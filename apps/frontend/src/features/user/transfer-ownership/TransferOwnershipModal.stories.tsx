@@ -7,11 +7,7 @@ import { getAdminForms } from '~/mocks/msw/handlers/admin-form'
 import { transferAllFormsOwnership } from '~/mocks/msw/handlers/admin-form/transfer-ownership'
 import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
-import {
-  fullScreenDecorator,
-  LoggedInDecorator,
-  viewports,
-} from '~utils/storybook'
+import { fullScreenDecorator, LoggedInDecorator } from '~utils/storybook'
 
 import { TransferOwnershipModal } from './TransferOwnershipModal'
 
@@ -22,7 +18,6 @@ export default {
   parameters: {
     layout: 'fullscreen',
     // Prevent flaky tests due to modal animating in.
-    chromatic: { pauseAnimationAtEnd: true },
     msw: [
       getUser({ delay: 0, mockUser: MOCK_USER }),
       getAdminForms.empty(),
@@ -59,9 +54,6 @@ const Template: StoryFn = () => {
 export const Default = Template.bind({})
 
 export const Mobile = Template.bind({})
-Mobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
 Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const FailureBecauseTransferEndpointFailed = Template.bind({})

@@ -6,8 +6,6 @@ import { FormColorTheme } from 'formsg-shared/types/form/form'
 
 import { getPublicFormResponse } from '~/mocks/msw/handlers/public-form'
 
-import { viewports } from '~utils/storybook'
-
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
 import { VerificationBox, VerificationBoxProps } from './VerificationBox'
@@ -58,9 +56,6 @@ MobileVerificationBox.args = {
 export const MobileVerificationBoxMobile = Template.bind({})
 MobileVerificationBoxMobile.args = {
   fieldType: BasicField.Mobile,
-}
-MobileVerificationBoxMobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
 }
 MobileVerificationBoxMobile.globals = {
   viewport: { value: 'mobile1', isRotated: false },
@@ -113,9 +108,6 @@ EmailVerificationBoxGreenTheme.parameters = {
 export const EmailVerificationBoxMobile = Template.bind({})
 EmailVerificationBoxMobile.args = {
   fieldType: BasicField.Email,
-}
-EmailVerificationBoxMobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
 }
 EmailVerificationBoxMobile.globals = {
   viewport: { value: 'mobile1', isRotated: false },

@@ -47,8 +47,6 @@ export default {
     }),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
     msw: DEFAULT_MSW_HANDLERS,
   },

@@ -9,8 +9,6 @@ import {
 } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { viewports } from '~/utils/storybook'
-
 import Button from '~components/Button'
 
 import { Rating, RatingProps } from './Rating'
@@ -176,7 +174,6 @@ Mobile.parameters = {
   controls: {
     include: ['name', 'colorScheme', 'wrapComponentsPerRow', 'helperText'],
   },
-  chromatic: { viewports: [viewports.xs] },
 }
 Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
@@ -189,7 +186,6 @@ Tablet.parameters = {
   controls: {
     include: ['name', 'colorScheme', 'wrapComponentsPerRow', 'helperText'],
   },
-  chromatic: { viewports: [viewports.md] },
 }
 Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 

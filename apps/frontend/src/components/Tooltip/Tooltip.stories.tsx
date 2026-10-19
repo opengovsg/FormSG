@@ -3,8 +3,6 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { BxsHelpCircle } from '~/assets/icons/BxsHelpCircle'
 
-import { viewports } from '~utils/storybook'
-
 import { Tooltip } from './Tooltip'
 
 export default {
@@ -88,7 +86,4 @@ const MobileTemplate: StoryFn<TooltipProps> = (args) => {
 }
 
 export const Mobile = MobileTemplate.bind({})
-Mobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
 Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }

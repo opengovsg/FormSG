@@ -11,7 +11,6 @@ export default {
   component: PrintableResponse,
   parameters: {
     layout: 'fullscreen',
-    chromatic: { pauseAnimationAtEnd: true },
   },
 } as Meta
 

@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { viewports } from '~utils/storybook'
-
 import { Pagination, PaginationProps } from './Pagination'
 
 export default {
@@ -104,9 +102,6 @@ Mobile.args = {
   pageSize: 10,
   siblingCount: 1,
 }
-Mobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
 Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const MobileDisabled = Template.bind({})
@@ -116,8 +111,5 @@ MobileDisabled.args = {
   pageSize: 10,
   siblingCount: 1,
   isDisabled: true,
-}
-MobileDisabled.parameters = {
-  chromatic: { viewports: [viewports.xs] },
 }
 MobileDisabled.globals = { viewport: { value: 'mobile1', isRotated: false } }

@@ -19,7 +19,6 @@ import { getUser } from '~/mocks/msw/handlers/user'
 
 import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
 import formsgSdk from '~utils/formSdk'
-import { viewports } from '~utils/storybook'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
 import { SettingsPage } from './settings/SettingsPage'
@@ -50,8 +49,6 @@ export default {
     },
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
     layout: 'fullscreen',
     msw: {
       handlers: {
@@ -94,15 +91,9 @@ PreventActivation.parameters = {
 }
 
 export const Tablet = Template.bind({})
-Tablet.parameters = {
-  chromatic: { viewports: [viewports.md] },
-}
 Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 export const Mobile = Template.bind({})
-Mobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
 Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 const storageModeKeypair = formsgSdk.crypto.generate()

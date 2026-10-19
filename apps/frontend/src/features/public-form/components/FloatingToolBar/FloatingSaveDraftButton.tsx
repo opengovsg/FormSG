@@ -28,7 +28,7 @@ export const FloatingSaveDraftButton = ({
   return (
     <Tooltip
       placement={isMobile ? 'top' : 'left'}
-      label={<Text data-chromatic="ignore">{tooltipLabel}</Text>}
+      label={<Text data-visual-test="transparent">{tooltipLabel}</Text>}
     >
       <IconButton
         variant="outline"

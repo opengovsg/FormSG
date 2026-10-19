@@ -32,11 +32,7 @@ import {
 } from '~/mocks/msw/handlers/public-form'
 
 import { ADMINFORM_PREVIEW_ROUTE } from '~constants/routes'
-import {
-  getMobileViewGlobals,
-  getMobileViewParameters,
-  StoryRouter,
-} from '~utils/storybook'
+import { getMobileViewGlobals, StoryRouter } from '~utils/storybook'
 
 import PreviewFormPage from './PreviewFormPage'
 
@@ -76,8 +72,6 @@ export default {
     }),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
     msw: DEFAULT_MSW_HANDLERS,
   },
@@ -140,7 +134,7 @@ WithCaptcha.parameters = {
 }
 
 export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 Mobile.globals = getMobileViewGlobals()
 
 export const ColorThemeGreen = Template.bind({})
@@ -196,8 +190,8 @@ SingpassUnauthorized.parameters = {
 export const UnauthedMobile = Template.bind({})
 UnauthedMobile.parameters = {
   ...SingpassUnauthorized.parameters,
-  ...getMobileViewParameters(),
 }
+UnauthedMobile.globals = getMobileViewGlobals()
 UnauthedMobile.globals = getMobileViewGlobals()
 
 export const SingpassAuthorized = Template.bind({})
@@ -359,8 +353,8 @@ FormNotFound.parameters = {
 export const FormNotFoundMobile = Template.bind({})
 FormNotFoundMobile.parameters = {
   ...FormNotFound.parameters,
-  ...getMobileViewParameters(),
 }
+FormNotFoundMobile.globals = getMobileViewGlobals()
 FormNotFoundMobile.globals = getMobileViewGlobals()
 
 export const WithPayment = Template.bind({})

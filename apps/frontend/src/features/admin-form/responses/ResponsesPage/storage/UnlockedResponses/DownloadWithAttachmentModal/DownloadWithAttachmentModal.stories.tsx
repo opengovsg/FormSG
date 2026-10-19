@@ -1,11 +1,7 @@
 import { useDisclosure } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import {
-  fullScreenDecorator,
-  getMobileViewGlobals,
-  getMobileViewParameters,
-} from '~utils/storybook'
+import { fullScreenDecorator, getMobileViewGlobals } from '~utils/storybook'
 
 import {
   DownloadWithAttachmentFlowStates,
@@ -28,7 +24,6 @@ export default {
   parameters: {
     layout: 'fullscreen',
     // Prevent flaky tests due to modal animating in.
-    chromatic: { delay: 200 },
   },
 } as Meta<DownloadWithAttachmentModalProps>
 
@@ -73,8 +68,7 @@ export const ConfirmationStateResponseAndAttachmentsMobile = Template.bind({})
 ConfirmationStateResponseAndAttachmentsMobile.args =
   ConfirmationStateResponseAndAttachmentsDesktop.args
 ConfirmationStateResponseAndAttachmentsMobile.parameters =
-  getMobileViewParameters()
-ConfirmationStateResponseAndAttachmentsMobile.globals = getMobileViewGlobals()
+  getMobileViewGlobals()
 
 export const ConfirmationScreenResponsesAndPdfsDesktop = Template.bind({})
 ConfirmationScreenResponsesAndPdfsDesktop.args = {
@@ -115,7 +109,7 @@ ConfirmationStateAttachmentsOnlyDesktop.args = {
 export const ConfirmationStateAttachmentsOnlyMobile = Template.bind({})
 ConfirmationStateAttachmentsOnlyMobile.args =
   ConfirmationStateAttachmentsOnlyDesktop.args
-ConfirmationStateAttachmentsOnlyMobile.parameters = getMobileViewParameters()
+ConfirmationStateAttachmentsOnlyMobile.globals = getMobileViewGlobals()
 ConfirmationStateAttachmentsOnlyMobile.globals = getMobileViewGlobals()
 
 export const ConfirmationScreenPdfsOnlyDesktop = Template.bind({})
@@ -140,7 +134,7 @@ DownloadingStateDesktop.args = {
 
 export const DownloadingStateMobile = Template.bind({})
 DownloadingStateMobile.args = DownloadingStateDesktop.args
-DownloadingStateMobile.parameters = getMobileViewParameters()
+DownloadingStateMobile.globals = getMobileViewGlobals()
 DownloadingStateMobile.globals = getMobileViewGlobals()
 
 export const CompleteStateDesktop = Template.bind({})
@@ -154,7 +148,7 @@ CompleteStateDesktop.args = {
 
 export const CompleteStateMobile = Template.bind({})
 CompleteStateMobile.args = CompleteStateDesktop.args
-CompleteStateMobile.parameters = getMobileViewParameters()
+CompleteStateMobile.globals = getMobileViewGlobals()
 CompleteStateMobile.globals = getMobileViewGlobals()
 
 export const CanceledStateDesktop = Template.bind({})
@@ -182,5 +176,5 @@ PartialSuccessStateMobile.args = {
   },
 }
 
-PartialSuccessStateMobile.parameters = getMobileViewParameters()
+PartialSuccessStateMobile.globals = getMobileViewGlobals()
 PartialSuccessStateMobile.globals = getMobileViewGlobals()

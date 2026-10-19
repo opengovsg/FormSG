@@ -26,11 +26,7 @@ import {
   ADMINFORM_ROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
 } from '~constants/routes'
-import {
-  getMobileViewGlobals,
-  getMobileViewParameters,
-  viewports,
-} from '~utils/storybook'
+import { getMobileViewGlobals } from '~utils/storybook'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
 import {
@@ -44,8 +40,6 @@ import {
 export default {
   title: 'Pages/AdminFormPage/Results/ResponsesTab',
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
     msw: {
       handlers: {
@@ -122,13 +116,9 @@ EmptyEmailForm.parameters = {
 }
 
 export const EmailFormTablet = Template.bind({})
-EmailFormTablet.parameters = {
-  chromatic: { viewports: [viewports.md] },
-}
 EmailFormTablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 export const EmailFormMobile = Template.bind({})
-EmailFormMobile.parameters = getMobileViewParameters()
 EmailFormMobile.globals = getMobileViewGlobals()
 
 export const StorageForm = Template.bind({})

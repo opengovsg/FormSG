@@ -15,11 +15,7 @@ import {
 } from '~/mocks/msw/handlers/public-form'
 
 import { ADMINFORM_USETEMPLATE_ROUTE } from '~constants/routes'
-import {
-  getMobileViewGlobals,
-  getMobileViewParameters,
-  StoryRouter,
-} from '~utils/storybook'
+import { getMobileViewGlobals, StoryRouter } from '~utils/storybook'
 
 import TemplateFormPage from './TemplateFormPage'
 
@@ -41,8 +37,6 @@ export default {
     }),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
     msw: DEFAULT_MSW_HANDLERS,
   },
@@ -52,7 +46,7 @@ const Template: StoryFn = () => <TemplateFormPage />
 export const Default = Template.bind({})
 
 export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 Mobile.globals = getMobileViewGlobals()
 
 export const FormNotFound = Template.bind({})
@@ -63,8 +57,8 @@ FormNotFound.parameters = {
 export const FormNotFoundMobile = Template.bind({})
 FormNotFoundMobile.parameters = {
   ...FormNotFound.parameters,
-  ...getMobileViewParameters(),
 }
+FormNotFoundMobile.globals = getMobileViewGlobals()
 FormNotFoundMobile.globals = getMobileViewGlobals()
 
 export const MultirespondentFormWithAdditionalRowsTableField = Template.bind({})

@@ -1,7 +1,7 @@
 import { Box, FormControl } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { getMobileViewGlobals, getMobileViewParameters } from '~utils/storybook'
+import { getMobileViewGlobals } from '~utils/storybook'
 import { SingleSelect } from '~components/Dropdown'
 import FormLabel from '~components/FormControl/FormLabel'
 
@@ -22,7 +22,6 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    chromatic: { delay: 200 },
   },
   args: {
     isOpen: true,
@@ -67,5 +66,5 @@ WithInputs.args = {
 }
 
 export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 Mobile.globals = getMobileViewGlobals()

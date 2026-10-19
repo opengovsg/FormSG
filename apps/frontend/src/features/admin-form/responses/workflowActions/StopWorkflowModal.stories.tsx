@@ -15,11 +15,7 @@ import {
 } from '~/mocks/msw/handlers/admin-form'
 import { getUser } from '~/mocks/msw/handlers/user'
 
-import {
-  getMobileViewGlobals,
-  getMobileViewParameters,
-  StoryRouter,
-} from '~utils/storybook'
+import { getMobileViewGlobals, StoryRouter } from '~utils/storybook'
 
 import { StopWorkflowModal, StopWorkflowModalProps } from './StopWorkflowModal'
 
@@ -80,7 +76,6 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    chromatic: { delay: 200 },
     msw: [
       ...createFormBuilderMocks(FORM),
       getAdminFormSettings({
@@ -119,5 +114,5 @@ const Template: StoryFn<StopWorkflowModalProps> = (args) => (
 export const Default = Template.bind({})
 
 export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 Mobile.globals = getMobileViewGlobals()

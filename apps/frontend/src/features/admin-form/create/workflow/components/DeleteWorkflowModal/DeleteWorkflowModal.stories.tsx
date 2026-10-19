@@ -9,7 +9,7 @@ import {
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 
-import { StoryRouter, viewports } from '~utils/storybook'
+import { StoryRouter } from '~utils/storybook'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -62,7 +62,6 @@ export default {
   decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
   parameters: {
     layout: 'fullscreen',
-    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
   },
 } as Meta
 
@@ -91,14 +90,12 @@ FormOpen.parameters = {
 export const MobileFormClosed = Template.bind({})
 MobileFormClosed.parameters = {
   ...FormClosed.parameters,
-  chromatic: { viewports: [viewports.xs] },
 }
 MobileFormClosed.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const MobileFormOpen = Template.bind({})
 MobileFormOpen.parameters = {
   ...FormOpen.parameters,
-  chromatic: { viewports: [viewports.xs] },
 }
 MobileFormOpen.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
@@ -115,7 +112,6 @@ FirstStepFormClosed.parameters = {
 export const MobileFirstStepFormClosed = FirstStepTemplate.bind({})
 MobileFirstStepFormClosed.parameters = {
   ...FirstStepFormClosed.parameters,
-  chromatic: { viewports: [viewports.xs] },
 }
 MobileFirstStepFormClosed.globals = {
   viewport: { value: 'mobile1', isRotated: false },

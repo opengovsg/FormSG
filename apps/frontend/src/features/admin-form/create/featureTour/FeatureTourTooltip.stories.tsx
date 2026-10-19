@@ -17,7 +17,6 @@ export default {
   decorators: [fullScreenDecorator],
   parameters: {
     layout: 'fullscreen',
-    chromatic: { pauseAnimationAtEnd: true, delay: 50 },
   },
 } as Meta
 

@@ -83,3 +83,6 @@ coverage/
 
 # Storybook builds
 storybook-static
+
+# Argos screenshots from the Storybook Vitest project
+screenshots

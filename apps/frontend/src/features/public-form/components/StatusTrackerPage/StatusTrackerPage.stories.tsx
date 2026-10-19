@@ -4,7 +4,7 @@ import { envHandlers } from '~/mocks/msw/handlers/env'
 import { getPublicFormResponse } from '~/mocks/msw/handlers/public-form'
 import { getStatusTrackerDataResponse } from '~/mocks/msw/status-tracker'
 
-import { StoryRouter, viewports } from '~utils/storybook'
+import { StoryRouter } from '~utils/storybook'
 
 import { StatusTrackerPage } from './StatusTrackerPage'
 
@@ -26,8 +26,6 @@ export default {
     }),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
     msw: DEFAULT_MSW_HANDLERS,
   },
@@ -38,13 +36,7 @@ const Template: StoryFn = () => <StatusTrackerPage />
 export const Desktop = Template.bind({})
 
 export const Tablet = Template.bind({})
-Tablet.parameters = {
-  chromatic: { viewports: [viewports.md] },
-}
 Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 export const Mobile = Template.bind({})
-Mobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
 Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }

@@ -1,8 +1,6 @@
 import { Box, Stack } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { viewports } from '~utils/storybook'
-
 import { PeekCard, PeekCardProps } from './PeekCard'
 
 export default {
@@ -66,7 +64,6 @@ MobileTwoActions.args = {
   ],
 }
 MobileTwoActions.parameters = {
-  chromatic: { viewports: [viewports.xs] },
   docs: {
     description: {
       story:

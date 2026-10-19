@@ -2,7 +2,6 @@ import { TabList, TabPanel, TabPanels, Tabs, TabsProps } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { useDraggable } from '~hooks/useDraggable'
-import { viewports } from '~utils/storybook'
 
 import { Tab } from './Tab'
 
@@ -53,9 +52,6 @@ export const WithScrollingLight = TabTemplate.bind({})
 WithScrollingLight.args = {
   variant: 'line-light',
 }
-WithScrollingLight.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
 WithScrollingLight.globals = {
   viewport: { value: 'mobile1', isRotated: false },
 }
@@ -63,9 +59,6 @@ WithScrollingLight.globals = {
 export const WithScrollingDark = TabTemplate.bind({})
 WithScrollingDark.args = {
   variant: 'line-dark',
-}
-WithScrollingDark.parameters = {
-  chromatic: { viewports: [viewports.xs] },
 }
 WithScrollingDark.globals = { viewport: { value: 'mobile1', isRotated: false } }
 

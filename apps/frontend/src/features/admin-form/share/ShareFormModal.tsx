@@ -284,8 +284,8 @@ export const ShareFormModal = ({
         <Stack direction="row" align="center">
           <InputGroup>
             <Input
-              // The link will always change in Chromatic so this should be ignored.
-              data-chromatic="ignore"
+              // The link will always change between snapshots so this should be ignored.
+              data-visual-test="transparent"
               isReadOnly
               value={shareLink}
               hasInputRightElement={Boolean(formId)}
@@ -319,8 +319,8 @@ export const ShareFormModal = ({
       <Skeleton isLoaded={!!formId}>
         <InputGroup>
           <Input
-            // The link will always change in Chromatic so this should be ignored.
-            data-chromatic="ignore"
+            // The link will always change between snapshots so this should be ignored.
+            data-visual-test="transparent"
             isReadOnly
             isDisabled={isFormPrivate}
             value={`${templateLink}`}

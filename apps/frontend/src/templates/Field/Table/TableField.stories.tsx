@@ -6,7 +6,6 @@ import { assign, merge, times } from 'lodash'
 
 import { BasicField } from 'formsg-shared/types/field'
 
-import { viewports } from '~utils/storybook'
 import Button from '~components/Button'
 
 import { TableFieldSchema } from '../types'
@@ -172,9 +171,6 @@ Default.args = {
 export const Mobile = Template.bind({})
 Mobile.args = {
   schema: baseSchema,
-}
-Mobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
 }
 Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 

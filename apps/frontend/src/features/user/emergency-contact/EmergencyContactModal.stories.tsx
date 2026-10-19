@@ -12,11 +12,7 @@ import {
   userHandlers,
 } from '~/mocks/msw/handlers/user'
 
-import {
-  fullScreenDecorator,
-  LoggedInDecorator,
-  viewports,
-} from '~utils/storybook'
+import { fullScreenDecorator, LoggedInDecorator } from '~utils/storybook'
 
 import { EmergencyContactModal } from './EmergencyContactModal'
 
@@ -27,7 +23,6 @@ export default {
   parameters: {
     layout: 'fullscreen',
     // Prevent flaky tests due to modal animating in.
-    chromatic: { pauseAnimationAtEnd: true },
     msw: userHandlers({ delay: 0 }),
   },
 } as Meta
@@ -73,7 +68,4 @@ Loading.parameters = {
 }
 
 export const Mobile = Template.bind({})
-Mobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
 Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }

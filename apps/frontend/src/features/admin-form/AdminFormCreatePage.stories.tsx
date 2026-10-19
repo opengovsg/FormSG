@@ -26,9 +26,7 @@ import {
   ADMIN_FORM_CREATE_PAGE_FORM_ID,
   AdminFormCreatePageDecorator,
   getMobileViewGlobals,
-  getMobileViewParameters,
   getTabletViewGlobals,
-  getTabletViewParameters,
   LoggedInDecorator,
   mockDateDecorator,
   ViewedFeatureTourDecorator,
@@ -76,10 +74,6 @@ export default {
     mockDateDecorator,
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    // Pass a very short delay to avoid bug where Chromatic takes a snapshot before
-    // the story has loaded
-    chromatic: { pauseAnimationAtEnd: true, delay: 200 },
     layout: 'fullscreen',
     msw: { handlers: { default: buildMswRoutes() } },
     mockdate: new Date('2022-12-25T06:22:27.219Z'),
@@ -135,11 +129,10 @@ DesktopLoading.parameters = {
 }
 
 export const TabletEmpty = Template.bind({})
-TabletEmpty.parameters = getTabletViewParameters()
+TabletEmpty.globals = getTabletViewGlobals()
 TabletEmpty.globals = getTabletViewGlobals()
 export const TabletAllFields = Template.bind({})
 TabletAllFields.parameters = {
-  ...getTabletViewParameters(),
   msw: {
     handlers: {
       default: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
@@ -147,9 +140,9 @@ TabletAllFields.parameters = {
   },
 }
 TabletAllFields.globals = getTabletViewGlobals()
+TabletAllFields.globals = getTabletViewGlobals()
 export const TabletLoading = Template.bind({})
 TabletLoading.parameters = {
-  ...getTabletViewParameters(),
   mockdate: new Date('2024-09-11T13:00:00.000Z'),
   msw: {
     handlers: {
@@ -158,13 +151,13 @@ TabletLoading.parameters = {
   },
 }
 TabletLoading.globals = getTabletViewGlobals()
+TabletLoading.globals = getTabletViewGlobals()
 
 export const MobileEmpty = Template.bind({})
-MobileEmpty.parameters = getMobileViewParameters()
+MobileEmpty.globals = getMobileViewGlobals()
 MobileEmpty.globals = getMobileViewGlobals()
 export const MobileAllFields = Template.bind({})
 MobileAllFields.parameters = {
-  ...getMobileViewParameters(),
   msw: {
     handlers: {
       default: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
@@ -172,15 +165,16 @@ MobileAllFields.parameters = {
   },
 }
 MobileAllFields.globals = getMobileViewGlobals()
+MobileAllFields.globals = getMobileViewGlobals()
 export const MobileLoading = Template.bind({})
 MobileLoading.parameters = {
-  ...getMobileViewParameters(),
   msw: {
     handlers: {
       default: buildMswRoutes({}, 'infinite'),
     },
   },
 }
+MobileLoading.globals = getMobileViewGlobals()
 MobileLoading.globals = getMobileViewGlobals()
 
 export const AllFieldsFieldsHiddenByLogic = Template.bind({})
@@ -215,8 +209,8 @@ FormWithWebhook.parameters = {
 export const FormWithWebhookMobile = Template.bind({})
 FormWithWebhookMobile.parameters = {
   ...FormWithWebhook.parameters,
-  ...getMobileViewParameters(),
 }
+FormWithWebhookMobile.globals = getMobileViewGlobals()
 FormWithWebhookMobile.globals = getMobileViewGlobals()
 
 export const FormWithPayment = Template.bind({})
@@ -245,8 +239,8 @@ FormWithPayment.parameters = {
 export const FormWithPaymentMobile = Template.bind({})
 FormWithPaymentMobile.parameters = {
   ...FormWithPayment.parameters,
-  ...getMobileViewParameters(),
 }
+FormWithPaymentMobile.globals = getMobileViewGlobals()
 FormWithPaymentMobile.globals = getMobileViewGlobals()
 
 export const AdminFormBuilderWithAdditionalRowsTableField = Template.bind({})

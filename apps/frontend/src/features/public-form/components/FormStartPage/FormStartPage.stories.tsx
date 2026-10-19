@@ -12,7 +12,7 @@ import {
   getPublicFormWithoutSectionsResponse,
 } from '~/mocks/msw/handlers/public-form'
 
-import { getMobileViewGlobals, getMobileViewParameters } from '~utils/storybook'
+import { getMobileViewGlobals } from '~utils/storybook'
 
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
@@ -40,8 +40,6 @@ export default {
     ),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
   },
 } as Meta
@@ -124,9 +122,9 @@ OverflowTitle.parameters = {
 
 export const OverflowTitleMobile = Template.bind({})
 OverflowTitleMobile.parameters = {
-  ...getMobileViewParameters(),
   ...OverflowTitle.parameters,
 }
+OverflowTitleMobile.globals = getMobileViewGlobals()
 OverflowTitleMobile.globals = getMobileViewGlobals()
 
 export const ColorThemeBrown = Template.bind({})
@@ -245,8 +243,8 @@ MiniHeaderMobileWithSections.args = {
 }
 MiniHeaderMobileWithSections.parameters = {
   ...MiniHeader.parameters,
-  ...getMobileViewParameters(),
 }
+MiniHeaderMobileWithSections.globals = getMobileViewGlobals()
 MiniHeaderMobileWithSections.globals = getMobileViewGlobals()
 
 export const MiniHeaderMobileWithoutSections = MiniHeaderTemplate.bind({})
@@ -265,6 +263,6 @@ MiniHeaderMobileWithoutSections.parameters = {
       delay: 0,
     }),
   ],
-  ...getMobileViewParameters(),
 }
+MiniHeaderMobileWithoutSections.globals = getMobileViewGlobals()
 MiniHeaderMobileWithoutSections.globals = getMobileViewGlobals()

@@ -28,7 +28,7 @@ export const ResendOtpButton = ({
       {...buttonProps}
     >
       Resend OTP
-      <Text as="span" data-chromatic="ignore">
+      <Text as="span" data-visual-test="transparent">
         {timer > 0 && ` in ${timer}s`}
       </Text>
     </Button>

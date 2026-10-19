@@ -34,9 +34,7 @@ import {
 } from '~hooks/useIndexedDb'
 import {
   getMobileViewGlobals,
-  getMobileViewParameters,
   getTabletViewGlobals,
-  getTabletViewParameters,
   StoryRouter,
 } from '~utils/storybook'
 import { ShortTextFieldSchema } from '~templates/Field'
@@ -134,8 +132,6 @@ export default {
     }),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
     msw: DEFAULT_MSW_HANDLERS,
   },
@@ -231,8 +227,8 @@ WithPrefilledNormalFields.parameters = {
 export const WithPrefilledNormalFieldsMobile = Template.bind({})
 WithPrefilledNormalFieldsMobile.parameters = {
   ...WithPrefilledNormalFields.parameters,
-  ...getMobileViewParameters(),
 }
+WithPrefilledNormalFieldsMobile.globals = getMobileViewGlobals()
 WithPrefilledNormalFieldsMobile.globals = getMobileViewGlobals()
 
 export const WithPrefilledLockedFields = Template.bind({})
@@ -253,8 +249,8 @@ WithPrefilledLockedFields.parameters = {
 export const WithPrefilledLockedFieldsMobile = Template.bind({})
 WithPrefilledLockedFieldsMobile.parameters = {
   ...WithPrefilledLockedFields.parameters,
-  ...getMobileViewParameters(),
 }
+WithPrefilledLockedFieldsMobile.globals = getMobileViewGlobals()
 WithPrefilledLockedFieldsMobile.globals = getMobileViewGlobals()
 
 export const WithPrefilledLockedAndNormalFields = Template.bind({})
@@ -278,12 +274,12 @@ WithPrefilledLockedAndNormalFields.parameters = {
 export const WithPrefilledLockedAndNormalFieldsMobile = Template.bind({})
 WithPrefilledLockedAndNormalFieldsMobile.parameters = {
   ...WithPrefilledLockedAndNormalFields.parameters,
-  ...getMobileViewParameters(),
 }
+WithPrefilledLockedAndNormalFieldsMobile.globals = getMobileViewGlobals()
 WithPrefilledLockedAndNormalFieldsMobile.globals = getMobileViewGlobals()
 
 export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 Mobile.globals = getMobileViewGlobals()
 
 export const ColorThemeGreen = Template.bind({})
@@ -363,8 +359,8 @@ SingpassUnauthorizedSubmitterIdCollectionEnabled.parameters = {
 export const UnauthedMobile = Template.bind({})
 UnauthedMobile.parameters = {
   ...SingpassUnauthorized.parameters,
-  ...getMobileViewParameters(),
 }
+UnauthedMobile.globals = getMobileViewGlobals()
 UnauthedMobile.globals = getMobileViewGlobals()
 
 export const SingpassAuthorized = Template.bind({})
@@ -675,15 +671,15 @@ FormNotFound.parameters = {
 export const FormNotFoundTablet = Template.bind({})
 FormNotFoundTablet.parameters = {
   ...FormNotFound.parameters,
-  ...getTabletViewParameters(),
 }
+FormNotFoundTablet.globals = getTabletViewGlobals()
 FormNotFoundTablet.globals = getTabletViewGlobals()
 
 export const FormNotFoundMobile = Template.bind({})
 FormNotFoundMobile.parameters = {
   ...FormNotFound.parameters,
-  ...getMobileViewParameters(),
 }
+FormNotFoundMobile.globals = getMobileViewGlobals()
 FormNotFoundMobile.globals = getMobileViewGlobals()
 
 export const WithMyInfo = Template.bind({})
@@ -793,8 +789,8 @@ WithSaveDraftEnabled.parameters = {
 export const WithSaveDraftEnabledMobile = Template.bind({})
 WithSaveDraftEnabledMobile.parameters = {
   ...WithSaveDraftEnabled.parameters,
-  ...getMobileViewParameters(),
 }
+WithSaveDraftEnabledMobile.globals = getMobileViewGlobals()
 WithSaveDraftEnabledMobile.globals = getMobileViewGlobals()
 
 const STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY =
@@ -1006,7 +1002,6 @@ export const WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile =
   Template.bind({})
 WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile.parameters = {
   ...WithSaveDraftEnabled.parameters,
-  ...getMobileViewParameters(),
   msw: [
     getPublicFormResponse({
       overrides: {
@@ -1019,6 +1014,8 @@ WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile.parameters = {
     ...DEFAULT_MSW_HANDLERS,
   ],
 }
+WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile.globals =
+  getMobileViewGlobals()
 WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile.globals =
   getMobileViewGlobals()
 WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile.play = async ({

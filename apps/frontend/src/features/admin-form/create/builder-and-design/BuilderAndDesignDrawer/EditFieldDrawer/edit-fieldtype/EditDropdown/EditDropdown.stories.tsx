@@ -39,8 +39,6 @@ export default {
     EditFieldDrawerDecorator,
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     msw: createFormBuilderMocks({}, 0),
   },
   args: {

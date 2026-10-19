@@ -3,8 +3,6 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { featureFlags } from 'formsg-shared/constants'
 
-import { viewports } from '~utils/storybook'
-
 import { WelcomeCard } from './WelcomeCard'
 
 const redesignOn = new GrowthBook({
@@ -22,9 +20,7 @@ export default {
       </GrowthBookProvider>
     ),
   ],
-  parameters: {
-    chromatic: { pauseAnimationAtEnd: true, delay: 1200 },
-  },
+  parameters: {},
 } as Meta
 
 const Template: StoryFn = () => <WelcomeCard />
@@ -32,11 +28,4 @@ const Template: StoryFn = () => <WelcomeCard />
 export const Default = Template.bind({})
 
 export const Mobile = Template.bind({})
-Mobile.parameters = {
-  chromatic: {
-    viewports: [viewports.xs],
-    pauseAnimationAtEnd: true,
-    delay: 1200,
-  },
-}
 Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }

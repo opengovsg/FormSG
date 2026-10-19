@@ -16,7 +16,7 @@ import {
   putFormWhitelistSettingSimulateCsvStringValidationError,
 } from '~/mocks/msw/handlers/admin-form'
 
-import { StoryRouter, viewports } from '~utils/storybook'
+import { StoryRouter } from '~utils/storybook'
 
 import { SettingsAuthPage } from './SettingsAuthPage'
 
@@ -42,10 +42,7 @@ export default {
   title: 'Pages/AdminFormPage/Settings/AuthTab',
   component: SettingsAuthPage,
   decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
-  parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
-  },
+  parameters: {},
 } as Meta
 
 const Template: StoryFn = () => <SettingsAuthPage />
@@ -338,7 +335,6 @@ PrivateStorageMyInfoUpdateWhitelistValidationErrorForm.parameters = {
 
 export const Tablet = Template.bind({})
 Tablet.parameters = {
-  chromatic: { viewports: [viewports.md] },
   msw: {
     handlers: {
       default:
@@ -351,7 +347,6 @@ Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 export const Mobile = Template.bind({})
 Mobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
   msw: {
     handlers: {
       default:

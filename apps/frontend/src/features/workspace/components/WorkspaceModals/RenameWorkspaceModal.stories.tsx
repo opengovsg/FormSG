@@ -6,7 +6,7 @@ import { Workspace, WorkspaceId } from 'formsg-shared/types/workspace'
 
 import { userHandlers } from '~/mocks/msw/handlers/user'
 
-import { getMobileViewGlobals, getMobileViewParameters } from '~utils/storybook'
+import { getMobileViewGlobals } from '~utils/storybook'
 
 import {
   RenameWorkspaceModal,
@@ -19,7 +19,6 @@ export default {
   parameters: {
     layout: 'fullscreen',
     // Prevent flaky tests due to modal animating in.
-    chromatic: { pauseAnimationAtEnd: true },
     msw: userHandlers({ delay: 0 }),
   },
 } as Meta
@@ -45,5 +44,5 @@ const Template: StoryFn<RenameWorkspaceModalProps> = (args) => {
 export const RenameWorkspace = Template.bind({})
 
 export const RenameWorkspaceMobile = Template.bind({})
-RenameWorkspaceMobile.parameters = getMobileViewParameters()
+RenameWorkspaceMobile.globals = getMobileViewGlobals()
 RenameWorkspaceMobile.globals = getMobileViewGlobals()

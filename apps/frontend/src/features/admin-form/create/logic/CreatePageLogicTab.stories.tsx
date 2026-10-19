@@ -19,7 +19,7 @@ import {
   deleteLogic,
 } from '~/mocks/msw/handlers/admin-form'
 
-import { StoryRouter, viewports } from '~utils/storybook'
+import { StoryRouter } from '~utils/storybook'
 
 import { CreatePageLogicTab } from './CreatePageLogicTab'
 
@@ -38,10 +38,6 @@ export default {
   decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
   parameters: {
     layout: 'fullscreen',
-    // Required so skeleton "animation" does not hide content.
-    // Pass a very short delay to avoid bug where Chromatic takes a snapshot before
-    // the story has loaded
-    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
     msw: { handlers: { default: buildMswRoutes() } },
   },
 } as Meta
@@ -142,7 +138,6 @@ NoLogic.parameters = {
 export const MobileNoLogic = Template.bind({})
 MobileNoLogic.parameters = {
   msw: { handlers: { default: buildMswRoutes({ form_logics: [] }) } },
-  chromatic: { viewports: [viewports.xs] },
 }
 MobileNoLogic.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
@@ -158,7 +153,6 @@ WithLogic.parameters = {
 export const MobileWithLogic = Template.bind({})
 MobileWithLogic.parameters = {
   msw: { handlers: { default: buildMswRoutes(FORM_WITH_LOGIC) } },
-  chromatic: { viewports: [viewports.xs] },
 }
 MobileWithLogic.globals = { viewport: { value: 'mobile1', isRotated: false } }
 

@@ -8,7 +8,6 @@ import {
 } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { viewports } from '~utils/storybook'
 import Button from '~components/Button'
 
 import { YesNo, YesNoProps } from './YesNo'
@@ -92,17 +91,11 @@ export const Mobile = Template.bind({})
 Mobile.args = {
   name: 'testMobileInput',
 }
-Mobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
 Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const Tablet = Template.bind({})
 Tablet.args = {
   name: 'testTabletInput',
-}
-Tablet.parameters = {
-  chromatic: { viewports: [viewports.md] },
 }
 Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 

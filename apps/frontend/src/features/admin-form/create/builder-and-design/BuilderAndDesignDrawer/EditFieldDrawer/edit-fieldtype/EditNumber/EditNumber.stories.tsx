@@ -41,10 +41,7 @@ export default {
     }),
     EditFieldDrawerDecorator,
   ],
-  parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
-  },
+  parameters: {},
   args: {
     field: DEFAULT_NUMBER_FIELD,
   },

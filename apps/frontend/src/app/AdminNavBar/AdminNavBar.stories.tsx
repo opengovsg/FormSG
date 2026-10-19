@@ -4,9 +4,7 @@ import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
 import {
   getMobileViewGlobals,
-  getMobileViewParameters,
   getTabletViewGlobals,
-  getTabletViewParameters,
   LoggedInDecorator,
   StoryRouter,
   ViewedEmergencyContactDecorator,
@@ -36,7 +34,7 @@ export const Expanded = Template.bind({})
 Expanded.args = { isMenuOpen: true }
 
 export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 Mobile.globals = getMobileViewGlobals()
 
 export const MobileExpanded = Template.bind({})
@@ -55,5 +53,5 @@ MobileExpanded.parameters = {
 MobileExpanded.args = Expanded.args
 
 export const Tablet = Template.bind({})
-Tablet.parameters = getTabletViewParameters()
+Tablet.globals = getTabletViewGlobals()
 Tablet.globals = getTabletViewGlobals()

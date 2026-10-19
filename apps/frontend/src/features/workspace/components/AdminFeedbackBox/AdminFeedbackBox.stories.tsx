@@ -1,8 +1,6 @@
 import { useState } from 'react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { viewports } from '~/utils/storybook'
-
 import { AdminFeedbackBox } from './AdminFeedbackBox'
 
 export default {
@@ -28,7 +26,4 @@ Default.storyName = 'Empty state (no stars selected)'
 
 export const Mobile = Template.bind({})
 Mobile.storyName = 'Mobile viewport'
-Mobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
 Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }

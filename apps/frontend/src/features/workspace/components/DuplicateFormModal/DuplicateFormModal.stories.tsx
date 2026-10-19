@@ -38,7 +38,6 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    chromatic: { pauseAnimationAtEnd: true },
     msw: baseMsw,
   },
 } as Meta

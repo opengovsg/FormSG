@@ -1,7 +1,7 @@
 import { Box } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { getMobileViewGlobals, getMobileViewParameters } from '~utils/storybook'
+import { getMobileViewGlobals } from '~utils/storybook'
 
 import { AddAssigneeModal, AddAssigneeModalProps } from './AddAssigneeModal'
 
@@ -17,7 +17,6 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    chromatic: { delay: 200 },
   },
   args: {
     isOpen: true,
@@ -34,5 +33,5 @@ const Template: StoryFn<AddAssigneeModalProps> = (args) => (
 export const Default = Template.bind({})
 
 export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 Mobile.globals = getMobileViewGlobals()

@@ -4,7 +4,6 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 import {
   fullScreenDecorator,
   getMobileViewGlobals,
-  getMobileViewParameters,
   LoggedInDecorator,
   StoryRouter,
 } from '~utils/storybook'
@@ -46,9 +45,7 @@ PublicView.args = {
 }
 
 export const MobilePublicView = Template.bind({})
-MobilePublicView.parameters = {
-  ...getMobileViewParameters(),
-}
+MobilePublicView.globals = getMobileViewGlobals()
 MobilePublicView.globals = getMobileViewGlobals()
 MobilePublicView.args = {
   isPreview: false,
@@ -62,9 +59,7 @@ AdminPreview.args = {
 }
 
 export const MobileAdminPreView = Template.bind({})
-MobileAdminPreView.parameters = {
-  ...getMobileViewParameters(),
-}
+MobileAdminPreView.globals = getMobileViewGlobals()
 MobileAdminPreView.globals = getMobileViewGlobals()
 MobileAdminPreView.args = {
   isPreview: true,

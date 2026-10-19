@@ -68,7 +68,21 @@ export const parameters = {
     'en-SG': 'English',
   },
   layout: 'fullscreen',
-  viewport: {},
+  // Capture the whole viewport: modals render in a portal, so cropping to the
+  // story root leaves Argos with nothing to measure and the screenshot hangs.
+  argos: { fitToContent: false },
+  viewport: {
+    // Argos reads sizes from here, so the keys stories use are defined
+    // explicitly rather than relying on the addon defaults.
+    options: {
+      mobile1: { name: 'Mobile', styles: { width: '320px', height: '568px' } },
+      tablet: { name: 'Tablet', styles: { width: '768px', height: '1024px' } },
+      desktop1: {
+        name: 'Desktop',
+        styles: { width: '1280px', height: '800px' },
+      },
+    },
+  },
   docs: {
     theme: StorybookTheme.docs,
     inlineStories: true,

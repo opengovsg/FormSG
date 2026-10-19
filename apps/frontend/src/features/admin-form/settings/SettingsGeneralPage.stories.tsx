@@ -10,11 +10,7 @@ import {
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 
-import {
-  getMobileViewGlobals,
-  getMobileViewParameters,
-  StoryRouter,
-} from '~utils/storybook'
+import { getMobileViewGlobals, StoryRouter } from '~utils/storybook'
 
 import { SettingsGeneralPage } from './SettingsGeneralPage'
 
@@ -45,8 +41,6 @@ export default {
     ),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
     msw: {
       handlers: {
         default: buildMswRoutes({
@@ -101,6 +95,6 @@ Loading.parameters = {
 export const Mobile = Template.bind({})
 Mobile.parameters = {
   ...WithScheduledClosure.parameters,
-  ...getMobileViewParameters(),
 }
+Mobile.globals = getMobileViewGlobals()
 Mobile.globals = getMobileViewGlobals()

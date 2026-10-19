@@ -1,11 +1,7 @@
 import { Meta, StoryFn } from '@storybook/react-vite'
 import { action } from 'storybook/actions'
 
-import {
-  fullScreenDecorator,
-  getMobileViewGlobals,
-  getMobileViewParameters,
-} from '~utils/storybook'
+import { fullScreenDecorator, getMobileViewGlobals } from '~utils/storybook'
 
 import {
   PublicFormContext,
@@ -146,9 +142,7 @@ WithSubmissionDataNoFloatingToolbar.args = {
 
 // Mobile variants
 export const MobileDefault = Template.bind({})
-MobileDefault.parameters = {
-  ...getMobileViewParameters(),
-}
+MobileDefault.globals = getMobileViewGlobals()
 MobileDefault.globals = getMobileViewGlobals()
 MobileDefault.args = {
   isPreview: false,
@@ -156,9 +150,7 @@ MobileDefault.args = {
 }
 
 export const MobileWithSaveDraft = Template.bind({})
-MobileWithSaveDraft.parameters = {
-  ...getMobileViewParameters(),
-}
+MobileWithSaveDraft.globals = getMobileViewGlobals()
 MobileWithSaveDraft.globals = getMobileViewGlobals()
 MobileWithSaveDraft.args = {
   isPreview: false,
@@ -167,9 +159,7 @@ MobileWithSaveDraft.args = {
 }
 
 export const MobilePreviewMode = Template.bind({})
-MobilePreviewMode.parameters = {
-  ...getMobileViewParameters(),
-}
+MobilePreviewMode.globals = getMobileViewGlobals()
 MobilePreviewMode.globals = getMobileViewGlobals()
 MobilePreviewMode.args = {
   isPreview: true,

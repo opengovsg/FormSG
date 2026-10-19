@@ -1,7 +1,5 @@
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { viewports } from '~utils/storybook'
-
 import { FooterProps } from './common/types'
 import { Footer } from './Footer'
 
@@ -54,13 +52,7 @@ WithTagline.args = {
 }
 
 export const Mobile = Template.bind({})
-Mobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
 Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const Tablet = Template.bind({})
-Tablet.parameters = {
-  chromatic: { viewports: [viewports.md] },
-}
 Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }

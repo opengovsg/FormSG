@@ -4,8 +4,6 @@ import { FormControl, VStack } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 import { get, isEmpty } from 'lodash'
 
-import { viewports } from '~utils/storybook'
-
 import Button from '../Button'
 import FormErrorMessage from '../FormControl/FormErrorMessage'
 import FormLabel from '../FormControl/FormLabel'
@@ -36,17 +34,11 @@ export const Mobile = Template.bind({})
 Mobile.args = {
   name: 'Mobile',
 }
-Mobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
 Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const Tablet = Template.bind({})
 Tablet.args = {
   name: 'Tablet',
-}
-Tablet.parameters = {
-  chromatic: { viewports: [viewports.md] },
 }
 Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 

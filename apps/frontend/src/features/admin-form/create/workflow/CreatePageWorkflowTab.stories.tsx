@@ -23,7 +23,7 @@ import {
 } from '~/mocks/msw/handlers/admin-form'
 import { getUser } from '~/mocks/msw/handlers/user'
 
-import { StoryRouter, viewports } from '~utils/storybook'
+import { StoryRouter } from '~utils/storybook'
 
 import { CreatePageSidebarProvider } from '~features/admin-form/create/common'
 
@@ -49,7 +49,6 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
     msw: {
       handlers: {
         default: buildMswRoutes({
@@ -276,9 +275,6 @@ const Template: StoryFn = () => <CreatePageWorkflowTab />
 export const NoWorkflow = Template.bind({})
 
 export const MobileNoWorkflow = Template.bind({})
-MobileNoWorkflow.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
 MobileNoWorkflow.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const WithWorkflow = Template.bind({})
@@ -293,7 +289,6 @@ WithWorkflow.parameters = {
 export const MobileWithWorkflow = Template.bind({})
 MobileWithWorkflow.parameters = {
   msw: { handlers: { default: buildMswRoutes(FORM_WITH_WORKFLOW) } },
-  chromatic: { viewports: [viewports.xs] },
 }
 MobileWithWorkflow.globals = {
   viewport: { value: 'mobile1', isRotated: false },

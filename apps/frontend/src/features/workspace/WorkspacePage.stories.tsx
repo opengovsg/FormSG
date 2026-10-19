@@ -16,7 +16,6 @@ import { getWorkspaces } from '~/mocks/msw/handlers/workspace'
 import { DASHBOARD_ROUTE } from '~constants/routes'
 import {
   getMobileViewGlobals,
-  getMobileViewParameters,
   LoggedInDecorator,
   mockDateDecorator,
   StoryRouter,
@@ -92,8 +91,6 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     mockdate: new Date('2021-12-01T06:22:27.219Z'),
     msw: BASE_MSW_HANDLERS,
   },
@@ -103,7 +100,6 @@ const Template: StoryFn = () => <WorkspacePage />
 export const Desktop = Template.bind({})
 export const Mobile = Template.bind({})
 Mobile.parameters = {
-  ...getMobileViewParameters(),
   a11y: {
     config: {
       // Seems to be a false positive, since a loading screen should have nothing focusable.
@@ -112,6 +108,7 @@ Mobile.parameters = {
     },
   },
 }
+Mobile.globals = getMobileViewGlobals()
 Mobile.globals = getMobileViewGlobals()
 
 export const LoadingDesktop = Template.bind({})

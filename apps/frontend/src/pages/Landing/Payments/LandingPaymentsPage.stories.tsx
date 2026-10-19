@@ -3,9 +3,7 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 import { LANDING_PAYMENTS_ROUTE } from '~constants/routes'
 import {
   getMobileViewGlobals,
-  getMobileViewParameters,
   getTabletViewGlobals,
-  getTabletViewParameters,
   StoryRouter,
 } from '~utils/storybook'
 
@@ -31,9 +29,9 @@ export const Default = Template.bind({})
 export const Loading = Template.bind({})
 
 export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 Mobile.globals = getMobileViewGlobals()
 
 export const Tablet = Template.bind({})
-Tablet.parameters = getTabletViewParameters()
+Tablet.globals = getTabletViewGlobals()
 Tablet.globals = getTabletViewGlobals()

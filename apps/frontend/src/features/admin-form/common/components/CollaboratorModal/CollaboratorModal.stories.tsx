@@ -13,10 +13,8 @@ import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 import {
   fullScreenDecorator,
   getMobileViewGlobals,
-  getMobileViewParameters,
   LoggedInDecorator,
   StoryRouter,
-  viewports,
 } from '~utils/storybook'
 
 import { CollaboratorModal } from './CollaboratorModal'
@@ -38,7 +36,6 @@ export default {
   parameters: {
     layout: 'fullscreen',
     // Prevent flaky tests due to modal animating in.
-    chromatic: { pauseAnimationAtEnd: true },
     msw: baseMswRoutes,
   },
 } as Meta
@@ -102,7 +99,6 @@ EditViewLoading.parameters = {
 
 export const EditViewMobile = Template.bind({})
 EditViewMobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
   msw: [
     getAdminFormCollaborators({
       delay: 0,
@@ -149,7 +145,6 @@ ViewerView.parameters = {
 export const ViewerViewMobile = Template.bind({})
 ViewerViewMobile.parameters = {
   ...ViewerView.parameters,
-  ...getMobileViewParameters(),
 }
 ViewerViewMobile.globals = getMobileViewGlobals()
 

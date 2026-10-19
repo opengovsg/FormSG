@@ -6,7 +6,7 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 import { get } from 'lodash'
 import difference from 'lodash/difference'
 
-import { fixedHeightDecorator, viewports } from '~utils/storybook'
+import { fixedHeightDecorator } from '~utils/storybook'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -95,9 +95,6 @@ export const MobileTruncatedOption = Template.bind({})
 MobileTruncatedOption.args = {
   values: ['What happens when the label is fairly long', 'Bat'],
   defaultIsOpen: true,
-}
-MobileTruncatedOption.parameters = {
-  chromatic: { viewports: [viewports.xs] },
 }
 MobileTruncatedOption.globals = {
   viewport: { value: 'mobile1', isRotated: false },

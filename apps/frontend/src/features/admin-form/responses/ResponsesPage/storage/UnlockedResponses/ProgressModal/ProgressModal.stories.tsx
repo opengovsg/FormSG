@@ -1,11 +1,7 @@
 import { useDisclosure } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import {
-  fullScreenDecorator,
-  getMobileViewGlobals,
-  getMobileViewParameters,
-} from '~utils/storybook'
+import { fullScreenDecorator, getMobileViewGlobals } from '~utils/storybook'
 
 import { ProgressModal, ProgressModalProps } from './ProgressModal'
 
@@ -16,7 +12,6 @@ export default {
   parameters: {
     layout: 'fullscreen',
     // Prevent flaky tests due to modal animating in.
-    chromatic: { delay: 200 },
   },
   args: {
     downloadPercentage: 50,
@@ -36,7 +31,7 @@ const Template: StoryFn<ProgressModalProps> = (args) => {
 export const Desktop = Template.bind({})
 
 export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 Mobile.globals = getMobileViewGlobals()
 
 export const CompleteStateDesktop = Template.bind({})
@@ -50,7 +45,7 @@ CompleteStateDesktop.args = {
 
 export const CompleteStateMobile = Template.bind({})
 CompleteStateMobile.args = CompleteStateDesktop.args
-CompleteStateMobile.parameters = getMobileViewParameters()
+CompleteStateMobile.globals = getMobileViewGlobals()
 CompleteStateMobile.globals = getMobileViewGlobals()
 
 export const PartialSuccessStateDesktop = Template.bind({})
@@ -63,5 +58,5 @@ PartialSuccessStateDesktop.args = {
 }
 export const PartialSuccessStateMobile = Template.bind({})
 PartialSuccessStateMobile.args = PartialSuccessStateDesktop.args
-PartialSuccessStateMobile.parameters = getMobileViewParameters()
+PartialSuccessStateMobile.globals = getMobileViewGlobals()
 PartialSuccessStateMobile.globals = getMobileViewGlobals()

@@ -4,8 +4,6 @@ import { delay as MswDelay, http, HttpResponse } from 'msw'
 
 import { BasicField } from 'formsg-shared/types/field'
 
-import { viewports } from '~utils/storybook'
-
 import { ImageFieldSchema } from '../types'
 
 import MockImage from './mocks/img-login.svg'
@@ -61,16 +59,10 @@ export const Mobile = Template.bind({})
 Mobile.args = {
   schema: baseSchema,
 }
-Mobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
 Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 export const Tablet = Template.bind({})
 Tablet.args = {
   schema: baseSchema,
-}
-Tablet.parameters = {
-  chromatic: { viewports: [viewports.md] },
 }
 Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
