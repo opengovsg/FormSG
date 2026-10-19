@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import {
   ButtonGroup,
   Modal,
@@ -47,15 +47,13 @@ export const SubmitterIdCollectionSetting = ({
 
   return (
     <Stack spacing="1rem">
-      <Stack spacing="0.5rem">
-        <FormSubmitterIdCollectionToggle settings={settings} isDisabled />
-        <Text textStyle="body-2" color="secondary.400">
-          {t(`${login}.stopHint`)}
-        </Text>
-      </Stack>
-      <InlineMessage>
+      <FormSubmitterIdCollectionToggle settings={settings} isDisabled />
+      <InlineMessage variant="warning">
         <Stack spacing="0.75rem" align="flex-start">
-          <Text>{t(`${login}.convertInfo`)}</Text>
+          <Stack spacing={0}>
+            <Text>{t('stopHint')}</Text>
+            <Text>{t('autoConvertNotice')}</Text>
+          </Stack>
           <Button
             variant="outline"
             onClick={convertModal.onOpen}
@@ -85,7 +83,13 @@ export const SubmitterIdCollectionSetting = ({
                 nextQuestionNumber={nextQuestionNumber}
               />
               <InlineMessage variant="warning">
-                {t(`${login}.warning`)}
+                <Text>
+                  <Trans
+                    t={t}
+                    i18nKey={`${login}.warning`}
+                    components={{ bold: <strong /> }}
+                  />
+                </Text>
               </InlineMessage>
             </Stack>
           </ModalBody>

@@ -2,13 +2,11 @@ import { Fields } from '.'
 
 export const enSG: Fields = {
   loginIdentity: {
-    entities: 'Singapore-registered entities',
-    corppassUsers: 'Corppass users',
-    sectionLabel: 'Identity',
+    sectionLabel: 'Personal',
     corppassPanelInfo:
       "These fields fill in from the respondent's Corppass login.",
     loginMissing:
-      "Enable {loginName} in <settingsLink>Settings</settingsLink> to fill these fields from the respondent's login.",
+      'Enable {loginName} in the <settingsLink>Settings</settingsLink> tab to access these fields.',
     convertFirst:
       'This form collects NRIC/FIN/UENs through <settingsLink>Singpass settings</settingsLink>. Convert that setting to add these fields.',
     convertedToast:
@@ -17,8 +15,8 @@ export const enSG: Fields = {
     details: {
       uinfin:
         'The NRIC/FIN of the respondent. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
-      uen: 'The UEN of the organisation the respondent represents.',
-      uid: "The NRIC/FIN or foreign ID of the respondent, who logs in on behalf of the organisation. This is different from the organisation's UEN.",
+      uen: "The UEN of the respondent's organisation. This field is verified by Corppass.",
+      uid: 'The NRIC/FIN or foreign ID of the respondent. This field is verified by Corppass.',
     },
   },
   builder: {
@@ -28,7 +26,7 @@ export const enSG: Fields = {
     searchPlaceholder: 'Search fields',
     tabs: {
       basic: 'Basic',
-      myInfo: 'MyInfo',
+      myInfo: 'Singpass',
       corppass: 'Corppass',
       payments: 'Payments',
     },

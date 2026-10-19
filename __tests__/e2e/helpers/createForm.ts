@@ -753,7 +753,7 @@ const addMyInfoField = async (
 ): Promise<void> => {
   const label = MYINFO_FIELD_TO_DRAWER_META[attr].label
 
-  await page.getByRole('tab', { name: 'MyInfo' }).click()
+  await page.getByRole('tab', { name: 'Singpass' }).click()
   await page.getByRole('button', { name: label, exact: true }).click()
 }
 
