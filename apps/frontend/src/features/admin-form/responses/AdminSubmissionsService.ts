@@ -38,6 +38,16 @@ export const createFormSavedView = async (
     savedView,
   ).then(({ data }) => data)
 
+export const updateFormSavedView = async (
+  formId: string,
+  savedViewId: string,
+  savedView: FormSavedViewInput,
+): Promise<FormSavedView[]> =>
+  ApiService.put<FormSavedView[]>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/saved-views/${savedViewId}`,
+    savedView,
+  ).then(({ data }) => data)
+
 export const deleteFormSavedView = async (
   formId: string,
   savedViewId: string,
