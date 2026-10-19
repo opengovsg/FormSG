@@ -26,6 +26,7 @@ import { TABLE_ROW_RENDER_CHUNK } from '../../../constants'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 
 import { usePageSearchParams } from './hooks/usePageSearchParams'
+import { renderLimitToInclude } from './renderLimit'
 import { exceedsTableLimit } from './responseLimit'
 import {
   fromSavedView,
@@ -101,7 +102,10 @@ interface UnlockedResponsesContextProps {
     previous?: SubmissionMetadata
     next?: SubmissionMetadata
   }
-  /** Keeps the paginated table on the page the navigated-to response is on. */
+  /**
+   * Keeps the navigated-to response in the table: on its page when paginated,
+   * or within the rendered rows otherwise.
+   */
   onNavigateToSubmission: (submissionId: string) => void
   lastNavPage?: number
   lastNavSubmissionId?: string
@@ -320,14 +324,22 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
 
   const onNavigateToSubmission = useCallback(
     (submissionId: string) => {
-      if (isInfiniteScroll) return
+      if (isInfiniteScroll) {
+        const index = navigableMetadata.findIndex(
+          (row) => row.refNo === submissionId,
+        )
+        if (index !== -1) {
+          setRenderLimit((limit) => renderLimitToInclude(index, limit))
+        }
+        return
+      }
       if (prevMetadata.some((row) => row.refNo === submissionId)) {
         setLastNavPage((page) => Math.max((page ?? 1) - 1, 1))
       } else if (nextMetadata.some((row) => row.refNo === submissionId)) {
         setLastNavPage((page) => (page ?? 1) + 1)
       }
     },
-    [isInfiniteScroll, nextMetadata, prevMetadata],
+    [isInfiniteScroll, navigableMetadata, nextMetadata, prevMetadata],
   )
 
   const { data: form } = useAdminForm()
