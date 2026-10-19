@@ -3,7 +3,6 @@ import { CorppassAttribute, MyInfoAttribute } from '../types'
 import type { FlattenedV1Response } from './flatten-v4-to-v1'
 
 export const MYINFO_QUESTION_PREFIX = '[Myinfo] '
-export const CORPPASS_QUESTION_PREFIX = '[Corppass] '
 
 type MyInfoPrefixCandidate = {
   _id: string
@@ -12,18 +11,19 @@ type MyInfoPrefixCandidate = {
 }
 
 /**
- * The prefix for a verified answer: `[Corppass] ` for a Corppass login
- * identity field, `[Myinfo] ` for a MyInfo field (including the NRIC/FIN login
- * identity field), and none when the answer was not verified.
+ * The prefix for a verified answer: `[Myinfo] ` for a MyInfo field or a login
+ * identity field, Singpass or Corppass, and none when the answer was not
+ * verified. Corppass fields share the prefix as Corppass moves to Myinfo
+ * business.
  */
 export const getVerifiedQuestionPrefix = (
   field: MyInfoPrefixCandidate,
   readOnlyFieldIds: ReadonlySet<string>,
 ): string => {
   if (!readOnlyFieldIds.has(String(field._id))) return ''
-  if (field.corppass?.attr) return CORPPASS_QUESTION_PREFIX
-  if (field.myInfo?.attr) return MYINFO_QUESTION_PREFIX
-  return ''
+  return field.myInfo?.attr || field.corppass?.attr
+    ? MYINFO_QUESTION_PREFIX
+    : ''
 }
 
 const asSet = (readOnlyFieldIds: Iterable<string>): ReadonlySet<string> =>

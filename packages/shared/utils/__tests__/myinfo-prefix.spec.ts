@@ -159,14 +159,14 @@ describe('Corppass login identity fields', () => {
       answer: '201912345A',
     }) as unknown as FlattenedV1Response
 
-  it('marks a verified Corppass answer [Corppass] using the form definition', () => {
+  it('marks a verified Corppass answer [Myinfo] using the form definition', () => {
     const result = applyMyInfoPrefix(
       [corppassEntry(), myInfoEntry()],
       [CORPPASS_ID, MYINFO_ID],
       [corppassField(), myInfoField()],
     )
     expect(result.map((entry) => entry.question)).toEqual([
-      '[Corppass] UEN',
+      '[Myinfo] UEN',
       '[Myinfo] Name',
     ])
   })
@@ -176,12 +176,12 @@ describe('Corppass login identity fields', () => {
     expect(entry.question).toBe('UEN')
   })
 
-  it('marks a verified Corppass title [Corppass]', () => {
+  it('marks a verified Corppass title [Myinfo]', () => {
     const [field] = applyMyInfoPrefixToFormFields(
       [corppassField()],
       [CORPPASS_ID],
     )
-    expect(field.title).toBe('[Corppass] UEN')
+    expect(field.title).toBe('[Myinfo] UEN')
   })
 })
 
