@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiRightArrowAlt } from 'react-icons/bi'
+import { useParams } from 'react-router-dom'
 import {
   Badge,
   Box,
@@ -233,17 +234,34 @@ export const LauncherApps = ({
   )
 }
 
-const TILES: LauncherTile[] = [
-  {
+const generateAiEditorPrompt = (id: string) => {
+  return `I would like to connect my FormSG form with form id: ${id}. Suggest workflows I can build with this form.`
+}
+
+const generatePlumberTile = (id: string): LauncherTile => {
+  const SSO_BASE_URL = 'https://plumber.gov.sg/login/sso'
+  // Encode the redirect as a single param so its own `&`s don't leak into the
+  // SSO URL's query string.
+  const redirect = `/editor/ai?${new URLSearchParams({ from: 'form', start: generateAiEditorPrompt(id) })}`
+
+  const href = new URL(SSO_BASE_URL)
+  href.searchParams.set('iss', 'https://one.gov.sg/api/auth')
+  href.searchParams.set('redirect', redirect)
+
+  return {
     name: 'Plumber',
-    href: 'https://plumber.gov.sg/login/sso?iss=https%3A%2F%2Fone.gov.sg%2Fapi%2Fauth',
+    href: href.toString(),
     domain: 'plumber.gov.sg',
     description: 'Automate workflows with AI',
     logoUrl: 'https://file.go.gov.sg/plumber-logo.png',
-  },
-]
+  }
+}
 
 export const CreatePageIntegrationTab = (): JSX.Element => {
+  const { formId } = useParams()
+
+  const plumberTile = generatePlumberTile(formId ?? '')
+
   return (
     <Box
       flex={1}
@@ -253,7 +271,7 @@ export const CreatePageIntegrationTab = (): JSX.Element => {
       px={{ base: '1.5rem', md: '3.75rem' }}
     >
       <Container p={0} maxW="42.5rem">
-        <LauncherApps tiles={TILES} />
+        <LauncherApps tiles={[plumberTile]} />
       </Container>
     </Box>
   )
