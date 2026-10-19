@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.51.0](https://github.com/opengovsg/formsg/compare/v9.50.0...v9.51.0) (2026-10-19)
+
+
+### Features
+
+* **results:** filter the responses table column by column (#10303) ([#10303](https://github.com/opengovsg/formsg/commit/27f88337e7993e104d796e1f012136f71d1b863e))
+* deep-link Plumber integration tile to AI editor with form context (#10266) ([#10266](https://github.com/opengovsg/formsg/commit/e5fa8822502ae40e4e68a860c229da08ad90cb30))
+
+
+### Bug Fixes
+
+* **results:** decrypt responses submitted while the table is open, and clear all filters (#10312) ([#10312](https://github.com/opengovsg/formsg/commit/2282aaf4ec798ab6b2aec4d3321389b33805f7b2))
+* **results:** drop CSV columns the responses table is not showing (#10293) ([#10293](https://github.com/opengovsg/formsg/commit/211ef6ded71f431c1e218f74afae726f50885311))
+* **results:** filter MRF response metadata by the date range (#10301) ([#10301](https://github.com/opengovsg/formsg/commit/c74bed3b74ec91f26525f770b307b7d27ea6dcff))
+* **results:** keep columns for deleted fields in the V2 table (#10298) ([#10298](https://github.com/opengovsg/formsg/commit/54934bd1cfcdeee12217260cd88ff8df246a922c))
+* **results:** keep responses table header visible while scrolling (v2) (#10297) ([#10297](https://github.com/opengovsg/formsg/commit/fa43064f18a1e975ee543575ab7456f02944caf8))
+* **results:** label field columns as the response drawer does (#10296) ([#10296](https://github.com/opengovsg/formsg/commit/58bb361ca7529af5e84772e49464f91144f1fe70))
+* **results:** match workflow status in the V2 table search (#10283) ([#10283](https://github.com/opengovsg/formsg/commit/e61bbcb854eda4eeb8a643d8178bcdb9abc6f4b0))
+* **results:** replace infinite scroll with a Show more button (#10294) ([#10294](https://github.com/opengovsg/formsg/commit/4577b604afdccf24a53db55bc913968ed89d7872))
+* **results:** save changes to the selected view instead of a new one (#10295) ([#10295](https://github.com/opengovsg/formsg/commit/dc9822eab99563b144deb15a8327e4eda6f6f08d))
+
 ## [9.50.0](https://github.com/opengovsg/formsg/compare/v9.49.1...v9.50.0) (2026-10-19)
 
 
