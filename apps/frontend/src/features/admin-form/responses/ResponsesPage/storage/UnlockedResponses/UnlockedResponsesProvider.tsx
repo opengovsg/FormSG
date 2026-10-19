@@ -26,6 +26,7 @@ import {
 import { TABLE_ROW_RENDER_CHUNK } from '../../../constants'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 
+import { useDecryptNewResponses } from './hooks/useDecryptNewResponses'
 import { usePageSearchParams } from './hooks/usePageSearchParams'
 import { renderLimitToInclude } from './renderLimit'
 import { exceedsTableLimit } from './responseLimit'
@@ -74,6 +75,7 @@ interface UnlockedResponsesContextProps {
   columnFilters: SavedViewColumnFilter[]
   /** Blank text clears the column's filter. */
   setColumnFilter: (columnId: string, text: string) => void
+  clearColumnFilters: () => void
   sortColumnId?: string
   sortDirection: ResponseSortDirection
   setSort: (
@@ -174,6 +176,8 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     [columnOptions],
   )
 
+  const clearColumnFilters = useCallback(() => setColumnFilters([]), [])
+
   const {
     page: [currentPage, setCurrentPage],
     submissionId: [submissionId, setSubmissionId],
@@ -240,6 +244,12 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
   })
 
   const allMetadata = useMemo(() => allData?.metadata ?? [], [allData])
+
+  useDecryptNewResponses({
+    metadata: allMetadata,
+    isDecryptingAll,
+    enabled: isInfiniteScroll && !submissionId,
+  })
 
   const isTableLoading = isLoadingAll || isDecryptingAll
 
@@ -381,6 +391,7 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     setAllColumnsVisible,
     columnFilters,
     setColumnFilter,
+    clearColumnFilters,
     sortColumnId,
     sortDirection,
     setSort,
