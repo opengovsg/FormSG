@@ -74,6 +74,7 @@ ConfirmationStateResponseAndAttachmentsMobile.args =
   ConfirmationStateResponseAndAttachmentsDesktop.args
 ConfirmationStateResponseAndAttachmentsMobile.parameters =
   getMobileViewParameters()
+ConfirmationStateResponseAndAttachmentsMobile.globals = getMobileViewGlobals()
 
 export const ConfirmationScreenResponsesAndPdfsDesktop = Template.bind({})
 ConfirmationScreenResponsesAndPdfsDesktop.args = {
