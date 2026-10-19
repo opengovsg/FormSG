@@ -1,10 +1,12 @@
 import { generateDefaultFieldV4 } from '__tests__/unit/backend/helpers/generate-form-data'
-import { BasicField } from 'formsg-shared/types'
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
+import { BasicField, MyInfoChildAttributes } from 'formsg-shared/types'
 import { isLeft, isRight } from 'fp-ts/lib/Either'
 
 import { ValidateFieldErrorV4 } from 'src/app/modules/submission/submission.errors'
 import { ParsedClearFormFieldResponseV4 } from 'src/types/api'
 
+import { constructFieldResponseValidatorV4 } from '../answerValidator.factory'
 import { validateResponseShapeV4 } from '../response-shape-validator'
 import { validateFieldV4 } from '..'
 
@@ -158,6 +160,64 @@ describe('V4 response shape validation', () => {
           }
         }
       }
+    },
+  )
+})
+
+// These callers bypass validateFieldV4. Their shape checks must agree with
+// the request boundary, including nested values and optional metadata.
+describe('direct structured field validation', () => {
+  it('rejects a different field type passed directly to a children validator', () => {
+    const validator = constructFieldResponseValidatorV4({
+      formId: 'formId',
+      formField: generateDefaultFieldV4(BasicField.Children, {
+        childrenSubFields: [MyInfoChildAttributes.ChildName],
+      }),
+      isVisible: true,
+    })
+    expect(
+      isLeft(validator(makeResponse(BasicField.Checkbox, { value: ['a'] }))),
+    ).toBe(true)
+  })
+
+  it.each<[BasicField, unknown]>([
+    [
+      BasicField.Checkbox,
+      { value: [CLIENT_CHECKBOX_OTHERS_INPUT_VALUE], othersInput: 123 },
+    ],
+    [BasicField.Checkbox, { value: ['a'], othersInput: 123 }],
+    [
+      BasicField.Children,
+      {
+        child0: {
+          value: { [MyInfoChildAttributes.ChildName]: { value: 'Alice' } },
+          type: 123,
+        },
+      },
+    ],
+    [
+      BasicField.Children,
+      {
+        child0: {
+          value: {
+            [MyInfoChildAttributes.ChildName]: { value: 'Alice', myInfo: null },
+          },
+        },
+      },
+    ],
+  ])(
+    'rejects malformed %s answers without throwing: %p',
+    (fieldType, answer) => {
+      const validator = constructFieldResponseValidatorV4({
+        formId: 'formId',
+        formField: generateDefaultFieldV4(fieldType, {
+          fieldOptions: ['a'],
+          othersRadioButton: true,
+          childrenSubFields: [MyInfoChildAttributes.ChildName],
+        }),
+        isVisible: true,
+      })
+      expect(isLeft(validator(makeResponse(fieldType, answer)))).toBe(true)
     },
   )
 })

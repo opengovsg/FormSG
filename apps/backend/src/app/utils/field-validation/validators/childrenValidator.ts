@@ -1,10 +1,7 @@
-import type {
-  ChildEntryV4,
-  ChildrenAnswerV4,
-  ChildSubFieldAnswerV4,
-} from '@opengovsg/formsg-sdk'
+import type { ChildrenAnswerV4 } from '@opengovsg/formsg-sdk'
 import { MAX_CHILDREN_PER_FIELD } from 'formsg-shared/constants/field/myinfo'
 import {
+  BasicField,
   ChildrenCompoundFieldBase,
   MyInfoChildAttributes,
 } from 'formsg-shared/types'
@@ -18,6 +15,7 @@ import {
 } from '../../../../types/field'
 import { ResponseValidator } from '../../../../types/field/utils/validation'
 import { ProcessedChildrenResponse } from '../../../modules/submission/submission.types'
+import { validateResponseShapeV4 } from '../response-shape-validator'
 
 type ChildrenValidator = ResponseValidator<ProcessedChildrenResponse>
 type ChildrenValidatorConstructor = (
@@ -198,47 +196,17 @@ type ChildrenValidatorV4Constructor = (
   childrenField: ChildrenCompoundFieldBase,
 ) => ChildrenValidatorV4
 
-const isChildSubFieldAnswerV4 = (
-  subFieldAnswer: unknown,
-): subFieldAnswer is ChildSubFieldAnswerV4 =>
-  typeof subFieldAnswer === 'object' &&
-  subFieldAnswer !== null &&
-  typeof (subFieldAnswer as { value: unknown }).value === 'string'
+const isChildrenFieldTypeV4: ChildrenValidatorV4 = (response) =>
+  response.fieldType === BasicField.Children
+    ? right(response)
+    : left(`ChildrenValidatorV4.fieldTypeMismatch:\tfield type is not children`)
 
-/**
- * Checks the answer is a ChildrenAnswerV4-shaped object with at least one
- * child entry, each carrying a `value` record of subfield answers.
- * V3 counterpart: childrenAnswerValidator + validChildAnswerFirstArray.
- */
-const childrenAnswerShapeValidatorV4: ChildrenValidatorV4 = (response) => {
-  const answer: unknown = response.answer
-  if (typeof answer !== 'object' || answer === null || Array.isArray(answer)) {
-    return left(
-      `ChildrenValidatorV4 (childrenAnswerShapeValidatorV4):\t answer is not an object`,
-    )
-  }
-  const childEntries = Object.values(answer)
-  if (childEntries.length === 0) {
-    return left(
-      `ChildrenValidatorV4 (childrenAnswerShapeValidatorV4):\t answer has no child entries`,
-    )
-  }
-  const everyEntryValid = childEntries.every(
-    (entry: unknown) =>
-      typeof entry === 'object' &&
-      entry !== null &&
-      typeof (entry as ChildEntryV4).value === 'object' &&
-      (entry as ChildEntryV4).value !== null &&
-      Object.values((entry as ChildEntryV4).value).every(
-        isChildSubFieldAnswerV4,
-      ),
-  )
-  return everyEntryValid
+const childrenAnswerNotEmptyValidatorV4: ChildrenValidatorV4 = (response) =>
+  Object.keys(response.answer).length > 0
     ? right(response)
     : left(
-        `ChildrenValidatorV4 (childrenAnswerShapeValidatorV4):\t one or more child entries are malformed`,
+        `ChildrenValidatorV4 (childrenAnswerNotEmptyValidatorV4):\t answer has no child entries`,
       )
-}
 
 /**
  * Checks that at most one child was answered. Keyed on
@@ -342,7 +310,9 @@ export const constructChildrenValidatorV4: ChildrenValidatorV4Constructor = (
   childrenField,
 ) =>
   flow(
-    childrenAnswerShapeValidatorV4,
+    isChildrenFieldTypeV4,
+    chain(validateResponseShapeV4),
+    chain(childrenAnswerNotEmptyValidatorV4),
     chain(validSingleChildV4),
     chain(validChildSubFieldsValidatorV4(childrenField)),
     chain(validChildAnswerMatchesSubFieldsV4(childrenField)),
