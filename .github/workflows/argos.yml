@@ -3,10 +3,8 @@ name: 'Argos'
 env:
   NODE_VERSION: '22.22'
   PNPM_VERSION: '10.30.3'
-  # One Argos team, one project per Storybook. No token secret: the jobs sign
-  # in with GitHub OIDC, which Argos scopes to the project named here.
-  ARGOS_FRONTEND_PROJECT: ogp/formsg-frontend
-  ARGOS_EMAIL_PROJECT: ogp/formsg-email-preview
+  # One Argos project, one build per Storybook: ARGOS_BUILD_NAME keeps their
+  # screenshots and baselines apart.
 
 on:
   push:
@@ -58,9 +56,6 @@ jobs:
       group: argos-frontend-${{ github.event_name == 'push' && github.sha || github.head_ref || github.ref_name }}
       cancel-in-progress: ${{ github.event_name != 'push' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write # Argos OIDC
     defaults:
       run:
         working-directory: apps/frontend
@@ -132,7 +127,8 @@ jobs:
             pnpm exec argos skip
           fi
         env:
-          ARGOS_PROJECT: ${{ env.ARGOS_FRONTEND_PROJECT }}
+          ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
+          ARGOS_BUILD_NAME: frontend
           # Subset builds ignore missing screenshots and never become baselines.
           ARGOS_SUBSET: ${{ steps.scope.outputs.full != 'true' }}
           FULL: ${{ steps.scope.outputs.full }}
@@ -140,7 +136,7 @@ jobs:
         if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
         run: pnpm exec argos deploy ./storybook-static
         env:
-          ARGOS_PROJECT: ${{ env.ARGOS_FRONTEND_PROJECT }}
+          ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
 
   argos-emailpreview:
     needs: changes
@@ -149,9 +145,6 @@ jobs:
       group: argos-emailpreview-${{ github.event_name == 'push' && github.sha || github.head_ref || github.ref_name }}
       cancel-in-progress: ${{ github.event_name != 'push' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write # Argos OIDC
     defaults:
       run:
         working-directory: packages/react-email-preview
@@ -186,4 +179,5 @@ jobs:
       - name: Upload screenshots to Argos
         run: pnpm exec argos upload ./screenshots
         env:
-          ARGOS_PROJECT: ${{ env.ARGOS_EMAIL_PROJECT }}
+          ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
+          ARGOS_BUILD_NAME: email-preview
