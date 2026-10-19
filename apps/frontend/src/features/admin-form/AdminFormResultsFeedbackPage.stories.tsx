@@ -1,6 +1,6 @@
 import { MemoryRouter, Route } from 'react-router'
 import { Routes } from 'react-router-dom'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
   createFormBuilderMocks,
@@ -106,9 +106,7 @@ EmptyIssue.parameters = {
 
 export const Tablet = Template.bind({})
 Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
+  globals: { viewport: { value: 'tablet', isRotated: false } },
   chromatic: { viewports: [viewports.md] },
 }
 

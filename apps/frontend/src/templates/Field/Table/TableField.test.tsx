@@ -1,4 +1,4 @@
-import { composeStories } from '@storybook/react'
+import { composeStories } from '@storybook/react-vite'
 import { render, screen, within } from '@testing-library/react'
 
 import * as stories from './TableField.stories'

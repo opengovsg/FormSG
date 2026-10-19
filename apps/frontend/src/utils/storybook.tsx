@@ -7,7 +7,7 @@ import {
   RouterProvider,
 } from 'react-router-dom'
 import { Box, BoxProps, Center, useDisclosure } from '@chakra-ui/react'
-import { Decorator } from '@storybook/react'
+import { Decorator } from '@storybook/react-vite'
 import dayjs from 'dayjs'
 import mockdate from 'mockdate'
 
@@ -218,18 +218,14 @@ export const viewports = {
 
 export const getMobileViewParameters = () => {
   return {
-    viewport: {
-      defaultViewport: 'mobile1',
-    },
+    globals: { viewport: { value: 'mobile1', isRotated: false } },
     chromatic: { viewports: [viewports.xs] },
   }
 }
 
 export const getTabletViewParameters = () => {
   return {
-    viewport: {
-      defaultViewport: 'tablet',
-    },
+    globals: { viewport: { value: 'tablet', isRotated: false } },
     chromatic: { viewports: [viewports.md] },
   }
 }

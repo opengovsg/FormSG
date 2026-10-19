@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
   AttachmentSize,
@@ -142,9 +142,7 @@ NoLogic.parameters = {
 export const MobileNoLogic = Template.bind({})
 MobileNoLogic.parameters = {
   msw: { handlers: { default: buildMswRoutes({ form_logics: [] }) } },
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
+  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }
 
@@ -160,9 +158,7 @@ WithLogic.parameters = {
 export const MobileWithLogic = Template.bind({})
 MobileWithLogic.parameters = {
   msw: { handlers: { default: buildMswRoutes(FORM_WITH_LOGIC) } },
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
+  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }
 

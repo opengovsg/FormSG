@@ -1,5 +1,5 @@
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { http, HttpResponse } from 'msw'
 
 import { featureFlags } from 'formsg-shared/constants'
@@ -181,9 +181,7 @@ Mobile.parameters = {
 export const Tablet = Template.bind({})
 Tablet.parameters = {
   ...StorageModeRetryEnabled.parameters,
-  viewport: {
-    defaultViewport: 'tablet',
-  },
+  globals: { viewport: { value: 'tablet', isRotated: false } },
   chromatic: { viewports: [viewports.md] },
 }
 

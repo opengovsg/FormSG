@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from '@storybook/react'
+import { Meta, StoryObj } from '@storybook/react-vite'
 
 import TurnstileOverlay from './TurnstileOverlay'
 
@@ -35,9 +35,10 @@ export const SmallMobile: Story = {
     onClose: () => console.log('Close'),
     onLoadingError: () => console.log('Loading Error'),
   },
-  parameters: {
+  globals: {
     viewport: {
-      defaultViewport: 'mobile1',
+      value: 'mobile1',
+      isRotated: false,
     },
   },
 }

@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react/*'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { envHandlers } from '~/mocks/msw/handlers/env'
 import { getPublicFormResponse } from '~/mocks/msw/handlers/public-form'
@@ -39,16 +39,12 @@ export const Desktop = Template.bind({})
 
 export const Tablet = Template.bind({})
 Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
+  globals: { viewport: { value: 'tablet', isRotated: false } },
   chromatic: { viewports: [viewports.md] },
 }
 
 export const Mobile = Template.bind({})
 Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
+  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }

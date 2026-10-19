@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { times } from 'lodash'
 import { delay as MswDelay, http, HttpResponse } from 'msw'
 

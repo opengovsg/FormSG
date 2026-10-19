@@ -1,5 +1,5 @@
-import { Meta, StoryFn } from '@storybook/react'
-import { expect, screen, userEvent, waitFor, within } from '@storybook/test'
+import { Meta, StoryFn } from '@storybook/react-vite'
+import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
 
 import { PaymentChannel, PaymentType, UserId } from 'formsg-shared/types'
 import {

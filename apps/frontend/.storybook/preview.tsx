@@ -8,7 +8,7 @@ import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ChakraProvider } from '@chakra-ui/react'
 import { withThemeFromJSXProvider } from '@storybook/addon-themes'
-import { Decorator, ReactRenderer } from '@storybook/react'
+import { Decorator, ReactRenderer } from '@storybook/react-vite'
 import { initialize, mswDecorator, mswLoader } from 'msw-storybook-addon'
 
 import { envHandlers } from '~/mocks/msw/handlers/env'
@@ -68,7 +68,7 @@ export const parameters = {
     'en-SG': 'English',
   },
   layout: 'fullscreen',
-  viewport: { defaultViewport: 'reset' },
+  viewport: {},
   docs: {
     theme: StorybookTheme.docs,
     inlineStories: true,
@@ -82,3 +82,10 @@ export const parameters = {
 }
 
 export const loaders = [mswLoader]
+
+export const initialGlobals = {
+  viewport: {
+    value: 'reset',
+    isRotated: false,
+  },
+}

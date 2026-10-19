@@ -1,6 +1,6 @@
-import { Meta, StoryFn } from '@storybook/react'
-import { expect, userEvent, waitFor, within } from '@storybook/test'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import dedent from 'dedent'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 
 import { DateString, ErrorCode } from 'formsg-shared/types'
 import { BasicField } from 'formsg-shared/types/field'

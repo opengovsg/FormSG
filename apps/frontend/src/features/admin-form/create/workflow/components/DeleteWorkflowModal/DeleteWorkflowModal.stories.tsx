@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
   FormResponseMode,
@@ -91,18 +91,14 @@ FormOpen.parameters = {
 export const MobileFormClosed = Template.bind({})
 MobileFormClosed.parameters = {
   ...FormClosed.parameters,
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
+  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }
 
 export const MobileFormOpen = Template.bind({})
 MobileFormOpen.parameters = {
   ...FormOpen.parameters,
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
+  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }
 
@@ -119,8 +115,6 @@ FirstStepFormClosed.parameters = {
 export const MobileFirstStepFormClosed = FirstStepTemplate.bind({})
 MobileFirstStepFormClosed.parameters = {
   ...FirstStepFormClosed.parameters,
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
+  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }

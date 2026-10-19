@@ -1,5 +1,5 @@
 import { Box, Stack } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { viewports } from '~utils/storybook'
 
@@ -66,7 +66,7 @@ MobileTwoActions.args = {
   ],
 }
 MobileTwoActions.parameters = {
-  viewport: { defaultViewport: 'mobile1' },
+  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
   docs: {
     description: {

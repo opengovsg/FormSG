@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form'
 import { VStack } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import Button from '../Button'
 

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { fullScreenDecorator } from '~utils/storybook'
 import { ButtonProps } from '~components/Button'

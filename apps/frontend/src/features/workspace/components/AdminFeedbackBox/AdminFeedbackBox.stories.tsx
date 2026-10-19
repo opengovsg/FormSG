@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { viewports } from '~/utils/storybook'
 
@@ -29,8 +29,6 @@ Default.storyName = 'Empty state (no stars selected)'
 export const Mobile = Template.bind({})
 Mobile.storyName = 'Mobile viewport'
 Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
+  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }

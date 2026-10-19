@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { viewports } from '~utils/storybook'
 
@@ -22,17 +22,13 @@ const Template: StoryFn<GovtMastheadProps> = (args) => (
 
 export const MobileDefault = Template.bind({})
 MobileDefault.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
+  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }
 
 export const MobileExpanded = Template.bind({})
 MobileExpanded.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
+  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }
 MobileExpanded.storyName = 'Mobile/Expanded'

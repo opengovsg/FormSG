@@ -1,6 +1,6 @@
 import { BiGitMerge } from 'react-icons/bi'
 import { ButtonGroup, SimpleGrid, Text } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { IconButton, IconButtonProps } from './IconButton'
 

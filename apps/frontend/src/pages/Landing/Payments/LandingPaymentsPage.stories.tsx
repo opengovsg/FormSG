@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { LANDING_PAYMENTS_ROUTE } from '~constants/routes'
 import {

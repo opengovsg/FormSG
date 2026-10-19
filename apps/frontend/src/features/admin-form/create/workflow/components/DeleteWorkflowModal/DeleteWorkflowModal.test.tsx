@@ -1,4 +1,4 @@
-import { composeStory, Meta, StoryFn } from '@storybook/react'
+import { composeStory, Meta, StoryFn } from '@storybook/react-vite'
 import { act, render, screen, waitFor } from '@testing-library/react'
 
 import { FormResponseMode, FormStatus } from 'formsg-shared/types'

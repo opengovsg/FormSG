@@ -7,7 +7,7 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { viewports } from '~/utils/storybook'
 
@@ -173,9 +173,7 @@ Mobile.args = {
   helperText: '1: Strongly agree, 10: Strongly disagree',
 }
 Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
+  globals: { viewport: { value: 'mobile1', isRotated: false } },
   controls: {
     include: ['name', 'colorScheme', 'wrapComponentsPerRow', 'helperText'],
   },
@@ -188,9 +186,7 @@ Tablet.args = {
   helperText: '1: Strongly agree, 10: Strongly disagree',
 }
 Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
+  globals: { viewport: { value: 'tablet', isRotated: false } },
   controls: {
     include: ['name', 'colorScheme', 'wrapComponentsPerRow', 'helperText'],
   },

@@ -1,5 +1,5 @@
 import { MemoryRouter } from 'react-router-dom'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { DateString } from 'formsg-shared/types'
 import { FormColorTheme } from 'formsg-shared/types/form/form'

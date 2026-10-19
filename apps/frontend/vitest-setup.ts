@@ -2,7 +2,7 @@
 
 import '@testing-library/jest-dom/vitest'
 
-import { setProjectAnnotations } from '@storybook/react'
+import { setProjectAnnotations } from '@storybook/react-vite'
 
 // Storybook's preview file location
 import * as globalStorybookConfig from './.storybook/preview'

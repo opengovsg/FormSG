@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { CountryRegion } from 'formsg-shared/constants/countryRegion'
 import { BasicField, CountryRegionFieldBase } from 'formsg-shared/types'

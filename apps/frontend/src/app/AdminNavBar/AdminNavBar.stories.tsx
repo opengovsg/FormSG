@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
