@@ -562,6 +562,22 @@ export const validateFieldV4 = ({
     return err(new ValidateFieldErrorV4(fieldTypeEither.left))
   }
 
+  // Check the wire answer before hidden-field and change detection read it.
+  if (
+    response.fieldType === BasicField.Attachment &&
+    (typeof response.answer !== 'object' ||
+      response.answer === null ||
+      !('value' in response.answer) ||
+      typeof response.answer.value !== 'string')
+  ) {
+    logInvalidAnswer(
+      formId,
+      formField,
+      'Attachment answer value is not a string',
+    )
+    return err(new ValidateFieldErrorV4('Invalid answer submitted'))
+  }
+
   const isResponsePresentOnHiddenFieldV4Result =
     isResponsePresentOnHiddenFieldV4({ formField, response, isVisible, formId })
 

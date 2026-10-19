@@ -233,6 +233,48 @@ describe('Attachment field validation V4', () => {
       provenance: {},
     }) as ParsedClearFormFieldResponseV4
 
+  describe('Malformed attachment answers', () => {
+    it.each([
+      {},
+      { value: undefined },
+      { value: null },
+      { value: 123 },
+      { value: true },
+      { value: [] },
+      null,
+      undefined,
+      'legacy-filename.pdf',
+    ])('should reject malformed answer %p without throwing', (answer) => {
+      for (const required of [true, false]) {
+        for (const isVisible of [true, false]) {
+          const formField = generateDefaultFieldV4(BasicField.Attachment, {
+            attachmentSize: AttachmentSize.OneMb,
+            required,
+          })
+          const response = makeAttachmentResponseV4({
+            value: 'file.pdf',
+            filename: 'file.pdf',
+            content: Buffer.alloc(1),
+            hasBeenScanned: false,
+          })
+          // Simulate an untyped request body at the validation boundary.
+          Object.assign(response, { answer })
+
+          const result = validateFieldV4({
+            formId,
+            formField,
+            response,
+            isVisible,
+          })
+
+          expect(result._unsafeUnwrapErr()).toEqual(
+            new ValidateFieldErrorV4('Invalid answer submitted'),
+          )
+        }
+      }
+    })
+  })
+
   describe('Required or optional', () => {
     it('should disallow submission with no attachment if it is required', () => {
       const formField = generateDefaultFieldV4(BasicField.Attachment, {
