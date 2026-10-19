@@ -54,7 +54,7 @@ describe('getFieldColumnHeader', () => {
     ).toBe('[Myinfo] NRIC/FIN')
   })
 
-  it('prefixes a Corppass login identity field', () => {
+  it('uses the Myinfo prefix for a Corppass login identity field', () => {
     expect(
       getFieldColumnHeader(
         field({
@@ -64,7 +64,7 @@ describe('getFieldColumnHeader', () => {
         }),
         'Verified',
       ),
-    ).toBe('[Corppass] UEN')
+    ).toBe('[Myinfo] UEN')
   })
 
   it('marks a verifiable field', () => {

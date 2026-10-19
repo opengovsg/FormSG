@@ -17,7 +17,7 @@ export const getVerifiedQuestionLabel = (
  * The column header for a form field, as the drawer labels its answers, e.g.
  * `[Myinfo] Name` or `[Verified] Email`.
  *
- * The drawer reads the `[Myinfo]`/`[Corppass]` prefix off each stored question,
+ * The drawer reads the `[Myinfo]` prefix off each stored question,
  * where the backend added it for answers filled from the login. A column spans
  * every response, so the prefix comes from the field instead, treating it as
  * filled from the login.
