@@ -10,6 +10,7 @@ import nacl from 'tweetnacl'
 import { encodeBase64 } from 'tweetnacl-util'
 
 import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
+import { toWorkflowEventDtos } from 'src/app/modules/workflow-event/workflow-event.service'
 
 import {
   MrfSendBackInvalidStepError,
@@ -125,6 +126,63 @@ describe('sendBackMultirespondentSubmission', () => {
         ],
       }),
     ])
+  })
+
+  it('keeps a copy of the answers from before the send back', async () => {
+    const submission = await createSubmission({
+      verifiedContent: 'verified',
+      attachmentMetadata: { 'field-1': 'form/abc/hash' },
+    })
+
+    await sendBack(submission._id, 2)
+
+    const stored = await MultirespondentSubmission.findById(submission._id)
+    expect(stored?.workflowEvents?.[0].previousContent).toEqual(
+      expect.objectContaining({
+        encryptedContent: 'content',
+        encryptedSubmissionSecretKey: 'secret-key',
+        submissionPublicKey: 'public-key',
+        verifiedContent: 'verified',
+        version: 3,
+      }),
+    )
+    expect(
+      Object.fromEntries(
+        stored?.workflowEvents?.[0].previousContent?.attachmentMetadata ?? [],
+      ),
+    ).toEqual({ 'field-1': 'form/abc/hash' })
+  })
+
+  it("keeps each send back's copy of the answers", async () => {
+    const submission = await createSubmission()
+    await sendBack(submission._id, 3)
+    await MultirespondentSubmission.updateOne(
+      { _id: submission._id },
+      {
+        encryptedContent: 'amended',
+        submittedSteps: SUBMITTED_STEPS,
+        workflowStep: SUBMITTED_STEPS.length - 1,
+      },
+    )
+
+    await sendBack(submission._id, 2)
+
+    const stored = await MultirespondentSubmission.findById(submission._id)
+    expect(
+      stored?.workflowEvents?.map(
+        ({ previousContent }) => previousContent?.encryptedContent,
+      ),
+    ).toEqual(['content', 'amended'])
+  })
+
+  it('does not send the copy of the answers to admins', async () => {
+    const submission = await createSubmission()
+    await sendBack(submission._id, 2)
+
+    const stored = await MultirespondentSubmission.findById(submission._id)
+    expect(toWorkflowEventDtos(stored?.workflowEvents)[0]).not.toHaveProperty(
+      'previousContent',
+    )
   })
 
   it('replaces the step link token so the old link stops working', async () => {

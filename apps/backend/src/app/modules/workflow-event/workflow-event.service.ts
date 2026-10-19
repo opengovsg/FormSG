@@ -32,7 +32,7 @@ export const buildWorkflowEvent = ({
   emails: string[]
 } & Pick<
   IWorkflowEvent,
-  'fromStepNumber' | 'remarks' | 'undoneSteps'
+  'fromStepNumber' | 'remarks' | 'undoneSteps' | 'previousContent'
 >): IWorkflowEvent => ({
   type,
   actorId: actor._id,
