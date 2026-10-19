@@ -37,6 +37,7 @@ import {
   ProcessedTableResponse,
 } from '../../modules/submission/submission.types'
 
+import { attachmentAnswerShapeValidatorV4 } from './validators/attachmentValidator'
 import {
   constructAddressFieldValidator,
   constructAttachmentFieldValidator,
@@ -562,20 +563,15 @@ export const validateFieldV4 = ({
     return err(new ValidateFieldErrorV4(fieldTypeEither.left))
   }
 
-  // Check the wire answer before hidden-field and change detection read it.
-  if (
-    response.fieldType === BasicField.Attachment &&
-    (typeof response.answer !== 'object' ||
-      response.answer === null ||
-      !('value' in response.answer) ||
-      typeof response.answer.value !== 'string')
-  ) {
-    logInvalidAnswer(
+  // Shape validation must precede hidden-field and change detection checks.
+  if (response.fieldType === BasicField.Attachment) {
+    const shapeResult = validateResponseWithValidatorV4(
+      attachmentAnswerShapeValidatorV4,
       formId,
       formField,
-      'Attachment answer value is not a string',
+      response,
     )
-    return err(new ValidateFieldErrorV4('Invalid answer submitted'))
+    if (shapeResult.isErr()) return shapeResult
   }
 
   const isResponsePresentOnHiddenFieldV4Result =

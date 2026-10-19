@@ -79,7 +79,7 @@ export const constructAttachmentValidator: AttachmentValidatorConstructor = (
 // V4 attachment: answer = { value: string (filename), hasBeenScanned: boolean, md5Hash? }
 // Plus content: Buffer and filename: string injected by the server (ParsedClearAttachmentFieldResponseV4)
 
-const isParsedClearAttachmentResponseV4: ResponseValidator<
+export const attachmentAnswerShapeValidatorV4: ResponseValidator<
   ParsedClearFormFieldResponseV4,
   ParsedClearAttachmentFieldResponseV4
 > = (response) => {
@@ -87,6 +87,15 @@ const isParsedClearAttachmentResponseV4: ResponseValidator<
     return left(
       `AttachmentValidatorV4.fieldTypeMismatch:\tfield type is not attachment`,
     )
+  }
+  const { answer } = response
+  if (
+    typeof answer !== 'object' ||
+    answer === null ||
+    !('value' in answer) ||
+    typeof answer.value !== 'string'
+  ) {
+    return left(`AttachmentValidatorV4:\t Answer value is not a string`)
   }
   return right(response as ParsedClearAttachmentFieldResponseV4)
 }
@@ -135,7 +144,7 @@ export const constructAttachmentFieldValidatorV4: ResponseValidatorConstructor<
   ParsedClearAttachmentFieldResponseV4
 > = (attachmentField) =>
   flow(
-    isParsedClearAttachmentResponseV4,
+    attachmentAnswerShapeValidatorV4,
     chain(attachmentAnswerNotEmptyValidatorV4),
     chain(attachmentContentDefinedValidatorV4),
     chain(makeAttachmentSizeValidatorV4(attachmentField)),

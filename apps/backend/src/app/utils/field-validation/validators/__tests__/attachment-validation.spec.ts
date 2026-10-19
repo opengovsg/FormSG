@@ -4,6 +4,7 @@ import {
   generateNewAttachmentResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
 import { AttachmentSize, BasicField } from 'formsg-shared/types'
+import { isLeft } from 'fp-ts/lib/Either'
 import { mongo as mongodb } from 'mongoose'
 
 import {
@@ -11,6 +12,7 @@ import {
   ValidateFieldErrorV4,
 } from 'src/app/modules/submission/submission.errors'
 import { validateField, validateFieldV4 } from 'src/app/utils/field-validation/'
+import { constructFieldResponseValidatorV4 } from 'src/app/utils/field-validation/answerValidator.factory'
 import { ParsedClearFormFieldResponseV4 } from 'src/types/api'
 
 const { ObjectId } = mongodb
@@ -259,6 +261,13 @@ describe('Attachment field validation V4', () => {
           })
           // Simulate an untyped request body at the validation boundary.
           Object.assign(response, { answer })
+
+          const validator = constructFieldResponseValidatorV4({
+            formId,
+            formField,
+            isVisible,
+          })
+          expect(isLeft(validator(response))).toBe(true)
 
           const result = validateFieldV4({
             formId,
