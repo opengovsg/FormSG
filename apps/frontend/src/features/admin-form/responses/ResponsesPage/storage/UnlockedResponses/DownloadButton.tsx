@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiDownload } from 'react-icons/bi'
+import { useParams } from 'react-router-dom'
 import { useThrottle } from 'react-use'
 import {
   Box,
@@ -15,6 +16,8 @@ import {
 import { datadogLogs } from '@datadog/browser-logs'
 import simplur from 'simplur'
 
+import { AnalyticsEventType, ResultsDownloadFormat } from 'formsg-shared/types'
+
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import { useToast } from '~hooks/useToast'
@@ -26,6 +29,7 @@ import { NavigationPrompt } from '~templates/NavigationPrompt'
 
 import { CSV_BUFFER_MAX_RESPONSES } from '~features/admin-form/responses/constants'
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
+import { logAnalyticsEvent } from '~features/analytics/AnalyticsEventService'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 import {
@@ -39,7 +43,18 @@ import { CsvExportView } from '../utils/csvExportView'
 
 import { DownloadWithAttachmentModal } from './DownloadWithAttachmentModal'
 import { ProgressModal } from './ProgressModal'
+import { matchesSavedView } from './savedViews'
 import { useUnlockedResponses } from './UnlockedResponsesProvider'
+
+const toDownloadFormats = ({
+  isDownloadCsv,
+  isDownloadAttachments,
+  isDownloadPdf,
+}: DownloadOptions): ResultsDownloadFormat[] => [
+  ...(isDownloadCsv ? (['csv'] as const) : []),
+  ...(isDownloadAttachments ? (['attachments'] as const) : []),
+  ...(isDownloadPdf ? (['pdf'] as const) : []),
+]
 
 const DownloadSelectorCheckbox = ({
   optionText,
@@ -134,6 +149,7 @@ export const DownloadButton = ({
 }: {
   isIconOnly?: boolean
 }): JSX.Element => {
+  const { formId } = useParams()
   const isDelightfulDashboard = useIsDelightfulDashboard()
   const {
     visibleSubmissionIds,
@@ -144,6 +160,9 @@ export const DownloadButton = ({
     hiddenColumnIds,
     columnOptions,
     isShowingRecentOnly,
+    savedViews,
+    selectedViewId,
+    currentViewState,
   } = useUnlockedResponses()
 
   const exportSubmissionIds =
@@ -306,6 +325,30 @@ export const DownloadButton = ({
 
   const handleBulkDownload = useCallback(() => {
     if (!downloadParams) return
+    const selectedSavedView = isDelightfulDashboard
+      ? savedViews.find(({ _id }) => _id === selectedViewId)
+      : undefined
+    logAnalyticsEvent(formId, {
+      type: AnalyticsEventType.ResultsDownload,
+      content: {
+        dashboardVersion: isDelightfulDashboard ? 'v2' : 'v1',
+        formats: toDownloadFormats(downloadOptions),
+        scope: 'bulk',
+        ...(selectedSavedView
+          ? {
+              savedViewId: selectedSavedView._id,
+              isSavedViewModified: !matchesSavedView(
+                currentViewState,
+                [selectedSavedView],
+                columnOptions,
+              ),
+            }
+          : {}),
+        ...(dateRangeResponsesCount !== undefined
+          ? { responsesCount: dateRangeResponsesCount }
+          : {}),
+      },
+    })
     datadogLogs.logger.info('Bulk download used', {
       meta: {
         action: 'bulkDownload',
@@ -326,10 +369,17 @@ export const DownloadButton = ({
     })
   }, [
     downloadParams,
-    handleBulkDownloadMutation,
+    isDelightfulDashboard,
+    savedViews,
+    formId,
     downloadOptions,
+    dateRangeResponsesCount,
+    handleBulkDownloadMutation,
     exportSubmissionIds,
     csvView,
+    selectedViewId,
+    currentViewState,
+    columnOptions,
   ])
 
   const resetDownload = useCallback(() => {

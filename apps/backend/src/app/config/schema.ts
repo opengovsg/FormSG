@@ -468,6 +468,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 60,
       env: 'MRF_PENDING_SUBMISSION_EMAIL_REMINDER_RATE_LIMIT',
     },
+    analyticsEvents: {
+      doc: 'Per-minute, per-IP request limit for recording product analytics events',
+      format: 'int',
+      default: 60,
+      env: 'ANALYTICS_EVENTS_RATE_LIMIT',
+    },
   },
   iacMigration: {
     isMigrated: {
