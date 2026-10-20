@@ -19,17 +19,12 @@ export const enSG = {
         'To change your Singpass authentication mode, remove the existing login-filled fields.',
       removeIdentityFieldsFirst:
         'Your form already collects NRIC/FIN/UENs through form fields. To use this setting instead, remove those fields first.',
-      stopHint:
-        'To change how you collect NRIC/FIN/UEN, switch to using form fields.',
       autoConvertNotice:
         'Your form will automatically switch by end-June 2027.',
       otherFormsAutoConvertNotice:
         'Forms that still collect these through settings will automatically switch to form fields by end-June 2027.',
       preview: {
         howYouCollect: 'How you collect',
-        responseLabels: 'Response labels',
-        currentResponsesExplanation:
-          'Email JSON and CSV exports currently use these labels.',
         outputChanges: 'How your data appears',
         outputDetails: 'How your data appears',
         viewExamples: 'View more details',
@@ -76,8 +71,6 @@ export const enSG = {
         modalTitle: 'Start collecting NRIC/FIN using form fields',
         collectionExplanation:
           'The NRIC/FIN field will be added to the end of your form and prefilled from Myinfo, similar to other Myinfo fields.',
-        warning:
-          '<bold>If you use webhooks, email JSON or CSV exports</bold>, check them after converting. In new responses, "SingPass Validated NRIC" becomes "NRIC/FIN". Past responses, response limits and eligibility stay the same.',
       },
       corppass: {
         goToFields: 'Go to Corppass fields',
@@ -94,8 +87,6 @@ export const enSG = {
         modalTitle: 'Start collecting NRIC/FIN and UEN using form fields',
         collectionExplanation:
           'The NRIC/FIN and UEN fields will be added to the end of your form and prefilled from Myinfo, similar to other Myinfo fields.',
-        warning:
-          '<bold>If you use webhooks, email JSON or CSV exports</bold>, check them after converting. In new responses, "CorpPass Validated UID" becomes "NRIC/FIN" and "CorpPass Validated UEN" becomes "UEN". Past responses, response limits and eligibility stay the same.',
       },
     },
   },

@@ -20,7 +20,6 @@ type SubmitterIdCollectionLoginStrings = {
   modalTitle: string
   currentCollectionExplanation: string
   collectionExplanation: string
-  warning: string
 }
 
 export interface SingpassSettingsStrings extends HasTitle {
@@ -33,13 +32,10 @@ export interface SingpassSettingsStrings extends HasTitle {
     closeFormToConvert: string
     loginFieldsLockAuth: string
     removeIdentityFieldsFirst: string
-    stopHint: string
     autoConvertNotice: string
     otherFormsAutoConvertNotice: string
     preview: {
       howYouCollect: string
-      responseLabels: string
-      currentResponsesExplanation: string
       outputChanges: string
       outputDetails: string
       viewExamples: string

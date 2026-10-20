@@ -5,7 +5,6 @@ export interface Fields {
     sectionLabel: string
     corppassPanelInfo: string
     loginMissing: string
-    convertFirst: string
     convertedToast: string
     fieldLimit: string
     details: {

@@ -7,8 +7,6 @@ export const enSG: Fields = {
       "These fields fill in from the respondent's Corppass login.",
     loginMissing:
       'Enable {loginName} in the <settingsLink>Settings</settingsLink> tab to access these fields.',
-    convertFirst:
-      'This form collects NRIC/FIN/UENs through <settingsLink>Singpass settings</settingsLink>. Convert that setting to add these fields.',
     convertedToast:
       'Your form now collects NRIC/FIN/UENs with login fields at the bottom of the form.',
     fieldLimit: 'Only {max} Myinfo fields are allowed ({count}/{max}).',
