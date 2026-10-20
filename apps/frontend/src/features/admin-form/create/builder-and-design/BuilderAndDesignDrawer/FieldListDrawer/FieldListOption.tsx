@@ -124,10 +124,13 @@ interface DraggableLoginIdentityFieldOptionProps extends Omit<
   'isActive'
 > {
   index: number
+  isDragDisabled?: boolean
+  onConvert?: () => void
   attr: LoginIdentityAttribute
 }
 
 export const DraggableLoginIdentityFieldListOption = ({
+  isDragDisabled,
   attr,
   index,
   isDisabled,
@@ -138,7 +141,7 @@ export const DraggableLoginIdentityFieldListOption = ({
   return (
     <Draggable
       index={index}
-      isDragDisabled={isDisabled || isMobile}
+      isDragDisabled={isDragDisabled || isDisabled || isMobile}
       disableInteractiveElementBlocking
       // Basic options already use the field types as their ids.
       draggableId={`login-identity-${attr}`}
@@ -286,13 +289,15 @@ export const MyInfoFieldOption = forwardRef<MyInfoFieldOptionProps, 'button'>(
 )
 
 interface LoginIdentityFieldOptionProps extends FieldOptionProps {
+  onConvert?: () => void
   attr: LoginIdentityAttribute
 }
 
 export const LoginIdentityFieldOption = forwardRef<
   LoginIdentityFieldOptionProps,
   'button'
->(({ attr, isDisabled, ...props }, ref) => {
+>(({ attr, isDisabled, onConvert, ...props }, ref) => {
+  const { t } = useTranslation()
   const { data: form } = useCreateTabForm()
   const numFields = form?.form_fields?.length ?? 0
 
@@ -302,8 +307,10 @@ export const LoginIdentityFieldOption = forwardRef<
   const updateCreateState = useFieldBuilderStore(updateCreateStateSelector)
 
   const handleClick = useCallback(() => {
-    if (!isDisabled) updateCreateState(newFieldMeta, numFields)
-  }, [newFieldMeta, numFields, updateCreateState, isDisabled])
+    if (isDisabled) return
+    if (onConvert) onConvert()
+    else updateCreateState(newFieldMeta, numFields)
+  }, [newFieldMeta, numFields, updateCreateState, isDisabled, onConvert])
 
   return (
     <FieldListOption
@@ -313,7 +320,14 @@ export const LoginIdentityFieldOption = forwardRef<
       ref={ref}
     >
       <Icon fontSize="1.5rem" as={meta.icon} />
-      <Text textStyle="body-1">{LOGIN_IDENTITY_LABELS[attr]}</Text>
+      <Stack direction="row" spacing="0.5rem" align="center">
+        <Text textStyle="body-1">{LOGIN_IDENTITY_LABELS[attr]}</Text>
+        {form?.isSubmitterIdCollectionEnabled && (
+          <Badge colorScheme="success">
+            {t('features.adminForm.settings.tabs.newBadge')}
+          </Badge>
+        )}
+      </Stack>
     </FieldListOption>
   )
 })

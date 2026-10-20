@@ -132,7 +132,6 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
             droppableId={CREATE_MYINFO_IDENTITY_DROP_ID}
             searchValue={searchValue}
             withSectionLabel={false}
-            showConvertFirst
           />
           {renderPersonalFields()}
         </FieldSection>
