@@ -93,6 +93,8 @@ export default defineConfig((configEnv) => {
               argosVitestPlugin({
                 // CI uploads from the workflow so subset builds can be skipped.
                 uploadToArgos: false,
+                // At least the viewport wide, like a Chromatic mode.
+                argosCSS: 'body { min-width: 100vw; }',
               }),
             ],
             test: {

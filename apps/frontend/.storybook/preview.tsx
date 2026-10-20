@@ -68,6 +68,9 @@ export const parameters = {
     'en-SG': 'English',
   },
   layout: 'fullscreen',
+  // Fit to the story's content at 1x with no padding, so a story at a viewport
+  // is that wide (min-width in vitest.config) and never wider than its content.
+  argos: { fitToContent: { padding: 0, zoom: 1 } },
   viewport: {
     // Argos reads sizes from here, so the keys stories use are defined
     // explicitly rather than relying on the addon defaults.
