@@ -1,5 +1,5 @@
-import { Meta, StoryFn } from '@storybook/react'
-import { expect, screen, userEvent, waitFor, within } from '@storybook/test'
+import { Meta, StoryFn } from '@storybook/react-vite'
+import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
 
 import { PaymentChannel, PaymentType, UserId } from 'formsg-shared/types'
 import {
@@ -25,7 +25,9 @@ import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 import {
   ADMIN_FORM_CREATE_PAGE_FORM_ID,
   AdminFormCreatePageDecorator,
+  getMobileViewGlobals,
   getMobileViewParameters,
+  getTabletViewGlobals,
   getTabletViewParameters,
   LoggedInDecorator,
   mockDateDecorator,
@@ -134,6 +136,7 @@ DesktopLoading.parameters = {
 
 export const TabletEmpty = Template.bind({})
 TabletEmpty.parameters = getTabletViewParameters()
+TabletEmpty.globals = getTabletViewGlobals()
 export const TabletAllFields = Template.bind({})
 TabletAllFields.parameters = {
   ...getTabletViewParameters(),
@@ -143,6 +146,7 @@ TabletAllFields.parameters = {
     },
   },
 }
+TabletAllFields.globals = getTabletViewGlobals()
 export const TabletLoading = Template.bind({})
 TabletLoading.parameters = {
   ...getTabletViewParameters(),
@@ -153,9 +157,11 @@ TabletLoading.parameters = {
     },
   },
 }
+TabletLoading.globals = getTabletViewGlobals()
 
 export const MobileEmpty = Template.bind({})
 MobileEmpty.parameters = getMobileViewParameters()
+MobileEmpty.globals = getMobileViewGlobals()
 export const MobileAllFields = Template.bind({})
 MobileAllFields.parameters = {
   ...getMobileViewParameters(),
@@ -165,6 +171,7 @@ MobileAllFields.parameters = {
     },
   },
 }
+MobileAllFields.globals = getMobileViewGlobals()
 export const MobileLoading = Template.bind({})
 MobileLoading.parameters = {
   ...getMobileViewParameters(),
@@ -174,6 +181,7 @@ MobileLoading.parameters = {
     },
   },
 }
+MobileLoading.globals = getMobileViewGlobals()
 
 export const AllFieldsFieldsHiddenByLogic = Template.bind({})
 AllFieldsFieldsHiddenByLogic.parameters = {
@@ -209,6 +217,7 @@ FormWithWebhookMobile.parameters = {
   ...FormWithWebhook.parameters,
   ...getMobileViewParameters(),
 }
+FormWithWebhookMobile.globals = getMobileViewGlobals()
 
 export const FormWithPayment = Template.bind({})
 FormWithPayment.parameters = {
@@ -238,6 +247,7 @@ FormWithPaymentMobile.parameters = {
   ...FormWithPayment.parameters,
   ...getMobileViewParameters(),
 }
+FormWithPaymentMobile.globals = getMobileViewGlobals()
 
 export const AdminFormBuilderWithAdditionalRowsTableField = Template.bind({})
 AdminFormBuilderWithAdditionalRowsTableField.parameters = {

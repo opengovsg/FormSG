@@ -1,5 +1,5 @@
 import { Box } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
   AdminFormDto,
@@ -15,7 +15,11 @@ import {
 } from '~/mocks/msw/handlers/admin-form'
 import { getUser } from '~/mocks/msw/handlers/user'
 
-import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
+import {
+  getMobileViewGlobals,
+  getMobileViewParameters,
+  StoryRouter,
+} from '~utils/storybook'
 
 import { StopWorkflowModal, StopWorkflowModalProps } from './StopWorkflowModal'
 
@@ -116,3 +120,4 @@ export const Default = Template.bind({})
 
 export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()

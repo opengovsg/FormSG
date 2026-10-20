@@ -1,5 +1,5 @@
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { http, HttpResponse } from 'msw'
 
 import { featureFlags } from 'formsg-shared/constants'
@@ -18,6 +18,7 @@ import { getPreviewFormResponse } from '~/mocks/msw/handlers/admin-form/preview-
 import { userHandlers } from '~/mocks/msw/handlers/user'
 
 import {
+  getMobileViewGlobals,
   getMobileViewParameters,
   StoryRouter,
   viewports,
@@ -177,15 +178,14 @@ Mobile.parameters = {
   ...StorageModeRetryEnabled.parameters,
   ...getMobileViewParameters(),
 }
+Mobile.globals = getMobileViewGlobals()
 
 export const Tablet = Template.bind({})
 Tablet.parameters = {
   ...StorageModeRetryEnabled.parameters,
-  viewport: {
-    defaultViewport: 'tablet',
-  },
   chromatic: { viewports: [viewports.md] },
 }
+Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 const mrfWebhooksGrowthBook = new GrowthBook({
   features: { [featureFlags.enableMrfWebhooks]: { defaultValue: true } },
@@ -342,6 +342,7 @@ StorageModeV4RolloutOnMobile.parameters = {
   ...StorageModeV4RolloutOnWithWebhook.parameters,
   ...getMobileViewParameters(),
 }
+StorageModeV4RolloutOnMobile.globals = getMobileViewGlobals()
 
 export const V4Webhook = Template.bind({})
 V4Webhook.decorators = [withV4Webhooks]

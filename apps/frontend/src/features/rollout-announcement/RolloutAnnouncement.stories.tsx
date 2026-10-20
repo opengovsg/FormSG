@@ -1,6 +1,10 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { fullScreenDecorator, getMobileViewParameters } from '~utils/storybook'
+import {
+  fullScreenDecorator,
+  getMobileViewGlobals,
+  getMobileViewParameters,
+} from '~utils/storybook'
 
 import { RolloutAnnouncementModal } from './RolloutAnnouncementModal'
 
@@ -28,3 +32,4 @@ export const Mobile = Template.bind({})
 Mobile.parameters = {
   ...getMobileViewParameters(),
 }
+Mobile.globals = getMobileViewGlobals()

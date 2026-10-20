@@ -1,5 +1,5 @@
 import { Box } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { BasicField } from 'formsg-shared/types/field'
 
@@ -49,8 +49,6 @@ Mobile.args = {
   schema: baseSchema,
 }
 Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
   chromatic: { viewports: [viewports.xs] },
 }
+Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }

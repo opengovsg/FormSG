@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { BiRadioCircleMarked } from 'react-icons/bi'
 import { FormControl } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { get } from 'lodash'
 import difference from 'lodash/difference'
 
@@ -97,10 +97,10 @@ MobileTruncatedOption.args = {
   defaultIsOpen: true,
 }
 MobileTruncatedOption.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
   chromatic: { viewports: [viewports.xs] },
+}
+MobileTruncatedOption.globals = {
+  viewport: { value: 'mobile1', isRotated: false },
 }
 
 export const Invalid = Template.bind({})

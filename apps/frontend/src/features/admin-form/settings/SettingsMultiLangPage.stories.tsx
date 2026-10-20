@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
   FormColorTheme,
@@ -16,6 +16,7 @@ import {
 } from '~/mocks/msw/handlers/admin-form'
 
 import {
+  getMobileViewGlobals,
   getMobileViewParameters,
   StoryRouter,
   viewports,
@@ -190,11 +191,10 @@ export const Mobile = Template.bind({})
 Mobile.parameters = {
   ...getMobileViewParameters(),
 }
+Mobile.globals = getMobileViewGlobals()
 
 export const Tablet = Template.bind({})
 Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
   chromatic: { viewports: [viewports.md] },
 }
+Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }

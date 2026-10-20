@@ -1,7 +1,11 @@
 import { useDisclosure } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { fullScreenDecorator, getMobileViewParameters } from '~utils/storybook'
+import {
+  fullScreenDecorator,
+  getMobileViewGlobals,
+  getMobileViewParameters,
+} from '~utils/storybook'
 
 import { ProgressModal, ProgressModalProps } from './ProgressModal'
 
@@ -33,6 +37,7 @@ export const Desktop = Template.bind({})
 
 export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 
 export const CompleteStateDesktop = Template.bind({})
 CompleteStateDesktop.args = {
@@ -46,6 +51,7 @@ CompleteStateDesktop.args = {
 export const CompleteStateMobile = Template.bind({})
 CompleteStateMobile.args = CompleteStateDesktop.args
 CompleteStateMobile.parameters = getMobileViewParameters()
+CompleteStateMobile.globals = getMobileViewGlobals()
 
 export const PartialSuccessStateDesktop = Template.bind({})
 PartialSuccessStateDesktop.args = {
@@ -58,3 +64,4 @@ PartialSuccessStateDesktop.args = {
 export const PartialSuccessStateMobile = Template.bind({})
 PartialSuccessStateMobile.args = PartialSuccessStateDesktop.args
 PartialSuccessStateMobile.parameters = getMobileViewParameters()
+PartialSuccessStateMobile.globals = getMobileViewGlobals()

@@ -7,7 +7,7 @@ import {
   RouterProvider,
 } from 'react-router-dom'
 import { Box, BoxProps, Center, useDisclosure } from '@chakra-ui/react'
-import { Decorator } from '@storybook/react'
+import { Decorator } from '@storybook/react-vite'
 import dayjs from 'dayjs'
 import mockdate from 'mockdate'
 
@@ -218,18 +218,22 @@ export const viewports = {
 
 export const getMobileViewParameters = () => {
   return {
-    viewport: {
-      defaultViewport: 'mobile1',
-    },
     chromatic: { viewports: [viewports.xs] },
   }
 }
 
+/** Assign to `Story.globals`: Storybook ignores globals under parameters. */
+export const getMobileViewGlobals = () => {
+  return { viewport: { value: 'mobile1', isRotated: false } }
+}
+
 export const getTabletViewParameters = () => {
   return {
-    viewport: {
-      defaultViewport: 'tablet',
-    },
     chromatic: { viewports: [viewports.md] },
   }
+}
+
+/** Assign to `Story.globals`: Storybook ignores globals under parameters. */
+export const getTabletViewGlobals = () => {
+  return { viewport: { value: 'tablet', isRotated: false } }
 }

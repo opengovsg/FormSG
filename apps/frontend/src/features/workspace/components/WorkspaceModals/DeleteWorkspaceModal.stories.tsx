@@ -1,12 +1,12 @@
 import { useDisclosure } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { FormId, UserId } from 'formsg-shared/types'
 import { Workspace, WorkspaceId } from 'formsg-shared/types/workspace'
 
 import { userHandlers } from '~/mocks/msw/handlers/user'
 
-import { getMobileViewParameters } from '~utils/storybook'
+import { getMobileViewGlobals, getMobileViewParameters } from '~utils/storybook'
 
 import {
   DeleteWorkspaceModal,
@@ -47,3 +47,4 @@ export const DeleteWorkspace = Template.bind({})
 
 export const DeleteWorkspaceMobile = Template.bind({})
 DeleteWorkspaceMobile.parameters = getMobileViewParameters()
+DeleteWorkspaceMobile.globals = getMobileViewGlobals()

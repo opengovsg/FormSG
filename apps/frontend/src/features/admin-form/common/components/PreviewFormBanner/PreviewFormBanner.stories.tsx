@@ -1,11 +1,15 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { FormAuthType } from 'formsg-shared/types'
 
 import { getPreviewFormResponse } from '~/mocks/msw/handlers/admin-form/preview-form'
 
 import { ADMINFORM_BUILD_SUBROUTE } from '~constants/routes'
-import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
+import {
+  getMobileViewGlobals,
+  getMobileViewParameters,
+  StoryRouter,
+} from '~utils/storybook'
 
 import { PreviewFormProvider } from '~features/admin-form/preview/PreviewFormProvider'
 
@@ -37,6 +41,7 @@ export const Desktop = Template.bind({})
 
 export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 
 export const WithAuthenticatedForm = Template.bind({})
 WithAuthenticatedForm.parameters = {

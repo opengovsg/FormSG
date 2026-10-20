@@ -1,10 +1,12 @@
 import { Button } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { FORM_GUIDE } from '~constants/links'
 import {
+  getMobileViewGlobals,
   getMobileViewParameters,
+  getTabletViewGlobals,
   getTabletViewParameters,
 } from '~utils/storybook'
 
@@ -49,6 +51,8 @@ WithoutCTA.args = {
 
 export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 
 export const Tablet = Template.bind({})
 Tablet.parameters = getTabletViewParameters()
+Tablet.globals = getTabletViewGlobals()

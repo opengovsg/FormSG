@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import ReactDOM from 'react-dom'
 import { useDisclosure } from '@chakra-ui/hooks'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
   createFormBuilderMocks,
@@ -12,6 +12,7 @@ import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
 import {
   fullScreenDecorator,
+  getMobileViewGlobals,
   getMobileViewParameters,
   LoggedInDecorator,
   StoryRouter,
@@ -101,9 +102,6 @@ EditViewLoading.parameters = {
 
 export const EditViewMobile = Template.bind({})
 EditViewMobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
   chromatic: { viewports: [viewports.xs] },
   msw: [
     getAdminFormCollaborators({
@@ -122,6 +120,7 @@ EditViewMobile.parameters = {
     ...baseMswRoutes,
   ],
 }
+EditViewMobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const ViewerView = Template.bind({})
 ViewerView.parameters = {
@@ -152,6 +151,7 @@ ViewerViewMobile.parameters = {
   ...ViewerView.parameters,
   ...getMobileViewParameters(),
 }
+ViewerViewMobile.globals = getMobileViewGlobals()
 
 export const ViewerViewLoading = Template.bind({})
 ViewerViewLoading.parameters = {

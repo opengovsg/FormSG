@@ -1,5 +1,5 @@
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { featureFlags } from 'formsg-shared/constants'
 import { DateString } from 'formsg-shared/types'
@@ -10,7 +10,11 @@ import {
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 
-import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
+import {
+  getMobileViewGlobals,
+  getMobileViewParameters,
+  StoryRouter,
+} from '~utils/storybook'
 
 import { SettingsGeneralPage } from './SettingsGeneralPage'
 
@@ -99,3 +103,4 @@ Mobile.parameters = {
   ...WithScheduledClosure.parameters,
   ...getMobileViewParameters(),
 }
+Mobile.globals = getMobileViewGlobals()

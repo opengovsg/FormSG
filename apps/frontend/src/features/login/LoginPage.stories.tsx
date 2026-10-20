@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { authHandlers, otpGenerationResponse } from '~/mocks/msw/handlers/auth'
 
@@ -28,19 +28,15 @@ export const Desktop = Template.bind({})
 
 export const Tablet = Template.bind({})
 Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
   chromatic: { viewports: [viewports.md] },
 }
+Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 export const Mobile = Template.bind({})
 Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
   chromatic: { viewports: [viewports.xs] },
 }
+Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const InvalidAgencyResponse = Template.bind({})
 InvalidAgencyResponse.parameters = {

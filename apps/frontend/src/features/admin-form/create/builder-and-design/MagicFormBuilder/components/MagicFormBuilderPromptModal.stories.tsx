@@ -1,5 +1,5 @@
-import { Meta, StoryFn } from '@storybook/react/*'
-import { userEvent, within } from '@storybook/test'
+import { Meta, StoryFn } from '@storybook/react-vite'
+import { userEvent, within } from 'storybook/test'
 
 import MagicFormBuilderPromptModal from './MagicFormBuilderPromptModal'
 

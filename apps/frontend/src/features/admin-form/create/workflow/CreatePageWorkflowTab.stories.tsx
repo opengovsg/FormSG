@@ -1,5 +1,5 @@
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { featureFlags } from 'formsg-shared/constants'
 import {
@@ -277,11 +277,9 @@ export const NoWorkflow = Template.bind({})
 
 export const MobileNoWorkflow = Template.bind({})
 MobileNoWorkflow.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
   chromatic: { viewports: [viewports.xs] },
 }
+MobileNoWorkflow.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const WithWorkflow = Template.bind({})
 WithWorkflow.parameters = {
@@ -295,10 +293,10 @@ WithWorkflow.parameters = {
 export const MobileWithWorkflow = Template.bind({})
 MobileWithWorkflow.parameters = {
   msw: { handlers: { default: buildMswRoutes(FORM_WITH_WORKFLOW) } },
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
   chromatic: { viewports: [viewports.xs] },
+}
+MobileWithWorkflow.globals = {
+  viewport: { value: 'mobile1', isRotated: false },
 }
 
 export const Step1 = Template.bind({})

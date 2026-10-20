@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { times } from 'lodash'
 import { delay as MswDelay, http, HttpResponse } from 'msw'
 
@@ -15,6 +15,7 @@ import { getWorkspaces } from '~/mocks/msw/handlers/workspace'
 
 import { DASHBOARD_ROUTE } from '~constants/routes'
 import {
+  getMobileViewGlobals,
   getMobileViewParameters,
   LoggedInDecorator,
   mockDateDecorator,
@@ -111,6 +112,7 @@ Mobile.parameters = {
     },
   },
 }
+Mobile.globals = getMobileViewGlobals()
 
 export const LoadingDesktop = Template.bind({})
 LoadingDesktop.parameters = {

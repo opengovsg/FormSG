@@ -1,11 +1,11 @@
 import { MemoryRouter } from 'react-router-dom'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { FormColorTheme } from 'formsg-shared/types'
 
 import { getPublicFormResponse } from '~/mocks/msw/handlers/public-form'
 
-import { getMobileViewParameters } from '~utils/storybook'
+import { getMobileViewGlobals, getMobileViewParameters } from '~utils/storybook'
 
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
@@ -94,3 +94,4 @@ Mobile.args = {
   ...Default.args,
 }
 Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()

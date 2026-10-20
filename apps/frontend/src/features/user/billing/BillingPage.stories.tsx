@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
   getBillingInfo,
@@ -40,21 +40,17 @@ DesktopDefault.parameters = {
 }
 export const TabletDefault = PageTemplate.bind({})
 TabletDefault.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
   chromatic: { viewports: [viewports.md] },
   msw: [getEmptyBillingInfo()],
 }
+TabletDefault.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 export const MobileDefault = PageTemplate.bind({})
 MobileDefault.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
   chromatic: { viewports: [viewports.xs] },
   msw: [getEmptyBillingInfo()],
 }
+MobileDefault.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 // BillCharges
 
@@ -81,24 +77,20 @@ export const TabletNoCharges: StoryFn<BillChargesProps> = (args) => (
 )
 TabletNoCharges.args = MOCK_BILLCHARGES_ARGS
 TabletNoCharges.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
   chromatic: { viewports: [viewports.md] },
   msw: [getEmptyBillingInfo()],
 }
+TabletNoCharges.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 export const MobileNoCharges: StoryFn<BillChargesProps> = (args) => (
   <BillCharges {...args} />
 )
 MobileNoCharges.args = MOCK_BILLCHARGES_ARGS
 MobileNoCharges.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
   chromatic: { viewports: [viewports.xs] },
   msw: [getEmptyBillingInfo()],
 }
+MobileNoCharges.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const DesktopHasCharges: StoryFn<BillChargesProps> = (args) => (
   <BillCharges {...args} />
@@ -113,24 +105,20 @@ export const TabletHasCharges: StoryFn<BillChargesProps> = (args) => (
 )
 TabletHasCharges.args = MOCK_BILLCHARGES_ARGS
 TabletHasCharges.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
   chromatic: { viewports: [viewports.md] },
   msw: [getBillingInfo({ delay: 1000 })],
 }
+TabletHasCharges.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 export const MobileHasCharges: StoryFn<BillChargesProps> = (args) => (
   <BillCharges {...args} />
 )
 MobileHasCharges.args = MOCK_BILLCHARGES_ARGS
 MobileHasCharges.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
   chromatic: { viewports: [viewports.xs] },
   msw: [getBillingInfo({ delay: 1000 })],
 }
+MobileHasCharges.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const DesktopLoading: StoryFn<BillChargesProps> = (args) => (
   <BillCharges {...args} />
@@ -145,21 +133,17 @@ export const TabletLoading: StoryFn<BillChargesProps> = (args) => (
 )
 TabletLoading.args = MOCK_BILLCHARGES_ARGS
 TabletLoading.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
   chromatic: { viewports: [viewports.md] },
   msw: [getBillingInfo({ delay: 'infinite' })],
 }
+TabletLoading.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 export const MobileLoading: StoryFn<BillChargesProps> = (args) => (
   <BillCharges {...args} />
 )
 MobileLoading.args = MOCK_BILLCHARGES_ARGS
 MobileLoading.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
   chromatic: { viewports: [viewports.xs] },
   msw: [getBillingInfo({ delay: 'infinite' })],
 }
+MobileLoading.globals = { viewport: { value: 'mobile1', isRotated: false } }

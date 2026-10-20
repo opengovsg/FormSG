@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { http, HttpResponse } from 'msw'
 
 import { featureFlags } from 'formsg-shared/constants'

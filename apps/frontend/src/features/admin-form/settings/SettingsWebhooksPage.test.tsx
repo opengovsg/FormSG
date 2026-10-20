@@ -1,5 +1,5 @@
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
-import { composeStories, composeStory } from '@storybook/react'
+import { composeStories, composeStory } from '@storybook/react-vite'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http } from 'msw'

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { viewports } from '~utils/storybook'
 
@@ -105,11 +105,9 @@ Mobile.args = {
   siblingCount: 1,
 }
 Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
   chromatic: { viewports: [viewports.xs] },
 }
+Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const MobileDisabled = Template.bind({})
 MobileDisabled.args = {
@@ -120,8 +118,6 @@ MobileDisabled.args = {
   isDisabled: true,
 }
 MobileDisabled.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
   chromatic: { viewports: [viewports.xs] },
 }
+MobileDisabled.globals = { viewport: { value: 'mobile1', isRotated: false } }

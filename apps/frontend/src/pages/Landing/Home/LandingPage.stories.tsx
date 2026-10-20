@@ -1,10 +1,12 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { getLandingStats } from '~/mocks/msw/handlers/landing'
 
 import { LANDING_ROUTE } from '~constants/routes'
 import {
+  getMobileViewGlobals,
   getMobileViewParameters,
+  getTabletViewGlobals,
   getTabletViewParameters,
   StoryRouter,
 } from '~utils/storybook'
@@ -36,6 +38,8 @@ Loading.parameters = {
 
 export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 
 export const Tablet = Template.bind({})
 Tablet.parameters = getTabletViewParameters()
+Tablet.globals = getTabletViewGlobals()

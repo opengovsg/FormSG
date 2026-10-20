@@ -1,8 +1,9 @@
 import { useDisclosure } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
   fullScreenDecorator,
+  getMobileViewGlobals,
   getMobileViewParameters,
   LoggedInDecorator,
   StoryRouter,
@@ -48,6 +49,7 @@ export const MobilePublicView = Template.bind({})
 MobilePublicView.parameters = {
   ...getMobileViewParameters(),
 }
+MobilePublicView.globals = getMobileViewGlobals()
 MobilePublicView.args = {
   isPreview: false,
   colorScheme: 'theme-red',
@@ -63,6 +65,7 @@ export const MobileAdminPreView = Template.bind({})
 MobileAdminPreView.parameters = {
   ...getMobileViewParameters(),
 }
+MobileAdminPreView.globals = getMobileViewGlobals()
 MobileAdminPreView.args = {
   isPreview: true,
   colorScheme: 'theme-red',

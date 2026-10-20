@@ -6,7 +6,7 @@ import {
   SimpleGrid,
   Text,
 } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { viewports } from '~utils/storybook'
 import Button from '~components/Button'
@@ -93,22 +93,18 @@ Mobile.args = {
   name: 'testMobileInput',
 }
 Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
   chromatic: { viewports: [viewports.xs] },
 }
+Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const Tablet = Template.bind({})
 Tablet.args = {
   name: 'testTabletInput',
 }
 Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
   chromatic: { viewports: [viewports.md] },
 }
+Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 export const Playground: StoryFn = ({
   name,

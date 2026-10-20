@@ -1,5 +1,5 @@
 import { DragDropContext } from '@hello-pangea/dnd'
-import { StoryFn } from '@storybook/react'
+import { StoryFn } from '@storybook/react-vite'
 
 import { FormResponseMode } from 'formsg-shared/types'
 

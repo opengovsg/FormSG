@@ -1,6 +1,6 @@
-import { Meta, StoryFn } from '@storybook/react'
-import { expect, userEvent, waitFor, within } from '@storybook/test'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import dedent from 'dedent'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 
 import { DateString, ErrorCode } from 'formsg-shared/types'
 import { BasicField } from 'formsg-shared/types/field'
@@ -33,7 +33,9 @@ import {
   _removeFromIndexedDBForTest,
 } from '~hooks/useIndexedDb'
 import {
+  getMobileViewGlobals,
   getMobileViewParameters,
+  getTabletViewGlobals,
   getTabletViewParameters,
   StoryRouter,
 } from '~utils/storybook'
@@ -231,6 +233,7 @@ WithPrefilledNormalFieldsMobile.parameters = {
   ...WithPrefilledNormalFields.parameters,
   ...getMobileViewParameters(),
 }
+WithPrefilledNormalFieldsMobile.globals = getMobileViewGlobals()
 
 export const WithPrefilledLockedFields = Template.bind({})
 WithPrefilledLockedFields.parameters = {
@@ -252,6 +255,7 @@ WithPrefilledLockedFieldsMobile.parameters = {
   ...WithPrefilledLockedFields.parameters,
   ...getMobileViewParameters(),
 }
+WithPrefilledLockedFieldsMobile.globals = getMobileViewGlobals()
 
 export const WithPrefilledLockedAndNormalFields = Template.bind({})
 WithPrefilledLockedAndNormalFields.parameters = {
@@ -276,9 +280,11 @@ WithPrefilledLockedAndNormalFieldsMobile.parameters = {
   ...WithPrefilledLockedAndNormalFields.parameters,
   ...getMobileViewParameters(),
 }
+WithPrefilledLockedAndNormalFieldsMobile.globals = getMobileViewGlobals()
 
 export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 
 export const ColorThemeGreen = Template.bind({})
 ColorThemeGreen.parameters = {
@@ -359,6 +365,7 @@ UnauthedMobile.parameters = {
   ...SingpassUnauthorized.parameters,
   ...getMobileViewParameters(),
 }
+UnauthedMobile.globals = getMobileViewGlobals()
 
 export const SingpassAuthorized = Template.bind({})
 SingpassAuthorized.storyName = 'Singpass/Authorized'
@@ -670,12 +677,14 @@ FormNotFoundTablet.parameters = {
   ...FormNotFound.parameters,
   ...getTabletViewParameters(),
 }
+FormNotFoundTablet.globals = getTabletViewGlobals()
 
 export const FormNotFoundMobile = Template.bind({})
 FormNotFoundMobile.parameters = {
   ...FormNotFound.parameters,
   ...getMobileViewParameters(),
 }
+FormNotFoundMobile.globals = getMobileViewGlobals()
 
 export const WithMyInfo = Template.bind({})
 WithMyInfo.storyName = 'With MyInfo'
@@ -786,6 +795,7 @@ WithSaveDraftEnabledMobile.parameters = {
   ...WithSaveDraftEnabled.parameters,
   ...getMobileViewParameters(),
 }
+WithSaveDraftEnabledMobile.globals = getMobileViewGlobals()
 
 const STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY =
   'formsg-save-draft-61540ece3d4a6e50ac0cc6ff'
@@ -1009,6 +1019,8 @@ WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile.parameters = {
     ...DEFAULT_MSW_HANDLERS,
   ],
 }
+WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile.globals =
+  getMobileViewGlobals()
 WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile.play = async ({
   step,
 }) => {

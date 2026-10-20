@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { FormResponseMode } from 'formsg-shared/types'
 
@@ -15,7 +15,11 @@ import {
 } from '~/mocks/msw/handlers/public-form'
 
 import { ADMINFORM_USETEMPLATE_ROUTE } from '~constants/routes'
-import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
+import {
+  getMobileViewGlobals,
+  getMobileViewParameters,
+  StoryRouter,
+} from '~utils/storybook'
 
 import TemplateFormPage from './TemplateFormPage'
 
@@ -49,6 +53,7 @@ export const Default = Template.bind({})
 
 export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 
 export const FormNotFound = Template.bind({})
 FormNotFound.parameters = {
@@ -60,6 +65,7 @@ FormNotFoundMobile.parameters = {
   ...FormNotFound.parameters,
   ...getMobileViewParameters(),
 }
+FormNotFoundMobile.globals = getMobileViewGlobals()
 
 export const MultirespondentFormWithAdditionalRowsTableField = Template.bind({})
 MultirespondentFormWithAdditionalRowsTableField.parameters = {

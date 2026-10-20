@@ -5,8 +5,8 @@ import {
   RouterProvider,
 } from 'react-router-dom'
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
-import { Meta, StoryFn } from '@storybook/react'
-import { expect, userEvent, waitFor, within } from '@storybook/test'
+import { Meta, StoryFn } from '@storybook/react-vite'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 
 import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types/form'
@@ -26,7 +26,11 @@ import {
   ADMINFORM_ROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
 } from '~constants/routes'
-import { getMobileViewParameters, viewports } from '~utils/storybook'
+import {
+  getMobileViewGlobals,
+  getMobileViewParameters,
+  viewports,
+} from '~utils/storybook'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
 import {
@@ -119,14 +123,13 @@ EmptyEmailForm.parameters = {
 
 export const EmailFormTablet = Template.bind({})
 EmailFormTablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
   chromatic: { viewports: [viewports.md] },
 }
+EmailFormTablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 export const EmailFormMobile = Template.bind({})
 EmailFormMobile.parameters = getMobileViewParameters()
+EmailFormMobile.globals = getMobileViewGlobals()
 
 export const StorageForm = Template.bind({})
 StorageForm.parameters = {

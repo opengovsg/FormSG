@@ -1,5 +1,5 @@
 import { useControllableState } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { isWeekend } from 'date-fns'
 
 import { mockDateDecorator } from '~utils/storybook'

@@ -1,5 +1,5 @@
 import { FormControl } from '@chakra-ui/form-control'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { FormFieldMessage, FormFieldMessageProps } from './FormFieldMessage'
 

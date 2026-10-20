@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import ReactDOM from 'react-dom'
 import { useDisclosure } from '@chakra-ui/hooks'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { getAdminForms } from '~/mocks/msw/handlers/admin-form'
 import { transferAllFormsOwnership } from '~/mocks/msw/handlers/admin-form/transfer-ownership'
@@ -60,11 +60,9 @@ export const Default = Template.bind({})
 
 export const Mobile = Template.bind({})
 Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
   chromatic: { viewports: [viewports.xs] },
 }
+Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const FailureBecauseTransferEndpointFailed = Template.bind({})
 FailureBecauseTransferEndpointFailed.parameters = {

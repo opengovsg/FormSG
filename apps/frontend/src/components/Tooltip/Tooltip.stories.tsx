@@ -1,5 +1,5 @@
 import { Box, Icon, Placement, TooltipProps, VStack } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { BxsHelpCircle } from '~/assets/icons/BxsHelpCircle'
 
@@ -89,8 +89,6 @@ const MobileTemplate: StoryFn<TooltipProps> = (args) => {
 
 export const Mobile = MobileTemplate.bind({})
 Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
   chromatic: { viewports: [viewports.xs] },
 }
+Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }

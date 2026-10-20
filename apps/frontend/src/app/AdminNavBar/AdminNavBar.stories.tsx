@@ -1,9 +1,11 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
 import {
+  getMobileViewGlobals,
   getMobileViewParameters,
+  getTabletViewGlobals,
   getTabletViewParameters,
   LoggedInDecorator,
   StoryRouter,
@@ -35,6 +37,7 @@ Expanded.args = { isMenuOpen: true }
 
 export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 
 export const MobileExpanded = Template.bind({})
 MobileExpanded.parameters = {
@@ -53,3 +56,4 @@ MobileExpanded.args = Expanded.args
 
 export const Tablet = Template.bind({})
 Tablet.parameters = getTabletViewParameters()
+Tablet.globals = getTabletViewGlobals()

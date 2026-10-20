@@ -1,5 +1,5 @@
 import { Box, Stack } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { viewports } from '~utils/storybook'
 
@@ -66,7 +66,6 @@ MobileTwoActions.args = {
   ],
 }
 MobileTwoActions.parameters = {
-  viewport: { defaultViewport: 'mobile1' },
   chromatic: { viewports: [viewports.xs] },
   docs: {
     description: {
@@ -75,6 +74,7 @@ MobileTwoActions.parameters = {
     },
   },
 }
+MobileTwoActions.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const OneAction = TuckedTemplate.bind({})
 OneAction.storyName = 'Tucked, one action'

@@ -1,6 +1,6 @@
 import { MemoryRouter, Route } from 'react-router'
 import { Routes } from 'react-router-dom'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
   createFormBuilderMocks,
@@ -19,7 +19,11 @@ import {
   ADMINFORM_ROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
 } from '~constants/routes'
-import { getMobileViewParameters, viewports } from '~utils/storybook'
+import {
+  getMobileViewGlobals,
+  getMobileViewParameters,
+  viewports,
+} from '~utils/storybook'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
 import { FeedbackPage, FormResultsLayout, ResponsesPage } from './responses'
@@ -106,14 +110,13 @@ EmptyIssue.parameters = {
 
 export const Tablet = Template.bind({})
 Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
   chromatic: { viewports: [viewports.md] },
 }
+Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 
 export const LoadingDesktop = Template.bind({})
 LoadingDesktop.storyName = 'Loading/Desktop'
@@ -133,3 +136,4 @@ LoadingMobile.parameters = {
   ...getMobileViewParameters(),
   ...LoadingDesktop.parameters,
 }
+LoadingMobile.globals = getMobileViewGlobals()

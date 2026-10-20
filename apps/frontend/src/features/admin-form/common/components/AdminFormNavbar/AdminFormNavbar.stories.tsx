@@ -1,8 +1,12 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { DateString } from 'formsg-shared/types/generic'
 
-import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
+import {
+  getMobileViewGlobals,
+  getMobileViewParameters,
+  StoryRouter,
+} from '~utils/storybook'
 
 import { AdminFormNavbar, AdminFormNavbarProps } from './AdminFormNavbar'
 
@@ -52,3 +56,4 @@ Mobile.args = {
   previewFormLink: '/test',
 }
 Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()

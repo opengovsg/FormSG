@@ -1,5 +1,5 @@
 import { Box } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
   BasicField,
@@ -22,7 +22,11 @@ import {
   MOCK_FORM_FIELDS,
 } from '~/mocks/msw/handlers/admin-form'
 
-import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
+import {
+  getMobileViewGlobals,
+  getMobileViewParameters,
+  StoryRouter,
+} from '~utils/storybook'
 
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
@@ -94,6 +98,7 @@ PreventSubmission.args = {
 export const Mobile = Template.bind({})
 Mobile.args = AllLogicConditions.args
 Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 
 // Helper functions to generate conditions
 function generateAllLogicConditions(): FormCondition[] {

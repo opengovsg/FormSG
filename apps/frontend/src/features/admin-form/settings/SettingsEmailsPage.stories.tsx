@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
   BasicField,
@@ -21,6 +21,7 @@ import {
 } from '~/mocks/msw/handlers/admin-form'
 
 import {
+  getMobileViewGlobals,
   getMobileViewParameters,
   StoryRouter,
   viewports,
@@ -380,12 +381,11 @@ Mobile.parameters = {
   ...NoEmailsAddedForm,
   ...getMobileViewParameters(),
 }
+Mobile.globals = getMobileViewGlobals()
 
 export const Tablet = Template.bind({})
 Tablet.parameters = {
   ...NoEmailsAddedForm,
-  viewport: {
-    defaultViewport: 'tablet',
-  },
   chromatic: { viewports: [viewports.md] },
 }
+Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }

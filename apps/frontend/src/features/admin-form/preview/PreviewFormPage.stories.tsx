@@ -1,8 +1,8 @@
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
-import { Meta, StoryFn } from '@storybook/react'
-import { expect, userEvent, waitFor, within } from '@storybook/test'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import dedent from 'dedent'
 import { http, HttpResponse } from 'msw'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 
 import { featureFlags } from 'formsg-shared/constants'
 import { BasicField } from 'formsg-shared/types/field'
@@ -32,7 +32,11 @@ import {
 } from '~/mocks/msw/handlers/public-form'
 
 import { ADMINFORM_PREVIEW_ROUTE } from '~constants/routes'
-import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
+import {
+  getMobileViewGlobals,
+  getMobileViewParameters,
+  StoryRouter,
+} from '~utils/storybook'
 
 import PreviewFormPage from './PreviewFormPage'
 
@@ -137,6 +141,7 @@ WithCaptcha.parameters = {
 
 export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 
 export const ColorThemeGreen = Template.bind({})
 ColorThemeGreen.parameters = {
@@ -193,6 +198,7 @@ UnauthedMobile.parameters = {
   ...SingpassUnauthorized.parameters,
   ...getMobileViewParameters(),
 }
+UnauthedMobile.globals = getMobileViewGlobals()
 
 export const SingpassAuthorized = Template.bind({})
 SingpassAuthorized.storyName = 'Singpass/Authorized'
@@ -355,6 +361,7 @@ FormNotFoundMobile.parameters = {
   ...FormNotFound.parameters,
   ...getMobileViewParameters(),
 }
+FormNotFoundMobile.globals = getMobileViewGlobals()
 
 export const WithPayment = Template.bind({})
 WithPayment.parameters = {

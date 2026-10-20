@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { merge } from 'lodash'
 import { delay as MswDelay, http, HttpResponse } from 'msw'
 
@@ -62,21 +62,17 @@ Mobile.args = {
   schema: baseSchema,
 }
 Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
   chromatic: { viewports: [viewports.xs] },
 }
+Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 export const Tablet = Template.bind({})
 Tablet.args = {
   schema: baseSchema,
 }
 Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
   chromatic: { viewports: [viewports.md] },
 }
+Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 export const Loading = Template.bind({})
 Loading.args = {

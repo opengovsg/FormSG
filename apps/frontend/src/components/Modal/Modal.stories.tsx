@@ -11,9 +11,12 @@ import {
   ModalOverlay,
   ModalProps,
 } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { getMobileViewParameters } from '~/utils/storybook'
+import {
+  getMobileViewGlobals,
+  getMobileViewParameters,
+} from '~/utils/storybook'
 
 import Button from '~components/Button'
 
@@ -94,3 +97,4 @@ Mobile.args = {
   bodyContent: generateLorem(5),
 }
 Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()

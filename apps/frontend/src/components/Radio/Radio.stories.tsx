@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { FieldError, useForm } from 'react-hook-form'
 import { FormControl, VStack } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { get, isEmpty } from 'lodash'
 
 import { viewports } from '~utils/storybook'
@@ -37,22 +37,18 @@ Mobile.args = {
   name: 'Mobile',
 }
 Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
   chromatic: { viewports: [viewports.xs] },
 }
+Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const Tablet = Template.bind({})
 Tablet.args = {
   name: 'Tablet',
 }
 Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
   chromatic: { viewports: [viewports.md] },
 }
+Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 const AllStates: StoryFn<RadioProps> = (args) => {
   return (

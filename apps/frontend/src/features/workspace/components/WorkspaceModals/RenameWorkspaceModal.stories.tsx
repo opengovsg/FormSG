@@ -1,12 +1,12 @@
 import { useDisclosure } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { UserId } from 'formsg-shared/types'
 import { Workspace, WorkspaceId } from 'formsg-shared/types/workspace'
 
 import { userHandlers } from '~/mocks/msw/handlers/user'
 
-import { getMobileViewParameters } from '~utils/storybook'
+import { getMobileViewGlobals, getMobileViewParameters } from '~utils/storybook'
 
 import {
   RenameWorkspaceModal,
@@ -46,3 +46,4 @@ export const RenameWorkspace = Template.bind({})
 
 export const RenameWorkspaceMobile = Template.bind({})
 RenameWorkspaceMobile.parameters = getMobileViewParameters()
+RenameWorkspaceMobile.globals = getMobileViewGlobals()
