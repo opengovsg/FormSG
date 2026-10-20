@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.52.0](https://github.com/opengovsg/formsg/compare/v9.51.0...v9.52.0) (2026-10-20)
+
+
+### Features
+
+* **login-fields:** share one 50-field limit across MyInfo and identity fields (#10325) ([#10325](https://github.com/opengovsg/formsg/commit/855782580a4cb96cf5c4a9c72413b70ab85052fd))
+
+
+### Bug Fixes
+
+* **frontend:** tell admins a shared secret key exposes their responses (#10299) ([#10299](https://github.com/opengovsg/formsg/commit/507b7a604689695301658668bfc77c7d6c4dd5f8))
+* **responses:** align drawer header and use table-order arrows (#10328) ([#10328](https://github.com/opengovsg/formsg/commit/7b012891a4d49a97218bf302c9919ae66e7373aa))
+* **results:** expect Corppass column headers to read [Myinfo] (#10326) ([#10326](https://github.com/opengovsg/formsg/commit/c93338d9166057a09c22b4a6070ba23aea002a54))
+
 ## [9.51.0](https://github.com/opengovsg/formsg/compare/v9.50.0...v9.51.0) (2026-10-19)
 
 
