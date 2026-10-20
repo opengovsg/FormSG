@@ -549,6 +549,40 @@ describe('receiver.service', () => {
         })
       })
 
+      it.each([
+        [
+          'a null response',
+          {
+            version: MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
+            responses: { [ATTACHMENT_FIELD_ID]: null },
+          },
+        ],
+        [
+          'null responses',
+          {
+            version: MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
+            responses: null,
+          },
+        ],
+      ])(
+        'should return MultipartError when the body has %s',
+        async (_, body) => {
+          const form = new FormData()
+          form.append('body', JSON.stringify(body))
+          const realBusboy = RealBusboy({
+            headers: {
+              'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
+            },
+          })
+          const resultPromise =
+            EmailSubmissionReceiver.configureMultipartReceiver(realBusboy)
+          form.pipe(realBusboy)
+
+          const result = await resultPromise
+          expect(result._unsafeUnwrapErr()).toEqual(new MultipartError())
+        },
+      )
+
       it('should return MultipartError when an attachment response has no file part', async () => {
         const form = new FormData()
         form.append('body', JSON.stringify(createMrfBody()))
