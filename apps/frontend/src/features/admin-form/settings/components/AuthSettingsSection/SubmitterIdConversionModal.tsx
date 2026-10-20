@@ -7,6 +7,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  useMediaQuery,
 } from '@chakra-ui/react'
 
 import { FormAuthType } from 'formsg-shared/types/form'
@@ -40,6 +41,9 @@ export const SubmitterIdConversionModal = ({
   const handleClose = () => {
     if (!isSaving) onClose()
   }
+  const [usePageScroll] = useMediaQuery(
+    '(max-height: 640px), (max-width: 479px)',
+  )
   const attrs = getLoginIdentityAttrsForAuthType(authType)
   const login = authType === FormAuthType.CP ? 'corppass' : 'singpass'
   return (
@@ -49,14 +53,18 @@ export const SubmitterIdConversionModal = ({
       closeOnEsc={!isSaving}
       closeOnOverlayClick={!isSaving}
       returnFocusOnClose={false}
-      scrollBehavior="inside"
+      scrollBehavior={usePageScroll ? 'outside' : 'inside'}
     >
       <ModalOverlay />
       <ModalContent
-        h={{
-          base: 'calc(100dvh - 2rem)',
-          md: 'min(52rem, calc(100dvh - 8rem))',
-        }}
+        h={
+          usePageScroll
+            ? 'auto'
+            : {
+                base: 'calc(100dvh - 2rem)',
+                md: 'min(52rem, calc(100dvh - 8rem))',
+              }
+        }
         maxH="none"
         my={{ base: '1rem', md: '4rem' }}
       >
@@ -67,10 +75,11 @@ export const SubmitterIdConversionModal = ({
           flexDirection="column"
           flex={1}
           minH={0}
-          overflow="hidden"
+          overflow={usePageScroll ? 'visible' : 'hidden'}
         >
           <ConversionPreview
             attrs={attrs}
+            isScrollable={!usePageScroll}
             nextQuestionNumber={nextQuestionNumber}
           />
         </ModalBody>

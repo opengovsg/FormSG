@@ -63,9 +63,11 @@ const PreviewCard = ({
 export const ConversionPreview = ({
   attrs,
   nextQuestionNumber = 1,
+  isScrollable = true,
 }: {
   attrs: LoginIdentityAttribute[]
   nextQuestionNumber?: number
+  isScrollable?: boolean
 }) => {
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.settings.singpass.submitterIdCollection',
@@ -137,12 +139,16 @@ export const ConversionPreview = ({
         <Tab>{t('preview.before')}</Tab>
         <Tab>{t('preview.after')}</Tab>
       </TabList>
-      <TabPanels flex={1} minH={0} overflow="hidden">
+      <TabPanels
+        flex={1}
+        minH={0}
+        overflow={isScrollable ? 'hidden' : 'visible'}
+      >
         <TabPanel
           p={0}
           pb="1.5rem"
-          h="100%"
-          overflowY="auto"
+          h={isScrollable ? '100%' : 'auto'}
+          overflowY={isScrollable ? 'auto' : 'visible'}
           sx={{ scrollbarGutter: 'stable' }}
         >
           <Stack spacing="1rem">
@@ -165,8 +171,8 @@ export const ConversionPreview = ({
         <TabPanel
           p={0}
           pb="1.5rem"
-          h="100%"
-          overflowY="auto"
+          h={isScrollable ? '100%' : 'auto'}
+          overflowY={isScrollable ? 'auto' : 'visible'}
           sx={{ scrollbarGutter: 'stable' }}
         >
           <Stack spacing="1rem">
