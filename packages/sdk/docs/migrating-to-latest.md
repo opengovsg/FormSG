@@ -431,34 +431,81 @@ addressField?.answer.postalCode.value // '570123'
 
 ### Table (`table`)
 
-Legacy identifies columns by position. Latest identifies rows and columns by ID. Record the column IDs from a test submission.
+#### What changes
+
+**Rows and columns**
+
+- **Legacy:** uses positional arrays.
+- **Latest:** uses row and column IDs. Each row keeps its position in `rowNum` and its cells in `value[columnId]`.
+
+**Table name**
+
+- **Legacy:** extract it from `question`, which includes column names, such as `'Household members (Name, Age)'`.
+- **Latest:** `tableField?.question` contains only the table name: `'Household members'`.
+
+**Column names**
+
+- **Legacy:** extract them from `question`.
+- **Latest:** `tableField?.subFields?.[columnId]?.question` gives the column name.
+
+#### Before: legacy
 
 ```javascript
-// Before: legacy
 const tableField = findLegacyField(TABLE_FIELD_ID)
-tableField.question // 'Household members (Name, Age)'. Column titles are in the question.
-tableField.answerArray // [['Tan Ah Kow', '45'], ['Tan Ah Mei', '42']]
+// {
+//   _id: TABLE_FIELD_ID,
+//   fieldType: 'table',
+//   question: 'Household members (Name, Age)',
+//   answerArray: [['Tan Ah Kow', '45'], ['Tan Ah Mei', '42']],
+// }
+```
 
-// After: latest
+#### After: latest
+
+```javascript
 const NAME_COLUMN_ID = '6a27d7a5e1b2c3d4e5f60721'
 const AGE_COLUMN_ID = '6a27d7a5e1b2c3d4e5f60722'
 
 const tableField = latestResponses[TABLE_FIELD_ID]
-tableField?.question // 'Household members'
-tableField?.answer
 // {
-//   '<rowId>': { rowNum: 0, value: { [NAME_COLUMN_ID]: 'Tan Ah Kow', [AGE_COLUMN_ID]: '45' } },
-//   '<rowId>': { rowNum: 1, value: { [NAME_COLUMN_ID]: 'Tan Ah Mei', [AGE_COLUMN_ID]: '42' } },
+//   fieldType: 'table',
+//   question: 'Household members',
+//   subFields: {
+//     [NAME_COLUMN_ID]: { question: 'Name' },
+//     [AGE_COLUMN_ID]: { question: 'Age' },
+//   },
+//   answer: {
+//     '<rowId1>': { rowNum: 0, value: { [NAME_COLUMN_ID]: 'Tan Ah Kow', [AGE_COLUMN_ID]: '45' } },
+//     '<rowId2>': { rowNum: 1, value: { [NAME_COLUMN_ID]: 'Tan Ah Mei', [AGE_COLUMN_ID]: '42' } },
+//   },
+//   provenance: {},
 // }
-
-// To get legacy-style rows:
-const rows = Object.values(tableField?.answer ?? {})
-  .sort((a, b) => a.rowNum - b.rowNum)
-  .map((row) => [row.value[NAME_COLUMN_ID], row.value[AGE_COLUMN_ID]])
-// [['Tan Ah Kow', '45'], ['Tan Ah Mei', '42']]
 ```
 
-In the latest format, a table cell can be a string or a number.
+#### Combine names and answers
+
+Choose the column order with `columnIds`; `subFields` has no ordering guarantee. Each row's values follow that order, and rows are sorted by `rowNum`.
+
+```javascript
+const columnIds = [NAME_COLUMN_ID, AGE_COLUMN_ID]
+
+const table = {
+  name: tableField?.question,
+  columns: columnIds.map((id) => tableField?.subFields?.[id]?.question),
+  rows: Object.values(tableField?.answer ?? {})
+    .sort((a, b) => a.rowNum - b.rowNum)
+    .map((row) => columnIds.map((id) => row.value[id])),
+}
+
+// {
+//   name: 'Household members',
+//   columns: ['Name', 'Age'],
+//   rows: [
+//     ['Tan Ah Kow', '45'],
+//     ['Tan Ah Mei', '42'],
+//   ],
+// }
+```
 
 ### Attachment (`attachment`)
 
@@ -534,7 +581,7 @@ Most differences are covered field by field above. These ones are easy to miss:
 
 **Field order.** Legacy arrays followed form order. Latest `responses` key order means nothing. If you need form order, iterate `data.formFields`, which follows it.
 
-**Question text and Myinfo.** `question` has no `[Myinfo] ` prefix, and table questions no longer include column names. If you match fields on question text, update those strings. The latest format can omit `response.myInfo` even on Myinfo-prefilled fields.
+**Question text and Myinfo.** `question` has no `[Myinfo] ` prefix, and table questions no longer include column names. Read column names from `subFields[columnId].question` when available. If you match fields on question text, update those strings. The latest format can omit `response.myInfo` even on Myinfo-prefilled fields.
 
 **Verified data keys.** `verified.uinFin` becomes `verified['uinFin (Step 1)']`, and `cpUen` becomes `cpUen (Step 1)`. FormSG collects Singpass and Corppass data only on the first step, so the suffix is always `(Step 1)` today.
 
