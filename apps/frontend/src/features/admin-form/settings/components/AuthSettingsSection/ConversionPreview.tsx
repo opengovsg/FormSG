@@ -108,7 +108,7 @@ export const ConversionPreview = ({
                     labels: attrs
                       .map((attr) =>
                         after
-                          ? `[Myinfo] ${LOGIN_IDENTITY_LABELS[attr]}`
+                          ? `${output === 'csv' ? '[Myinfo] ' : ''}${LOGIN_IDENTITY_LABELS[attr]}`
                           : LEGACY_LABELS[attr],
                       )
                       .join(', '),
