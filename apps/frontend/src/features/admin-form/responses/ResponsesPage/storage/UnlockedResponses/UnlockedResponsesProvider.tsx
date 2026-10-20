@@ -10,6 +10,7 @@ import {
 import {
   DateString,
   FormSavedView,
+  ResultsEventType,
   SavedViewColumnFilter,
   SavedViewSortDirection,
   SubmissionMetadata,
@@ -22,6 +23,7 @@ import {
   useDecryptedResponsesBySubmissionId,
   useFormResponses,
 } from '~features/admin-form/responses/queries'
+import { logResultsEvent } from '~features/admin-form/responses/ResultsEventService'
 
 import { TABLE_ROW_RENDER_CHUNK } from '../../../constants'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
@@ -366,6 +368,12 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     (viewId: string) => {
       setSelectedViewId(viewId)
       const view = savedViews.find(({ _id }) => _id === viewId)
+      if (view) {
+        logResultsEvent(form?._id, {
+          type: ResultsEventType.SavedViewApplied,
+          savedViewId: view._id,
+        })
+      }
       const next = view ? fromSavedView(view, columnOptions) : EMPTY_VIEW_STATE
       setDateRange(next.dateRange)
       setColumnFilters(next.columnFilters)
@@ -373,7 +381,7 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
       setSortColumnId(next.sortColumnId)
       setSortDirection(next.sortDirection)
     },
-    [columnOptions, savedViews, setDateRange],
+    [columnOptions, form?._id, savedViews, setDateRange],
   )
 
   return {

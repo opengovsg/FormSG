@@ -7,10 +7,13 @@ import { datadogLogs } from '@datadog/browser-logs'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants'
+import { ResultsEventType } from 'formsg-shared/types'
 
 import IconButton from '~components/IconButton'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
+import { logResultsEvent } from '~features/admin-form/responses/ResultsEventService'
 import { useUser } from '~features/user/queries'
 
 import { downloadResponsePdf } from './utils/generateResponsePdf'
@@ -23,7 +26,8 @@ export const IndividualResponseTitle = ({
 }): JSX.Element => {
   const { t } = useTranslation()
   const { state } = useLocation()
-  const { submissionId } = useParams()
+  const { formId, submissionId } = useParams()
+  const isDelightfulDashboard = useIsDelightfulDashboard()
 
   const currentResponseNumber = useMemo(() => {
     return (state as { responseNumber?: number })?.responseNumber
@@ -52,6 +56,12 @@ export const IndividualResponseTitle = ({
               icon={<FaRegFilePdf />}
               isLoading={isLoading}
               onClick={async () => {
+                logResultsEvent(formId, {
+                  type: ResultsEventType.Download,
+                  dashboardVersion: isDelightfulDashboard ? 'v2' : 'v1',
+                  formats: ['pdf'],
+                  scope: 'single',
+                })
                 datadogLogs.logger.info(
                   `IndividualResponseNavbar: admin printing pdf`,
                   {

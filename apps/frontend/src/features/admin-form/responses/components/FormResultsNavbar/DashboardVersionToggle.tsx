@@ -1,14 +1,17 @@
 import { SVGProps } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useParams } from 'react-router-dom'
 import { Badge, Flex } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants'
+import { ResultsEventType } from 'formsg-shared/types'
 
 import { Switch } from '~components/Toggle/Switch'
 
 import { useResultsDashboardVersion } from '../../hooks/useIsDelightfulDashboard'
 import { useStorageResponsesContext } from '../../ResponsesPage/storage'
+import { logResultsEvent } from '../../ResultsEventService'
 
 const versionIcon = (label: string) => {
   const VersionIcon = (props: SVGProps<SVGSVGElement>) => (
@@ -34,6 +37,7 @@ const V2Icon = versionIcon('V2')
 export const DashboardVersionToggle = (): JSX.Element | null => {
   const { t } = useTranslation()
   const isEnabled = useFeatureIsOn(featureFlags.delightfulDashboard)
+  const { formId } = useParams()
   const [version, setVersion] = useResultsDashboardVersion()
   // The version only changes the unlocked table, so the toggle stays hidden
   // until the secret key is in.
@@ -46,7 +50,15 @@ export const DashboardVersionToggle = (): JSX.Element | null => {
       <Flex lineHeight={0}>
         <Switch
           isChecked={version !== 'v1'}
-          onChange={(event) => setVersion(event.target.checked ? 'v2' : 'v1')}
+          onChange={(event) => {
+            const next = event.target.checked ? 'v2' : 'v1'
+            logResultsEvent(formId, {
+              type: ResultsEventType.VersionToggled,
+              from: version === 'v1' ? 'v1' : 'v2',
+              to: next,
+            })
+            setVersion(next)
+          }}
           checkedIcon={V2Icon}
           uncheckedIcon={V1Icon}
           aria-label={t(
