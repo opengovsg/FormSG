@@ -10,7 +10,8 @@ export const enSG = {
     title: 'Singpass',
     submitterIdCollection: {
       toggleLabel: 'Collect NRIC/FIN/UENs with form submissions',
-      convert: 'Convert',
+      convert: 'Switch to using fields',
+      learnMore: 'Learn more',
       makeTheSwitch: 'Make the switch',
       closeFormToConvert: 'Close your form to convert.',
       loginFieldsLockAuth:
@@ -18,9 +19,9 @@ export const enSG = {
       removeIdentityFieldsFirst:
         'Your form already collects NRIC/FIN/UENs through form fields. To use this setting instead, remove those fields first.',
       stopHint:
-        'You cannot disable this anymore. Convert to fields and delete them instead.',
+        'To change how you collect NRIC/FIN/UEN, switch to using form fields.',
       autoConvertNotice:
-        'This will automatically be converted for you by end Jun 2027. <guideLink>Learn more</guideLink>.',
+        'You will automatically switch to using fields by end-June 2027.',
       otherFormsAutoConvertNotice:
         'This will automatically be converted for other forms by end Jun 2027.',
       preview: {

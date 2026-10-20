@@ -22,6 +22,7 @@ export interface SingpassSettingsStrings extends HasTitle {
   submitterIdCollection: {
     toggleLabel: string
     convert: string
+    learnMore: string
     makeTheSwitch: string
     closeFormToConvert: string
     loginFieldsLockAuth: string

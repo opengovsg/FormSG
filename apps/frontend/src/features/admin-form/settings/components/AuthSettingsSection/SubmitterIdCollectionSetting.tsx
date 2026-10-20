@@ -1,4 +1,5 @@
-import { Trans, useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
+import { BiLinkExternal } from 'react-icons/bi'
 import {
   ButtonGroup,
   Modal,
@@ -18,7 +19,6 @@ import { getLoginIdentityAttrsForAuthType } from 'formsg-shared/utils/login-iden
 import { GUIDE_NRIC_FIELD } from '~constants/links'
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
-import Link from '~components/Link'
 import { ModalCloseButton } from '~components/Modal'
 
 import { useMutateFormSettings } from '../../mutations'
@@ -52,31 +52,27 @@ export const SubmitterIdCollectionSetting = ({
       <FormSubmitterIdCollectionToggle settings={settings} isDisabled />
       <InlineMessage variant="warning">
         <Stack spacing="0.75rem" align="flex-start">
-          <Stack spacing={0}>
-            <Text>{t('stopHint')}</Text>
-            <Text>
-              <Trans
-                t={t}
-                i18nKey="autoConvertNotice"
-                components={{
-                  guideLink: (
-                    <Link
-                      href={GUIDE_NRIC_FIELD}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    />
-                  ),
-                }}
-              />
-            </Text>
+          <Text>{t('stopHint')}</Text>
+          <Text>{t('autoConvertNotice')}</Text>
+          <Stack direction={{ base: 'column', sm: 'row' }} spacing="0.5rem">
+            <Button
+              variant="outline"
+              onClick={convertModal.onOpen}
+              isDisabled={isFormPublic}
+            >
+              {t('convert')}
+            </Button>
+            <Button
+              as="a"
+              href={GUIDE_NRIC_FIELD}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="clear"
+              rightIcon={<BiLinkExternal aria-hidden />}
+            >
+              {t('learnMore')}
+            </Button>
           </Stack>
-          <Button
-            variant="outline"
-            onClick={convertModal.onOpen}
-            isDisabled={isFormPublic}
-          >
-            {t('convert')}
-          </Button>
           {isFormPublic ? (
             <Text textStyle="caption-1">{t('closeFormToConvert')}</Text>
           ) : null}
