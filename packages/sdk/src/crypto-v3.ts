@@ -47,20 +47,24 @@ export function isFieldResponsesV4(
  * text: the receiver shim adapts V3 bodies without the form definition in
  * scope, and thin V4 wire bodies omit `question` entirely (the server strips
  * it). Enrich empty questions from the form definition at read time instead.
- * Responses that already carry a question are left untouched.
+ * Subfield labels are filled independently of the question text.
  */
-function backfillMissingQuestions(
+function backfillMissingFieldMetadata(
   responses: FieldResponsesV4,
   formFields: Record<string, FormFieldMeta>
 ): FieldResponsesV4 {
   for (const [fieldId, response] of Object.entries(responses)) {
-    if (response.question) continue
     // Tolerate an omitted formFields map from untyped (JS) callers
     const meta = formFields?.[fieldId]
     if (!meta) continue
-    response.question = deriveQuestionFromMeta(meta)
-    if (meta.myInfo && !response.myInfo) {
-      response.myInfo = meta.myInfo
+    if (!response.question) {
+      response.question = deriveQuestionFromMeta(meta)
+      if (meta.myInfo && !response.myInfo) {
+        response.myInfo = meta.myInfo
+      }
+    }
+    if (meta.subFields && !response.subFields) {
+      response.subFields = meta.subFields
     }
   }
   return responses
@@ -224,7 +228,7 @@ export default class CryptoV3 extends CryptoBase {
   /**
    * Decrypts an encrypted submission and returns it in V4 format.
    * If the decrypted data is already in V4 format, it is returned with any
-   * missing question text backfilled from the provided formFields metadata.
+   * missing question text and subfield labels filled from formFields metadata.
    * If the decrypted data is in V3 format, it is adapted to V4 using the provided formFields metadata.
    * @param formSecretKey The base-64 encoded form secret key for decrypting the submission.
    * @param decryptParams The params containing encrypted content, encrypted submission key and information.
@@ -243,9 +247,9 @@ export default class CryptoV3 extends CryptoBase {
     formFields = { ...decryptParams.formFields, ...formFields }
 
     // If the decrypted responses are already in V4 format, return them with
-    // any missing question text backfilled from the form definition.
+    // any missing field labels filled from the form definition.
     const responses = isFieldResponsesV4(decrypted.responses)
-      ? backfillMissingQuestions(decrypted.responses, formFields)
+      ? backfillMissingFieldMetadata(decrypted.responses, formFields)
       : adaptV3ToV4(decrypted.responses, { formFields })
 
     let stepToken: string | undefined = undefined

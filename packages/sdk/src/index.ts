@@ -48,6 +48,7 @@ export type {
   FieldResponsesV4,
   FieldResponseV4,
   FormFieldMeta,
+  SubFieldMeta,
   FormFieldV4,
   FormFieldsV4,
   RadioAnswerV4,

@@ -198,6 +198,7 @@ export function adaptV3ToV4(
       answer: convertAnswer(field.fieldType, field.answer),
       provenance,
       ...(myInfo && { myInfo }),
+      ...(meta?.subFields && { subFields: meta.subFields }),
     }
   }
 
