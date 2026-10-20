@@ -23,6 +23,7 @@ const SnapshotV4 = SnapshotBase.extend({
     .record(
       z.object({
         question: z.string(),
+        subFields: z.record(z.object({ question: z.string() })).optional(),
       }),
     )
     .optional(),

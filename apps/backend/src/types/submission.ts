@@ -39,7 +39,7 @@ export interface WebhookData {
   paymentContent?: PaymentWebhookEventObject | object
   workflowContent?: WorkflowWebhookEventObject
   encryptedSubmissionSecretKey?: string
-  formFields?: Record<string, Pick<FormFieldMeta, 'question'>>
+  formFields?: Record<string, Pick<FormFieldMeta, 'question' | 'subFields'>>
 }
 
 export interface WebhookView {
