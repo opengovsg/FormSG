@@ -36,12 +36,18 @@ export const SubmitterIdConversionModal = ({
   })
   const { t: tCommon } = useTranslation()
   const { mutateConvertSubmitterIdCollection } = useMutateFormSettings()
+  const isSaving = mutateConvertSubmitterIdCollection.isLoading
+  const handleClose = () => {
+    if (!isSaving) onClose()
+  }
   const attrs = getLoginIdentityAttrsForAuthType(authType)
   const login = authType === FormAuthType.CP ? 'corppass' : 'singpass'
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
+      closeOnEsc={!isSaving}
+      closeOnOverlayClick={!isSaving}
       returnFocusOnClose={false}
       scrollBehavior="inside"
     >
@@ -54,7 +60,7 @@ export const SubmitterIdConversionModal = ({
         maxH="none"
         my={{ base: '1rem', md: '4rem' }}
       >
-        <ModalCloseButton />
+        <ModalCloseButton isDisabled={isSaving} />
         <ModalHeader flexShrink={0}>{t(`${login}.modalTitle`)}</ModalHeader>
         <ModalBody
           display="flex"
@@ -74,16 +80,22 @@ export const SubmitterIdConversionModal = ({
           borderTopColor="neutral.300"
         >
           <ButtonGroup>
-            <Button variant="clear" colorScheme="secondary" onClick={onClose}>
+            <Button
+              variant="clear"
+              colorScheme="secondary"
+              onClick={handleClose}
+              isDisabled={isSaving}
+            >
               {tCommon('features.common.cancel')}
             </Button>
             <Button
-              isLoading={mutateConvertSubmitterIdCollection.isLoading}
-              onClick={() =>
+              isLoading={isSaving}
+              onClick={() => {
+                if (isSaving) return
                 mutateConvertSubmitterIdCollection.mutate(undefined, {
                   onSuccess: onClose,
                 })
-              }
+              }}
             >
               {t('makeTheSwitch')}
             </Button>
