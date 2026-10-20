@@ -58,6 +58,6 @@ describe('conversion pending guard', () => {
     fireEvent.click(
       screen.getByRole('button', { name: 'features.common.cancel' }),
     )
-    expect(onClose).toHaveBeenCalledOnce()
+    expect(onClose).toHaveBeenCalledTimes(1)
   })
 })
