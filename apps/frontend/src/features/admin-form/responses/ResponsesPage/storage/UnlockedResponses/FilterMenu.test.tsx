@@ -38,7 +38,7 @@ const openFilterMenu = async () => {
     </ChakraProvider>,
   )
   await userEvent.click(screen.getByRole('button', { name: /filter/i }))
-  return screen.findByRole('button', { name: 'Clear all filters' })
+  return screen.queryByRole('button', { name: 'Clear all filters' })
 }
 
 describe('the Filter menu', () => {
@@ -50,17 +50,23 @@ describe('the Filter menu', () => {
   })
 
   it('cannot clear filters when none are applied', async () => {
-    expect(await openFilterMenu()).toBeDisabled()
+    expect(await openFilterMenu()).not.toBeInTheDocument()
   })
 
   it('clears column filters and the date range together', async () => {
     mockColumnFilters = [{ columnId: 'name', text: 'tan' }]
     mockDateRange = ['2026-10-06', '2026-10-08'] as DateString[]
 
-    await userEvent.click(await openFilterMenu())
+    await userEvent.click((await openFilterMenu())!)
 
     expect(mockClearColumnFilters).toHaveBeenCalledTimes(1)
     expect(mockSetDateRange).toHaveBeenCalledWith([])
+  })
+
+  it('shows the action for a column filter on its own', async () => {
+    mockColumnFilters = [{ columnId: 'name', text: 'tan' }]
+
+    expect(await openFilterMenu()).toBeEnabled()
   })
 
   it('can clear a date range on its own', async () => {

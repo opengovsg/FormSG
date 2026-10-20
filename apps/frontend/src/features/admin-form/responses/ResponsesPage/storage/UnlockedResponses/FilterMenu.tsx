@@ -151,16 +151,16 @@ export const FilterMenu = ({
                 ))}
               </Stack>
             </Box>
-            <Divider />
-            <Box px="1rem" py="0.75rem">
-              <Button
-                variant="clear"
-                isDisabled={!hasFilters}
-                onClick={handleClearAllFilters}
-              >
-                {clearAllFiltersLabel}
-              </Button>
-            </Box>
+            {hasFilters && (
+              <>
+                <Divider />
+                <Box px="1rem" py="0.75rem">
+                  <Button variant="clear" onClick={handleClearAllFilters}>
+                    {clearAllFiltersLabel}
+                  </Button>
+                </Box>
+              </>
+            )}
           </MenuList>
         </>
       )}
