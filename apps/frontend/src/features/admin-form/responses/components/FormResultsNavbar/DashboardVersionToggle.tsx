@@ -5,13 +5,14 @@ import { Badge, Flex } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants'
-import { ResultsEventType } from 'formsg-shared/types'
+import { AnalyticsEventType } from 'formsg-shared/types'
 
 import { Switch } from '~components/Toggle/Switch'
 
+import { logAnalyticsEvent } from '~features/analytics/AnalyticsEventService'
+
 import { useResultsDashboardVersion } from '../../hooks/useIsDelightfulDashboard'
 import { useStorageResponsesContext } from '../../ResponsesPage/storage'
-import { logResultsEvent } from '../../ResultsEventService'
 
 const versionIcon = (label: string) => {
   const VersionIcon = (props: SVGProps<SVGSVGElement>) => (
@@ -52,10 +53,9 @@ export const DashboardVersionToggle = (): JSX.Element | null => {
           isChecked={version !== 'v1'}
           onChange={(event) => {
             const next = event.target.checked ? 'v2' : 'v1'
-            logResultsEvent(formId, {
-              type: ResultsEventType.VersionToggled,
-              from: version === 'v1' ? 'v1' : 'v2',
-              to: next,
+            logAnalyticsEvent(formId, {
+              type: AnalyticsEventType.ResultsVersionToggled,
+              content: { from: version === 'v1' ? 'v1' : 'v2', to: next },
             })
             setVersion(next)
           }}

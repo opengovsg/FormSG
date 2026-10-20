@@ -4,9 +4,9 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import {
+  AnalyticsEventType,
   FormSavedView,
   Language,
-  ResultsEventType,
   SavedViewSortDirection,
 } from 'formsg-shared/types'
 
@@ -19,13 +19,13 @@ import { ResponsesViewState } from './savedViews'
 
 const FORM_ID = '0123456789abcdef01234567'
 
-const mockLogResultsEvent = vi.fn()
+const mockLogAnalyticsEvent = vi.fn()
 const mockMutate = vi.fn()
 let mockIsDelightful = true
 let mockContext: Record<string, unknown> = {}
 
-vi.mock('~features/admin-form/responses/ResultsEventService', () => ({
-  logResultsEvent: (...args: unknown[]) => mockLogResultsEvent(...args),
+vi.mock('~features/analytics/AnalyticsEventService', () => ({
+  logAnalyticsEvent: (...args: unknown[]) => mockLogAnalyticsEvent(...args),
 }))
 
 vi.mock('~features/admin-form/responses/hooks', () => ({
@@ -130,7 +130,7 @@ const startDownload = async (formatLabel: RegExp) => {
   if (confirm) await user.click(confirm)
 }
 
-describe('DownloadButton results events', () => {
+describe('DownloadButton analytics events', () => {
   beforeAll(() => i18n.changeLanguage(Language.ENGLISH))
   beforeEach(() => vi.clearAllMocks())
 
@@ -139,12 +139,14 @@ describe('DownloadButton results events', () => {
 
     await startDownload(/csv/i)
 
-    expect(mockLogResultsEvent).toHaveBeenCalledWith(FORM_ID, {
-      type: ResultsEventType.Download,
-      dashboardVersion: 'v1',
-      formats: ['csv'],
-      scope: 'bulk',
-      responsesCount: 12,
+    expect(mockLogAnalyticsEvent).toHaveBeenCalledWith(FORM_ID, {
+      type: AnalyticsEventType.ResultsDownload,
+      content: {
+        dashboardVersion: 'v1',
+        formats: ['csv'],
+        scope: 'bulk',
+        responsesCount: 12,
+      },
     })
     expect(mockMutate).toHaveBeenCalled()
   })
@@ -154,14 +156,16 @@ describe('DownloadButton results events', () => {
 
     await startDownload(/pdf/i)
 
-    expect(mockLogResultsEvent).toHaveBeenCalledWith(FORM_ID, {
-      type: ResultsEventType.Download,
-      dashboardVersion: 'v2',
-      formats: ['pdf'],
-      scope: 'bulk',
-      savedViewId: VIEW._id,
-      isSavedViewModified: false,
-      responsesCount: 12,
+    expect(mockLogAnalyticsEvent).toHaveBeenCalledWith(FORM_ID, {
+      type: AnalyticsEventType.ResultsDownload,
+      content: {
+        dashboardVersion: 'v2',
+        formats: ['pdf'],
+        scope: 'bulk',
+        savedViewId: VIEW._id,
+        isSavedViewModified: false,
+        responsesCount: 12,
+      },
     })
   })
 
@@ -173,11 +177,13 @@ describe('DownloadButton results events', () => {
 
     await startDownload(/pdf/i)
 
-    expect(mockLogResultsEvent).toHaveBeenCalledWith(
+    expect(mockLogAnalyticsEvent).toHaveBeenCalledWith(
       FORM_ID,
       expect.objectContaining({
-        savedViewId: VIEW._id,
-        isSavedViewModified: true,
+        content: expect.objectContaining({
+          savedViewId: VIEW._id,
+          isSavedViewModified: true,
+        }),
       }),
     )
   })
@@ -187,9 +193,13 @@ describe('DownloadButton results events', () => {
 
     await startDownload(/pdf/i)
 
-    expect(mockLogResultsEvent).toHaveBeenCalledWith(
+    expect(mockLogAnalyticsEvent).toHaveBeenCalledWith(
       FORM_ID,
-      expect.not.objectContaining({ savedViewId: expect.anything() }),
+      expect.objectContaining({
+        content: expect.not.objectContaining({
+          savedViewId: expect.anything(),
+        }),
+      }),
     )
   })
 })

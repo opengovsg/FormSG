@@ -8,9 +8,9 @@ import {
 } from 'react'
 
 import {
+  AnalyticsEventType,
   DateString,
   FormSavedView,
-  ResultsEventType,
   SavedViewColumnFilter,
   SavedViewSortDirection,
   SubmissionMetadata,
@@ -23,7 +23,7 @@ import {
   useDecryptedResponsesBySubmissionId,
   useFormResponses,
 } from '~features/admin-form/responses/queries'
-import { logResultsEvent } from '~features/admin-form/responses/ResultsEventService'
+import { logAnalyticsEvent } from '~features/analytics/AnalyticsEventService'
 
 import { TABLE_ROW_RENDER_CHUNK } from '../../../constants'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
@@ -369,9 +369,9 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
       setSelectedViewId(viewId)
       const view = savedViews.find(({ _id }) => _id === viewId)
       if (view) {
-        logResultsEvent(form?._id, {
-          type: ResultsEventType.SavedViewApplied,
-          savedViewId: view._id,
+        logAnalyticsEvent(form?._id, {
+          type: AnalyticsEventType.ResultsSavedViewApplied,
+          content: { savedViewId: view._id },
         })
       }
       const next = view ? fromSavedView(view, columnOptions) : EMPTY_VIEW_STATE

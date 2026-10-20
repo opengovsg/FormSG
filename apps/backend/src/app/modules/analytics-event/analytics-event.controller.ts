@@ -1,9 +1,9 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import {
+  AnalyticsEventInput,
+  AnalyticsEventType,
   ErrorDto,
-  ResultsEventInput,
-  ResultsEventType,
 } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 
@@ -15,48 +15,58 @@ import { PermissionLevel } from '../form/admin-form/admin-form.types'
 import { mapRouteError } from '../form/admin-form/admin-form.utils'
 import * as UserService from '../user/user.service'
 
-import * as ResultsEventService from './results-event.service'
+import * as AnalyticsEventService from './analytics-event.service'
 
 const logger = createLoggerWithLabel(module)
 
 const dashboardVersion = Joi.string().valid('v1', 'v2')
 const objectId = Joi.string().hex().length(24)
 
-const joiResultsEventBody = Joi.alternatives().try(
-  Joi.object({
-    type: Joi.string().valid(ResultsEventType.Download).required(),
-    dashboardVersion: dashboardVersion.required(),
-    formats: Joi.array()
-      .items(Joi.string().valid('csv', 'attachments', 'pdf'))
-      .min(1)
-      .unique()
-      .required(),
-    scope: Joi.string().valid('bulk', 'single').required(),
-    savedViewId: objectId.optional(),
-    isSavedViewModified: Joi.boolean().optional(),
-    responsesCount: Joi.number().integer().min(0).optional(),
-  }),
+const joiEvent = (types: AnalyticsEventType[], content: Joi.ObjectSchema) =>
   Joi.object({
     type: Joi.string()
-      .valid(
-        ResultsEventType.SavedViewCreated,
-        ResultsEventType.SavedViewUpdated,
-        ResultsEventType.SavedViewApplied,
-      )
+      .valid(...types)
       .required(),
-    savedViewId: objectId.required(),
-  }),
-  Joi.object({
-    type: Joi.string().valid(ResultsEventType.VersionToggled).required(),
-    from: dashboardVersion.required(),
-    to: dashboardVersion.required(),
-  }),
+    content: content.required(),
+  })
+
+const joiAnalyticsEventBody = Joi.alternatives().try(
+  joiEvent(
+    [AnalyticsEventType.ResultsDownload],
+    Joi.object({
+      dashboardVersion: dashboardVersion.required(),
+      formats: Joi.array()
+        .items(Joi.string().valid('csv', 'attachments', 'pdf'))
+        .min(1)
+        .unique()
+        .required(),
+      scope: Joi.string().valid('bulk', 'single').required(),
+      savedViewId: objectId.optional(),
+      isSavedViewModified: Joi.boolean().optional(),
+      responsesCount: Joi.number().integer().min(0).optional(),
+    }),
+  ),
+  joiEvent(
+    [
+      AnalyticsEventType.ResultsSavedViewCreated,
+      AnalyticsEventType.ResultsSavedViewUpdated,
+      AnalyticsEventType.ResultsSavedViewApplied,
+    ],
+    Joi.object({ savedViewId: objectId.required() }),
+  ),
+  joiEvent(
+    [AnalyticsEventType.ResultsVersionToggled],
+    Joi.object({
+      from: dashboardVersion.required(),
+      to: dashboardVersion.required(),
+    }),
+  ),
 )
 
-export const _handleCreateResultsEvent: ControllerHandler<
+export const _handleCreateAnalyticsEvent: ControllerHandler<
   { formId: string },
   ErrorDto | void,
-  ResultsEventInput
+  AnalyticsEventInput
 > = (req, res) => {
   const { formId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
@@ -70,7 +80,7 @@ export const _handleCreateResultsEvent: ControllerHandler<
       }),
     )
     .andThen((form) =>
-      ResultsEventService.createResultsEvent({
+      AnalyticsEventService.createAnalyticsEvent({
         form,
         adminId: sessionUserId,
         event: req.body,
@@ -79,9 +89,9 @@ export const _handleCreateResultsEvent: ControllerHandler<
     .map(() => res.sendStatus(StatusCodes.NO_CONTENT))
     .mapErr((error) => {
       logger.error({
-        message: 'Error occurred when creating results event',
+        message: 'Error occurred when creating analytics event',
         meta: {
-          action: 'handleCreateResultsEvent',
+          action: 'handleCreateAnalyticsEvent',
           ...createReqMeta(req),
           userId: sessionUserId,
           formId,
@@ -94,11 +104,11 @@ export const _handleCreateResultsEvent: ControllerHandler<
 }
 
 /**
- * Handler for POST /forms/:formId/results-events
+ * Handler for POST /forms/:formId/analytics-events
  */
-export const handleCreateResultsEvent = [
+export const handleCreateAnalyticsEvent = [
   celebrate({
-    [Segments.BODY]: joiResultsEventBody,
+    [Segments.BODY]: joiAnalyticsEventBody,
   }),
-  _handleCreateResultsEvent,
+  _handleCreateAnalyticsEvent,
 ] as ControllerHandler[]

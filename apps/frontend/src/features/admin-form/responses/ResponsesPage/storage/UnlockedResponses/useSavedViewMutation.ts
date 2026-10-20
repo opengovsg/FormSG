@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { FormSavedViewInput, ResultsEventType } from 'formsg-shared/types'
+import { AnalyticsEventType, FormSavedViewInput } from 'formsg-shared/types'
 
 import { useToast } from '~hooks/useToast'
 
@@ -12,7 +12,7 @@ import {
   deleteFormSavedView,
   updateFormSavedView,
 } from '~features/admin-form/responses/AdminSubmissionsService'
-import { logResultsEvent } from '~features/admin-form/responses/ResultsEventService'
+import { logAnalyticsEvent } from '~features/analytics/AnalyticsEventService'
 
 export const useSavedViewMutation = () => {
   const { formId } = useParams()
@@ -26,9 +26,9 @@ export const useSavedViewMutation = () => {
       onSuccess: (savedViews) => {
         const created = savedViews[savedViews.length - 1]
         if (created) {
-          logResultsEvent(formId, {
-            type: ResultsEventType.SavedViewCreated,
-            savedViewId: created._id,
+          logAnalyticsEvent(formId, {
+            type: AnalyticsEventType.ResultsSavedViewCreated,
+            content: { savedViewId: created._id },
           })
         }
         return queryClient.invalidateQueries(adminFormKeys.id(formId as string))
@@ -56,9 +56,9 @@ export const useUpdateSavedViewMutation = () => {
     }) => updateFormSavedView(formId as string, savedViewId, savedView),
     {
       onSuccess: async (_, { savedViewId }) => {
-        logResultsEvent(formId, {
-          type: ResultsEventType.SavedViewUpdated,
-          savedViewId,
+        logAnalyticsEvent(formId, {
+          type: AnalyticsEventType.ResultsSavedViewUpdated,
+          content: { savedViewId },
         })
         await queryClient.invalidateQueries(adminFormKeys.id(formId as string))
         toast.closeAll()

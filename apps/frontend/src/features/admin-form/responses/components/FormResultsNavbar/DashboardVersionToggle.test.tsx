@@ -3,7 +3,7 @@ import { ChakraProvider } from '@chakra-ui/react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { Language, ResultsEventType } from 'formsg-shared/types'
+import { AnalyticsEventType, Language } from 'formsg-shared/types'
 
 import i18n from '~/i18n/i18n'
 
@@ -13,12 +13,12 @@ import { DashboardVersionToggle } from './DashboardVersionToggle'
 
 const FORM_ID = '0123456789abcdef01234567'
 
-const mockLogResultsEvent = vi.fn()
+const mockLogAnalyticsEvent = vi.fn()
 const mockSetVersion = vi.fn()
 let mockVersion: 'v1' | 'v2' = 'v2'
 
-vi.mock('../../ResultsEventService', () => ({
-  logResultsEvent: (...args: unknown[]) => mockLogResultsEvent(...args),
+vi.mock('~features/analytics/AnalyticsEventService', () => ({
+  logAnalyticsEvent: (...args: unknown[]) => mockLogAnalyticsEvent(...args),
 }))
 
 vi.mock('@growthbook/growthbook-react', () => ({
@@ -49,7 +49,7 @@ const renderToggle = (version: 'v1' | 'v2') => {
   )
 }
 
-describe('DashboardVersionToggle results events', () => {
+describe('DashboardVersionToggle analytics events', () => {
   beforeAll(() => i18n.changeLanguage(Language.ENGLISH))
   beforeEach(() => vi.clearAllMocks())
 
@@ -58,10 +58,9 @@ describe('DashboardVersionToggle results events', () => {
 
     await userEvent.setup().click(screen.getByRole('checkbox'))
 
-    expect(mockLogResultsEvent).toHaveBeenCalledWith(FORM_ID, {
-      type: ResultsEventType.VersionToggled,
-      from: 'v2',
-      to: 'v1',
+    expect(mockLogAnalyticsEvent).toHaveBeenCalledWith(FORM_ID, {
+      type: AnalyticsEventType.ResultsVersionToggled,
+      content: { from: 'v2', to: 'v1' },
     })
     expect(mockSetVersion).toHaveBeenCalledWith('v1')
   })
@@ -71,10 +70,9 @@ describe('DashboardVersionToggle results events', () => {
 
     await userEvent.setup().click(screen.getByRole('checkbox'))
 
-    expect(mockLogResultsEvent).toHaveBeenCalledWith(FORM_ID, {
-      type: ResultsEventType.VersionToggled,
-      from: 'v1',
-      to: 'v2',
+    expect(mockLogAnalyticsEvent).toHaveBeenCalledWith(FORM_ID, {
+      type: AnalyticsEventType.ResultsVersionToggled,
+      content: { from: 'v1', to: 'v2' },
     })
   })
 })

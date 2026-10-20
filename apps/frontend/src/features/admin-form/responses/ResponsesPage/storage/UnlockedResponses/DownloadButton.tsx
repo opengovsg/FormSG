@@ -16,7 +16,7 @@ import {
 import { datadogLogs } from '@datadog/browser-logs'
 import simplur from 'simplur'
 
-import { ResultsDownloadFormat, ResultsEventType } from 'formsg-shared/types'
+import { AnalyticsEventType, ResultsDownloadFormat } from 'formsg-shared/types'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
@@ -29,7 +29,7 @@ import { NavigationPrompt } from '~templates/NavigationPrompt'
 
 import { CSV_BUFFER_MAX_RESPONSES } from '~features/admin-form/responses/constants'
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
-import { logResultsEvent } from '~features/admin-form/responses/ResultsEventService'
+import { logAnalyticsEvent } from '~features/analytics/AnalyticsEventService'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 import {
@@ -328,24 +328,26 @@ export const DownloadButton = ({
     const selectedSavedView = isDelightfulDashboard
       ? savedViews.find(({ _id }) => _id === selectedViewId)
       : undefined
-    logResultsEvent(formId, {
-      type: ResultsEventType.Download,
-      dashboardVersion: isDelightfulDashboard ? 'v2' : 'v1',
-      formats: toDownloadFormats(downloadOptions),
-      scope: 'bulk',
-      ...(selectedSavedView
-        ? {
-            savedViewId: selectedSavedView._id,
-            isSavedViewModified: !matchesSavedView(
-              currentViewState,
-              [selectedSavedView],
-              columnOptions,
-            ),
-          }
-        : {}),
-      ...(dateRangeResponsesCount !== undefined
-        ? { responsesCount: dateRangeResponsesCount }
-        : {}),
+    logAnalyticsEvent(formId, {
+      type: AnalyticsEventType.ResultsDownload,
+      content: {
+        dashboardVersion: isDelightfulDashboard ? 'v2' : 'v1',
+        formats: toDownloadFormats(downloadOptions),
+        scope: 'bulk',
+        ...(selectedSavedView
+          ? {
+              savedViewId: selectedSavedView._id,
+              isSavedViewModified: !matchesSavedView(
+                currentViewState,
+                [selectedSavedView],
+                columnOptions,
+              ),
+            }
+          : {}),
+        ...(dateRangeResponsesCount !== undefined
+          ? { responsesCount: dateRangeResponsesCount }
+          : {}),
+      },
     })
     datadogLogs.logger.info('Bulk download used', {
       meta: {
