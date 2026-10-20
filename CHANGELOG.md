@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.53.0](https://github.com/opengovsg/formsg/compare/v9.52.4...v9.53.0) (2026-10-20)
+
+
+### Features
+
+* **ci:** Datadog synthetics smoke gate for previews, staging and production (#10278) ([#10278](https://github.com/opengovsg/formsg/commit/6641872f0ee5cf6c6c391a891ebc8d4bf08dab60))
+
 ## [9.52.4](https://github.com/opengovsg/formsg/compare/v9.52.3...v9.52.4) (2026-10-20)
 
 
