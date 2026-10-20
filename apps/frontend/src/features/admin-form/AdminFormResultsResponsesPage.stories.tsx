@@ -259,7 +259,7 @@ MultiRespondentFormUnlocked.play = StorageFormUnlocked.play
 const MOCK_SUBMISSION_ID = '62a8a7476f4f3e005bcd5ab7'
 
 // Mirrors the app's routes so a response opens in the drawer over the table.
-const DrawerTemplate: StoryFn = () => {
+const DrawerTemplate: StoryFn = ({ responseNumber = 3 }) => {
   const router = createMemoryRouter(
     createRoutesFromElements(
       <Route path={`${ADMINFORM_ROUTE}/:formId`} element={<AdminFormLayout />}>
@@ -279,7 +279,10 @@ const DrawerTemplate: StoryFn = () => {
     ),
     {
       initialEntries: [
-        `${ADMINFORM_ROUTE}/61540ece3d4a6e50ac0cc6ff/${ADMINFORM_RESULTS_SUBROUTE}/${MOCK_SUBMISSION_ID}`,
+        {
+          pathname: `${ADMINFORM_ROUTE}/61540ece3d4a6e50ac0cc6ff/${ADMINFORM_RESULTS_SUBROUTE}/${MOCK_SUBMISSION_ID}`,
+          state: { responseNumber },
+        },
       ],
     },
   )
@@ -288,6 +291,8 @@ const DrawerTemplate: StoryFn = () => {
 
 export const StorageFormResponseDrawer = DrawerTemplate.bind({})
 StorageFormResponseDrawer.parameters = {
+  // The router contains circular references, so skip automatic JSX serialization.
+  docs: { source: { type: 'code', code: '<IndividualResponseDrawer />' } },
   msw: {
     handlers: {
       default: [
@@ -307,6 +312,16 @@ StorageFormResponseDrawer.parameters = {
     },
   },
 }
+const responseDrawerGrowthBook = new GrowthBook({
+  features: { [featureFlags.adminPrintPdf]: { defaultValue: true } },
+})
+StorageFormResponseDrawer.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={responseDrawerGrowthBook}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
 StorageFormResponseDrawer.play = StorageFormUnlocked.play
 
 export const StorageFormResponseDrawerMobile = DrawerTemplate.bind({})
@@ -314,7 +329,17 @@ StorageFormResponseDrawerMobile.parameters = {
   ...EmailFormMobile.parameters,
   ...StorageFormResponseDrawer.parameters,
 }
+StorageFormResponseDrawerMobile.decorators =
+  StorageFormResponseDrawer.decorators
 StorageFormResponseDrawerMobile.play = StorageFormUnlocked.play
+
+export const StorageFormResponseDrawerLongNumber = DrawerTemplate.bind({})
+StorageFormResponseDrawerLongNumber.args = { responseNumber: 123456789 }
+StorageFormResponseDrawerLongNumber.parameters =
+  StorageFormResponseDrawerMobile.parameters
+StorageFormResponseDrawerLongNumber.decorators =
+  StorageFormResponseDrawer.decorators
+StorageFormResponseDrawerLongNumber.play = StorageFormUnlocked.play
 
 export const Loading = Template.bind({})
 Loading.parameters = {
