@@ -1,12 +1,18 @@
-import type { FieldResponsesV4, FormFieldsV3 } from '@opengovsg/formsg-sdk'
+import type {
+  AttachmentAnswerV4,
+  FieldResponsesV4,
+  FormFieldsV3,
+} from '@opengovsg/formsg-sdk'
 import { adaptV3ToV4 } from '@opengovsg/formsg-sdk'
 import { VIRUS_SCANNER_SUBMISSION_VERSION } from 'formsg-shared/constants'
 import { BasicField, FieldResponse } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
+import { err, ok, Result } from 'neverthrow'
+import { z } from 'zod'
 
 import { IAttachmentInfo, MapRouteError } from '../../../../types'
 import {
-  ParsedClearAttachmentFieldResponseV4,
+  ParsedClearAttachmentAnswerV4,
   ParsedClearAttachmentResponse,
   ParsedClearFormFieldResponse,
 } from '../../../../types/api'
@@ -14,6 +20,7 @@ import { createLoggerWithLabel } from '../../../config/logger'
 
 import {
   InitialiseMultipartReceiverError,
+  MultipartContentParsingError,
   MultipartError,
 } from './receiver.errors'
 import {
@@ -23,6 +30,13 @@ import {
 } from './receiver.types'
 
 const logger = createLoggerWithLabel(module)
+
+const attachmentAnswerV4Schema = z.object({
+  value: z.string(),
+  hasBeenScanned: z.boolean().default(false),
+  md5Hash: z.string().optional(),
+  // RATIONALE: pin to the AttachmentAnswerV4 type to avoid type drift
+}) satisfies z.ZodType<AttachmentAnswerV4, z.ZodTypeDef, unknown>
 
 export const mapRouteError: MapRouteError = (error) => {
   switch (error.constructor) {
@@ -94,12 +108,12 @@ export const adaptMrfV3BodyToV4 = (
  *
  * @param responses - Array of responses received
  * @param attachments - Array of file objects
- * @returns void. Modifies responses in place.
+ * @returns error if a V3+ attachment response has no file part. Modifies responses in place.
  */
 export const addAttachmentToResponses = (
   body: ParsedMultipartForm<FieldResponse[] | FieldResponsesV4>,
   attachments: IAttachmentInfo[],
-): void => {
+): Result<void, MultipartContentParsingError> => {
   // default to 0 for email mode forms where version is undefined
   // TODO (FRM-1413): change to a version existence guardrail when
   // virus scanning has completed rollout, so that virus scanning
@@ -107,23 +121,17 @@ export const addAttachmentToResponses = (
   const isVirusScannerEnabled =
     (body.version ?? 0) >= VIRUS_SCANNER_SUBMISSION_VERSION
 
-  // Create a map of the attachments with fieldId as keys
-  const attachmentMap: Record<IAttachmentInfo['fieldId'], IAttachmentInfo> =
-    attachments.reduce<Record<string, IAttachmentInfo>>((acc, attachment) => {
-      acc[attachment.fieldId] = attachment
-      return acc
-    }, {})
+  const attachmentsByFieldId = new Map(
+    attachments.map((attachment) => [attachment.fieldId, attachment]),
+  )
 
   if (isBodyVersion2AndBelow(body)) {
     const responses = body.responses as ParsedClearFormFieldResponse[]
     if (responses) {
       // matches responses to attachments using id, adding filename and content to response
       responses.forEach((response) => {
-        if (
-          response.fieldType === BasicField.Attachment &&
-          response._id in attachmentMap
-        ) {
-          const file = attachmentMap[response._id]
+        const file = attachmentsByFieldId.get(response._id)
+        if (response.fieldType === BasicField.Attachment && file) {
           const attachmentResponse = response as ParsedClearAttachmentResponse
           attachmentResponse.filename = file.filename
           attachmentResponse.content = file.content
@@ -136,17 +144,36 @@ export const addAttachmentToResponses = (
   }
 
   if (isBodyVersion3AndAbove(body)) {
-    Object.keys(body.responses).forEach((id) => {
-      const response = body.responses[
-        id
-      ] as unknown as ParsedClearAttachmentFieldResponseV4
-      if (response.fieldType === BasicField.Attachment && id in attachmentMap) {
-        const file = attachmentMap[id]
-        response.answer.filename = file.filename
-        response.answer.content = file.content
+    for (const [id, response] of Object.entries(body.responses)) {
+      if (response.fieldType !== BasicField.Attachment) continue
+      const answer = attachmentAnswerV4Schema.safeParse(response.answer)
+      if (!answer.success) {
+        return err(
+          new MultipartContentParsingError(
+            `Attachment response ${id} has an invalid answer`,
+          ),
+        )
       }
-    })
+      // NOTE: The file part is required since its the only source of the attachment's filename,
+      // which later becomes the answer value once the clean file is retrieved.
+      const file = attachmentsByFieldId.get(id)
+      if (!file) {
+        return err(
+          new MultipartContentParsingError(
+            `Attachment response ${id} has no matching file part`,
+          ),
+        )
+      }
+      const parsedAnswer: ParsedClearAttachmentAnswerV4 = {
+        ...answer.data,
+        filename: file.filename,
+        content: file.content,
+      }
+      response.answer = parsedAnswer
+    }
   }
+
+  return ok(undefined)
 }
 
 /**

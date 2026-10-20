@@ -162,10 +162,28 @@ export const configureMultipartReceiver = (
       })
       .on('close', () => {
         if (body) {
-          adaptMrfV3BodyToV4(body)
-          handleDuplicatesInAttachments(attachments)
-          addAttachmentToResponses(body, attachments)
-          return resolve(body)
+          // The body is unvalidated client JSON, so a malformed shape can
+          // throw here. This handler runs outside the promise executor, so an
+          // uncaught throw would crash the process instead of rejecting.
+          try {
+            adaptMrfV3BodyToV4(body)
+            handleDuplicatesInAttachments(attachments)
+            const addAttachmentsResult = addAttachmentToResponses(
+              body,
+              attachments,
+            )
+            if (addAttachmentsResult.isErr()) {
+              return reject(addAttachmentsResult.error)
+            }
+            return resolve(body)
+          } catch (error) {
+            logger.error({
+              message: 'Error while processing multipart body',
+              meta: logMeta,
+              error,
+            })
+            return reject(new MultipartContentParsingError())
+          }
         } else {
           // if body is not defined, the Promise would have been rejected elsewhere.
           // but reject here again just in case.

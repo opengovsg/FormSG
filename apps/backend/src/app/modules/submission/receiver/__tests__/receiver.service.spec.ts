@@ -2,8 +2,10 @@ import {
   generateNewAttachmentResponse,
   generateNewSingleAnswerResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
+import { ObjectId } from 'bson'
 import Busboy from 'busboy'
 import FormData from 'form-data'
+import { MULTIRESPONDENT_FORM_SUBMISSION_VERSION } from 'formsg-shared/constants'
 import { MB } from 'formsg-shared/constants/file'
 import { BasicField, FormResponseMode } from 'formsg-shared/types'
 import { createReadStream, readFileSync } from 'fs'
@@ -503,6 +505,99 @@ describe('receiver.service', () => {
 
       const result = await resultPromise
       expect(result._unsafeUnwrapErr()).toEqual(new MultipartError())
+    })
+
+    describe('multirespondent (V4) submissions', () => {
+      const ATTACHMENT_FIELD_ID = String(new ObjectId())
+      const QUARANTINE_KEY = '3b241101-e2bb-4255-8caf-4136c566a962'
+      const createMrfBody = () => ({
+        version: MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
+        responses: {
+          [ATTACHMENT_FIELD_ID]: {
+            fieldType: BasicField.Attachment,
+            answer: { value: QUARANTINE_KEY, hasBeenScanned: false },
+            provenance: {},
+          },
+        },
+      })
+
+      it('should add the filename and content of the file part to the attachment answer', async () => {
+        const form = new FormData()
+        form.append('body', JSON.stringify(createMrfBody()))
+        form.append(VALID_FILENAME_1, VALID_FILE_CONTENT_1, ATTACHMENT_FIELD_ID)
+        const realBusboy = RealBusboy({
+          headers: {
+            'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
+          },
+        })
+        const resultPromise =
+          EmailSubmissionReceiver.configureMultipartReceiver(realBusboy)
+        form.pipe(realBusboy)
+
+        const result = await resultPromise
+        expect(result._unsafeUnwrap().responses).toEqual({
+          [ATTACHMENT_FIELD_ID]: {
+            fieldType: BasicField.Attachment,
+            answer: {
+              value: QUARANTINE_KEY,
+              hasBeenScanned: false,
+              filename: VALID_FILENAME_1,
+              content: VALID_FILE_CONTENT_1,
+            },
+            provenance: {},
+          },
+        })
+      })
+
+      it.each([
+        [
+          'a null response',
+          {
+            version: MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
+            responses: { [ATTACHMENT_FIELD_ID]: null },
+          },
+        ],
+        [
+          'null responses',
+          {
+            version: MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
+            responses: null,
+          },
+        ],
+      ])(
+        'should return MultipartError when the body has %s',
+        async (_, body) => {
+          const form = new FormData()
+          form.append('body', JSON.stringify(body))
+          const realBusboy = RealBusboy({
+            headers: {
+              'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
+            },
+          })
+          const resultPromise =
+            EmailSubmissionReceiver.configureMultipartReceiver(realBusboy)
+          form.pipe(realBusboy)
+
+          const result = await resultPromise
+          expect(result._unsafeUnwrapErr()).toEqual(new MultipartError())
+        },
+      )
+
+      it('should return MultipartError when an attachment response has no file part', async () => {
+        const form = new FormData()
+        form.append('body', JSON.stringify(createMrfBody()))
+        const realBusboy = RealBusboy({
+          headers: {
+            'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
+          },
+        })
+        const resultPromise =
+          EmailSubmissionReceiver.configureMultipartReceiver(realBusboy)
+        form.pipe(realBusboy)
+
+        const result = await resultPromise
+        expect(result._unsafeUnwrapErr()).toEqual(new MultipartError())
+      })
     })
   })
 })
