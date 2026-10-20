@@ -98,6 +98,7 @@ export const Playground: StoryFn = ({
     </form>
   )
 }
+Playground.tags = ['playground']
 Playground.args = {
   name: 'Test playground Textarea',
   label: 'Field label',

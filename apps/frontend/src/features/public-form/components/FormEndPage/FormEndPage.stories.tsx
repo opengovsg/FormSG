@@ -5,7 +5,7 @@ import { FormColorTheme } from 'formsg-shared/types'
 
 import { getPublicFormResponse } from '~/mocks/msw/handlers/public-form'
 
-import { getMobileViewGlobals } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
@@ -39,6 +39,7 @@ export default {
 
 const Template: StoryFn<FormEndPageProps> = (args) => <FormEndPage {...args} />
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('mobile') } }
 Default.args = {
   endPage: {
     buttonText: 'Continue',
@@ -90,10 +91,3 @@ FeedbackSubmitted.args = {
   ...Default.args,
   isFeedbackSectionHidden: true,
 }
-
-export const Mobile = Template.bind({})
-Mobile.args = {
-  ...Default.args,
-}
-Mobile.globals = getMobileViewGlobals()
-Mobile.globals = getMobileViewGlobals()

@@ -92,7 +92,6 @@ PreventSubmission.args = {
 export const Mobile = Template.bind({})
 Mobile.args = AllLogicConditions.args
 Mobile.globals = getMobileViewGlobals()
-Mobile.globals = getMobileViewGlobals()
 
 // Helper functions to generate conditions
 function generateAllLogicConditions(): FormCondition[] {

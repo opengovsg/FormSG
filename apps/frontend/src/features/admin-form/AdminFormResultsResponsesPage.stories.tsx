@@ -26,7 +26,7 @@ import {
   ADMINFORM_ROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
 } from '~constants/routes'
-import { getMobileViewGlobals } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
 import {
@@ -86,6 +86,7 @@ const Template: StoryFn = () => {
   return <RouterProvider router={router} />
 }
 export const EmailForm = Template.bind({})
+EmailForm.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 
 export const EmailFormLoading = Template.bind({})
 EmailFormLoading.parameters = {
@@ -117,14 +118,9 @@ EmptyEmailForm.parameters = {
   },
 }
 
-export const EmailFormTablet = Template.bind({})
-EmailFormTablet.globals = { viewport: { value: 'tablet', isRotated: false } }
-
-export const EmailFormMobile = Template.bind({})
-EmailFormMobile.globals = getMobileViewGlobals()
-
 export const StorageForm = Template.bind({})
 StorageForm.parameters = {
+  argos: { modes: viewportModes('tablet', 'mobile') },
   msw: {
     handlers: {
       default: [
@@ -146,6 +142,13 @@ StorageForm.parameters = {
 
 export const StorageFormUnlocked = Template.bind({})
 StorageFormUnlocked.parameters = StorageForm.parameters
+StorageFormUnlocked.parameters = {
+  ...StorageFormUnlocked.parameters,
+  argos: {
+    ...StorageFormUnlocked.parameters?.argos,
+    modes: viewportModes('tablet', 'mobile'),
+  },
+}
 StorageFormUnlocked.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement)
 
@@ -183,32 +186,6 @@ StorageFormUnlockedV2.decorators = [
     </GrowthBookProvider>
   ),
 ]
-
-export const StorageFormUnlockedTablet = Template.bind({})
-StorageFormUnlockedTablet.parameters = {
-  ...EmailFormTablet.parameters,
-  ...StorageFormUnlocked.parameters,
-}
-StorageFormUnlockedTablet.play = StorageFormUnlocked.play
-
-export const StorageFormUnlockedMobile = Template.bind({})
-StorageFormUnlockedMobile.parameters = {
-  ...EmailFormMobile.parameters,
-  ...StorageFormUnlocked.parameters,
-}
-StorageFormUnlockedMobile.play = StorageFormUnlocked.play
-
-export const StorageFormTablet = Template.bind({})
-StorageFormTablet.parameters = {
-  ...EmailFormTablet.parameters,
-  ...StorageForm.parameters,
-}
-
-export const StorageFormMobile = Template.bind({})
-StorageFormMobile.parameters = {
-  ...EmailFormMobile.parameters,
-  ...StorageForm.parameters,
-}
 
 export const StorageFormLoading = Template.bind({})
 StorageFormLoading.parameters = {
@@ -286,6 +263,7 @@ const DrawerTemplate: StoryFn = ({ responseNumber = 3 }) => {
 
 export const StorageFormResponseDrawer = DrawerTemplate.bind({})
 StorageFormResponseDrawer.parameters = {
+  argos: { modes: viewportModes('mobile') },
   // The router contains circular references, so skip automatic JSX serialization.
   docs: { source: { type: 'code', code: '<IndividualResponseDrawer />' } },
   msw: {
@@ -319,19 +297,10 @@ StorageFormResponseDrawer.decorators = [
 ]
 StorageFormResponseDrawer.play = StorageFormUnlocked.play
 
-export const StorageFormResponseDrawerMobile = DrawerTemplate.bind({})
-StorageFormResponseDrawerMobile.parameters = {
-  ...EmailFormMobile.parameters,
-  ...StorageFormResponseDrawer.parameters,
-}
-StorageFormResponseDrawerMobile.decorators =
-  StorageFormResponseDrawer.decorators
-StorageFormResponseDrawerMobile.play = StorageFormUnlocked.play
-
 export const StorageFormResponseDrawerLongNumber = DrawerTemplate.bind({})
 StorageFormResponseDrawerLongNumber.args = { responseNumber: 123456789 }
 StorageFormResponseDrawerLongNumber.parameters =
-  StorageFormResponseDrawerMobile.parameters
+  StorageFormResponseDrawer.parameters
 StorageFormResponseDrawerLongNumber.decorators =
   StorageFormResponseDrawer.decorators
 StorageFormResponseDrawerLongNumber.play = StorageFormUnlocked.play

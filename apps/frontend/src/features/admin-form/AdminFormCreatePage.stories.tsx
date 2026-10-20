@@ -30,6 +30,7 @@ import {
   LoggedInDecorator,
   mockDateDecorator,
   ViewedFeatureTourDecorator,
+  viewportModes,
 } from '~utils/storybook'
 
 import { CreatePage } from '~features/admin-form/create/CreatePage'
@@ -85,6 +86,9 @@ export default {
 
 const Template: StoryFn = () => <CreatePage />
 export const DesktopEmpty = Template.bind({})
+DesktopEmpty.parameters = {
+  argos: { modes: viewportModes('tablet', 'mobile') },
+}
 export const DesktopAllFields = Template.bind({})
 DesktopAllFields.parameters = {
   msw: {
@@ -123,16 +127,13 @@ DesktopFieldsWithAcceptDeny.decorators = [
 
 export const DesktopLoading = Template.bind({})
 DesktopLoading.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: {
     handlers: {
       default: buildMswRoutes({}, 'infinite'),
     },
   },
 }
-
-export const TabletEmpty = Template.bind({})
-TabletEmpty.globals = getTabletViewGlobals()
-TabletEmpty.globals = getTabletViewGlobals()
 export const TabletAllFields = Template.bind({})
 TabletAllFields.parameters = {
   msw: {
@@ -141,7 +142,6 @@ TabletAllFields.parameters = {
     },
   },
 }
-TabletAllFields.globals = getTabletViewGlobals()
 TabletAllFields.globals = getTabletViewGlobals()
 export const TabletLoading = Template.bind({})
 TabletLoading.parameters = {
@@ -153,11 +153,6 @@ TabletLoading.parameters = {
   },
 }
 TabletLoading.globals = getTabletViewGlobals()
-TabletLoading.globals = getTabletViewGlobals()
-
-export const MobileEmpty = Template.bind({})
-MobileEmpty.globals = getMobileViewGlobals()
-MobileEmpty.globals = getMobileViewGlobals()
 export const MobileAllFields = Template.bind({})
 MobileAllFields.parameters = {
   msw: {
@@ -167,17 +162,6 @@ MobileAllFields.parameters = {
   },
 }
 MobileAllFields.globals = getMobileViewGlobals()
-MobileAllFields.globals = getMobileViewGlobals()
-export const MobileLoading = Template.bind({})
-MobileLoading.parameters = {
-  msw: {
-    handlers: {
-      default: buildMswRoutes({}, 'infinite'),
-    },
-  },
-}
-MobileLoading.globals = getMobileViewGlobals()
-MobileLoading.globals = getMobileViewGlobals()
 
 export const AllFieldsFieldsHiddenByLogic = Template.bind({})
 AllFieldsFieldsHiddenByLogic.parameters = {
@@ -191,6 +175,7 @@ AllFieldsFieldsHiddenByLogic.parameters = {
 
 export const FormWithWebhook = Template.bind({})
 FormWithWebhook.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: {
     handlers: {
       default: [
@@ -208,15 +193,9 @@ FormWithWebhook.parameters = {
   },
 }
 
-export const FormWithWebhookMobile = Template.bind({})
-FormWithWebhookMobile.parameters = {
-  ...FormWithWebhook.parameters,
-}
-FormWithWebhookMobile.globals = getMobileViewGlobals()
-FormWithWebhookMobile.globals = getMobileViewGlobals()
-
 export const FormWithPayment = Template.bind({})
 FormWithPayment.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: {
     handlers: {
       default: buildMswRoutes({
@@ -237,13 +216,6 @@ FormWithPayment.parameters = {
     },
   },
 }
-
-export const FormWithPaymentMobile = Template.bind({})
-FormWithPaymentMobile.parameters = {
-  ...FormWithPayment.parameters,
-}
-FormWithPaymentMobile.globals = getMobileViewGlobals()
-FormWithPaymentMobile.globals = getMobileViewGlobals()
 
 export const AdminFormBuilderWithAdditionalRowsTableField = Template.bind({})
 AdminFormBuilderWithAdditionalRowsTableField.parameters = {

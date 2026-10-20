@@ -168,6 +168,7 @@ export const Playground: StoryFn<MultiSelectProps> = ({
     </form>
   )
 }
+Playground.tags = ['playground']
 
 Playground.args = {
   isDisabled: false,

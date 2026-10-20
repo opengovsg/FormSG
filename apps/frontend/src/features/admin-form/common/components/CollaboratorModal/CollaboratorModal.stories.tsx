@@ -12,9 +12,9 @@ import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
 import {
   fullScreenDecorator,
-  getMobileViewGlobals,
   LoggedInDecorator,
   StoryRouter,
+  viewportModes,
 } from '~utils/storybook'
 
 import { CollaboratorModal } from './CollaboratorModal'
@@ -122,6 +122,7 @@ EditViewMobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const ViewerView = Template.bind({})
 ViewerView.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: [
     ...createFormBuilderMocks({}, 0),
     getUser({
@@ -143,12 +144,6 @@ ViewerView.parameters = {
     }),
   ],
 }
-
-export const ViewerViewMobile = Template.bind({})
-ViewerViewMobile.parameters = {
-  ...ViewerView.parameters,
-}
-ViewerViewMobile.globals = getMobileViewGlobals()
 
 export const ViewerViewLoading = Template.bind({})
 ViewerViewLoading.parameters = {

@@ -87,6 +87,8 @@ export default defineConfig((configEnv) => {
                 configDir: fileURLToPath(
                   new URL('.storybook', import.meta.url),
                 ),
+                // Playgrounds are for poking at args, not for regression.
+                tags: { skip: ['playground'] },
               }),
               argosVitestPlugin({
                 // CI uploads from the workflow so subset builds can be skipped.

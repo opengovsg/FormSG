@@ -3,7 +3,7 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { userHandlers } from '~/mocks/msw/handlers/user'
 
-import { getMobileViewGlobals } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import {
   CreateWorkspaceModal,
@@ -35,7 +35,4 @@ const Template: StoryFn<CreateWorkspaceModalProps> = (args) => {
 }
 
 export const CreateWorkspace = Template.bind({})
-
-export const CreateWorkspaceMobile = Template.bind({})
-CreateWorkspaceMobile.globals = getMobileViewGlobals()
-CreateWorkspaceMobile.globals = getMobileViewGlobals()
+CreateWorkspace.parameters = { argos: { modes: viewportModes('mobile') } }

@@ -7,6 +7,7 @@ import {
   LoggedInDecorator,
   LoggedOutDecorator,
   StoryRouter,
+  viewportModes,
 } from '~utils/storybook'
 
 import { NotFoundErrorPage } from './NotFoundErrorPage'
@@ -36,13 +37,8 @@ NotLoggedIn.parameters = {
 
 export const MobileNotLoggedIn = Template.bind({})
 MobileNotLoggedIn.globals = getMobileViewGlobals()
-MobileNotLoggedIn.globals = getMobileViewGlobals()
 MobileNotLoggedIn.decorators = NotLoggedIn.decorators
 
 export const LoggedIn = Template.bind({})
+LoggedIn.parameters = { argos: { modes: viewportModes('mobile') } }
 LoggedIn.decorators = [LoggedInDecorator]
-
-export const MobileLoggedIn = Template.bind({})
-MobileLoggedIn.globals = getMobileViewGlobals()
-MobileLoggedIn.globals = getMobileViewGlobals()
-MobileLoggedIn.decorators = LoggedIn.decorators

@@ -165,3 +165,4 @@ export const Playground: StoryFn = () => {
     </Box>
   )
 }
+Playground.tags = ['playground']

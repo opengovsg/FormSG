@@ -93,4 +93,3 @@ Mobile.args = {
   bodyContent: generateLorem(5),
 }
 Mobile.globals = getMobileViewGlobals()
-Mobile.globals = getMobileViewGlobals()

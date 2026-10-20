@@ -10,7 +10,7 @@ import {
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 
-import { getMobileViewGlobals, StoryRouter } from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { SettingsGeneralPage } from './SettingsGeneralPage'
 
@@ -59,6 +59,7 @@ export const NoScheduledClosure = Template.bind({})
 /** Expiry toggle on, showing the date picker pre-filled with a close date. */
 export const WithScheduledClosure = Template.bind({})
 WithScheduledClosure.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: {
     handlers: {
       default: buildMswRoutes({
@@ -91,10 +92,3 @@ export const Loading = Template.bind({})
 Loading.parameters = {
   msw: { handlers: { default: buildMswRoutes({ delay: 'infinite' }) } },
 }
-
-export const Mobile = Template.bind({})
-Mobile.parameters = {
-  ...WithScheduledClosure.parameters,
-}
-Mobile.globals = getMobileViewGlobals()
-Mobile.globals = getMobileViewGlobals()

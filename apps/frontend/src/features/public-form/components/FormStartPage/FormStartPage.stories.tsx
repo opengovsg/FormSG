@@ -12,7 +12,7 @@ import {
   getPublicFormWithoutSectionsResponse,
 } from '~/mocks/msw/handlers/public-form'
 
-import { getMobileViewGlobals } from '~utils/storybook'
+import { getMobileViewGlobals, viewportModes } from '~utils/storybook'
 
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
@@ -101,6 +101,7 @@ WithDeadlineNoEstimatedTime.parameters = {
 
 export const OverflowTitle = Template.bind({})
 OverflowTitle.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: [
     ...envHandlers,
     getCustomLogoResponse(),
@@ -121,13 +122,6 @@ OverflowTitle.parameters = {
     }),
   ],
 }
-
-export const OverflowTitleMobile = Template.bind({})
-OverflowTitleMobile.parameters = {
-  ...OverflowTitle.parameters,
-}
-OverflowTitleMobile.globals = getMobileViewGlobals()
-OverflowTitleMobile.globals = getMobileViewGlobals()
 
 export const ColorThemeBrown = Template.bind({})
 ColorThemeBrown.parameters = {
@@ -247,7 +241,6 @@ MiniHeaderMobileWithSections.parameters = {
   ...MiniHeader.parameters,
 }
 MiniHeaderMobileWithSections.globals = getMobileViewGlobals()
-MiniHeaderMobileWithSections.globals = getMobileViewGlobals()
 
 export const MiniHeaderMobileWithoutSections = MiniHeaderTemplate.bind({})
 MiniHeaderMobileWithoutSections.args = {
@@ -266,5 +259,4 @@ MiniHeaderMobileWithoutSections.parameters = {
     }),
   ],
 }
-MiniHeaderMobileWithoutSections.globals = getMobileViewGlobals()
 MiniHeaderMobileWithoutSections.globals = getMobileViewGlobals()

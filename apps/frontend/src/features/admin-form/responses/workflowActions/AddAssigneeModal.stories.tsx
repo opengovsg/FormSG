@@ -1,7 +1,7 @@
 import { Box } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { getMobileViewGlobals } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { AddAssigneeModal, AddAssigneeModalProps } from './AddAssigneeModal'
 
@@ -33,7 +33,4 @@ const Template: StoryFn<AddAssigneeModalProps> = (args) => (
 )
 
 export const Default = Template.bind({})
-
-export const Mobile = Template.bind({})
-Mobile.globals = getMobileViewGlobals()
-Mobile.globals = getMobileViewGlobals()
+Default.parameters = { argos: { modes: viewportModes('mobile') } }

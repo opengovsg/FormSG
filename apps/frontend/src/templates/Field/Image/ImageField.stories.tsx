@@ -4,6 +4,8 @@ import { delay as MswDelay, http, HttpResponse } from 'msw'
 
 import { BasicField } from 'formsg-shared/types/field'
 
+import { viewportModes } from '~utils/storybook'
+
 import { ImageFieldSchema } from '../types'
 
 import MockImage from './mocks/img-login.svg'
@@ -51,20 +53,10 @@ const Template: StoryFn<StoryImageFieldProps> = ({ defaultValue, ...args }) => {
 }
 
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 Default.args = {
   schema: baseSchema,
 }
-
-export const Mobile = Template.bind({})
-Mobile.args = {
-  schema: baseSchema,
-}
-Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
-export const Tablet = Template.bind({})
-Tablet.args = {
-  schema: baseSchema,
-}
-Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 export const Loading = Template.bind({})
 Loading.args = {

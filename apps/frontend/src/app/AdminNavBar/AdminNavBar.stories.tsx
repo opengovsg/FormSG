@@ -4,10 +4,10 @@ import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
 import {
   getMobileViewGlobals,
-  getTabletViewGlobals,
   LoggedInDecorator,
   StoryRouter,
   ViewedEmergencyContactDecorator,
+  viewportModes,
 } from '~utils/storybook'
 
 import { AdminNavBar, AdminNavBarProps } from './AdminNavBar'
@@ -31,17 +31,14 @@ export default {
 const Template: StoryFn<AdminNavBarProps> = (args) => <AdminNavBar {...args} />
 
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 
 export const Expanded = Template.bind({})
 Expanded.args = { isMenuOpen: true }
 
-export const Mobile = Template.bind({})
-Mobile.globals = getMobileViewGlobals()
-Mobile.globals = getMobileViewGlobals()
-
 export const MobileExpanded = Template.bind({})
+MobileExpanded.globals = getMobileViewGlobals()
 MobileExpanded.parameters = {
-  ...Mobile.parameters,
   msw: [
     getUser({
       delay: 0,
@@ -53,7 +50,3 @@ MobileExpanded.parameters = {
   ],
 }
 MobileExpanded.args = Expanded.args
-
-export const Tablet = Template.bind({})
-Tablet.globals = getTabletViewGlobals()
-Tablet.globals = getTabletViewGlobals()

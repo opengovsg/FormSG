@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { fullScreenDecorator, getMobileViewGlobals } from '~utils/storybook'
+import { fullScreenDecorator, viewportModes } from '~utils/storybook'
 
 import { RolloutAnnouncementModal } from './RolloutAnnouncementModal'
 
@@ -24,7 +24,4 @@ const Template: StoryFn = () => (
 )
 
 export const BasicUsage = Template.bind({})
-
-export const Mobile = Template.bind({})
-Mobile.globals = getMobileViewGlobals()
-Mobile.globals = getMobileViewGlobals()
+BasicUsage.parameters = { argos: { modes: viewportModes('mobile') } }

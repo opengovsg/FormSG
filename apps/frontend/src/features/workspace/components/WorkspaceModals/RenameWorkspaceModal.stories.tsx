@@ -6,7 +6,7 @@ import { Workspace, WorkspaceId } from 'formsg-shared/types/workspace'
 
 import { userHandlers } from '~/mocks/msw/handlers/user'
 
-import { getMobileViewGlobals } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import {
   RenameWorkspaceModal,
@@ -44,7 +44,4 @@ const Template: StoryFn<RenameWorkspaceModalProps> = (args) => {
   )
 }
 export const RenameWorkspace = Template.bind({})
-
-export const RenameWorkspaceMobile = Template.bind({})
-RenameWorkspaceMobile.globals = getMobileViewGlobals()
-RenameWorkspaceMobile.globals = getMobileViewGlobals()
+RenameWorkspace.parameters = { argos: { modes: viewportModes('mobile') } }

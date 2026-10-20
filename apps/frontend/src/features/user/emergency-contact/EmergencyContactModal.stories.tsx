@@ -12,7 +12,11 @@ import {
   userHandlers,
 } from '~/mocks/msw/handlers/user'
 
-import { fullScreenDecorator, LoggedInDecorator } from '~utils/storybook'
+import {
+  fullScreenDecorator,
+  LoggedInDecorator,
+  viewportModes,
+} from '~utils/storybook'
 
 import { EmergencyContactModal } from './EmergencyContactModal'
 
@@ -54,6 +58,7 @@ const Template: StoryFn = () => {
   )
 }
 export const WithContact = Template.bind({})
+WithContact.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const NoContact = Template.bind({})
 NoContact.parameters = {
@@ -68,6 +73,3 @@ export const Loading = Template.bind({})
 Loading.parameters = {
   msw: userHandlers({ delay: 'infinite' }),
 }
-
-export const Mobile = Template.bind({})
-Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }

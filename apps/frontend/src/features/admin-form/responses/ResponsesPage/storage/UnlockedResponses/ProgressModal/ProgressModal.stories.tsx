@@ -1,7 +1,7 @@
 import { useDisclosure } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { fullScreenDecorator, getMobileViewGlobals } from '~utils/storybook'
+import { fullScreenDecorator, viewportModes } from '~utils/storybook'
 
 import { ProgressModal, ProgressModalProps } from './ProgressModal'
 
@@ -31,12 +31,10 @@ const Template: StoryFn<ProgressModalProps> = (args) => {
   )
 }
 export const Desktop = Template.bind({})
-
-export const Mobile = Template.bind({})
-Mobile.globals = getMobileViewGlobals()
-Mobile.globals = getMobileViewGlobals()
+Desktop.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const CompleteStateDesktop = Template.bind({})
+CompleteStateDesktop.parameters = { argos: { modes: viewportModes('mobile') } }
 CompleteStateDesktop.args = {
   downloadMetadata: {
     errorCount: 0,
@@ -45,12 +43,10 @@ CompleteStateDesktop.args = {
   },
 }
 
-export const CompleteStateMobile = Template.bind({})
-CompleteStateMobile.args = CompleteStateDesktop.args
-CompleteStateMobile.globals = getMobileViewGlobals()
-CompleteStateMobile.globals = getMobileViewGlobals()
-
 export const PartialSuccessStateDesktop = Template.bind({})
+PartialSuccessStateDesktop.parameters = {
+  argos: { modes: viewportModes('mobile') },
+}
 PartialSuccessStateDesktop.args = {
   downloadMetadata: {
     errorCount: 1,
@@ -58,7 +54,3 @@ PartialSuccessStateDesktop.args = {
     successCount: 9000,
   },
 }
-export const PartialSuccessStateMobile = Template.bind({})
-PartialSuccessStateMobile.args = PartialSuccessStateDesktop.args
-PartialSuccessStateMobile.globals = getMobileViewGlobals()
-PartialSuccessStateMobile.globals = getMobileViewGlobals()

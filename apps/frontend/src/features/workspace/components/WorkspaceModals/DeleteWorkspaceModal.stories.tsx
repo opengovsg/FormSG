@@ -6,7 +6,7 @@ import { Workspace, WorkspaceId } from 'formsg-shared/types/workspace'
 
 import { userHandlers } from '~/mocks/msw/handlers/user'
 
-import { getMobileViewGlobals } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import {
   DeleteWorkspaceModal,
@@ -45,7 +45,4 @@ const Template: StoryFn<DeleteWorkspaceModalProps> = (args) => {
   )
 }
 export const DeleteWorkspace = Template.bind({})
-
-export const DeleteWorkspaceMobile = Template.bind({})
-DeleteWorkspaceMobile.globals = getMobileViewGlobals()
-DeleteWorkspaceMobile.globals = getMobileViewGlobals()
+DeleteWorkspace.parameters = { argos: { modes: viewportModes('mobile') } }

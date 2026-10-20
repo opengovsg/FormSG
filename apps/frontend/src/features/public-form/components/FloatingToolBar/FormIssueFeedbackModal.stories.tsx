@@ -3,9 +3,9 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
   fullScreenDecorator,
-  getMobileViewGlobals,
   LoggedInDecorator,
   StoryRouter,
+  viewportModes,
 } from '~utils/storybook'
 
 import {
@@ -41,29 +41,15 @@ const Template: StoryFn<FormIssueFeedbackProps> = (args) => {
 }
 
 export const PublicView = Template.bind({})
+PublicView.parameters = { argos: { modes: viewportModes('mobile') } }
 PublicView.args = {
   isPreview: false,
   colorScheme: 'theme-red',
 }
 
-export const MobilePublicView = Template.bind({})
-MobilePublicView.globals = getMobileViewGlobals()
-MobilePublicView.globals = getMobileViewGlobals()
-MobilePublicView.args = {
-  isPreview: false,
-  colorScheme: 'theme-red',
-}
-
 export const AdminPreview = Template.bind({})
+AdminPreview.parameters = { argos: { modes: viewportModes('mobile') } }
 AdminPreview.args = {
-  isPreview: true,
-  colorScheme: 'theme-red',
-}
-
-export const MobileAdminPreView = Template.bind({})
-MobileAdminPreView.globals = getMobileViewGlobals()
-MobileAdminPreView.globals = getMobileViewGlobals()
-MobileAdminPreView.args = {
   isPreview: true,
   colorScheme: 'theme-red',
 }

@@ -19,6 +19,7 @@ import { getUser } from '~/mocks/msw/handlers/user'
 
 import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
 import formsgSdk from '~utils/formSdk'
+import { viewportModes } from '~utils/storybook'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
 import { SettingsPage } from './settings/SettingsPage'
@@ -69,6 +70,7 @@ export default {
 
 const Template: StoryFn = () => <SettingsPage />
 export const Desktop = Template.bind({})
+Desktop.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 
 export const PreventActivation = Template.bind({})
 PreventActivation.parameters = {
@@ -91,12 +93,6 @@ PreventActivation.parameters = {
     },
   },
 }
-
-export const Tablet = Template.bind({})
-Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
-
-export const Mobile = Template.bind({})
-Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 const storageModeKeypair = formsgSdk.crypto.generate()
 

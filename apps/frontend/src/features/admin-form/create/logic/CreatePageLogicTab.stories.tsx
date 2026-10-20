@@ -19,7 +19,7 @@ import {
   deleteLogic,
 } from '~/mocks/msw/handlers/admin-form'
 
-import { StoryRouter } from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { CreatePageLogicTab } from './CreatePageLogicTab'
 
@@ -134,14 +134,9 @@ const FORM_WITH_LOGIC: Partial<AdminFormDto> = {
 const Template: StoryFn = () => <CreatePageLogicTab />
 export const NoLogic = Template.bind({})
 NoLogic.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: { handlers: { default: buildMswRoutes({ form_logics: [] }) } },
 }
-
-export const MobileNoLogic = Template.bind({})
-MobileNoLogic.parameters = {
-  msw: { handlers: { default: buildMswRoutes({ form_logics: [] }) } },
-}
-MobileNoLogic.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const WithLogic = Template.bind({})
 WithLogic.parameters = {

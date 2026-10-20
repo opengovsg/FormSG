@@ -42,6 +42,7 @@ Disabled.args = {
 }
 
 export const Playground = stories.Playground.bind({})
+Playground.tags = ['playground']
 Playground.args = {
   ...stories.Playground.args,
   allowInternational: false,

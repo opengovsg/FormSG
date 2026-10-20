@@ -32,6 +32,7 @@ InProgress.args = {
 export const Playground: StoryFn<ResendOtpButtonContainerProps> = (args) => (
   <ResendOtpButtonContainer {...args} />
 )
+Playground.tags = ['playground']
 Playground.args = {
   onResendOtp: () => new Promise((res) => setTimeout(res, 800)),
 }

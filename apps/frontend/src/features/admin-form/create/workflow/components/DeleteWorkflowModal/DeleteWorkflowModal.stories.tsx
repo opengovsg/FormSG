@@ -9,7 +9,7 @@ import {
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 
-import { StoryRouter } from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -76,6 +76,7 @@ const FirstStepTemplate: StoryFn = () => (
 /** Form closed: deleting is allowed, and the confirm button is destructive. */
 export const FormClosed = Template.bind({})
 FormClosed.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: { handlers: { default: buildMocks(FormStatus.Private) } },
 }
 
@@ -86,20 +87,9 @@ FormClosed.parameters = {
  */
 export const FormOpen = Template.bind({})
 FormOpen.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: { handlers: { default: buildMocks(FormStatus.Public) } },
 }
-
-export const MobileFormClosed = Template.bind({})
-MobileFormClosed.parameters = {
-  ...FormClosed.parameters,
-}
-MobileFormClosed.globals = { viewport: { value: 'mobile1', isRotated: false } }
-
-export const MobileFormOpen = Template.bind({})
-MobileFormOpen.parameters = {
-  ...FormOpen.parameters,
-}
-MobileFormOpen.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 /**
  * Entered from step 1's delete button. Same outcome and same actions as
@@ -108,13 +98,6 @@ MobileFormOpen.globals = { viewport: { value: 'mobile1', isRotated: false } }
  */
 export const FirstStepFormClosed = FirstStepTemplate.bind({})
 FirstStepFormClosed.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: { handlers: { default: buildMocks(FormStatus.Private) } },
-}
-
-export const MobileFirstStepFormClosed = FirstStepTemplate.bind({})
-MobileFirstStepFormClosed.parameters = {
-  ...FirstStepFormClosed.parameters,
-}
-MobileFirstStepFormClosed.globals = {
-  viewport: { value: 'mobile1', isRotated: false },
 }

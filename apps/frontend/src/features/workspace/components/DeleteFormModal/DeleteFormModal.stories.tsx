@@ -5,7 +5,7 @@ import { FormId } from 'formsg-shared/types'
 
 import { MOCK_USER, userHandlers } from '~/mocks/msw/handlers/user'
 
-import { getMobileViewGlobals } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { DeleteFormModal, DeleteFormModalProps } from './DeleteFormModal'
 
@@ -41,7 +41,4 @@ const Template: StoryFn<DeleteFormModalProps> = (args) => {
   )
 }
 export const Default = Template.bind({})
-
-export const Mobile = Template.bind({})
-Mobile.globals = getMobileViewGlobals()
-Mobile.globals = getMobileViewGlobals()
+Default.parameters = { argos: { modes: viewportModes('mobile') } }

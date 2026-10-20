@@ -198,3 +198,20 @@ export const getMobileViewGlobals = () => {
 export const getTabletViewGlobals = () => {
   return { viewport: { value: 'tablet', isRotated: false } }
 }
+
+type ViewportMode = 'tablet' | 'mobile'
+
+const VIEWPORT_MODES: Record<ViewportMode, { viewport: string }> = {
+  tablet: { viewport: 'tablet' },
+  mobile: { viewport: 'mobile1' },
+}
+
+/**
+ * Argos modes that capture a story at the default (desktop) size and again at
+ * each given viewport, instead of a separate story per viewport. Set it as
+ * `parameters.argos.modes`; the viewport keys are defined in the preview.
+ */
+export const viewportModes = (...viewports: ViewportMode[]) => ({
+  desktop: {},
+  ...Object.fromEntries(viewports.map((v) => [v, VIEWPORT_MODES[v]])),
+})

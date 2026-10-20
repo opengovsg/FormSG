@@ -1,11 +1,7 @@
 import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { LANDING_PAYMENTS_ROUTE } from '~constants/routes'
-import {
-  getMobileViewGlobals,
-  getTabletViewGlobals,
-  StoryRouter,
-} from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { LandingPaymentsPage } from './LandingPaymentsPage'
 
@@ -27,13 +23,6 @@ export default {
 
 const Template: StoryFn = () => <LandingPaymentsPage />
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 
 export const Loading = Template.bind({})
-
-export const Mobile = Template.bind({})
-Mobile.globals = getMobileViewGlobals()
-Mobile.globals = getMobileViewGlobals()
-
-export const Tablet = Template.bind({})
-Tablet.globals = getTabletViewGlobals()
-Tablet.globals = getTabletViewGlobals()

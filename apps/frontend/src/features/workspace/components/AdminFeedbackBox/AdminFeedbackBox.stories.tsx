@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
+import { viewportModes } from '~utils/storybook'
+
 import { AdminFeedbackBox } from './AdminFeedbackBox'
 
 export default {
@@ -22,8 +24,5 @@ const Template: StoryFn = () => {
 }
 
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('mobile') } }
 Default.storyName = 'Empty state (no stars selected)'
-
-export const Mobile = Template.bind({})
-Mobile.storyName = 'Mobile viewport'
-Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }

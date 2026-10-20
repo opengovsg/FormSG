@@ -3,6 +3,8 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { BxsHelpCircle } from '~/assets/icons/BxsHelpCircle'
 
+import { viewportModes } from '~utils/storybook'
+
 import { Tooltip } from './Tooltip'
 
 export default {
@@ -56,6 +58,7 @@ const Template: StoryFn<TooltipProps> = (args) => {
   )
 }
 export const TooltipOnHover = Template.bind({})
+TooltipOnHover.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const OpenTooltip = Template.bind({})
 OpenTooltip.args = {
@@ -84,6 +87,3 @@ const MobileTemplate: StoryFn<TooltipProps> = (args) => {
     />
   )
 }
-
-export const Mobile = MobileTemplate.bind({})
-Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }

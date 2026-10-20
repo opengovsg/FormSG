@@ -3,7 +3,7 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { FORM_GUIDE } from '~constants/links'
-import { getMobileViewGlobals, getTabletViewGlobals } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { PublicHeader, PublicHeaderProps } from './PublicHeader'
 
@@ -39,17 +39,10 @@ const Template: StoryFn<PublicHeaderProps> = (args) => (
   <PublicHeader {...args} />
 )
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 
 export const WithoutCTA = Template.bind({})
 WithoutCTA.args = {
   ...DEFAULT_ARGS,
   ctaElement: undefined,
 }
-
-export const Mobile = Template.bind({})
-Mobile.globals = getMobileViewGlobals()
-Mobile.globals = getMobileViewGlobals()
-
-export const Tablet = Template.bind({})
-Tablet.globals = getTabletViewGlobals()
-Tablet.globals = getTabletViewGlobals()

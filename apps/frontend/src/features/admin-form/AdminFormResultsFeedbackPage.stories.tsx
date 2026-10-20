@@ -19,7 +19,7 @@ import {
   ADMINFORM_ROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
 } from '~constants/routes'
-import { getMobileViewGlobals } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
 import { FeedbackPage, FormResultsLayout, ResponsesPage } from './responses'
@@ -73,6 +73,7 @@ const Template: StoryFn = () => {
   )
 }
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 
 export const EmptyReviewAndIssue = Template.bind({})
 EmptyReviewAndIssue.parameters = {
@@ -104,15 +105,10 @@ EmptyIssue.parameters = {
   },
 }
 
-export const Tablet = Template.bind({})
-Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
-
-export const Mobile = Template.bind({})
-Mobile.globals = getMobileViewGlobals()
-
 export const LoadingDesktop = Template.bind({})
 LoadingDesktop.storyName = 'Loading/Desktop'
 LoadingDesktop.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: {
     handlers: {
       default: [
@@ -122,9 +118,3 @@ LoadingDesktop.parameters = {
     },
   },
 }
-export const LoadingMobile = Template.bind({})
-LoadingMobile.storyName = 'Loading/Mobile'
-LoadingMobile.parameters = {
-  ...LoadingDesktop.parameters,
-}
-LoadingMobile.globals = getMobileViewGlobals()

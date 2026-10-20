@@ -54,4 +54,3 @@ Mobile.args = {
   ],
 }
 Mobile.globals = getMobileViewGlobals()
-Mobile.globals = getMobileViewGlobals()

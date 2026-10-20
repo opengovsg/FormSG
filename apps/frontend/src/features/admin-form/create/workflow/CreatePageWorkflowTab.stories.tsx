@@ -23,7 +23,7 @@ import {
 } from '~/mocks/msw/handlers/admin-form'
 import { getUser } from '~/mocks/msw/handlers/user'
 
-import { StoryRouter } from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { CreatePageSidebarProvider } from '~features/admin-form/create/common'
 
@@ -275,9 +275,7 @@ const withRedesignOn = (Story: StoryFn) => (
 
 const Template: StoryFn = () => <CreatePageWorkflowTab />
 export const NoWorkflow = Template.bind({})
-
-export const MobileNoWorkflow = Template.bind({})
-MobileNoWorkflow.globals = { viewport: { value: 'mobile1', isRotated: false } }
+NoWorkflow.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const WithWorkflow = Template.bind({})
 WithWorkflow.parameters = {

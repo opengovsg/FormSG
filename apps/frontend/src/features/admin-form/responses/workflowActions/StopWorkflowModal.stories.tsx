@@ -15,7 +15,7 @@ import {
 } from '~/mocks/msw/handlers/admin-form'
 import { getUser } from '~/mocks/msw/handlers/user'
 
-import { getMobileViewGlobals, StoryRouter } from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { StopWorkflowModal, StopWorkflowModalProps } from './StopWorkflowModal'
 
@@ -114,7 +114,4 @@ const Template: StoryFn<StopWorkflowModalProps> = (args) => (
 )
 
 export const Default = Template.bind({})
-
-export const Mobile = Template.bind({})
-Mobile.globals = getMobileViewGlobals()
-Mobile.globals = getMobileViewGlobals()
+Default.parameters = { argos: { modes: viewportModes('mobile') } }

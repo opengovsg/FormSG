@@ -7,7 +7,11 @@ import { getAdminForms } from '~/mocks/msw/handlers/admin-form'
 import { transferAllFormsOwnership } from '~/mocks/msw/handlers/admin-form/transfer-ownership'
 import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
-import { fullScreenDecorator, LoggedInDecorator } from '~utils/storybook'
+import {
+  fullScreenDecorator,
+  LoggedInDecorator,
+  viewportModes,
+} from '~utils/storybook'
 
 import { TransferOwnershipModal } from './TransferOwnershipModal'
 
@@ -54,9 +58,7 @@ const Template: StoryFn = () => {
 }
 
 export const Default = Template.bind({})
-
-export const Mobile = Template.bind({})
-Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
+Default.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const FailureBecauseTransferEndpointFailed = Template.bind({})
 FailureBecauseTransferEndpointFailed.parameters = {

@@ -3,6 +3,8 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { BasicField } from 'formsg-shared/types/field'
 
+import { viewportModes } from '~utils/storybook'
+
 import { ParagraphFieldSchema } from '../types'
 
 import {
@@ -38,12 +40,7 @@ const Template: StoryFn<StoryParagraphFieldProps> = (args) => (
 )
 
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('mobile') } }
 Default.args = {
   schema: baseSchema,
 }
-
-export const Mobile = Template.bind({})
-Mobile.args = {
-  schema: baseSchema,
-}
-Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }

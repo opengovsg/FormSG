@@ -1,7 +1,7 @@
 import { Box, FormControl } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { getMobileViewGlobals } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 import { SingleSelect } from '~components/Dropdown'
 import FormLabel from '~components/FormControl/FormLabel'
 
@@ -41,6 +41,7 @@ const Template: StoryFn<WorkflowActionModalProps> = (args) => (
 )
 
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const NoOneNotified = Template.bind({})
 NoOneNotified.args = { notifiedEmails: [] }
@@ -66,7 +67,3 @@ WithInputs.args = {
     </FormControl>
   ),
 }
-
-export const Mobile = Template.bind({})
-Mobile.globals = getMobileViewGlobals()
-Mobile.globals = getMobileViewGlobals()

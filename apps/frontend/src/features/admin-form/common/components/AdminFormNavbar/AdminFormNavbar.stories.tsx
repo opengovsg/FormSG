@@ -54,4 +54,3 @@ Mobile.args = {
   previewFormLink: '/test',
 }
 Mobile.globals = getMobileViewGlobals()
-Mobile.globals = getMobileViewGlobals()

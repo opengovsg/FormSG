@@ -115,6 +115,7 @@ export const Playground: StoryFn<AttachmentProps> = ({
     </form>
   )
 }
+Playground.tags = ['playground']
 Playground.args = {
   name: 'Test-attachment',
   maxSize: 400000,

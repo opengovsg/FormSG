@@ -15,7 +15,7 @@ import {
 } from '~/mocks/msw/handlers/public-form'
 
 import { ADMINFORM_USETEMPLATE_ROUTE } from '~constants/routes'
-import { getMobileViewGlobals, StoryRouter } from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import TemplateFormPage from './TemplateFormPage'
 
@@ -46,22 +46,13 @@ export default {
 
 const Template: StoryFn = () => <TemplateFormPage />
 export const Default = Template.bind({})
-
-export const Mobile = Template.bind({})
-Mobile.globals = getMobileViewGlobals()
-Mobile.globals = getMobileViewGlobals()
+Default.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const FormNotFound = Template.bind({})
 FormNotFound.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: [getTemplateFormErrorResponse()],
 }
-
-export const FormNotFoundMobile = Template.bind({})
-FormNotFoundMobile.parameters = {
-  ...FormNotFound.parameters,
-}
-FormNotFoundMobile.globals = getMobileViewGlobals()
-FormNotFoundMobile.globals = getMobileViewGlobals()
 
 export const MultirespondentFormWithAdditionalRowsTableField = Template.bind({})
 MultirespondentFormWithAdditionalRowsTableField.parameters = {

@@ -3,6 +3,8 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { featureFlags } from 'formsg-shared/constants'
 
+import { viewportModes } from '~utils/storybook'
+
 import { WelcomeCard } from './WelcomeCard'
 
 const redesignOn = new GrowthBook({
@@ -26,6 +28,4 @@ export default {
 const Template: StoryFn = () => <WelcomeCard />
 
 export const Default = Template.bind({})
-
-export const Mobile = Template.bind({})
-Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
+Default.parameters = { argos: { modes: viewportModes('mobile') } }

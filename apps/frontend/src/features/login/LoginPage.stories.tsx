@@ -3,7 +3,7 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 import { authHandlers, otpGenerationResponse } from '~/mocks/msw/handlers/auth'
 
 import { LOGIN_ROUTE } from '~constants/routes'
-import { StoryRouter } from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { LoginPage } from './LoginPage'
 
@@ -26,12 +26,7 @@ export default {
 
 const Template: StoryFn = () => <LoginPage />
 export const Desktop = Template.bind({})
-
-export const Tablet = Template.bind({})
-Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
-
-export const Mobile = Template.bind({})
-Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
+Desktop.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 
 export const InvalidAgencyResponse = Template.bind({})
 InvalidAgencyResponse.parameters = {

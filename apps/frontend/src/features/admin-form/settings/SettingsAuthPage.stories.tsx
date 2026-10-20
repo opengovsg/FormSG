@@ -16,7 +16,7 @@ import {
   putFormWhitelistSettingSimulateCsvStringValidationError,
 } from '~/mocks/msw/handlers/admin-form'
 
-import { StoryRouter } from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { SettingsAuthPage } from './SettingsAuthPage'
 
@@ -222,6 +222,7 @@ PrivateEmailSingpassFormSingleSubmissionEnabled.parameters = {
 // purpose: displays all available singpass settings in an enabled state
 export const PrivateStorageSingpassFormAllTogglesEnabled = Template.bind({})
 PrivateStorageSingpassFormAllTogglesEnabled.parameters = {
+  argos: { modes: viewportModes('tablet', 'mobile') },
   msw: {
     handlers: {
       default: buildEncryptModeMswRoutes({
@@ -332,30 +333,6 @@ PrivateStorageMyInfoUpdateWhitelistValidationErrorForm.parameters = {
     },
   },
 }
-
-export const Tablet = Template.bind({})
-Tablet.parameters = {
-  msw: {
-    handlers: {
-      default:
-        PrivateStorageSingpassFormAllTogglesEnabled.parameters.msw.handlers
-          .default,
-    },
-  },
-}
-Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
-
-export const Mobile = Template.bind({})
-Mobile.parameters = {
-  msw: {
-    handlers: {
-      default:
-        PrivateStorageSingpassFormAllTogglesEnabled.parameters.msw.handlers
-          .default,
-    },
-  },
-}
-Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const Loading = Template.bind({})
 Loading.parameters = {
