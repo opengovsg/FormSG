@@ -28,9 +28,30 @@ export const enSG = {
         howYouCollect: 'How you collect',
         responseLabels: 'Response labels',
         currentResponsesExplanation:
-          'Webhooks, email JSON and CSV exports currently use these labels.',
-        responsesExplanation:
-          'Webhooks, email JSON and CSV exports will use these labels for new responses after the switch. Check any integrations that use the current labels.',
+          'Email JSON and CSV exports currently use these labels.',
+        outputChanges: 'How your data appears',
+        outputDetails: 'How your data appears',
+        viewExamples: 'View more details',
+        outputs: {
+          emailJson: {
+            label: 'Email JSON',
+            beforeDescription: 'The labels for {fields} are: {labels}.',
+            description: 'The new labels for {fields} are: {labels}.',
+          },
+          webhooks: {
+            label: 'Webhooks',
+            beforeDescription: 'You receive {fields} in verified content.',
+            description:
+              'You will receive {fields} in field responses instead of verified content.',
+          },
+          csv: {
+            label: 'CSV downloads',
+            beforeDescription:
+              'You receive {fields} in these columns: {labels}.',
+            description:
+              'New responses use these columns: {labels}. Past responses keep their existing columns.',
+          },
+        },
         responsesUnchanged:
           'Past responses, response limits and eligibility stay the same.',
         before: 'Before',

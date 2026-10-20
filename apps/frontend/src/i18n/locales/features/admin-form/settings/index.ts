@@ -34,7 +34,17 @@ export interface SingpassSettingsStrings extends HasTitle {
       howYouCollect: string
       responseLabels: string
       currentResponsesExplanation: string
-      responsesExplanation: string
+      outputChanges: string
+      outputDetails: string
+      viewExamples: string
+      outputs: Record<
+        'emailJson' | 'webhooks' | 'csv',
+        {
+          label: string
+          description: string
+          beforeDescription: string
+        }
+      >
       responsesUnchanged: string
       before: string
       after: string

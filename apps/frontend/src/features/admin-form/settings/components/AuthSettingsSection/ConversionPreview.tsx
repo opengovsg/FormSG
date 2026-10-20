@@ -3,11 +3,15 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import {
   Stack,
+  Table,
   TabList,
   TabPanel,
   TabPanels,
   Tabs,
+  Tbody,
+  Td,
   Text,
+  Tr,
 } from '@chakra-ui/react'
 
 import {
@@ -23,6 +27,7 @@ import {
   LoginIdentityAttribute,
 } from 'formsg-shared/utils/login-identity'
 
+import Link from '~components/Link'
 import { Tab } from '~components/Tabs'
 import Toggle from '~components/Toggle'
 import { NricField } from '~templates/Field/Nric/NricField'
@@ -75,6 +80,57 @@ export const ConversionPreview = ({
     ),
   })
 
+  const renderOutputTable = (after: boolean) => (
+    <PreviewCard
+      label={t(after ? 'preview.outputChanges' : 'preview.outputDetails')}
+    >
+      <Table size="sm" variant="simple" sx={{ td: { whiteSpace: 'normal' } }}>
+        <Tbody>
+          {(['csv', 'emailJson', 'webhooks'] as const).map((output) => (
+            <Tr key={output} _last={{ '& > *': { borderBottom: 0 } }}>
+              <Td
+                as="th"
+                scope="row"
+                width="30%"
+                pl={0}
+                py="0.75rem"
+                verticalAlign="top"
+                textStyle="subhead-1"
+              >
+                {t(`preview.outputs.${output}.label`)}
+              </Td>
+              <Td pr={0} py="0.75rem" color="secondary.500" verticalAlign="top">
+                {t(
+                  `preview.outputs.${output}.${after ? 'description' : 'beforeDescription'}`,
+                  {
+                    fields:
+                      login === 'corppass' ? 'NRIC/FIN and UEN' : 'NRIC/FIN',
+                    labels: attrs
+                      .map((attr) =>
+                        after
+                          ? `[Myinfo] ${LOGIN_IDENTITY_LABELS[attr]}`
+                          : LEGACY_LABELS[attr],
+                      )
+                      .join(', '),
+                  },
+                )}
+              </Td>
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
+      {after && (
+        <Link
+          href="https://guide.form.gov.sg/faq/faq/migration-to-nric-fin-uen-field#will-my-responses-look-different-after-i-convert"
+          isExternal
+          alignSelf="flex-start"
+        >
+          {t('preview.viewExamples')}
+        </Link>
+      )}
+    </PreviewCard>
+  )
+
   return (
     <Tabs isFitted>
       <TabList px="2px" mb="1.5rem">
@@ -97,16 +153,7 @@ export const ConversionPreview = ({
                 containerStyles={{ pointerEvents: 'none' }}
               />
             </PreviewCard>
-            <Text color="secondary.500">
-              {t('preview.currentResponsesExplanation')}
-            </Text>
-            <PreviewCard label={t('preview.responseLabels')}>
-              {attrs.map((attr) => (
-                <Text key={attr} textStyle="subhead-1">
-                  {LEGACY_LABELS[attr]}
-                </Text>
-              ))}
-            </PreviewCard>
+            {renderOutputTable(false)}
           </Stack>
         </TabPanel>
         <TabPanel p={0}>
@@ -145,16 +192,7 @@ export const ConversionPreview = ({
                 </Stack>
               </FormProvider>
             </PreviewCard>
-            <Text color="secondary.500">
-              {t('preview.responsesExplanation')}
-            </Text>
-            <PreviewCard label={t('preview.responseLabels')}>
-              {attrs.map((attr) => (
-                <Text key={attr} textStyle="subhead-1">
-                  {LOGIN_IDENTITY_LABELS[attr]}
-                </Text>
-              ))}
-            </PreviewCard>
+            {renderOutputTable(true)}
             <Text color="secondary.500">{t('preview.responsesUnchanged')}</Text>
           </Stack>
         </TabPanel>
