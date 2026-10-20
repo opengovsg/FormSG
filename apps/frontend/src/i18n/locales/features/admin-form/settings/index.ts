@@ -16,6 +16,7 @@ type SubmitterIdCollectionLoginStrings = {
   stopDescription: string
   collectLaterDescription: string
   movedToFields: string
+  goToFields: string
   modalTitle: string
   currentCollectionExplanation: string
   collectionExplanation: string

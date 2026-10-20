@@ -24,7 +24,7 @@ export const enSG = {
       autoConvertNotice:
         'Your form will automatically switch by end-June 2027.',
       otherFormsAutoConvertNotice:
-        'This will automatically be converted for other forms by end Jun 2027.',
+        'Forms that still collect these through settings will automatically switch to form fields by end-June 2027.',
       preview: {
         howYouCollect: 'How you collect',
         responseLabels: 'Response labels',
@@ -62,6 +62,7 @@ export const enSG = {
       // Singpass converts to one field and Corppass to two, so each login has
       // its own sentences.
       singpass: {
+        goToFields: 'Go to Singpass fields',
         switchHint: 'Switch to collecting NRIC/FIN using form fields.',
         stopTitle: 'Stop collecting NRIC/FIN',
         collectLaterDescription:
@@ -71,7 +72,7 @@ export const enSG = {
         currentCollectionExplanation:
           'Your form currently collects NRIC/FIN through Singpass settings.',
         movedToFields:
-          'NRIC/FIN/UEN collection is now a form field. <builderLink>Add it from the Singpass tab</builderLink>.',
+          'NRIC/FIN collection has moved from settings to Singpass form fields.',
         modalTitle: 'Start collecting NRIC/FIN using form fields',
         collectionExplanation:
           'The NRIC/FIN field will be added to the end of your form and prefilled from Myinfo, similar to other Myinfo fields.',
@@ -79,6 +80,7 @@ export const enSG = {
           '<bold>If you use webhooks, email JSON or CSV exports</bold>, check them after converting. In new responses, "SingPass Validated NRIC" becomes "NRIC/FIN". Past responses, response limits and eligibility stay the same.',
       },
       corppass: {
+        goToFields: 'Go to Corppass fields',
         switchHint: 'Switch to collecting NRIC/FIN and UEN using form fields.',
         stopTitle: 'Stop collecting NRIC/FIN and UEN',
         collectLaterDescription:
@@ -88,7 +90,7 @@ export const enSG = {
         currentCollectionExplanation:
           'Your form currently collects NRIC/FIN and UEN through Singpass settings.',
         movedToFields:
-          'NRIC/FIN/UEN collection is now a form field. <builderLink>Add it from the Corppass tab</builderLink>.',
+          'NRIC/FIN and UEN collection has moved from settings to Corppass form fields.',
         modalTitle: 'Start collecting NRIC/FIN and UEN using form fields',
         collectionExplanation:
           'The NRIC/FIN and UEN fields will be added to the end of your form and prefilled from Myinfo, similar to other Myinfo fields.',
