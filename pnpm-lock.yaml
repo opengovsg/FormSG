@@ -264,7 +264,7 @@ importers:
         version: 1.2.0
       axios:
         specifier: ^1.20.0
-        version: 1.20.0(supports-color@8.1.1)
+        version: 1.20.0(debug@4.4.1)
       bcrypt:
         specifier: ^5.1.1
         version: 5.1.1(encoding@0.1.13)
@@ -832,7 +832,7 @@ importers:
         version: 2.0.1
       axios:
         specifier: ^1.20.0
-        version: 1.20.0(supports-color@8.1.1)
+        version: 1.20.0(debug@4.4.1)
       broadcast-channel:
         specifier: ^4.13.0
         version: 4.13.0
@@ -1254,7 +1254,7 @@ importers:
         version: 1.0.2
       axios:
         specifier: ^1.20.0
-        version: 1.20.0(supports-color@8.1.1)
+        version: 1.20.0(debug@4.4.1)
       tweetnacl:
         specifier: ^1.0.3
         version: 1.0.3
@@ -1324,8 +1324,8 @@ importers:
         specifier: ^5.0.3
         version: 5.0.3
       '@types/lodash':
-        specifier: ^4.14.186
-        version: 4.17.24
+        specifier: ^4.17.25
+        version: 4.17.26
       '@types/validator':
         specifier: ^13.7.0
         version: 13.12.0
@@ -1355,7 +1355,7 @@ importers:
         version: 12.1.1(eslint@8.57.1)
       jest:
         specifier: ^29.5.0
-        version: 29.7.0(@types/node@24.0.10)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@24.0.10)(typescript@5.9.3))
+        version: 29.7.0(@types/node@24.0.10)(babel-plugin-macros@3.1.0)
       mongoose:
         specifier: 7.8.10
         version: 7.8.10
@@ -5604,6 +5604,9 @@ packages:
 
   '@types/lodash@4.17.24':
     resolution: {integrity: sha512-gIW7lQLZbue7lRSWEFql49QJJWThrTFFeIMJdp3eH4tKoxm1OvEPg02rm4wCCSHS0cL3/Fizimb35b7k8atwsQ==}
+
+  '@types/lodash@4.17.26':
+    resolution: {integrity: sha512-48NWfiY6oNcKOh47Z4h+sIvwcQR91h6KPhaYKgeMIrkT2jV82Gy90SErj60vW8jQbeMSOSbhIv3bZ7JoqPPVhA==}
 
   '@types/mdast@4.0.4':
     resolution: {integrity: sha512-kGaNbPh1k7AFzgpud/gMdvIm5xuECykRR+JnWKQno9TAXVa6WIVCGTPvYGekIDL4uwCZQSYbUxNBSb1aUo79oA==}
@@ -17100,7 +17103,7 @@ snapshots:
   '@datadog/datadog-ci-plugin-deployment@5.12.1(@datadog/datadog-ci-base@5.12.1)':
     dependencies:
       '@datadog/datadog-ci-base': 5.12.1(@datadog/datadog-ci-plugin-coverage@5.12.1)(@datadog/datadog-ci-plugin-deployment@5.12.1)(@datadog/datadog-ci-plugin-dora@5.12.1)(@datadog/datadog-ci-plugin-gate@5.12.1)(@datadog/datadog-ci-plugin-junit@5.12.1)(@datadog/datadog-ci-plugin-sarif@5.12.1)(@datadog/datadog-ci-plugin-sbom@5.12.1)(@types/node@24.0.10)
-      axios: 1.20.0(supports-color@8.1.1)
+      axios: 1.20.0(debug@4.4.1)
       chalk: 3.0.0
       simple-git: 4.0.2(supports-color@8.1.1)
     transitivePeerDependencies:
@@ -17146,7 +17149,7 @@ snapshots:
       '@datadog/datadog-ci-base': 5.12.1(@datadog/datadog-ci-plugin-coverage@5.12.1)(@datadog/datadog-ci-plugin-deployment@5.12.1)(@datadog/datadog-ci-plugin-dora@5.12.1)(@datadog/datadog-ci-plugin-gate@5.12.1)(@datadog/datadog-ci-plugin-junit@5.12.1)(@datadog/datadog-ci-plugin-sarif@5.12.1)(@datadog/datadog-ci-plugin-sbom@5.12.1)(@types/node@24.0.10)
       ajv: 8.18.0
       ajv-formats: 3.0.1(ajv@8.18.0)
-      axios: 1.20.0(supports-color@8.1.1)
+      axios: 1.20.0(debug@4.4.1)
       chalk: 3.0.0
       packageurl-js: 2.0.1
     transitivePeerDependencies:
@@ -19091,7 +19094,7 @@ snapshots:
 
   '@serverless/event-mocks@1.1.1':
     dependencies:
-      '@types/lodash': 4.17.24
+      '@types/lodash': 4.17.26
       lodash: 4.18.1
 
   '@serverless/platform-client@4.5.1(supports-color@8.1.1)':
@@ -19753,7 +19756,7 @@ snapshots:
 
   '@sparticuz/chromium@138.0.2':
     dependencies:
-      follow-redirects: 1.16.0(debug@4.4.3)
+      follow-redirects: 1.16.0(debug@4.4.1)
       tar-fs: 3.1.2
     transitivePeerDependencies:
       - bare-buffer
@@ -20284,13 +20287,15 @@ snapshots:
 
   '@types/lodash.mergewith@4.6.7':
     dependencies:
-      '@types/lodash': 4.17.24
+      '@types/lodash': 4.17.26
 
   '@types/lodash.mergewith@4.6.9':
     dependencies:
-      '@types/lodash': 4.17.24
+      '@types/lodash': 4.17.26
 
   '@types/lodash@4.17.24': {}
+
+  '@types/lodash@4.17.26': {}
 
   '@types/mdast@4.0.4':
     dependencies:
@@ -21372,7 +21377,7 @@ snapshots:
 
   axios-mock-adapter@1.22.0(axios@1.20.0):
     dependencies:
-      axios: 1.20.0(supports-color@8.1.1)
+      axios: 1.20.0(debug@4.4.1)
       fast-deep-equal: 3.1.3
       is-buffer: 2.0.5
 
@@ -21388,7 +21393,7 @@ snapshots:
 
   axios@1.20.0(supports-color@8.1.1):
     dependencies:
-      follow-redirects: 1.16.0(debug@4.4.3)
+      follow-redirects: 1.16.0(debug@4.4.1)
       form-data: 4.0.6
       https-proxy-agent: 5.0.1(supports-color@8.1.1)
       proxy-from-env: 2.1.0
@@ -23631,15 +23636,6 @@ snapshots:
       eslint: 8.57.1
       globals: 13.24.0
 
-  eslint-plugin-prettier@5.5.5(eslint-config-prettier@10.1.5(eslint@8.57.1))(eslint@8.57.1)(prettier@3.8.1):
-    dependencies:
-      eslint: 8.57.1
-      prettier: 3.8.1
-      prettier-linter-helpers: 1.0.1
-      synckit: 0.11.12
-    optionalDependencies:
-      eslint-config-prettier: 10.1.5(eslint@8.57.1)
-
   eslint-plugin-prettier@5.5.5(eslint-config-prettier@8.10.0(eslint@8.57.1))(eslint@8.57.1)(prettier@3.8.1):
     dependencies:
       eslint: 8.57.1
@@ -25490,6 +25486,25 @@ snapshots:
       - supports-color
       - ts-node
 
+  jest-cli@29.7.0(@types/node@24.0.10)(babel-plugin-macros@3.1.0):
+    dependencies:
+      '@jest/core': 29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@18.19.130)(typescript@5.9.3))
+      '@jest/test-result': 29.7.0
+      '@jest/types': 29.6.3
+      chalk: 4.1.2
+      create-jest: 29.7.0(@types/node@24.0.10)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@24.0.10)(typescript@5.9.3))
+      exit: 0.1.2
+      import-local: 3.2.0
+      jest-config: 29.7.0(@types/node@24.0.10)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@24.0.10)(typescript@5.9.3))
+      jest-util: 29.7.0
+      jest-validate: 29.7.0
+      yargs: 17.7.2
+    transitivePeerDependencies:
+      - '@types/node'
+      - babel-plugin-macros
+      - supports-color
+      - ts-node
+
   jest-cli@29.7.0(@types/node@24.0.10)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@24.0.10)(typescript@5.9.3)):
     dependencies:
       '@jest/core': 29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@24.0.10)(typescript@5.9.3))
@@ -26227,6 +26242,18 @@ snapshots:
       '@jest/types': 29.6.3
       import-local: 3.2.0
       jest-cli: 29.7.0(@types/node@18.19.130)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@18.19.130)(typescript@5.9.3))
+    transitivePeerDependencies:
+      - '@types/node'
+      - babel-plugin-macros
+      - supports-color
+      - ts-node
+
+  jest@29.7.0(@types/node@24.0.10)(babel-plugin-macros@3.1.0):
+    dependencies:
+      '@jest/core': 29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@18.19.130)(typescript@5.9.3))
+      '@jest/types': 29.6.3
+      import-local: 3.2.0
+      jest-cli: 29.7.0(@types/node@24.0.10)(babel-plugin-macros@3.1.0)
     transitivePeerDependencies:
       - '@types/node'
       - babel-plugin-macros
