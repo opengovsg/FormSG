@@ -104,6 +104,40 @@ wake() {
   output woke true
 }
 
+await() {
+  local name=$1 sha=$2 deadline existing id url suspended status
+  deadline=$(($(date +%s) + ${AWAIT_TIMEOUT_SECS:-1800}))
+  while :; do
+    existing=$(find_service "$name")
+    if [ -n "$existing" ]; then
+      read -r id url suspended <<<"$existing"
+      status=$(render GET "/services/$id/deploys?limit=20" |
+        jq -r --arg sha "$sha" '[.[].deploy | select(.commit.id == $sha)][0].status // empty')
+      case "$status" in
+        live)
+          output url "$url"
+          output status live
+          return 0
+          ;;
+        build_failed | update_failed | canceled | deactivated)
+          echo "deploy of $sha ended with status: $status" >&2
+          output status "$status"
+          return 1
+          ;;
+      esac
+      echo "waiting for $name deploy of $sha (currently: ${status:-not started})"
+    else
+      echo "waiting for $name service to be created"
+    fi
+    if [ "$(date +%s)" -ge "$deadline" ]; then
+      echo "timed out waiting for $name deploy of $sha" >&2
+      output status timeout
+      return 1
+    fi
+    sleep 30
+  done
+}
+
 to_epoch='sub("\\.[0-9]+"; "") | fromdateiso8601'
 
 last_activity() {
@@ -156,6 +190,7 @@ case "${1:-}" in
   up) up "$2" "$3" ;;
   down) down "$2" ;;
   wake) wake "$2" "$3" ;;
+  await) await "$2" "$3" ;;
   sweep) sweep ;;
-  *) echo "usage: $0 up <service-name> <branch> | down <service-name> | wake <service-name> <sha> | sweep" >&2; exit 64 ;;
+  *) echo "usage: $0 up <service-name> <branch> | down <service-name> | wake <service-name> <sha> | await <service-name> <sha> | sweep" >&2; exit 64 ;;
 esac
