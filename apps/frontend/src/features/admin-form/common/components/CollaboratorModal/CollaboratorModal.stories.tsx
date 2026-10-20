@@ -12,11 +12,9 @@ import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
 import {
   fullScreenDecorator,
-  getMobileViewGlobals,
-  getMobileViewParameters,
   LoggedInDecorator,
   StoryRouter,
-  viewports,
+  viewportModes,
 } from '~utils/storybook'
 
 import { CollaboratorModal } from './CollaboratorModal'
@@ -37,8 +35,9 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     // Prevent flaky tests due to modal animating in.
-    chromatic: { pauseAnimationAtEnd: true },
     msw: baseMswRoutes,
   },
 } as Meta
@@ -102,7 +101,6 @@ EditViewLoading.parameters = {
 
 export const EditViewMobile = Template.bind({})
 EditViewMobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
   msw: [
     getAdminFormCollaborators({
       delay: 0,
@@ -124,6 +122,7 @@ EditViewMobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const ViewerView = Template.bind({})
 ViewerView.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: [
     ...createFormBuilderMocks({}, 0),
     getUser({
@@ -145,13 +144,6 @@ ViewerView.parameters = {
     }),
   ],
 }
-
-export const ViewerViewMobile = Template.bind({})
-ViewerViewMobile.parameters = {
-  ...ViewerView.parameters,
-  ...getMobileViewParameters(),
-}
-ViewerViewMobile.globals = getMobileViewGlobals()
 
 export const ViewerViewLoading = Template.bind({})
 ViewerViewLoading.parameters = {

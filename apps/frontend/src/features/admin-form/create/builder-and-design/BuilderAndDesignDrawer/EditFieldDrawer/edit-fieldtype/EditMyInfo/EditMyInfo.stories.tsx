@@ -38,7 +38,6 @@ export default {
     EditFieldDrawerDecorator,
   ],
   parameters: {
-    chromatic: { pauseAnimationAtEnd: true },
     msw: createFormBuilderMocks({}, 0),
   },
   args: {

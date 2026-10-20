@@ -19,11 +19,7 @@ import {
   ADMINFORM_ROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
 } from '~constants/routes'
-import {
-  getMobileViewGlobals,
-  getMobileViewParameters,
-  viewports,
-} from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
 import { FeedbackPage, FormResultsLayout, ResponsesPage } from './responses'
@@ -42,9 +38,9 @@ export default {
   title: 'Pages/AdminFormPage/Results/FeedbackTab',
   component: FeedbackPage,
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: { handlers: { default: DEFAULT_MSW_ROUTES } },
   },
 } as Meta
@@ -77,6 +73,7 @@ const Template: StoryFn = () => {
   )
 }
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 
 export const EmptyReviewAndIssue = Template.bind({})
 EmptyReviewAndIssue.parameters = {
@@ -108,19 +105,10 @@ EmptyIssue.parameters = {
   },
 }
 
-export const Tablet = Template.bind({})
-Tablet.parameters = {
-  chromatic: { viewports: [viewports.md] },
-}
-Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
-
-export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
-Mobile.globals = getMobileViewGlobals()
-
 export const LoadingDesktop = Template.bind({})
 LoadingDesktop.storyName = 'Loading/Desktop'
 LoadingDesktop.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: {
     handlers: {
       default: [
@@ -130,10 +118,3 @@ LoadingDesktop.parameters = {
     },
   },
 }
-export const LoadingMobile = Template.bind({})
-LoadingMobile.storyName = 'Loading/Mobile'
-LoadingMobile.parameters = {
-  ...getMobileViewParameters(),
-  ...LoadingDesktop.parameters,
-}
-LoadingMobile.globals = getMobileViewGlobals()

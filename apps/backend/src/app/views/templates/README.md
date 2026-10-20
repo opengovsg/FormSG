@@ -7,8 +7,8 @@ We currently have a **mix of legacy HTML (used for EJS renders)** and **React Em
 When modifying or creating templates:
 
 - ✅ Migrate HTML/EJS templates to **React Email** components
-- ✅ Add **Chromatic Storybook tests** to catch visual regressions
+- ✅ Add **Argos Storybook visual tests** to catch visual regressions
 
 ## Goal
 
-Over time, all templates should be standardized on **React Email + Chromatic** for consistency, maintainability, and reliability.
+Over time, all templates should be standardized on **React Email + Argos** for consistency, maintainability, and reliability.

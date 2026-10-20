@@ -15,8 +15,9 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     // Prevent flaky tests due to modal animating in.
-    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
   },
 } as Meta
 

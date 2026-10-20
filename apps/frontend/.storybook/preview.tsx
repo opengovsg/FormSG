@@ -68,7 +68,21 @@ export const parameters = {
     'en-SG': 'English',
   },
   layout: 'fullscreen',
-  viewport: {},
+  // Component stories are cropped to their content with a little breathing
+  // room. Stories captured at a viewport are sized in `beforeEach` below.
+  argos: { fitToContent: { padding: 8 } },
+  viewport: {
+    // Argos reads sizes from here, so the keys stories use are defined
+    // explicitly rather than relying on the addon defaults.
+    options: {
+      mobile1: { name: 'Mobile', styles: { width: '320px', height: '568px' } },
+      tablet: { name: 'Tablet', styles: { width: '768px', height: '1024px' } },
+      desktop1: {
+        name: 'Desktop',
+        styles: { width: '1280px', height: '800px' },
+      },
+    },
+  },
   docs: {
     theme: StorybookTheme.docs,
     inlineStories: true,
@@ -82,6 +96,23 @@ export const parameters = {
 }
 
 export const loaders = [mswLoader]
+
+// A story captured at several viewports (Argos modes) should be exactly that
+// wide with no padding, like a Chromatic mode: the content then lays out at the
+// viewport width instead of overflowing it by the padding. Modals and pages
+// capture the whole viewport (`fitToContent: false`) and need no adjustment.
+export const beforeEach = ({
+  parameters,
+}: {
+  parameters: { argos?: { modes?: unknown; fitToContent?: unknown } }
+}) => {
+  const argos = parameters.argos
+  if (!argos?.modes || argos.fitToContent === false) return
+  argos.fitToContent = { padding: 0, zoom: 1 }
+  // vitest.config adds `min-width: 100vw` to bodies carrying this attribute.
+  document.body.setAttribute('data-argos-viewport', '')
+  return () => document.body.removeAttribute('data-argos-viewport')
+}
 
 export const initialGlobals = {
   viewport: {

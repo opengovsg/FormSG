@@ -106,6 +106,7 @@ export const Playground: StoryFn = () => {
     </Stack>
   )
 }
+Playground.tags = ['playground']
 
 interface StoryTileProps {
   onClick: () => void

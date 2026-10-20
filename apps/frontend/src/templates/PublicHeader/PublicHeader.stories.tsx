@@ -3,12 +3,7 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { FORM_GUIDE } from '~constants/links'
-import {
-  getMobileViewGlobals,
-  getMobileViewParameters,
-  getTabletViewGlobals,
-  getTabletViewParameters,
-} from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { PublicHeader, PublicHeaderProps } from './PublicHeader'
 
@@ -33,6 +28,8 @@ export default {
   component: PublicHeader,
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
   decorators: [],
   args: DEFAULT_ARGS,
@@ -42,17 +39,10 @@ const Template: StoryFn<PublicHeaderProps> = (args) => (
   <PublicHeader {...args} />
 )
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 
 export const WithoutCTA = Template.bind({})
 WithoutCTA.args = {
   ...DEFAULT_ARGS,
   ctaElement: undefined,
 }
-
-export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
-Mobile.globals = getMobileViewGlobals()
-
-export const Tablet = Template.bind({})
-Tablet.parameters = getTabletViewParameters()
-Tablet.globals = getTabletViewGlobals()

@@ -203,6 +203,7 @@ export const Playground: StoryFn<SingleSelectProps> = ({
     </form>
   )
 }
+Playground.tags = ['playground']
 Playground.args = {
   isReadOnly: false,
 }

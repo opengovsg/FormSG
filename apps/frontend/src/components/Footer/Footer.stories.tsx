@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { viewports } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { FooterProps } from './common/types'
 import { Footer } from './Footer'
@@ -34,12 +34,15 @@ export default {
   decorators: [],
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
   args: DEFAULT_ARGS,
 } as Meta<FooterProps>
 
 const Template: StoryFn<FooterProps> = (args) => <Footer {...args} />
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 
 export const CompactVariant = Template.bind({})
 CompactVariant.args = {
@@ -52,15 +55,3 @@ WithTagline.args = {
   ...DEFAULT_ARGS,
   tagline: 'Build secure government forms in minutes',
 }
-
-export const Mobile = Template.bind({})
-Mobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
-Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
-
-export const Tablet = Template.bind({})
-Tablet.parameters = {
-  chromatic: { viewports: [viewports.md] },
-}
-Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }

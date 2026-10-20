@@ -3,13 +3,7 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 import { getLandingStats } from '~/mocks/msw/handlers/landing'
 
 import { LANDING_ROUTE } from '~constants/routes'
-import {
-  getMobileViewGlobals,
-  getMobileViewParameters,
-  getTabletViewGlobals,
-  getTabletViewParameters,
-  StoryRouter,
-} from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { LandingPage } from './LandingPage'
 
@@ -24,22 +18,17 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: [getLandingStats()],
   },
 } as Meta
 
 const Template: StoryFn = () => <LandingPage />
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 
 export const Loading = Template.bind({})
 Loading.parameters = {
   msw: [getLandingStats({ delay: 'infinite' })],
 }
-
-export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
-Mobile.globals = getMobileViewGlobals()
-
-export const Tablet = Template.bind({})
-Tablet.parameters = getTabletViewParameters()
-Tablet.globals = getTabletViewGlobals()

@@ -6,7 +6,7 @@ import { FormColorTheme } from 'formsg-shared/types/form/form'
 
 import { getPublicFormResponse } from '~/mocks/msw/handlers/public-form'
 
-import { viewports } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
@@ -51,19 +51,9 @@ const Template: StoryFn<VerificationBoxProps> = (args) => (
   <VerificationBox {...args} />
 )
 export const MobileVerificationBox = Template.bind({})
+MobileVerificationBox.parameters = { argos: { modes: viewportModes('mobile') } }
 MobileVerificationBox.args = {
   fieldType: BasicField.Mobile,
-}
-
-export const MobileVerificationBoxMobile = Template.bind({})
-MobileVerificationBoxMobile.args = {
-  fieldType: BasicField.Mobile,
-}
-MobileVerificationBoxMobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
-MobileVerificationBoxMobile.globals = {
-  viewport: { value: 'mobile1', isRotated: false },
 }
 
 export const MobileVerificationBoxOrangeThemeMobile = Template.bind({})
@@ -88,6 +78,7 @@ MobileVerificationBoxOrangeThemeMobile.globals = {
 }
 
 export const EmailVerificationBox = Template.bind({})
+EmailVerificationBox.parameters = { argos: { modes: viewportModes('mobile') } }
 EmailVerificationBox.args = {
   fieldType: BasicField.Email,
 }
@@ -108,15 +99,4 @@ EmailVerificationBoxGreenTheme.parameters = {
       },
     }),
   ],
-}
-
-export const EmailVerificationBoxMobile = Template.bind({})
-EmailVerificationBoxMobile.args = {
-  fieldType: BasicField.Email,
-}
-EmailVerificationBoxMobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
-EmailVerificationBoxMobile.globals = {
-  viewport: { value: 'mobile1', isRotated: false },
 }

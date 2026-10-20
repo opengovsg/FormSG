@@ -6,7 +6,7 @@ import {
 } from '~/mocks/msw/handlers/billing'
 
 import { BILLING_ROUTE } from '~constants/routes'
-import { mockDateDecorator, StoryRouter, viewports } from '~utils/storybook'
+import { mockDateDecorator, StoryRouter, viewportModes } from '~utils/storybook'
 
 import { BillCharges, BillChargesProps } from './BillCharges'
 import { BillingPage } from './BillingPage'
@@ -25,7 +25,8 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    chromatic: { delay: 200 },
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     mockdate: new Date('2024-10-07T19:52:00.000Z'),
   },
 } as Meta
@@ -36,21 +37,9 @@ const PageTemplate: StoryFn = () => <BillingPage />
 
 export const DesktopDefault = PageTemplate.bind({})
 DesktopDefault.parameters = {
+  argos: { modes: viewportModes('tablet', 'mobile') },
   msw: [getEmptyBillingInfo()],
 }
-export const TabletDefault = PageTemplate.bind({})
-TabletDefault.parameters = {
-  chromatic: { viewports: [viewports.md] },
-  msw: [getEmptyBillingInfo()],
-}
-TabletDefault.globals = { viewport: { value: 'tablet', isRotated: false } }
-
-export const MobileDefault = PageTemplate.bind({})
-MobileDefault.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-  msw: [getEmptyBillingInfo()],
-}
-MobileDefault.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 // BillCharges
 
@@ -69,81 +58,24 @@ export const DesktopNoCharges: StoryFn<BillChargesProps> = (args) => (
 )
 DesktopNoCharges.args = MOCK_BILLCHARGES_ARGS
 DesktopNoCharges.parameters = {
+  argos: { modes: viewportModes('tablet', 'mobile') },
   msw: [getEmptyBillingInfo()],
 }
-
-export const TabletNoCharges: StoryFn<BillChargesProps> = (args) => (
-  <BillCharges {...args} />
-)
-TabletNoCharges.args = MOCK_BILLCHARGES_ARGS
-TabletNoCharges.parameters = {
-  chromatic: { viewports: [viewports.md] },
-  msw: [getEmptyBillingInfo()],
-}
-TabletNoCharges.globals = { viewport: { value: 'tablet', isRotated: false } }
-
-export const MobileNoCharges: StoryFn<BillChargesProps> = (args) => (
-  <BillCharges {...args} />
-)
-MobileNoCharges.args = MOCK_BILLCHARGES_ARGS
-MobileNoCharges.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-  msw: [getEmptyBillingInfo()],
-}
-MobileNoCharges.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const DesktopHasCharges: StoryFn<BillChargesProps> = (args) => (
   <BillCharges {...args} />
 )
 DesktopHasCharges.args = MOCK_BILLCHARGES_ARGS
 DesktopHasCharges.parameters = {
+  argos: { modes: viewportModes('tablet', 'mobile') },
   msw: [getBillingInfo({ delay: 1000 })],
 }
-
-export const TabletHasCharges: StoryFn<BillChargesProps> = (args) => (
-  <BillCharges {...args} />
-)
-TabletHasCharges.args = MOCK_BILLCHARGES_ARGS
-TabletHasCharges.parameters = {
-  chromatic: { viewports: [viewports.md] },
-  msw: [getBillingInfo({ delay: 1000 })],
-}
-TabletHasCharges.globals = { viewport: { value: 'tablet', isRotated: false } }
-
-export const MobileHasCharges: StoryFn<BillChargesProps> = (args) => (
-  <BillCharges {...args} />
-)
-MobileHasCharges.args = MOCK_BILLCHARGES_ARGS
-MobileHasCharges.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-  msw: [getBillingInfo({ delay: 1000 })],
-}
-MobileHasCharges.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const DesktopLoading: StoryFn<BillChargesProps> = (args) => (
   <BillCharges {...args} />
 )
 DesktopLoading.args = MOCK_BILLCHARGES_ARGS
 DesktopLoading.parameters = {
+  argos: { modes: viewportModes('tablet', 'mobile') },
   msw: [getBillingInfo({ delay: 'infinite' })],
 }
-
-export const TabletLoading: StoryFn<BillChargesProps> = (args) => (
-  <BillCharges {...args} />
-)
-TabletLoading.args = MOCK_BILLCHARGES_ARGS
-TabletLoading.parameters = {
-  chromatic: { viewports: [viewports.md] },
-  msw: [getBillingInfo({ delay: 'infinite' })],
-}
-TabletLoading.globals = { viewport: { value: 'tablet', isRotated: false } }
-
-export const MobileLoading: StoryFn<BillChargesProps> = (args) => (
-  <BillCharges {...args} />
-)
-MobileLoading.args = MOCK_BILLCHARGES_ARGS
-MobileLoading.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-  msw: [getBillingInfo({ delay: 'infinite' })],
-}
-MobileLoading.globals = { viewport: { value: 'mobile1', isRotated: false } }

@@ -4,7 +4,7 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 import {
   fullScreenDecorator,
   getMobileViewGlobals,
-  getMobileViewParameters,
+  viewportModes,
 } from '~utils/storybook'
 
 import {
@@ -27,8 +27,9 @@ export default {
   },
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     // Prevent flaky tests due to modal animating in.
-    chromatic: { delay: 200 },
   },
 } as Meta<DownloadWithAttachmentModalProps>
 
@@ -59,6 +60,9 @@ ConfirmationScreenResponsesAndAttachmentsAndPdfsDesktop.args = {
 }
 
 export const ConfirmationStateResponseAndAttachmentsDesktop = Template.bind({})
+ConfirmationStateResponseAndAttachmentsDesktop.parameters = {
+  argos: { modes: viewportModes('mobile') },
+}
 ConfirmationStateResponseAndAttachmentsDesktop.args = {
   downloadPercentage: 0,
   isDownloading: false,
@@ -69,12 +73,6 @@ ConfirmationStateResponseAndAttachmentsDesktop.args = {
     isDownloadPdf: false,
   },
 }
-export const ConfirmationStateResponseAndAttachmentsMobile = Template.bind({})
-ConfirmationStateResponseAndAttachmentsMobile.args =
-  ConfirmationStateResponseAndAttachmentsDesktop.args
-ConfirmationStateResponseAndAttachmentsMobile.parameters =
-  getMobileViewParameters()
-ConfirmationStateResponseAndAttachmentsMobile.globals = getMobileViewGlobals()
 
 export const ConfirmationScreenResponsesAndPdfsDesktop = Template.bind({})
 ConfirmationScreenResponsesAndPdfsDesktop.args = {
@@ -101,6 +99,9 @@ ConfirmationScreenAttachmentsAndPdfsDesktop.args = {
 }
 
 export const ConfirmationStateAttachmentsOnlyDesktop = Template.bind({})
+ConfirmationStateAttachmentsOnlyDesktop.parameters = {
+  argos: { modes: viewportModes('mobile') },
+}
 ConfirmationStateAttachmentsOnlyDesktop.args = {
   downloadPercentage: 0,
   isDownloading: false,
@@ -111,12 +112,6 @@ ConfirmationStateAttachmentsOnlyDesktop.args = {
     isDownloadPdf: false,
   },
 }
-
-export const ConfirmationStateAttachmentsOnlyMobile = Template.bind({})
-ConfirmationStateAttachmentsOnlyMobile.args =
-  ConfirmationStateAttachmentsOnlyDesktop.args
-ConfirmationStateAttachmentsOnlyMobile.parameters = getMobileViewParameters()
-ConfirmationStateAttachmentsOnlyMobile.globals = getMobileViewGlobals()
 
 export const ConfirmationScreenPdfsOnlyDesktop = Template.bind({})
 ConfirmationScreenPdfsOnlyDesktop.args = {
@@ -131,6 +126,9 @@ ConfirmationScreenPdfsOnlyDesktop.args = {
 }
 
 export const DownloadingStateDesktop = Template.bind({})
+DownloadingStateDesktop.parameters = {
+  argos: { modes: viewportModes('mobile') },
+}
 DownloadingStateDesktop.args = {
   initialState: [DownloadWithAttachmentFlowStates.Progress, -1],
   downloadPercentage: 30,
@@ -138,12 +136,8 @@ DownloadingStateDesktop.args = {
   responsesCount: 12345,
 }
 
-export const DownloadingStateMobile = Template.bind({})
-DownloadingStateMobile.args = DownloadingStateDesktop.args
-DownloadingStateMobile.parameters = getMobileViewParameters()
-DownloadingStateMobile.globals = getMobileViewGlobals()
-
 export const CompleteStateDesktop = Template.bind({})
+CompleteStateDesktop.parameters = { argos: { modes: viewportModes('mobile') } }
 CompleteStateDesktop.args = {
   downloadMetadata: {
     errorCount: 0,
@@ -151,11 +145,6 @@ CompleteStateDesktop.args = {
     expectedCount: 12345,
   },
 }
-
-export const CompleteStateMobile = Template.bind({})
-CompleteStateMobile.args = CompleteStateDesktop.args
-CompleteStateMobile.parameters = getMobileViewParameters()
-CompleteStateMobile.globals = getMobileViewGlobals()
 
 export const CanceledStateDesktop = Template.bind({})
 CanceledStateDesktop.args = {
@@ -182,5 +171,4 @@ PartialSuccessStateMobile.args = {
   },
 }
 
-PartialSuccessStateMobile.parameters = getMobileViewParameters()
 PartialSuccessStateMobile.globals = getMobileViewGlobals()

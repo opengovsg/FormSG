@@ -28,11 +28,9 @@ export default {
   // component: To be implemented,
   decorators: [AdminFormCreatePageDecorator],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    // Pass a very short delay to avoid bug where Chromatic takes a snapshot before
-    // the story has loaded
-    chromatic: { pauseAnimationAtEnd: true, delay: 200 },
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: buildMswRoutes(),
   },
 } as Meta

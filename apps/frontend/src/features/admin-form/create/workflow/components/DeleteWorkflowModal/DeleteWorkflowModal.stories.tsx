@@ -9,7 +9,7 @@ import {
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 
-import { StoryRouter, viewports } from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -62,7 +62,8 @@ export default {
   decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
   parameters: {
     layout: 'fullscreen',
-    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
 } as Meta
 
@@ -75,6 +76,7 @@ const FirstStepTemplate: StoryFn = () => (
 /** Form closed: deleting is allowed, and the confirm button is destructive. */
 export const FormClosed = Template.bind({})
 FormClosed.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: { handlers: { default: buildMocks(FormStatus.Private) } },
 }
 
@@ -85,22 +87,9 @@ FormClosed.parameters = {
  */
 export const FormOpen = Template.bind({})
 FormOpen.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: { handlers: { default: buildMocks(FormStatus.Public) } },
 }
-
-export const MobileFormClosed = Template.bind({})
-MobileFormClosed.parameters = {
-  ...FormClosed.parameters,
-  chromatic: { viewports: [viewports.xs] },
-}
-MobileFormClosed.globals = { viewport: { value: 'mobile1', isRotated: false } }
-
-export const MobileFormOpen = Template.bind({})
-MobileFormOpen.parameters = {
-  ...FormOpen.parameters,
-  chromatic: { viewports: [viewports.xs] },
-}
-MobileFormOpen.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 /**
  * Entered from step 1's delete button. Same outcome and same actions as
@@ -109,14 +98,6 @@ MobileFormOpen.globals = { viewport: { value: 'mobile1', isRotated: false } }
  */
 export const FirstStepFormClosed = FirstStepTemplate.bind({})
 FirstStepFormClosed.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: { handlers: { default: buildMocks(FormStatus.Private) } },
-}
-
-export const MobileFirstStepFormClosed = FirstStepTemplate.bind({})
-MobileFirstStepFormClosed.parameters = {
-  ...FirstStepFormClosed.parameters,
-  chromatic: { viewports: [viewports.xs] },
-}
-MobileFirstStepFormClosed.globals = {
-  viewport: { value: 'mobile1', isRotated: false },
 }

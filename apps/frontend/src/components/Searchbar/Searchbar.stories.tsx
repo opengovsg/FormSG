@@ -126,6 +126,7 @@ export const Playground: StoryFn<SearchbarProps> = ({
     </Box>
   )
 }
+Playground.tags = ['playground']
 Playground.args = {
   isExpanded: false,
   onSearch: (query) => alert(`${query} is being searched`),

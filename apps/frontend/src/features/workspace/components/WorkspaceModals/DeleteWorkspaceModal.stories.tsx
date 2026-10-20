@@ -6,7 +6,7 @@ import { Workspace, WorkspaceId } from 'formsg-shared/types/workspace'
 
 import { userHandlers } from '~/mocks/msw/handlers/user'
 
-import { getMobileViewGlobals, getMobileViewParameters } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import {
   DeleteWorkspaceModal,
@@ -18,8 +18,9 @@ export default {
   component: DeleteWorkspaceModal,
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     // Prevent flaky tests due to modal animating in.
-    chromatic: { pauseAnimationAtEnd: true },
     msw: userHandlers({ delay: 0 }),
   },
 } as Meta
@@ -44,7 +45,4 @@ const Template: StoryFn<DeleteWorkspaceModalProps> = (args) => {
   )
 }
 export const DeleteWorkspace = Template.bind({})
-
-export const DeleteWorkspaceMobile = Template.bind({})
-DeleteWorkspaceMobile.parameters = getMobileViewParameters()
-DeleteWorkspaceMobile.globals = getMobileViewGlobals()
+DeleteWorkspace.parameters = { argos: { modes: viewportModes('mobile') } }

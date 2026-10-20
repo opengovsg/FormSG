@@ -1,13 +1,18 @@
 import { useState } from 'react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { viewports } from '~/utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { AdminFeedbackBox } from './AdminFeedbackBox'
 
 export default {
   title: 'Features/AdminFeedbackBox',
   component: AdminFeedbackBox,
+  parameters: {
+    // Fixed-position overlay: nothing in the story root's flow for
+    // fit-to-content to measure, so capture the viewport.
+    argos: { fitToContent: false },
+  },
 } as Meta
 
 const Template: StoryFn = () => {
@@ -24,11 +29,5 @@ const Template: StoryFn = () => {
 }
 
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('mobile') } }
 Default.storyName = 'Empty state (no stars selected)'
-
-export const Mobile = Template.bind({})
-Mobile.storyName = 'Mobile viewport'
-Mobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
-Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }

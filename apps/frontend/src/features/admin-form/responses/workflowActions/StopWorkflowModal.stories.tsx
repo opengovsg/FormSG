@@ -15,11 +15,7 @@ import {
 } from '~/mocks/msw/handlers/admin-form'
 import { getUser } from '~/mocks/msw/handlers/user'
 
-import {
-  getMobileViewGlobals,
-  getMobileViewParameters,
-  StoryRouter,
-} from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { StopWorkflowModal, StopWorkflowModalProps } from './StopWorkflowModal'
 
@@ -80,7 +76,8 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    chromatic: { delay: 200 },
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: [
       ...createFormBuilderMocks(FORM),
       getAdminFormSettings({
@@ -117,7 +114,4 @@ const Template: StoryFn<StopWorkflowModalProps> = (args) => (
 )
 
 export const Default = Template.bind({})
-
-export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
-Mobile.globals = getMobileViewGlobals()
+Default.parameters = { argos: { modes: viewportModes('mobile') } }

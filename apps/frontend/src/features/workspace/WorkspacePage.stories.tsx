@@ -15,13 +15,12 @@ import { getWorkspaces } from '~/mocks/msw/handlers/workspace'
 
 import { DASHBOARD_ROUTE } from '~constants/routes'
 import {
-  getMobileViewGlobals,
-  getMobileViewParameters,
   LoggedInDecorator,
   mockDateDecorator,
   StoryRouter,
   ViewedEmergencyContactDecorator,
   ViewedRolloutDecorator,
+  viewportModes,
 } from '~utils/storybook'
 
 import { WorkspacePage } from './WorkspacePage'
@@ -92,8 +91,8 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     mockdate: new Date('2021-12-01T06:22:27.219Z'),
     msw: BASE_MSW_HANDLERS,
   },
@@ -101,9 +100,10 @@ export default {
 
 const Template: StoryFn = () => <WorkspacePage />
 export const Desktop = Template.bind({})
-export const Mobile = Template.bind({})
-Mobile.parameters = {
-  ...getMobileViewParameters(),
+Desktop.parameters = { argos: { modes: viewportModes('mobile') } }
+
+export const LoadingDesktop = Template.bind({})
+LoadingDesktop.parameters = {
   a11y: {
     config: {
       // Seems to be a false positive, since a loading screen should have nothing focusable.
@@ -111,11 +111,7 @@ Mobile.parameters = {
       rules: [{ id: 'scrollable-region-focusable', enabled: false }],
     },
   },
-}
-Mobile.globals = getMobileViewGlobals()
-
-export const LoadingDesktop = Template.bind({})
-LoadingDesktop.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: [
     http.get<never, never, AdminDashboardFormMetaDto[]>(
       '/api/v3/admin/forms',
@@ -127,14 +123,9 @@ LoadingDesktop.parameters = {
   ],
 }
 
-export const LoadingMobile = Template.bind({})
-LoadingMobile.parameters = {
-  ...Mobile.parameters,
-  ...LoadingDesktop.parameters,
-}
-
 export const Empty = Template.bind({})
 Empty.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: [
     ...envHandlers,
     http.get<never, never, AdminDashboardFormMetaDto[]>(
@@ -155,14 +146,9 @@ Empty.parameters = {
   ],
 }
 
-export const EmptyMobile = Template.bind({})
-EmptyMobile.parameters = {
-  ...Empty.parameters,
-  ...Mobile.parameters,
-}
-
 export const EmptyWithAnnouncementModal = Template.bind({})
 EmptyWithAnnouncementModal.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: [
     http.get<never, never, AdminDashboardFormMetaDto[]>(
       '/api/v3/admin/forms',
@@ -174,14 +160,9 @@ EmptyWithAnnouncementModal.parameters = {
   ],
 }
 
-export const EmptyMobileWithAnnouncementModal = Template.bind({})
-EmptyMobileWithAnnouncementModal.parameters = {
-  ...EmptyWithAnnouncementModal.parameters,
-  ...Mobile.parameters,
-}
-
 export const AllOpenDesktop = Template.bind({})
 AllOpenDesktop.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: [
     http.get<never, never, AdminDashboardFormMetaDto[]>(
       '/api/v3/admin/forms',
@@ -197,6 +178,7 @@ AllOpenDesktop.parameters = {
 
 export const AllOpenDesktopNoAnnouncementModal = Template.bind({})
 AllOpenDesktopNoAnnouncementModal.parameters = {
+  argos: { modes: viewportModes('mobile') },
   ...AllOpenDesktop.parameters,
   msw: [
     ...envHandlers,
@@ -216,16 +198,4 @@ AllOpenDesktopNoAnnouncementModal.parameters = {
       },
     }),
   ],
-}
-
-export const AllOpenMobile = Template.bind({})
-AllOpenMobile.parameters = {
-  ...Mobile.parameters,
-  ...AllOpenDesktop.parameters,
-}
-
-export const AllOpenMobileNoAnnouncementModal = Template.bind({})
-AllOpenMobileNoAnnouncementModal.parameters = {
-  ...Mobile.parameters,
-  ...AllOpenDesktopNoAnnouncementModal.parameters,
 }

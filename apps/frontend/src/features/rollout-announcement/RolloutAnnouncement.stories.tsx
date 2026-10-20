@@ -1,10 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import {
-  fullScreenDecorator,
-  getMobileViewGlobals,
-  getMobileViewParameters,
-} from '~utils/storybook'
+import { fullScreenDecorator, viewportModes } from '~utils/storybook'
 
 import { RolloutAnnouncementModal } from './RolloutAnnouncementModal'
 
@@ -13,8 +9,9 @@ export default {
   decorators: [fullScreenDecorator],
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     // Prevent flaky tests due to modal animating in.
-    chromatic: { delay: 200 },
   },
 } as Meta
 
@@ -27,9 +24,4 @@ const Template: StoryFn = () => (
 )
 
 export const BasicUsage = Template.bind({})
-
-export const Mobile = Template.bind({})
-Mobile.parameters = {
-  ...getMobileViewParameters(),
-}
-Mobile.globals = getMobileViewGlobals()
+BasicUsage.parameters = { argos: { modes: viewportModes('mobile') } }

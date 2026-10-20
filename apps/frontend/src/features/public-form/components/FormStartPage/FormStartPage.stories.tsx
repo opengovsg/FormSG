@@ -12,7 +12,7 @@ import {
   getPublicFormWithoutSectionsResponse,
 } from '~/mocks/msw/handlers/public-form'
 
-import { getMobileViewGlobals, getMobileViewParameters } from '~utils/storybook'
+import { getMobileViewGlobals, viewportModes } from '~utils/storybook'
 
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
@@ -40,9 +40,9 @@ export default {
     ),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
 } as Meta
 
@@ -101,6 +101,7 @@ WithDeadlineNoEstimatedTime.parameters = {
 
 export const OverflowTitle = Template.bind({})
 OverflowTitle.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: [
     ...envHandlers,
     getCustomLogoResponse(),
@@ -121,13 +122,6 @@ OverflowTitle.parameters = {
     }),
   ],
 }
-
-export const OverflowTitleMobile = Template.bind({})
-OverflowTitleMobile.parameters = {
-  ...getMobileViewParameters(),
-  ...OverflowTitle.parameters,
-}
-OverflowTitleMobile.globals = getMobileViewGlobals()
 
 export const ColorThemeBrown = Template.bind({})
 ColorThemeBrown.parameters = {
@@ -245,7 +239,6 @@ MiniHeaderMobileWithSections.args = {
 }
 MiniHeaderMobileWithSections.parameters = {
   ...MiniHeader.parameters,
-  ...getMobileViewParameters(),
 }
 MiniHeaderMobileWithSections.globals = getMobileViewGlobals()
 
@@ -265,6 +258,5 @@ MiniHeaderMobileWithoutSections.parameters = {
       delay: 0,
     }),
   ],
-  ...getMobileViewParameters(),
 }
 MiniHeaderMobileWithoutSections.globals = getMobileViewGlobals()

@@ -32,13 +32,7 @@ import {
   _getFromIndexedDBForTest,
   _removeFromIndexedDBForTest,
 } from '~hooks/useIndexedDb'
-import {
-  getMobileViewGlobals,
-  getMobileViewParameters,
-  getTabletViewGlobals,
-  getTabletViewParameters,
-  StoryRouter,
-} from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 import { ShortTextFieldSchema } from '~templates/Field'
 
 import { SAVE_DRAFT_INDEXEDDB_STORE_NAME } from '~features/form/constants'
@@ -134,15 +128,16 @@ export default {
     }),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: DEFAULT_MSW_HANDLERS,
   },
 } as Meta
 
 const Template: StoryFn = () => <PublicFormPage />
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('mobile') } }
 
 /** 2359 SGT on 31 Dec 2026, stored as UTC. Header should read 11:59 PM (SGT). */
 export const WithScheduledClosure = Template.bind({})
@@ -215,6 +210,7 @@ WithCaptcha.parameters = {
 
 export const WithPrefilledNormalFields = Template.bind({})
 WithPrefilledNormalFields.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: [
     getPublicFormResponse({
       delay: 0,
@@ -228,15 +224,9 @@ WithPrefilledNormalFields.parameters = {
   ],
 }
 
-export const WithPrefilledNormalFieldsMobile = Template.bind({})
-WithPrefilledNormalFieldsMobile.parameters = {
-  ...WithPrefilledNormalFields.parameters,
-  ...getMobileViewParameters(),
-}
-WithPrefilledNormalFieldsMobile.globals = getMobileViewGlobals()
-
 export const WithPrefilledLockedFields = Template.bind({})
 WithPrefilledLockedFields.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: [
     getPublicFormResponse({
       delay: 0,
@@ -250,15 +240,9 @@ WithPrefilledLockedFields.parameters = {
   ],
 }
 
-export const WithPrefilledLockedFieldsMobile = Template.bind({})
-WithPrefilledLockedFieldsMobile.parameters = {
-  ...WithPrefilledLockedFields.parameters,
-  ...getMobileViewParameters(),
-}
-WithPrefilledLockedFieldsMobile.globals = getMobileViewGlobals()
-
 export const WithPrefilledLockedAndNormalFields = Template.bind({})
 WithPrefilledLockedAndNormalFields.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: [
     getPublicFormResponse({
       delay: 0,
@@ -274,17 +258,6 @@ WithPrefilledLockedAndNormalFields.parameters = {
     }),
   ],
 }
-
-export const WithPrefilledLockedAndNormalFieldsMobile = Template.bind({})
-WithPrefilledLockedAndNormalFieldsMobile.parameters = {
-  ...WithPrefilledLockedAndNormalFields.parameters,
-  ...getMobileViewParameters(),
-}
-WithPrefilledLockedAndNormalFieldsMobile.globals = getMobileViewGlobals()
-
-export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
-Mobile.globals = getMobileViewGlobals()
 
 export const ColorThemeGreen = Template.bind({})
 ColorThemeGreen.parameters = {
@@ -319,6 +292,7 @@ Loading.parameters = {
 export const SingpassUnauthorized = Template.bind({})
 SingpassUnauthorized.storyName = 'Singpass/Unauthorized'
 SingpassUnauthorized.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: [
     ...envHandlers,
     getPublicFormResponse({
@@ -359,13 +333,6 @@ SingpassUnauthorizedSubmitterIdCollectionEnabled.parameters = {
     }),
   ],
 }
-
-export const UnauthedMobile = Template.bind({})
-UnauthedMobile.parameters = {
-  ...SingpassUnauthorized.parameters,
-  ...getMobileViewParameters(),
-}
-UnauthedMobile.globals = getMobileViewGlobals()
 
 export const SingpassAuthorized = Template.bind({})
 SingpassAuthorized.storyName = 'Singpass/Authorized'
@@ -669,22 +636,9 @@ WithPreventSubmissionLogic.play = async ({ canvasElement }) => {
 
 export const FormNotFound = Template.bind({})
 FormNotFound.parameters = {
+  argos: { modes: viewportModes('tablet', 'mobile') },
   msw: [getPublicFormErrorResponse()],
 }
-
-export const FormNotFoundTablet = Template.bind({})
-FormNotFoundTablet.parameters = {
-  ...FormNotFound.parameters,
-  ...getTabletViewParameters(),
-}
-FormNotFoundTablet.globals = getTabletViewGlobals()
-
-export const FormNotFoundMobile = Template.bind({})
-FormNotFoundMobile.parameters = {
-  ...FormNotFound.parameters,
-  ...getMobileViewParameters(),
-}
-FormNotFoundMobile.globals = getMobileViewGlobals()
 
 export const WithMyInfo = Template.bind({})
 WithMyInfo.storyName = 'With MyInfo'
@@ -777,6 +731,7 @@ WithRespondentCopy.parameters = {
 
 export const WithSaveDraftEnabled = Template.bind({})
 WithSaveDraftEnabled.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: [
     getPublicFormResponse({
       overrides: {
@@ -790,19 +745,13 @@ WithSaveDraftEnabled.parameters = {
   ],
 }
 
-export const WithSaveDraftEnabledMobile = Template.bind({})
-WithSaveDraftEnabledMobile.parameters = {
-  ...WithSaveDraftEnabled.parameters,
-  ...getMobileViewParameters(),
-}
-WithSaveDraftEnabledMobile.globals = getMobileViewGlobals()
-
 const STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY =
   'formsg-save-draft-61540ece3d4a6e50ac0cc6ff'
 
 export const WithSaveDraftEnabledAndClickFormHeaderSaveDraftButton =
   Template.bind({})
 WithSaveDraftEnabledAndClickFormHeaderSaveDraftButton.parameters = {
+  argos: { modes: viewportModes('mobile') },
   ...WithSaveDraftEnabled.parameters,
   msw: [
     getPublicFormResponse({
@@ -991,118 +940,6 @@ WithSaveDraftEnabledPersistsPrefilledFields.play = async ({ step }) => {
         [PREFILLABLE_NORMAL_SHORTTEXT_FIELD._id]: 'PrefilledValue',
         [PREFILLABLE_EMPTY_SHORTTEXT_FIELD._id]: '',
       })
-    },
-  )
-
-  await step('Cleanup saved draft', async () => {
-    await _removeFromIndexedDBForTest({
-      key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
-      storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
-    })
-  })
-}
-
-export const WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile =
-  Template.bind({})
-WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile.parameters = {
-  ...WithSaveDraftEnabled.parameters,
-  ...getMobileViewParameters(),
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Encrypt,
-          isSaveDraftEnabled: true,
-        },
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
-}
-WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile.globals =
-  getMobileViewGlobals()
-WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile.play = async ({
-  step,
-}) => {
-  const screen = within(document.body)
-
-  let formHeaderSaveDraftButton: HTMLElement
-
-  await step(
-    'Scroll down the page to reveal the form header save draft button',
-    async () => {
-      await window.scrollBy(0, 500)
-    },
-  )
-
-  await step('Find the form header save draft button', async () => {
-    await waitFor(
-      async () => {
-        const allSaveDraftButtons = screen.getAllByLabelText('Save a draft')
-        // Find the button that's inside the chakra-slide component (form header)
-        const foundFormHeaderSaveDraftButton = allSaveDraftButtons.find(
-          (button) => {
-            const slideParent = button.closest('.chakra-slide')
-            return slideParent !== null
-          },
-        )
-        if (!foundFormHeaderSaveDraftButton) {
-          throw new Error('Form header save draft button not found')
-        }
-        formHeaderSaveDraftButton = foundFormHeaderSaveDraftButton
-        expect(formHeaderSaveDraftButton).toBeInTheDocument()
-      },
-      { timeout: 3000 },
-    )
-  })
-
-  await step('Click the form header save draft button', async () => {
-    await userEvent.click(formHeaderSaveDraftButton)
-  })
-
-  await step(
-    'Assert that the saved draft success toast message appears',
-    async () => {
-      await waitFor(
-        async () => {
-          await expect(document.body).toHaveTextContent(
-            'Draft saved. Reopen this link in this browser to resume filling it.',
-          )
-        },
-        { timeout: 3000 },
-      )
-    },
-  )
-
-  await step(
-    'Hover over the save draft button to see the save draft tooltip',
-    async () => {
-      await userEvent.hover(formHeaderSaveDraftButton)
-    },
-  )
-
-  await step(
-    'Assert that a tooltip appears reflecting that draft has been saved',
-    async () => {
-      let tooltip: HTMLElement | null = null
-      await waitFor(
-        () => {
-          tooltip = screen.getByRole('tooltip', { name: /Last saved/i })
-          expect(tooltip).toBeInTheDocument()
-        },
-        { timeout: 5000 },
-      )
-    },
-  )
-
-  await step(
-    'Assert that the saved draft is created in IndexedDB',
-    async () => {
-      const savedDraft = (await _getFromIndexedDBForTest({
-        key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
-        storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
-      })) as DraftSubmission | undefined
-      expect(savedDraft).toBeDefined()
     },
   )
 

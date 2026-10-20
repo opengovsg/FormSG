@@ -31,9 +31,9 @@ export default {
     ),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
 } as Meta
 

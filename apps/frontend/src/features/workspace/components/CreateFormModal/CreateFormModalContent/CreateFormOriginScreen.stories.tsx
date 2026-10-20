@@ -23,7 +23,8 @@ export default {
   decorators: [fullScreenDecorator],
   parameters: {
     layout: 'fullscreen',
-    chromatic: { pauseAnimationAtEnd: true },
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
 } as Meta
 

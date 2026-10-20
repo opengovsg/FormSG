@@ -11,7 +11,7 @@ import {
   postVfnTransactionResponse,
 } from '~/mocks/msw/handlers/public-form'
 
-import { getMobileViewGlobals, getMobileViewParameters } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 import Button from '~components/Button'
 import {
   VerifiableFieldInput,
@@ -131,16 +131,12 @@ const Template: StoryFn<StoryMobileFieldProps> = ({
 export const VerifiableMobileField = Template.bind({})
 
 export const PendingVerification = Template.bind({})
+PendingVerification.parameters = { argos: { modes: viewportModes('mobile') } }
 PendingVerification.args = {
   defaultValue: {
     value: '+6598888888',
   },
 }
-
-export const PendingVerificationMobile = Template.bind({})
-PendingVerificationMobile.args = PendingVerification.args
-PendingVerificationMobile.parameters = getMobileViewParameters()
-PendingVerificationMobile.globals = getMobileViewGlobals()
 
 export const Verified = Template.bind({})
 Verified.args = {

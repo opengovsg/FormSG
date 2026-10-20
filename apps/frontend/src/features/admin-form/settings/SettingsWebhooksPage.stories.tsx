@@ -17,12 +17,7 @@ import {
 import { getPreviewFormResponse } from '~/mocks/msw/handlers/admin-form/preview-form'
 import { userHandlers } from '~/mocks/msw/handlers/user'
 
-import {
-  getMobileViewGlobals,
-  getMobileViewParameters,
-  StoryRouter,
-  viewports,
-} from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 
@@ -42,8 +37,6 @@ export default {
   component: SettingsWebhooksPage,
   decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
     msw: { handlers: { default: buildMswRoutes() } },
   },
 } as Meta
@@ -105,6 +98,7 @@ StorageModePlumberConnected.parameters = {
 
 export const StorageModeRetryEnabled = Template.bind({})
 StorageModeRetryEnabled.parameters = {
+  argos: { modes: viewportModes('tablet', 'mobile') },
   msw: {
     handlers: {
       default: buildMswRoutes({
@@ -172,20 +166,6 @@ Error.parameters = {
     },
   },
 }
-
-export const Mobile = Template.bind({})
-Mobile.parameters = {
-  ...StorageModeRetryEnabled.parameters,
-  ...getMobileViewParameters(),
-}
-Mobile.globals = getMobileViewGlobals()
-
-export const Tablet = Template.bind({})
-Tablet.parameters = {
-  ...StorageModeRetryEnabled.parameters,
-  chromatic: { viewports: [viewports.md] },
-}
-Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 const mrfWebhooksGrowthBook = new GrowthBook({
   features: { [featureFlags.enableMrfWebhooks]: { defaultValue: true } },
@@ -307,6 +287,7 @@ StorageModeV4RolloutOn.parameters = {
 export const StorageModeV4RolloutOnWithWebhook = Template.bind({})
 StorageModeV4RolloutOnWithWebhook.decorators = [withV4Webhooks]
 StorageModeV4RolloutOnWithWebhook.parameters = {
+  argos: { modes: viewportModes('mobile') },
   ...StorageModeV4RolloutOn.parameters,
   msw: {
     handlers: {
@@ -335,14 +316,6 @@ StorageModeV4RolloutOnMrfCutover.decorators = [
 ]
 StorageModeV4RolloutOnMrfCutover.parameters =
   StorageModeV4RolloutOnWithWebhook.parameters
-
-export const StorageModeV4RolloutOnMobile = Template.bind({})
-StorageModeV4RolloutOnMobile.decorators = [withV4Webhooks]
-StorageModeV4RolloutOnMobile.parameters = {
-  ...StorageModeV4RolloutOnWithWebhook.parameters,
-  ...getMobileViewParameters(),
-}
-StorageModeV4RolloutOnMobile.globals = getMobileViewGlobals()
 
 export const V4Webhook = Template.bind({})
 V4Webhook.decorators = [withV4Webhooks]

@@ -4,7 +4,7 @@ import { FormControl, VStack } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 import { get, isEmpty } from 'lodash'
 
-import { viewports } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import Button from '../Button'
 import FormErrorMessage from '../FormControl/FormErrorMessage'
@@ -22,6 +22,7 @@ const Template: StoryFn<RadioProps> = (args) => (
 )
 
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 Default.args = {
   name: 'Default',
 }
@@ -31,24 +32,6 @@ Disabled.args = {
   name: 'Disabled',
   isDisabled: true,
 }
-
-export const Mobile = Template.bind({})
-Mobile.args = {
-  name: 'Mobile',
-}
-Mobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
-Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
-
-export const Tablet = Template.bind({})
-Tablet.args = {
-  name: 'Tablet',
-}
-Tablet.parameters = {
-  chromatic: { viewports: [viewports.md] },
-}
-Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 const AllStates: StoryFn<RadioProps> = (args) => {
   return (
@@ -162,6 +145,7 @@ const PlaygroundTemplate: StoryFn = ({
 }
 
 export const Playground = PlaygroundTemplate.bind({})
+Playground.tags = ['playground']
 Playground.args = {
   label: 'Radio without others',
   hasOthers: false,
@@ -169,6 +153,7 @@ Playground.args = {
 }
 
 export const PlaygroundWithOthers = PlaygroundTemplate.bind({})
+PlaygroundWithOthers.tags = ['playground']
 PlaygroundWithOthers.args = {
   label: 'Radio with others',
   hasOthers: true,

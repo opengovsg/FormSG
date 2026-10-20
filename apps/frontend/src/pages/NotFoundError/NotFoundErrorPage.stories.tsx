@@ -4,10 +4,10 @@ import { getUnauthedUser } from '~/mocks/msw/handlers/user'
 
 import {
   getMobileViewGlobals,
-  getMobileViewParameters,
   LoggedInDecorator,
   LoggedOutDecorator,
   StoryRouter,
+  viewportModes,
 } from '~utils/storybook'
 
 import { NotFoundErrorPage } from './NotFoundErrorPage'
@@ -23,6 +23,8 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
 } as Meta
 
@@ -34,14 +36,9 @@ NotLoggedIn.parameters = {
 }
 
 export const MobileNotLoggedIn = Template.bind({})
-MobileNotLoggedIn.parameters = getMobileViewParameters()
 MobileNotLoggedIn.globals = getMobileViewGlobals()
 MobileNotLoggedIn.decorators = NotLoggedIn.decorators
 
 export const LoggedIn = Template.bind({})
+LoggedIn.parameters = { argos: { modes: viewportModes('mobile') } }
 LoggedIn.decorators = [LoggedInDecorator]
-
-export const MobileLoggedIn = Template.bind({})
-MobileLoggedIn.parameters = getMobileViewParameters()
-MobileLoggedIn.globals = getMobileViewGlobals()
-MobileLoggedIn.decorators = LoggedIn.decorators

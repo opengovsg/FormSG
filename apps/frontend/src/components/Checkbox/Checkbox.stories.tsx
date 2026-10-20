@@ -4,7 +4,7 @@ import { FormControl, VStack } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 import { isEmpty } from 'lodash'
 
-import { viewports } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import Button from '../Button'
 import FormErrorMessage from '../FormControl/FormErrorMessage'
@@ -22,6 +22,7 @@ const Template: StoryFn<CheckboxProps> = (args) => {
 }
 
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 Default.args = {
   name: 'Default',
 }
@@ -31,24 +32,6 @@ Indeterminate.args = {
   name: 'Partially selected',
   isIndeterminate: true,
 }
-
-export const Mobile = Template.bind({})
-Mobile.args = {
-  name: 'Mobile',
-}
-Mobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
-Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
-
-export const Tablet = Template.bind({})
-Tablet.args = {
-  name: 'Tablet',
-}
-Tablet.parameters = {
-  chromatic: { viewports: [viewports.md] },
-}
-Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 const AllStates: StoryFn<CheckboxProps> = (args) => {
   return (
@@ -157,6 +140,7 @@ export const Playground: StoryFn = ({
     </form>
   )
 }
+Playground.tags = ['playground']
 
 Playground.args = {
   label: 'Checkbox label',

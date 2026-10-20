@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { viewports } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { Pagination, PaginationProps } from './Pagination'
 
@@ -90,24 +90,13 @@ EndOf100Pages.args = {
 }
 
 export const MiddleOf100Pages = Template.bind({})
+MiddleOf100Pages.parameters = { argos: { modes: viewportModes('mobile') } }
 MiddleOf100Pages.args = {
   currentPage: 31,
   totalCount: 1000,
   pageSize: 10,
   siblingCount: 1,
 }
-
-export const Mobile = Template.bind({})
-Mobile.args = {
-  currentPage: 31,
-  totalCount: 1000,
-  pageSize: 10,
-  siblingCount: 1,
-}
-Mobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
-Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const MobileDisabled = Template.bind({})
 MobileDisabled.args = {
@@ -116,8 +105,5 @@ MobileDisabled.args = {
   pageSize: 10,
   siblingCount: 1,
   isDisabled: true,
-}
-MobileDisabled.parameters = {
-  chromatic: { viewports: [viewports.xs] },
 }
 MobileDisabled.globals = { viewport: { value: 'mobile1', isRotated: false } }

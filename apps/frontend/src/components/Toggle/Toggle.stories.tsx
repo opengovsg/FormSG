@@ -102,3 +102,4 @@ export const Playground: StoryFn<ToggleProps> = (args) => {
     </form>
   )
 }
+Playground.tags = ['playground']

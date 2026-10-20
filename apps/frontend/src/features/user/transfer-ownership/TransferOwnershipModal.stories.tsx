@@ -10,7 +10,7 @@ import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 import {
   fullScreenDecorator,
   LoggedInDecorator,
-  viewports,
+  viewportModes,
 } from '~utils/storybook'
 
 import { TransferOwnershipModal } from './TransferOwnershipModal'
@@ -21,8 +21,9 @@ export default {
   decorators: [fullScreenDecorator, LoggedInDecorator],
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     // Prevent flaky tests due to modal animating in.
-    chromatic: { pauseAnimationAtEnd: true },
     msw: [
       getUser({ delay: 0, mockUser: MOCK_USER }),
       getAdminForms.empty(),
@@ -57,12 +58,7 @@ const Template: StoryFn = () => {
 }
 
 export const Default = Template.bind({})
-
-export const Mobile = Template.bind({})
-Mobile.parameters = {
-  chromatic: { viewports: [viewports.xs] },
-}
-Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
+Default.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const FailureBecauseTransferEndpointFailed = Template.bind({})
 FailureBecauseTransferEndpointFailed.parameters = {

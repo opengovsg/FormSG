@@ -2,11 +2,7 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { DateString } from 'formsg-shared/types/generic'
 
-import {
-  getMobileViewGlobals,
-  getMobileViewParameters,
-  StoryRouter,
-} from '~utils/storybook'
+import { getMobileViewGlobals, StoryRouter } from '~utils/storybook'
 
 import { AdminFormNavbar, AdminFormNavbarProps } from './AdminFormNavbar'
 
@@ -21,6 +17,8 @@ export default {
   decorators: [StoryRouter({ path: 'test', initialEntries: ['/test'] })],
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
   args: {
     formInfo: MOCK_FORM,
@@ -55,5 +53,4 @@ Mobile.args = {
   },
   previewFormLink: '/test',
 }
-Mobile.parameters = getMobileViewParameters()
 Mobile.globals = getMobileViewGlobals()

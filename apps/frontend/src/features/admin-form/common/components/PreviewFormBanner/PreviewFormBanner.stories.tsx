@@ -5,11 +5,7 @@ import { FormAuthType } from 'formsg-shared/types'
 import { getPreviewFormResponse } from '~/mocks/msw/handlers/admin-form/preview-form'
 
 import { ADMINFORM_BUILD_SUBROUTE } from '~constants/routes'
-import {
-  getMobileViewGlobals,
-  getMobileViewParameters,
-  StoryRouter,
-} from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { PreviewFormProvider } from '~features/admin-form/preview/PreviewFormProvider'
 
@@ -19,6 +15,8 @@ export default {
   title: 'Features/AdminForm/PreviewFormBanner',
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: [getPreviewFormResponse()],
   },
   component: PreviewFormBannerComponent,
@@ -38,10 +36,7 @@ export default {
 const Template: StoryFn = () => <PreviewFormBannerComponent />
 
 export const Desktop = Template.bind({})
-
-export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
-Mobile.globals = getMobileViewGlobals()
+Desktop.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const WithAuthenticatedForm = Template.bind({})
 WithAuthenticatedForm.parameters = {

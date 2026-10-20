@@ -3,7 +3,7 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { userHandlers } from '~/mocks/msw/handlers/user'
 
-import { getMobileViewGlobals, getMobileViewParameters } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import {
   CreateWorkspaceModal,
@@ -15,8 +15,9 @@ export default {
   component: CreateWorkspaceModal,
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     // Prevent flaky tests due to modal animating in.
-    chromatic: { pauseAnimationAtEnd: true },
     msw: userHandlers({ delay: 0 }),
   },
 } as Meta
@@ -34,7 +35,4 @@ const Template: StoryFn<CreateWorkspaceModalProps> = (args) => {
 }
 
 export const CreateWorkspace = Template.bind({})
-
-export const CreateWorkspaceMobile = Template.bind({})
-CreateWorkspaceMobile.parameters = getMobileViewParameters()
-CreateWorkspaceMobile.globals = getMobileViewGlobals()
+CreateWorkspace.parameters = { argos: { modes: viewportModes('mobile') } }
