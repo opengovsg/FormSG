@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.52.1](https://github.com/opengovsg/formsg/compare/v9.52.0...v9.52.1) (2026-10-20)
+
+
+### Bug Fixes
+
+* **results:** simplify column selection and filter actions (#10324) ([#10324](https://github.com/opengovsg/formsg/commit/377813f92bf9fc90706e85c812c3822c677ad452))
+
 ## [9.52.0](https://github.com/opengovsg/formsg/compare/v9.51.0...v9.52.0) (2026-10-20)
 
 
