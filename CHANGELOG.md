@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.52.4](https://github.com/opengovsg/formsg/compare/v9.52.3...v9.52.4) (2026-10-20)
+
+
+### Dependencies
+
+* **deps:** remove verified unused dependency declarations (#10339) ([#10339](https://github.com/opengovsg/formsg/commit/394ba8717b4ff2088db1bc26dce184090ee5ab1d))
+
+## [9.52.3](https://github.com/opengovsg/formsg/compare/v9.52.2...v9.52.3) (2026-10-20)
+
+
+### Dependencies
+
+* **deps:** bump amannn/action-semantic-pull-request from 4.6.0 to 6.1.1 (#10251) ([#10251](https://github.com/opengovsg/formsg/commit/40975631d17776d54df9da72372da8d7ef685d1b))
+* **deps:** bump aws-actions/amazon-ecr-login from 2.1.2 to 2.1.7 (#10248) ([#10248](https://github.com/opengovsg/formsg/commit/0a85e14e67d99343c41cfd9d73b8f5f2dc67fa48))
+* **deps:** bump aws-actions/amazon-ecs-render-task-definition from c804dfbdd57f713b6c079302a4c01db7017a36fc to 8d79160660ad39c402a16e5fc7cd2a32e8f7d6b7 (#10247) ([#10247](https://github.com/opengovsg/formsg/commit/25c2228395a071adfe5dd06eb67fd84ee180ef08))
+* **deps:** bump pnpm/action-setup from 5.0.0 to 6.1.0 (#10250) ([#10250](https://github.com/opengovsg/formsg/commit/01a669ea920e8045af5ceedebaf880017cdb7e69))
+
+
+### Dev-Dependencies
+
+* **deps-dev:** bump @types/lodash from 4.17.24 to 4.17.26 in /packages/shared (#10253) ([#10253](https://github.com/opengovsg/formsg/commit/5a8bff183196d1d367f79931e8c21864dcbe36fc))
+* **deps-dev:** bump eslint-plugin-import from 2.29.1 to 2.32.0 in /packages/shared (#10257) ([#10257](https://github.com/opengovsg/formsg/commit/62e7ef354dcabdda7ca7b72fa638204a513dd05f))
+* **deps-dev:** bump eslint-plugin-prettier from 5.5.5 to 5.5.6 in /packages/shared (#10258) ([#10258](https://github.com/opengovsg/formsg/commit/7f961cce7454a837f91893dc3a0eda4be82ced49))
+
+
+### Chores
+
+* **storybook:** upgrade to Storybook 10 (#10323) ([#10323](https://github.com/opengovsg/formsg/commit/26c1e21c170e87219d93fed8d3e0eaebace290a0))
+
 ## [9.52.2](https://github.com/opengovsg/formsg/compare/v9.52.1...v9.52.2) (2026-10-20)
 
 
