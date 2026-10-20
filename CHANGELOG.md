@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.52.4](https://github.com/opengovsg/formsg/compare/v9.52.3...v9.52.4) (2026-10-20)
+
+
+### Dependencies
+
+* **deps:** remove verified unused dependency declarations (#10339) ([#10339](https://github.com/opengovsg/formsg/commit/394ba8717b4ff2088db1bc26dce184090ee5ab1d))
+
 ## [9.52.3](https://github.com/opengovsg/formsg/compare/v9.52.2...v9.52.3) (2026-10-20)
 
 
