@@ -11,6 +11,10 @@ export type HasTitle = {
 }
 
 type SubmitterIdCollectionLoginStrings = {
+  switchHint: string
+  stopTitle: string
+  stopDescription: string
+  collectLaterDescription: string
   movedToFields: string
   modalTitle: string
   currentCollectionExplanation: string
@@ -23,6 +27,7 @@ export interface SingpassSettingsStrings extends HasTitle {
     toggleLabel: string
     convert: string
     learnMore: string
+    stopCollecting: string
     makeTheSwitch: string
     closeFormToConvert: string
     loginFieldsLockAuth: string
