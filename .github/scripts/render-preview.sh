@@ -26,6 +26,18 @@ deploy() {
   render POST "/services/$1/deploys" '{"clearCache":"do_not_clear"}' >/dev/null
 }
 
+set_env() {
+  render PUT "/services/$1/env-vars/$2" "$(jq -n --arg v "$3" '{value: $v}')" >/dev/null
+}
+
+preview_env() {
+  set_env "$1" APP_URL "$2"
+  set_env "$1" GOOGLE_CAPTCHA_PUBLIC 6LeIxAcTAAAAAJcZVRqyHh4ePcyEl0YuGgZ7e8bq
+  set_env "$1" GOOGLE_CAPTCHA 6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
+  set_env "$1" TURNSTILE_CAPTCHA 1x00000000000000000000AA
+  set_env "$1" TURNSTILE_CAPTCHA_PRIVATE 1x0000000000000000000000000000000AA
+}
+
 output() {
   if [ -n "${GITHUB_OUTPUT:-}" ]; then echo "$1=$2" >>"$GITHUB_OUTPUT"; fi
   echo "$1=$2"
@@ -37,6 +49,7 @@ up() {
   if [ -n "$existing" ]; then
     read -r id url suspended <<<"$existing"
     if [ "$suspended" = suspended ]; then render POST "/services/$id/resume" >/dev/null; fi
+    preview_env "$id" "$url"
     deploy "$id"
     created=false
   else
@@ -64,7 +77,7 @@ up() {
       render POST "/services/$id/deploys/$first_deploy/cancel" >/dev/null || true
     fi
     render POST "/env-groups/$ENV_GROUP_ID/services/$id" >/dev/null
-    render PUT "/services/$id/env-vars/APP_URL" "$(jq -n --arg v "$url" '{value: $v}')" >/dev/null
+    preview_env "$id" "$url"
     deploy "$id"
     created=true
   fi
