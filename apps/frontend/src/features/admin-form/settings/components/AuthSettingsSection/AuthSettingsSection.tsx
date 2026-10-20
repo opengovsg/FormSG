@@ -45,6 +45,7 @@ export const AuthSettingsSection = ({
         isFormPublic={isFormPublic}
         containsMyInfoFields={containsMyInfoFields}
         containsLoginIdentityFields={containsLoginIdentityFields}
+        isSubmitterIdCollectionEnabled={settings.isSubmitterIdCollectionEnabled}
         formResponseMode={form?.responseMode}
       />
       <AuthSettingsDescriptionText />
