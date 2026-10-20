@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Divider, Stack } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
@@ -52,6 +53,18 @@ export const AuthSettingsSingpassSection = ({
   const offersIdentityFields =
     getLoginIdentityAttrsForAuthType(settings.authType).length > 0
 
+  const fieldsActionRef = useRef<HTMLAnchorElement>(null)
+  const previouslyCollected = useRef(settings.isSubmitterIdCollectionEnabled)
+  useEffect(() => {
+    const stoppedCollecting =
+      previouslyCollected.current && !settings.isSubmitterIdCollectionEnabled
+    previouslyCollected.current = settings.isSubmitterIdCollectionEnabled
+    if (!stoppedCollecting || !usesIdentityFields) return
+    // Wait for the outgoing modal's focus restoration cleanup to finish.
+    const frame = requestAnimationFrame(() => fieldsActionRef.current?.focus())
+    return () => cancelAnimationFrame(frame)
+  }, [settings.isSubmitterIdCollectionEnabled, usesIdentityFields])
+
   return (
     <>
       <SingpassAuthOptionsRadio
@@ -85,7 +98,10 @@ export const AuthSettingsSingpassSection = ({
           <Divider my="2.5rem" />
           <Stack spacing="1rem">
             <FormSubmitterIdCollectionToggle settings={settings} isDisabled />
-            <MovedToFieldsMessage authType={settings.authType} />
+            <MovedToFieldsMessage
+              authType={settings.authType}
+              actionRef={fieldsActionRef}
+            />
           </Stack>
         </>
       )}

@@ -1,3 +1,4 @@
+import { RefObject } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as ReactLink, useParams } from 'react-router-dom'
 import { Stack, Text } from '@chakra-ui/react'
@@ -19,8 +20,10 @@ import {
  */
 export const MovedToFieldsMessage = ({
   authType,
+  actionRef,
 }: {
   authType: FormAuthType
+  actionRef?: RefObject<HTMLAnchorElement>
 }): JSX.Element => {
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.settings.singpass.submitterIdCollection',
@@ -37,6 +40,7 @@ export const MovedToFieldsMessage = ({
         <Text>{t('otherFormsAutoConvertNotice')}</Text>
         <Button
           as={ReactLink}
+          ref={actionRef}
           variant="outline"
           to={`${ADMINFORM_ROUTE}/${formId}`}
           state={openFieldListTabState(tab)}
