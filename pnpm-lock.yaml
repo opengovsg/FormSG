@@ -1071,9 +1071,9 @@ importers:
       '@vitest/browser-playwright':
         specifier: ^4.1.12
         version: 4.1.12(msw@2.10.5(@types/node@24.0.10)(typescript@5.9.3))(playwright@1.64.1)(vite@6.4.3(@types/node@24.0.10)(lightningcss@1.32.0)(yaml@2.8.4))(vitest@4.1.12)
-      env-cmd:
-        specifier: ^10.1.0
-        version: 10.1.0
+      chromatic:
+        specifier: ^6.2.0
+        version: 6.24.1
       eslint:
         specifier: ^8.57.0
         version: 8.57.1
@@ -6926,6 +6926,10 @@ packages:
   chownr@3.0.0:
     resolution: {integrity: sha512-+IxzY9BZOQd/XuYPRmrvEVjF/nqj5kgT4kEq7VofrDoM1MxoRjEWkrCC3EtLi59TVawxTAn+orJwFQcrqEN1+g==}
     engines: {node: '>=18'}
+
+  chromatic@6.24.1:
+    resolution: {integrity: sha512-XbpdWWHvFpEHtcq1Km71UcuQ07effB+8q8L47E1Y7HJmJ4ZCoKCuPd8liNrbnvwEAxqfBZvTcONYU/3BPz2i5w==}
+    hasBin: true
 
   chrome-trace-event@1.0.4:
     resolution: {integrity: sha512-rNjApaLzuwaOTjCiT8lSDdGN1APCiqkChLMJxJPWLunPAt5fy8xgU9/jNOchV84wfIxrA0lRQB7oCT8jrn/wrQ==}
@@ -21879,6 +21883,8 @@ snapshots:
   chownr@2.0.0: {}
 
   chownr@3.0.0: {}
+
+  chromatic@6.24.1: {}
 
   chrome-trace-event@1.0.4: {}
 
