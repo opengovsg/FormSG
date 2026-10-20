@@ -126,11 +126,10 @@ export const LoginIdentityFieldSection = ({
     form.authType,
   ).includes(attrs[0])
   const isCollectedBySettings = form.isSubmitterIdCollectionEnabled
+  const mustCloseToConvert =
+    isCollectedBySettings && form.status === FormStatus.Public
   const isSectionDisabled =
-    isLoading ||
-    isLoginMissing ||
-    isAtLimit ||
-    form.status === FormStatus.Public
+    isLoading || isLoginMissing || isAtLimit || mustCloseToConvert
 
   const options = filteredAttrs.map(({ attr, originalIndex }) => (
     <DraggableLoginIdentityFieldListOption
@@ -155,6 +154,11 @@ export const LoginIdentityFieldSection = ({
           ).length + 1
         }
       />
+      {mustCloseToConvert && !isLoginMissing && (
+        <MessageBox>
+          <Trans i18nKey="features.adminForm.settings.singpass.submitterIdCollection.closeFormToConvert" />
+        </MessageBox>
+      )}
       <Droppable isDropDisabled droppableId={droppableId}>
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>

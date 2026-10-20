@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 
-import { MyInfoAttribute } from 'formsg-shared/types/field'
 import { FormAuthType, FormStatus } from 'formsg-shared/types/form'
+import { getLoginIdentityAttrsForAuthType } from 'formsg-shared/utils/login-identity'
 
 import { LoginIdentityFieldSection } from './LoginIdentityFieldSection'
 
@@ -56,10 +56,10 @@ vi.mock(
   }),
 )
 
-const renderSection = () =>
+const renderSection = (authType = state.form.authType) =>
   render(
     <LoginIdentityFieldSection
-      attrs={[MyInfoAttribute.UinFin]}
+      attrs={getLoginIdentityAttrsForAuthType(authType as FormAuthType)}
       droppableId="identity"
       searchValue=""
       withSectionLabel={false}
@@ -81,13 +81,39 @@ describe('identity picker conversion entry', () => {
     fireEvent.click(row)
     expect(screen.getByRole('dialog')).toHaveTextContent('Switch fields')
   })
-  it('blocks interaction for a public form', () => {
-    state.form.status = FormStatus.Public
-    renderSection()
-    fireEvent.click(screen.getByRole('button'))
-    expect(screen.getByRole('button')).toBeDisabled()
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-  })
+  it.each([FormAuthType.MyInfo, FormAuthType.CP])(
+    'blocks legacy public %s forms and explains how to proceed',
+    (authType) => {
+      state.form.authType = authType
+      state.form.status = FormStatus.Public
+      renderSection()
+      for (const row of screen.getAllByRole('button')) {
+        expect(row).toBeDisabled()
+        fireEvent.click(row)
+      }
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      expect(
+        screen.getByText('Close your form to convert.'),
+      ).toBeInTheDocument()
+    },
+  )
+  it.each([FormAuthType.MyInfo, FormAuthType.CP])(
+    'allows normal field creation on converted public %s forms',
+    (authType) => {
+      state.form.authType = authType
+      state.form.status = FormStatus.Public
+      state.form.isSubmitterIdCollectionEnabled = false
+      renderSection()
+      for (const row of screen.getAllByRole('button')) {
+        expect(row).not.toBeDisabled()
+        expect(row).toHaveAttribute('data-converts', 'false')
+        expect(row).toHaveAttribute('data-drag-disabled', 'false')
+      }
+      expect(
+        screen.queryByText('Close your form to convert.'),
+      ).not.toBeInTheDocument()
+    },
+  )
   it('preserves normal field creation and dragging after switching', () => {
     state.form.isSubmitterIdCollectionEnabled = false
     renderSection()
@@ -100,7 +126,7 @@ describe('identity picker conversion entry', () => {
   it.each(['auth', 'limit'])('preserves the %s blocker', (blocker) => {
     if (blocker === 'auth') state.form.authType = FormAuthType.CP
     else state.atLimit = true
-    renderSection()
+    renderSection(FormAuthType.MyInfo)
     expect(screen.getByRole('button')).toBeDisabled()
     fireEvent.click(screen.getByRole('button'))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
