@@ -92,22 +92,10 @@ export const SubmitterIdCollectionSetting = ({
           <ModalCloseButton />
           <ModalHeader>{t(`${login}.modalTitle`)}</ModalHeader>
           <ModalBody>
-            <Stack spacing="1rem">
-              <Text color="secondary.500">{t(`${login}.modalBody`)}</Text>
-              <ConversionPreview
-                attrs={attrs}
-                nextQuestionNumber={nextQuestionNumber}
-              />
-              <InlineMessage variant="warning">
-                <Text>
-                  <Trans
-                    t={t}
-                    i18nKey={`${login}.warning`}
-                    components={{ bold: <strong /> }}
-                  />
-                </Text>
-              </InlineMessage>
-            </Stack>
+            <ConversionPreview
+              attrs={attrs}
+              nextQuestionNumber={nextQuestionNumber}
+            />
           </ModalBody>
           <ModalFooter>
             <ButtonGroup>
@@ -122,7 +110,7 @@ export const SubmitterIdCollectionSetting = ({
                 isLoading={mutateConvertSubmitterIdCollection.isLoading}
                 onClick={() => mutateConvertSubmitterIdCollection.mutate()}
               >
-                {t('convert')}
+                {t('makeTheSwitch')}
               </Button>
             </ButtonGroup>
           </ModalFooter>
