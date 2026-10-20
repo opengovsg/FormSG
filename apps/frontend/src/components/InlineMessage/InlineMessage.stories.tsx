@@ -40,6 +40,6 @@ Warning.args = {
 export const Error = InlineMessageTemplate.bind({})
 Error.args = {
   variant: 'error',
-  children: `Only 30 Myinfo fields are allowed (30/30). [Learn more](http://localhost:6006)`,
+  children: `Only 50 Myinfo, NRIC/FIN and UEN fields are allowed (50/50). [Learn more](http://localhost:6006)`,
   useMarkdown: true,
 }

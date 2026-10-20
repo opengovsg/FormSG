@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
 import { Box, Text } from '@chakra-ui/react'
@@ -6,11 +5,7 @@ import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { Droppable } from '@hello-pangea/dnd'
 
 import { featureFlags } from 'formsg-shared/constants'
-import {
-  AdminFormDto,
-  FormAuthType,
-  FormResponseMode,
-} from 'formsg-shared/types'
+import { FormAuthType, FormResponseMode } from 'formsg-shared/types'
 
 import { GUIDE_MYINFO_BUILDER_FIELD } from '~constants/links'
 import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
@@ -32,14 +27,17 @@ import {
   CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
 } from '~features/admin-form/create/builder-and-design/constants'
 import { MYINFO_FIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
-import { isMyInfo } from '~features/myinfo/utils'
 import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../../../builder-and-design/useCreateTabForm'
 import { DraggableMyInfoFieldListOption } from '../FieldListOption'
 
 import { FieldSection } from './FieldSection'
-import { LoginIdentityFieldSection } from './LoginIdentityFieldSection'
+import {
+  LoginFieldLimitText,
+  LoginIdentityFieldSection,
+} from './LoginIdentityFieldSection'
+import { useLoginFieldLimit } from './useLoginFieldLimit'
 import { useOfferedLoginIdentityAttrs } from './useOfferedLoginIdentityAttrs'
 import { filterFieldsBySearchValue } from './utils'
 
@@ -64,17 +62,9 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
       (form?.responseMode === FormResponseMode.Multirespondent &&
         isMrfChildrenEnabled))
 
-  // myInfo should be disabled if
-  // 1. form auth type is not myInfo
-  // 2. # of myInfo fields >= 30
-  const isMyInfoDisabled = useMemo(
-    () =>
-      form
-        ? form.form_fields.filter(isMyInfo).length >= 30 ||
-          form.authType !== FormAuthType.MyInfo
-        : true,
-    [form],
-  )
+  const { isAtLimit } = useLoginFieldLimit()
+  const isMyInfoDisabled =
+    !form || form.authType !== FormAuthType.MyInfo || isAtLimit
   const isDisabled = isMyInfoDisabled || isLoading
 
   const filteredCreateMyInfoPersonalFields = filterFieldsBySearchValue(
@@ -239,22 +229,12 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
   )
 }
 
-type MyInfoTextProps = Pick<AdminFormDto, 'authType' | 'form_fields'>
-
-const MyInfoText = ({
-  authType,
-  form_fields,
-}: MyInfoTextProps): JSX.Element => {
+const MyInfoText = ({ authType }: { authType: FormAuthType }): JSX.Element => {
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.sidebar.fields.myInfoPanel',
   })
-  const isMyInfoDisabled = authType !== FormAuthType.MyInfo
-  const numMyInfoFields = useMemo(
-    () => form_fields.filter((ff) => isMyInfo(ff)).length,
-    [form_fields],
-  )
 
-  if (isMyInfoDisabled) {
+  if (authType !== FormAuthType.MyInfo) {
     return (
       <Text>
         {t('singpassDisabledBefore')}{' '}
@@ -268,7 +248,7 @@ const MyInfoText = ({
 
   return (
     <Text>
-      {t('myInfoFieldsLimit', { numMyInfoFields })}{' '}
+      <LoginFieldLimitText />{' '}
       <Link isExternal href={GUIDE_MYINFO_BUILDER_FIELD}>
         {t('learnMore')}
       </Link>
@@ -278,16 +258,16 @@ const MyInfoText = ({
 
 const MyInfoMessage = (): JSX.Element | null => {
   const { data: form } = useCreateTabForm()
-  const numMyInfoFields = form?.form_fields.filter((ff) => isMyInfo(ff)).length
-  const hasExceededLimit = useMemo(
-    () => numMyInfoFields && numMyInfoFields >= 30,
-    [numMyInfoFields],
-  )
+  const { isAtLimit } = useLoginFieldLimit()
 
   return form ? (
     <Box px="1.5rem" pt="2rem" pb="1.5rem">
-      <InlineMessage variant={hasExceededLimit ? 'error' : 'info'}>
-        <MyInfoText {...form} />
+      <InlineMessage
+        variant={
+          isAtLimit && form.authType === FormAuthType.MyInfo ? 'error' : 'info'
+        }
+      >
+        <MyInfoText authType={form.authType} />
       </InlineMessage>
     </Box>
   ) : null

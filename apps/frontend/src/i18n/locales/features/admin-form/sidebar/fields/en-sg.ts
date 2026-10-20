@@ -11,6 +11,8 @@ export const enSG: Fields = {
       'This form collects NRIC/FIN/UENs through <settingsLink>Singpass settings</settingsLink>. Convert that setting to add these fields.',
     convertedToast:
       'Your form now collects NRIC/FIN/UENs with login fields at the bottom of the form.',
+    fieldLimit:
+      'Only {max} Myinfo, NRIC/FIN and UEN fields are allowed ({count}/{max}).',
     // Keyed by login identity attribute.
     details: {
       uinfin:
@@ -272,8 +274,6 @@ export const enSG: Fields = {
     singpassDisabledBefore: 'Enable Singpass in the',
     singpassDisabledSettings: 'Settings',
     singpassDisabledAfter: 'tab to access these fields.',
-    myInfoFieldsLimit:
-      'Only 30 Myinfo fields are allowed ({numMyInfoFields}/30).',
     learnMore: 'Learn more',
   },
   fixedPaymentAmountField: {

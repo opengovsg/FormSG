@@ -7,6 +7,7 @@ export interface Fields {
     loginMissing: string
     convertFirst: string
     convertedToast: string
+    fieldLimit: string
     details: {
       uinfin: string
       uen: string
@@ -254,7 +255,6 @@ export interface Fields {
     singpassDisabledBefore: string
     singpassDisabledSettings: string
     singpassDisabledAfter: string
-    myInfoFieldsLimit: string
     learnMore: string
   }
   fixedPaymentAmountField: {
