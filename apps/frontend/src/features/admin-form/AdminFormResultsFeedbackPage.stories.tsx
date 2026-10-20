@@ -39,6 +39,8 @@ export default {
   component: FeedbackPage,
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: { handlers: { default: DEFAULT_MSW_ROUTES } },
   },
 } as Meta

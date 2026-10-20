@@ -18,6 +18,9 @@ const meta: Meta<typeof SaveSecretKeyContent> = {
   ),
   parameters: {
     layout: 'centered',
+    // The modal renders in a portal, so there is nothing in the story root for
+    // fit-to-content to measure; capture the viewport.
+    argos: { fitToContent: false },
   },
 }
 

@@ -9,6 +9,8 @@ const meta = {
   component: TurnstileOverlay,
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
 } satisfies Meta<typeof TurnstileOverlay>
 

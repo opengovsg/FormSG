@@ -17,6 +17,8 @@ export default {
   component: AdminNavBar,
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: [getUser({ delay: 0 })],
   },
   decorators: [

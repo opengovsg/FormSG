@@ -17,6 +17,8 @@ export default {
   decorators: [StoryRouter({ path: 'test', initialEntries: ['/test'] })],
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
   args: {
     formInfo: MOCK_FORM,

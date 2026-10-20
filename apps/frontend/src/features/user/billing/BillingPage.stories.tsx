@@ -25,6 +25,8 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     mockdate: new Date('2024-10-07T19:52:00.000Z'),
   },
 } as Meta

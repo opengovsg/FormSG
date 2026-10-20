@@ -28,6 +28,8 @@ export default {
   component: PublicHeader,
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
   decorators: [],
   args: DEFAULT_ARGS,

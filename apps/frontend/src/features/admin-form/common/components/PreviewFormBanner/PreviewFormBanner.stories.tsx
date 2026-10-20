@@ -15,6 +15,8 @@ export default {
   title: 'Features/AdminForm/PreviewFormBanner',
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: [getPreviewFormResponse()],
   },
   component: PreviewFormBannerComponent,

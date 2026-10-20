@@ -29,6 +29,8 @@ export default {
   decorators: [AdminFormCreatePageDecorator],
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: buildMswRoutes(),
   },
 } as Meta

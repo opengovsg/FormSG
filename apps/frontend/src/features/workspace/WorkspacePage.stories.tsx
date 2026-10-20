@@ -91,6 +91,8 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     mockdate: new Date('2021-12-01T06:22:27.219Z'),
     msw: BASE_MSW_HANDLERS,
   },

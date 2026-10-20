@@ -9,6 +9,8 @@ export default {
   title: 'Components/GovtMasthead',
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
   component: GovtMastheadComponent,
   decorators: [],

@@ -68,9 +68,6 @@ export const parameters = {
     'en-SG': 'English',
   },
   layout: 'fullscreen',
-  // Capture the whole viewport: modals render in a portal, so cropping to the
-  // story root leaves Argos with nothing to measure and the screenshot hangs.
-  argos: { fitToContent: false },
   viewport: {
     // Argos reads sizes from here, so the keys stories use are defined
     // explicitly rather than relying on the addon defaults.
