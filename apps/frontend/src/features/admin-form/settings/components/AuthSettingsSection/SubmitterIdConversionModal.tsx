@@ -39,18 +39,40 @@ export const SubmitterIdConversionModal = ({
   const attrs = getLoginIdentityAttrsForAuthType(authType)
   const login = authType === FormAuthType.CP ? 'corppass' : 'singpass'
   return (
-    <Modal isOpen={isOpen} onClose={onClose} returnFocusOnClose={false}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      returnFocusOnClose={false}
+      scrollBehavior="inside"
+    >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent
+        h={{
+          base: 'calc(100dvh - 2rem)',
+          md: 'min(52rem, calc(100dvh - 8rem))',
+        }}
+        maxH="none"
+        my={{ base: '1rem', md: '4rem' }}
+      >
         <ModalCloseButton />
-        <ModalHeader>{t(`${login}.modalTitle`)}</ModalHeader>
-        <ModalBody>
+        <ModalHeader flexShrink={0}>{t(`${login}.modalTitle`)}</ModalHeader>
+        <ModalBody
+          display="flex"
+          flexDirection="column"
+          flex={1}
+          minH={0}
+          overflow="hidden"
+        >
           <ConversionPreview
             attrs={attrs}
             nextQuestionNumber={nextQuestionNumber}
           />
         </ModalBody>
-        <ModalFooter>
+        <ModalFooter
+          flexShrink={0}
+          borderTopWidth="1px"
+          borderTopColor="neutral.300"
+        >
           <ButtonGroup>
             <Button variant="clear" colorScheme="secondary" onClick={onClose}>
               {tCommon('features.common.cancel')}

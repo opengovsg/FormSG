@@ -132,13 +132,19 @@ export const ConversionPreview = ({
   )
 
   return (
-    <Tabs isFitted>
-      <TabList px="2px" mb="1.5rem">
+    <Tabs isFitted display="flex" flexDirection="column" flex={1} minH={0}>
+      <TabList px="2px" mb="1.5rem" flexShrink={0}>
         <Tab>{t('preview.before')}</Tab>
         <Tab>{t('preview.after')}</Tab>
       </TabList>
-      <TabPanels>
-        <TabPanel p={0}>
+      <TabPanels flex={1} minH={0} overflow="hidden">
+        <TabPanel
+          p={0}
+          pb="1.5rem"
+          h="100%"
+          overflowY="auto"
+          sx={{ scrollbarGutter: 'stable' }}
+        >
           <Stack spacing="1rem">
             <Text color="secondary.500">
               {t(`${login}.currentCollectionExplanation`)}
@@ -156,10 +162,17 @@ export const ConversionPreview = ({
             {renderOutputTable(false)}
           </Stack>
         </TabPanel>
-        <TabPanel p={0}>
+        <TabPanel
+          p={0}
+          pb="1.5rem"
+          h="100%"
+          overflowY="auto"
+          sx={{ scrollbarGutter: 'stable' }}
+        >
           <Stack spacing="1rem">
             <Text color="secondary.500">
-              {t(`${login}.collectionExplanation`)}
+              {t(`${login}.collectionExplanation`)}{' '}
+              {t('preview.responsesUnchanged')}
             </Text>
             <PreviewCard label={t('preview.howYouCollect')}>
               <FormProvider {...formMethods}>
@@ -193,7 +206,6 @@ export const ConversionPreview = ({
               </FormProvider>
             </PreviewCard>
             {renderOutputTable(true)}
-            <Text color="secondary.500">{t('preview.responsesUnchanged')}</Text>
           </Stack>
         </TabPanel>
       </TabPanels>
