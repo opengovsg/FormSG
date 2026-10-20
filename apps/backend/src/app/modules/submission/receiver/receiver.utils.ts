@@ -1,4 +1,8 @@
-import type { FieldResponsesV4, FormFieldsV3 } from '@opengovsg/formsg-sdk'
+import type {
+  AttachmentAnswerV4,
+  FieldResponsesV4,
+  FormFieldsV3,
+} from '@opengovsg/formsg-sdk'
 import { adaptV3ToV4 } from '@opengovsg/formsg-sdk'
 import { VIRUS_SCANNER_SUBMISSION_VERSION } from 'formsg-shared/constants'
 import { BasicField, FieldResponse } from 'formsg-shared/types'
@@ -31,7 +35,8 @@ const attachmentAnswerV4Schema = z.object({
   value: z.string(),
   hasBeenScanned: z.boolean().default(false),
   md5Hash: z.string().optional(),
-})
+  // RATIONALE: pin to the AttachmentAnswerV4 type to avoid type drift
+}) satisfies z.ZodType<AttachmentAnswerV4, z.ZodTypeDef, unknown>
 
 export const mapRouteError: MapRouteError = (error) => {
   switch (error.constructor) {
@@ -149,8 +154,8 @@ export const addAttachmentToResponses = (
           ),
         )
       }
-      // The file part is the only carrier of the attachment's filename, which
-      // later becomes the answer value once the clean file is retrieved.
+      // NOTE: The file part is required since its the only source of the attachment's filename,
+      // which later becomes the answer value once the clean file is retrieved.
       const file = attachmentsByFieldId.get(id)
       if (!file) {
         return err(
