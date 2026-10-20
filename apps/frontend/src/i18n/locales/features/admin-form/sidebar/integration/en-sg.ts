@@ -4,7 +4,8 @@ export const enSG: Integration = {
   title: 'Integrations',
   header: {
     title: 'Start using integrations for your form',
-    description: 'Connect your forms with other tools and set-up automations.',
+    description:
+      'Connect your forms with other tools and set up automations.\nNote that sharing your secret key lets a platform read your responses.',
   },
   empty: {
     title: 'No integrations are available yet.',

@@ -209,7 +209,8 @@ export const LauncherApps = ({
             {t('features.common.betaBadgeLabel')}
           </Badge>
         </Text>
-        <Text textStyle="body-1" mt="1rem">
+        {/* The copy breaks itself so the secret-key note starts a new line. */}
+        <Text textStyle="body-1" mt="1rem" whiteSpace="pre-line">
           {t('features.adminForm.sidebar.integration.header.description')}
         </Text>
       </Flex>
