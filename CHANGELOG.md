@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.52.2](https://github.com/opengovsg/formsg/compare/v9.52.1...v9.52.2) (2026-10-20)
+
+
+### Bug Fixes
+
+* **mrf:** reject attachment responses without a file part (#10333) ([#10333](https://github.com/opengovsg/formsg/commit/13bedb92abaf6c328047361d987456359ed401a2))
+
 ## [9.52.1](https://github.com/opengovsg/formsg/compare/v9.52.0...v9.52.1) (2026-10-20)
 
 
