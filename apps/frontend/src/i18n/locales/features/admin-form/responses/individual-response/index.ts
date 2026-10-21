@@ -27,7 +27,7 @@ export interface ResponsesIndividualResponse {
       stepNumber: string
       stepNameLabel: string
       submitted: string
-      stepCompleted: string
+      stepSubmitted: string
       stepApproved: string
       stepRejected: string
       stepSent: string

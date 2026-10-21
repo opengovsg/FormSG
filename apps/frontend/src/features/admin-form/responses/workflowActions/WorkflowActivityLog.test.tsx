@@ -76,7 +76,7 @@ describe('WorkflowActivityLog', () => {
       />,
     )
     expect(titles()).toEqual([
-      'Response submitted',
+      'Step 1 submitted',
       'Step 2 · Team lead sent to lead@agency.gov.sg',
       'new@agency.gov.sg, other@agency.gov.sg added to Step 2 · Team lead by admin@agency.gov.sg',
       'Reminder triggered for Step 2 · Team lead by admin@agency.gov.sg',
@@ -115,7 +115,7 @@ describe('WorkflowActivityLog', () => {
       />,
     )
     expect(titles()).toEqual([
-      'Response submitted',
+      'Step 1 submitted',
       'Step 2 · Team lead sent to lead@agency.gov.sg',
       'Step 2 · Team lead rejected',
     ])
@@ -163,9 +163,9 @@ describe('WorkflowActivityLog', () => {
       />,
     )
     expect(titles()).toEqual([
-      'Response submitted',
-      'Step 2 · Team lead completed',
-      'Step 3 completed',
+      'Step 1 submitted',
+      'Step 2 · Team lead submitted',
+      'Step 3 submitted',
       'Workflow stopped',
     ])
     expect(

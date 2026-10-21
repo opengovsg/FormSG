@@ -78,9 +78,9 @@ export const WorkflowActivityLog = ({
             ? 'stepApproved'
             : index === 0
               ? 'submitted'
-              : 'stepCompleted',
+              : 'stepSubmitted',
         stepValues(index + 1),
-        rejected ? BiX : index === 0 && !approved ? BiFile : BiCheck,
+        rejected ? BiX : approved ? BiCheck : BiFile,
       ),
     ]
     if (!rejected && index < workflow.length - 1 && recipients.length) {
