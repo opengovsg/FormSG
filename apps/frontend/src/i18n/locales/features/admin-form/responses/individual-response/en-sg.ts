@@ -24,19 +24,18 @@ export const enSG: ResponsesIndividualResponse = {
     activityLog: {
       title: 'Activity log',
       stepNumber: 'Step {stepNumber}',
-      stepNameLabel: ' ({name})',
-      stepCompleted: '<bold>{step}</bold>{stepName} completed.',
-      stepCompletedSentTo:
-        '<bold>{step}</bold>{stepName} completed. Sent to <bold>{recipients}</bold> to respond.',
-      stepApproved: '<bold>{step}</bold>{stepName} approved.',
-      stepApprovedSentTo:
-        '<bold>{step}</bold>{stepName} approved. Sent to <bold>{recipients}</bold> to respond.',
-      stepNotApproved: '<bold>{step}</bold>{stepName} not approved.',
-      assigneeAdded:
-        '<bold>{emails}</bold> added to <bold>{step}</bold>{stepName} by <bold>{actor}</bold>.',
-      reminderSent:
-        'Reminder sent to <bold>{recipients}</bold> by <bold>{actor}</bold>.',
-      stopped: 'Workflow stopped by <bold>{actor}</bold>.',
+      stepNameLabel: ' · {name}',
+      submitted: '{step} submitted',
+      stepSubmitted: '{step}{stepName} submitted',
+      stepApproved: '{step}{stepName} approved',
+      stepRejected: '{step}{stepName} rejected',
+      stepSent: '{step}{stepName} sent to {recipients}',
+      actorClause: ' by {actor}',
+      assigneeAdded: '{emails} added to {step}{stepName}{actor}',
+      reminderTriggered: 'Reminder triggered for {step}{stepName}{actor}',
+      reminderSent: 'Reminder for {step}{stepName} sent to {recipients}',
+      stopped: 'Workflow stopped{actor}',
+      notificationRecipients: 'Notification recipients',
     },
     reassignButton: 'Reassign',
     addAssigneeModal: {
