@@ -10,6 +10,8 @@ export interface ResponsesIndividualResponse {
   previousResponse: string
   nextResponse: string
   statusTrackingLinkLabel: string
+  responsesTab: string
+  activityTab: string
   workflowActions: {
     whoIsNotifiedLabel: string
     whoIsNotifiedNone: string
