@@ -3,6 +3,7 @@ import { IconType } from 'react-icons'
 import {
   BiBell,
   BiCheck,
+  BiFile,
   BiSend,
   BiStopCircle,
   BiUserPlus,
@@ -79,7 +80,7 @@ export const WorkflowActivityLog = ({
               ? 'submitted'
               : 'stepCompleted',
         stepValues(index + 1),
-        rejected ? BiX : index === 0 && !approved ? BiSend : BiCheck,
+        rejected ? BiX : index === 0 && !approved ? BiFile : BiCheck,
       ),
     ]
     if (!rejected && index < workflow.length - 1 && recipients.length) {

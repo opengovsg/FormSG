@@ -286,33 +286,35 @@ const IndividualResponseContent = ({
       </SimpleGrid>
       {hasWorkflow ? (
         <>
-          <StackRow
-            label={MRF_WORKFLOW_STATUS_LABEL}
-            value={responseMrfStatus}
-            isLoading={isLoading}
-            isError={isError}
-          >
-            {responseMrfStatus ? (
-              <WorkflowStatusBadge status={responseMrfStatus} />
-            ) : null}
-          </StackRow>
-          <StackRow
-            label={MRF_PENDING_RESPONSE_AT_LABEL}
-            value={
-              isStopped ||
-              workflowStatus === undefined ||
-              workflowCurrentStepNumber === undefined ||
-              workflowNumTotalSteps === undefined
-                ? '-'
-                : getPendingResponseAtString({
-                    workflowStatus,
-                    workflowCurrentStepNumber,
-                    workflowNumTotalSteps,
-                  })
-            }
-            isLoading={isLoading}
-            isError={isError}
-          />
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
+            <StackRow
+              label={MRF_WORKFLOW_STATUS_LABEL}
+              value={responseMrfStatus}
+              isLoading={isLoading}
+              isError={isError}
+            >
+              {responseMrfStatus ? (
+                <WorkflowStatusBadge status={responseMrfStatus} />
+              ) : null}
+            </StackRow>
+            <StackRow
+              label={MRF_PENDING_RESPONSE_AT_LABEL}
+              value={
+                isStopped ||
+                workflowStatus === undefined ||
+                workflowCurrentStepNumber === undefined ||
+                workflowNumTotalSteps === undefined
+                  ? '-'
+                  : getPendingResponseAtString({
+                      workflowStatus,
+                      workflowCurrentStepNumber,
+                      workflowNumTotalSteps,
+                    })
+              }
+              isLoading={isLoading}
+              isError={isError}
+            />
+          </SimpleGrid>
           <StackRow
             label={MRF_STATUS_TRACKING_LABEL}
             value={''}
