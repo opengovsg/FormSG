@@ -11,6 +11,7 @@ const {
   DisabledCarriedForward,
   DisabledUnanswered,
   SameNamedLocalAndSponsored,
+  RecordMissingSubField,
 } = composeStories(stories)
 
 describe('editable children field', () => {
@@ -76,6 +77,43 @@ describe('same-named child records', () => {
     await user.click(screen.getByText('Submit'))
 
     await expectSubmitted('SPONSORED', 'sponsored')
+  })
+})
+
+describe('record missing a sub-field', () => {
+  // Records are listed in MyInfo order: SITI RY (has birth cert no.),
+  // THRO RY (no birth cert no.).
+  const pickRecord = async (
+    user: ReturnType<typeof userEvent.setup>,
+    position: number,
+  ) => {
+    const input = screen.getByRole('combobox')
+    await user.click(input)
+    await user.type(input, `${'{arrowdown}'.repeat(position + 1)}{enter}`)
+  }
+
+  it('clears and locks the blank sub-field, replacing the previous record value', async () => {
+    const user = userEvent.setup()
+    render(<RecordMissingSubField />)
+    const bcInput = screen.getByRole('textbox', { name: /birth certificate/i })
+
+    await pickRecord(user, 0)
+    expect(bcInput).toHaveValue('T1234567X')
+    await pickRecord(user, 1)
+
+    expect(bcInput).toHaveValue('')
+    expect(bcInput).toBeDisabled()
+  })
+
+  it('blocks submission, as the locked sub-field is still required', async () => {
+    const user = userEvent.setup()
+    render(<RecordMissingSubField />)
+
+    await pickRecord(user, 1)
+    await user.click(screen.getByText('Submit'))
+
+    expect(await screen.findByText(REQUIRED_ERROR)).toBeInTheDocument()
+    expect(screen.queryByText(/You have submitted:/)).not.toBeInTheDocument()
   })
 })
 
