@@ -11,6 +11,8 @@ export const enSG: ResponsesIndividualResponse = {
   previousResponse: 'Previous response',
   nextResponse: 'Next response',
   statusTrackingLinkLabel: 'View',
+  responsesTab: 'Responses',
+  activityTab: 'Activity',
   workflowActions: {
     whoIsNotifiedLabel: 'Who will be notified',
     whoIsNotifiedNone: 'No one will be notified.',

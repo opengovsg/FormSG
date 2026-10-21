@@ -96,9 +96,11 @@ const pendingMrf = (
 const renderSection = (
   mrf: SubmissionMrfMetadata = pendingMrf(),
   recipients: string[] = ['lead@agency.gov.sg'],
+  withOverview = false,
 ) =>
   render(
     <WorkflowActionsSection
+      overview={withOverview ? <div>Response overview</div> : undefined}
       submissionId="mock-submission-id"
       mrf={mrf}
       history={{
@@ -124,6 +126,30 @@ describe('WorkflowActionsSection', () => {
     mockIsV2 = true
     mockMutate.mockReset()
     mockAddAssignees.mockReset()
+  })
+
+  it('keeps the overview alongside eligible actions', () => {
+    renderSection(pendingMrf(), ['lead@agency.gov.sg'], true)
+    expect(screen.getByText('Response overview')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: STOP })).toBeInTheDocument()
+  })
+
+  it.each([
+    pendingMrf({ stoppedAt: '2026-10-07T08:00:00.000Z' }),
+    pendingMrf({ workflowStatus: WorkflowStatus.APPROVED }),
+    pendingMrf({ workflowStatus: WorkflowStatus.REJECTED }),
+  ])('keeps the overview without actions for a terminal workflow', (mrf) => {
+    renderSection(mrf, [], true)
+    expect(screen.getByText('Response overview')).toBeInTheDocument()
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
+  })
+
+  it('keeps the overview when no actions are eligible', () => {
+    mockIsGateOn = false
+    mockIsV2 = false
+    renderSection(pendingMrf(), [], true)
+    expect(screen.getByText('Response overview')).toBeInTheDocument()
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
   })
 
   it('stops the workflow with the chosen emails', async () => {
