@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.54.0](https://github.com/opengovsg/formsg/compare/v9.53.0...v9.54.0) (2026-10-21)
+
+
+### Features
+
+* **analytics:** record product analytics events for Metabase (#10341) ([#10341](https://github.com/opengovsg/formsg/commit/091d8a17cab697b3dcdd85f74196ad2f6dd993f1))
+
+
+### CI
+
+* **render:** use captcha test keys on PR previews (#10343) ([#10343](https://github.com/opengovsg/formsg/commit/6f62db79e16ffda6be016177b47cc4b5a1ff2e9d))
+* **storybook:** replace Chromatic with Argos (#10329) ([#10329](https://github.com/opengovsg/formsg/commit/1a773934ff21ed9b22cc4d24c7fdfb6ddb5c4878))
+
 ## [9.53.0](https://github.com/opengovsg/formsg/compare/v9.52.4...v9.53.0) (2026-10-20)
 
 
