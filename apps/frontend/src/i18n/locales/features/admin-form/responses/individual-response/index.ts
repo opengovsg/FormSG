@@ -26,14 +26,17 @@ export interface ResponsesIndividualResponse {
       title: string
       stepNumber: string
       stepNameLabel: string
-      stepCompleted: string
-      stepCompletedSentTo: string
+      submitted: string
+      stepSubmitted: string
       stepApproved: string
-      stepApprovedSentTo: string
-      stepNotApproved: string
+      stepRejected: string
+      stepSent: string
+      actorClause: string
       assigneeAdded: string
+      reminderTriggered: string
       reminderSent: string
       stopped: string
+      notificationRecipients: string
     }
     reassignButton: string
     addAssigneeModal: {
