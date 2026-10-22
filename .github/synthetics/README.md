@@ -1,11 +1,10 @@
 # Datadog synthetic smoke tests
 
-Definitions for the `ci:formsg-smoke` suite, managed as code. The tests run
-**only via CI triggers** — the release gate (`release.yml` → `smoke-stg`,
-against stg, blocking all prod deploys) and PR previews
-(`render-preview.yml`, against the Render preview URL). They are kept
-`status: paused` in Datadog so they never run on a Datadog schedule or alert
-on their own.
+This folder contains definitions for the `ci:formsg-smoke` suite, managed as code. The tests run two ways:
+1. **only via CI triggers** — the release gate (`release.yml` → `smoke-stg`, against stg, blocking all prod deploys)
+2. **PR previews** (`render-preview.yml`, against the Render preview URL). 
+
+Tests are kept `status: paused` in Datadog so they never run on a Datadog schedule or alert on their own.
 
 ## Layout
 
@@ -18,9 +17,8 @@ on their own.
 
 ## Conventions
 
-- Every request in a test routes through the `START_URL` variable; CI
-  overrides it per run with the environment under test. Never hardcode an
-  environment URL in a step.
+- Every request in a test routes through the `START_URL` variable
+- CI overrides it per run with the environment under test
 - Browser-test element locators use `userLocator` with stable CSS selectors
   (prefer `data-testid` / `id` / `name`), not recorded multi-locators.
 - Tags: `team:formsg ci:formsg-smoke managed-by:formsg-repo`.
@@ -30,11 +28,17 @@ on their own.
 Editing an existing test: change its JSON, open a PR. On merge to develop,
 `synthetics-sync.yml` pushes it to Datadog.
 
-Adding a test: add the JSON, run `sync.sh push` locally with your own
-`DD_API_KEY`/`DD_APP_KEY` (needs `synthetics_read` + `synthetics_write`),
-and commit the resulting `ids.json` entry in the same PR. The sync workflow
-fails if a definition has no `ids.json` entry — it never creates tests, so
-CI can't silently duplicate them.
+Adding a test: add the JSON, open a PR. On merge, the sync workflow creates
+the test in Datadog and commits the new `ids.json` entry back to develop,
+which adds it to the CI trigger list. Duplication is prevented by name:
+before creating, `sync.sh push` adopts any live test with the same `name`,
+so re-runs (or a lost ids.json entry) update rather than duplicate. Keep
+test names unique.
+
+You can also run `sync.sh push` locally with your own
+`DD_API_KEY`/`DD_APP_KEY` (needs `synthetics_read` + `synthetics_write`) to
+create the test ahead of merge — e.g. to record placeholder steps in the UI
+first — and commit the `ids.json` entry in the same PR.
 
 Datadog UI edits are overwritten on the next sync — `sync.sh pull` first if
 you prototyped a change in the UI and want to keep it.

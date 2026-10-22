@@ -8,8 +8,10 @@ set -euo pipefail
 #   sync.sh push   create/update every tests/*.json in Datadog
 #   sync.sh pull   overwrite tests/*.json from the live Datadog definitions
 #
-# push on a file with no ids.json entry CREATES the test and records its new
-# public_id — commit the ids.json change, CI resolves test ids from it.
+# push on a file with no ids.json entry first looks for a live test with the
+# same name (adopts its id) and only then CREATES one, recording the public_id
+# in ids.json — so re-running push can never duplicate a test, and CI commits
+# the ids.json change back. Test names are the identity key: keep them unique.
 # Requires DD_API_KEY and DD_APP_KEY (synthetics_read + synthetics_write).
 
 : "${DD_API_KEY:?}" "${DD_APP_KEY:?}"
@@ -32,7 +34,7 @@ write_path() { if [ "$1" = browser ]; then echo "/tests/browser"; else echo "/te
 read_path() { if [ "$1" = browser ]; then echo "/tests/browser/$2"; else echo "/tests/$2"; fi; }
 
 push() {
-  local file slug type id created=false failed=
+  local file slug type id name created=false failed=
   for file in "$DIR"/tests/*.json; do
     slug=$(basename "$file" .json)
     type=$(jq -r '.type' "$file")
@@ -44,7 +46,19 @@ push() {
         failed="$failed $slug"
       fi
     else
-      if id=$(dd POST "$(write_path "$type")" --data @"$file" | jq -r '.public_id') && [ -n "$id" ]; then
+      # Adopt a live test with the same name before creating, so a lost
+      # ids.json entry (failed commit-back, manual wipe) never duplicates.
+      name=$(jq -r '.name' "$file")
+      id=$(dd GET "/tests" | jq -r --arg n "$name" '[.tests[] | select(.name == $n).public_id][0] // empty')
+      if [ -n "$id" ]; then
+        if dd PUT "$(write_path "$type")/$id" --data @"$file" >/dev/null; then
+          jq --arg s "$slug" --arg id "$id" '.[$s] = $id' "$IDS" >"$IDS.tmp" && mv "$IDS.tmp" "$IDS"
+          echo "adopted $slug ($id)"
+          created=true
+        else
+          failed="$failed $slug"
+        fi
+      elif id=$(dd POST "$(write_path "$type")" --data @"$file" | jq -r '.public_id') && [ -n "$id" ]; then
         jq --arg s "$slug" --arg id "$id" '.[$s] = $id' "$IDS" >"$IDS.tmp" && mv "$IDS.tmp" "$IDS"
         echo "created $slug ($id)"
         created=true
