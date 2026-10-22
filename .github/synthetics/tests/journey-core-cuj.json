@@ -1,0 +1,820 @@
+{
+  "name": "[formsg-smoke] Core CUJ: create, publish, submit, view, download (MRF)",
+  "type": "browser",
+  "status": "paused",
+  "message": "CI smoke journey — OTP login, create MRF form (no workflow), add fields, publish, public submission with attachment + verified email + respondent copy, then unlock results and export CSV. Runs only via CI triggers. Steps named PLACEHOLDER must be recorded once in the Datadog UI (email OTP extraction has no public API schema), then reconciled with sync.sh pull.",
+  "tags": ["team:formsg", "ci:formsg-smoke", "managed-by:formsg-repo"],
+  "locations": ["aws:ap-southeast-1"],
+  "config": {
+    "request": {
+      "method": "GET",
+      "url": "{{ START_URL }}/login"
+    },
+    "variables": [
+      {
+        "name": "START_URL",
+        "type": "text",
+        "pattern": "https://stg.form.gov.sg",
+        "example": "https://stg.form.gov.sg"
+      },
+      { "name": "EMAIL", "type": "email" }
+    ]
+  },
+  "options": {
+    "device_ids": ["chrome.laptop_large"],
+    "tick_every": 604800,
+    "min_failure_duration": 0,
+    "retry": { "count": 2, "interval": 5000 }
+  },
+  "steps": [
+    {
+      "type": "typeText",
+      "name": "Enter login email",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "input[name='email']" }]
+          }
+        },
+        "value": "{{ EMAIL }}"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Request OTP",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[@type='submit'][contains(., 'Log in')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "assertPageContains",
+      "name": "OTP prompt shown",
+      "timeout": 60,
+      "params": { "value": "Enter OTP sent to" }
+    },
+    {
+      "type": "assertEmail",
+      "name": "PLACEHOLDER record in UI: login OTP email arrives, extract 8-char code after dash into LOGIN_OTP (subject: One-Time Password (OTP) for FormSG; body: Your OTP is XXX-########)",
+      "timeout": 120,
+      "params": {}
+    },
+    {
+      "type": "typeText",
+      "name": "Enter login OTP",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "input[name='otp']" }]
+          }
+        },
+        "value": "{{ LOGIN_OTP }}"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Sign in",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[@type='submit'][contains(., 'Sign in')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Dismiss announcement modal (if shown)",
+      "allowFailure": true,
+      "timeout": 15,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "[aria-label='Close']" }]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Dismiss emergency contact modal (if shown)",
+      "allowFailure": true,
+      "timeout": 15,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "[aria-label='Close']" }]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Create form",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[contains(., 'Create form')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "typeText",
+      "name": "Form title",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "input[name='title']" }]
+          }
+        },
+        "value": "[smoke] core CUJ"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Select multi-respondent mode (absent when mrfCutover flag makes MRF the default)",
+      "allowFailure": true,
+      "timeout": 15,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[contains(., 'Two or more respondents')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Create MRF form",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": "[data-dd-action-name='dashboard.create.create_multirespondent']"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "extractFromJavascript",
+      "name": "Extract secret key",
+      "timeout": 60,
+      "params": {
+        "code": "return document.querySelector(\"code[data-dd-privacy='mask']\").textContent.trim()",
+        "variable": { "name": "SECRET_KEY" }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Download key",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[contains(., 'Download key')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Acknowledge key loss",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//label[contains(., 'If I lose my Secret Key')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Confirm key saved",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[contains(., 'I have saved my Secret Key safely')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "extractFromJavascript",
+      "name": "Extract form id from admin URL",
+      "timeout": 60,
+      "params": {
+        "code": "return window.location.pathname.match(/[a-f0-9]{24}/)[0]",
+        "variable": { "name": "FORM_ID" }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Open field drawer",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "[aria-label='Add Fields']" }]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Add short answer field",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": "[data-rfd-drag-handle-draggable-id='textfield']"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "typeText",
+      "name": "Name the short answer field",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "input[name='title']" }]
+          }
+        },
+        "value": "Full name"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Save short answer field",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[contains(., 'Create field')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Add attachment field",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": "[data-rfd-drag-handle-draggable-id='attachment']"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Save attachment field",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[contains(., 'Create field')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Add email field",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": "[data-rfd-drag-handle-draggable-id='email']"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Enable OTP verification",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": "label.chakra-switch:has(input[name='isVerifiable'])"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Enable email confirmation (respondent copy)",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": "label.chakra-switch:has(input[name='autoReplyOptions.hasAutoReply'])"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Include response summary PDF (exercises pdf-gen)",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": "label.chakra-switch:has(input[name='autoReplyOptions.includeFormSummary'])"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "typeText",
+      "name": "Respondent copy subject",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": "input[name='autoReplyOptions.autoReplySubject']"
+              }
+            ]
+          }
+        },
+        "value": "[smoke] respondent copy"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Save email field",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[contains(., 'Create field')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "goToUrl",
+      "name": "Open general settings",
+      "timeout": 60,
+      "params": {
+        "value": "{{ START_URL }}/admin/form/{{ FORM_ID }}/settings/general"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Toggle form status open",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//input[@aria-label='Toggle form status']/ancestor::label"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "typeText",
+      "name": "Enter secret key to activate",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "input[name='secretKey']" }]
+          }
+        },
+        "value": "{{ SECRET_KEY }}"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Acknowledge activation",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//label[contains(., 'If I lose my key')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Activate form",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[contains(., 'Activate form')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "assertElementContent",
+      "name": "Form is open",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "#form-status" }]
+          }
+        },
+        "check": "contains",
+        "value": "OPEN"
+      }
+    },
+    {
+      "type": "goToUrl",
+      "name": "Open public form",
+      "timeout": 60,
+      "params": { "value": "{{ START_URL }}/{{ FORM_ID }}" }
+    },
+    {
+      "type": "typeText",
+      "name": "Fill short answer",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              { "type": "css", "value": "input[aria-label='1. Full name']" }
+            ]
+          }
+        },
+        "value": "Datadog Smoke"
+      }
+    },
+    {
+      "type": "uploadFiles",
+      "name": "Upload attachment (exercises virus scanner)",
+      "timeout": 120,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "input[type='file']" }]
+          }
+        },
+        "files": [
+          {
+            "name": "smoke.txt",
+            "content": "Zm9ybXNnIHNtb2tlIHRlc3QgYXR0YWNobWVudAo=",
+            "type": "text/plain"
+          }
+        ]
+      }
+    },
+    {
+      "type": "typeText",
+      "name": "Fill respondent email",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              { "type": "css", "value": "input[autocomplete='email']" }
+            ]
+          }
+        },
+        "value": "{{ EMAIL }}"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Request email verification OTP",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "button[name$='-verify']" }]
+          }
+        }
+      }
+    },
+    {
+      "type": "assertEmail",
+      "name": "PLACEHOLDER record in UI: verification OTP email arrives, extract code into VERIFY_OTP (subject: Your One-Time Password (OTP) for submitting a form on FormSG; body: Your email OTP is XXX-<b>########</b>)",
+      "timeout": 120,
+      "params": {}
+    },
+    {
+      "type": "typeText",
+      "name": "Enter verification OTP",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "input[name='otp']" }]
+          }
+        },
+        "value": "{{ VERIFY_OTP }}"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Submit verification OTP",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": "[aria-label='Submit OTP for verification']"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Submit form",
+      "timeout": 120,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[contains(., 'Submit now')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "assertPageContains",
+      "name": "Submission accepted",
+      "timeout": 120,
+      "params": { "value": "Response ID:" }
+    },
+    {
+      "type": "assertEmail",
+      "name": "PLACEHOLDER record in UI: respondent copy email arrives (subject contains '[smoke] respondent copy') — arrival proves SES + pdf-gen",
+      "timeout": 180,
+      "params": {}
+    },
+    {
+      "type": "goToUrl",
+      "name": "Open results page",
+      "timeout": 60,
+      "params": { "value": "{{ START_URL }}/admin/form/{{ FORM_ID }}/results" }
+    },
+    {
+      "type": "typeText",
+      "name": "Enter secret key to unlock responses",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "[data-testid='secretKey']" }]
+          }
+        },
+        "value": "{{ SECRET_KEY }}"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Unlock responses",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[contains(., 'Unlock responses')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Open the submitted response",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              { "type": "css", "value": "[data-testid^='response-row-']" }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "assertPageContains",
+      "name": "Decrypted answer visible",
+      "timeout": 60,
+      "params": { "value": "Datadog Smoke" }
+    },
+    {
+      "type": "goToUrl",
+      "name": "Back to results listing",
+      "timeout": 60,
+      "params": { "value": "{{ START_URL }}/admin/form/{{ FORM_ID }}/results" }
+    },
+    {
+      "type": "click",
+      "name": "Open download menu",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              { "type": "css", "value": "[aria-label='Download options']" }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Choose CSV export",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//*[contains(., 'Spreadsheet of responses (.csv)')][self::button or self::label or @role='menuitem' or @role='menuitemcheckbox']"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "assertFileDownload",
+      "name": "CSV downloaded (client-side decryption works)",
+      "timeout": 120,
+      "params": {
+        "file": { "sizeCheck": { "type": "greaterThan", "value": 1 } }
+      }
+    }
+  ]
+}

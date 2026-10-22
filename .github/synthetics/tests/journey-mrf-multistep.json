@@ -1,0 +1,652 @@
+{
+  "name": "[formsg-smoke] MRF multi-step: workflow invite, step 2 via email link",
+  "type": "browser",
+  "status": "paused",
+  "message": "CI smoke journey — create MRF form with a 2-step workflow (step 2 = static email), publish, submit step 1 publicly, open the 'Action required' invitation from the mailbox, complete step 2. Runs only via CI triggers. Steps named PLACEHOLDER must be recorded once in the Datadog UI (email OTP extraction has no public API schema), then reconciled with sync.sh pull.",
+  "tags": ["team:formsg", "ci:formsg-smoke", "managed-by:formsg-repo"],
+  "locations": ["aws:ap-southeast-1"],
+  "config": {
+    "request": {
+      "method": "GET",
+      "url": "{{ START_URL }}/login"
+    },
+    "variables": [
+      {
+        "name": "START_URL",
+        "type": "text",
+        "pattern": "https://stg.form.gov.sg",
+        "example": "https://stg.form.gov.sg"
+      },
+      { "name": "EMAIL", "type": "email" }
+    ]
+  },
+  "options": {
+    "device_ids": ["chrome.laptop_large"],
+    "tick_every": 604800,
+    "min_failure_duration": 0,
+    "retry": { "count": 2, "interval": 5000 }
+  },
+  "steps": [
+    {
+      "type": "typeText",
+      "name": "Enter login email",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "input[name='email']" }]
+          }
+        },
+        "value": "{{ EMAIL }}"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Request OTP",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[@type='submit'][contains(., 'Log in')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "assertEmail",
+      "name": "PLACEHOLDER record in UI: login OTP email arrives, extract 8-char code after dash into LOGIN_OTP",
+      "timeout": 120,
+      "params": {}
+    },
+    {
+      "type": "typeText",
+      "name": "Enter login OTP",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "input[name='otp']" }]
+          }
+        },
+        "value": "{{ LOGIN_OTP }}"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Sign in",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[@type='submit'][contains(., 'Sign in')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Dismiss announcement modal (if shown)",
+      "allowFailure": true,
+      "timeout": 15,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "[aria-label='Close']" }]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Dismiss emergency contact modal (if shown)",
+      "allowFailure": true,
+      "timeout": 15,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "[aria-label='Close']" }]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Create form",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[contains(., 'Create form')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "typeText",
+      "name": "Form title",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "input[name='title']" }]
+          }
+        },
+        "value": "[smoke] MRF multi-step"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Select multi-respondent mode (absent when mrfCutover flag makes MRF the default)",
+      "allowFailure": true,
+      "timeout": 15,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[contains(., 'Two or more respondents')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Create MRF form",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": "[data-dd-action-name='dashboard.create.create_multirespondent']"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "extractFromJavascript",
+      "name": "Extract secret key",
+      "timeout": 60,
+      "params": {
+        "code": "return document.querySelector(\"code[data-dd-privacy='mask']\").textContent.trim()",
+        "variable": { "name": "SECRET_KEY" }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Download key",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[contains(., 'Download key')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Acknowledge key loss",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//label[contains(., 'If I lose my Secret Key')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Confirm key saved",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[contains(., 'I have saved my Secret Key safely')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "extractFromJavascript",
+      "name": "Extract form id from admin URL",
+      "timeout": 60,
+      "params": {
+        "code": "return window.location.pathname.match(/[a-f0-9]{24}/)[0]",
+        "variable": { "name": "FORM_ID" }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Open field drawer",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "[aria-label='Add Fields']" }]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Add step 1 field",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": "[data-rfd-drag-handle-draggable-id='textfield']"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "typeText",
+      "name": "Name step 1 field",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "input[name='title']" }]
+          }
+        },
+        "value": "Step 1 answer"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Save step 1 field",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[contains(., 'Create field')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Add step 2 field",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": "[data-rfd-drag-handle-draggable-id='textfield']"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "typeText",
+      "name": "Name step 2 field",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "input[name='title']" }]
+          }
+        },
+        "value": "Step 2 answer"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Save step 2 field",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[contains(., 'Create field')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Open workflow tab",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              { "type": "css", "value": "[aria-label='Add workflow']" }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Add workflow step",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              { "type": "css", "value": "[data-testid='workflow-add-step']" }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Choose specific email respondent",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//input[@name='workflow_type'][@value='static']/ancestor::label"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "typeText",
+      "name": "Step 2 respondent email",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              { "type": "css", "value": "#emails input, input#emails" }
+            ]
+          }
+        },
+        "value": "{{ EMAIL }}"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Assign step 2 field to this step (shakedown: exact control may differ)",
+      "allowFailure": true,
+      "timeout": 15,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//label[contains(., 'Step 2 answer')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Save workflow step",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": "[data-testid='save-action-group-submit']"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "goToUrl",
+      "name": "Open general settings",
+      "timeout": 60,
+      "params": {
+        "value": "{{ START_URL }}/admin/form/{{ FORM_ID }}/settings/general"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Toggle form status open",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//input[@aria-label='Toggle form status']/ancestor::label"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "typeText",
+      "name": "Enter secret key to activate",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [{ "type": "css", "value": "input[name='secretKey']" }]
+          }
+        },
+        "value": "{{ SECRET_KEY }}"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Acknowledge activation",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//label[contains(., 'If I lose my key')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Activate form",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[contains(., 'Activate form')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "goToUrl",
+      "name": "Open public form",
+      "timeout": 60,
+      "params": { "value": "{{ START_URL }}/{{ FORM_ID }}" }
+    },
+    {
+      "type": "typeText",
+      "name": "Fill step 1 answer",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              { "type": "css", "value": "input[aria-label='1. Step 1 answer']" }
+            ]
+          }
+        },
+        "value": "step one done"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Submit step 1",
+      "timeout": 120,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[contains(., 'Submit now')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "assertPageContains",
+      "name": "Step 1 accepted",
+      "timeout": 120,
+      "params": { "value": "Response ID:" }
+    },
+    {
+      "type": "goToEmailLink",
+      "name": "Open step 2 invitation link (email subject: Action required - [smoke] MRF multi-step)",
+      "timeout": 180,
+      "params": { "value": "/edit/" }
+    },
+    {
+      "type": "typeText",
+      "name": "Fill step 2 answer",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              { "type": "css", "value": "input[aria-label='2. Step 2 answer']" }
+            ]
+          }
+        },
+        "value": "step two done"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Submit step 2",
+      "timeout": 120,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[contains(., 'Submit now')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "assertPageContains",
+      "name": "Step 2 accepted — workflow complete",
+      "timeout": 120,
+      "params": { "value": "Response ID:" }
+    }
+  ]
+}
