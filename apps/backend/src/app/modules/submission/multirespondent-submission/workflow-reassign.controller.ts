@@ -66,6 +66,7 @@ const addAssigneesToPendingMrfSubmission: ControllerHandler<
       addAssigneesToPendingStep({
         formId,
         submissionId,
+        submissionSecretKey,
         emails,
         expectedStepNumber,
         actor: user,

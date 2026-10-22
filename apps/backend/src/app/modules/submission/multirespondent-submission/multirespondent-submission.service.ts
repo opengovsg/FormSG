@@ -14,6 +14,7 @@ import {
   SubmittedStep,
   WorkflowEventType,
   WorkflowStatus,
+  WorkflowType,
 } from 'formsg-shared/types'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
 import moment from 'moment'
@@ -77,6 +78,7 @@ import {
   MrfReminderRecipientEmailsEmptyError,
   MrfWorkflowNotPendingError,
   MrfWorkflowStoppedError,
+  ProcessingError,
   ResponseModeError,
   SubmissionNotFoundError,
   SubmissionSaveError,
@@ -128,6 +130,7 @@ import {
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
 import {
   buildMrfResponseJson,
+  decryptSubmissionResponsesToV4,
   extractEmailAnswersFromResponses,
   extractRespondentCopyEmailDatas,
   formatSubmittedStepTimestamp,
@@ -2366,12 +2369,14 @@ export const stopMultirespondentSubmission = ({
 export const addAssigneesToPendingStep = ({
   formId,
   submissionId,
+  submissionSecretKey,
   emails,
   expectedStepNumber,
   actor,
 }: {
   formId: string
   submissionId: string
+  submissionSecretKey: string
   emails: string[]
   /** The pending step the admin saw, so a stale page cannot add to a later step. */
   expectedStepNumber: number
@@ -2382,6 +2387,8 @@ export const addAssigneesToPendingStep = ({
   | SubmissionNotFoundError
   | MrfWorkflowNotPendingError
   | MrfAssigneeAlreadyAssignedError
+  | ProcessingError
+  | InvalidWorkflowTypeError
 > =>
   getMultirespondentSubmission(submissionId)
     .andThen((submission) => {
@@ -2402,19 +2409,43 @@ export const addAssigneesToPendingStep = ({
         return errAsync(new MrfWorkflowNotPendingError())
       }
 
-      const assigned = new Set([
-        ...(
-          submittedSteps[submittedSteps.length - 1].nextStepRecipientEmails ??
-          []
-        ).map((email) => email.toLowerCase()),
-        ...getAddedAssignees(submission.workflowEvents, stepNumber),
-      ])
+      let recipients =
+        submittedSteps[submittedSteps.length - 1].nextStepRecipientEmails
+      const hasRecipientMetadata = recipients !== undefined
+      if (recipients === undefined) {
+        const step = submission.workflow[stepNumber - 1]
+        let responses: FieldResponsesV4 = {}
+        if (step.workflow_type !== WorkflowType.Static) {
+          const decrypted = decryptSubmissionResponsesToV4(
+            submissionSecretKey,
+            {
+              encryptedContent: submission.encryptedContent,
+              version: submission.version,
+            },
+          )
+          if (decrypted.isErr()) return errAsync(decrypted.error)
+          responses = decrypted.value
+        }
+        const resolved = retrieveWorkflowStepEmailAddresses(
+          submission,
+          step,
+          responses,
+        )
+        if (resolved.isErr()) return errAsync(resolved.error)
+        recipients = resolved.value
+      }
+      const assigned = new Set(recipients.map((email) => email.toLowerCase()))
       const alreadyAssigned = emails.filter((email) => assigned.has(email))
       return alreadyAssigned.length > 0
         ? errAsync(new MrfAssigneeAlreadyAssignedError(alreadyAssigned))
-        : okAsync(stepNumber)
+        : okAsync({
+            stepNumber,
+            recipientsToAdd: hasRecipientMetadata
+              ? emails
+              : [...recipients, ...emails],
+          })
     })
-    .andThen((stepNumber) =>
+    .andThen(({ stepNumber, recipientsToAdd }) =>
       ResultAsync.fromPromise(
         // RATIONALE: the filter re-checks, in the same write, that the
         // workflow is still pending on this step and nobody added these
@@ -2426,17 +2457,18 @@ export const addAssigneesToPendingStep = ({
             form: formId,
             stoppedAt: { $exists: false },
             submittedSteps: { $size: stepNumber - 1 },
-            workflowEvents: {
-              $not: {
-                $elemMatch: {
-                  type: WorkflowEventType.AssigneesAdded,
-                  stepNumber,
-                  emails: { $in: emails },
-                },
-              },
+            [`submittedSteps.${stepNumber - 2}.nextStepRecipientEmails`]: {
+              $nin: emails,
             },
           },
           {
+            $addToSet: {
+              [`submittedSteps.${stepNumber - 2}.nextStepRecipientEmails`]: {
+                $each: recipientsToAdd,
+              },
+            },
+            // Invalidate a concurrent step submission holding the old recipient list.
+            $inc: { __v: 1 },
             $push: {
               workflowEvents: buildWorkflowEvent({
                 type: WorkflowEventType.AssigneesAdded,
