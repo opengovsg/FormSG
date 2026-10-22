@@ -4,6 +4,7 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { Router } from 'express'
 import {
+  BasicField,
   FormResponseMode,
   SubmissionType,
   WorkflowEventType,
@@ -12,6 +13,7 @@ import {
 import mongoose from 'mongoose'
 import supertest, { Session } from 'supertest-session'
 
+import formsgSdk from 'src/app/config/formsg-sdk'
 import { getMultirespondentFormModel } from 'src/app/models/form.server.model'
 import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
 import MailService from 'src/app/services/mail/mail.service'
@@ -108,15 +110,63 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/assignees', () => 
     submissionId: unknown,
     emails: unknown,
     expectedStepNumber = 2,
+    submissionSecretKey = 'mock-key',
   ) =>
     request
       .post(`/admin/forms/${formId}/submissions/${submissionId}/assignees`)
       .send({
         emails,
-        submissionSecretKey: 'mock-key',
+        submissionSecretKey,
         stepToken: 'mock-token',
         expectedStepNumber,
       })
+
+  it('initializes legacy dynamic recipients using the submission key', async () => {
+    const form = await createForm()
+    const submission = await createSubmission(form._id)
+    const fieldId = new ObjectId().toHexString()
+    const { publicKey } = formsgSdk.cryptoV3.generate()
+    const encrypted = formsgSdk.cryptoV3.encrypt(
+      {
+        [fieldId]: {
+          fieldType: BasicField.Email,
+          answer: { value: 'original@example.com' },
+        },
+      },
+      publicKey,
+    )
+    await MultirespondentSubmission.collection.updateOne(
+      { _id: submission._id },
+      {
+        $unset: { 'submittedSteps.0.nextStepRecipientEmails': '' },
+        $set: {
+          'workflow.1': {
+            ...step('unused@example.com'),
+            workflow_type: WorkflowType.Dynamic,
+            field: fieldId,
+          },
+          encryptedContent: encrypted.encryptedContent,
+          version: 1,
+        },
+      },
+    )
+    const response = await addAssignees(
+      form._id,
+      submission._id,
+      ['bob@example.com'],
+      2,
+      encrypted.submissionSecretKey,
+    )
+    expect(response.status).toBe(200)
+    const stored = await MultirespondentSubmission.findById(
+      submission._id,
+    ).orFail()
+    expect(stored.submittedSteps?.[0].nextStepRecipientEmails).toEqual([
+      'original@example.com',
+      'bob@example.com',
+    ])
+    expect(stored.workflowEvents?.[0].emails).toEqual(['bob@example.com'])
+  })
 
   it('adds the people and emails them the step link without answers', async () => {
     const sendSpy = jest.spyOn(MailService, 'sendMRFWorkflowStepEmail')

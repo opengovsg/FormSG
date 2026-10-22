@@ -834,6 +834,8 @@ const submittedStepSchema = new Schema(
     },
     nextStepRecipientEmails: {
       type: [String],
+      // Mongoose defaults arrays to [], which would make legacy steps read as having no recipients.
+      default: undefined,
     },
     submitterId: {
       type: String,
