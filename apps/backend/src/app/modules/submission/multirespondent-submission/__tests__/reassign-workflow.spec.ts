@@ -16,6 +16,7 @@ import {
 import {
   addAssigneesToPendingStep,
   getPendingStepRecipientEmailsFromSubmittedStepsMeta,
+  MAX_REMINDERS_PER_STEP,
   stopMultirespondentSubmission,
 } from '../multirespondent-submission.service'
 
@@ -178,5 +179,42 @@ describe('addAssigneesToPendingStep', () => {
       'Lead@example.com',
       'new@example.com',
     ])
+  })
+
+  it('ignores step submissions when counting reminders and choosing who to remind', async () => {
+    const submission = await createSubmission()
+    const pendingStepNumber = 2
+    const reminder = {
+      type: WorkflowEventType.ReminderSent,
+      actorId: actor._id,
+      actorEmail: actor.email,
+      stepNumber: pendingStepNumber,
+      emails: ['Lead@example.com'],
+      created: new Date(),
+    }
+    const stepSubmitted = {
+      type: WorkflowEventType.StepSubmitted,
+      outcome: WorkflowStatus.COMPLETED,
+      stepNumber: pendingStepNumber,
+      emails: ['routed@example.com'],
+      created: new Date(),
+    }
+    await MultirespondentSubmission.updateOne(
+      { _id: submission._id },
+      {
+        $set: {
+          workflowEvents: [
+            ...Array(MAX_REMINDERS_PER_STEP - 1).fill(reminder),
+            stepSubmitted,
+          ],
+        },
+      },
+    )
+
+    const result = await getPendingStepRecipientEmailsFromSubmittedStepsMeta({
+      submissionId: String(submission._id),
+    })
+
+    expect(result._unsafeUnwrap().recipientEmails).toEqual(['Lead@example.com'])
   })
 })

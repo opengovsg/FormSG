@@ -230,6 +230,10 @@
       "require": "./dist/utils/verified-content.js",
       "default": "./utils/verified-content.ts"
     },
+    "./utils/workflow-event": {
+      "require": "./dist/utils/workflow-event.js",
+      "default": "./utils/workflow-event.ts"
+    },
     "./utils/workflow-step-completion": {
       "require": "./dist/utils/workflow-step-completion.js",
       "default": "./utils/workflow-step-completion.ts"

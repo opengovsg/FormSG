@@ -4,6 +4,7 @@ import { Circle, Flex, Stack, Text } from '@chakra-ui/react'
 import { formatInTimeZone } from 'date-fns-tz'
 
 import { WorkflowEventType, WorkflowStatus } from 'formsg-shared/types'
+import { isAdminWorkflowEvent } from 'formsg-shared/utils/workflow-event'
 
 import type { ResponsesIndividualResponse } from '~/i18n/locales/features/admin-form/responses/individual-response'
 
@@ -130,7 +131,9 @@ export const WorkflowActivityLog = ({
     )
   })
 
-  const eventEntries = events.map((event) => {
+  const adminEvents = events.filter(isAdminWorkflowEvent)
+
+  const eventEntries = adminEvents.map((event) => {
     switch (event.type) {
       case WorkflowEventType.AssigneesAdded:
         return entry(

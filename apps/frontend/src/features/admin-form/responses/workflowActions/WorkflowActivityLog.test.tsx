@@ -45,6 +45,17 @@ const event = (
   created: created as DateString,
 })
 
+const stepSubmitted = (
+  stepNumber: number,
+  emails: string[],
+): WorkflowEventDto => ({
+  type: WorkflowEventType.StepSubmitted,
+  outcome: WorkflowStatus.COMPLETED,
+  stepNumber,
+  emails,
+  created: '2026-10-08T01:00:00.000Z' as DateString,
+})
+
 const history = {
   submittedSteps: [
     {
@@ -63,6 +74,7 @@ const history = {
 describe('WorkflowActivityLog', () => {
   it('lists steps and actions oldest first', () => {
     const workflowEvents = [
+      stepSubmitted(1, ['lead@agency.gov.sg']),
       event(WorkflowEventType.Stopped, '2026-10-08T04:00:00.000Z', []),
       event(WorkflowEventType.AssigneesAdded, '2026-10-08T02:00:00.000Z', [
         'new@agency.gov.sg',
