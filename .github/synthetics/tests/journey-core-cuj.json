@@ -326,24 +326,6 @@
     },
     {
       "type": "click",
-      "name": "Open field drawer",
-      "timeout": 60,
-      "params": {
-        "element": {
-          "userLocator": {
-            "failTestOnCannotLocate": true,
-            "values": [
-              {
-                "type": "css",
-                "value": "[aria-label='Add Fields']"
-              }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "type": "click",
       "name": "Add short answer field",
       "timeout": 60,
       "params": {
@@ -560,8 +542,8 @@
             "failTestOnCannotLocate": true,
             "values": [
               {
-                "type": "xpath",
-                "value": "//input[@aria-label='Toggle form status']/ancestor::label"
+                "type": "css",
+                "value": "label:has(input[aria-label='Toggle form status'])"
               }
             ]
           }
@@ -918,7 +900,7 @@
             "values": [
               {
                 "type": "xpath",
-                "value": "//*[contains(., 'Spreadsheet of responses (.csv)')][self::button or self::label or @role='menuitem' or @role='menuitemcheckbox']"
+                "value": "//*[contains(text(), 'Spreadsheet of responses (.csv)')]"
               }
             ]
           }
