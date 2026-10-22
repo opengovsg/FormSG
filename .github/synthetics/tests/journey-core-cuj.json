@@ -81,12 +81,6 @@
       }
     },
     {
-      "type": "assertEmail",
-      "name": "PLACEHOLDER record in UI: login OTP email arrives, extract 8-char code after dash into LOGIN_OTP (subject: One-Time Password (OTP) for FormSG; body: Your OTP is XXX-########)",
-      "timeout": 120,
-      "params": {}
-    },
-    {
       "type": "typeText",
       "name": "Enter login OTP",
       "timeout": 60,
@@ -720,12 +714,6 @@
       }
     },
     {
-      "type": "assertEmail",
-      "name": "PLACEHOLDER record in UI: verification OTP email arrives, extract code into VERIFY_OTP (subject: Your One-Time Password (OTP) for submitting a form on FormSG; body: Your email OTP is XXX-<b>########</b>)",
-      "timeout": 120,
-      "params": {}
-    },
-    {
       "type": "typeText",
       "name": "Enter verification OTP",
       "timeout": 60,
@@ -787,12 +775,6 @@
       "params": {
         "value": "Response ID:"
       }
-    },
-    {
-      "type": "assertEmail",
-      "name": "PLACEHOLDER record in UI: respondent copy email arrives (subject contains '[smoke] respondent copy') — arrival proves SES + pdf-gen",
-      "timeout": 180,
-      "params": {}
     },
     {
       "type": "goToUrl",

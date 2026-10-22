@@ -73,12 +73,6 @@
       }
     },
     {
-      "type": "assertEmail",
-      "name": "PLACEHOLDER record in UI: login OTP email arrives, extract 8-char code after dash into LOGIN_OTP",
-      "timeout": 120,
-      "params": {}
-    },
-    {
       "type": "typeText",
       "name": "Enter login OTP",
       "timeout": 60,
