@@ -38,12 +38,14 @@ interface SubmitterIdCollectionSettingProps {
   settings: FormSettings
   isFormPublic: boolean
   nextQuestionNumber?: number
+  onStoppedCollecting?: () => void
 }
 
 export const SubmitterIdCollectionSetting = ({
   settings,
   isFormPublic,
   nextQuestionNumber,
+  onStoppedCollecting,
 }: SubmitterIdCollectionSettingProps): JSX.Element => {
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.settings.singpass.submitterIdCollection',
@@ -167,11 +169,18 @@ export const SubmitterIdCollectionSetting = ({
               </Button>
               <Button
                 isLoading={isSaving}
-                onClick={() => {
+                onClick={async () => {
                   if (isSaving || isFormPublic) return
-                  mutateIsSubmitterIdCollectionEnabled.mutate(false, {
-                    onSuccess: stopModal.onClose,
-                  })
+                  try {
+                    // Await the save even if its cache update unmounts this modal.
+                    await mutateIsSubmitterIdCollectionEnabled.mutateAsync(
+                      false,
+                    )
+                    stopModal.onClose()
+                    onStoppedCollecting?.()
+                  } catch {
+                    // The mutation reports the error; keep the modal open to retry.
+                  }
                 }}
               >
                 {t('stopCollecting')}

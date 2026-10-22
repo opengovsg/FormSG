@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Divider, Stack } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
@@ -54,16 +54,16 @@ export const AuthSettingsSingpassSection = ({
     getLoginIdentityAttrsForAuthType(settings.authType).length > 0
 
   const fieldsActionRef = useRef<HTMLAnchorElement>(null)
-  const previouslyCollected = useRef(settings.isSubmitterIdCollectionEnabled)
+  const [shouldFocusFields, setShouldFocusFields] = useState(false)
   useEffect(() => {
-    const stoppedCollecting =
-      previouslyCollected.current && !settings.isSubmitterIdCollectionEnabled
-    previouslyCollected.current = settings.isSubmitterIdCollectionEnabled
-    if (!stoppedCollecting || !usesIdentityFields) return
+    if (!shouldFocusFields || !usesIdentityFields) return
     // Wait for the outgoing modal's focus restoration cleanup to finish.
-    const frame = requestAnimationFrame(() => fieldsActionRef.current?.focus())
+    const frame = requestAnimationFrame(() => {
+      fieldsActionRef.current?.focus()
+      setShouldFocusFields(false)
+    })
     return () => cancelAnimationFrame(frame)
-  }, [settings.isSubmitterIdCollectionEnabled, usesIdentityFields])
+  }, [shouldFocusFields, usesIdentityFields])
 
   return (
     <>
@@ -79,6 +79,7 @@ export const AuthSettingsSingpassSection = ({
               settings={settings}
               isFormPublic={isFormPublic}
               nextQuestionNumber={nextQuestionNumber}
+              onStoppedCollecting={() => setShouldFocusFields(true)}
             />
           ) : isToggleLockedByIdentityFields ? (
             <Stack spacing="1rem">

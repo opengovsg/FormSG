@@ -21,7 +21,7 @@ vi.mock('../../mutations', () => ({
   useMutateFormSettings: () => ({
     mutateIsSubmitterIdCollectionEnabled: {
       isLoading: false,
-      mutate: (enabled: boolean) => state.save(enabled),
+      mutateAsync: async (enabled: boolean) => state.save(enabled),
     },
   }),
 }))
@@ -46,6 +46,9 @@ const Harness = ({ initiallyEnabled = true }) => {
   state.save = setEnabled
   return (
     <MemoryRouter>
+      <button onClick={() => setEnabled(false)}>
+        Collaborator stopped collection
+      </button>
       <AuthSettingsSingpassSection
         settings={
           {
@@ -73,6 +76,16 @@ describe('focus after stopping collection', () => {
       ).toHaveFocus(),
     )
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+  it('does not steal focus after a collaborator or refetch updates collection', async () => {
+    render(<Harness />)
+    const otherAction = screen.getByRole('button', {
+      name: 'Collaborator stopped collection',
+    })
+    otherAction.focus()
+    fireEvent.click(otherAction)
+    await screen.findByRole('link', { name: 'corppass.goToFields' })
+    expect(otherAction).toHaveFocus()
   })
   it('does not steal focus when opening an already-switched form', () => {
     render(<Harness initiallyEnabled={false} />)
