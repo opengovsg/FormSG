@@ -1,24 +1,9 @@
 import { PropsWithChildren } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import {
-  Stack,
-  Table,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
-  Tbody,
-  Td,
-  Text,
-  Tr,
-} from '@chakra-ui/react'
+import { Box, Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
 
-import {
-  BasicField,
-  CorppassAttribute,
-  MyInfoAttribute,
-} from 'formsg-shared/types/field'
+import { BasicField, CorppassAttribute } from 'formsg-shared/types/field'
 import {
   createLoginIdentityField,
   LOGIN_IDENTITY_LABELS,
@@ -28,18 +13,10 @@ import {
 } from 'formsg-shared/utils/login-identity'
 
 import Link from '~components/Link'
-import { Tab } from '~components/Tabs'
-import Toggle from '~components/Toggle'
 import { NricField } from '~templates/Field/Nric/NricField'
 import { UenField } from '~templates/Field/Uen/UenField'
 
 import { LOGIN_IDENTITY_PREVIEW_VALUES } from '~features/myinfo/utils'
-
-const LEGACY_LABELS: Record<LoginIdentityAttribute, string> = {
-  [MyInfoAttribute.UinFin]: 'SingPass Validated NRIC',
-  [CorppassAttribute.Uid]: 'CorpPass Validated UID',
-  [CorppassAttribute.Uen]: 'CorpPass Validated UEN',
-}
 
 const PreviewCard = ({
   label,
@@ -62,10 +39,12 @@ const PreviewCard = ({
 
 export const ConversionPreview = ({
   attrs,
+  stepNumber,
   nextQuestionNumber = 1,
   isScrollable = true,
 }: {
   attrs: LoginIdentityAttribute[]
+  stepNumber: number
   nextQuestionNumber?: number
   isScrollable?: boolean
 }) => {
@@ -82,139 +61,119 @@ export const ConversionPreview = ({
     ),
   })
 
-  const renderOutputTable = (after: boolean) => (
-    <PreviewCard
-      label={t(after ? 'preview.outputChanges' : 'preview.outputDetails')}
-    >
-      <Table size="sm" variant="simple" sx={{ td: { whiteSpace: 'normal' } }}>
-        <Tbody>
-          {(['csv', 'emailJson', 'webhooks'] as const).map((output) => (
-            <Tr key={output} _last={{ '& > *': { borderBottom: 0 } }}>
-              <Td
-                as="th"
-                scope="row"
-                width="30%"
-                pl={0}
-                py="0.75rem"
-                verticalAlign="top"
-                textStyle="subhead-1"
-              >
-                {t(`preview.outputs.${output}.label`)}
-              </Td>
-              <Td pr={0} py="0.75rem" color="secondary.500" verticalAlign="top">
-                {t(
-                  `preview.outputs.${output}.${after ? 'description' : 'beforeDescription'}`,
-                  {
+  const outputDetails = (
+    <Stack spacing="1rem">
+      <Box
+        bg="white"
+        borderWidth="1px"
+        borderColor="neutral.300"
+        borderRadius="md"
+        p={{ base: '1rem', md: '1.5rem' }}
+      >
+        <Table size="sm" variant="simple" sx={{ td: { whiteSpace: 'normal' } }}>
+          <Tbody>
+            {(['csv', 'emailJson', 'webhooks'] as const).map((output) => (
+              <Tr key={output} _last={{ '& > *': { borderBottom: 0 } }}>
+                <Td
+                  as="th"
+                  scope="row"
+                  width="30%"
+                  pl={0}
+                  py="0.75rem"
+                  verticalAlign="top"
+                  textStyle="subhead-1"
+                >
+                  {t(`preview.outputs.${output}.label`)}
+                </Td>
+                <Td
+                  pr={0}
+                  py="0.75rem"
+                  color="secondary.500"
+                  verticalAlign="top"
+                >
+                  {t(`preview.outputs.${output}.description`, {
                     fields:
                       login === 'corppass' ? 'NRIC/FIN and UEN' : 'NRIC/FIN',
                     labels: attrs
-                      .map((attr) =>
-                        after
-                          ? `${output === 'csv' ? '[Myinfo] ' : ''}${LOGIN_IDENTITY_LABELS[attr]}`
-                          : LEGACY_LABELS[attr],
+                      .map(
+                        (attr) =>
+                          `${output === 'csv' ? '[Myinfo] ' : ''}${LOGIN_IDENTITY_LABELS[attr]}`,
                       )
                       .join(', '),
-                  },
-                )}
-              </Td>
-            </Tr>
-          ))}
-        </Tbody>
-      </Table>
-      {after && (
-        <Link
-          href="https://guide.form.gov.sg/faq/faq/migration-to-nric-fin-uen-field#will-my-responses-look-different-after-i-convert"
-          isExternal
-          alignSelf="flex-start"
-        >
-          {t('preview.viewExamples')}
-        </Link>
-      )}
-    </PreviewCard>
+                  })}
+                </Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      </Box>
+      <Link
+        href="https://guide.form.gov.sg/faq/faq/migration-to-nric-fin-uen-field#will-my-responses-look-different-after-i-convert"
+        isExternal
+        alignSelf="flex-start"
+      >
+        {t('learnMore')}
+      </Link>
+    </Stack>
   )
 
   return (
-    <Tabs isFitted display="flex" flexDirection="column" flex={1} minH={0}>
-      <TabList px="2px" mb="1.5rem" flexShrink={0}>
-        <Tab>{t('preview.before')}</Tab>
-        <Tab>{t('preview.after')}</Tab>
-      </TabList>
-      <TabPanels
-        flex={1}
-        minH={0}
-        overflow={isScrollable ? 'hidden' : 'visible'}
-      >
-        <TabPanel
-          p={0}
-          pb="1.5rem"
-          h={isScrollable ? '100%' : 'auto'}
-          overflowY={isScrollable ? 'auto' : 'visible'}
-          sx={{ scrollbarGutter: 'stable' }}
-        >
-          <Stack spacing="1rem">
-            <Text color="secondary.500">
-              {t(`${login}.currentCollectionExplanation`)}
-            </Text>
-            <PreviewCard label={t('preview.howYouCollect')}>
-              <Text textStyle="subhead-1">{t('preview.settingsTitle')}</Text>
-              <Toggle
-                label={t('toggleLabel')}
-                isChecked
-                isReadOnly
-                tabIndex={-1}
-                containerStyles={{ pointerEvents: 'none' }}
-              />
-            </PreviewCard>
-            {renderOutputTable(false)}
-          </Stack>
-        </TabPanel>
-        <TabPanel
-          p={0}
-          pb="1.5rem"
-          h={isScrollable ? '100%' : 'auto'}
-          overflowY={isScrollable ? 'auto' : 'visible'}
-          sx={{ scrollbarGutter: 'stable' }}
-        >
-          <Stack spacing="1rem">
-            <Text color="secondary.500">
-              {t(`${login}.collectionExplanation`)}{' '}
-              {t('preview.responsesUnchanged')}
-            </Text>
-            <PreviewCard label={t('preview.howYouCollect')}>
-              <FormProvider {...formMethods}>
-                <Stack spacing="2rem">
-                  {attrs.map((attr, index) => {
-                    const schema = {
-                      ...createLoginIdentityField(attr),
-                      _id: `conversion-preview-${attr}`,
-                      questionNumber: nextQuestionNumber + index,
-                      disabled: true,
-                    }
-                    const sourceBadge = LOGIN_IDENTITY_SOURCES[attr]
-                    return schema.fieldType === BasicField.Uen ? (
-                      <UenField
-                        key={attr}
-                        schema={schema}
-                        sourceBadge={sourceBadge}
-                        isHighContrast
-                      />
-                    ) : (
-                      <NricField
-                        key={attr}
-                        schema={schema}
-                        sourceBadge={sourceBadge}
-                        loginBadge={LOGIN_IDENTITY_LOGINS[attr]}
-                        isHighContrast
-                      />
-                    )
-                  })}
-                </Stack>
-              </FormProvider>
-            </PreviewCard>
-            {renderOutputTable(true)}
-          </Stack>
-        </TabPanel>
-      </TabPanels>
-    </Tabs>
+    <Stack
+      spacing="1.5rem"
+      flex="0 1 auto"
+      minH={0}
+      overflowY={isScrollable ? 'auto' : 'visible'}
+      pb="1.5rem"
+      sx={{ scrollbarGutter: 'stable' }}
+    >
+      {stepNumber === 0 ? (
+        <Stack spacing="1rem">
+          <Text color="secondary.500">
+            {t(`${login}.collectionExplanation`)}{' '}
+            {t('preview.responsesUnchanged')}
+          </Text>
+          <PreviewCard label={t('preview.howYouCollect')}>
+            <FormProvider {...formMethods}>
+              <Stack spacing="2rem">
+                {attrs.map((attr, index) => {
+                  const schema = {
+                    ...createLoginIdentityField(attr),
+                    _id: `conversion-preview-${attr}`,
+                    questionNumber: nextQuestionNumber + index,
+                    disabled: true,
+                  }
+                  const sourceBadge = LOGIN_IDENTITY_SOURCES[attr]
+                  return schema.fieldType === BasicField.Uen ? (
+                    <UenField
+                      key={attr}
+                      schema={schema}
+                      sourceBadge={sourceBadge}
+                      isHighContrast
+                    />
+                  ) : (
+                    <NricField
+                      key={attr}
+                      schema={schema}
+                      sourceBadge={sourceBadge}
+                      loginBadge={LOGIN_IDENTITY_LOGINS[attr]}
+                      isHighContrast
+                    />
+                  )
+                })}
+              </Stack>
+            </FormProvider>
+          </PreviewCard>
+        </Stack>
+      ) : (
+        <Stack spacing="1rem">
+          <Text color="secondary.500">
+            {t('preview.automationWarning', {
+              fields: login === 'corppass' ? 'NRIC/FIN and UEN' : 'NRIC/FIN',
+            })}
+          </Text>
+          {outputDetails}
+        </Stack>
+      )}
+    </Stack>
   )
 }

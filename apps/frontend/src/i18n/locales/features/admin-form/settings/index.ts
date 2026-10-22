@@ -18,7 +18,6 @@ type SubmitterIdCollectionLoginStrings = {
   movedToFields: string
   goToFields: string
   modalTitle: string
-  currentCollectionExplanation: string
   collectionExplanation: string
 }
 
@@ -36,21 +35,16 @@ export interface SingpassSettingsStrings extends HasTitle {
     otherFormsAutoConvertNotice: string
     preview: {
       howYouCollect: string
-      outputChanges: string
-      outputDetails: string
-      viewExamples: string
+      outputTitle: string
+      automationWarning: string
       outputs: Record<
         'emailJson' | 'webhooks' | 'csv',
         {
           label: string
           description: string
-          beforeDescription: string
         }
       >
       responsesUnchanged: string
-      before: string
-      after: string
-      settingsTitle: string
     }
     singpass: SubmitterIdCollectionLoginStrings
     corppass: SubmitterIdCollectionLoginStrings
