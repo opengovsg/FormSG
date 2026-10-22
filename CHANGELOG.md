@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.54.5](https://github.com/opengovsg/formsg/compare/v9.54.4...v9.54.5) (2026-10-22)
+
+
+### Bug Fixes
+
+* **docker:** pin virus scanner base image to node 22.23.4 (#10376) ([#10376](https://github.com/opengovsg/formsg/commit/cff7d39f315b88e97138d5b4fcb4d76bb300d464))
+
 ## [9.54.4](https://github.com/opengovsg/formsg/compare/v9.54.3...v9.54.4) (2026-10-22)
 
 
