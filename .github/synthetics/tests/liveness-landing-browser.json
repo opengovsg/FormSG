@@ -10,7 +10,8 @@
       "method": "GET",
       "url": "{{ START_URL }}"
     },
-    "variables": [
+    "variables": [],
+    "configVariables": [
       {
         "name": "START_URL",
         "type": "text",
@@ -23,7 +24,10 @@
     "device_ids": ["chrome.laptop_large"],
     "tick_every": 604800,
     "min_failure_duration": 0,
-    "retry": { "count": 1, "interval": 1000 }
+    "retry": {
+      "count": 1,
+      "interval": 1000
+    }
   },
   "steps": [
     {
@@ -35,7 +39,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "#root" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "#root"
+              }
+            ]
           }
         }
       }
