@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.54.1](https://github.com/opengovsg/formsg/compare/v9.54.0...v9.54.1) (2026-10-22)
+
+
+### Bug Fixes
+
+* **children:** clear and lock sub-fields a MyInfo record leaves blank (#10357) ([#10357](https://github.com/opengovsg/formsg/commit/c3a1beae020ac9304eb8e10364183fa08b0e4cc7))
+* **drawer:** dim the drawer when a modal opens over it (#10355) ([#10355](https://github.com/opengovsg/formsg/commit/f39f3506eed0977f08b3ec7475c376e2a479c77d))
+* **workflow-actions:** send the completion email to reassigned people (#10359) ([#10359](https://github.com/opengovsg/formsg/commit/fb9928baec6d64f8e7fe956b40d09bdeb981d04d))
+* **workflow-actions:** show the Stop modal's recipient dropdowns above the modal (#10356) ([#10356](https://github.com/opengovsg/formsg/commit/16485dd8118469bcb7b75f54de16ab4345748629))
+
+
+### Dependencies
+
+* **deps:** bump follow-redirects override to ^1.16.1 (#10366) ([#10366](https://github.com/opengovsg/formsg/commit/e44b19cf3b061826fb4b08e491a4f6a450a1c11d))
+
 ## [9.54.0](https://github.com/opengovsg/formsg/compare/v9.53.0...v9.54.0) (2026-10-21)
 
 
