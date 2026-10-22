@@ -584,6 +584,24 @@
     },
     {
       "type": "click",
+      "name": "Disable reCAPTCHA (invisible captcha has no always-pass test key)",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": "label:has(input[aria-label='Enable human verification (reCAPTCHA)'])"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
       "name": "Toggle form status open",
       "timeout": 60,
       "params": {
