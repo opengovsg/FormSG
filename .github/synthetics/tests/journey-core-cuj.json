@@ -2,7 +2,7 @@
   "name": "[formsg-smoke] Core CUJ: create, publish, submit, view, download (MRF)",
   "type": "browser",
   "status": "paused",
-  "message": "CI smoke journey — OTP login, create MRF form (no workflow), add fields, publish, public submission with attachment + verified email + respondent copy, then unlock results and export CSV. Runs only via CI triggers. Steps named PLACEHOLDER must be recorded once in the Datadog UI (email OTP extraction has no public API schema), then reconciled with sync.sh pull.",
+  "message": "CI smoke journey \u2014 OTP login, create MRF form (no workflow), add fields, publish, public submission with attachment + verified email + respondent copy, then unlock results and export CSV. Runs only via CI triggers. Steps named PLACEHOLDER must be recorded once in the Datadog UI (email OTP extraction has no public API schema), then reconciled with sync.sh pull.",
   "tags": ["team:formsg", "ci:formsg-smoke", "managed-by:formsg-repo"],
   "locations": ["aws:ap-southeast-1"],
   "config": {
@@ -20,8 +20,8 @@
       {
         "name": "EMAIL",
         "type": "email",
-        "pattern": "",
-        "example": ""
+        "pattern": "kr3-hn4-dcz.{{ numeric(10) }}@synthetics.dtdg.co",
+        "example": "kr3-hn4-dcz.0000000000@synthetics.dtdg.co"
       }
     ]
   },
@@ -78,6 +78,21 @@
       "timeout": 60,
       "params": {
         "value": "Enter OTP sent to"
+      }
+    },
+    {
+      "type": "extractFromEmailBody",
+      "name": "Login OTP email: extract code into LOGIN_OTP",
+      "timeout": 120,
+      "params": {
+        "pattern": {
+          "type": "regex",
+          "value": "(?<=Your OTP is [A-Za-z0-9]{3}-)[A-Za-z0-9]{8}"
+        },
+        "variable": {
+          "name": "LOGIN_OTP",
+          "example": ""
+        }
       }
     },
     {
@@ -716,6 +731,21 @@
       }
     },
     {
+      "type": "extractFromEmailBody",
+      "name": "Verification OTP email: extract code into VERIFY_OTP",
+      "timeout": 120,
+      "params": {
+        "pattern": {
+          "type": "regex",
+          "value": "(?<=OTP is [A-Za-z0-9]{3}-(?:<b>)?)[A-Za-z0-9]{8}"
+        },
+        "variable": {
+          "name": "VERIFY_OTP",
+          "example": ""
+        }
+      }
+    },
+    {
       "type": "typeText",
       "name": "Enter verification OTP",
       "timeout": 60,
@@ -766,6 +796,19 @@
                 "value": "//button[contains(., 'Submit now')]"
               }
             ]
+          }
+        }
+      }
+    },
+    {
+      "type": "assertEmail",
+      "name": "Respondent copy email arrives (proves SES + pdf-gen)",
+      "timeout": 120,
+      "params": {
+        "email": {
+          "subject": {
+            "type": "contains",
+            "value": "[smoke] respondent copy"
           }
         }
       }
