@@ -338,6 +338,24 @@
     },
     {
       "type": "click",
+      "name": "Open field drawer",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": "[aria-label='Add Fields']"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
       "name": "Add step 1 field",
       "timeout": 60,
       "params": {
