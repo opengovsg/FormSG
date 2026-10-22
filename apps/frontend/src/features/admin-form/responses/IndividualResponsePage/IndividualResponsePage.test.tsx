@@ -209,7 +209,7 @@ describe('IndividualResponsePage', () => {
     expect(screen.getAllByRole('tab')).toHaveLength(2)
   })
 
-  it('resets tab and scroll for a different response but preserves the tab on refetch', async () => {
+  it('preserves scroll on tab changes and resets it for a different response', async () => {
     mockResponseMode = FormResponseMode.Multirespondent
     mockIsWorkflowActionsOn = true
     const { rerender } = render(
@@ -221,7 +221,7 @@ describe('IndividualResponsePage', () => {
     scroller.scrollTop = 300
     await userEvent.click(screen.getAllByRole('tab')[1])
     expect(screen.getByText('Workflow history content')).toBeVisible()
-    expect(scroller.scrollTop).toBe(0)
+    expect(scroller.scrollTop).toBe(300)
     rerender(
       <div data-testid="scroll" style={{ overflowY: 'auto' }}>
         <IndividualResponsePage />
