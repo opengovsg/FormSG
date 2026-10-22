@@ -46,6 +46,7 @@ import {
 import { mapRouteError } from '../../submission.utils'
 import * as MultirespondentSubmissionService from '../multirespondent-submission.service'
 import {
+  addAssigneesToPendingStep,
   createMultiRespondentFormSubmission,
   getPendingStepRecipientEmailsFromSubmittedStepsMeta,
   performMultiRespondentPostSubmissionCreateActions,
@@ -3440,6 +3441,8 @@ describe('multirespondent-submission.service', () => {
   })
 
   describe('getPendingStepRecipientEmailsFromSubmittedStepsMeta', () => {
+    afterEach(() => jest.restoreAllMocks())
+
     it('gets correct recipient emails for 2nd step of 5-step mrf submission', async () => {
       // Arrange
       const mockEmails = ['test@example.com']
@@ -4353,6 +4356,44 @@ describe('multirespondent-submission.service', () => {
       expect(saved?.workflowEvents?.map(({ type }) => type)).toEqual([
         WorkflowEventType.ReminderSent,
         WorkflowEventType.StepSubmitted,
+      ])
+    })
+
+    it('adds a reassigned recipient to the pending step without rewriting who the step was sent to', async () => {
+      const created = await createMultiRespondentFormSubmission({
+        form: formDef as unknown as IPopulatedMultirespondentForm,
+        encryptedPayload: payload(0),
+        logMeta: { action: 'test' },
+      })
+      const submissionId = String(created._unsafeUnwrap().submission._id)
+
+      const added = await addAssigneesToPendingStep({
+        formId: mockFormId,
+        submissionId,
+        submissionSecretKey: 'submission-secret-key',
+        emails: ['added@example.com'],
+        expectedStepNumber: 2,
+        actor: { _id: new ObjectId(), email: 'admin@example.com' },
+      })
+      expect(added.isOk()).toBe(true)
+
+      const saved = await Model.findById(submissionId).lean()
+      expect(saved?.submittedSteps?.[0].nextStepRecipientEmails).toEqual([
+        'second@example.com',
+        'added@example.com',
+      ])
+      expect(
+        saved?.workflowEvents?.filter(
+          (event) => event.type === WorkflowEventType.StepSubmitted,
+        ),
+      ).toEqual([
+        {
+          type: WorkflowEventType.StepSubmitted,
+          outcome: WorkflowStatus.COMPLETED,
+          stepNumber: 1,
+          emails: ['second@example.com'],
+          created: expect.any(Date),
+        },
       ])
     })
   })
