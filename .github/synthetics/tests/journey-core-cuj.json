@@ -801,19 +801,6 @@
       }
     },
     {
-      "type": "assertEmail",
-      "name": "Respondent copy email arrives (proves SES + pdf-gen)",
-      "timeout": 120,
-      "params": {
-        "email": {
-          "subject": {
-            "matchingType": "contains",
-            "value": "[smoke] respondent copy"
-          }
-        }
-      }
-    },
-    {
       "type": "assertPageContains",
       "name": "Submission accepted",
       "timeout": 120,

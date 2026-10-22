@@ -48,27 +48,19 @@ you prototyped a change in the UI and want to keep it.
 
 ## Journey tests: first-run shakedown
 
-The email-assertion steps (`assertEmail`) have no public API schema, so the
-journey definitions ship without them — the API rejects any hand-written
-shape. Record them once in the Datadog UI (the test's email variable
-`{{ EMAIL }}` provides the mailbox), run `sync.sh pull`, and commit the
-canonical JSON. Until then the journeys fail at the first step that uses an
-extracted variable (e.g. "Enter login OTP").
+The email OTP extractions are authored in the definitions as
+`extractFromEmailBody` steps (a failed extraction doubles as the
+"email arrived" assertion). Their regexes are a first cut against the
+current email copy — if a journey fails at an extraction step, fix the
+regex in the Datadog UI, run `sync.sh pull`, and commit.
 
-Steps to record, in test order:
-
-- `journey-core-cuj`, before "Enter login OTP": login OTP email arrives,
-  extract the 8-char code after the dash into `LOGIN_OTP` (subject:
-  "One-Time Password (OTP) for FormSG"; body: "Your OTP is XXX-########").
-- `journey-core-cuj`, before "Enter verification OTP": verification OTP
-  email arrives, extract the code into `VERIFY_OTP` (subject: "Your
-  One-Time Password (OTP) for submitting a form on FormSG"; body: "Your
-  email OTP is XXX-<b>########</b>").
-- `journey-core-cuj`, after submission: respondent copy email arrives
-  (subject contains "[smoke] respondent copy") — arrival proves SES +
-  pdf-gen.
-- `journey-mrf-multistep`, before "Enter login OTP": same login OTP
-  extraction as above.
+One step must still be recorded in the UI: `assertEmail` has no
+API-authorable schema (the validator rejects every documented field
+spelling). In `journey-core-cuj`, after "Submit form", record: respondent
+copy email arrives (subject contains "[smoke] respondent copy") — arrival
+proves SES + pdf-gen. Then `sync.sh pull` and commit the canonical JSON;
+future pushes preserve it. Until recorded, the journey simply lacks that
+one assertion — everything else runs.
 
 The journeys log in as a fresh throwaway `@synthetics.dtdg.co` user per run
 (the domain is whitelisted as an agency in stg only) and create their own
