@@ -1,0 +1,39 @@
+name: Synthetics sync
+
+# Pushes the Datadog synthetic test definitions in .github/synthetics/tests/
+# to Datadog whenever they change on develop. Creating a NEW test is done
+# locally (run sync.sh push with your own keys and commit the ids.json change
+# in the same PR as the new definition) — this workflow only updates tests
+# that already have an ids.json entry, and fails loudly if one is missing.
+
+on:
+  push:
+    branches: [develop]
+    paths: ['.github/synthetics/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: Push test definitions to Datadog
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - name: Require ids for every definition
+        run: |
+          missing=$(for f in .github/synthetics/tests/*.json; do
+            slug=$(basename "$f" .json)
+            jq -e --arg s "$slug" 'has($s)' .github/synthetics/ids.json >/dev/null || echo "$slug"
+          done)
+          if [ -n "$missing" ]; then
+            echo "No ids.json entry for: $missing" >&2
+            echo 'Run .github/synthetics/sync.sh push locally and commit ids.json.' >&2
+            exit 1
+          fi
+      - name: Sync
+        env:
+          DD_API_KEY: ${{ secrets.DD_API_KEY }}
+          DD_APP_KEY: ${{ secrets.DD_APP_KEY }}
+        run: .github/synthetics/sync.sh push
