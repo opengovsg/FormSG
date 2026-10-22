@@ -174,10 +174,6 @@ const IndividualResponseContent = ({
     if (container) container.scrollTop = 0
   }, [])
   useEffect(scrollToTop, [scrollToTop])
-  const selectTab = (index: number) => {
-    setTab(index)
-    scrollToTop()
-  }
 
   const { data: form } = useAdminForm()
 
@@ -427,7 +423,7 @@ const IndividualResponseContent = ({
       {hasWorkflow && isWorkflowActionsOn ? (
         <Tabs
           index={tab}
-          onChange={selectTab}
+          onChange={setTab}
           variant="line-light"
           isLazy
           lazyBehavior="keepMounted"
