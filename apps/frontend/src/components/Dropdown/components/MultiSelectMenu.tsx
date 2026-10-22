@@ -32,8 +32,7 @@ export const MultiSelectMenu = (): JSX.Element => {
           hidden: !isOpen,
           ref: floatingRef,
         })}
-        zIndex={menuZIndex ?? 'dropdown'}
-        sx={styles.list}
+        sx={{ ...styles.list, ...(menuZIndex ? { zIndex: menuZIndex } : {}) }}
       >
         {isOpen && items.length > 0 && (
           <Virtuoso

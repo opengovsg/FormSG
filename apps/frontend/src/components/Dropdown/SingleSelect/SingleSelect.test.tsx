@@ -1,6 +1,17 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import { SingleSelect } from './SingleSelect'
+
+vi.mock('react-virtuoso', () => ({
+  Virtuoso: ({
+    data = [],
+    itemContent,
+  }: {
+    data?: unknown[]
+    itemContent: (index: number, item: unknown) => React.ReactNode
+  }) => <>{data.map((item, index) => itemContent(index, item))}</>,
+}))
 
 const LONG_LABEL =
   'This is a very long dropdown option label that should not be truncated when disabled and scrollable'
@@ -35,5 +46,26 @@ describe('SingleSelect — disabled scrollable selected label', () => {
     )
 
     expect(screen.queryByTitle(LONG_LABEL)).not.toBeInTheDocument()
+  })
+})
+
+describe('SingleSelect — action items', () => {
+  it('does not pick a highlighted action item when focus tabs away', async () => {
+    const onChange = vi.fn()
+    render(
+      <SingleSelect
+        name="test-select"
+        value=""
+        onChange={onChange}
+        items={[{ value: '__add__', label: 'Add a field', isAction: true }]}
+        isClearable={false}
+      />,
+    )
+
+    await userEvent.click(screen.getByRole('combobox'))
+    expect(screen.getByRole('option', { name: 'Add a field' })).toBeVisible()
+    await userEvent.tab()
+
+    expect(onChange).not.toHaveBeenCalled()
   })
 })
