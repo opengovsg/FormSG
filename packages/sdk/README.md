@@ -388,13 +388,13 @@ Each delivery for the same submission:
 
 Each entry in `submittedSteps` describes one completed step:
 
-| Key                       | Meaning                                                               |
-| ------------------------- | --------------------------------------------------------------------- |
-| `isApproval`              | Whether this was an approval step.                                    |
-| `submittedAt`             | ISO 8601 time when the step was submitted.                            |
-| `status`                  | `APPROVED` or `REJECTED`, present on approval steps.                  |
-| `nextStepRecipientEmails` | Optional list of recipients resolved for the next step.               |
-| `submitterId`             | Optional hashed submitter identifier, not a plaintext identity value. |
+| Key                       | Meaning                                                                                                             |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `isApproval`              | Whether this was an approval step.                                                                                  |
+| `submittedAt`             | ISO 8601 time when the step was submitted.                                                                          |
+| `status`                  | `APPROVED` or `REJECTED`, present on approval steps.                                                                |
+| `nextStepRecipientEmails` | Optional list of the next step's current recipients, including anyone an admin added after this step was submitted. |
+| `submitterId`             | Optional hashed submitter identifier, not a plaintext identity value.                                               |
 
 To process each step once, store the pair `(submissionId, workflowStep)` and skip a delivery you have already seen.
 
