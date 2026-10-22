@@ -1,18 +1,18 @@
 import { PropsWithChildren } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Box, Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
+import { BiLinkExternal } from 'react-icons/bi'
+import { Stack, Text } from '@chakra-ui/react'
 
 import { BasicField, CorppassAttribute } from 'formsg-shared/types/field'
 import {
   createLoginIdentityField,
-  LOGIN_IDENTITY_LABELS,
   LOGIN_IDENTITY_LOGINS,
   LOGIN_IDENTITY_SOURCES,
   LoginIdentityAttribute,
 } from 'formsg-shared/utils/login-identity'
 
-import Link from '~components/Link'
+import Button from '~components/Button'
 import { NricField } from '~templates/Field/Nric/NricField'
 import { UenField } from '~templates/Field/Uen/UenField'
 
@@ -41,12 +41,10 @@ export const ConversionPreview = ({
   attrs,
   stepNumber,
   nextQuestionNumber = 1,
-  isScrollable = true,
 }: {
   attrs: LoginIdentityAttribute[]
   stepNumber: number
   nextQuestionNumber?: number
-  isScrollable?: boolean
 }) => {
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.settings.singpass.submitterIdCollection',
@@ -61,76 +59,12 @@ export const ConversionPreview = ({
     ),
   })
 
-  const outputDetails = (
-    <Stack spacing="1rem">
-      <Box
-        bg="white"
-        borderWidth="1px"
-        borderColor="neutral.300"
-        borderRadius="md"
-        p={{ base: '1rem', md: '1.5rem' }}
-      >
-        <Table size="sm" variant="simple" sx={{ td: { whiteSpace: 'normal' } }}>
-          <Tbody>
-            {(['csv', 'emailJson', 'webhooks'] as const).map((output) => (
-              <Tr key={output} _last={{ '& > *': { borderBottom: 0 } }}>
-                <Td
-                  as="th"
-                  scope="row"
-                  width="30%"
-                  pl={0}
-                  py="0.75rem"
-                  verticalAlign="top"
-                  textStyle="subhead-1"
-                >
-                  {t(`preview.outputs.${output}.label`)}
-                </Td>
-                <Td
-                  pr={0}
-                  py="0.75rem"
-                  color="secondary.500"
-                  verticalAlign="top"
-                >
-                  {t(`preview.outputs.${output}.description`, {
-                    fields:
-                      login === 'corppass' ? 'NRIC/FIN and UEN' : 'NRIC/FIN',
-                    labels: attrs
-                      .map(
-                        (attr) =>
-                          `${output === 'csv' ? '[Myinfo] ' : ''}${LOGIN_IDENTITY_LABELS[attr]}`,
-                      )
-                      .join(', '),
-                  })}
-                </Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      </Box>
-      <Link
-        href="https://guide.form.gov.sg/faq/faq/migration-to-nric-fin-uen-field#will-my-responses-look-different-after-i-convert"
-        isExternal
-        alignSelf="flex-start"
-      >
-        {t('learnMore')}
-      </Link>
-    </Stack>
-  )
-
   return (
-    <Stack
-      spacing="1.5rem"
-      flex="0 1 auto"
-      minH={0}
-      overflowY={isScrollable ? 'auto' : 'visible'}
-      pb="1.5rem"
-      sx={{ scrollbarGutter: 'stable' }}
-    >
+    <Stack spacing="1.5rem" pb="1.5rem">
       {stepNumber === 0 ? (
         <Stack spacing="1rem">
           <Text color="secondary.500">
-            {t(`${login}.collectionExplanation`)}{' '}
-            {t('preview.responsesUnchanged')}
+            {t(`${login}.collectionExplanation`)}
           </Text>
           <PreviewCard label={t('preview.howYouCollect')}>
             <FormProvider {...formMethods}>
@@ -166,12 +100,19 @@ export const ConversionPreview = ({
         </Stack>
       ) : (
         <Stack spacing="1rem">
-          <Text color="secondary.500">
-            {t('preview.automationWarning', {
-              fields: login === 'corppass' ? 'NRIC/FIN and UEN' : 'NRIC/FIN',
-            })}
-          </Text>
-          {outputDetails}
+          <Text color="secondary.500">{t('preview.automationWarning')}</Text>
+          <Text color="secondary.500">{t('preview.responsesUnchanged')}</Text>
+          <Button
+            as="a"
+            href="https://guide.form.gov.sg/faq/faq/migration-to-nric-fin-uen-field#will-my-responses-look-different-after-i-convert"
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="outline"
+            alignSelf="flex-start"
+            rightIcon={<BiLinkExternal aria-hidden />}
+          >
+            {t('preview.checkFullChanges')}
+          </Button>
         </Stack>
       )}
     </Stack>
