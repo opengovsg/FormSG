@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.54.3](https://github.com/opengovsg/formsg/compare/v9.54.2...v9.54.3) (2026-10-22)
+
+
+### Bug Fixes
+
+* **docker:** force cstdint include so canvas compiles under GCC 15 (#10372) ([#10372](https://github.com/opengovsg/formsg/commit/b754425077ce46e530e7cf4f7d70b3a2de230b7d))
+
 ## [9.54.2](https://github.com/opengovsg/formsg/compare/v9.54.1...v9.54.2) (2026-10-22)
 
 
