@@ -326,6 +326,26 @@
     },
     {
       "type": "click",
+      "name": "Dismiss feature tour (if shown)",
+      "timeout": 30,
+      "allowFailure": true,
+      "isCritical": false,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": ".__floater button[aria-label='Close']"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
       "name": "Add short answer field",
       "timeout": 60,
       "params": {
