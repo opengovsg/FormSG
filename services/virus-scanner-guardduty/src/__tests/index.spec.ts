@@ -7,7 +7,11 @@ import { validate } from 'uuid'
 
 import { handler } from '../index'
 import * as LoggerService from '../logger'
-import { S3Service } from '../s3.service'
+import {
+  MissingS3VersionIdError,
+  S3Service,
+  ZeroByteS3ObjectError,
+} from '../s3.service'
 
 // mocked S3Service
 const MockS3Service = jest.mocked(S3Service)
@@ -72,14 +76,14 @@ describe('handler', () => {
     )
   })
 
-  it('should return 404 if versionId not found', async () => {
+  it('should return 404 and log missing_version_id if the object has no version id', async () => {
     // Arrange
     const mockUUID = crypto.randomUUID()
     const mockEvent = { key: mockUUID }
 
     MockS3Service.prototype.getS3ObjectVersionId = jest
       .fn()
-      .mockRejectedValueOnce(new Error('VersionId is empty'))
+      .mockRejectedValueOnce(new MissingS3VersionIdError())
 
     // Act
     const result = await handler(mockEvent as unknown as APIGatewayProxyEvent)
@@ -95,21 +99,26 @@ describe('handler', () => {
     expect(mockLoggerWarn).toHaveBeenCalledTimes(1)
     expect(mockLoggerWarn).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: 'File not found or its content is empty',
-        err: new Error('VersionId is empty'),
+        message: 'S3 object is missing a version id',
+        reason: 'missing_version_id',
+        err: expect.any(MissingS3VersionIdError),
         quarantineFileKey: mockUUID,
       }),
     )
   })
 
-  it('should return 404 if body content length is empty', async () => {
+  it('should return 404 and log not_found if the object is missing', async () => {
     // Arrange
     const mockUUID = crypto.randomUUID()
     const mockEvent = { key: mockUUID }
 
+    const notFoundError = Object.assign(new Error('Not Found'), {
+      name: 'NotFound',
+      $metadata: { httpStatusCode: 404 },
+    })
     MockS3Service.prototype.getS3ObjectVersionId = jest
       .fn()
-      .mockRejectedValueOnce(new Error('Body is empty'))
+      .mockRejectedValueOnce(notFoundError)
 
     // Act
     const result = await handler(mockEvent as unknown as APIGatewayProxyEvent)
@@ -125,8 +134,40 @@ describe('handler', () => {
     expect(mockLoggerWarn).toHaveBeenCalledTimes(1)
     expect(mockLoggerWarn).toHaveBeenCalledWith(
       expect.objectContaining({
+        message: 'File not found in s3',
+        reason: 'not_found',
+        err: notFoundError,
+        quarantineFileKey: mockUUID,
+      }),
+    )
+  })
+
+  it('should return 404 and log zero_byte if the object is 0 bytes', async () => {
+    // Arrange
+    const mockUUID = crypto.randomUUID()
+    const mockEvent = { key: mockUUID }
+
+    MockS3Service.prototype.getS3ObjectVersionId = jest
+      .fn()
+      .mockRejectedValueOnce(new ZeroByteS3ObjectError())
+
+    // Act
+    const result = await handler(mockEvent as unknown as APIGatewayProxyEvent)
+
+    // Assert
+    expect(result.statusCode).toBe(StatusCodes.NOT_FOUND)
+    expect(result.body).toBe(
+      JSON.stringify({
         message: 'File not found or its content is empty',
-        err: new Error('Body is empty'),
+        fileKey: mockUUID,
+      }),
+    )
+    expect(mockLoggerWarn).toHaveBeenCalledTimes(1)
+    expect(mockLoggerWarn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'S3 object is 0 bytes',
+        reason: 'zero_byte',
+        err: expect.any(ZeroByteS3ObjectError),
         quarantineFileKey: mockUUID,
       }),
     )
