@@ -173,6 +173,18 @@
       }
     },
     {
+      "type": "extractFromJavascript",
+      "name": "Extract base URL into BASE_URL",
+      "timeout": 60,
+      "params": {
+        "code": "return window.location.origin",
+        "variable": {
+          "name": "BASE_URL",
+          "example": ""
+        }
+      }
+    },
+    {
       "type": "click",
       "name": "Create form",
       "timeout": 60,
@@ -567,7 +579,7 @@
       "name": "Open general settings",
       "timeout": 60,
       "params": {
-        "value": "{{ START_URL }}/admin/form/{{ FORM_ID }}/settings/general"
+        "value": "{{ BASE_URL }}/admin/form/{{ FORM_ID }}/settings/general"
       }
     },
     {
@@ -668,7 +680,7 @@
       "name": "Open public form",
       "timeout": 60,
       "params": {
-        "value": "{{ START_URL }}/{{ FORM_ID }}"
+        "value": "{{ BASE_URL }}/{{ FORM_ID }}"
       }
     },
     {
@@ -835,7 +847,7 @@
       "name": "Open results page",
       "timeout": 60,
       "params": {
-        "value": "{{ START_URL }}/admin/form/{{ FORM_ID }}/results"
+        "value": "{{ BASE_URL }}/admin/form/{{ FORM_ID }}/results"
       }
     },
     {
@@ -906,7 +918,7 @@
       "name": "Back to results listing",
       "timeout": 60,
       "params": {
-        "value": "{{ START_URL }}/admin/form/{{ FORM_ID }}/results"
+        "value": "{{ BASE_URL }}/admin/form/{{ FORM_ID }}/results"
       }
     },
     {

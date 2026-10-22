@@ -165,6 +165,18 @@
       }
     },
     {
+      "type": "extractFromJavascript",
+      "name": "Extract base URL into BASE_URL",
+      "timeout": 60,
+      "params": {
+        "code": "return window.location.origin",
+        "variable": {
+          "name": "BASE_URL",
+          "example": ""
+        }
+      }
+    },
+    {
       "type": "click",
       "name": "Create form",
       "timeout": 60,
@@ -504,6 +516,60 @@
     },
     {
       "type": "click",
+      "name": "Open step 1 field dropdown",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": "input[placeholder^='Select field']"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Assign step 1 field",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//li[contains(., 'Step 1 answer')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Save workflow step 1",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": "[data-testid='save-action-group-submit']"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
       "name": "Add workflow step",
       "timeout": 60,
       "params": {
@@ -559,9 +625,26 @@
     },
     {
       "type": "click",
-      "name": "Assign step 2 field to this step (shakedown: exact control may differ)",
-      "allowFailure": true,
-      "timeout": 15,
+      "name": "Open step 2 field dropdown",
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": "input[placeholder^='Select field']"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
+      "name": "Assign step 2 field",
+      "timeout": 60,
       "params": {
         "element": {
           "userLocator": {
@@ -569,7 +652,7 @@
             "values": [
               {
                 "type": "xpath",
-                "value": "//label[contains(., 'Step 2 answer')]"
+                "value": "//li[contains(., 'Step 2 answer')]"
               }
             ]
           }
@@ -599,7 +682,7 @@
       "name": "Open general settings",
       "timeout": 60,
       "params": {
-        "value": "{{ START_URL }}/admin/form/{{ FORM_ID }}/settings/general"
+        "value": "{{ BASE_URL }}/admin/form/{{ FORM_ID }}/settings/general"
       }
     },
     {
@@ -680,7 +763,7 @@
       "name": "Open public form",
       "timeout": 60,
       "params": {
-        "value": "{{ START_URL }}/{{ FORM_ID }}"
+        "value": "{{ BASE_URL }}/{{ FORM_ID }}"
       }
     },
     {
