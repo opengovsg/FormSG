@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.54.4](https://github.com/opengovsg/formsg/compare/v9.54.3...v9.54.4) (2026-10-22)
+
+
+### Bug Fixes
+
+* **docker:** bump pnpm use-node-version pin to 22.23.4 (#10374) ([#10374](https://github.com/opengovsg/formsg/commit/12269386b29011fc5adcbafeffeb688ce6858ca6))
+
 ## [9.54.3](https://github.com/opengovsg/formsg/compare/v9.54.2...v9.54.3) (2026-10-22)
 
 
