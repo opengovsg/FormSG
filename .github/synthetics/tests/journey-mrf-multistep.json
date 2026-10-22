@@ -228,7 +228,8 @@
       "params": {
         "code": "return document.querySelector(\"code[data-dd-privacy='mask']\").textContent.trim()",
         "variable": {
-          "name": "SECRET_KEY"
+          "name": "SECRET_KEY",
+          "example": ""
         }
       }
     },
@@ -293,7 +294,8 @@
       "params": {
         "code": "return window.location.pathname.match(/[a-f0-9]{24}/)[0]",
         "variable": {
-          "name": "FORM_ID"
+          "name": "FORM_ID",
+          "example": ""
         }
       }
     },
