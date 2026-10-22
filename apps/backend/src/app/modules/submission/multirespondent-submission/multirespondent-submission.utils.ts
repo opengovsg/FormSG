@@ -253,6 +253,14 @@ export const retrieveWorkflowStepEmailAddresses = (
   }
 }
 
+export const retrieveStoredOrRoutedRecipients = (
+  storedRecipients: string[] | undefined,
+  ...routing: Parameters<typeof retrieveWorkflowStepEmailAddresses>
+): Result<string[], InvalidWorkflowTypeError> =>
+  storedRecipients !== undefined
+    ? ok(storedRecipients)
+    : retrieveWorkflowStepEmailAddresses(...routing)
+
 /**
  * Validates each field by individual field rules.
  * @param formId formId, used for logging
