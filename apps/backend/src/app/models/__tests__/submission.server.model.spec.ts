@@ -229,7 +229,10 @@ describe('Submission Model', () => {
           '__v',
         ])
 
-        const expectedObject = merge({}, MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS)
+        const expectedObject = merge(
+          { workflowEvents: [] },
+          MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS,
+        )
         expect(actualSavedObject).toEqual(expectedObject)
       })
 
@@ -256,7 +259,7 @@ describe('Submission Model', () => {
         ])
 
         const expectedObject = merge(
-          {},
+          { workflowEvents: [] },
           multirespondentSubmissionWithResponseMetadata,
         )
         expect(actualSavedObject).toEqual(expectedObject)

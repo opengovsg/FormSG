@@ -214,6 +214,6 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/assignees', () => 
 
     expect(response.status).toEqual(403)
     const stored = await MultirespondentSubmission.findById(submission._id)
-    expect(stored?.workflowEvents).toBeUndefined()
+    expect(stored?.workflowEvents).toHaveLength(0)
   })
 })

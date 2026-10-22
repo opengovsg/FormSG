@@ -3902,6 +3902,229 @@ describe('multirespondent-submission.service', () => {
     })
   })
 
+  describe('step submitted events', () => {
+    const fieldId = new ObjectId().toHexString()
+    const threeStepWorkflow: FormWorkflowStepDto[] = [
+      'first@example.com',
+      'second@example.com',
+      'third@example.com',
+    ].map((email) => ({
+      _id: new ObjectId().toHexString(),
+      workflow_type: WorkflowType.Static,
+      emails: [email],
+      edit: [fieldId],
+    }))
+    const formDef = {
+      _id: mockFormId,
+      authType: FormAuthType.NIL,
+      responseMode: FormResponseMode.Multirespondent,
+      title: 'Test form',
+      form_fields: [
+        { _id: fieldId, fieldType: BasicField.ShortText, title: 'Q1' },
+      ],
+      form_logics: [],
+      workflow: threeStepWorkflow,
+      isSingleSubmission: false,
+      getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+    }
+    const payload = (workflowStep: number): MultirespondentSubmissionDto => ({
+      submissionPublicKey: 'submission-public-key',
+      encryptedSubmissionSecretKey: 'encrypted-submission-secret-key',
+      encryptedContent: 'encrypted-content',
+      submissionSecretKey: 'submission-secret-key',
+      version: 2,
+      workflowStep,
+      responses: {
+        [fieldId]: {
+          fieldType: BasicField.ShortText,
+          question: 'Q1',
+          answer: { value: 'answer' },
+          provenance: {},
+        },
+      },
+      mrfVersion: 1,
+    })
+    const Model = getMultirespondentSubmissionModel(mongoose)
+    const createLegacyRowAtStepTwo = () =>
+      Model.create({
+        form: mockFormId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: threeStepWorkflow,
+        submissionPublicKey: 'pk',
+        encryptedSubmissionSecretKey: 'esk',
+        encryptedContent: 'ec',
+        version: 2,
+        workflowStep: 0,
+        submittedSteps: [
+          {
+            isApproval: false,
+            submittedAt: new Date().toISOString(),
+            nextStepRecipientEmails: ['second@example.com'],
+          },
+        ],
+      }).then(async (row) => {
+        await Model.updateOne(
+          { _id: row._id },
+          { $unset: { workflowEvents: 1 } },
+        )
+        return row
+      })
+    const submitStep = (submissionId: unknown, workflowStep: number) =>
+      updateMultiRespondentFormSubmission({
+        submissionId: String(submissionId),
+        snapshottedFormDef: formDef as unknown as SnapshottedFormDef,
+        encryptedPayload: payload(workflowStep),
+        logMeta: { action: 'test' },
+      })
+
+    it('records who the first step was sent to when the submission is created', async () => {
+      const result = await createMultiRespondentFormSubmission({
+        form: formDef as unknown as IPopulatedMultirespondentForm,
+        encryptedPayload: payload(0),
+        logMeta: { action: 'test' },
+      })
+
+      const saved = await Model.findById(
+        result._unsafeUnwrap().submission._id,
+      ).lean()
+      expect(saved?.submittedSteps?.[0].nextStepRecipientEmails).toEqual([
+        'second@example.com',
+      ])
+      expect(saved?.workflowEvents).toEqual([
+        {
+          type: WorkflowEventType.StepSubmitted,
+          outcome: WorkflowStatus.COMPLETED,
+          stepNumber: 1,
+          emails: ['second@example.com'],
+          created: expect.any(Date),
+        },
+      ])
+    })
+
+    it('records who the next step was sent to when a later step is submitted', async () => {
+      const row = await createLegacyRowAtStepTwo()
+
+      expect((await submitStep(row._id, 1)).isOk()).toBe(true)
+
+      const saved = await Model.findById(row._id).lean()
+      expect(saved?.workflowEvents).toEqual([
+        {
+          type: WorkflowEventType.StepSubmitted,
+          outcome: WorkflowStatus.COMPLETED,
+          stepNumber: 2,
+          emails: ['third@example.com'],
+          created: expect.any(Date),
+        },
+      ])
+    })
+
+    it('records no recipients when the last step is submitted', async () => {
+      const row = await createLegacyRowAtStepTwo()
+      await submitStep(row._id, 1)
+
+      expect((await submitStep(row._id, 2)).isOk()).toBe(true)
+
+      const saved = await Model.findById(row._id).lean()
+      expect(saved?.workflowEvents?.[1]).toMatchObject({
+        type: WorkflowEventType.StepSubmitted,
+        outcome: WorkflowStatus.COMPLETED,
+        stepNumber: 3,
+        emails: [],
+      })
+    })
+
+    it.each([
+      ['Yes', WorkflowStatus.APPROVED, ['third@example.com']],
+      ['No', WorkflowStatus.REJECTED, []],
+    ])(
+      'records the outcome and recipients for approval answer %s',
+      async (answer, outcome, emails) => {
+        const approvalFieldId = new ObjectId().toHexString()
+        const approvalFormDef = {
+          ...formDef,
+          form_fields: [
+            ...formDef.form_fields,
+            { _id: approvalFieldId, fieldType: BasicField.YesNo, title: 'OK?' },
+          ],
+          workflow: threeStepWorkflow.map((step, index) =>
+            index === 1
+              ? {
+                  ...step,
+                  edit: [...step.edit, approvalFieldId],
+                  approval_field: approvalFieldId,
+                }
+              : step,
+          ),
+        }
+        const row = await createLegacyRowAtStepTwo()
+
+        const result = await updateMultiRespondentFormSubmission({
+          submissionId: String(row._id),
+          snapshottedFormDef: approvalFormDef as unknown as SnapshottedFormDef,
+          encryptedPayload: {
+            ...payload(1),
+            responses: {
+              ...payload(1).responses,
+              [approvalFieldId]: {
+                fieldType: BasicField.YesNo,
+                question: 'OK?',
+                answer: { value: answer },
+                provenance: {},
+              },
+            },
+          },
+          logMeta: { action: 'test' },
+        })
+
+        expect(result.isOk()).toBe(true)
+        const saved = await Model.findById(row._id).lean()
+        expect(saved?.workflowEvents).toEqual([
+          {
+            type: WorkflowEventType.StepSubmitted,
+            outcome,
+            stepNumber: 2,
+            emails,
+            created: expect.any(Date),
+          },
+        ])
+      },
+    )
+
+    it('keeps an admin event written after the respondent loaded the submission', async () => {
+      const row = await createLegacyRowAtStepTwo()
+      const findById = Model.findById.bind(Model)
+      jest.spyOn(Model, 'findById').mockImplementationOnce(((id: unknown) =>
+        findById(id).then(async (loaded) => {
+          await Model.updateOne(
+            { _id: row._id },
+            {
+              $push: {
+                workflowEvents: {
+                  type: WorkflowEventType.ReminderSent,
+                  actorId: new ObjectId(),
+                  actorEmail: 'admin@example.com',
+                  stepNumber: 2,
+                  emails: ['second@example.com'],
+                  created: new Date(),
+                },
+              },
+            },
+          )
+          return loaded
+        })) as unknown as typeof Model.findById)
+
+      expect((await submitStep(row._id, 1)).isOk()).toBe(true)
+
+      const saved = await Model.findById(row._id).lean()
+      expect(saved?.workflowEvents?.map(({ type }) => type)).toEqual([
+        WorkflowEventType.ReminderSent,
+        WorkflowEventType.StepSubmitted,
+      ])
+    })
+  })
+
   describe('S4 MRF v4 webhook snapshot integration', () => {
     const { publicKey: formPublicKey } = formsgSdk.crypto.generate()
     const PLUMBER_URL = 'https://plumber.gov.sg/webhooks/x'
