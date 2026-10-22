@@ -96,11 +96,15 @@ export const WorkflowActivityLog = ({
     ),
   })
 
+  const sentToByStep = new Map(
+    events
+      .filter((event) => event.type === WorkflowEventType.StepSubmitted)
+      .map((event): [number, string[]] => [event.stepNumber, event.emails]),
+  )
+
   const stepEntries = submittedSteps.map((step, index) => {
-    const recipients =
-      'nextStepRecipientEmails' in step
-        ? (step.nextStepRecipientEmails ?? [])
-        : []
+    const stepNumber = index + 1
+    const recipients = sentToByStep.get(stepNumber) ?? []
     const sentTo = index < workflow.length - 1 && recipients.length > 0
     const status = 'status' in step ? step.status : undefined
     const key: ActivityLogKey =
@@ -124,7 +128,7 @@ export const WorkflowActivityLog = ({
       step.submittedAt,
       key,
       {
-        ...stepValues(index + 1),
+        ...stepValues(stepNumber),
         recipients: formatEmailList(recipients),
       },
       tone,

@@ -98,6 +98,56 @@ describe('WorkflowActivityLog', () => {
     ])
   })
 
+  it('shows who a step was sent to when it was submitted', () => {
+    render(
+      <WorkflowActivityLog
+        history={{
+          ...history,
+          submittedSteps: [
+            {
+              ...history.submittedSteps[0],
+              nextStepRecipientEmails: ['current@agency.gov.sg'],
+            },
+          ],
+          workflowEvents: [stepSubmitted(1, ['original@agency.gov.sg'])],
+        }}
+      />,
+    )
+
+    expect(
+      screen.getByText(/^stepCompletedSentTo: Step 1/).textContent,
+    ).toContain('original@agency.gov.sg')
+    expect(
+      screen.queryByText(/current@agency\.gov\.sg/),
+    ).not.toBeInTheDocument()
+  })
+
+  it('leaves out recipients for steps submitted before they were recorded', () => {
+    render(
+      <WorkflowActivityLog
+        history={{
+          ...history,
+          submittedSteps: [
+            history.submittedSteps[0],
+            {
+              isApproval: true,
+              status: WorkflowStatus.APPROVED,
+              submittedAt: '2026-10-08T02:00:00.000Z',
+              nextStepRecipientEmails: ['finance@agency.gov.sg'],
+            },
+          ],
+        }}
+      />,
+    )
+
+    expect(
+      screen.getAllByText(/^step/).map((element) => element.textContent),
+    ).toEqual([
+      'stepCompleted: Step 1 |  (Applicant) | ',
+      'stepApproved: Step 2 |  (Team lead) | ',
+    ])
+  })
+
   it('shows an approval outcome', () => {
     render(
       <WorkflowActivityLog
