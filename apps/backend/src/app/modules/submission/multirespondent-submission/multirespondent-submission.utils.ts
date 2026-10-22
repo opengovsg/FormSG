@@ -1,8 +1,10 @@
 import type {
   ChildrenAnswerV4,
+  DecryptParams,
   FieldResponsesV4,
   FieldResponseV4,
 } from '@opengovsg/formsg-sdk'
+import { adaptV3ToV4, isFieldResponsesV4 } from '@opengovsg/formsg-sdk/adapters'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import {
   MYINFO_ATTRIBUTE_MAP,
@@ -47,6 +49,7 @@ import {
 } from '../../../../types/api'
 import config from '../../../config/config'
 import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
+import formsgSdk from '../../../config/formsg-sdk'
 import { AutoReplyMailData } from '../../../services/mail/mail.types'
 import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-array-to-png'
 import { validateFieldV4 } from '../../../utils/field-validation'
@@ -71,6 +74,26 @@ import { buildMrfMetadata } from '../submission.utils'
 import { projectSubmittedStepForAdmin } from '../submitted-step-visibility'
 
 import { MrfJwtPayload } from './multirespondent-submission.types'
+
+const ANSWERS_ONLY_ADAPT_CONTEXT = { formFields: {}, provenance: {} }
+
+export const decryptSubmissionResponsesToV4 = (
+  submissionSecretKey: string,
+  submission: DecryptParams,
+): Result<FieldResponsesV4, ProcessingError> => {
+  const decrypted = formsgSdk.cryptoV3.decryptFromSubmissionKey(
+    submissionSecretKey,
+    submission,
+  )
+  if (!decrypted) {
+    return err(new ProcessingError('Unable to decrypt previous response'))
+  }
+  return ok(
+    isFieldResponsesV4(decrypted.responses)
+      ? decrypted.responses
+      : adaptV3ToV4(decrypted.responses, ANSWERS_ONLY_ADAPT_CONTEXT),
+  )
+}
 
 export const isSubmissionMultirespondentMode = (
   submission: ISubmissionSchema,
