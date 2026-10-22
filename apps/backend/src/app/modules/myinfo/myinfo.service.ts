@@ -12,6 +12,7 @@ import {
   IFieldSchema,
   IHashes,
   IMyInfoHashSchema,
+  MyInfoHashScope,
   PossiblyPrefilledField,
 } from '../../../types'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
@@ -68,12 +69,14 @@ export class MyInfoServiceClass {
    * @param formId
    * @param myInfoData
    * @param currFormFields
+   * @param scope a later MRF step's login session, which scopes the hashes
    * @returns currFormFields with the MyInfo fields prefilled with data from myInfoData
    */
   prefillAndSaveMyInfoFields(
     formId: string,
     myInfoData: MyInfoData,
     currFormFields: FlattenMaps<IFieldSchema[]>,
+    scope?: MyInfoHashScope,
   ): ResultAsync<PossiblyPrefilledField[], MyInfoHashingError | DatabaseError> {
     const allChildAttrs: InternalAttr[] = []
     const prefilledFields = currFormFields.map((field) => {
@@ -119,6 +122,7 @@ export class MyInfoServiceClass {
       myInfoData instanceof MyInfoData
         ? myInfoData.getChildrenBirthRecords(allChildAttrs)
         : undefined,
+      scope,
     ).map(() => prefilledFields)
   }
 
@@ -127,6 +131,7 @@ export class MyInfoServiceClass {
    * @param uinFin NRIC
    * @param formId ID of form being populated
    * @param prefilledFormFields Fields with fieldValue prefilled and disabled set to true if read-only
+   * @param scope a later MRF step's login session the hashes belong to
    * @returns the document saved to the database which contains the hashes, or null if the document was not found
    * @throws error if an error occurred while hashing the values or updating the database
    */
@@ -135,6 +140,7 @@ export class MyInfoServiceClass {
     formId: string,
     prefilledFormFields: PossiblyPrefilledField[],
     childrenBirthRecords?: MyInfoChildData,
+    scope?: MyInfoHashScope,
   ): ResultAsync<IMyInfoHashSchema | null, MyInfoHashingError | DatabaseError> {
     const readOnlyHashPromises = hashFieldValues(
       prefilledFormFields,
@@ -160,6 +166,7 @@ export class MyInfoServiceClass {
           formId,
           readOnlyHashes,
           this.#spCookieMaxAge,
+          scope,
         ),
         (error) => {
           const message = 'Failed to save MyInfo hashes to database'
@@ -181,15 +188,17 @@ export class MyInfoServiceClass {
    * Fetches the saved hashes for a given MyInfo form and user.
    * @param uinFin NRIC
    * @param formId ID of form being checked
+   * @param scope a later MRF step's login session the hashes belong to
    * @returns an object mapping MyInfo attributes to their respective saved hashes
    * @throws error if there was an error while querying the database or the requested hashes were not found
    */
   fetchMyInfoHashes(
     uinFin: string,
     formId: string,
+    scope?: MyInfoHashScope,
   ): ResultAsync<IHashes, DatabaseError | MyInfoMissingHashError> {
     return ResultAsync.fromPromise(
-      MyInfoHash.findHashes(uinFin, formId),
+      MyInfoHash.findHashes(uinFin, formId, scope),
       (error) => {
         const message = 'Error while fetching MyInfo hashes from database'
         logger.error({

@@ -3,8 +3,11 @@ import { useForm } from 'react-hook-form'
 import { Box, Stack } from '@chakra-ui/react'
 
 import {
-  FormWorkflowStep,
+  FirstStepLoginInput,
+  FormAuthType,
+  FormWorkflowStepAuth,
   FormWorkflowStepBase,
+  FormWorkflowStepWriteDto,
   WorkflowType,
 } from 'formsg-shared/types'
 
@@ -21,6 +24,7 @@ import {
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
 import { useGuidedStepReveal } from '../../../hooks/useGuidedStepReveal'
+import { useIsStepLoginShown } from '../../../hooks/useIsStepLoginShown'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
 import { EditStepInputs } from '../../../types'
@@ -30,13 +34,14 @@ import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { ApprovalsBlock } from './ApprovalsBlock'
 import { GuidedActionGroup } from './GuidedActionGroup'
+import { LoginBlock } from './LoginBlock'
 import { QuestionsBlock } from './QuestionsBlock'
 import { RespondentBlock } from './RespondentBlock'
 import { StepNameBlock } from './StepNameBlock'
 
 export interface EditLogicBlockProps {
   defaultValues?: Partial<EditStepInputs>
-  onSubmit: (inputs: FormWorkflowStep) => void
+  onSubmit: (inputs: FormWorkflowStepWriteDto) => void
 
   stepNumber: number
   submitButtonLabel: string
@@ -50,10 +55,48 @@ export const APPROVAL_ENABLED_NAME = 'is_approval_enabled'
 
 const SECTION_REVEAL_SCROLL_DELAY_MS = 100
 
+type WriteStep = FormWorkflowStepWriteDto & { _id: string }
+
+// Corppass is the only login with an e-service ID; an empty one is omitted.
+const normaliseEsrvcId = (
+  authType: FormAuthType,
+  esrvcId: string | undefined,
+): { esrvc_id?: string } => {
+  const trimmed = esrvcId?.trim()
+  return authType === FormAuthType.CP && trimmed ? { esrvc_id: trimmed } : {}
+}
+
+/** A later step's login as sent: absent when the step has none. */
+export const normaliseStepAuth = (
+  auth: FormWorkflowStepAuth | null | undefined,
+): FormWorkflowStepAuth | undefined =>
+  auth
+    ? {
+        auth_type: auth.auth_type,
+        ...normaliseEsrvcId(auth.auth_type, auth.esrvc_id),
+      }
+    : undefined
+
+// Step 1's login updates the form-level settings, where a missing e-service
+// ID means "unchanged". Send a cleared Corppass ID as '' so it is saved.
+const normaliseFirstStepLogin = (
+  login: FirstStepLoginInput | undefined,
+): { first_step_login?: FirstStepLoginInput } =>
+  login
+    ? {
+        first_step_login: {
+          auth_type: login.auth_type,
+          ...(login.auth_type === FormAuthType.CP
+            ? { esrvc_id: login.esrvc_id?.trim() ?? '' }
+            : {}),
+        },
+      }
+    : {}
+
 export const buildWorkflowStep = (
   rawInputs: EditStepInputs,
   isFirstStep: boolean,
-): (FormWorkflowStep & { _id: string }) | undefined => {
+): WriteStep | undefined => {
   const inputs = { ...rawInputs }
   if (inputs.approval_field === '') {
     inputs.approval_field = undefined
@@ -77,16 +120,24 @@ export const buildWorkflowStep = (
       is_approval_enabled: !!inputs.is_approval_enabled,
       step_name: inputs.step_name,
       emails: inputs.emails ?? [],
+      // Only sent once the admin changed Step 1's login in the editor.
+      ...normaliseFirstStepLogin(inputs.first_step_login),
     }
   }
 
-  const workflowStepBase: FormWorkflowStepBase & { _id: string } = {
+  // A saved login is always sent back, even while the login block is hidden,
+  // so a save never drops it.
+  const workflowStepBase: Omit<FormWorkflowStepBase, 'auth'> & {
+    _id: string
+    auth?: FormWorkflowStepAuth
+  } = {
     _id: inputs._id,
     workflow_type: inputs.workflow_type,
     edit: inputs.edit,
     approval_field: inputs.approval_field,
     is_approval_enabled: !!inputs.is_approval_enabled,
     step_name: inputs.step_name,
+    auth: normaliseStepAuth(inputs.auth),
   }
 
   const workflowType: WorkflowType | undefined = inputs.workflow_type
@@ -111,7 +162,7 @@ export const buildWorkflowStep = (
         ...workflowStepBase,
         workflow_type: WorkflowType.Dynamic,
         ...(inputs.field ? { field: inputs.field } : {}),
-      } as FormWorkflowStep & { _id: string }
+      } as WriteStep
     }
     case WorkflowType.Conditional: {
       return {
@@ -120,7 +171,7 @@ export const buildWorkflowStep = (
         ...(inputs.conditional_field
           ? { conditional_field: inputs.conditional_field }
           : {}),
-      } as FormWorkflowStep & { _id: string }
+      } as WriteStep
     }
     default: {
       const exhaustiveCheck: never = workflowType
@@ -144,6 +195,7 @@ export const EditStepBlock = ({
   const isCreatingState = useAdminWorkflowStore(isCreatingStateSelector)
   const isGuidedSetup = useAdminWorkflowStore(isGuidedSetupSelector)
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const isLoginShown = useIsStepLoginShown(stepNumber)
   const { cardRadius, activeCardBg, activeCardBorderWidth, activeCardShadow } =
     useWorkflowSurfaces()
 
@@ -190,9 +242,17 @@ export const EditStepBlock = ({
       key="fields"
       formMethods={formMethods}
       isLoading={_isLoading}
-      isFirstStep={isFirstStep}
+      stepNumber={stepNumber}
     />
   )
+  const loginSection = isLoginShown ? (
+    <LoginBlock
+      key="login"
+      formMethods={formMethods}
+      stepNumber={stepNumber}
+      isLoading={_isLoading}
+    />
+  ) : null
   const approvalsSection = isFirstStep ? null : (
     <ApprovalsBlock
       key="what-they-do"
@@ -214,9 +274,11 @@ export const EditStepBlock = ({
       formMethods={formMethods}
       isLoading={_isLoading}
     />,
+    // Login follows the respondent in both orders: who fills the step, then
+    // how they log in, then what they do.
     ...(isRedesign
-      ? [approvalsSection, questionsSection]
-      : [questionsSection, approvalsSection]
+      ? [loginSection, approvalsSection, questionsSection]
+      : [loginSection, questionsSection, approvalsSection]
     ).filter((section): section is JSX.Element => section !== null),
   ]
 

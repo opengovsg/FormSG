@@ -8,6 +8,7 @@ import {
 
 import {
   getLoginIdentityValues,
+  mergePrefilledFields,
   prefillLoginIdentityFields,
 } from '../public-form.utils'
 
@@ -79,6 +80,22 @@ describe('public-form.utils', () => {
       )
 
       expect(unowned).toBe(identityField)
+    })
+  })
+
+  describe('mergePrefilledFields', () => {
+    it('keeps every field and swaps in the prefilled ones', () => {
+      const section = { _id: 'a', fieldType: 'section' }
+      const name = { _id: 'b', fieldType: 'textfield' }
+      const laterStep = { _id: 'c', fieldType: 'textfield' }
+      const prefilledName = { ...name, fieldValue: 'TAN AH KOW' }
+
+      const merged = mergePrefilledFields(
+        [section, name, laterStep],
+        [prefilledName],
+      )
+
+      expect(merged).toEqual([section, prefilledName, laterStep])
     })
   })
 })

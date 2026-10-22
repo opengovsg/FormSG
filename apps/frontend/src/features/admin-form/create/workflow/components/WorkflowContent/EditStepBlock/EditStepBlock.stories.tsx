@@ -6,8 +6,10 @@ import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
+  FormAuthType,
   FormFieldDto,
   FormResponseMode,
+  FormStatus,
   MyInfoAttribute,
   WorkflowType,
 } from 'formsg-shared/types'
@@ -748,4 +750,96 @@ export const EmptyStateApprovalField = {
       ]),
     },
   },
+}
+
+// Login block: Step 1 edits the form-level login, later steps their own.
+const stepLoginOn = new GrowthBook({
+  features: {
+    [featureFlags.workflowBuilderRedesign]: { defaultValue: true },
+    [featureFlags.mrfStepLogin]: { defaultValue: true },
+  },
+})
+
+const withStepLoginOn = (Story: StoryFn) => (
+  <GrowthBookProvider growthbook={stepLoginOn}>
+    <Story />
+  </GrowthBookProvider>
+)
+
+const mrfSingpassFormView = (status = FormStatus.Private) => [
+  getAdminFormView({
+    mode: FormResponseMode.Multirespondent,
+    overrides: {
+      status,
+      authType: FormAuthType.MyInfo,
+      form_fields: [form_field_1, form_field_3, form_field_5, myinfo_field],
+      workflow: [
+        {
+          _id: '61e6857c9c794b0012f1c6f8',
+          workflow_type: WorkflowType.Static,
+          emails: [],
+          edit: [form_field_1._id, myinfo_field._id],
+        },
+        {
+          _id: '61e6857c9c794b0012f1c6f9',
+          workflow_type: WorkflowType.Static,
+          emails: ['test_1@tech.gov.sg'],
+          edit: [form_field_3._id],
+          auth: { auth_type: FormAuthType.MyInfo },
+        },
+        {
+          _id: '61e6857c9c794b0012f1c6fa',
+          workflow_type: WorkflowType.Static,
+          emails: ['test_2@tech.gov.sg'],
+          edit: [form_field_5._id],
+          auth: { auth_type: FormAuthType.CP, esrvc_id: 'STORYBOOK-TEST' },
+        },
+      ],
+    },
+  }),
+]
+
+export const Step1Login = {
+  args: {
+    stepNumber: 0,
+    defaultValues: {
+      workflow_type: WorkflowType.Static,
+      edit: [form_field_1._id, myinfo_field._id],
+    },
+  },
+  decorators: [withStepLoginOn],
+  parameters: { msw: { handlers: mrfSingpassFormView() } },
+}
+
+export const Step2LoginSingpass = {
+  args: {
+    stepNumber: 1,
+    defaultValues: {
+      workflow_type: WorkflowType.Static,
+      emails: ['test_1@tech.gov.sg'],
+      edit: [form_field_3._id],
+      auth: { auth_type: FormAuthType.MyInfo },
+    },
+  },
+  decorators: [withStepLoginOn],
+  parameters: { msw: { handlers: mrfSingpassFormView() } },
+}
+
+export const Step3LoginCorppass = {
+  args: {
+    stepNumber: 2,
+    defaultValues: {
+      workflow_type: WorkflowType.Static,
+      emails: ['test_2@tech.gov.sg'],
+      edit: [form_field_5._id],
+      auth: { auth_type: FormAuthType.CP, esrvc_id: 'STORYBOOK-TEST' },
+    },
+  },
+  decorators: [withStepLoginOn],
+  parameters: { msw: { handlers: mrfSingpassFormView() } },
+}
+
+export const Step2LoginOnPublicForm = {
+  ...Step2LoginSingpass,
+  parameters: { msw: { handlers: mrfSingpassFormView(FormStatus.Public) } },
 }

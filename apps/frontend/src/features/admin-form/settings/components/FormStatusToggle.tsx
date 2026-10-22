@@ -2,7 +2,6 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Flex, Skeleton, Stack, Text, useDisclosure } from '@chakra-ui/react'
 
-import { BasicField } from 'formsg-shared/types'
 import {
   EmailFormDto,
   FormResponseMode,
@@ -21,12 +20,13 @@ import { useAdminFormSettings } from '../queries'
 import { EmailModeConvertModal } from './EmailModeConvertModal'
 import { IncompleteWorkflowModal } from './IncompleteWorkflowModal'
 import { SecretKeyActivationModal } from './SecretKeyActivationModal'
-import { isEsrvcidRequired } from './utils'
+import { hasCorppassStepWithoutEsrvcId, isEsrvcidRequired } from './utils'
 
 export const FormStatusToggle = (): JSX.Element => {
   const { t } = useTranslation()
   const {
-    data: { form_fields, _id: formId, ...adminFormData } = {},
+    data: adminForm,
+    data: { _id: formId, ...adminFormData } = {},
     isLoading: isLoadingForm,
   } = useAdminForm()
   const { data: formSettings, isLoading: isLoadingFormSettings } =
@@ -48,7 +48,14 @@ export const FormStatusToggle = (): JSX.Element => {
         'features.adminForm.settings.general.status.supplySingpassEServiceId',
       )
     }
-  }, [authType, esrvcId, formSettings?.responseMode, form_fields, status, t])
+
+    // Later Corppass steps have their own e-service ID.
+    if (adminForm && hasCorppassStepWithoutEsrvcId(adminForm)) {
+      return t(
+        'features.adminForm.settings.general.status.supplyStepEServiceIds',
+      )
+    }
+  }, [adminForm, authType, esrvcId, status, t])
 
   const { mutateFormStatus } = useMutateFormSettings()
 

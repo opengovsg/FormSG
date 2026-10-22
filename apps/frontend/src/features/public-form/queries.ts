@@ -1,5 +1,6 @@
 import { useQuery, UseQueryResult } from 'react-query'
 
+import { MrfStepAuthSessionDto } from 'formsg-shared/types/form'
 import { PublicFormViewDto } from 'formsg-shared/types/form/form'
 
 import { ApiError } from '~typings/core'
@@ -8,6 +9,7 @@ import { MONGODB_ID_REGEX } from '~constants/routes'
 
 import {
   getAdminUseEmailModeFeedbackFormView,
+  getMrfStepAuthSession,
   getMultirespondentSubmissionById,
   getPublicFormView,
 } from './PublicFormService'
@@ -20,6 +22,8 @@ export const publicFormKeys = {
   id: (formId: string) => [...publicFormKeys.base, formId] as const,
   submission: (formId: string, submissionId?: string) =>
     [...publicFormKeys.id(formId), submissionId] as const,
+  mrfStepAuth: (formId: string, submissionId: string) =>
+    [...publicFormKeys.submission(formId, submissionId), 'stepAuth'] as const,
 }
 
 export const usePublicFormView = (
@@ -34,6 +38,41 @@ export const usePublicFormView = (
       // Treat form as static on load.
       staleTime: Infinity,
       enabled: MONGODB_ID_REGEX.test(formId) && enabled,
+    },
+  )
+}
+
+/**
+ * Login requirement and session for the pending step of an MRF submission.
+ * Fetched once, since it completes a MyInfo login that can only be read once.
+ */
+export const useMrfStepAuthSession = ({
+  formId,
+  submissionId,
+  stepToken,
+  enabled,
+}: {
+  formId: string
+  submissionId?: string
+  stepToken?: string
+  enabled: boolean
+}): UseQueryResult<MrfStepAuthSessionDto, ApiError> => {
+  return useQuery<MrfStepAuthSessionDto, ApiError>(
+    publicFormKeys.mrfStepAuth(formId, submissionId ?? ''),
+    () =>
+      getMrfStepAuthSession({
+        formId,
+        submissionId: submissionId ?? '',
+        stepToken,
+      }),
+    {
+      staleTime: Infinity,
+      retry: false,
+      enabled:
+        enabled &&
+        MONGODB_ID_REGEX.test(formId) &&
+        !!submissionId &&
+        MONGODB_ID_REGEX.test(submissionId),
     },
   )
 }

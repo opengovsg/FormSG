@@ -20,6 +20,9 @@ export type FormBillingStatistic = Merge<
   { formId: ILogin['form'] }
 >
 
+/** The login to bill. Defaults to the form-level login (Step 1). */
+export type LoginAuth = Pick<LoginBase, 'authType' | 'esrvcId'>
+
 export interface ILoginSchema extends ILogin, Document {
   created?: Date
 }
@@ -30,5 +33,8 @@ export interface ILoginModel extends Model<ILoginSchema> {
     gte: Date,
     lte: Date,
   ) => Promise<FormBillingStatistic[]>
-  addLoginFromForm: (form: IPopulatedForm) => Promise<ILoginSchema>
+  addLoginFromForm: (
+    form: IPopulatedForm,
+    login?: LoginAuth,
+  ) => Promise<ILoginSchema>
 }

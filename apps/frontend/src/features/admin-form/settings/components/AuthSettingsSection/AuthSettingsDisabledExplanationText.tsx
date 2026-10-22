@@ -1,15 +1,14 @@
 import { useTranslation } from 'react-i18next'
 import { Box, List, ListItem } from '@chakra-ui/react'
 
-import { FormResponseMode } from 'formsg-shared/types'
-
 import InlineMessage from '~components/InlineMessage'
 
 interface AuthSettingsDisabledExplanationTextProps {
   isFormPublic: boolean
   containsMyInfoFields: boolean
   containsLoginIdentityFields: boolean
-  formResponseMode?: string
+  // Multi-respondent forms where only Step 1 can log in.
+  isMrfFirstStepOnly?: boolean
 }
 
 const FORM_IS_PUBLIC_DISABLED_EXPLANATION_TEXT =
@@ -21,12 +20,12 @@ export const AuthSettingsDisabledExplanationText = ({
   isFormPublic,
   containsMyInfoFields,
   containsLoginIdentityFields,
-  formResponseMode,
+  isMrfFirstStepOnly = false,
 }: AuthSettingsDisabledExplanationTextProps) => {
   const { t } = useTranslation()
 
   const infoboxTextArray: string[] = []
-  if (formResponseMode === FormResponseMode.Multirespondent) {
+  if (isMrfFirstStepOnly) {
     infoboxTextArray.push(
       t('features.adminForm.settings.general.singpass.mrfFirstStep'),
     )

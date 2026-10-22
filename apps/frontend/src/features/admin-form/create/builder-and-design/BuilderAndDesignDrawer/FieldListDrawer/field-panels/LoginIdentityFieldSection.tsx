@@ -4,10 +4,7 @@ import { Link as ReactLink } from 'react-router-dom'
 import { Box, Text } from '@chakra-ui/react'
 import { Droppable } from '@hello-pangea/dnd'
 
-import {
-  getLoginIdentityAttrsForAuthType,
-  LoginIdentityAttribute,
-} from 'formsg-shared/utils/login-identity'
+import { LoginIdentityAttribute } from 'formsg-shared/utils/login-identity'
 
 import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
 import InlineMessage from '~components/InlineMessage'
@@ -17,6 +14,7 @@ import { useCreateTabForm } from '../../../useCreateTabForm'
 import { DraggableLoginIdentityFieldListOption } from '../FieldListOption'
 
 import { FieldSection } from './FieldSection'
+import { useFormUsesLogin } from './useFormUsesLogin'
 import { useLoginFieldLimit } from './useLoginFieldLimit'
 import { useOfferedLoginIdentityAttrs } from './useOfferedLoginIdentityAttrs'
 
@@ -78,11 +76,10 @@ export const LoginIdentityMessage = ({
   })
   const { data: form } = useCreateTabForm()
   const { isAtLimit } = useLoginFieldLimit()
+  const { offersIdentityAttr } = useFormUsesLogin()
   if (!form) return null
 
-  const isLoginMissing = !getLoginIdentityAttrsForAuthType(
-    form.authType,
-  ).includes(attrs[0])
+  const isLoginMissing = !offersIdentityAttr(attrs[0])
   const isConvertFirst = !isLoginMissing && form.isSubmitterIdCollectionEnabled
 
   return (
@@ -130,11 +127,10 @@ export const LoginIdentityFieldSection = ({
   const { isAtLimit } = useLoginFieldLimit()
 
   const filteredAttrs = useOfferedLoginIdentityAttrs(attrs, searchValue)
+  const { offersIdentityAttr } = useFormUsesLogin()
   if (!form || filteredAttrs.length === 0) return null
 
-  const isLoginMissing = !getLoginIdentityAttrsForAuthType(
-    form.authType,
-  ).includes(attrs[0])
+  const isLoginMissing = !offersIdentityAttr(attrs[0])
   const isCollectedBySettings = form.isSubmitterIdCollectionEnabled
   const isSectionDisabled =
     isLoading || isLoginMissing || isCollectedBySettings || isAtLimit
