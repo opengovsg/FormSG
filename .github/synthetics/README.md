@@ -28,17 +28,20 @@ Tests are kept `status: paused` in Datadog so they never run on a Datadog schedu
 Editing an existing test: change its JSON, open a PR. On merge to develop,
 `synthetics-sync.yml` pushes it to Datadog.
 
-Adding a test: add the JSON, open a PR. On merge, the sync workflow creates
-the test in Datadog and commits the new `ids.json` entry back to develop,
-which adds it to the CI trigger list. Duplication is prevented by name:
-before creating, `sync.sh push` adopts any live test with the same `name`,
-so re-runs (or a lost ids.json entry) update rather than duplicate. Keep
-test names unique.
+Adding a test: add the JSON, open a PR. The sync workflow runs on the PR,
+creates the test in Datadog, and commits the new `ids.json` entry back to
+the PR branch — so the test can be shaken down on the PR preview before it
+joins the release gate (the gate reads `ids.json` from develop, so new
+tests only gate prod after merge). The commit-back doesn't re-trigger the
+preview; re-run it (or push again) to exercise the new test. Duplication is
+prevented by name: before creating, `sync.sh push` adopts any live test
+with the same `name`, so re-runs (or a lost ids.json entry) update rather
+than duplicate. Keep test names unique. Abandoned PRs can leave orphan
+paused tests in Datadog; delete them in the UI if they bother you.
 
 You can also run `sync.sh push` locally with your own
-`DD_API_KEY`/`DD_APP_KEY` (needs `synthetics_read` + `synthetics_write`) to
-create the test ahead of merge — e.g. to record placeholder steps in the UI
-first — and commit the `ids.json` entry in the same PR.
+`DD_API_KEY`/`DD_APP_KEY` (needs `synthetics_read` + `synthetics_write`) —
+e.g. to record placeholder steps in the UI before opening the PR.
 
 Datadog UI edits are overwritten on the next sync — `sync.sh pull` first if
 you prototyped a change in the UI and want to keep it.
