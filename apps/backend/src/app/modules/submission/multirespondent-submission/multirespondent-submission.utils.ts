@@ -142,7 +142,8 @@ export const createPublicMultirespondentSubmissionDto = (
     workflow: stripWorkflowEmails(submissionData.workflow),
     encryptedStepToken: undefined,
     submittedSteps: undefined,
-    // Events name the admins who acted, so they never reach respondents.
+    // Events name the admins who acted and who each step was sent to, so they
+    // never reach respondents.
     workflowEvents: undefined,
   }
 }
