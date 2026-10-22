@@ -17,14 +17,22 @@
         "pattern": "https://stg.form.gov.sg",
         "example": "https://stg.form.gov.sg"
       },
-      { "name": "EMAIL", "type": "email" }
+      {
+        "name": "EMAIL",
+        "type": "email",
+        "pattern": "",
+        "example": ""
+      }
     ]
   },
   "options": {
     "device_ids": ["chrome.laptop_large"],
     "tick_every": 604800,
     "min_failure_duration": 0,
-    "retry": { "count": 2, "interval": 5000 }
+    "retry": {
+      "count": 2,
+      "interval": 5000
+    }
   },
   "steps": [
     {
@@ -35,7 +43,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "input[name='email']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "input[name='email']"
+              }
+            ]
           }
         },
         "value": "{{ EMAIL }}"
@@ -73,7 +86,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "input[name='otp']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "input[name='otp']"
+              }
+            ]
           }
         },
         "value": "{{ LOGIN_OTP }}"
@@ -106,7 +124,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "[aria-label='Close']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "[aria-label='Close']"
+              }
+            ]
           }
         }
       }
@@ -120,7 +143,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "[aria-label='Close']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "[aria-label='Close']"
+              }
+            ]
           }
         }
       }
@@ -151,7 +179,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "input[name='title']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "input[name='title']"
+              }
+            ]
           }
         },
         "value": "[smoke] MRF multi-step"
@@ -200,7 +233,9 @@
       "timeout": 60,
       "params": {
         "code": "return document.querySelector(\"code[data-dd-privacy='mask']\").textContent.trim()",
-        "variable": { "name": "SECRET_KEY" }
+        "variable": {
+          "name": "SECRET_KEY"
+        }
       }
     },
     {
@@ -263,7 +298,9 @@
       "timeout": 60,
       "params": {
         "code": "return window.location.pathname.match(/[a-f0-9]{24}/)[0]",
-        "variable": { "name": "FORM_ID" }
+        "variable": {
+          "name": "FORM_ID"
+        }
       }
     },
     {
@@ -274,7 +311,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "[aria-label='Add Fields']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "[aria-label='Add Fields']"
+              }
+            ]
           }
         }
       }
@@ -305,7 +347,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "input[name='title']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "input[name='title']"
+              }
+            ]
           }
         },
         "value": "Step 1 answer"
@@ -355,7 +402,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "input[name='title']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "input[name='title']"
+              }
+            ]
           }
         },
         "value": "Step 2 answer"
@@ -388,7 +440,10 @@
           "userLocator": {
             "failTestOnCannotLocate": true,
             "values": [
-              { "type": "css", "value": "[aria-label='Add workflow']" }
+              {
+                "type": "css",
+                "value": "[aria-label='Add workflow']"
+              }
             ]
           }
         }
@@ -403,7 +458,10 @@
           "userLocator": {
             "failTestOnCannotLocate": true,
             "values": [
-              { "type": "css", "value": "[data-testid='workflow-add-step']" }
+              {
+                "type": "css",
+                "value": "[data-testid='workflow-add-step']"
+              }
             ]
           }
         }
@@ -436,7 +494,10 @@
           "userLocator": {
             "failTestOnCannotLocate": true,
             "values": [
-              { "type": "css", "value": "#emails input, input#emails" }
+              {
+                "type": "css",
+                "value": "#emails input, input#emails"
+              }
             ]
           }
         },
@@ -514,7 +575,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "input[name='secretKey']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "input[name='secretKey']"
+              }
+            ]
           }
         },
         "value": "{{ SECRET_KEY }}"
@@ -560,7 +626,9 @@
       "type": "goToUrl",
       "name": "Open public form",
       "timeout": 60,
-      "params": { "value": "{{ START_URL }}/{{ FORM_ID }}" }
+      "params": {
+        "value": "{{ START_URL }}/{{ FORM_ID }}"
+      }
     },
     {
       "type": "typeText",
@@ -571,7 +639,10 @@
           "userLocator": {
             "failTestOnCannotLocate": true,
             "values": [
-              { "type": "css", "value": "input[aria-label='1. Step 1 answer']" }
+              {
+                "type": "css",
+                "value": "input[aria-label='1. Step 1 answer']"
+              }
             ]
           }
         },
@@ -600,13 +671,17 @@
       "type": "assertPageContains",
       "name": "Step 1 accepted",
       "timeout": 120,
-      "params": { "value": "Response ID:" }
+      "params": {
+        "value": "Response ID:"
+      }
     },
     {
       "type": "goToEmailLink",
       "name": "Open step 2 invitation link (email subject: Action required - [smoke] MRF multi-step)",
       "timeout": 180,
-      "params": { "value": "/edit/" }
+      "params": {
+        "value": "/edit/"
+      }
     },
     {
       "type": "typeText",
@@ -617,7 +692,10 @@
           "userLocator": {
             "failTestOnCannotLocate": true,
             "values": [
-              { "type": "css", "value": "input[aria-label='2. Step 2 answer']" }
+              {
+                "type": "css",
+                "value": "input[aria-label='2. Step 2 answer']"
+              }
             ]
           }
         },
@@ -646,7 +724,9 @@
       "type": "assertPageContains",
       "name": "Step 2 accepted — workflow complete",
       "timeout": 120,
-      "params": { "value": "Response ID:" }
+      "params": {
+        "value": "Response ID:"
+      }
     }
   ]
 }

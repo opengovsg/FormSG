@@ -17,14 +17,22 @@
         "pattern": "https://stg.form.gov.sg",
         "example": "https://stg.form.gov.sg"
       },
-      { "name": "EMAIL", "type": "email" }
+      {
+        "name": "EMAIL",
+        "type": "email",
+        "pattern": "",
+        "example": ""
+      }
     ]
   },
   "options": {
     "device_ids": ["chrome.laptop_large"],
     "tick_every": 604800,
     "min_failure_duration": 0,
-    "retry": { "count": 2, "interval": 5000 }
+    "retry": {
+      "count": 2,
+      "interval": 5000
+    }
   },
   "steps": [
     {
@@ -35,7 +43,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "input[name='email']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "input[name='email']"
+              }
+            ]
           }
         },
         "value": "{{ EMAIL }}"
@@ -63,7 +76,9 @@
       "type": "assertPageContains",
       "name": "OTP prompt shown",
       "timeout": 60,
-      "params": { "value": "Enter OTP sent to" }
+      "params": {
+        "value": "Enter OTP sent to"
+      }
     },
     {
       "type": "assertEmail",
@@ -79,7 +94,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "input[name='otp']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "input[name='otp']"
+              }
+            ]
           }
         },
         "value": "{{ LOGIN_OTP }}"
@@ -112,7 +132,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "[aria-label='Close']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "[aria-label='Close']"
+              }
+            ]
           }
         }
       }
@@ -126,7 +151,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "[aria-label='Close']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "[aria-label='Close']"
+              }
+            ]
           }
         }
       }
@@ -157,7 +187,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "input[name='title']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "input[name='title']"
+              }
+            ]
           }
         },
         "value": "[smoke] core CUJ"
@@ -206,7 +241,9 @@
       "timeout": 60,
       "params": {
         "code": "return document.querySelector(\"code[data-dd-privacy='mask']\").textContent.trim()",
-        "variable": { "name": "SECRET_KEY" }
+        "variable": {
+          "name": "SECRET_KEY"
+        }
       }
     },
     {
@@ -269,7 +306,9 @@
       "timeout": 60,
       "params": {
         "code": "return window.location.pathname.match(/[a-f0-9]{24}/)[0]",
-        "variable": { "name": "FORM_ID" }
+        "variable": {
+          "name": "FORM_ID"
+        }
       }
     },
     {
@@ -280,7 +319,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "[aria-label='Add Fields']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "[aria-label='Add Fields']"
+              }
+            ]
           }
         }
       }
@@ -311,7 +355,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "input[name='title']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "input[name='title']"
+              }
+            ]
           }
         },
         "value": "Full name"
@@ -514,7 +563,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "input[name='secretKey']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "input[name='secretKey']"
+              }
+            ]
           }
         },
         "value": "{{ SECRET_KEY }}"
@@ -564,7 +618,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "#form-status" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "#form-status"
+              }
+            ]
           }
         },
         "check": "contains",
@@ -575,7 +634,9 @@
       "type": "goToUrl",
       "name": "Open public form",
       "timeout": 60,
-      "params": { "value": "{{ START_URL }}/{{ FORM_ID }}" }
+      "params": {
+        "value": "{{ START_URL }}/{{ FORM_ID }}"
+      }
     },
     {
       "type": "typeText",
@@ -586,7 +647,10 @@
           "userLocator": {
             "failTestOnCannotLocate": true,
             "values": [
-              { "type": "css", "value": "input[aria-label='1. Full name']" }
+              {
+                "type": "css",
+                "value": "input[aria-label='1. Full name']"
+              }
             ]
           }
         },
@@ -601,7 +665,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "input[type='file']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "input[type='file']"
+              }
+            ]
           }
         },
         "files": [
@@ -622,7 +691,10 @@
           "userLocator": {
             "failTestOnCannotLocate": true,
             "values": [
-              { "type": "css", "value": "input[autocomplete='email']" }
+              {
+                "type": "css",
+                "value": "input[autocomplete='email']"
+              }
             ]
           }
         },
@@ -637,7 +709,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "button[name$='-verify']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "button[name$='-verify']"
+              }
+            ]
           }
         }
       }
@@ -656,7 +733,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "input[name='otp']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "input[name='otp']"
+              }
+            ]
           }
         },
         "value": "{{ VERIFY_OTP }}"
@@ -702,7 +784,9 @@
       "type": "assertPageContains",
       "name": "Submission accepted",
       "timeout": 120,
-      "params": { "value": "Response ID:" }
+      "params": {
+        "value": "Response ID:"
+      }
     },
     {
       "type": "assertEmail",
@@ -714,7 +798,9 @@
       "type": "goToUrl",
       "name": "Open results page",
       "timeout": 60,
-      "params": { "value": "{{ START_URL }}/admin/form/{{ FORM_ID }}/results" }
+      "params": {
+        "value": "{{ START_URL }}/admin/form/{{ FORM_ID }}/results"
+      }
     },
     {
       "type": "typeText",
@@ -724,7 +810,12 @@
         "element": {
           "userLocator": {
             "failTestOnCannotLocate": true,
-            "values": [{ "type": "css", "value": "[data-testid='secretKey']" }]
+            "values": [
+              {
+                "type": "css",
+                "value": "[data-testid='secretKey']"
+              }
+            ]
           }
         },
         "value": "{{ SECRET_KEY }}"
@@ -757,7 +848,10 @@
           "userLocator": {
             "failTestOnCannotLocate": true,
             "values": [
-              { "type": "css", "value": "[data-testid^='response-row-']" }
+              {
+                "type": "css",
+                "value": "[data-testid^='response-row-']"
+              }
             ]
           }
         }
@@ -767,13 +861,17 @@
       "type": "assertPageContains",
       "name": "Decrypted answer visible",
       "timeout": 60,
-      "params": { "value": "Datadog Smoke" }
+      "params": {
+        "value": "Datadog Smoke"
+      }
     },
     {
       "type": "goToUrl",
       "name": "Back to results listing",
       "timeout": 60,
-      "params": { "value": "{{ START_URL }}/admin/form/{{ FORM_ID }}/results" }
+      "params": {
+        "value": "{{ START_URL }}/admin/form/{{ FORM_ID }}/results"
+      }
     },
     {
       "type": "click",
@@ -784,7 +882,10 @@
           "userLocator": {
             "failTestOnCannotLocate": true,
             "values": [
-              { "type": "css", "value": "[aria-label='Download options']" }
+              {
+                "type": "css",
+                "value": "[aria-label='Download options']"
+              }
             ]
           }
         }
@@ -813,7 +914,12 @@
       "name": "CSV downloaded (client-side decryption works)",
       "timeout": 120,
       "params": {
-        "file": { "sizeCheck": { "type": "greaterThan", "value": 1 } }
+        "file": {
+          "sizeCheck": {
+            "type": "greaterThan",
+            "value": 1
+          }
+        }
       }
     }
   ]
