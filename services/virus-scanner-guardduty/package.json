@@ -1,6 +1,6 @@
 {
   "name": "formsg-virus-scanner-guardduty",
-  "version": "9.54.1",
+  "version": "9.54.2",
   "private": true,
   "description": "",
   "scripts": {

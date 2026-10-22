@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.54.2](https://github.com/opengovsg/formsg/compare/v9.54.1...v9.54.2) (2026-10-22)
+
+
+### Bug Fixes
+
+* **security:** bump Node.js to 22.23.4 for Brotli decoder RCE (#10370) ([#10370](https://github.com/opengovsg/formsg/commit/6b4a0d2216d30f031d6e007aa401c7ff06d893d5))
+
 ## [9.54.1](https://github.com/opengovsg/formsg/compare/v9.54.0...v9.54.1) (2026-10-22)
 
 
