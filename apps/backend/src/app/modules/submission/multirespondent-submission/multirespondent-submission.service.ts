@@ -28,6 +28,7 @@ import {
   IMultirespondentSubmissionSchema,
   IPopulatedForm,
   IPopulatedMultirespondentForm,
+  IWorkflowEvent,
   WebhookView,
 } from '../../../../types'
 import {
@@ -492,6 +493,7 @@ const getEmailsToNotifyAboutMrfOutcome = ({
   responses,
   currentStepNumber,
   submissionId,
+  workflowEvents,
 }: {
   form: Pick<
     IPopulatedMultirespondentForm,
@@ -506,6 +508,7 @@ const getEmailsToNotifyAboutMrfOutcome = ({
   responses: FieldResponsesV4
   currentStepNumber: number
   submissionId: string
+  workflowEvents?: IWorkflowEvent[]
 }): Result<string[], InvalidWorkflowTypeError> => {
   const logMeta = {
     action: 'getMrfOutcomeEmailsToNotify',
@@ -560,11 +563,26 @@ const getEmailsToNotifyAboutMrfOutcome = ({
 
   const otherRespondentsInYourWorkflowEmailsToNotify =
     otherRespondentsInYourWorkflowEmailsToNotifyResult.value
-  return ok([
+  const emailsToNotify = [
     ...othersEmailsToNotify,
     ...respondentInStepOneEmailToNotify,
     ...otherRespondentsInYourWorkflowEmailsToNotify,
-  ])
+  ]
+
+  // Emails added to a notified step through Reassign
+  const alreadyNotified = new Set(
+    emailsToNotify.map((email) => email.toLowerCase()),
+  )
+  const reassignedEmailsToNotify = validWorkflowStepsToNotify
+    .flatMap((workflowStep) =>
+      getAddedAssignees(
+        workflowEvents,
+        form.workflow.indexOf(workflowStep) + 1,
+      ),
+    )
+    .filter((email) => !alreadyNotified.has(email))
+
+  return ok([...emailsToNotify, ...new Set(reassignedEmailsToNotify)])
 }
 
 const checkIsWorkflowCompleted = ({
@@ -593,6 +611,7 @@ const sendMrfOutcomeEmails = ({
   attachments,
   pdfResult,
   growthbook,
+  workflowEvents,
 }: {
   currentStepNumber: number
   form: Pick<
@@ -618,6 +637,7 @@ const sendMrfOutcomeEmails = ({
     AutoreplyPdfGenerationError
   >
   growthbook?: GrowthBook
+  workflowEvents?: IWorkflowEvent[]
 }): ResultAsync<
   true,
   InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError
@@ -635,6 +655,7 @@ const sendMrfOutcomeEmails = ({
       responses,
       currentStepNumber,
       submissionId,
+      workflowEvents,
     })
       .asyncAndThen((destinationEmails) => {
         return pdfResult
@@ -1290,6 +1311,7 @@ interface CheckIsWorkflowCompletionEmailPdfRequiredArgs {
   isRejected: boolean
   submissionId: string
   growthbook?: GrowthBook
+  workflowEvents?: IWorkflowEvent[]
 }
 
 const checkIsWorkflowCompletionEmailPdfRequired = ({
@@ -1299,6 +1321,7 @@ const checkIsWorkflowCompletionEmailPdfRequired = ({
   isRejected,
   submissionId,
   growthbook,
+  workflowEvents,
 }: CheckIsWorkflowCompletionEmailPdfRequiredArgs) => {
   const isGbFlagEnabled =
     isAdminEmailPdfEnabled({
@@ -1321,6 +1344,7 @@ const checkIsWorkflowCompletionEmailPdfRequired = ({
       responses,
       currentStepNumber,
       submissionId,
+      workflowEvents,
     })
 
   return (
@@ -1373,6 +1397,7 @@ const generatePdfAttachmentIfRequired = ({
       isRejected,
       submissionId,
       growthbook,
+      workflowEvents: submission.workflowEvents,
     })
 
   if (!isRespondentCopyPdfRequired && !isWorkflowCompletionEmailPdfRequired) {
@@ -1670,6 +1695,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
       isRejected: false,
       submissionId,
       growthbook,
+      workflowEvents: submission.workflowEvents,
     })
       ? pdfResult
       : okAsync(undefined)
@@ -1735,6 +1761,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
         attachments,
         pdfResult: sendMrfOutcomeEmailsPdfResult,
         growthbook,
+        workflowEvents: submission.workflowEvents,
       })
     })
     .mapErr((error) => {
@@ -2138,6 +2165,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       isRejected: isStepRejected,
       submissionId,
       growthbook,
+      workflowEvents: submission.workflowEvents,
     })
       ? pdfResult
       : okAsync(undefined)
@@ -2171,6 +2199,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       attachments: attachments,
       pdfResult: sendMrfOutcomeEmailsPdfResult,
       growthbook,
+      workflowEvents: submission.workflowEvents,
     }).mapErr((error) => {
       logger.error({
         message: 'Send mrf outcome email error',
@@ -2190,6 +2219,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     attachments: attachments,
     pdfResult: sendMrfOutcomeEmailsPdfResult,
     growthbook,
+    workflowEvents: submission.workflowEvents,
   })
     .mapErr((error) => {
       logger.error({
