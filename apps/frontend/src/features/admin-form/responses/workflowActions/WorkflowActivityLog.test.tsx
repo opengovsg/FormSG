@@ -1,6 +1,8 @@
 import { screen, within } from '@testing-library/react'
 
 import {
+  AdminWorkflowEventBase,
+  AdminWorkflowEventType,
   DateString,
   WorkflowEventDto,
   WorkflowEventType,
@@ -25,15 +27,25 @@ vi.mock('react-i18next', () => ({
   Trans: ({ i18nKey }: { i18nKey: string }) => <span>{i18nKey}</span>,
 }))
 const event = (
-  type: WorkflowEventType,
+  type: AdminWorkflowEventType,
   created: string,
   emails: string[],
-): WorkflowEventDto => ({
+): AdminWorkflowEventBase & { created: DateString } => ({
   type,
   actorEmail: 'admin@agency.gov.sg',
   stepNumber: 2,
   emails,
   created: created as DateString,
+})
+const stepSubmitted = (
+  stepNumber: number,
+  emails: string[],
+): WorkflowEventDto => ({
+  type: WorkflowEventType.StepSubmitted,
+  outcome: WorkflowStatus.COMPLETED,
+  stepNumber,
+  emails,
+  created: '2026-10-08T01:00:00.000Z' as DateString,
 })
 const at = '2026-10-08T01:00:00.000Z'
 const history = {
@@ -189,5 +201,19 @@ describe('WorkflowActivityLog', () => {
   it('has no invented submission for empty history', () => {
     render(<WorkflowActivityLog />)
     expect(screen.queryAllByRole('listitem')).toHaveLength(0)
+  })
+  it('does not list step submission events as their own entries', () => {
+    render(
+      <WorkflowActivityLog
+        history={{
+          ...history,
+          workflowEvents: [stepSubmitted(1, ['lead@agency.gov.sg'])],
+        }}
+      />,
+    )
+    expect(titles()).toEqual([
+      'Step 1 submitted',
+      'Step 2 · Team lead sent to lead@agency.gov.sg',
+    ])
   })
 })

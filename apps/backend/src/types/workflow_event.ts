@@ -1,16 +1,17 @@
-import { WorkflowEventBase } from 'formsg-shared/types'
-import type { Merge } from 'type-fest'
+import {
+  AdminWorkflowEventBase,
+  StepSubmittedEventBase,
+} from 'formsg-shared/types'
 
 import { IUserSchema } from './user'
 
-/**
- * An admin action on a multirespondent workflow, stored in the submission's
- * `workflowEvents`.
- */
-export type IWorkflowEvent = Merge<
-  WorkflowEventBase,
-  {
-    actorId: IUserSchema['_id']
-    created: Date
-  }
->
+export type IAdminWorkflowEvent = AdminWorkflowEventBase & {
+  actorId: IUserSchema['_id']
+  created: Date
+}
+
+export type IStepSubmittedEvent = StepSubmittedEventBase & {
+  created: Date
+}
+
+export type IWorkflowEvent = IAdminWorkflowEvent | IStepSubmittedEvent

@@ -13,6 +13,7 @@ import { Box, Stack, Text } from '@chakra-ui/react'
 import { formatInTimeZone } from 'date-fns-tz'
 
 import { WorkflowEventType, WorkflowStatus } from 'formsg-shared/types'
+import { isAdminWorkflowEvent } from 'formsg-shared/utils/workflow-event'
 
 import type { ResponsesIndividualResponse } from '~/i18n/locales/features/admin-form/responses/individual-response'
 
@@ -100,64 +101,66 @@ export const WorkflowActivityLog = ({
     }
     return { at: step.submittedAt, entries }
   })
-  const eventGroups = events.map((event, index) => {
-    const id = `event-${index}`
-    const actor = event.actorEmail
-      ? t(`${I18N_PREFIX}.actorClause`, { actor: event.actorEmail })
-      : ''
-    let entries: ActivityEntry[]
-    switch (event.type) {
-      case WorkflowEventType.AssigneesAdded:
-        entries = [
-          entry(
-            id,
-            event.created,
-            'assigneeAdded',
-            {
-              ...stepValues(event.stepNumber),
-              emails: formatEmailList(event.emails),
-              actor,
-            },
-            BiUserPlus,
-          ),
-        ]
-        break
-      case WorkflowEventType.ReminderSent:
-        entries = [
-          entry(
-            id,
-            event.created,
-            'reminderTriggered',
-            { ...stepValues(event.stepNumber), actor },
-            BiBell,
-          ),
-        ]
-        if (event.emails.length) {
-          entries.push(
+  const eventGroups = events
+    .filter(isAdminWorkflowEvent)
+    .map((event, index) => {
+      const id = `event-${index}`
+      const actor = event.actorEmail
+        ? t(`${I18N_PREFIX}.actorClause`, { actor: event.actorEmail })
+        : ''
+      let entries: ActivityEntry[]
+      switch (event.type) {
+        case WorkflowEventType.AssigneesAdded:
+          entries = [
             entry(
-              `${id}-sent`,
+              id,
               event.created,
-              'reminderSent',
+              'assigneeAdded',
               {
                 ...stepValues(event.stepNumber),
-                recipients: formatEmailList(event.emails),
+                emails: formatEmailList(event.emails),
+                actor,
               },
-              BiSend,
+              BiUserPlus,
             ),
-          )
-        }
-        break
-      case WorkflowEventType.Stopped:
-        entries = [
-          {
-            ...entry(id, event.created, 'stopped', { actor }, BiStopCircle),
-            notificationRecipients: event.emails,
-          },
-        ]
-        break
-    }
-    return { at: event.created, entries }
-  })
+          ]
+          break
+        case WorkflowEventType.ReminderSent:
+          entries = [
+            entry(
+              id,
+              event.created,
+              'reminderTriggered',
+              { ...stepValues(event.stepNumber), actor },
+              BiBell,
+            ),
+          ]
+          if (event.emails.length) {
+            entries.push(
+              entry(
+                `${id}-sent`,
+                event.created,
+                'reminderSent',
+                {
+                  ...stepValues(event.stepNumber),
+                  recipients: formatEmailList(event.emails),
+                },
+                BiSend,
+              ),
+            )
+          }
+          break
+        case WorkflowEventType.Stopped:
+          entries = [
+            {
+              ...entry(id, event.created, 'stopped', { actor }, BiStopCircle),
+              notificationRecipients: event.emails,
+            },
+          ]
+          break
+      }
+      return { at: event.created, entries }
+    })
   const entries = [...stepGroups, ...eventGroups]
     .sort((a, b) => a.at.localeCompare(b.at))
     .flatMap((group) => group.entries)
