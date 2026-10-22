@@ -3,8 +3,14 @@
   "type": "browser",
   "status": "paused",
   "message": "CI smoke journey \u2014 create MRF form with a 2-step workflow (step 2 = static email), publish, submit step 1 publicly, open the 'Action required' invitation from the mailbox, complete step 2. Runs only via CI triggers. Steps named PLACEHOLDER must be recorded once in the Datadog UI (email OTP extraction has no public API schema), then reconciled with sync.sh pull.",
-  "tags": ["team:formsg", "ci:formsg-smoke", "managed-by:formsg-repo"],
-  "locations": ["aws:ap-southeast-1"],
+  "tags": [
+    "team:formsg",
+    "ci:formsg-smoke",
+    "managed-by:formsg-repo"
+  ],
+  "locations": [
+    "aws:ap-southeast-1"
+  ],
   "config": {
     "request": {
       "method": "GET",
@@ -28,7 +34,9 @@
     ]
   },
   "options": {
-    "device_ids": ["chrome.laptop_large"],
+    "device_ids": [
+      "chrome.laptop_large"
+    ],
     "tick_every": 604800,
     "min_failure_duration": 0,
     "retry": {
@@ -858,7 +866,7 @@
       "name": "Open step 2 invitation link (email subject: Action required - [smoke] MRF multi-step)",
       "timeout": 180,
       "params": {
-        "value": "/edit/"
+        "value": "Click to review and complete"
       }
     },
     {
