@@ -484,6 +484,26 @@
     },
     {
       "type": "click",
+      "name": "Create workflow (empty state, if shown)",
+      "timeout": 30,
+      "allowFailure": true,
+      "isCritical": false,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[contains(., 'Create workflow')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
       "name": "Add workflow step",
       "timeout": 60,
       "params": {

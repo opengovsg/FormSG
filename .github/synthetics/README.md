@@ -67,6 +67,11 @@ The journeys log in as a fresh throwaway `@synthetics.dtdg.co` user per run
 form, so every run leaves one orphan user + form + submission in the stg
 database. Tolerated for now; add a cleanup job if it ever matters.
 
+A push that changes definitions AND triggers a preview races the sync
+workflow against the preview smoke run — a transient
+`Unknown variable name` or `UnknownTestError` on such a run can be a
+mid-update trigger; re-run the preview before digging deeper.
+
 Known flake surfaces: GrowthBook flags that reshape the create-form modal
 and workflow builder (`mrfCutover`, `enablePaperTrackingSetUpPage`, workflow
 redesign/guided mode) — flag-sensitive steps are `allowFailure: true` where
