@@ -19,6 +19,7 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
+import { getMultirespondentFormModel } from 'src/app/models/form.server.model'
 import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
 import { WebhookFactory } from 'src/app/modules/webhook/webhook.factory'
 import { webhookStatsdClient } from 'src/app/modules/webhook/webhook.statsd-client'
@@ -2405,7 +2406,11 @@ describe('multirespondent-submission.service', () => {
         'sendMRFWorkflowStepEmail',
       )
 
-      const expectedEmails = ['expected1@example.com', 'expected2@example.com']
+      const expectedEmails = [
+        'expected1@example.com',
+        'expected2@example.com',
+        'reassigned@example.com',
+      ]
 
       const stepOneId = new ObjectId().toHexString()
       const stepTwoId = new ObjectId().toHexString()
@@ -2469,11 +2474,24 @@ describe('multirespondent-submission.service', () => {
       await performMultiRespondentPostSubmissionUpdateActions({
         submission: {
           id: mockSubmissionId,
+          submittedSteps: [
+            {
+              isApproval: false,
+              submittedAt: '2026-10-08T07:00:00.000Z',
+              nextStepRecipientEmails: ['not_selected@example.com'],
+            },
+            {
+              isApproval: false,
+              submittedAt: '2026-10-08T08:00:00.000Z',
+              nextStepRecipientEmails: ['reassigned@example.com'],
+            },
+          ],
         } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef: {
           _id: mockFormId,
           workflow: threeStepApprovalWorkflow,
+          stepsToNotify: [stepThreeId],
           emails: [expectedEmails[1]],
           stepOneEmailNotificationFieldId: emailFieldId1,
           admin: {
@@ -2863,9 +2881,11 @@ describe('multirespondent-submission.service', () => {
       const completeWorkflow = async ({
         workflow,
         stepNumbersToNotify,
+        recipients,
       }: {
         workflow: FormWorkflowStepDto[]
         stepNumbersToNotify: number[]
+        recipients?: string[][]
       }) => {
         const sendMrfWorkflowCompletionEmailSpy = jest.spyOn(
           MailService,
@@ -2876,13 +2896,15 @@ describe('multirespondent-submission.service', () => {
         await performMultiRespondentPostSubmissionUpdateActions({
           submission: {
             id: mockSubmissionId,
-            workflowEvents: workflow.slice(1).map((_, index) => ({
-              type: WorkflowEventType.AssigneesAdded,
-              actorEmail: 'admin@example.com',
-              stepNumber: index + 2,
-              emails: [`added${index + 2}@example.com`],
-              created: new Date(),
+            submittedSteps: workflow.map((_, index) => ({
+              isApproval: false,
+              submittedAt: '2026-10-08T07:00:00.000Z',
+              nextStepRecipientEmails: recipients?.[index] ?? [
+                `step${index + 2}@example.com`,
+                `added${index + 2}@example.com`,
+              ],
             })),
+            workflowEvents: [],
           } as unknown as IMultirespondentSubmissionSchema,
           submissionId: mockSubmissionId,
           snapshottedFormDef: {
@@ -2905,8 +2927,7 @@ describe('multirespondent-submission.service', () => {
           logMeta: {} as any,
         })
 
-        expect(sendMrfWorkflowCompletionEmailSpy).toHaveBeenCalledTimes(1)
-        return sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails
+        return sendMrfWorkflowCompletionEmailSpy.mock.calls[0]?.[0].emails ?? []
       }
 
       it.each([
@@ -2925,11 +2946,63 @@ describe('multirespondent-submission.service', () => {
           })
 
           expect(emails).toEqual([
-            ...stepNumbersToNotify.map((n) => `step${n}@example.com`),
-            ...stepNumbersToNotify.map((n) => `added${n}@example.com`),
+            ...stepNumbersToNotify.flatMap((n) => [
+              `step${n}@example.com`,
+              `added${n}@example.com`,
+            ]),
           ])
         },
       )
+
+      it.each([
+        WorkflowType.Static,
+        WorkflowType.Dynamic,
+        WorkflowType.Conditional,
+      ])(
+        'uses stored recipients instead of re-resolving a %s workflow',
+        async (workflowType) => {
+          const workflow = buildWorkflow(2)
+          workflow[1] =
+            workflowType === WorkflowType.Dynamic
+              ? {
+                  _id: workflow[1]._id,
+                  edit: [],
+                  workflow_type: workflowType,
+                  field: 'unanswered-email',
+                }
+              : workflowType === WorkflowType.Conditional
+                ? {
+                    _id: workflow[1]._id,
+                    edit: [],
+                    workflow_type: workflowType,
+                    conditional_field: 'unanswered-routing-field',
+                  }
+                : workflow[1]
+          const emails = await completeWorkflow({
+            workflow,
+            stepNumbersToNotify: [2],
+            recipients: [['current@example.com']],
+          })
+          expect(emails).toEqual(['current@example.com'])
+          expect(MockMailUtils.generateAutoreplyPdf).toHaveBeenCalledTimes(1)
+          expect(
+            jest.mocked(MailService.sendMrfWorkflowCompletionEmail).mock
+              .calls[0][0].attachments,
+          ).toContainEqual(EXPECTED_MOCK_PDF_ATTACHMENT)
+        },
+      )
+
+      it('does not restore configured recipients when the stored recipient list is empty', async () => {
+        const emails = await completeWorkflow({
+          workflow: buildWorkflow(2),
+          stepNumbersToNotify: [2],
+          recipients: [[]],
+        })
+        expect(emails).toEqual([])
+        expect(
+          MailService.sendMrfWorkflowCompletionEmail,
+        ).not.toHaveBeenCalled()
+      })
 
       it('sends the completion email once to someone added who was already in the step', async () => {
         const workflow = buildWorkflow(3)
@@ -2941,13 +3014,20 @@ describe('multirespondent-submission.service', () => {
         await performMultiRespondentPostSubmissionUpdateActions({
           submission: {
             id: mockSubmissionId,
-            workflowEvents: [
+            submittedSteps: [
               {
-                type: WorkflowEventType.AssigneesAdded,
-                actorEmail: 'admin@example.com',
-                stepNumber: 3,
-                emails: ['Step3@example.com', 'added3@example.com'],
-                created: new Date(),
+                isApproval: false,
+                submittedAt: '2026-10-08T07:00:00.000Z',
+                nextStepRecipientEmails: ['step2@example.com'],
+              },
+              {
+                isApproval: false,
+                submittedAt: '2026-10-08T08:00:00.000Z',
+                nextStepRecipientEmails: [
+                  'step3@example.com',
+                  'Step3@example.com',
+                  'added3@example.com',
+                ],
               },
             ],
           } as unknown as IMultirespondentSubmissionSchema,
@@ -3612,6 +3692,151 @@ describe('multirespondent-submission.service', () => {
       ...overrides,
     })
 
+    it.each([WorkflowType.Dynamic, WorkflowType.Conditional])(
+      'resolves %s routing per transition and keeps earlier assignments when answers change',
+      async (workflowType) => {
+        const form = buildForm()
+        const routedStep: FormWorkflowStepDto =
+          workflowType === WorkflowType.Dynamic
+            ? {
+                _id: stepId1,
+                workflow_type: WorkflowType.Dynamic,
+                field: fieldId,
+                edit: [fieldId],
+              }
+            : {
+                _id: stepId1,
+                workflow_type: WorkflowType.Conditional,
+                conditional_field: fieldId,
+                edit: [fieldId],
+              }
+        form.workflow = [
+          twoStepWorkflow[0],
+          routedStep,
+          { ...routedStep, _id: new ObjectId().toHexString() },
+        ]
+        form.form_fields =
+          getMultirespondentFormModel(mongoose).hydrate({
+            form_fields: [
+              {
+                _id: fieldId,
+                title: 'Routing field',
+                fieldType:
+                  workflowType === WorkflowType.Dynamic
+                    ? BasicField.Email
+                    : BasicField.Dropdown,
+                fieldOptions: ['Finance', 'HR'],
+                optionsToRecipientsMap: {
+                  Finance: ['alice@example.com'],
+                  HR: ['bob@example.com'],
+                },
+              },
+            ],
+          }).form_fields ?? []
+        const responsesFor = (
+          changed: boolean,
+        ): MultirespondentSubmissionDto['responses'] => ({
+          [fieldId]:
+            workflowType === WorkflowType.Dynamic
+              ? {
+                  fieldType: BasicField.Email,
+                  question: 'Routing field',
+                  provenance: {},
+                  answer: {
+                    value: changed ? 'bob@example.com' : 'alice@example.com',
+                  },
+                }
+              : {
+                  fieldType: BasicField.Dropdown,
+                  question: 'Routing field',
+                  provenance: {},
+                  answer: { value: changed ? 'HR' : 'Finance' },
+                },
+        })
+        const originalPayload = buildPayload({ responses: responsesFor(false) })
+        const created = (
+          await createMultiRespondentFormSubmission({
+            form,
+            encryptedPayload: originalPayload,
+            logMeta: { action: 'test' },
+          })
+        )._unsafeUnwrap()
+        const submissionId = String(created.submission._id)
+        const sendSpy = jest
+          .spyOn(MailService, 'sendMRFWorkflowStepEmail')
+          .mockReturnValue(okAsync(true))
+        await performMultiRespondentPostSubmissionCreateActions({
+          submission: created.submission,
+          submissionId,
+          form,
+          encryptedPayload: originalPayload,
+          logMeta: { action: 'test' },
+        })
+        expect(sendSpy.mock.calls[0][0].emails).toEqual(['alice@example.com'])
+
+        const snapshottedFormDef = {
+          ...buildSnapshottedFormDef(),
+          workflow: form.workflow,
+          form_fields: form.form_fields.map((field) => field.toObject()),
+          stepsToNotify: [stepId1],
+        }
+        const changedPayload = buildPayload({
+          workflowStep: 1,
+          responses: responsesFor(true),
+        })
+        const updated = (
+          await updateMultiRespondentFormSubmission({
+            submissionId,
+            snapshottedFormDef,
+            encryptedPayload: changedPayload,
+            logMeta: { action: 'test' },
+          })
+        )._unsafeUnwrap()
+        expect(
+          updated.submission.submittedSteps?.map(
+            (step) => step.nextStepRecipientEmails,
+          ),
+        ).toEqual([['alice@example.com'], ['bob@example.com']])
+        await performMultiRespondentPostSubmissionUpdateActions({
+          submission: updated.submission,
+          submissionId,
+          snapshottedFormDef,
+          currentStepNumber: 1,
+          encryptedPayload: changedPayload,
+          logMeta: { action: 'test' },
+        })
+        expect(sendSpy.mock.calls[1][0].emails).toEqual(['bob@example.com'])
+
+        const finalPayload = buildPayload({
+          workflowStep: 2,
+          responses: responsesFor(true),
+        })
+        const completed = (
+          await updateMultiRespondentFormSubmission({
+            submissionId,
+            snapshottedFormDef,
+            encryptedPayload: finalPayload,
+            logMeta: { action: 'test' },
+          })
+        )._unsafeUnwrap()
+        const completionSpy = jest.spyOn(
+          MailService,
+          'sendMrfWorkflowCompletionEmail',
+        )
+        await performMultiRespondentPostSubmissionUpdateActions({
+          submission: completed.submission,
+          submissionId,
+          snapshottedFormDef,
+          currentStepNumber: 2,
+          encryptedPayload: finalPayload,
+          logMeta: { action: 'test' },
+        })
+        expect(completionSpy.mock.calls[0][0].emails).toEqual([
+          'alice@example.com',
+        ])
+      },
+    )
+
     it('persists stepTokenHash and encryptedStepToken on create', async () => {
       const raw = stepToken.generate()
       const result = await createMultiRespondentFormSubmission({
@@ -3886,7 +4111,11 @@ describe('multirespondent-submission.service', () => {
         submission: {
           id: mockSubmissionId,
           submittedSteps: [
-            { isApproval: false, submittedAt: new Date().toISOString() },
+            {
+              isApproval: false,
+              submittedAt: new Date().toISOString(),
+              nextStepRecipientEmails: ['stored-recipient@example.com'],
+            },
           ],
         } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
@@ -3896,6 +4125,9 @@ describe('multirespondent-submission.service', () => {
       })
 
       expect(sendSpy).toHaveBeenCalled()
+      expect(sendSpy.mock.calls[0][0].emails).toEqual([
+        'stored-recipient@example.com',
+      ])
       expect(sendSpy.mock.calls[0][0].responseUrl).toContain(
         `&token=${encodeURIComponent(raw)}`,
       )

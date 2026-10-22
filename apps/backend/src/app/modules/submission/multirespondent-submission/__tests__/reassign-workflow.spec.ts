@@ -476,6 +476,29 @@ describe('addAssigneesToPendingStep', () => {
     ])
   })
 
+  it('uses recipient state even when an audit event mentions a removed assignee', async () => {
+    const submission = await createSubmission()
+    await add(submission._id, ['removed@example.com'])
+    await MultirespondentSubmission.updateOne(
+      { _id: submission._id },
+      {
+        $set: {
+          'submittedSteps.0.nextStepRecipientEmails': ['current@example.com'],
+        },
+      },
+    )
+
+    const result = await getPendingStepRecipientEmailsFromSubmittedStepsMeta({
+      submissionId: String(submission._id),
+    })
+    expect(result._unsafeUnwrap().recipientEmails).toEqual([
+      'current@example.com',
+    ])
+    expect((await add(submission._id, ['removed@example.com'])).isOk()).toBe(
+      true,
+    )
+  })
+
   it('includes added people in reminders for the step', async () => {
     const submission = await createSubmission()
     await add(submission._id, ['new@example.com'])

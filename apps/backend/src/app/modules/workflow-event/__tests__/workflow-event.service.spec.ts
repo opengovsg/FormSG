@@ -161,25 +161,4 @@ describe('workflow-event.service', () => {
       ])
     })
   })
-
-  describe('getAddedAssignees', () => {
-    it('ignores the people a step submission sent the step to', () => {
-      expect(
-        WorkflowEventService.getAddedAssignees(
-          [
-            stepSubmitted,
-            {
-              type: WorkflowEventType.AssigneesAdded,
-              actorId: actor._id,
-              actorEmail: actor.email,
-              stepNumber: 2,
-              emails: ['Added@example.com'],
-              created: new Date(),
-            },
-          ],
-          2,
-        ),
-      ).toEqual(['added@example.com'])
-    })
-  })
 })
