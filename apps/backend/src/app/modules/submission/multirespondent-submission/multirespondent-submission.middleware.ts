@@ -1,9 +1,5 @@
 import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
-import {
-  adaptV3ToV4,
-  adaptV4ToV3,
-  isFieldResponsesV4,
-} from '@opengovsg/formsg-sdk/adapters'
+import { adaptV4ToV3 } from '@opengovsg/formsg-sdk/adapters'
 import { celebrate, Joi, Segments } from 'celebrate'
 import crypto from 'crypto'
 import { NextFunction } from 'express'
@@ -30,7 +26,6 @@ import {
 
 import {
   ParsedClearAttachmentFieldResponseV4,
-  ParsedClearFormFieldResponsesV4,
   ParsedClearFormFieldResponseV4,
 } from '../../../../types/api'
 import {
@@ -98,6 +93,7 @@ import {
 } from './multirespondent-submission.types'
 import {
   adaptV4ResponsesForMyInfoHashCheck,
+  decryptSubmissionResponsesToV4,
   MRF_VERSION_V4,
   reconcileChildTypesWithChildTypeAnswers,
   stampMyInfoVerifiedOnResponses,
@@ -640,40 +636,13 @@ export const validateMultirespondentSubmission = async (
                   )
                 }
 
-                const previousSubmissionDecryptedContent =
-                  formsgSdk.cryptoV3.decryptFromSubmissionKey(
-                    req.body.submissionSecretKey,
-                    previousSubmission,
-                  )
-
-                if (!previousSubmissionDecryptedContent) {
-                  return err(
-                    new ProcessingError('Unable to decrypt previous response'),
-                  )
-                }
-
-                /**
-                 * Since the incoming client responses are in V4,
-                 * if previous submission was encrypted in V3 format, convert to V4
-                 * to facilitate comparison. Comparison (isFieldResponseV4Equal)
-                 * only inspects fieldType + answer, so we skip the formFields
-                 * meta — question text and myInfo on the adapted response are
-                 * unused; downstream consumers source both from the form field.
-                 */
-                const previousResponses = (() => {
-                  const responses = previousSubmissionDecryptedContent.responses
-                  if (
-                    !isFieldResponsesV4(responses as Record<string, unknown>)
-                  ) {
-                    // Response is in V3 format, adapt to V4
-                    return adaptV3ToV4(responses, {
-                      formFields: {},
-                      provenance: {},
-                    }) as ParsedClearFormFieldResponsesV4
-                  }
-                  // Response is in V4 format, return as is
-                  return responses as unknown as ParsedClearFormFieldResponsesV4
-                })()
+                const decryptedResponses = decryptSubmissionResponsesToV4(
+                  req.body.submissionSecretKey,
+                  previousSubmission,
+                )
+                if (decryptedResponses.isErr())
+                  return err(decryptedResponses.error)
+                const previousResponses = decryptedResponses.value
 
                 const previousNonEditableFieldIdsWithResponses = Object.keys(
                   previousResponses,
