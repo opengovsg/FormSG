@@ -20,12 +20,16 @@ API=https://api.datadoghq.com/api/v1/synthetics
 IDS="$DIR/ids.json"
 
 dd() {
-  local method=$1 path=$2
+  local method=$1 path=$2 out
   shift 2
-  curl -sS --fail-with-body -X "$method" "$API$path" \
+  if ! out=$(curl -sS --fail-with-body -X "$method" "$API$path" \
     -H "DD-API-KEY: $DD_API_KEY" \
     -H "DD-APPLICATION-KEY: $DD_APP_KEY" \
-    -H 'Content-Type: application/json' "$@"
+    -H 'Content-Type: application/json' "$@" 2>&1); then
+    echo "$method $path: $out" >&2
+    return 1
+  fi
+  printf '%s' "$out"
 }
 
 # Create/update use /tests/api/… and /tests/browser/…; GET uses /tests/{id}
