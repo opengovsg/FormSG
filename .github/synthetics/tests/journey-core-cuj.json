@@ -672,8 +672,11 @@
         "files": [
           {
             "name": "smoke.txt",
+            "originalFileName": "smoke.txt",
+            "type": "text/plain",
+            "size": 29,
             "content": "Zm9ybXNnIHNtb2tlIHRlc3QgYXR0YWNobWVudAo=",
-            "type": "text/plain"
+            "encoding": "base64"
           }
         ]
       }

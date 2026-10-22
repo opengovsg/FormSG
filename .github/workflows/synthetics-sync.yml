@@ -40,6 +40,10 @@ jobs:
           DD_APP_KEY: ${{ secrets.DD_APP_KEY }}
         run: .github/synthetics/sync.sh push
       - name: Commit updated ids.json
+        # Run even when the sync partially failed — tests created before the
+        # failure must still get their ids recorded, or they'd be orphaned
+        # (adopt-by-name would recover them, but recording is cheaper).
+        if: ${{ !cancelled() }}
         run: |
           if ! git diff --quiet .github/synthetics/ids.json; then
             git config user.name 'github-actions[bot]'
