@@ -900,7 +900,7 @@
       "params": {
         "file": {
           "sizeCheck": {
-            "type": "greaterThan",
+            "type": "greater",
             "value": 1
           }
         }
