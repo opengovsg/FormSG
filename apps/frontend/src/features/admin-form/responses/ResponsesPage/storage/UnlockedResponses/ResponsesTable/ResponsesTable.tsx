@@ -747,6 +747,7 @@ export const ResponsesTable = () => {
                 as="div"
                 {...row.getRowProps()}
                 key={row.getRowProps().key}
+                data-testid={`response-row-${row.values.refNo}`}
                 px={0}
                 onClick={() =>
                   handleRowClick(row.values.refNo, row.values.number)

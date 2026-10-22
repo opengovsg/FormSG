@@ -62,6 +62,7 @@ export const SaveActionGroup = ({
           isDisabled={isLoading || isSubmitDisabled}
           onClick={handleSubmit}
           isFullWidth={isMobile}
+          data-testid="save-action-group-submit"
         >
           {submitButtonLabel ??
             t('features.adminForm.sidebar.logic.saveChangesBtn')}

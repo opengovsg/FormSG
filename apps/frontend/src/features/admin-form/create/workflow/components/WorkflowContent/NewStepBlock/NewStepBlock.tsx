@@ -160,6 +160,7 @@ export const NewStepBlock = () => {
           variant="outline"
           leftIcon={<BiPlus />}
           isDisabled={isPaymentEnabled}
+          data-testid="workflow-add-step"
         >
           {t('features.adminForm.sidebar.workflow.approvals.addStep')}
         </Button>
