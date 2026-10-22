@@ -81,7 +81,7 @@
       "params": {
         "pattern": {
           "type": "regex",
-          "value": "(?<=Your OTP is [A-Za-z0-9]{3}-)[A-Za-z0-9]{8}"
+          "value": "(?<=-<strong>)[A-Z0-9]{8}(?=</strong>)"
         },
         "variable": {
           "name": "LOGIN_OTP",

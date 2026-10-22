@@ -89,7 +89,7 @@
       "params": {
         "pattern": {
           "type": "regex",
-          "value": "(?<=Your OTP is [A-Za-z0-9]{3}-)[A-Za-z0-9]{8}"
+          "value": "(?<=-<strong>)[A-Z0-9]{8}(?=</strong>)"
         },
         "variable": {
           "name": "LOGIN_OTP",
@@ -739,7 +739,7 @@
       "params": {
         "pattern": {
           "type": "regex",
-          "value": "(?<=OTP is [A-Za-z0-9]{3}-(?:<b>)?)[A-Za-z0-9]{8}"
+          "value": "(?<=-<b>)[A-Z0-9]{8}(?=</b>)"
         },
         "variable": {
           "name": "VERIFY_OTP",
