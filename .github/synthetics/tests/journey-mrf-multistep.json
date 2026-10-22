@@ -632,6 +632,14 @@
       }
     },
     {
+      "type": "pressKey",
+      "name": "Commit step 2 respondent email tag",
+      "timeout": 60,
+      "params": {
+        "value": "Enter"
+      }
+    },
+    {
       "type": "click",
       "name": "Open step 2 field dropdown",
       "timeout": 60,

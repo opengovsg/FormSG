@@ -932,11 +932,15 @@
       }
     },
     {
-      "type": "goToUrl",
-      "name": "Back to results listing",
+      "type": "extractFromJavascript",
+      "name": "Back to results listing (SPA history.back keeps unlock state)",
       "timeout": 60,
       "params": {
-        "value": "{{ BASE_URL }}/admin/form/{{ FORM_ID }}/results"
+        "code": "history.back(); return 'ok'",
+        "variable": {
+          "name": "NAV_BACK",
+          "example": ""
+        }
       }
     },
     {
