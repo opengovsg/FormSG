@@ -72,6 +72,7 @@ describe('WorkflowActivityLog', () => {
         history={{
           ...history,
           workflowEvents: [
+            stepSubmitted(1, ['lead@agency.gov.sg']),
             event(WorkflowEventType.Stopped, '2026-10-08T04:00:00.000Z', [
               'notify@agency.gov.sg',
             ]),
@@ -114,6 +115,7 @@ describe('WorkflowActivityLog', () => {
       <WorkflowActivityLog
         history={{
           ...history,
+          workflowEvents: [stepSubmitted(1, ['lead@agency.gov.sg'])],
           submittedSteps: [
             history.submittedSteps[0],
             {
@@ -138,6 +140,7 @@ describe('WorkflowActivityLog', () => {
       <WorkflowActivityLog
         history={{
           ...history,
+          workflowEvents: [stepSubmitted(1, ['lead@agency.gov.sg'])],
           submittedSteps: [
             {
               isApproval: true,
@@ -214,6 +217,48 @@ describe('WorkflowActivityLog', () => {
     expect(titles()).toEqual([
       'Step 1 submitted',
       'Step 2 · Team lead sent to lead@agency.gov.sg',
+    ])
+  })
+  it('shows who a step was sent to when it was submitted', () => {
+    render(
+      <WorkflowActivityLog
+        history={{
+          ...history,
+          submittedSteps: [
+            {
+              ...history.submittedSteps[0],
+              nextStepRecipientEmails: ['current@agency.gov.sg'],
+            },
+          ],
+          workflowEvents: [stepSubmitted(1, ['original@agency.gov.sg'])],
+        }}
+      />,
+    )
+    expect(titles()).toEqual([
+      'Step 1 submitted',
+      'Step 2 · Team lead sent to original@agency.gov.sg',
+    ])
+  })
+  it('leaves out recipients for steps submitted before they were recorded', () => {
+    render(
+      <WorkflowActivityLog
+        history={{
+          ...history,
+          submittedSteps: [
+            history.submittedSteps[0],
+            {
+              isApproval: true,
+              status: WorkflowStatus.APPROVED,
+              submittedAt: '2026-10-08T02:00:00.000Z',
+              nextStepRecipientEmails: ['finance@agency.gov.sg'],
+            },
+          ],
+        }}
+      />,
+    )
+    expect(titles()).toEqual([
+      'Step 1 submitted',
+      'Step 2 · Team lead approved',
     ])
   })
 })

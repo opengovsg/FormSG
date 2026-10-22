@@ -61,12 +61,14 @@ export const WorkflowActivityLog = ({
 
   // Sort source records before expanding them, so equal-time action/sending
   // pairs stay adjacent and preserve the existing submitted-steps-first order.
+  const sentToByStep = new Map(
+    events
+      .filter((event) => event.type === WorkflowEventType.StepSubmitted)
+      .map((event): [number, string[]] => [event.stepNumber, event.emails]),
+  )
   const stepGroups = submittedSteps.map((step, index) => {
     const id = `step-${index}`
-    const recipients =
-      'nextStepRecipientEmails' in step
-        ? (step.nextStepRecipientEmails ?? [])
-        : []
+    const recipients = sentToByStep.get(index + 1) ?? []
     const status = 'status' in step ? step.status : undefined
     const rejected = status === WorkflowStatus.REJECTED
     const approved = status === WorkflowStatus.APPROVED
