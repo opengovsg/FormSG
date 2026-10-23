@@ -1,7 +1,6 @@
 import { PropsWithChildren } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { BiLinkExternal } from 'react-icons/bi'
 import { Stack, Text } from '@chakra-ui/react'
 
 import { BasicField } from 'formsg-shared/types/field'
@@ -14,7 +13,7 @@ import {
 } from 'formsg-shared/utils/login-identity'
 
 import { GUIDE_NRIC_FIELD_RESPONSE_CHANGES } from '~constants/links'
-import Button from '~components/Button'
+import Link from '~components/Link'
 import { NricField } from '~templates/Field/Nric/NricField'
 import { UenField } from '~templates/Field/Uen/UenField'
 
@@ -109,17 +108,13 @@ export const ConversionResponseChanges = () => {
     <Stack spacing="1rem" pb="1.5rem">
       <Text color="secondary.500">{t('preview.automationWarning')}</Text>
       <Text color="secondary.500">{t('preview.responsesUnchanged')}</Text>
-      <Button
-        as="a"
+      <Link
         href={GUIDE_NRIC_FIELD_RESPONSE_CHANGES}
-        target="_blank"
-        rel="noopener noreferrer"
-        variant="outline"
+        isExternal
         alignSelf="flex-start"
-        rightIcon={<BiLinkExternal aria-hidden />}
       >
         {t('preview.checkFullChanges')}
-      </Button>
+      </Link>
     </Stack>
   )
 }
