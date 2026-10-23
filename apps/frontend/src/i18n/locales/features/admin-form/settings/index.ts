@@ -39,6 +39,7 @@ export interface SingpassSettingsStrings extends HasTitle {
 }
 
 export interface SettingsTabsStrings {
+  navLabels: { emails: string; multiLanguage: string }
   newBadge: string
   multiLanguage: string
 }

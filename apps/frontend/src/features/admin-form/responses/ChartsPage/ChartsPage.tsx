@@ -11,7 +11,7 @@ import { useToast } from '~hooks/useToast'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
-import { resultsNavBleed } from '../components/FormResultsNavbar'
+import { useResultsNavLayout } from '../components/FormResultsNavbar'
 import { SecretKeyVerification } from '../components/SecretKeyVerification'
 import { ResponsesPageSkeleton } from '../ResponsesPage/ResponsesPageSkeleton'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
@@ -24,6 +24,7 @@ import UnlockedCharts from './UnlockedCharts'
 
 export const ChartsPage = (): JSX.Element => {
   const { t } = useTranslation()
+  const { bleed: resultsNavBleed } = useResultsNavLayout()
   const { data: form, isLoading } = useAdminForm()
   const { totalResponsesCount, secretKey } = useStorageResponsesContext()
   const { pathname } = useLocation()
