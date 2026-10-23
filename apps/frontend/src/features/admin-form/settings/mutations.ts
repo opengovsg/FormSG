@@ -517,7 +517,9 @@ export const useMutateFormSettings = () => {
         handleSuccess({
           newData,
           toastDescription: t(
-            'features.adminForm.sidebar.fields.loginIdentity.convertedToast',
+            newData.authType === FormAuthType.CP
+              ? 'features.adminForm.sidebar.fields.loginIdentity.convertedToast.corppass'
+              : 'features.adminForm.sidebar.fields.loginIdentity.convertedToast.singpass',
           ),
         })
         // Convert also changes the form fields and MRF Step 1.

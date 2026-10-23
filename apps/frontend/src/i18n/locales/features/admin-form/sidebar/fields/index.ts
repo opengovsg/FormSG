@@ -5,7 +5,11 @@ export interface Fields {
     sectionLabel: string
     corppassPanelInfo: string
     loginMissing: string
-    convertedToast: string
+    // Keyed by login, since Singpass adds one field and Corppass two.
+    convertedToast: {
+      singpass: string
+      corppass: string
+    }
     fieldLimit: string
     details: {
       uinfin: string
