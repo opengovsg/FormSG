@@ -4,6 +4,7 @@ import {
   createRoutesFromElements,
   RouterProvider,
 } from 'react-router-dom'
+import { Box } from '@chakra-ui/react'
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
@@ -24,11 +25,13 @@ import { getUser } from '~/mocks/msw/handlers/user'
 import {
   ADMINFORM_RESULTS_SUBROUTE,
   ADMINFORM_ROUTE,
+  RESULTS_CHARTS_SUBROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
 } from '~constants/routes'
 import { viewportModes } from '~utils/storybook'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
+import { ChartsPage } from './responses/ChartsPage/ChartsPage'
 import {
   FeedbackPage,
   FormResultsLayout,
@@ -74,6 +77,9 @@ const Template: StoryFn = () => {
             <Route index element={<ResponsesPage />} />
           </Route>
           <Route path={RESULTS_FEEDBACK_SUBROUTE} element={<FeedbackPage />} />
+          <Route path={RESULTS_CHARTS_SUBROUTE} element={<ResponsesLayout />}>
+            <Route index element={<ChartsPage />} />
+          </Route>
         </Route>
       </Route>,
     ),
@@ -318,3 +324,40 @@ Loading.parameters = {
     },
   },
 }
+
+const legacyNavGrowthbook = new GrowthBook({
+  features: { [featureFlags.sidebarNavLabels]: { defaultValue: false } },
+})
+
+const labelledNavGrowthbook = new GrowthBook({
+  features: {
+    [featureFlags.sidebarNavLabels]: { defaultValue: true },
+    [featureFlags.delightfulDashboard]: { defaultValue: true },
+    charts: { defaultValue: true },
+  },
+})
+export const LabelledNavigation = Template.bind({})
+LabelledNavigation.parameters = {
+  ...StorageForm.parameters,
+  argos: { modes: viewportModes('tablet', 'mobile') },
+}
+LabelledNavigation.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={labelledNavGrowthbook}>
+      <Box h="100vh">
+        <Story />
+      </Box>
+    </GrowthBookProvider>
+  ),
+]
+export const LegacyNavigation = Template.bind({})
+LegacyNavigation.parameters = StorageForm.parameters
+LegacyNavigation.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={legacyNavGrowthbook}>
+      <Box h="100vh">
+        <Story />
+      </Box>
+    </GrowthBookProvider>
+  ),
+]

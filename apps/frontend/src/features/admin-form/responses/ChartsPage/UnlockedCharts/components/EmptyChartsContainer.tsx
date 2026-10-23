@@ -1,6 +1,6 @@
 import { Box, Divider, Flex, Stack, Text } from '@chakra-ui/react'
 
-import { resultsNavBleed } from '../../../components/FormResultsNavbar'
+import { useResultsNavLayout } from '../../../components/FormResultsNavbar'
 import { ChartsSvgr } from '../assets/svgr/ChartsSvgr'
 
 import { ChartsSupportedFieldsInfoBox } from './ChartsSupportedFieldsInfoBox'
@@ -12,6 +12,7 @@ export const EmptyChartsContainer = ({
   title: string
   subtitle: string
 }): JSX.Element => {
+  const { bleed: resultsNavBleed } = useResultsNavLayout()
   return (
     <Flex
       flexDir="column"

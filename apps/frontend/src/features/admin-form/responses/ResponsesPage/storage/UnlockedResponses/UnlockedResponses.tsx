@@ -10,6 +10,7 @@ import Pagination from '~components/Pagination'
 
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 
+import { useResultsNavLayout } from '../../../components/FormResultsNavbar'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 
 import { DeleteViewModal } from './DeleteViewModal'
@@ -35,6 +36,7 @@ export const UnlockedResponses = (): JSX.Element => {
 }
 
 const DelightfulUnlockedResponses = (): JSX.Element => {
+  const { contentPr } = useResultsNavLayout('1rem')
   const { t } = useTranslation()
 
   const {
@@ -71,13 +73,7 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
   )
 
   return (
-    <Flex
-      flexDir="column"
-      pr={{ base: '1rem', md: '1.75rem', lg: '2rem' }}
-      w="100%"
-      maxW="100%"
-      minW={0}
-    >
+    <Flex flexDir="column" pr={contentPr} w="100%" maxW="100%" minW={0}>
       <Flex
         direction="column"
         mb="1rem"
@@ -151,6 +147,7 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
 }
 
 const LegacyUnlockedResponses = (): JSX.Element => {
+  const { contentPr } = useResultsNavLayout('1rem')
   const { t } = useTranslation()
 
   const {
@@ -172,13 +169,7 @@ const LegacyUnlockedResponses = (): JSX.Element => {
   const { dateRange, setDateRange } = useStorageResponsesContext()
 
   return (
-    <Flex
-      flexDir="column"
-      pr={{ base: '1rem', md: '1.75rem', lg: '2rem' }}
-      w="100%"
-      maxW="100%"
-      minW={0}
-    >
+    <Flex flexDir="column" pr={contentPr} w="100%" maxW="100%" minW={0}>
       <Flex
         direction="column"
         mb="1rem"

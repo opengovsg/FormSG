@@ -12,6 +12,9 @@ import {
   TabPanels,
   Tabs,
 } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
+
+import { featureFlags } from 'formsg-shared/constants'
 
 import { LanguageTranslation } from '~assets/icons/LanguageTranslation'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
@@ -19,6 +22,12 @@ import { useDraggable } from '~hooks/useDraggable'
 
 import { useUser } from '~features/user/queries'
 
+import {
+  AdminFormSideNav,
+  AdminFormSideNavTab,
+  SideNavCollapseControl,
+} from '../common/AdminFormSideNav/AdminFormSideNav'
+import { useSideNavCollapse } from '../common/AdminFormSideNav/useSideNavCollapse'
 import { useAdminFormCollaborators } from '../common/queries'
 
 import { SettingsTab } from './components/SettingsTab'
@@ -32,6 +41,7 @@ import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 
 interface TabEntry {
   label: string
+  navLabel?: string
   icon: IconType
   component: () => JSX.Element
   path: string
@@ -40,6 +50,8 @@ interface TabEntry {
 
 export const SettingsPage = (): JSX.Element => {
   const { formId, settingsTab } = useParams()
+  const showNavLabels = useFeatureIsOn(featureFlags.sidebarNavLabels)
+  const { isCollapsed, isMobile, toggle } = useSideNavCollapse()
   const { isLoading: isFormSettingLoading } = useAdminFormSettings()
   const { user, isLoading: isUserLoading } = useUser()
   const { t } = useTranslation()
@@ -49,7 +61,7 @@ export const SettingsPage = (): JSX.Element => {
     emailNotifications: { title: emailNotificationsTitle },
     webhooks: { title: webhooksTitle },
     payments: { title: paymentsTitle },
-    tabs: { multiLanguage },
+    tabs: { multiLanguage, navLabels },
   } = t('features.adminForm.settings', { returnObjects: true })
 
   if (!formId) throw new Error('No formId provided')
@@ -70,6 +82,7 @@ export const SettingsPage = (): JSX.Element => {
     user?.betaFlags?.multiLangTranslation
       ? {
           label: multiLanguage,
+          navLabel: navLabels.multiLanguage,
           icon: LanguageTranslation,
           component: SettingsMultiLangPage,
           path: 'language',
@@ -91,6 +104,7 @@ export const SettingsPage = (): JSX.Element => {
     },
     {
       label: emailNotificationsTitle,
+      navLabel: navLabels.emails,
       icon: BiMailSend,
       component: SettingsEmailsPage,
       path: 'email-notifications',
@@ -120,9 +134,27 @@ export const SettingsPage = (): JSX.Element => {
     navigate(`${ADMINFORM_ROUTE}/${formId}/settings/${tabConfig[index].path}`)
   }
 
+  const tabPanels = (
+    <TabPanels
+      maxW="42.5rem"
+      mx={showNavLabels ? 'auto' : undefined}
+      minW={0}
+      mt={showNavLabels ? 0 : { md: '1rem' }}
+    >
+      {tabConfig.map((tab) => (
+        <TabPanel key={tab.label}>
+          <tab.component />
+        </TabPanel>
+      ))}
+    </TabPanels>
+  )
+
   return (
     <Box
-      overflow="auto"
+      overflow={showNavLabels ? 'hidden' : 'auto'}
+      display={showNavLabels ? 'flex' : undefined}
+      flexDirection={showNavLabels ? 'column' : undefined}
+      minH={showNavLabels ? 0 : undefined}
       /**
        * HACK: Chromium browsers have a bug where sibling elements with `position: sticky` will not
        * be correctly calculated during a reflow. This causes the sibling to not have the correct
@@ -139,62 +171,98 @@ export const SettingsPage = (): JSX.Element => {
         isManual
         orientation="vertical"
         variant="line"
-        py={{ base: '2.5rem', lg: '3.125rem' }}
-        px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+        py={showNavLabels ? 0 : { base: '2.5rem', lg: '3.125rem' }}
+        px={showNavLabels ? 0 : { base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+        flex={showNavLabels ? 1 : undefined}
+        minH={showNavLabels ? 0 : undefined}
         index={tabIndex === -1 ? 0 : tabIndex}
         onChange={(index) => {
           handleTabChange(index)
         }}
       >
-        <Flex
-          h="max-content"
-          flex={1}
-          flexShrink={0}
-          ref={ref}
-          onMouseDown={onMouseDown}
-          position="sticky"
-          zIndex={0}
-          top={{ base: '2.5rem', lg: '3.125rem' }}
-          borderTopColor="neutral.300"
-          w={{ base: 'auto', lg: '21rem' }}
-          __css={{
-            scrollbarWidth: 0,
-            /* Scrollbar for Chrome, Safari, Opera and Microsoft Edge */
-            '&::-webkit-scrollbar': {
-              width: 0,
-              height: 0,
-            },
-          }}
-        >
-          <TabList
-            overflowX="initial"
-            display="inline-flex"
-            w="max-content"
-            mr={{ base: '1.5rem', md: '4rem', lg: '2rem' }}
-            mb="calc(0.5rem - 2px)"
+        {showNavLabels ? (
+          isCollapsed ? (
+            <SideNavCollapseControl
+              isCollapsed
+              onClick={toggle}
+              trackingLabel="settings.sidebar.toggle_collapse"
+            />
+          ) : (
+            <AdminFormSideNav
+              footer={
+                isMobile ? (
+                  <SideNavCollapseControl
+                    isCollapsed={false}
+                    trackingLabel="settings.sidebar.toggle_collapse"
+                    onClick={toggle}
+                  />
+                ) : undefined
+              }
+            >
+              <TabList border={0} m={0} p={0} overflow="visible" gap="1rem">
+                {tabConfig.map((tab) => (
+                  <AdminFormSideNavTab
+                    key={tab.path}
+                    label={tab.navLabel ?? tab.label}
+                    icon={<tab.icon fontSize="1.5rem" />}
+                  />
+                ))}
+              </TabList>
+            </AdminFormSideNav>
+          )
+        ) : (
+          <Flex
+            h="max-content"
+            flex={1}
+            flexShrink={0}
+            ref={ref}
+            onMouseDown={onMouseDown}
+            position="sticky"
+            zIndex={0}
+            top={{ base: '2.5rem', lg: '3.125rem' }}
+            borderTopColor="neutral.300"
+            w={{ base: 'auto', lg: '21rem' }}
+            __css={{
+              scrollbarWidth: 0,
+              /* Scrollbar for Chrome, Safari, Opera and Microsoft Edge */
+              '&::-webkit-scrollbar': {
+                width: 0,
+                height: 0,
+              },
+            }}
           >
-            {tabConfig.map((tab) => (
-              <SettingsTab
-                key={tab.label}
-                label={tab.label}
-                icon={tab.icon}
-                showNewBadge={tab.showRedDot}
-              />
-            ))}
-          </TabList>
-        </Flex>
-        <TabPanels
-          maxW="42.5rem"
-          // Offset start of tabpanel text from tablist.
-          mt={{ md: '1rem' }}
-        >
-          {tabConfig.map((tab) => (
-            <TabPanel key={tab.label}>
-              <tab.component />
-            </TabPanel>
-          ))}
-        </TabPanels>
-        <Spacer />
+            <TabList
+              overflowX="initial"
+              display="inline-flex"
+              w="max-content"
+              mr={{ base: '1.5rem', md: '4rem', lg: '2rem' }}
+              mb="calc(0.5rem - 2px)"
+            >
+              {tabConfig.map((tab) => (
+                <SettingsTab
+                  key={tab.label}
+                  label={tab.label}
+                  icon={tab.icon}
+                  showNewBadge={tab.showRedDot}
+                />
+              ))}
+            </TabList>
+          </Flex>
+        )}
+        {showNavLabels ? (
+          <Box
+            flex={1}
+            minW={0}
+            overflowY="auto"
+            px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+            py={{ base: '2.5rem', lg: '3.125rem' }}
+          >
+            {tabPanels}
+          </Box>
+        ) : (
+          tabPanels
+        )}
+        {!showNavLabels && <Spacer />}
       </Tabs>
     </Box>
   )
