@@ -55,6 +55,7 @@ export const RemindButton = ({
   return (
     <>
       <Button
+        size="sm"
         variant="outline"
         colorScheme="secondary"
         leftIcon={
