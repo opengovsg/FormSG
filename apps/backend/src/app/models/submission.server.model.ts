@@ -8,6 +8,7 @@ import {
   WorkflowEventType,
   WorkflowStatus,
 } from 'formsg-shared/types'
+import { isAdminWorkflowEvent } from 'formsg-shared/utils/workflow-event'
 import moment from 'moment-timezone'
 import mongoose, {
   Cursor as QueryCursor,
@@ -853,6 +854,10 @@ const submittedStepSchema = new Schema(
   { _id: false },
 )
 
+function requiresWorkflowEventActor(this: { type: WorkflowEventType }) {
+  return isAdminWorkflowEvent(this)
+}
+
 const workflowEventSchema = new Schema(
   {
     type: {
@@ -860,14 +865,23 @@ const workflowEventSchema = new Schema(
       enum: Object.values(WorkflowEventType),
       required: true,
     },
+    outcome: {
+      type: String,
+      enum: Object.values(WorkflowStatus).filter(
+        (status) => status !== WorkflowStatus.PENDING,
+      ),
+      required: function (this: { type: WorkflowEventType }) {
+        return this.type === WorkflowEventType.StepSubmitted
+      },
+    },
     actorId: {
       type: Schema.Types.ObjectId,
       ref: USER_SCHEMA_ID,
-      required: true,
+      required: requiresWorkflowEventActor,
     },
     actorEmail: {
       type: String,
-      required: true,
+      required: requiresWorkflowEventActor,
     },
     stepNumber: {
       type: Number,
@@ -946,12 +960,13 @@ export const MultirespondentSubmissionSchema = new Schema<
     // Defer loading of the ref due to circular dependency on schema IDs.
     ref: () => PAYMENT_SCHEMA_ID,
   },
-  // RATIONALE: admin actions live on the submission so that an action and its
-  // log entry are written in one conditional update. Only ever $push to this
-  // array; assigning it from a loaded document and saving drops newer events.
+  // RATIONALE: only ever $push to this array; assigning it from a loaded
+  // document and saving drops newer events. A document saved before this
+  // field existed loads with the [] default, and saving it sends
+  // $set: { workflowEvents: [] } unless something was pushed first.
   workflowEvents: {
     type: [workflowEventSchema],
-    default: undefined,
+    default: [],
   },
   stoppedAt: {
     type: Date,

@@ -955,6 +955,7 @@ describe('Multirespondent Submission Model', () => {
           'workflowStep',
           'submittedSteps',
           'encryptedStepToken',
+          'workflowEvents',
           'mrfVersion',
         )
         expect(actual).not.toBeNull()

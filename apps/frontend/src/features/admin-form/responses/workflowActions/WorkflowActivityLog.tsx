@@ -4,6 +4,7 @@ import { Circle, Flex, Stack, Text } from '@chakra-ui/react'
 import { formatInTimeZone } from 'date-fns-tz'
 
 import { WorkflowEventType, WorkflowStatus } from 'formsg-shared/types'
+import { isAdminWorkflowEvent } from 'formsg-shared/utils/workflow-event'
 
 import type { ResponsesIndividualResponse } from '~/i18n/locales/features/admin-form/responses/individual-response'
 
@@ -95,11 +96,15 @@ export const WorkflowActivityLog = ({
     ),
   })
 
+  const sentToByStep = new Map(
+    events
+      .filter((event) => event.type === WorkflowEventType.StepSubmitted)
+      .map((event): [number, string[]] => [event.stepNumber, event.emails]),
+  )
+
   const stepEntries = submittedSteps.map((step, index) => {
-    const recipients =
-      'nextStepRecipientEmails' in step
-        ? (step.nextStepRecipientEmails ?? [])
-        : []
+    const stepNumber = index + 1
+    const recipients = sentToByStep.get(stepNumber) ?? []
     const sentTo = index < workflow.length - 1 && recipients.length > 0
     const status = 'status' in step ? step.status : undefined
     const key: ActivityLogKey =
@@ -123,14 +128,16 @@ export const WorkflowActivityLog = ({
       step.submittedAt,
       key,
       {
-        ...stepValues(index + 1),
+        ...stepValues(stepNumber),
         recipients: formatEmailList(recipients),
       },
       tone,
     )
   })
 
-  const eventEntries = events.map((event) => {
+  const adminEvents = events.filter(isAdminWorkflowEvent)
+
+  const eventEntries = adminEvents.map((event) => {
     switch (event.type) {
       case WorkflowEventType.AssigneesAdded:
         return entry(

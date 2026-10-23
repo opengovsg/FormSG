@@ -61,6 +61,7 @@ import { WebhookFactory } from '../../webhook/webhook.factory'
 import { getWebhookType, toConsumerType } from '../../webhook/webhook.service'
 import { SnapshotRef } from '../../webhook/webhook.types'
 import {
+  buildStepSubmittedEvent,
   buildWorkflowEvent,
   getAddedAssignees,
 } from '../../workflow-event/workflow-event.service'
@@ -980,6 +981,7 @@ export const createMultiRespondentFormSubmission = ({
         workflowStep: 0,
         mrfVersion,
         submittedSteps: [submittedStepMeta],
+        workflowEvents: [buildStepSubmittedEvent(1, submittedStepMeta)],
         stepTokenHash,
         encryptedStepToken,
       }
@@ -1216,6 +1218,7 @@ export const createMultiRespondentFormPendingSubmission = ({
       workflowStep: 0,
       mrfVersion,
       submittedSteps: [submittedStepMeta],
+      workflowEvents: [buildStepSubmittedEvent(1, submittedStepMeta)],
       stepTokenHash,
       encryptedStepToken,
       paymentId,
@@ -2026,6 +2029,17 @@ export const updateMultiRespondentFormSubmission = ({
           ...(submission.submittedSteps ?? []),
           submittedStepMeta,
         ]
+        // RATIONALE: push, never assign, so the save sends $push and keeps
+        // admin events written since this document was read.
+        submission.workflowEvents.push(
+          buildStepSubmittedEvent(submissionIndex + 1, {
+            ...submittedStepMeta,
+            // A rejection ends the workflow, so the next step is never sent.
+            nextStepRecipientEmails: isStepRejected
+              ? []
+              : nextStepRecipientEmails,
+          }),
+        )
 
         return ResultAsync.fromPromise(
           submission

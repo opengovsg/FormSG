@@ -18,6 +18,8 @@ import {
   PaymentChannel,
   PaymentStatus,
   PaymentType,
+  WorkflowEventType,
+  WorkflowStatus,
 } from 'formsg-shared/types'
 import mongoose from 'mongoose'
 import request from 'supertest'
@@ -30,6 +32,7 @@ import getPaymentModel from 'src/app/models/payment.server.model'
 import getPendingSubmissionModel, {
   getEncryptPendingSubmissionModel,
 } from 'src/app/models/pending_submission.server.model'
+import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
 import {
   confirmPaymentPendingSubmission,
   performPaymentPostSubmissionActions,
@@ -432,6 +435,23 @@ describe('[GATE] payment webhook delivery', () => {
       payer: 'payer@example.com',
     })
     expect(data).not.toHaveProperty('encryptedSubmissionSecretKey')
+  })
+  it('keeps the first step submitted event when the pending submission is confirmed', async () => {
+    const { payment, submission } = await submit()
+    await confirm(payment)
+
+    const confirmed = await getMultirespondentSubmissionModel(mongoose)
+      .findById(submission._id)
+      .lean()
+    expect(confirmed?.workflowEvents).toEqual([
+      {
+        type: WorkflowEventType.StepSubmitted,
+        outcome: WorkflowStatus.COMPLETED,
+        stepNumber: 1,
+        emails: [],
+        created: expect.any(Date),
+      },
+    ])
   })
   it('carries verified plaintext through the payment respondent controller into the delivered V1 payload', async () => {
     const input = await prepare()
