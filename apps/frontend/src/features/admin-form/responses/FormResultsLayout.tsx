@@ -106,7 +106,6 @@ export const FormResultsLayout = (): JSX.Element => {
             w="100%"
             minW={0}
             overflowY={showNavLabels ? 'auto' : undefined}
-            py={showNavLabels ? { base: '2.5rem', lg: '3.125rem' } : undefined}
             px={
               showNavLabels
                 ? { base: '1.5rem', md: '1.75rem', lg: '2rem' }
@@ -114,7 +113,15 @@ export const FormResultsLayout = (): JSX.Element => {
             }
           >
             {showNavLabels && versionToggle}
-            <Outlet />
+            {/* Keep vertical spacing inside the scroller so sticky table
+                headers can reach its top edge. */}
+            <Box
+              py={
+                showNavLabels ? { base: '2.5rem', lg: '3.125rem' } : undefined
+              }
+            >
+              <Outlet />
+            </Box>
           </Box>
         </Tabs>
       </Box>
