@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.54.6](https://github.com/opengovsg/formsg/compare/v9.54.5...v9.54.6) (2026-10-23)
+
+
+### Bug Fixes
+
+* **payments:** honor global_min_amount_override on MRF submissions (#10378) ([#10378](https://github.com/opengovsg/formsg/commit/17ab7894cb47f14c580b31206af227b393c2e5ab))
+
 ## [9.54.5](https://github.com/opengovsg/formsg/compare/v9.54.4...v9.54.5) (2026-10-22)
 
 
