@@ -1,6 +1,9 @@
+import { Box } from '@chakra-ui/react'
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { PaymentChannel, PaymentType, UserId } from 'formsg-shared/types'
 import {
   AdminFormDto,
@@ -70,7 +73,12 @@ export default {
   // component: To be implemented,
   decorators: [
     ViewedFeatureTourDecorator,
-    AdminFormCreatePageDecorator,
+    (Story, context) =>
+      context.parameters.sideNavViewport ? (
+        <Box h="100vh">{AdminFormCreatePageDecorator(Story, context)}</Box>
+      ) : (
+        AdminFormCreatePageDecorator(Story, context)
+      ),
     LoggedInDecorator,
     mockDateDecorator,
   ],
@@ -283,7 +291,7 @@ AdminFormBuilderWithAdditionalRowsTableField.play = async ({
         // Find the HighlightableFlex by looking for the field container that contains the table field
         // The HighlightableFlex is the clickable wrapper around the field with role="button"
         const highlightableFlex = canvas.getByRole('button', {
-          name: (content, element) => {
+          name: (content) => {
             // Look for a button that contains the table field title
             // The HighlightableFlex wraps the entire field including its title
             return content.includes('Table field for test')
@@ -337,3 +345,39 @@ AdminFormBuilderWithAdditionalRowsTableField.play = async ({
     })
   })
 }
+
+const legacyNavGrowthbook = new GrowthBook({
+  features: { [featureFlags.sidebarNavLabels]: { defaultValue: false } },
+})
+
+const labelledNavGrowthbook = new GrowthBook({
+  features: {
+    [featureFlags.sidebarNavLabels]: { defaultValue: true },
+    charts: { defaultValue: true },
+  },
+})
+export const LabelledNavigation = Template.bind({})
+LabelledNavigation.parameters = {
+  ...DesktopEmpty.parameters,
+  sideNavViewport: true,
+  argos: { modes: viewportModes('tablet', 'mobile') },
+}
+LabelledNavigation.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={labelledNavGrowthbook}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+export const LegacyNavigation = Template.bind({})
+LegacyNavigation.parameters = {
+  ...DesktopEmpty.parameters,
+  sideNavViewport: true,
+}
+LegacyNavigation.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={legacyNavGrowthbook}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]

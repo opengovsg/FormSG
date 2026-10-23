@@ -9,6 +9,7 @@ import { render } from '~/test-utils'
 import { CreatePageSidebar } from './CreatePageSidebar'
 
 const mockUseFeatureIsOn = vi.fn()
+const mockReportSidebarWidth = vi.fn()
 const mockResponseMode = { current: FormResponseMode.Multirespondent }
 const mockIsMobile = { current: false }
 
@@ -65,7 +66,7 @@ vi.mock(
       handleEndpageClick: vi.fn(),
       handleWorkflowClick: vi.fn(),
       handleIntegrationClick: vi.fn(),
-      reportSidebarWidth: vi.fn(),
+      reportSidebarWidth: mockReportSidebarWidth,
     }),
   }),
 )
@@ -160,6 +161,33 @@ describe('CreatePageSidebar', () => {
     ])
   })
 
+  it('observes the replacement rail when the feature flag resolves after mount', () => {
+    const originalObserver = globalThis.ResizeObserver
+    const observed: Element[] = []
+    const disconnect = vi.fn()
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        observe(element: Element) {
+          observed.push(element)
+        }
+        disconnect = disconnect
+      },
+    )
+    try {
+      mockUseFeatureIsOn.mockReturnValue(false)
+      const { rerender } = render(<CreatePageSidebar />)
+      const originalRail = observed[0]
+      mockUseFeatureIsOn.mockReturnValue(true)
+      rerender(<CreatePageSidebar />)
+      expect(observed).toHaveLength(2)
+      expect(observed[1]).not.toBe(originalRail)
+      expect(disconnect).toHaveBeenCalledTimes(1)
+    } finally {
+      vi.stubGlobal('ResizeObserver', originalObserver)
+    }
+  })
+
   it('offers no collapse toggle on desktop', () => {
     mockUseFeatureIsOn.mockReturnValue(false)
     mockResponseMode.current = FormResponseMode.Multirespondent
@@ -188,6 +216,12 @@ describe('CreatePageSidebar', () => {
       screen.queryByTestId('sidebar-collapse-toggle'),
     ).not.toBeInTheDocument()
 
+    expect(
+      screen.getByRole('button', { name: 'Collapse sidebar' }),
+    ).toHaveAttribute(
+      'data-dd-action-name',
+      'create_builder.sidebar.toggle_collapse',
+    )
     await userEvent.click(
       screen.getByRole('button', { name: 'Collapse sidebar' }),
     )
