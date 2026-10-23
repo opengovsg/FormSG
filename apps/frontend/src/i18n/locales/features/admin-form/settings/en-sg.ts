@@ -68,6 +68,7 @@ export const enSG = {
     },
   },
   tabs: {
+    navLabels: { emails: 'Emails', multiLanguage: 'Multi-lang' },
     newBadge: 'New',
     multiLanguage: 'Multi-language',
   },

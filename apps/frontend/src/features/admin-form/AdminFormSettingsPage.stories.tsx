@@ -1,7 +1,10 @@
 import { MemoryRouter, Route } from 'react-router'
 import { Routes } from 'react-router-dom'
+import { Box } from '@chakra-ui/react'
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
+import { featureFlags } from 'formsg-shared/constants'
 import {
   FormAuthType,
   FormResponseMode,
@@ -15,7 +18,7 @@ import {
   getAdminFormSubmissions,
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
-import { getUser } from '~/mocks/msw/handlers/user'
+import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
 import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
 import formsgSdk from '~utils/formSdk'
@@ -28,10 +31,10 @@ export default {
   title: 'Pages/AdminFormPage/Settings',
   component: SettingsPage,
   decorators: [
-    (storyFn) => {
+    (storyFn, { parameters }) => {
       // MemoryRouter is used so react-router-dom#Link components can work
       // (and also to force the initial tab the page renders to be the settings tab).
-      return (
+      const page = (
         <MemoryRouter
           initialEntries={[
             `${ADMINFORM_ROUTE}/61540ece3d4a6e50ac0cc6ff/${ADMINFORM_SETTINGS_SUBROUTE}`,
@@ -42,11 +45,15 @@ export default {
               path={`${ADMINFORM_ROUTE}/:formId`}
               element={<AdminFormLayout />}
             >
-              <Route path={ADMINFORM_SETTINGS_SUBROUTE} element={storyFn()} />
+              <Route
+                path={`${ADMINFORM_SETTINGS_SUBROUTE}/:settingsTab?`}
+                element={storyFn()}
+              />
             </Route>
           </Routes>
         </MemoryRouter>
       )
+      return parameters.sideNavViewport ? <Box h="100vh">{page}</Box> : page
     },
   ],
   parameters: {
@@ -140,4 +147,56 @@ SaveDraftEnabled.parameters = {
     getUser(),
     getAdminFormCollaborators(),
   ],
+}
+
+const legacyNavGrowthbook = new GrowthBook({
+  features: { [featureFlags.sidebarNavLabels]: { defaultValue: false } },
+})
+
+const labelledNavGrowthbook = new GrowthBook({
+  features: {
+    [featureFlags.sidebarNavLabels]: { defaultValue: true },
+    charts: { defaultValue: true },
+  },
+})
+export const LabelledNavigation = Template.bind({})
+
+LabelledNavigation.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={labelledNavGrowthbook}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+export const LegacyNavigation = Template.bind({})
+LegacyNavigation.parameters = { ...Desktop.parameters, sideNavViewport: true }
+LegacyNavigation.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={legacyNavGrowthbook}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+
+LabelledNavigation.parameters = {
+  ...Desktop.parameters,
+  sideNavViewport: true,
+  argos: { modes: viewportModes('tablet', 'mobile') },
+  msw: {
+    handlers: {
+      default: [
+        ...createFormBuilderMocks(),
+        getAdminFormSettings(),
+        getAdminFormSubmissions(),
+        patchAdminFormSettings(),
+        getAdminFormCollaborators(),
+        getUser({
+          mockUser: {
+            ...MOCK_USER,
+            betaFlags: { ...MOCK_USER.betaFlags, multiLangTranslation: true },
+          },
+        }),
+      ],
+    },
+  },
 }
