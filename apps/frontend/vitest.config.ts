@@ -76,6 +76,10 @@ export default defineConfig((configEnv) => {
             },
           },
           {
+            // Vitest 5 extends an inline project from this file by default.
+            // This project already spreads the app config, so inheriting again
+            // would register every Vite plugin twice.
+            extends: false,
             // Runs every story in a real browser and screenshots it for Argos.
             // Reuses the app's aliases and plugins. The Node polyfills are kept
             // for app code (csv-string needs `stream`), but they shim

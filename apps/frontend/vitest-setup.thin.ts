@@ -1,6 +1,9 @@
 /// <reference types="vitest/globals" />
 
 import '@testing-library/jest-dom/vitest'
+// Storybook's preview imports this for its side effect (i18next init).
+// Plain *.test.ts files skip that preview, but a few still call useTranslation.
+import '~/i18n/i18n'
 
 // Mock the ResizeObserver. Vitest 5's vi.fn() requires a real function (not
 // an arrow function) to be usable via `new`, since some libraries (e.g.
