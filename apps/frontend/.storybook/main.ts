@@ -31,7 +31,7 @@ const config: StorybookConfig = {
   },
   // For injecitng environment variables into Storybook runs
   // Envs must be prefixed with STORYBOOK_ on vite-builds
-  env: (config: Record<string, string>) => ({
+  env: (config: Record<string, string> = {}) => ({
     ...config,
     STORYBOOK_NODE_ENV: 'test',
   }),
