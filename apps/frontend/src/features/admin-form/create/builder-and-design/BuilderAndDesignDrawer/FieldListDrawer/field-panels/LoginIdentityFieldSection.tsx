@@ -15,7 +15,7 @@ import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 
 import { SubmitterIdConversionModal } from '~features/admin-form/settings/components/AuthSettingsSection/SubmitterIdConversionModal'
-import { NON_RESPONSE_FIELD_SET } from '~features/form/constants'
+import { getNextQuestionNumber } from '~features/form/utils'
 
 import { useCreateTabForm } from '../../../useCreateTabForm'
 import { DraggableLoginIdentityFieldListOption } from '../FieldListOption'
@@ -148,11 +148,7 @@ export const LoginIdentityFieldSection = ({
         authType={form.authType}
         isOpen={convertModal.isOpen}
         onClose={convertModal.onClose}
-        nextQuestionNumber={
-          form.form_fields.filter(
-            (field) => !NON_RESPONSE_FIELD_SET.has(field.fieldType),
-          ).length + 1
-        }
+        nextQuestionNumber={getNextQuestionNumber(form.form_fields)}
       />
       {mustCloseToConvert && !isLoginMissing && (
         <MessageBox>
