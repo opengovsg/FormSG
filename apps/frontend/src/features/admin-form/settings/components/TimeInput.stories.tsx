@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Box, FormControl, Stack, Text } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -11,9 +11,7 @@ import { TimeInput } from './TimeInput'
 export default {
   title: 'Features/AdminForm/Settings/TimeInput',
   component: TimeInput,
-  parameters: {
-    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
-  },
+  parameters: {},
 } as Meta
 
 /** Live input: try "123" then tab away, "3:00pm" then tab away, and AM/PM. */

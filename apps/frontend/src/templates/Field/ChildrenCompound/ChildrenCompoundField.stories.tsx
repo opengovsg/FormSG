@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { get, merge } from 'lodash'
 
 import {
@@ -171,5 +171,24 @@ SameNamedLocalAndSponsored.args = {
       MyInfoChildrenScope.Local,
       MyInfoChildrenScope.Sponsored,
     ],
+  },
+}
+
+/**
+ * MyInfo returns a record without every sub-field, e.g. a sponsored child with
+ * no birth certificate number. Its blank sub-fields are cleared and locked.
+ */
+export const RecordMissingSubField = Template.bind({})
+RecordMissingSubField.args = {
+  schema: merge({}, baseSchema, {
+    childrenSubFields: [
+      MyInfoChildAttributes.ChildName,
+      MyInfoChildAttributes.ChildBirthCertNo,
+    ],
+  }),
+  childrenBirthRecords: {
+    [MyInfoChildAttributes.ChildName]: ['SITI RY', 'THRO RY'],
+    [MyInfoChildAttributes.ChildBirthCertNo]: ['T1234567X', ''],
+    scopes: [MyInfoChildrenScope.Local, MyInfoChildrenScope.Sponsored],
   },
 }

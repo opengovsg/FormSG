@@ -361,8 +361,12 @@ const ChildrenBody = ({
               ? formatMyinfoDate(myInfoValue)
               : myInfoValue
 
+          // A picked record owns every subfield, including ones MyInfo left
+          // blank: those are cleared (dropping the previous record's value)
+          // rather than left for the respondent to fill in.
+          const isFromRecord = indexOfChild >= 0
           const value = watch(fieldPath) as unknown as string
-          if (myInfoFormattedValue && value !== myInfoFormattedValue) {
+          if (isFromRecord && (value ?? '') !== myInfoFormattedValue) {
             // We need to do this as the underlying data is not updated
             // by the field's value, but rather by onChange, which we did
             // not trigger via prefill.
@@ -372,8 +376,9 @@ const ChildrenBody = ({
           }
           // schema.disabled: whole-field read-only (MRF carry-forward on
           // steps 2+, where there is no MyInfo session to prefill from).
-          // myInfoValue: individual subfield locked by MyInfo prefill.
-          const isDisabled = isSubmitting || !!myInfoValue || schema.disabled
+          // isFromRecord: subfields locked to the picked MyInfo record. A
+          // blank one stays required, so the child cannot be submitted.
+          const isDisabled = isSubmitting || isFromRecord || schema.disabled
           switch (subField) {
             case MyInfoChildAttributes.ChildBirthCertNo: {
               return (

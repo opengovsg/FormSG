@@ -1,6 +1,6 @@
 import { MemoryRouter, Route } from 'react-router'
 import { Routes } from 'react-router-dom'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
   createFormBuilderMocks,
@@ -19,7 +19,7 @@ import {
   ADMINFORM_ROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
 } from '~constants/routes'
-import { getMobileViewParameters, viewports } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
 import { FeedbackPage, FormResultsLayout, ResponsesPage } from './responses'
@@ -38,9 +38,9 @@ export default {
   title: 'Pages/AdminFormPage/Results/FeedbackTab',
   component: FeedbackPage,
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: { handlers: { default: DEFAULT_MSW_ROUTES } },
   },
 } as Meta
@@ -73,6 +73,7 @@ const Template: StoryFn = () => {
   )
 }
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 
 export const EmptyReviewAndIssue = Template.bind({})
 EmptyReviewAndIssue.parameters = {
@@ -104,20 +105,10 @@ EmptyIssue.parameters = {
   },
 }
 
-export const Tablet = Template.bind({})
-Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
-  chromatic: { viewports: [viewports.md] },
-}
-
-export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
-
 export const LoadingDesktop = Template.bind({})
 LoadingDesktop.storyName = 'Loading/Desktop'
 LoadingDesktop.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: {
     handlers: {
       default: [
@@ -126,10 +117,4 @@ LoadingDesktop.parameters = {
       ],
     },
   },
-}
-export const LoadingMobile = Template.bind({})
-LoadingMobile.storyName = 'Loading/Mobile'
-LoadingMobile.parameters = {
-  ...getMobileViewParameters(),
-  ...LoadingDesktop.parameters,
 }

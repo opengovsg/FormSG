@@ -2,8 +2,8 @@ import { useCallback, useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { BiHeading, BiRadioCircleMarked } from 'react-icons/bi'
 import { FormControl } from '@chakra-ui/react'
-import { useArgs } from '@storybook/preview-api'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
+import { useArgs } from 'storybook/preview-api'
 
 import { fixedHeightDecorator } from '~utils/storybook'
 import Button from '~components/Button'
@@ -203,6 +203,7 @@ export const Playground: StoryFn<SingleSelectProps> = ({
     </form>
   )
 }
+Playground.tags = ['playground']
 Playground.args = {
   isReadOnly: false,
 }

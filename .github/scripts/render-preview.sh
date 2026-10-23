@@ -26,6 +26,18 @@ deploy() {
   render POST "/services/$1/deploys" '{"clearCache":"do_not_clear"}' >/dev/null
 }
 
+set_env() {
+  render PUT "/services/$1/env-vars/$2" "$(jq -n --arg v "$3" '{value: $v}')" >/dev/null
+}
+
+preview_env() {
+  set_env "$1" APP_URL "$2"
+  set_env "$1" GOOGLE_CAPTCHA_PUBLIC 6LeIxAcTAAAAAJcZVRqyHh4ePcyEl0YuGgZ7e8bq
+  set_env "$1" GOOGLE_CAPTCHA 6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
+  set_env "$1" TURNSTILE_CAPTCHA 1x00000000000000000000AA
+  set_env "$1" TURNSTILE_CAPTCHA_PRIVATE 1x0000000000000000000000000000000AA
+}
+
 output() {
   if [ -n "${GITHUB_OUTPUT:-}" ]; then echo "$1=$2" >>"$GITHUB_OUTPUT"; fi
   echo "$1=$2"
@@ -37,6 +49,7 @@ up() {
   if [ -n "$existing" ]; then
     read -r id url suspended <<<"$existing"
     if [ "$suspended" = suspended ]; then render POST "/services/$id/resume" >/dev/null; fi
+    preview_env "$id" "$url"
     deploy "$id"
     created=false
   else
@@ -64,7 +77,7 @@ up() {
       render POST "/services/$id/deploys/$first_deploy/cancel" >/dev/null || true
     fi
     render POST "/env-groups/$ENV_GROUP_ID/services/$id" >/dev/null
-    render PUT "/services/$id/env-vars/APP_URL" "$(jq -n --arg v "$url" '{value: $v}')" >/dev/null
+    preview_env "$id" "$url"
     deploy "$id"
     created=true
   fi
@@ -102,6 +115,40 @@ wake() {
   deployed=$(render GET "/services/$id/deploys?limit=1" | jq -r '.[0].deploy.commit.id // empty')
   if [ "$deployed" != "$sha" ]; then deploy "$id"; fi
   output woke true
+}
+
+await() {
+  local name=$1 sha=$2 deadline existing id url suspended status
+  deadline=$(($(date +%s) + ${AWAIT_TIMEOUT_SECS:-1800}))
+  while :; do
+    existing=$(find_service "$name")
+    if [ -n "$existing" ]; then
+      read -r id url suspended <<<"$existing"
+      status=$(render GET "/services/$id/deploys?limit=20" |
+        jq -r --arg sha "$sha" '[.[].deploy | select(.commit.id == $sha)][0].status // empty')
+      case "$status" in
+        live)
+          output url "$url"
+          output status live
+          return 0
+          ;;
+        build_failed | update_failed | canceled | deactivated)
+          echo "deploy of $sha ended with status: $status" >&2
+          output status "$status"
+          return 1
+          ;;
+      esac
+      echo "waiting for $name deploy of $sha (currently: ${status:-not started})"
+    else
+      echo "waiting for $name service to be created"
+    fi
+    if [ "$(date +%s)" -ge "$deadline" ]; then
+      echo "timed out waiting for $name deploy of $sha" >&2
+      output status timeout
+      return 1
+    fi
+    sleep 30
+  done
 }
 
 to_epoch='sub("\\.[0-9]+"; "") | fromdateiso8601'
@@ -156,6 +203,7 @@ case "${1:-}" in
   up) up "$2" "$3" ;;
   down) down "$2" ;;
   wake) wake "$2" "$3" ;;
+  await) await "$2" "$3" ;;
   sweep) sweep ;;
-  *) echo "usage: $0 up <service-name> <branch> | down <service-name> | wake <service-name> <sha> | sweep" >&2; exit 64 ;;
+  *) echo "usage: $0 up <service-name> <branch> | down <service-name> | wake <service-name> <sha> | await <service-name> <sha> | sweep" >&2; exit 64 ;;
 esac

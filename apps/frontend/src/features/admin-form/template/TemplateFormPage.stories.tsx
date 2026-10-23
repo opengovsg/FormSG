@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { FormResponseMode } from 'formsg-shared/types'
 
@@ -15,7 +15,7 @@ import {
 } from '~/mocks/msw/handlers/public-form'
 
 import { ADMINFORM_USETEMPLATE_ROUTE } from '~constants/routes'
-import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import TemplateFormPage from './TemplateFormPage'
 
@@ -37,28 +37,21 @@ export default {
     }),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: DEFAULT_MSW_HANDLERS,
   },
 } as Meta
 
 const Template: StoryFn = () => <TemplateFormPage />
 export const Default = Template.bind({})
-
-export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
+Default.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const FormNotFound = Template.bind({})
 FormNotFound.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: [getTemplateFormErrorResponse()],
-}
-
-export const FormNotFoundMobile = Template.bind({})
-FormNotFoundMobile.parameters = {
-  ...FormNotFound.parameters,
-  ...getMobileViewParameters(),
 }
 
 export const MultirespondentFormWithAdditionalRowsTableField = Template.bind({})

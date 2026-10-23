@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { PaymentChannel } from 'formsg-shared/types'
 import {
@@ -16,7 +16,7 @@ import {
   putFormWhitelistSettingSimulateCsvStringValidationError,
 } from '~/mocks/msw/handlers/admin-form'
 
-import { StoryRouter, viewports } from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { SettingsAuthPage } from './SettingsAuthPage'
 
@@ -42,10 +42,7 @@ export default {
   title: 'Pages/AdminFormPage/Settings/AuthTab',
   component: SettingsAuthPage,
   decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
-  parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
-  },
+  parameters: {},
 } as Meta
 
 const Template: StoryFn = () => <SettingsAuthPage />
@@ -225,6 +222,7 @@ PrivateEmailSingpassFormSingleSubmissionEnabled.parameters = {
 // purpose: displays all available singpass settings in an enabled state
 export const PrivateStorageSingpassFormAllTogglesEnabled = Template.bind({})
 PrivateStorageSingpassFormAllTogglesEnabled.parameters = {
+  argos: { modes: viewportModes('tablet', 'mobile') },
   msw: {
     handlers: {
       default: buildEncryptModeMswRoutes({
@@ -332,36 +330,6 @@ PrivateStorageMyInfoUpdateWhitelistValidationErrorForm.parameters = {
             'Uploading a valid CSV file should display a mock validation error. This story is used to simulate validation errors are displayed correctly in the UI.',
         },
       },
-    },
-  },
-}
-
-export const Tablet = Template.bind({})
-Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
-  chromatic: { viewports: [viewports.md] },
-  msw: {
-    handlers: {
-      default:
-        PrivateStorageSingpassFormAllTogglesEnabled.parameters.msw.handlers
-          .default,
-    },
-  },
-}
-
-export const Mobile = Template.bind({})
-Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
-  msw: {
-    handlers: {
-      default:
-        PrivateStorageSingpassFormAllTogglesEnabled.parameters.msw.handlers
-          .default,
     },
   },
 }

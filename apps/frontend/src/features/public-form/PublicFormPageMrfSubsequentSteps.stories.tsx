@@ -1,6 +1,6 @@
-import { Meta, StoryFn } from '@storybook/react/*'
-import { expect, waitFor, within } from '@storybook/test'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { http, HttpResponse } from 'msw'
+import { expect, waitFor, within } from 'storybook/test'
 
 import { FormResponseMode, WorkflowType } from 'formsg-shared/types'
 
@@ -47,9 +47,9 @@ export default {
     }),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: DEFAULT_MSW_HANDLERS,
   },
 } as Meta

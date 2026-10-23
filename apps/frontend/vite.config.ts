@@ -48,6 +48,10 @@ const baseRollupOptions = {
   },
 } satisfies BuildOptions['rollupOptions']
 
+// Only the ~ aliases. tsconfig.json also maps Storybook's ESM-only packages to
+// their .d.ts files for the type checker, which must not be used at runtime.
+const tsPaths = () => tsconfigPaths({ projects: ['./tsconfig.vite.json'] })
+
 export default defineConfig(() => {
   return {
     build: {
@@ -72,7 +76,7 @@ export default defineConfig(() => {
     },
     plugins: [
       replaceEnvPlaceholders(),
-      tsconfigPaths(),
+      tsPaths(),
       nodePolyfills(),
       react(),
       svgr({
@@ -84,7 +88,7 @@ export default defineConfig(() => {
       }),
     ],
     worker: {
-      plugins: () => [tsconfigPaths()],
+      plugins: () => [tsPaths()],
       format: 'es' as const,
     },
   }

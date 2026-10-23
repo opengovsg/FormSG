@@ -1,6 +1,8 @@
 import { Box } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
+import { featureFlags } from 'formsg-shared/constants'
 import {
   AdminFormDto,
   BasicField,
@@ -15,7 +17,7 @@ import {
 } from '~/mocks/msw/handlers/admin-form'
 import { getUser } from '~/mocks/msw/handlers/user'
 
-import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { StopWorkflowModal, StopWorkflowModalProps } from './StopWorkflowModal'
 
@@ -60,6 +62,16 @@ const FORM = {
   workflow: WORKFLOW,
 } as unknown as Partial<AdminFormDto>
 
+const redesignOn = new GrowthBook({
+  features: { [featureFlags.workflowBuilderRedesign]: { defaultValue: true } },
+})
+
+const withRedesignOn = (Story: StoryFn) => (
+  <GrowthBookProvider growthbook={redesignOn}>
+    <Story />
+  </GrowthBookProvider>
+)
+
 export default {
   title: 'Features/AdminForm/Responses/WorkflowActions/StopWorkflowModal',
   component: StopWorkflowModal,
@@ -76,7 +88,8 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    chromatic: { delay: 200 },
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: [
       ...createFormBuilderMocks(FORM),
       getAdminFormSettings({
@@ -113,6 +126,21 @@ const Template: StoryFn<StopWorkflowModalProps> = (args) => (
 )
 
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('mobile') } }
 
-export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
+export const Redesign = Template.bind({})
+Redesign.decorators = [withRedesignOn]
+
+export const NoEmailFields = Template.bind({})
+NoEmailFields.decorators = [withRedesignOn]
+NoEmailFields.parameters = {
+  msw: [
+    ...createFormBuilderMocks({ ...FORM, form_fields: [] }),
+    getAdminFormSettings({
+      mode: FormResponseMode.Multirespondent,
+      overrides: { emails: [], stepsToNotify: [] } as Partial<FormSettings>,
+    }),
+    getUser(),
+  ],
+}
+NoEmailFields.args = { responses: [] }

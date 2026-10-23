@@ -66,6 +66,7 @@ export const SelectMenu = (): JSX.Element => {
   const listSx = {
     ...styles.list,
     ...(fullWidth ? { maxH: '100%' } : {}),
+    ...(menuZIndex ? { zIndex: menuZIndex } : {}),
   }
 
   return (
@@ -78,7 +79,6 @@ export const SelectMenu = (): JSX.Element => {
           { suppressRefError: true },
         )}
         style={floatingStyles}
-        zIndex={menuZIndex}
         sx={listSx}
       >
         <RenderIfOpen isOpen={isOpen}>

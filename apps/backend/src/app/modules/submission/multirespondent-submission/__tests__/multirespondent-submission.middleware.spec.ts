@@ -42,6 +42,7 @@ import {
   scanAndRetrieveAttachments,
   validateMultirespondentRemindBody,
   validateMultirespondentSubmission,
+  validateMultirespondentSubmissionParams,
   validatePaymentSubmission,
   verifyLoginIdentityAnswers,
   verifyMyInfoHashes,
@@ -154,6 +155,33 @@ describe('Multirespondent Submission Middleware', () => {
         stepToken: 't',
       })
       expect(error).toBeFalsy()
+    })
+  })
+
+  describe('validateMultirespondentSubmissionParams', () => {
+    const runValidator = (body: Record<string, unknown>): Promise<unknown> =>
+      new Promise((resolve) =>
+        validateMultirespondentSubmissionParams(
+          { body, method: 'POST', headers: {}, query: {}, params: {} } as any,
+          {} as any,
+          resolve as any,
+        ),
+      )
+
+    it('accepts a payment amount below the global minimum, which is enforced in the controller where global_min_amount_override applies', async () => {
+      const error = await runValidator({
+        version: 4,
+        payments: { amount_cents: 10 },
+      })
+      expect(error).toBeFalsy()
+    })
+
+    it('rejects a payment amount above the global maximum', async () => {
+      const error = await runValidator({
+        version: 4,
+        payments: { amount_cents: 200 * 1000 * 100 + 1 },
+      })
+      expect(error).toBeTruthy()
     })
   })
 

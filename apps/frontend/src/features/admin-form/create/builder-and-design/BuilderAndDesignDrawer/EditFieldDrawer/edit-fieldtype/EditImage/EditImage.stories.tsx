@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { BasicField, ImageFieldBase } from 'formsg-shared/types'
 
@@ -35,8 +35,6 @@ export default {
     EditFieldDrawerDecorator,
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     msw: createFormBuilderMocks({}, 0),
   },
   args: {

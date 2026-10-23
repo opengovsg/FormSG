@@ -1,12 +1,12 @@
 import { useDisclosure } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { UserId } from 'formsg-shared/types'
 import { Workspace, WorkspaceId } from 'formsg-shared/types/workspace'
 
 import { userHandlers } from '~/mocks/msw/handlers/user'
 
-import { getMobileViewParameters } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import {
   RenameWorkspaceModal,
@@ -18,8 +18,9 @@ export default {
   component: RenameWorkspaceModal,
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     // Prevent flaky tests due to modal animating in.
-    chromatic: { pauseAnimationAtEnd: true },
     msw: userHandlers({ delay: 0 }),
   },
 } as Meta
@@ -43,6 +44,4 @@ const Template: StoryFn<RenameWorkspaceModalProps> = (args) => {
   )
 }
 export const RenameWorkspace = Template.bind({})
-
-export const RenameWorkspaceMobile = Template.bind({})
-RenameWorkspaceMobile.parameters = getMobileViewParameters()
+RenameWorkspace.parameters = { argos: { modes: viewportModes('mobile') } }

@@ -1,5 +1,5 @@
 import { useControllableState } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { isWeekend } from 'date-fns'
 
 import { mockDateDecorator } from '~utils/storybook'
@@ -12,6 +12,8 @@ export default {
   decorators: [mockDateDecorator],
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     mockdate: new Date('2021-12-25T06:22:27.219Z'),
   },
 } as Meta<RangeCalendarProps>

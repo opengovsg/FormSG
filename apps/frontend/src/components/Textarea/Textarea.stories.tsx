@@ -4,7 +4,7 @@ import {
   FormErrorMessage,
   FormLabel,
 } from '@chakra-ui/form-control'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import Button from '../Button'
 
@@ -98,6 +98,7 @@ export const Playground: StoryFn = ({
     </form>
   )
 }
+Playground.tags = ['playground']
 Playground.args = {
   name: 'Test playground Textarea',
   label: 'Field label',

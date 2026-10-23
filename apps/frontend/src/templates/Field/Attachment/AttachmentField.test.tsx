@@ -1,5 +1,5 @@
 import { datadogLogs } from '@datadog/browser-logs'
-import { composeStories } from '@storybook/react'
+import { composeStories } from '@storybook/react-vite'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import imageCompression from 'browser-image-compression'

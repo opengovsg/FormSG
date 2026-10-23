@@ -1,6 +1,6 @@
 import { UseFormRegister } from 'react-hook-form'
 import { Modal, ModalContent } from '@chakra-ui/react'
-import { Meta, StoryObj } from '@storybook/react'
+import { Meta, StoryObj } from '@storybook/react-vite'
 
 import {
   SaveSecretKeyContent,
@@ -18,6 +18,9 @@ const meta: Meta<typeof SaveSecretKeyContent> = {
   ),
   parameters: {
     layout: 'centered',
+    // The modal renders in a portal, so there is nothing in the story root for
+    // fit-to-content to measure; capture the viewport.
+    argos: { fitToContent: false },
   },
 }
 

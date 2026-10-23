@@ -1,6 +1,6 @@
 import { Link, MemoryRouter, Route, Routes } from 'react-router-dom'
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
-import { composeStory } from '@storybook/react'
+import { composeStory } from '@storybook/react-vite'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 

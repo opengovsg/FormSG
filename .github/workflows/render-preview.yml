@@ -63,6 +63,40 @@ jobs:
         run: |
           gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "Render preview woken by a push and deploying: $URL"
 
+  # Blocking smoke check on the preview: waits for Render to finish deploying
+  # the head SHA (previews auto-deploy on push, so `up`/`wake` may be skipped),
+  # then runs the Datadog synthetics CI smoke suite against the preview URL.
+  smoke:
+    name: Synthetics smoke on preview
+    concurrency:
+      group: render-preview-smoke-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    needs: [up, wake]
+    if: >-
+      !cancelled() &&
+      needs.up.result != 'failure' &&
+      needs.wake.result != 'failure' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.state == 'open' &&
+      contains(github.event.pull_request.labels.*.name, 'render-preview') &&
+      (github.event.action == 'synchronize' ||
+       github.event.action == 'reopened' ||
+       github.event.label.name == 'render-preview')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - name: Wait for preview deploy of head SHA
+        id: await
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: .github/scripts/render-preview.sh await "formsg-pr-${{ github.event.pull_request.number }}" "$SHA"
+      - uses: ./.github/actions/synthetics-smoke
+        with:
+          url: ${{ steps.await.outputs.url }}
+          dd-api-key: ${{ secrets.DD_API_KEY }}
+          dd-app-key: ${{ secrets.DD_APP_KEY }}
+
   down:
     concurrency:
       group: render-preview-${{ github.event.pull_request.number }}

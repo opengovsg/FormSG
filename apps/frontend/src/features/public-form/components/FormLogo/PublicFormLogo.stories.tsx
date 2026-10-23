@@ -1,5 +1,5 @@
 import { MemoryRouter } from 'react-router-dom'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { FormLogoState } from 'formsg-shared/types/form/form_logo'
 
@@ -31,9 +31,9 @@ export default {
     ),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
 } as Meta
 

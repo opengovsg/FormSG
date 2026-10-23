@@ -1,5 +1,5 @@
-import { Meta, StoryFn } from '@storybook/react'
-import { expect, screen, userEvent, waitFor, within } from '@storybook/test'
+import { Meta, StoryFn } from '@storybook/react-vite'
+import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
 
 import { PaymentChannel, PaymentType, UserId } from 'formsg-shared/types'
 import {
@@ -25,11 +25,12 @@ import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 import {
   ADMIN_FORM_CREATE_PAGE_FORM_ID,
   AdminFormCreatePageDecorator,
-  getMobileViewParameters,
-  getTabletViewParameters,
+  getMobileViewGlobals,
+  getTabletViewGlobals,
   LoggedInDecorator,
   mockDateDecorator,
   ViewedFeatureTourDecorator,
+  viewportModes,
 } from '~utils/storybook'
 
 import { CreatePage } from '~features/admin-form/create/CreatePage'
@@ -74,11 +75,9 @@ export default {
     mockDateDecorator,
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    // Pass a very short delay to avoid bug where Chromatic takes a snapshot before
-    // the story has loaded
-    chromatic: { pauseAnimationAtEnd: true, delay: 200 },
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: { handlers: { default: buildMswRoutes() } },
     mockdate: new Date('2022-12-25T06:22:27.219Z'),
     userId: 'adminFormTestUserId',
@@ -87,6 +86,9 @@ export default {
 
 const Template: StoryFn = () => <CreatePage />
 export const DesktopEmpty = Template.bind({})
+DesktopEmpty.parameters = {
+  argos: { modes: viewportModes('tablet', 'mobile') },
+}
 export const DesktopAllFields = Template.bind({})
 DesktopAllFields.parameters = {
   msw: {
@@ -125,27 +127,24 @@ DesktopFieldsWithAcceptDeny.decorators = [
 
 export const DesktopLoading = Template.bind({})
 DesktopLoading.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: {
     handlers: {
       default: buildMswRoutes({}, 'infinite'),
     },
   },
 }
-
-export const TabletEmpty = Template.bind({})
-TabletEmpty.parameters = getTabletViewParameters()
 export const TabletAllFields = Template.bind({})
 TabletAllFields.parameters = {
-  ...getTabletViewParameters(),
   msw: {
     handlers: {
       default: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
     },
   },
 }
+TabletAllFields.globals = getTabletViewGlobals()
 export const TabletLoading = Template.bind({})
 TabletLoading.parameters = {
-  ...getTabletViewParameters(),
   mockdate: new Date('2024-09-11T13:00:00.000Z'),
   msw: {
     handlers: {
@@ -153,27 +152,16 @@ TabletLoading.parameters = {
     },
   },
 }
-
-export const MobileEmpty = Template.bind({})
-MobileEmpty.parameters = getMobileViewParameters()
+TabletLoading.globals = getTabletViewGlobals()
 export const MobileAllFields = Template.bind({})
 MobileAllFields.parameters = {
-  ...getMobileViewParameters(),
   msw: {
     handlers: {
       default: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
     },
   },
 }
-export const MobileLoading = Template.bind({})
-MobileLoading.parameters = {
-  ...getMobileViewParameters(),
-  msw: {
-    handlers: {
-      default: buildMswRoutes({}, 'infinite'),
-    },
-  },
-}
+MobileAllFields.globals = getMobileViewGlobals()
 
 export const AllFieldsFieldsHiddenByLogic = Template.bind({})
 AllFieldsFieldsHiddenByLogic.parameters = {
@@ -187,6 +175,7 @@ AllFieldsFieldsHiddenByLogic.parameters = {
 
 export const FormWithWebhook = Template.bind({})
 FormWithWebhook.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: {
     handlers: {
       default: [
@@ -204,14 +193,9 @@ FormWithWebhook.parameters = {
   },
 }
 
-export const FormWithWebhookMobile = Template.bind({})
-FormWithWebhookMobile.parameters = {
-  ...FormWithWebhook.parameters,
-  ...getMobileViewParameters(),
-}
-
 export const FormWithPayment = Template.bind({})
 FormWithPayment.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: {
     handlers: {
       default: buildMswRoutes({
@@ -231,12 +215,6 @@ FormWithPayment.parameters = {
       }),
     },
   },
-}
-
-export const FormWithPaymentMobile = Template.bind({})
-FormWithPaymentMobile.parameters = {
-  ...FormWithPayment.parameters,
-  ...getMobileViewParameters(),
 }
 
 export const AdminFormBuilderWithAdditionalRowsTableField = Template.bind({})

@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { BasicField } from 'formsg-shared/types/field'
 
@@ -13,7 +13,6 @@ export default {
   title: 'Templates/Field/SectionField',
   component: SectionFieldComponent,
   decorators: [],
-  parameters: {},
 } as Meta
 
 const baseSchema: SectionFieldSchema = {

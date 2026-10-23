@@ -2,6 +2,105 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.54.6](https://github.com/opengovsg/formsg/compare/v9.54.5...v9.54.6) (2026-10-23)
+
+
+### Bug Fixes
+
+* **payments:** honor global_min_amount_override on MRF submissions (#10378) ([#10378](https://github.com/opengovsg/formsg/commit/17ab7894cb47f14c580b31206af227b393c2e5ab))
+
+## [9.54.5](https://github.com/opengovsg/formsg/compare/v9.54.4...v9.54.5) (2026-10-22)
+
+
+### Bug Fixes
+
+* **docker:** pin virus scanner base image to node 22.23.4 (#10376) ([#10376](https://github.com/opengovsg/formsg/commit/cff7d39f315b88e97138d5b4fcb4d76bb300d464))
+
+## [9.54.4](https://github.com/opengovsg/formsg/compare/v9.54.3...v9.54.4) (2026-10-22)
+
+
+### Bug Fixes
+
+* **docker:** bump pnpm use-node-version pin to 22.23.4 (#10374) ([#10374](https://github.com/opengovsg/formsg/commit/12269386b29011fc5adcbafeffeb688ce6858ca6))
+
+## [9.54.3](https://github.com/opengovsg/formsg/compare/v9.54.2...v9.54.3) (2026-10-22)
+
+
+### Bug Fixes
+
+* **docker:** force cstdint include so canvas compiles under GCC 15 (#10372) ([#10372](https://github.com/opengovsg/formsg/commit/b754425077ce46e530e7cf4f7d70b3a2de230b7d))
+
+## [9.54.2](https://github.com/opengovsg/formsg/compare/v9.54.1...v9.54.2) (2026-10-22)
+
+
+### Bug Fixes
+
+* **security:** bump Node.js to 22.23.4 for Brotli decoder RCE (#10370) ([#10370](https://github.com/opengovsg/formsg/commit/6b4a0d2216d30f031d6e007aa401c7ff06d893d5))
+
+## [9.54.1](https://github.com/opengovsg/formsg/compare/v9.54.0...v9.54.1) (2026-10-22)
+
+
+### Bug Fixes
+
+* **children:** clear and lock sub-fields a MyInfo record leaves blank (#10357) ([#10357](https://github.com/opengovsg/formsg/commit/c3a1beae020ac9304eb8e10364183fa08b0e4cc7))
+* **drawer:** dim the drawer when a modal opens over it (#10355) ([#10355](https://github.com/opengovsg/formsg/commit/f39f3506eed0977f08b3ec7475c376e2a479c77d))
+* **workflow-actions:** send the completion email to reassigned people (#10359) ([#10359](https://github.com/opengovsg/formsg/commit/fb9928baec6d64f8e7fe956b40d09bdeb981d04d))
+* **workflow-actions:** show the Stop modal's recipient dropdowns above the modal (#10356) ([#10356](https://github.com/opengovsg/formsg/commit/16485dd8118469bcb7b75f54de16ab4345748629))
+
+
+### Dependencies
+
+* **deps:** bump follow-redirects override to ^1.16.1 (#10366) ([#10366](https://github.com/opengovsg/formsg/commit/e44b19cf3b061826fb4b08e491a4f6a450a1c11d))
+
+## [9.54.0](https://github.com/opengovsg/formsg/compare/v9.53.0...v9.54.0) (2026-10-21)
+
+
+### Features
+
+* **analytics:** record product analytics events for Metabase (#10341) ([#10341](https://github.com/opengovsg/formsg/commit/091d8a17cab697b3dcdd85f74196ad2f6dd993f1))
+
+
+### CI
+
+* **render:** use captcha test keys on PR previews (#10343) ([#10343](https://github.com/opengovsg/formsg/commit/6f62db79e16ffda6be016177b47cc4b5a1ff2e9d))
+* **storybook:** replace Chromatic with Argos (#10329) ([#10329](https://github.com/opengovsg/formsg/commit/1a773934ff21ed9b22cc4d24c7fdfb6ddb5c4878))
+
+## [9.53.0](https://github.com/opengovsg/formsg/compare/v9.52.4...v9.53.0) (2026-10-20)
+
+
+### Features
+
+* **ci:** Datadog synthetics smoke gate for previews, staging and production (#10278) ([#10278](https://github.com/opengovsg/formsg/commit/6641872f0ee5cf6c6c391a891ebc8d4bf08dab60))
+
+## [9.52.4](https://github.com/opengovsg/formsg/compare/v9.52.3...v9.52.4) (2026-10-20)
+
+
+### Dependencies
+
+* **deps:** remove verified unused dependency declarations (#10339) ([#10339](https://github.com/opengovsg/formsg/commit/394ba8717b4ff2088db1bc26dce184090ee5ab1d))
+
+## [9.52.3](https://github.com/opengovsg/formsg/compare/v9.52.2...v9.52.3) (2026-10-20)
+
+
+### Dependencies
+
+* **deps:** bump amannn/action-semantic-pull-request from 4.6.0 to 6.1.1 (#10251) ([#10251](https://github.com/opengovsg/formsg/commit/40975631d17776d54df9da72372da8d7ef685d1b))
+* **deps:** bump aws-actions/amazon-ecr-login from 2.1.2 to 2.1.7 (#10248) ([#10248](https://github.com/opengovsg/formsg/commit/0a85e14e67d99343c41cfd9d73b8f5f2dc67fa48))
+* **deps:** bump aws-actions/amazon-ecs-render-task-definition from c804dfbdd57f713b6c079302a4c01db7017a36fc to 8d79160660ad39c402a16e5fc7cd2a32e8f7d6b7 (#10247) ([#10247](https://github.com/opengovsg/formsg/commit/25c2228395a071adfe5dd06eb67fd84ee180ef08))
+* **deps:** bump pnpm/action-setup from 5.0.0 to 6.1.0 (#10250) ([#10250](https://github.com/opengovsg/formsg/commit/01a669ea920e8045af5ceedebaf880017cdb7e69))
+
+
+### Dev-Dependencies
+
+* **deps-dev:** bump @types/lodash from 4.17.24 to 4.17.26 in /packages/shared (#10253) ([#10253](https://github.com/opengovsg/formsg/commit/5a8bff183196d1d367f79931e8c21864dcbe36fc))
+* **deps-dev:** bump eslint-plugin-import from 2.29.1 to 2.32.0 in /packages/shared (#10257) ([#10257](https://github.com/opengovsg/formsg/commit/62e7ef354dcabdda7ca7b72fa638204a513dd05f))
+* **deps-dev:** bump eslint-plugin-prettier from 5.5.5 to 5.5.6 in /packages/shared (#10258) ([#10258](https://github.com/opengovsg/formsg/commit/7f961cce7454a837f91893dc3a0eda4be82ced49))
+
+
+### Chores
+
+* **storybook:** upgrade to Storybook 10 (#10323) ([#10323](https://github.com/opengovsg/formsg/commit/26c1e21c170e87219d93fed8d3e0eaebace290a0))
+
 ## [9.52.2](https://github.com/opengovsg/formsg/compare/v9.52.1...v9.52.2) (2026-10-20)
 
 

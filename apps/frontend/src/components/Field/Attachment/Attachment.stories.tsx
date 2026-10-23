@@ -1,6 +1,6 @@
 import { Controller, useForm } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -115,6 +115,7 @@ export const Playground: StoryFn<AttachmentProps> = ({
     </form>
   )
 }
+Playground.tags = ['playground']
 Playground.args = {
   name: 'Test-attachment',
   maxSize: 400000,

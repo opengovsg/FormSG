@@ -1,5 +1,5 @@
 import { MemoryRouter } from 'react-router-dom'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { DateString } from 'formsg-shared/types'
 import { FormColorTheme } from 'formsg-shared/types/form/form'
@@ -12,7 +12,7 @@ import {
   getPublicFormWithoutSectionsResponse,
 } from '~/mocks/msw/handlers/public-form'
 
-import { getMobileViewParameters } from '~utils/storybook'
+import { getMobileViewGlobals, viewportModes } from '~utils/storybook'
 
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
@@ -40,9 +40,9 @@ export default {
     ),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
 } as Meta
 
@@ -101,6 +101,7 @@ WithDeadlineNoEstimatedTime.parameters = {
 
 export const OverflowTitle = Template.bind({})
 OverflowTitle.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: [
     ...envHandlers,
     getCustomLogoResponse(),
@@ -120,12 +121,6 @@ OverflowTitle.parameters = {
       delay: 0,
     }),
   ],
-}
-
-export const OverflowTitleMobile = Template.bind({})
-OverflowTitleMobile.parameters = {
-  ...getMobileViewParameters(),
-  ...OverflowTitle.parameters,
 }
 
 export const ColorThemeBrown = Template.bind({})
@@ -244,8 +239,8 @@ MiniHeaderMobileWithSections.args = {
 }
 MiniHeaderMobileWithSections.parameters = {
   ...MiniHeader.parameters,
-  ...getMobileViewParameters(),
 }
+MiniHeaderMobileWithSections.globals = getMobileViewGlobals()
 
 export const MiniHeaderMobileWithoutSections = MiniHeaderTemplate.bind({})
 MiniHeaderMobileWithoutSections.args = {
@@ -263,5 +258,5 @@ MiniHeaderMobileWithoutSections.parameters = {
       delay: 0,
     }),
   ],
-  ...getMobileViewParameters(),
 }
+MiniHeaderMobileWithoutSections.globals = getMobileViewGlobals()

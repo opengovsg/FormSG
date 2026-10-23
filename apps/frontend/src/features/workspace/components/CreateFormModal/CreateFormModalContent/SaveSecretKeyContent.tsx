@@ -140,7 +140,7 @@ export const SaveSecretKeyContent = ({
                   bg="neutral.200"
                   color="secondary.500"
                   borderRadius="4px"
-                  data-chromatic="ignore" // secret key always changes in Chromatic so this should be ignored
+                  data-visual-test="transparent" // secret key always changes between snapshots so this should be ignored
                   data-dd-privacy="mask"
                 >
                   {secretKey}

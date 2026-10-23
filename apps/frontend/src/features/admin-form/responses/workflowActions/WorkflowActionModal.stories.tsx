@@ -1,7 +1,7 @@
 import { Box, FormControl } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { getMobileViewParameters } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 import { SingleSelect } from '~components/Dropdown'
 import FormLabel from '~components/FormControl/FormLabel'
 
@@ -22,7 +22,8 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    chromatic: { delay: 200 },
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
   args: {
     isOpen: true,
@@ -40,6 +41,7 @@ const Template: StoryFn<WorkflowActionModalProps> = (args) => (
 )
 
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const NoOneNotified = Template.bind({})
 NoOneNotified.args = { notifiedEmails: [] }
@@ -65,6 +67,3 @@ WithInputs.args = {
     </FormControl>
   ),
 }
-
-export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()

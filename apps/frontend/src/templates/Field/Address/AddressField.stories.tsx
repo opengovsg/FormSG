@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
-import { userEvent, within } from '@storybook/test'
+import { Meta, StoryFn } from '@storybook/react-vite'
+import { userEvent, within } from 'storybook/test'
 
 import { BasicField } from 'formsg-shared/types/field'
 

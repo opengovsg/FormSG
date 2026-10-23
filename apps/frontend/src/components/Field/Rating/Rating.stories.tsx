@@ -7,9 +7,7 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
-
-import { viewports } from '~/utils/storybook'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import Button from '~components/Button'
 
@@ -173,14 +171,11 @@ Mobile.args = {
   helperText: '1: Strongly agree, 10: Strongly disagree',
 }
 Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
   controls: {
     include: ['name', 'colorScheme', 'wrapComponentsPerRow', 'helperText'],
   },
-  chromatic: { viewports: [viewports.xs] },
 }
+Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const Tablet = ResponsiveGroup.bind({})
 Tablet.args = {
@@ -188,14 +183,11 @@ Tablet.args = {
   helperText: '1: Strongly agree, 10: Strongly disagree',
 }
 Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
   controls: {
     include: ['name', 'colorScheme', 'wrapComponentsPerRow', 'helperText'],
   },
-  chromatic: { viewports: [viewports.md] },
 }
+Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 export const Playground: StoryFn = ({
   name,
@@ -246,6 +238,7 @@ export const Playground: StoryFn = ({
     </form>
   )
 }
+Playground.tags = ['playground']
 Playground.args = {
   name: 'Test playground input',
   label: 'Rating field label',

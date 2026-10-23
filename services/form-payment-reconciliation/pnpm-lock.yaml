@@ -8,18 +8,11 @@ importers:
 
   .:
     dependencies:
-      '@aws-sdk/client-secrets-manager':
-        specifier: ^3.1091.0
-        version: 3.1091.0
       '@aws-sdk/client-ssm':
         specifier: ^3.1091.0
         version: 3.1091.0
 
 packages:
-
-  '@aws-sdk/client-secrets-manager@3.1091.0':
-    resolution: {integrity: sha512-VrJUAZAU6/pEUzy5bqXhBV2xqBcIp5an3rS7BYYaCZhLCAg1avI8EtxodQKhT6PNxBbfAmcoYHcb/JJ4Fn1ZCw==}
-    engines: {node: '>=20.0.0'}
 
   '@aws-sdk/client-ssm@3.1091.0':
     resolution: {integrity: sha512-aqDOBa+gA4nH77Gh18gHQzo7ZGEX5cY9y7YHTQ/rXukqC/+BJ2uIfjbQVbxKGhrfNYlLgdc/cDsvrYM/t83jaQ==}
@@ -116,17 +109,6 @@ packages:
     resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
 
 snapshots:
-
-  '@aws-sdk/client-secrets-manager@3.1091.0':
-    dependencies:
-      '@aws-sdk/core': 3.975.3
-      '@aws-sdk/credential-provider-node': 3.972.70
-      '@aws-sdk/types': 3.974.2
-      '@smithy/core': 3.29.6
-      '@smithy/fetch-http-handler': 5.6.8
-      '@smithy/node-http-handler': 4.9.8
-      '@smithy/types': 4.16.1
-      tslib: 2.6.2
 
   '@aws-sdk/client-ssm@3.1091.0':
     dependencies:

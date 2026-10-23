@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { Modal, ModalContent } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
-import { expect, screen, userEvent } from '@storybook/test'
+import { Meta, StoryFn } from '@storybook/react-vite'
+import { expect, screen, userEvent } from 'storybook/test'
 
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types/form/form'
@@ -23,7 +23,8 @@ export default {
   decorators: [fullScreenDecorator],
   parameters: {
     layout: 'fullscreen',
-    chromatic: { pauseAnimationAtEnd: true },
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
 } as Meta
 

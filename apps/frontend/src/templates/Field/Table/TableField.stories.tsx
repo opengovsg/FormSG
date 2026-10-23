@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { assign, merge, times } from 'lodash'
 
 import { BasicField } from 'formsg-shared/types/field'
 
-import { viewports } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 import Button from '~components/Button'
 
 import { TableFieldSchema } from '../types'
@@ -165,19 +165,9 @@ const Template: StoryFn<StoryTableFieldProps> = ({
 }
 
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('mobile') } }
 Default.args = {
   schema: baseSchema,
-}
-
-export const Mobile = Template.bind({})
-Mobile.args = {
-  schema: baseSchema,
-}
-Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
 }
 
 export const NoAddableRows = Template.bind({})

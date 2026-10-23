@@ -1,10 +1,10 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { merge } from 'lodash'
 import { delay as MswDelay, http, HttpResponse } from 'msw'
 
 import { BasicField } from 'formsg-shared/types/field'
 
-import { viewports } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { ImageFieldSchema } from '../types'
 
@@ -53,29 +53,9 @@ const Template: StoryFn<StoryImageFieldProps> = ({ defaultValue, ...args }) => {
 }
 
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 Default.args = {
   schema: baseSchema,
-}
-
-export const Mobile = Template.bind({})
-Mobile.args = {
-  schema: baseSchema,
-}
-Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
-}
-export const Tablet = Template.bind({})
-Tablet.args = {
-  schema: baseSchema,
-}
-Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
-  chromatic: { viewports: [viewports.md] },
 }
 
 export const Loading = Template.bind({})

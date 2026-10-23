@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { BasicField, TableFieldBase } from 'formsg-shared/types'
 
@@ -55,10 +55,7 @@ export default {
     }),
     EditFieldDrawerDecorator,
   ],
-  parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
-  },
+  parameters: {},
   args: {
     field: DEFAULT_TABLE_FIELD,
   },

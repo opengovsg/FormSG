@@ -1,0 +1,27 @@
+name: Synthetics smoke
+
+# Reusable wrapper around the synthetics-smoke composite action so release.yml
+# can run the suite as a gate job between the staging and production deploys.
+
+on:
+  workflow_call:
+    inputs:
+      url:
+        description: Base URL of the deployed environment to test
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Datadog synthetics smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: ./.github/actions/synthetics-smoke
+        with:
+          url: ${{ inputs.url }}
+          dd-api-key: ${{ secrets.DD_API_KEY }}
+          dd-app-key: ${{ secrets.DD_APP_KEY }}

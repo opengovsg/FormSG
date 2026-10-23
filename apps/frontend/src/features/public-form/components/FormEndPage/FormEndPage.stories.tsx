@@ -1,11 +1,11 @@
 import { MemoryRouter } from 'react-router-dom'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { FormColorTheme } from 'formsg-shared/types'
 
 import { getPublicFormResponse } from '~/mocks/msw/handlers/public-form'
 
-import { getMobileViewParameters } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
@@ -31,12 +31,15 @@ export default {
       default: 'light',
     },
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: [getPublicFormResponse()],
   },
 } as Meta<FormEndPageProps>
 
 const Template: StoryFn<FormEndPageProps> = (args) => <FormEndPage {...args} />
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('mobile') } }
 Default.args = {
   endPage: {
     buttonText: 'Continue',
@@ -88,9 +91,3 @@ FeedbackSubmitted.args = {
   ...Default.args,
   isFeedbackSectionHidden: true,
 }
-
-export const Mobile = Template.bind({})
-Mobile.args = {
-  ...Default.args,
-}
-Mobile.parameters = getMobileViewParameters()

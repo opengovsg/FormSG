@@ -1,6 +1,6 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { getMobileViewParameters, mockDateDecorator } from '~utils/storybook'
+import { mockDateDecorator, viewportModes } from '~utils/storybook'
 
 import { DatePicker, DatePickerProps } from './DatePicker'
 
@@ -15,6 +15,7 @@ export default {
 
 const Template: StoryFn<DatePickerProps> = (args) => <DatePicker {...args} />
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const DatePickerWithValue = Template.bind({})
 DatePickerWithValue.args = {
@@ -26,9 +27,6 @@ DatePickerDisallowManualInput.args = {
   allowManualInput: false,
   defaultValue: new Date('2021-09-13'),
 }
-
-export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
 
 export const Prefilled = Template.bind({})
 Prefilled.args = {

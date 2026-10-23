@@ -1,8 +1,8 @@
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
-import { Meta, StoryFn } from '@storybook/react'
-import { expect, userEvent, waitFor, within } from '@storybook/test'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import dedent from 'dedent'
 import { http, HttpResponse } from 'msw'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 
 import { featureFlags } from 'formsg-shared/constants'
 import { BasicField } from 'formsg-shared/types/field'
@@ -32,7 +32,7 @@ import {
 } from '~/mocks/msw/handlers/public-form'
 
 import { ADMINFORM_PREVIEW_ROUTE } from '~constants/routes'
-import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import PreviewFormPage from './PreviewFormPage'
 
@@ -72,15 +72,16 @@ export default {
     }),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: DEFAULT_MSW_HANDLERS,
   },
 } as Meta
 
 const Template: StoryFn = () => <PreviewFormPage />
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const WithShortInstructions = Template.bind({})
 WithShortInstructions.parameters = {
@@ -135,9 +136,6 @@ WithCaptcha.parameters = {
   ],
 }
 
-export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
-
 export const ColorThemeGreen = Template.bind({})
 ColorThemeGreen.parameters = {
   msw: generateMswHandlersForColorTheme(FormColorTheme.Green),
@@ -171,6 +169,7 @@ Loading.parameters = {
 export const SingpassUnauthorized = Template.bind({})
 SingpassUnauthorized.storyName = 'Singpass/Unauthorized'
 SingpassUnauthorized.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: [
     ...envHandlers,
     getPreviewFormResponse({
@@ -186,12 +185,6 @@ SingpassUnauthorized.parameters = {
       },
     }),
   ],
-}
-
-export const UnauthedMobile = Template.bind({})
-UnauthedMobile.parameters = {
-  ...SingpassUnauthorized.parameters,
-  ...getMobileViewParameters(),
 }
 
 export const SingpassAuthorized = Template.bind({})
@@ -347,13 +340,8 @@ WithPreventSubmissionLogic.play = async ({ canvasElement }) => {
 
 export const FormNotFound = Template.bind({})
 FormNotFound.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: [getPreviewFormErrorResponse()],
-}
-
-export const FormNotFoundMobile = Template.bind({})
-FormNotFoundMobile.parameters = {
-  ...FormNotFound.parameters,
-  ...getMobileViewParameters(),
 }
 
 export const WithPayment = Template.bind({})

@@ -1,6 +1,6 @@
 import 'inter-ui/inter.css'
 
-import { create } from '@storybook/theming'
+import { create } from 'storybook/theming'
 
 export const StorybookTheme = {
   docs: create({

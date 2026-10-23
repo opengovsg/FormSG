@@ -10,11 +10,14 @@ import { Box, FormControl, FormErrorMessage, Skeleton } from '@chakra-ui/react'
 import { get, isEmpty, noop } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
+import { BasicField } from 'formsg-shared/types'
+
 import { useOptionalAdminEmailValidationRules } from '~utils/formValidation'
 import { MultiSelect, SingleSelect } from '~components/Dropdown'
 import FormLabel from '~components/FormControl/FormLabel'
 import { TagInput } from '~components/TagInput'
 
+import { useAddFieldPicker } from '~features/admin-form/create/common/useAddFieldPicker'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { useAdminFormWorkflow } from '~features/admin-form/create/workflow/hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '~features/admin-form/create/workflow/hooks/useIsWorkflowBuilderRedesign'
@@ -125,6 +128,12 @@ const StepOneRecipientControl = ({
 }: MrfEmailRecipientControlProps): JSX.Element => {
   const { t } = useTranslation()
   const { isLoading, emailFormFields = [] } = useAdminFormWorkflow()
+  const isRedesign = useIsWorkflowBuilderRedesign()
+  const { withAddFieldItem, withAddFieldAction } = useAddFieldPicker({
+    label: t('features.adminForm.sidebar.workflow.addField.email'),
+    fieldType: BasicField.Email,
+    enabled: isRedesign,
+  })
 
   const emailFieldItems = emailFormFields.map(
     ({ _id, questionNumber, title, fieldType }) => ({
@@ -147,17 +156,18 @@ const StepOneRecipientControl = ({
           name={STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME}
           render={({
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            field: { value, onBlur, ...rest },
+            field: { value, onBlur, onChange, ...rest },
           }) => (
             <SingleSelect
               isDisabled={isLoading || isDisabled}
               placeholder={t(
                 'features.adminForm.settings.emailNotifications.section.mrf.respondents.step1.placeholder',
               )}
-              items={emailFieldItems}
+              items={withAddFieldItem(emailFieldItems)}
               onBlur={onSelectBlur}
               isClearable
               value={value}
+              onChange={withAddFieldAction(onChange)}
               {...rest}
             />
           )}

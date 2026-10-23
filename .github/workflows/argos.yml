@@ -1,0 +1,211 @@
+name: 'Argos'
+
+env:
+  NODE_VERSION: '22.23'
+  PNPM_VERSION: '10.30.3'
+  # One Argos project, one build per Storybook: ARGOS_BUILD_NAME keeps their
+  # screenshots and baselines apart.
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    # edited: only acts when the base changes, e.g. a stacked PR retargeted
+    # to develop after the PR below it merges.
+    types: [opened, reopened, synchronize, ready_for_review, edited]
+
+# Jobs run PR code (pnpm install, Storybook build), so the token is
+# read-only by default.
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    if: ${{ github.event_name != 'pull_request' || (github.event.pull_request.draft == false && (github.event.action != 'edited' || github.event.changes.base)) }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      emailpreview: ${{ steps.filter.outputs.emailpreview }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: filter
+        with:
+          # The lockfile is listed so dependency bumps run the visual tests.
+          filters: |
+            ci: &ci
+              - pnpm-lock.yaml
+              - .github/workflows/argos.yml
+            frontend:
+              - *ci
+              - packages/shared/**
+              - apps/frontend/**
+            emailpreview:
+              - *ci
+              - packages/react-email-preview/**
+
+  # The full story suite takes ~15 minutes on one runner, so it is sharded.
+  # Each shard builds Storybook on its own to pick the same affected stories;
+  # only shard 1 deploys it. Shards upload as one parallel Argos build, which
+  # argos-frontend-finalize closes.
+  argos-frontend:
+    name: argos-frontend (${{ matrix.shard }}/${{ strategy.job-total }})
+    needs: changes
+    if: ${{ needs.changes.outputs.frontend == 'true' && !startsWith(github.head_ref, 'dependabot/') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    # A newer push to the same PR cancels this run. develop builds never cancel.
+    concurrency:
+      group: argos-frontend-${{ matrix.shard }}-${{ github.event_name == 'push' && github.sha || github.head_ref || github.ref_name }}
+      cancel-in-progress: ${{ github.event_name != 'push' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/frontend
+    env:
+      STORYBOOK_DISABLE_TELEMETRY: '1'
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+          # Build the PR head, not GitHub's merge commit with develop, so the
+          # affected-story selection only sees the PR's own changes.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Install pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - name: Use Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - name: Install dependencies
+        working-directory: .
+        run: pnpm install
+      - name: Build SDK
+        working-directory: .
+        run: pnpm build:sdk
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      # The module graph (preview-stats.json) is what picks the affected stories.
+      # develop runs everything, so only shard 1 builds it there, to deploy.
+      - name: Build Storybook
+        if: ${{ github.event_name == 'pull_request' || matrix.shard == 1 }}
+        run: pnpm exec storybook build --stats-json
+      - name: Verify story selection
+        if: ${{ github.event_name == 'pull_request' && matrix.shard == 1 }}
+        run: node --test scripts/storybook-affected.check.mjs
+      - name: Select affected stories
+        id: scope
+        # PRs screenshot only the stories a change can reach. develop always runs
+        # everything so its baseline stays complete.
+        run: |
+          if [ "$EVENT" = pull_request ]; then
+            git fetch --no-tags origin "$BASE_REF"
+            node scripts/storybook-affected.mjs "origin/$BASE_REF" storybook-static/preview-stats.json
+          else
+            echo full=true >>"$GITHUB_OUTPUT"
+          fi
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+      - name: Test Storybook
+        run: |
+          rm -rf screenshots
+          if [ "$FULL" = true ]; then
+            pnpm test-storybook --shard "$SHARD/4"
+          elif [ -n "$STORIES" ]; then
+            # shellcheck disable=SC2086
+            pnpm test-storybook --shard "$SHARD/4" $STORIES
+          fi
+        env:
+          FULL: ${{ steps.scope.outputs.full }}
+          STORIES: ${{ steps.scope.outputs.stories }}
+          SHARD: ${{ matrix.shard }}
+      - name: Upload screenshots to Argos
+        run: |
+          if find screenshots -type f -name '*.png' -print -quit 2>/dev/null | grep -q .; then
+            pnpm exec argos upload ./screenshots --parallel --parallel-total -1 --parallel-index "$SHARD" --parallel-nonce "$ARGOS_NONCE"
+          elif [ "$FULL" = true ]; then
+            echo "::error::A shard of the full Storybook suite produced no screenshots"
+            exit 1
+          fi
+          # -1 total: shards with no affected stories upload nothing, so the
+          # build is closed by finalize rather than by a shard count.
+        env:
+          ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
+          ARGOS_BUILD_NAME: frontend
+          ARGOS_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}
+          SHARD: ${{ matrix.shard }}
+          # Subset builds ignore missing screenshots and never become baselines.
+          ARGOS_SUBSET: ${{ steps.scope.outputs.full != 'true' }}
+          FULL: ${{ steps.scope.outputs.full }}
+      - name: Deploy Storybook to Argos
+        if: ${{ matrix.shard == 1 && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        run: pnpm exec argos deploy ./storybook-static
+        env:
+          ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
+
+  argos-frontend-finalize:
+    needs: argos-frontend
+    if: ${{ !cancelled() && needs.argos-frontend.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      # Version matches the lockfile; no checkout or install needed.
+      - name: Finalize the Argos build
+        run: npx --yes @argos-ci/cli@6.9.6 finalize --parallel-nonce "$ARGOS_NONCE" --skip-if-empty
+        env:
+          ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
+          ARGOS_BUILD_NAME: frontend
+          ARGOS_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}
+
+  argos-emailpreview:
+    needs: changes
+    if: ${{ needs.changes.outputs.emailpreview == 'true' && !startsWith(github.head_ref, 'dependabot/') }}
+    concurrency:
+      group: argos-emailpreview-${{ github.event_name == 'push' && github.sha || github.head_ref || github.ref_name }}
+      cancel-in-progress: ${{ github.event_name != 'push' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/react-email-preview
+    env:
+      STORYBOOK_DISABLE_TELEMETRY: '1'
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Install pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - name: Use Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - name: Install dependencies
+        working-directory: .
+        run: pnpm install
+      - name: Build SDK
+        working-directory: .
+        run: pnpm build:sdk
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      # Three small stories: always run them all, no affected-story selection.
+      - name: Test Storybook
+        run: |
+          rm -rf screenshots
+          pnpm test-storybook
+      - name: Upload screenshots to Argos
+        run: pnpm exec argos upload ./screenshots
+        env:
+          ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
+          ARGOS_BUILD_NAME: email-preview

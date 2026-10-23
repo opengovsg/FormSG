@@ -1,7 +1,11 @@
-import { action } from '@storybook/addon-actions'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
+import { action } from 'storybook/actions'
 
-import { fullScreenDecorator, getMobileViewParameters } from '~utils/storybook'
+import {
+  fullScreenDecorator,
+  getMobileViewGlobals,
+  viewportModes,
+} from '~utils/storybook'
 
 import {
   PublicFormContext,
@@ -16,6 +20,8 @@ export default {
   decorators: [fullScreenDecorator],
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
 } as Meta
 
@@ -99,6 +105,7 @@ const Template: StoryFn = (args) => {
 }
 
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('mobile') } }
 Default.args = {
   isPreview: false,
   isSaveDraftEnabled: false,
@@ -140,20 +147,8 @@ WithSubmissionDataNoFloatingToolbar.args = {
   },
 }
 
-// Mobile variants
-export const MobileDefault = Template.bind({})
-MobileDefault.parameters = {
-  ...getMobileViewParameters(),
-}
-MobileDefault.args = {
-  isPreview: false,
-  isSaveDraftEnabled: false,
-}
-
 export const MobileWithSaveDraft = Template.bind({})
-MobileWithSaveDraft.parameters = {
-  ...getMobileViewParameters(),
-}
+MobileWithSaveDraft.globals = getMobileViewGlobals()
 MobileWithSaveDraft.args = {
   isPreview: false,
   isSaveDraftEnabled: true,
@@ -161,9 +156,7 @@ MobileWithSaveDraft.args = {
 }
 
 export const MobilePreviewMode = Template.bind({})
-MobilePreviewMode.parameters = {
-  ...getMobileViewParameters(),
-}
+MobilePreviewMode.globals = getMobileViewGlobals()
 MobilePreviewMode.args = {
   isPreview: true,
   isSaveDraftEnabled: true,

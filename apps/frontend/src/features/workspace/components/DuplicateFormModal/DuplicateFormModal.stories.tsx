@@ -1,7 +1,7 @@
 import { MemoryRouter } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { http, HttpResponse } from 'msw'
 
 import { featureFlags } from 'formsg-shared/constants'
@@ -38,7 +38,8 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    chromatic: { pauseAnimationAtEnd: true },
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: baseMsw,
   },
 } as Meta

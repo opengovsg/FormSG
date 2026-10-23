@@ -1,9 +1,9 @@
 import { Box } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { BasicField } from 'formsg-shared/types/field'
 
-import { viewports } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { ParagraphFieldSchema } from '../types'
 
@@ -15,7 +15,7 @@ import {
 export default {
   title: 'Templates/Field/ParagraphField',
   component: ParagraphFieldComponent,
-  // Prevents chromatic from cutting the story off due to <li/> margins.
+  // Prevents the snapshot from cutting the story off due to <li/> margins.
   decorators: [(storyFn) => <Box>{storyFn()}</Box>],
 } as Meta
 
@@ -40,17 +40,7 @@ const Template: StoryFn<StoryParagraphFieldProps> = (args) => (
 )
 
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('mobile') } }
 Default.args = {
   schema: baseSchema,
-}
-
-export const Mobile = Template.bind({})
-Mobile.args = {
-  schema: baseSchema,
-}
-Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
 }

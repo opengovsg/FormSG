@@ -45,8 +45,8 @@ export const StatusTrackerLink = ({
         <Stack direction="row" align="center">
           <InputGroup>
             <Input
-              // The link will always change in Chromatic so this should be ignored.
-              data-chromatic="ignore"
+              // The link will always change between snapshots so this should be ignored.
+              data-visual-test="transparent"
               isReadOnly
               value={statusTrackerLink}
               hasInputRightElement={Boolean(formId)}

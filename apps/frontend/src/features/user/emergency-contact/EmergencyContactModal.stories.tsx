@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import ReactDOM from 'react-dom'
 import { useDisclosure } from '@chakra-ui/hooks'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { omit } from 'lodash'
 
 import {
@@ -15,7 +15,7 @@ import {
 import {
   fullScreenDecorator,
   LoggedInDecorator,
-  viewports,
+  viewportModes,
 } from '~utils/storybook'
 
 import { EmergencyContactModal } from './EmergencyContactModal'
@@ -26,8 +26,9 @@ export default {
   decorators: [fullScreenDecorator, LoggedInDecorator],
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     // Prevent flaky tests due to modal animating in.
-    chromatic: { pauseAnimationAtEnd: true },
     msw: userHandlers({ delay: 0 }),
   },
 } as Meta
@@ -57,6 +58,7 @@ const Template: StoryFn = () => {
   )
 }
 export const WithContact = Template.bind({})
+WithContact.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const NoContact = Template.bind({})
 NoContact.parameters = {
@@ -70,12 +72,4 @@ NoContact.parameters = {
 export const Loading = Template.bind({})
 Loading.parameters = {
   msw: userHandlers({ delay: 'infinite' }),
-}
-
-export const Mobile = Template.bind({})
-Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
 }

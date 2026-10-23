@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2021",
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ES2021"
-    ],
+    "lib": ["DOM", "DOM.Iterable", "ES2021"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -22,52 +18,34 @@
     "downlevelIteration": true,
     "baseUrl": ".",
     "paths": {
-      "~assets/*": [
-        "./src/assets/*"
+      "@storybook/react-vite": [
+        "./node_modules/@storybook/react-vite/dist/index.d.ts"
       ],
-      "~contexts/*": [
-        "./src/contexts/*"
+      "@storybook/addon-links": [
+        "./node_modules/@storybook/addon-links/dist/index.d.ts"
       ],
-      "~constants/*": [
-        "./src/constants/*"
+      "@storybook/addon-themes": [
+        "./node_modules/@storybook/addon-themes/dist/index.d.ts"
       ],
-      "~components/*": [
-        "./src/components/*"
-      ],
-      "~templates/*": [
-        "./src/templates/*"
-      ],
-      "~features/*": [
-        "./src/features/*"
-      ],
-      "~hooks/*": [
-        "./src/hooks/*"
-      ],
-      "~utils/*": [
-        "./src/utils/*"
-      ],
-      "~pages/*": [
-        "./src/pages/*"
-      ],
-      "~services/*": [
-        "./src/services/*"
-      ],
-      "~theme/*": [
-        "./src/theme/*"
-      ],
-      "~typings/*": [
-        "./src/typings/*"
-      ],
-      "~/*": [
-        "./src/*"
-      ]
+      "@storybook/react": ["./node_modules/@storybook/react/dist/index.d.ts"],
+      "storybook/internal/*": ["./node_modules/storybook/dist/*/index.d.ts"],
+      "storybook/*": ["./node_modules/storybook/dist/*/index.d.ts"],
+      "~assets/*": ["./src/assets/*"],
+      "~contexts/*": ["./src/contexts/*"],
+      "~constants/*": ["./src/constants/*"],
+      "~components/*": ["./src/components/*"],
+      "~templates/*": ["./src/templates/*"],
+      "~features/*": ["./src/features/*"],
+      "~hooks/*": ["./src/hooks/*"],
+      "~utils/*": ["./src/utils/*"],
+      "~pages/*": ["./src/pages/*"],
+      "~services/*": ["./src/services/*"],
+      "~theme/*": ["./src/theme/*"],
+      "~typings/*": ["./src/typings/*"],
+      "~/*": ["./src/*"]
     }
   },
-  "include": [
-    "src/**/*",
-    ".storybook/**/*",
-    "./vitest-setup.ts"
-  ],
+  "include": ["src/**/*", ".storybook/**/*", "./vitest-setup.ts"],
   "references": [
     {
       "path": "./tsconfig.node.json"

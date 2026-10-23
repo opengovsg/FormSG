@@ -1,6 +1,6 @@
 import { MemoryRouter, Route } from 'react-router'
 import { Routes } from 'react-router-dom'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
   FormAuthType,
@@ -19,7 +19,7 @@ import { getUser } from '~/mocks/msw/handlers/user'
 
 import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
 import formsgSdk from '~utils/formSdk'
-import { viewports } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
 import { SettingsPage } from './settings/SettingsPage'
@@ -50,9 +50,9 @@ export default {
     },
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: {
       handlers: {
         default: [
@@ -70,6 +70,7 @@ export default {
 
 const Template: StoryFn = () => <SettingsPage />
 export const Desktop = Template.bind({})
+Desktop.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 
 export const PreventActivation = Template.bind({})
 PreventActivation.parameters = {
@@ -91,22 +92,6 @@ PreventActivation.parameters = {
       ],
     },
   },
-}
-
-export const Tablet = Template.bind({})
-Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
-  chromatic: { viewports: [viewports.md] },
-}
-
-export const Mobile = Template.bind({})
-Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
 }
 
 const storageModeKeypair = formsgSdk.crypto.generate()

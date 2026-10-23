@@ -11,17 +11,15 @@ import {
   ModalOverlay,
   ModalProps,
 } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { getMobileViewParameters } from '~/utils/storybook'
+import { getMobileViewGlobals } from '~/utils/storybook'
 
 import Button from '~components/Button'
 
 export default {
   title: 'Components/Modal',
-  // Required for Chromatic to know the dimensions of the snapshot to take,
-  // since the modal is rendered in a portal and Chromatic only detects the
-  // bounding box of the button that opens the modal.
+  // Gives the story real dimensions, since the modal is rendered in a portal.
   decorators: [
     (storyFn) => (
       <Box w="100vw" h="100vh">
@@ -31,8 +29,9 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     // Prevent flaky tests due to modal animating in.
-    chromatic: { delay: 200 },
   },
 } as Meta
 
@@ -93,4 +92,4 @@ Mobile.args = {
   size: 'mobile',
   bodyContent: generateLorem(5),
 }
-Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()

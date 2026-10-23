@@ -1,5 +1,5 @@
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { featureFlags } from 'formsg-shared/constants'
 import { DateString } from 'formsg-shared/types'
@@ -10,7 +10,7 @@ import {
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 
-import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { SettingsGeneralPage } from './SettingsGeneralPage'
 
@@ -41,8 +41,6 @@ export default {
     ),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
     msw: {
       handlers: {
         default: buildMswRoutes({
@@ -61,6 +59,7 @@ export const NoScheduledClosure = Template.bind({})
 /** Expiry toggle on, showing the date picker pre-filled with a close date. */
 export const WithScheduledClosure = Template.bind({})
 WithScheduledClosure.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: {
     handlers: {
       default: buildMswRoutes({
@@ -92,10 +91,4 @@ WithResponseLimitAndScheduledClosure.parameters = {
 export const Loading = Template.bind({})
 Loading.parameters = {
   msw: { handlers: { default: buildMswRoutes({ delay: 'infinite' }) } },
-}
-
-export const Mobile = Template.bind({})
-Mobile.parameters = {
-  ...WithScheduledClosure.parameters,
-  ...getMobileViewParameters(),
 }

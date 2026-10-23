@@ -1,7 +1,7 @@
 import { ReactNode, useLayoutEffect, useState } from 'react'
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
-import { StoryFn } from '@storybook/react'
-import { expect, userEvent, waitFor, within } from '@storybook/test'
+import { StoryFn } from '@storybook/react-vite'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 
 import { featureFlags } from 'formsg-shared/constants'
 import {

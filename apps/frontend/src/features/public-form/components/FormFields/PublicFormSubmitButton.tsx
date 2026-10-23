@@ -48,7 +48,7 @@ const PublicFormSaveDraftButton = (props: ButtonProps) => {
     <Tooltip
       placement="top"
       isDisabled={!tooltipLabel}
-      label={<Text data-chromatic="ignore">{tooltipLabel}</Text>}
+      label={<Text data-visual-test="transparent">{tooltipLabel}</Text>}
     >
       <Button
         variant="outline"

@@ -79,4 +79,10 @@ coverage/
 
 # Scratch files (usually used for AI state/context handoff)
 # =======
-.scratch 
+.scratch
+
+# Storybook builds
+storybook-static
+
+# Argos screenshots from the Storybook Vitest project
+screenshots

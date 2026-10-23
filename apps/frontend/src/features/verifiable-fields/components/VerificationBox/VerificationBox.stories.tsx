@@ -1,12 +1,12 @@
 import { MemoryRouter } from 'react-router-dom'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { BasicField } from 'formsg-shared/types/field'
 import { FormColorTheme } from 'formsg-shared/types/form/form'
 
 import { getPublicFormResponse } from '~/mocks/msw/handlers/public-form'
 
-import { viewports } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
@@ -15,6 +15,7 @@ import { VerificationBox, VerificationBoxProps } from './VerificationBox'
 export default {
   title: 'Features/VerifiableField/VerificationBox',
   component: VerificationBox,
+
   decorators: [
     (storyFn) => (
       <MemoryRouter initialEntries={['/12345']}>
@@ -27,15 +28,21 @@ export default {
       </MemoryRouter>
     ),
   ],
+
   args: {
     handleResendOtp: () => Promise.resolve(console.log('resending otp')),
     handleVfnSuccess: () => Promise.resolve(console.log('vfn success')),
     handleVerifyOtp: () => Promise.resolve('some-mock-signature'),
   },
+
   parameters: {
     msw: [getPublicFormResponse()],
+  },
+
+  globals: {
     viewport: {
-      defaultViewport: 'desktop1',
+      value: 'desktop1',
+      isRotated: false,
     },
   },
 } as Meta<VerificationBoxProps>
@@ -44,19 +51,9 @@ const Template: StoryFn<VerificationBoxProps> = (args) => (
   <VerificationBox {...args} />
 )
 export const MobileVerificationBox = Template.bind({})
+MobileVerificationBox.parameters = { argos: { modes: viewportModes('mobile') } }
 MobileVerificationBox.args = {
   fieldType: BasicField.Mobile,
-}
-
-export const MobileVerificationBoxMobile = Template.bind({})
-MobileVerificationBoxMobile.args = {
-  fieldType: BasicField.Mobile,
-}
-MobileVerificationBoxMobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
 }
 
 export const MobileVerificationBoxOrangeThemeMobile = Template.bind({})
@@ -64,9 +61,6 @@ MobileVerificationBoxOrangeThemeMobile.args = {
   fieldType: BasicField.Mobile,
 }
 MobileVerificationBoxOrangeThemeMobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
   msw: [
     getPublicFormResponse({
       overrides: {
@@ -79,8 +73,12 @@ MobileVerificationBoxOrangeThemeMobile.parameters = {
     }),
   ],
 }
+MobileVerificationBoxOrangeThemeMobile.globals = {
+  viewport: { value: 'mobile1', isRotated: false },
+}
 
 export const EmailVerificationBox = Template.bind({})
+EmailVerificationBox.parameters = { argos: { modes: viewportModes('mobile') } }
 EmailVerificationBox.args = {
   fieldType: BasicField.Email,
 }
@@ -101,15 +99,4 @@ EmailVerificationBoxGreenTheme.parameters = {
       },
     }),
   ],
-}
-
-export const EmailVerificationBoxMobile = Template.bind({})
-EmailVerificationBoxMobile.args = {
-  fieldType: BasicField.Email,
-}
-EmailVerificationBoxMobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
 }

@@ -12,12 +12,29 @@ import { Modal } from './Modal'
 
 const $bg = cssVar('drawer-bg')
 
+const nestedModalOverlay = '.chakra-portal > .chakra-modal__overlay'
+
 const baseStyleOverlay: SystemStyleFunction = (props) => {
-  return Modal.baseStyle(props).overlay ?? {}
+  const overlay = Modal.baseStyle(props).overlay ?? {}
+  return {
+    ...overlay,
+    [`& ~ ${nestedModalOverlay}`]: { bg: 'transparent' },
+  }
 }
 
 const baseStyleDialog = defineStyle({
   [$bg.variable]: 'white',
+  _after: {
+    content: '""',
+    position: 'absolute',
+    inset: 0,
+    bg: 'transparent',
+    pointerEvents: 'none',
+    transition: 'background-color 0.15s',
+  },
+  [`.chakra-portal:has(> ${nestedModalOverlay}) &::after`]: {
+    bg: 'rgba(0, 0, 0, 0.65)',
+  },
 })
 
 const baseStyleHeader: SystemStyleObject = {

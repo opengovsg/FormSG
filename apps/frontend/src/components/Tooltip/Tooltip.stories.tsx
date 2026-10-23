@@ -1,9 +1,9 @@
 import { Box, Icon, Placement, TooltipProps, VStack } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { BxsHelpCircle } from '~/assets/icons/BxsHelpCircle'
 
-import { viewports } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { Tooltip } from './Tooltip'
 
@@ -58,6 +58,7 @@ const Template: StoryFn<TooltipProps> = (args) => {
   )
 }
 export const TooltipOnHover = Template.bind({})
+TooltipOnHover.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const OpenTooltip = Template.bind({})
 OpenTooltip.args = {
@@ -85,12 +86,4 @@ const MobileTemplate: StoryFn<TooltipProps> = (args) => {
       ]}
     />
   )
-}
-
-export const Mobile = MobileTemplate.bind({})
-Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
 }

@@ -1,5 +1,5 @@
 import { Box } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
   BasicField,
@@ -22,7 +22,7 @@ import {
   MOCK_FORM_FIELDS,
 } from '~/mocks/msw/handlers/admin-form'
 
-import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
+import { getMobileViewGlobals, StoryRouter } from '~utils/storybook'
 
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
@@ -40,8 +40,6 @@ export default {
     }),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true, delay: 200 },
     msw: createFormBuilderMocks({ form_fields: MOCK_FORM_FIELDS }, 0),
   },
 } as Meta
@@ -93,7 +91,7 @@ PreventSubmission.args = {
 
 export const Mobile = Template.bind({})
 Mobile.args = AllLogicConditions.args
-Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 
 // Helper functions to generate conditions
 function generateAllLogicConditions(): FormCondition[] {

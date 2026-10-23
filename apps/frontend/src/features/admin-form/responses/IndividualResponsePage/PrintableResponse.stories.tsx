@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { BasicField } from 'formsg-shared/types/field'
 
@@ -11,7 +11,8 @@ export default {
   component: PrintableResponse,
   parameters: {
     layout: 'fullscreen',
-    chromatic: { pauseAnimationAtEnd: true },
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
 } as Meta
 

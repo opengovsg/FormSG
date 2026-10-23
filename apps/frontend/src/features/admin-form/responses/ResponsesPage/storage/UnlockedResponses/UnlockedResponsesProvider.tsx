@@ -8,6 +8,7 @@ import {
 } from 'react'
 
 import {
+  AnalyticsEventType,
   DateString,
   FormSavedView,
   SavedViewColumnFilter,
@@ -22,6 +23,7 @@ import {
   useDecryptedResponsesBySubmissionId,
   useFormResponses,
 } from '~features/admin-form/responses/queries'
+import { logAnalyticsEvent } from '~features/analytics/AnalyticsEventService'
 
 import { TABLE_ROW_RENDER_CHUNK } from '../../../constants'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
@@ -366,6 +368,12 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     (viewId: string) => {
       setSelectedViewId(viewId)
       const view = savedViews.find(({ _id }) => _id === viewId)
+      if (view) {
+        logAnalyticsEvent(form?._id, {
+          type: AnalyticsEventType.ResultsSavedViewApplied,
+          content: { savedViewId: view._id },
+        })
+      }
       const next = view ? fromSavedView(view, columnOptions) : EMPTY_VIEW_STATE
       setDateRange(next.dateRange)
       setColumnFilters(next.columnFilters)
@@ -373,7 +381,7 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
       setSortColumnId(next.sortColumnId)
       setSortDirection(next.sortDirection)
     },
-    [columnOptions, savedViews, setDateRange],
+    [columnOptions, form?._id, savedViews, setDateRange],
   )
 
   return {
