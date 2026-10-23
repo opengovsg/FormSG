@@ -37,6 +37,7 @@ export const featureFlags = {
   mrfPayments: 'mrf-payments' as const,
   workflowDeletion: 'workflow-deletion' as const,
   workflowActions: 'workflow-actions' as const,
+  workflowActionsSendBack: 'workflow-actions-send-back' as const,
   scheduledFormClosure: 'scheduled-form-closure' as const,
   mrfChildren: 'mrf-children' as const,
   isNricFieldEnabled: 'is-nric-field-enabled' as const,

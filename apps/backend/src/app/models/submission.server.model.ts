@@ -882,6 +882,43 @@ const workflowEventSchema = new Schema(
       type: Date,
       required: true,
     },
+    fromStepNumber: {
+      type: Number,
+      min: 1,
+    },
+    remarks: {
+      type: String,
+    },
+    undoneSteps: {
+      type: [
+        {
+          _id: false,
+          stepNumber: { type: Number, min: 1, required: true },
+          submittedAt: { type: String, required: true },
+          isApproval: { type: Boolean, required: true },
+          status: {
+            type: String,
+            enum: [WorkflowStatus.APPROVED, WorkflowStatus.REJECTED],
+          },
+          nextStepRecipientEmails: { type: [String], default: undefined },
+        },
+      ],
+      default: undefined,
+    },
+    previousContent: {
+      type: new Schema(
+        {
+          encryptedContent: { type: String, required: true },
+          encryptedSubmissionSecretKey: { type: String, required: true },
+          submissionPublicKey: { type: String, required: true },
+          verifiedContent: { type: String },
+          attachmentMetadata: { type: Map, of: String },
+          version: { type: Number, required: true },
+        },
+        { _id: false },
+      ),
+      default: undefined,
+    },
   },
   { _id: false },
 )

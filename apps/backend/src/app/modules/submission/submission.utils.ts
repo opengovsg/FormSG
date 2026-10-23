@@ -148,6 +148,7 @@ import {
   MrfReminderInvalidWorkflowStepError,
   MrfReminderLimitReachedError,
   MrfReminderRecipientEmailsEmptyError,
+  MrfSendBackInvalidStepError,
   MrfWorkflowActionsUnavailableError,
   MrfWorkflowNotPendingError,
   MrfWorkflowOverflowError,
@@ -482,6 +483,7 @@ const errorMapper: MapRouteError = (
         errorMessageKey: submissionErrorKey('mrf.workflowStopped'),
       }
     case MrfAssigneeAlreadyAssignedError:
+    case MrfSendBackInvalidStepError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
