@@ -18,9 +18,8 @@ vi.mock('../../mutations', () => ({
   }),
 }))
 vi.mock('./ConversionPreview', () => ({
-  ConversionPreview: ({ stepNumber }: { stepNumber: number }) => (
-    <button>Preview {stepNumber}</button>
-  ),
+  ConversionFieldPreview: () => <button>Preview 0</button>,
+  ConversionResponseChanges: () => <button>Preview 1</button>,
 }))
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),

@@ -14,7 +14,6 @@ import {
 } from '@chakra-ui/react'
 
 import { FormAuthType } from 'formsg-shared/types/form'
-import { getLoginIdentityAttrsForAuthType } from 'formsg-shared/utils/login-identity'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button, { NextAndBackButtonGroup } from '~components/Button'
@@ -23,7 +22,10 @@ import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicat
 
 import { useMutateFormSettings } from '../../mutations'
 
-import { ConversionPreview } from './ConversionPreview'
+import {
+  ConversionFieldPreview,
+  ConversionResponseChanges,
+} from './ConversionPreview'
 
 interface Props {
   authType: FormAuthType
@@ -63,8 +65,7 @@ export const SubmitterIdConversionModal = ({
   const handleClose = () => {
     if (!isSaving) onClose()
   }
-  const [useCompactViewport] = useMediaQuery('(max-height: 640px)')
-  const attrs = getLoginIdentityAttrsForAuthType(authType)
+  const [isCompactViewport] = useMediaQuery('(max-height: 640px)')
   const login = authType === FormAuthType.CP ? 'corppass' : 'singpass'
   const backButtonLabel = tCommon(
     stepNumber === 0 ? 'features.common.cancel' : 'features.common.back',
@@ -104,12 +105,10 @@ export const SubmitterIdConversionModal = ({
         h={{ base: '100dvh', md: 'auto' }}
         maxH={{
           base: '100dvh',
-          md: useCompactViewport
-            ? 'calc(100dvh - 2rem)'
-            : 'calc(100dvh - 8rem)',
+          md: isCompactViewport ? 'calc(100dvh - 2rem)' : 'calc(100dvh - 8rem)',
         }}
         maxW={{ base: '100vw', md: '42.5rem' }}
-        my={{ base: 0, md: useCompactViewport ? '1rem' : '4rem' }}
+        my={{ base: 0, md: isCompactViewport ? '1rem' : '4rem' }}
         borderRadius={{ base: 0, md: '4px' }}
       >
         <ModalCloseButton
@@ -168,11 +167,14 @@ export const SubmitterIdConversionModal = ({
                     : `${login}.outputTitle`,
                 )}
               </Text>
-              <ConversionPreview
-                stepNumber={panelStep}
-                attrs={attrs}
-                nextQuestionNumber={nextQuestionNumber}
-              />
+              {panelStep === 0 ? (
+                <ConversionFieldPreview
+                  authType={authType}
+                  nextQuestionNumber={nextQuestionNumber}
+                />
+              ) : (
+                <ConversionResponseChanges />
+              )}
             </Box>
           ))}
         </ModalBody>
