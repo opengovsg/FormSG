@@ -1,9 +1,4 @@
-import {
-  DateString,
-  WorkflowEventDto,
-  WorkflowEventType,
-  WorkflowStatus,
-} from 'formsg-shared/types'
+import { WorkflowStatus } from 'formsg-shared/types'
 
 import {
   getStepRecipients,
@@ -25,16 +20,15 @@ const history = {
   ],
 }
 
-const addedEvent = (
-  stepNumber: number,
-  emails: string[],
-): WorkflowEventDto => ({
-  type: WorkflowEventType.AssigneesAdded,
-  actorEmail: 'admin@agency.gov.sg',
-  stepNumber,
-  emails,
-  created: '2026-10-08T00:00:00.000Z' as DateString,
-})
+const reassignedHistory = {
+  ...history,
+  submittedSteps: [
+    {
+      ...history.submittedSteps[0],
+      nextStepRecipientEmails: ['lead@agency.gov.sg', 'Added@agency.gov.sg'],
+    },
+  ],
+}
 
 const base = {
   history,
@@ -56,11 +50,7 @@ describe('getStepRecipients', () => {
   it('adds people added to the step through Reassign', () => {
     expect(
       getStepRecipients({
-        submittedSteps: history.submittedSteps,
-        events: [
-          addedEvent(2, ['Added@agency.gov.sg']),
-          addedEvent(3, ['later@agency.gov.sg']),
-        ],
+        submittedSteps: reassignedHistory.submittedSteps,
         stepNumber: 2,
       }),
     ).toEqual(['lead@agency.gov.sg', 'added@agency.gov.sg'])
@@ -91,7 +81,7 @@ describe('getStopNotifiedEmails', () => {
     expect(
       getStopNotifiedEmails({
         ...base,
-        events: [addedEvent(2, ['added@agency.gov.sg'])],
+        history: reassignedHistory,
         stepIdsToNotify: ['step-2'],
       }),
     ).toEqual(['lead@agency.gov.sg', 'added@agency.gov.sg'])

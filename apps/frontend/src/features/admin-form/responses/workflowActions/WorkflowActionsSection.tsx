@@ -50,7 +50,6 @@ export const WorkflowActionsSection = ({
   const addAssigneeModal = useDisclosure()
   const stopMutation = useStopWorkflowMutation(formId)
   const addAssigneesMutation = useAddAssigneesMutation(formId)
-  const events = history.workflowEvents
   const pendingStepNumber = history.submittedSteps.length + 1
 
   if (mrf?.stoppedAt || mrf?.workflowStatus !== WorkflowStatus.PENDING) {
@@ -59,7 +58,6 @@ export const WorkflowActionsSection = ({
 
   const pendingStepAssignees = getStepRecipients({
     submittedSteps: history.submittedSteps,
-    events,
     stepNumber: pendingStepNumber,
   })
   const canRemind = isDelightfulDashboard && pendingStepAssignees.length > 0
@@ -145,7 +143,6 @@ export const WorkflowActionsSection = ({
         onConfirm={handleStop}
         isLoading={stopMutation.isLoading}
         history={history}
-        events={events}
         responses={responses}
       />
     </>

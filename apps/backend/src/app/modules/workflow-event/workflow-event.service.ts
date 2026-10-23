@@ -125,22 +125,3 @@ export const toWorkflowEventDtos = (
         : toAdminWorkflowEventDto(event),
     )
     .sort((a, b) => a.created.localeCompare(b.created))
-
-/**
- * @returns the emails added to the step through Reassign, lowercased and deduped
- */
-export const getAddedAssignees = (
-  events: IWorkflowEvent[] = [],
-  stepNumber: number,
-): string[] =>
-  Array.from(
-    new Set(
-      events
-        .filter(
-          (event) =>
-            event.type === WorkflowEventType.AssigneesAdded &&
-            event.stepNumber === stepNumber,
-        )
-        .flatMap(({ emails }) => emails.map((email) => email.toLowerCase())),
-    ),
-  )

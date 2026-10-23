@@ -14,8 +14,10 @@ import {
   SubmittedStep,
   WorkflowEventType,
   WorkflowStatus,
+  WorkflowType,
 } from 'formsg-shared/types'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
+import { uniqBy } from 'lodash'
 import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -28,7 +30,6 @@ import {
   IMultirespondentSubmissionSchema,
   IPopulatedForm,
   IPopulatedMultirespondentForm,
-  IWorkflowEvent,
   WebhookView,
 } from '../../../../types'
 import {
@@ -63,7 +64,6 @@ import { SnapshotRef } from '../../webhook/webhook.types'
 import {
   buildStepSubmittedEvent,
   buildWorkflowEvent,
-  getAddedAssignees,
 } from '../../workflow-event/workflow-event.service'
 import {
   AttachmentUploadError,
@@ -77,6 +77,7 @@ import {
   MrfReminderRecipientEmailsEmptyError,
   MrfWorkflowNotPendingError,
   MrfWorkflowStoppedError,
+  ProcessingError,
   ResponseModeError,
   SubmissionNotFoundError,
   SubmissionSaveError,
@@ -128,6 +129,7 @@ import {
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
 import {
   buildMrfResponseJson,
+  decryptSubmissionResponsesToV4,
   extractEmailAnswersFromResponses,
   extractRespondentCopyEmailDatas,
   formatSubmittedStepTimestamp,
@@ -135,6 +137,7 @@ import {
   getFormDelimiter,
   getQuestionAnswerPairsForMultipleFields,
   getResponsesDataFromMrfResponses,
+  retrieveStoredOrRoutedRecipients,
   retrieveWorkflowStepEmailAddresses,
 } from './multirespondent-submission.utils'
 
@@ -280,6 +283,7 @@ const checkIsStepRejected = ({
 }
 
 interface sendNextStepEmailProps {
+  recipientEmails: string[] | undefined
   nextStepNumber: number
   form: Pick<IPopulatedMultirespondentForm, 'workflow'> & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
@@ -292,6 +296,7 @@ interface sendNextStepEmailProps {
 }
 
 const sendNextStepEmail = ({
+  recipientEmails,
   nextStepNumber,
   form,
   formTitle,
@@ -322,7 +327,7 @@ const sendNextStepEmail = ({
 
   return (
     // Step 1: Retrieve email addresses for current workflow step
-    retrieveWorkflowStepEmailAddresses(form, nextStep, responses)
+    retrieveStoredOrRoutedRecipients(recipientEmails, form, nextStep, responses)
       .mapErr((error) => {
         logger.error({
           message: 'Failed to retrieve workflow step email addresses',
@@ -418,12 +423,7 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
         )
       }
 
-      const recipientEmails = Array.from(
-        new Set([
-          ...(pendingStep.nextStepRecipientEmails ?? []),
-          ...getAddedAssignees(workflowEvents, reminderStepNumber),
-        ]),
-      )
+      const recipientEmails = pendingStep.nextStepRecipientEmails ?? []
 
       if (recipientEmails.length === 0) {
         logger.error({
@@ -494,7 +494,7 @@ const getEmailsToNotifyAboutMrfOutcome = ({
   responses,
   currentStepNumber,
   submissionId,
-  workflowEvents,
+  submittedSteps,
 }: {
   form: Pick<
     IPopulatedMultirespondentForm,
@@ -509,7 +509,7 @@ const getEmailsToNotifyAboutMrfOutcome = ({
   responses: FieldResponsesV4
   currentStepNumber: number
   submissionId: string
-  workflowEvents?: IWorkflowEvent[]
+  submittedSteps?: SubmittedStep[]
 }): Result<string[], InvalidWorkflowTypeError> => {
   const logMeta = {
     action: 'getMrfOutcomeEmailsToNotify',
@@ -548,7 +548,13 @@ const getEmailsToNotifyAboutMrfOutcome = ({
 
   const otherRespondentsInYourWorkflowEmailsToNotifyResult = Result.combine(
     validWorkflowStepsToNotify.flatMap((workflowStep) => {
-      return retrieveWorkflowStepEmailAddresses(form, workflowStep, responses)
+      return retrieveStoredOrRoutedRecipients(
+        submittedSteps?.[form.workflow.indexOf(workflowStep) - 1]
+          ?.nextStepRecipientEmails,
+        form,
+        workflowStep,
+        responses,
+      )
     }),
   ).map((emails) => emails.flat())
 
@@ -570,20 +576,7 @@ const getEmailsToNotifyAboutMrfOutcome = ({
     ...otherRespondentsInYourWorkflowEmailsToNotify,
   ]
 
-  // Emails added to a notified step through Reassign
-  const alreadyNotified = new Set(
-    emailsToNotify.map((email) => email.toLowerCase()),
-  )
-  const reassignedEmailsToNotify = validWorkflowStepsToNotify
-    .flatMap((workflowStep) =>
-      getAddedAssignees(
-        workflowEvents,
-        form.workflow.indexOf(workflowStep) + 1,
-      ),
-    )
-    .filter((email) => !alreadyNotified.has(email))
-
-  return ok([...emailsToNotify, ...new Set(reassignedEmailsToNotify)])
+  return ok(uniqBy(emailsToNotify, (email) => email.toLowerCase()))
 }
 
 const checkIsWorkflowCompleted = ({
@@ -612,7 +605,7 @@ const sendMrfOutcomeEmails = ({
   attachments,
   pdfResult,
   growthbook,
-  workflowEvents,
+  submittedSteps,
 }: {
   currentStepNumber: number
   form: Pick<
@@ -638,7 +631,7 @@ const sendMrfOutcomeEmails = ({
     AutoreplyPdfGenerationError
   >
   growthbook?: GrowthBook
-  workflowEvents?: IWorkflowEvent[]
+  submittedSteps?: SubmittedStep[]
 }): ResultAsync<
   true,
   InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError
@@ -656,7 +649,7 @@ const sendMrfOutcomeEmails = ({
       responses,
       currentStepNumber,
       submissionId,
-      workflowEvents,
+      submittedSteps,
     })
       .asyncAndThen((destinationEmails) => {
         return pdfResult
@@ -1314,7 +1307,7 @@ interface CheckIsWorkflowCompletionEmailPdfRequiredArgs {
   isRejected: boolean
   submissionId: string
   growthbook?: GrowthBook
-  workflowEvents?: IWorkflowEvent[]
+  submittedSteps?: SubmittedStep[]
 }
 
 const checkIsWorkflowCompletionEmailPdfRequired = ({
@@ -1324,7 +1317,7 @@ const checkIsWorkflowCompletionEmailPdfRequired = ({
   isRejected,
   submissionId,
   growthbook,
-  workflowEvents,
+  submittedSteps,
 }: CheckIsWorkflowCompletionEmailPdfRequiredArgs) => {
   const isGbFlagEnabled =
     isAdminEmailPdfEnabled({
@@ -1347,7 +1340,7 @@ const checkIsWorkflowCompletionEmailPdfRequired = ({
       responses,
       currentStepNumber,
       submissionId,
-      workflowEvents,
+      submittedSteps,
     })
 
   return (
@@ -1400,7 +1393,7 @@ const generatePdfAttachmentIfRequired = ({
       isRejected,
       submissionId,
       growthbook,
-      workflowEvents: submission.workflowEvents,
+      submittedSteps: submission.submittedSteps,
     })
 
   if (!isRespondentCopyPdfRequired && !isWorkflowCompletionEmailPdfRequired) {
@@ -1698,7 +1691,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
       isRejected: false,
       submissionId,
       growthbook,
-      workflowEvents: submission.workflowEvents,
+      submittedSteps: submission.submittedSteps,
     })
       ? pdfResult
       : okAsync(undefined)
@@ -1734,6 +1727,8 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   }
 
   return sendNextStepEmail({
+    recipientEmails:
+      submission.submittedSteps?.[currentStepNumber]?.nextStepRecipientEmails,
     nextStepNumber: currentStepNumber + 1, // we want to send emails to the addresses linked to the next step of the workflow
     form,
     formTitle: form.title,
@@ -1764,7 +1759,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
         attachments,
         pdfResult: sendMrfOutcomeEmailsPdfResult,
         growthbook,
-        workflowEvents: submission.workflowEvents,
+        submittedSteps: submission.submittedSteps,
       })
     })
     .mapErr((error) => {
@@ -2179,7 +2174,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       isRejected: isStepRejected,
       submissionId,
       growthbook,
-      workflowEvents: submission.workflowEvents,
+      submittedSteps: submission.submittedSteps,
     })
       ? pdfResult
       : okAsync(undefined)
@@ -2213,7 +2208,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       attachments: attachments,
       pdfResult: sendMrfOutcomeEmailsPdfResult,
       growthbook,
-      workflowEvents: submission.workflowEvents,
+      submittedSteps: submission.submittedSteps,
     }).mapErr((error) => {
       logger.error({
         message: 'Send mrf outcome email error',
@@ -2233,7 +2228,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     attachments: attachments,
     pdfResult: sendMrfOutcomeEmailsPdfResult,
     growthbook,
-    workflowEvents: submission.workflowEvents,
+    submittedSteps: submission.submittedSteps,
   })
     .mapErr((error) => {
       logger.error({
@@ -2245,6 +2240,9 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     })
     .andThen(() =>
       sendNextStepEmail({
+        recipientEmails:
+          submission.submittedSteps?.[currentStepNumber]
+            ?.nextStepRecipientEmails,
         nextStepNumber: currentStepNumber + 1,
         form: snapshottedFormDef,
         formTitle: snapshottedFormDef.title,
@@ -2366,12 +2364,14 @@ export const stopMultirespondentSubmission = ({
 export const addAssigneesToPendingStep = ({
   formId,
   submissionId,
+  submissionSecretKey,
   emails,
   expectedStepNumber,
   actor,
 }: {
   formId: string
   submissionId: string
+  submissionSecretKey: string
   emails: string[]
   /** The pending step the admin saw, so a stale page cannot add to a later step. */
   expectedStepNumber: number
@@ -2382,6 +2382,8 @@ export const addAssigneesToPendingStep = ({
   | SubmissionNotFoundError
   | MrfWorkflowNotPendingError
   | MrfAssigneeAlreadyAssignedError
+  | ProcessingError
+  | InvalidWorkflowTypeError
 > =>
   getMultirespondentSubmission(submissionId)
     .andThen((submission) => {
@@ -2402,19 +2404,43 @@ export const addAssigneesToPendingStep = ({
         return errAsync(new MrfWorkflowNotPendingError())
       }
 
-      const assigned = new Set([
-        ...(
-          submittedSteps[submittedSteps.length - 1].nextStepRecipientEmails ??
-          []
-        ).map((email) => email.toLowerCase()),
-        ...getAddedAssignees(submission.workflowEvents, stepNumber),
-      ])
+      let recipients =
+        submittedSteps[submittedSteps.length - 1].nextStepRecipientEmails
+      const hasRecipientMetadata = recipients !== undefined
+      if (recipients === undefined) {
+        const step = submission.workflow[stepNumber - 1]
+        let responses: FieldResponsesV4 = {}
+        if (step.workflow_type !== WorkflowType.Static) {
+          const decrypted = decryptSubmissionResponsesToV4(
+            submissionSecretKey,
+            {
+              encryptedContent: submission.encryptedContent,
+              version: submission.version,
+            },
+          )
+          if (decrypted.isErr()) return errAsync(decrypted.error)
+          responses = decrypted.value
+        }
+        const resolved = retrieveWorkflowStepEmailAddresses(
+          submission,
+          step,
+          responses,
+        )
+        if (resolved.isErr()) return errAsync(resolved.error)
+        recipients = resolved.value
+      }
+      const assigned = new Set(recipients.map((email) => email.toLowerCase()))
       const alreadyAssigned = emails.filter((email) => assigned.has(email))
       return alreadyAssigned.length > 0
         ? errAsync(new MrfAssigneeAlreadyAssignedError(alreadyAssigned))
-        : okAsync(stepNumber)
+        : okAsync({
+            stepNumber,
+            recipientsToAdd: hasRecipientMetadata
+              ? emails
+              : [...recipients, ...emails],
+          })
     })
-    .andThen((stepNumber) =>
+    .andThen(({ stepNumber, recipientsToAdd }) =>
       ResultAsync.fromPromise(
         // RATIONALE: the filter re-checks, in the same write, that the
         // workflow is still pending on this step and nobody added these
@@ -2426,17 +2452,18 @@ export const addAssigneesToPendingStep = ({
             form: formId,
             stoppedAt: { $exists: false },
             submittedSteps: { $size: stepNumber - 1 },
-            workflowEvents: {
-              $not: {
-                $elemMatch: {
-                  type: WorkflowEventType.AssigneesAdded,
-                  stepNumber,
-                  emails: { $in: emails },
-                },
-              },
+            [`submittedSteps.${stepNumber - 2}.nextStepRecipientEmails`]: {
+              $nin: emails,
             },
           },
           {
+            $addToSet: {
+              [`submittedSteps.${stepNumber - 2}.nextStepRecipientEmails`]: {
+                $each: recipientsToAdd,
+              },
+            },
+            // Invalidate a concurrent step submission holding the old recipient list.
+            $inc: { __v: 1 },
             $push: {
               workflowEvents: buildWorkflowEvent({
                 type: WorkflowEventType.AssigneesAdded,
