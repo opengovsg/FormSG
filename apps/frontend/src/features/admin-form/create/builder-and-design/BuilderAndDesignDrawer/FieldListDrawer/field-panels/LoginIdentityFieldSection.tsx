@@ -1,9 +1,10 @@
 import { ReactNode } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
-import { Box, Text } from '@chakra-ui/react'
+import { Box, Text, useDisclosure } from '@chakra-ui/react'
 import { Droppable } from '@hello-pangea/dnd'
 
+import { FormStatus } from 'formsg-shared/types/form'
 import {
   getLoginIdentityAttrsForAuthType,
   LoginIdentityAttribute,
@@ -12,6 +13,9 @@ import {
 import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
+
+import { SubmitterIdConversionModal } from '~features/admin-form/settings/components/AuthSettingsSection/SubmitterIdConversionModal'
+import { getNextQuestionNumber } from '~features/form/utils'
 
 import { useCreateTabForm } from '../../../useCreateTabForm'
 import { DraggableLoginIdentityFieldListOption } from '../FieldListOption'
@@ -26,19 +30,6 @@ const SettingsLink = ({ children }: { children?: ReactNode }) => (
     {children}
   </Link>
 )
-
-const ConvertFirstText = () => {
-  const { t } = useTranslation('translation', {
-    keyPrefix: 'features.adminForm.sidebar.fields.loginIdentity',
-  })
-  return (
-    <Trans
-      t={t}
-      i18nKey="convertFirst"
-      components={{ settingsLink: <SettingsLink /> }}
-    />
-  )
-}
 
 const MessageBox = ({
   children,
@@ -85,6 +76,8 @@ export const LoginIdentityMessage = ({
   ).includes(attrs[0])
   const isConvertFirst = !isLoginMissing && form.isSubmitterIdCollectionEnabled
 
+  if (isConvertFirst) return null
+
   return (
     <MessageBox
       variant={
@@ -98,8 +91,6 @@ export const LoginIdentityMessage = ({
           values={{ loginName }}
           components={{ settingsLink: <SettingsLink /> }}
         />
-      ) : isConvertFirst ? (
-        <ConvertFirstText />
       ) : (
         <>
           {info} <LoginFieldLimitText />
@@ -114,18 +105,18 @@ export const LoginIdentityFieldSection = ({
   droppableId,
   searchValue,
   withSectionLabel = true,
-  showConvertFirst = false,
 }: {
   // Fixed order: the drop handler reads the dragged attr by this index.
   attrs: LoginIdentityAttribute[]
   droppableId: string
   searchValue: string
   withSectionLabel?: boolean
-  showConvertFirst?: boolean
 }): JSX.Element | null => {
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.sidebar.fields.loginIdentity',
   })
+  const { t: tCommon } = useTranslation()
+  const convertModal = useDisclosure()
   const { data: form, isLoading } = useCreateTabForm()
   const { isAtLimit } = useLoginFieldLimit()
 
@@ -136,8 +127,10 @@ export const LoginIdentityFieldSection = ({
     form.authType,
   ).includes(attrs[0])
   const isCollectedBySettings = form.isSubmitterIdCollectionEnabled
+  const mustCloseToConvert =
+    isCollectedBySettings && form.status === FormStatus.Public
   const isSectionDisabled =
-    isLoading || isLoginMissing || isCollectedBySettings || isAtLimit
+    isLoading || isLoginMissing || isAtLimit || mustCloseToConvert
 
   const options = filteredAttrs.map(({ attr, originalIndex }) => (
     <DraggableLoginIdentityFieldListOption
@@ -145,26 +138,38 @@ export const LoginIdentityFieldSection = ({
       index={originalIndex}
       attr={attr}
       isDisabled={isSectionDisabled}
+      isDragDisabled={isCollectedBySettings}
+      onConvert={isCollectedBySettings ? convertModal.onOpen : undefined}
     />
   ))
 
   return (
-    <Droppable isDropDisabled droppableId={droppableId}>
-      {(provided) => (
-        <Box ref={provided.innerRef} {...provided.droppableProps}>
-          {showConvertFirst && isCollectedBySettings && !isLoginMissing && (
-            <MessageBox>
-              <ConvertFirstText />
-            </MessageBox>
+    <>
+      <SubmitterIdConversionModal
+        authType={form.authType}
+        isOpen={convertModal.isOpen}
+        onClose={convertModal.onClose}
+        nextQuestionNumber={getNextQuestionNumber(form.form_fields)}
+      />
+      {mustCloseToConvert && !isLoginMissing && (
+        <MessageBox>
+          {tCommon(
+            'features.adminForm.settings.singpass.submitterIdCollection.closeFormToConvert',
           )}
-          {withSectionLabel ? (
-            <FieldSection label={t('sectionLabel')}>{options}</FieldSection>
-          ) : (
-            options
-          )}
-          <Box display="none">{provided.placeholder}</Box>
-        </Box>
+        </MessageBox>
       )}
-    </Droppable>
+      <Droppable isDropDisabled droppableId={droppableId}>
+        {(provided) => (
+          <Box ref={provided.innerRef} {...provided.droppableProps}>
+            {withSectionLabel ? (
+              <FieldSection label={t('sectionLabel')}>{options}</FieldSection>
+            ) : (
+              options
+            )}
+            <Box display="none">{provided.placeholder}</Box>
+          </Box>
+        )}
+      </Droppable>
+    </>
   )
 }

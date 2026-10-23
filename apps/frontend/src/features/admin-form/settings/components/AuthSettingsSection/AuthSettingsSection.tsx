@@ -9,7 +9,7 @@ import {
 import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { NON_RESPONSE_FIELD_SET } from '~features/form/constants'
+import { getNextQuestionNumber } from '~features/form/utils'
 import { isMyInfo } from '~features/myinfo/utils'
 
 import { AuthSettingsDescriptionText } from './AuthSettingsDescriptionText'
@@ -45,6 +45,7 @@ export const AuthSettingsSection = ({
         isFormPublic={isFormPublic}
         containsMyInfoFields={containsMyInfoFields}
         containsLoginIdentityFields={containsLoginIdentityFields}
+        isSubmitterIdCollectionEnabled={settings.isSubmitterIdCollectionEnabled}
         formResponseMode={form?.responseMode}
       />
       <AuthSettingsDescriptionText />
@@ -56,11 +57,7 @@ export const AuthSettingsSection = ({
         <AuthSettingsSingpassSection
           settings={settings}
           isFormPublic={isFormPublic}
-          nextQuestionNumber={
-            (form?.form_fields.filter(
-              (field) => !NON_RESPONSE_FIELD_SET.has(field.fieldType),
-            ).length ?? 0) + 1
-          }
+          nextQuestionNumber={getNextQuestionNumber(form?.form_fields ?? [])}
           hasLoginFields={hasLoginFields}
           hasIdentityFields={containsLoginIdentityFields}
         />

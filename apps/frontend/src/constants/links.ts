@@ -23,6 +23,8 @@ export const GUIDE_SINGPASS_FEATURES =
 export const GUIDE_SPCP_ESRVCID =
   'https://go.gov.sg/formsg-guide-singpass-myinfo'
 export const GUIDE_NRIC_FIELD = 'https://go.gov.sg/nric-field'
+export const GUIDE_NRIC_FIELD_RESPONSE_CHANGES =
+  'https://guide.form.gov.sg/faq/faq/migration-to-nric-fin-uen-field#will-my-responses-look-different-after-i-convert'
 export const GUIDE_ENABLE_SPCP =
   'https://go.gov.sg/formsg-guide-singpass-myinfo-enable'
 export const GUIDE_ATTACHMENT_SIZE_LIMIT =
