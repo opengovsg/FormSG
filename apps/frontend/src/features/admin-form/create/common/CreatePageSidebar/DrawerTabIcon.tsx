@@ -1,8 +1,10 @@
 import { GoDotFill } from 'react-icons/go'
-import { Box, Flex, Icon, Text } from '@chakra-ui/react'
+import { Box, Icon } from '@chakra-ui/react'
 
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
+
+import { AdminFormSideNavItem } from '../../../common/AdminFormSideNav/AdminFormSideNav'
 
 interface DrawerTabIconProps {
   icon: React.ReactElement
@@ -41,30 +43,17 @@ export const DrawerTabIcon = ({
   // Treatment arm: visible label beneath the icon, no tooltip.
   if (navLabel) {
     return (
-      <Flex direction="column" align="center" gap="0.25rem">
-        <Box position="relative" data-testid="drawer-tab-icon-box">
-          {button}
-          {showRedDot ? (
-            <Icon
-              as={GoDotFill}
-              data-testid="drawer-tab-reddot"
-              color="danger.500"
-              position="absolute"
-              top="-2px"
-              right="-2px"
-            />
-          ) : null}
-        </Box>
-        <Text
-          // Single size across states avoids reflow on selection; only weight/colour change.
-          textStyle="caption-2"
-          fontWeight={isActive ? 500 : 400}
-          color={isActive ? 'primary.500' : 'secondary.400'}
-          whiteSpace="nowrap"
-        >
-          <span>{navLabel}</span>
-        </Text>
-      </Flex>
+      <AdminFormSideNavItem
+        icon={icon}
+        label={navLabel}
+        aria-label={label}
+        aria-pressed={isActive}
+        data-dd-action-name={trackingLabel}
+        isActive={isActive}
+        onClick={onClick}
+        id={id}
+        showRedDot={showRedDot}
+      />
     )
   }
 
