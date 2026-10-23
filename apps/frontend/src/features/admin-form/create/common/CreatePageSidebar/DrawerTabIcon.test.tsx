@@ -9,6 +9,21 @@ import { DrawerTabIcon } from './DrawerTabIcon'
 const noop = () => undefined
 
 describe('DrawerTabIcon', () => {
+  it('activates the editor when the visible label is clicked', async () => {
+    const onClick = vi.fn()
+    render(
+      <DrawerTabIcon
+        icon={<BiCog />}
+        onClick={onClick}
+        label="Add fields"
+        navLabel="Fields"
+        isActive={false}
+      />,
+    )
+    await userEvent.click(screen.getByText('Fields'))
+    expect(onClick).toHaveBeenCalledTimes(1)
+  })
+
   it('shows the nav label beneath the icon when a navLabel is given', () => {
     render(
       <DrawerTabIcon
@@ -101,7 +116,7 @@ describe('DrawerTabIcon', () => {
     // Dot shares the icon's wrapper (anchored to its corner)...
     const iconBox = screen.getByTestId('drawer-tab-icon-box')
     expect(
-      within(iconBox).getByRole('button', { name: 'Add workflow' }),
+      screen.getByRole('button', { name: 'Add workflow' }),
     ).toBeInTheDocument()
     expect(within(iconBox).getByTestId('drawer-tab-reddot')).toBeInTheDocument()
     // ...and the wrapper excludes the label, so it can't drift to the column.

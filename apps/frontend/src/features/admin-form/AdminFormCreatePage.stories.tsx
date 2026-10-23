@@ -1,6 +1,9 @@
+import { Box } from '@chakra-ui/react'
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
 
+import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
   PaymentChannel,
@@ -75,7 +78,12 @@ export default {
   // component: To be implemented,
   decorators: [
     ViewedFeatureTourDecorator,
-    AdminFormCreatePageDecorator,
+    (Story, context) =>
+      context.parameters.sideNavViewport ? (
+        <Box h="100vh">{AdminFormCreatePageDecorator(Story, context)}</Box>
+      ) : (
+        AdminFormCreatePageDecorator(Story, context)
+      ),
     LoggedInDecorator,
     mockDateDecorator,
   ],
@@ -374,3 +382,39 @@ AdminFormBuilderWithAdditionalRowsTableField.play = async ({
     })
   })
 }
+
+const legacyNavGrowthbook = new GrowthBook({
+  features: { [featureFlags.sidebarNavLabels]: { defaultValue: false } },
+})
+
+const labelledNavGrowthbook = new GrowthBook({
+  features: {
+    [featureFlags.sidebarNavLabels]: { defaultValue: true },
+    charts: { defaultValue: true },
+  },
+})
+export const LabelledNavigation = Template.bind({})
+LabelledNavigation.parameters = {
+  ...DesktopEmpty.parameters,
+  sideNavViewport: true,
+  argos: { modes: viewportModes('tablet', 'mobile') },
+}
+LabelledNavigation.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={labelledNavGrowthbook}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+export const LegacyNavigation = Template.bind({})
+LegacyNavigation.parameters = {
+  ...DesktopEmpty.parameters,
+  sideNavViewport: true,
+}
+LegacyNavigation.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={legacyNavGrowthbook}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
