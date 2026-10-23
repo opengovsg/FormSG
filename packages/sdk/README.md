@@ -239,20 +239,75 @@ const interests = (checkboxField?.answer.value ?? []).map((option) =>
 // ['Sports', 'Chess']
 ```
 
-For tables, column IDs are separate from the table field's ID. Submit a test row and inspect its keys:
+### Table fields
+
+- **Table name:** `tableField?.question` gives the table name.
+- **Column names:** table column names are provided in the `subFields` property. Read a column name with `tableField?.subFields?.[columnId]?.question`.
+- **Rows:** `tableField?.answer` contains rows keyed by row ID. Each row has a `rowNum` and cells keyed by column ID in `value`.
+
+Read the table response:
 
 ```javascript
-const TABLE_FIELD_ID = '6a27d7a5e1b2c3d4e5f6071d' // Table: "Household members"
-
+const TABLE_FIELD_ID = '6a27d7a5e1b2c3d4e5f6071d'
 const tableField = submission.responses[TABLE_FIELD_ID]
-for (const row of Object.values(tableField?.answer ?? {})) {
-  console.log(row.rowNum, row.value)
-}
-// 0 { '6a27d7a5e1b2c3d4e5f60721': 'Tan Ah Kow', '6a27d7a5e1b2c3d4e5f60722': '45' }
-// 1 { '6a27d7a5e1b2c3d4e5f60721': 'Tan Ah Mei', '6a27d7a5e1b2c3d4e5f60722': '42' }
 ```
 
-Save those column IDs in your configuration and map them to your application's column names.
+Example `tableField`:
+
+```json
+{
+  "fieldType": "table",
+  "question": "Household members",
+  "subFields": {
+    "6a27d7a5e1b2c3d4e5f60721": { "question": "Name" },
+    "6a27d7a5e1b2c3d4e5f60722": { "question": "Age" }
+  },
+  "answer": {
+    "<rowId1>": {
+      "rowNum": 0,
+      "value": {
+        "6a27d7a5e1b2c3d4e5f60721": "Tan Ah Kow",
+        "6a27d7a5e1b2c3d4e5f60722": "45"
+      }
+    },
+    "<rowId2>": {
+      "rowNum": 1,
+      "value": {
+        "6a27d7a5e1b2c3d4e5f60721": "Tan Ah Mei",
+        "6a27d7a5e1b2c3d4e5f60722": "42"
+      }
+    }
+  },
+  "provenance": {}
+}
+```
+
+#### Combine names and answers
+
+Choose the column order with `columnIds`. Each row's values follow that order, and rows are sorted by `rowNum`.
+
+```javascript
+const NAME_COLUMN_ID = '6a27d7a5e1b2c3d4e5f60721'
+const AGE_COLUMN_ID = '6a27d7a5e1b2c3d4e5f60722'
+const columnIds = [NAME_COLUMN_ID, AGE_COLUMN_ID]
+
+const table = {
+  name: tableField?.question,
+  columns: columnIds.map((id) => tableField?.subFields?.[id]?.question),
+  rows: Object.values(tableField?.answer ?? {})
+    .sort((a, b) => a.rowNum - b.rowNum)
+    .map((row) => columnIds.map((id) => row.value[id])),
+}
+
+// {
+//   name: 'Household members',
+//   columns: ['Name', 'Age'],
+//   rows: [
+//     ['Tan Ah Kow', '45'],
+//     ['Tan Ah Mei', '42'],
+//   ],
+// }
+```
 
 ### Children fields
 
@@ -489,7 +544,14 @@ Here is an illustrative request for a form with no workflow or attachments. The 
     "encryptedContent": "<encrypted responses>",
     "encryptedSubmissionSecretKey": "<encrypted submission key>",
     "formFields": {
-      "6a27d7a5e1b2c3d4e5f60718": { "question": "Your name" }
+      "6a27d7a5e1b2c3d4e5f60718": { "question": "Your name" },
+      "6a27d7a5e1b2c3d4e5f6071d": {
+        "question": "Household members",
+        "subFields": {
+          "6a27d7a5e1b2c3d4e5f60721": { "question": "Name" },
+          "6a27d7a5e1b2c3d4e5f60722": { "question": "Age" }
+        }
+      }
     },
     "attachmentDownloadUrls": {},
     "paymentContent": {},
@@ -506,19 +568,19 @@ Here is an illustrative request for a form with no workflow or attachments. The 
 
 The SDK decrypts `encryptedContent` into `submission.responses`. Workflow and payment metadata stay in `req.body.data`.
 
-| Key in `data`                  | Type                            | Description                                                                                                    |
-| ------------------------------ | ------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `formId`                       | string                          | The form ID.                                                                                                   |
-| `submissionId`                 | string                          | The submission ID. Shown to respondents as **Response ID**. The same across all steps of a workflow.           |
-| `version`                      | number                          | `4`.                                                                                                           |
-| `created`                      | string                          | ISO 8601 creation time of the submission.                                                                      |
-| `encryptedContent`             | string                          | The encrypted responses.                                                                                       |
-| `encryptedSubmissionSecretKey` | string                          | The submission key, encrypted with the form key.                                                               |
-| `verifiedContent`              | string                          | Optional. The encrypted, signed Singpass or Corppass data.                                                     |
-| `formFields`                   | `Record<fieldId, { question }>` | The field titles at submission time. The SDK uses these to fill in `question`.                                 |
-| `attachmentDownloadUrls`       | `Record<fieldId, string>`       | URLs of encrypted attachments. Valid for one hour. `{}` if there are none.                                     |
-| `paymentContent`               | object                          | Payment details. `{}` if the form has no payment. See [payment content](#payment-content).                     |
-| `workflowContent`              | object                          | `{ workflow, workflowStep, submittedSteps }`. See [Handle multi-step workflows](#handle-multi-step-workflows). |
+| Key in `data`                  | Type                                        | Description                                                                                                           |
+| ------------------------------ | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `formId`                       | string                                      | The form ID.                                                                                                          |
+| `submissionId`                 | string                                      | The submission ID. Shown to respondents as **Response ID**. The same across all steps of a workflow.                  |
+| `version`                      | number                                      | `4`.                                                                                                                  |
+| `created`                      | string                                      | ISO 8601 creation time of the submission.                                                                             |
+| `encryptedContent`             | string                                      | The encrypted responses.                                                                                              |
+| `encryptedSubmissionSecretKey` | string                                      | The submission key, encrypted with the form key.                                                                      |
+| `verifiedContent`              | string                                      | Optional. The encrypted, signed Singpass or Corppass data.                                                            |
+| `formFields`                   | `Record<fieldId, { question, subFields? }>` | Saved field titles and optional `subFields: Record<columnId, { question }>`. The SDK fills missing response metadata. |
+| `attachmentDownloadUrls`       | `Record<fieldId, string>`                   | URLs of encrypted attachments. Valid for one hour. `{}` if there are none.                                            |
+| `paymentContent`               | object                                      | Payment details. `{}` if the form has no payment. See [payment content](#payment-content).                            |
+| `workflowContent`              | object                                      | `{ workflow, workflowStep, submittedSteps }`. See [Handle multi-step workflows](#handle-multi-step-workflows).        |
 
 ### Payment content
 
