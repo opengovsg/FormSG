@@ -11,26 +11,6 @@ minimumReleaseAgeIgnoreMissingTime: false
 registries:
   default: 'https://registry.npmjs.org/'
 
-# 1 year — packages published before provenance/trusted-publishing were
-# common shouldn't need it retroactively. pnpm 12 checks this on every
-# install, not only when the lockfile re-resolves.
-trustPolicy: no-downgrade
-trustPolicyIgnoreAfter: 525600
-trustPolicyExclude:
-  # 7.x security override (see mongoose override below). 7.8.10 was
-  # published by vkarpov15 with no provenance. Earlier the same day,
-  # 8.24.1/9.7.2 went out via GitHub Actions with provenance, and pnpm
-  # compares across majors by publish date, so 7.8.10 looks like a
-  # downgrade. Same maintainer, same hotfix line as the 7.8.9 exclude
-  # from 2026-09-12; develop has since moved the override to 7.8.10.
-  - mongoose@7.8.10
-  # @argos-ci/cli devDependency. 1.2.3 and earlier were published by
-  # vercel-release-bot with provenance. 1.2.4+ moved to the same Vercel
-  # GitHub Actions OIDC config but stopped attaching provenance, which
-  # pnpm ranks as no trust evidence. Investigated 2026-10-23: not a
-  # maintainer change.
-  - '@vercel/detect-agent@1.2.7'
-
 allowBuilds:
   bcrypt: true
   canvas: true
@@ -204,3 +184,36 @@ overrides:
 patchedDependencies:
   '@serverless/dashboard-plugin@7.2.3': patches/@serverless__dashboard-plugin@7.2.3.patch
   braces@3.0.3: patches/braces@3.0.3.patch
+
+# 3 years, same window as develop. pnpm 12 checks this on every install,
+# not only when the lockfile re-resolves.
+trustPolicy: no-downgrade
+
+trustPolicyExclude:
+  # Kept from develop. Final releases of the semver 5 and 6 lines (2023
+  # ReDoS fixes); they predate provenance.
+  - semver@5.7.2
+  - semver@6.3.1
+  # 4.0.0 and 4.0.1 have provenance; 4.0.2 and 4.0.3, still published by
+  # paulmillr, do not. pnpm ranks that as a downgrade from 3.6.0/4.0.1.
+  # 5.x/6.x restored trusted publishing, but the lockfile is on 4.0.3.
+  - chokidar@4.0.3
+  # Security override above pins jose <=4.15.4 to ^4.15.9. 4.14.1 has
+  # provenance; 4.15.9, still published by panva, does not. Later majors
+  # publish via GitHub Actions with provenance.
+  - jose@4.15.9
+  # 7.x security override above. 7.8.10 was published by vkarpov15 with
+  # no provenance. Earlier the same day, 8.24.1/9.7.2 went out via GitHub
+  # Actions with provenance, and pnpm compares across majors by publish
+  # date, so 7.8.10 looks like a downgrade. Same maintainer, same hotfix
+  # line as the 7.8.9 exclude from 2026-09-12; develop has since moved
+  # the override to 7.8.10.
+  - mongoose@7.8.10
+  # @argos-ci/cli devDependency. 1.2.3 and earlier were published by
+  # vercel-release-bot with provenance. 1.2.4+ moved to the same Vercel
+  # GitHub Actions OIDC config but stopped attaching provenance, which
+  # pnpm ranks as no trust evidence. Investigated 2026-10-23: not a
+  # maintainer change.
+  - '@vercel/detect-agent@1.2.7'
+
+trustPolicyIgnoreAfter: 1576800
