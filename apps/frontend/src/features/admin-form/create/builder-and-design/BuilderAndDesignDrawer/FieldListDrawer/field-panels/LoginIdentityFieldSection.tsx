@@ -115,6 +115,7 @@ export const LoginIdentityFieldSection = ({
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.sidebar.fields.loginIdentity',
   })
+  const { t: tCommon } = useTranslation()
   const convertModal = useDisclosure()
   const { data: form, isLoading } = useCreateTabForm()
   const { isAtLimit } = useLoginFieldLimit()
@@ -152,7 +153,9 @@ export const LoginIdentityFieldSection = ({
       />
       {mustCloseToConvert && !isLoginMissing && (
         <MessageBox>
-          <Trans i18nKey="features.adminForm.settings.singpass.submitterIdCollection.closeFormToConvert" />
+          {tCommon(
+            'features.adminForm.settings.singpass.submitterIdCollection.closeFormToConvert',
+          )}
         </MessageBox>
       )}
       <Droppable isDropDisabled droppableId={droppableId}>
