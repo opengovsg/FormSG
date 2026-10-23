@@ -2,7 +2,6 @@ name: 'Argos'
 
 env:
   NODE_VERSION: '22.23'
-  PNPM_VERSION: '10.30.3'
   # One Argos project, one build per Storybook: ARGOS_BUILD_NAME keeps their
   # screenshots and baselines apart.
 
@@ -79,8 +78,6 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
       - name: Use Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
@@ -184,8 +181,6 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
       - name: Use Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
