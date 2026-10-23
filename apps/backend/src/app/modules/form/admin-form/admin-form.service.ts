@@ -109,6 +109,7 @@ import {
   MalformedParametersError,
   PossibleDatabaseError,
 } from '../../core/core.errors'
+import { resolveWebhookContentFormat } from '../../submission/multirespondent-submission/webhook/webhook-payload-policy'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
 import { getWebhookType, toConsumerType } from '../../webhook/webhook.service'
@@ -1655,7 +1656,13 @@ const hasWebhookWorkflowConflict = (
   url: string | undefined,
   stepCount: number,
   format: FormWebhook['webhookFormat'],
-): boolean => stepCount >= 2 && isNonPlumberWebhook(url) && format !== 'v4'
+): boolean =>
+  stepCount >= 2 &&
+  !!url &&
+  resolveWebhookContentFormat({
+    webhookType: toConsumerType(getWebhookType(url)),
+    webhookFormat: format,
+  }) === 'v1'
 
 // Keep both parts of the checked webhook choice stable until the write.
 const getCheckedWebhookFilter = (form: IPopulatedForm) => ({

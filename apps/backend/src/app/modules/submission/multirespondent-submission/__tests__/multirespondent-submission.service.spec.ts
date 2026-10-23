@@ -4421,7 +4421,8 @@ describe('multirespondent-submission.service', () => {
       ${'generic v1 by default, 2 steps'}  | ${GENERIC_URL} | ${undefined}  | ${twoStepWorkflow} | ${true}           | ${false}
       ${'generic v1 explicit, 2 steps'}    | ${GENERIC_URL} | ${'v1'}       | ${twoStepWorkflow} | ${true}           | ${false}
       ${'zapier v1 by default, 2 steps'}   | ${ZAPIER_URL}  | ${undefined}  | ${twoStepWorkflow} | ${true}           | ${false}
-      ${'plumber, 2 steps, v1 requested'}  | ${PLUMBER_URL} | ${'v1'}       | ${twoStepWorkflow} | ${true}           | ${true}
+      ${'plumber v1 explicit, 2 steps'}    | ${PLUMBER_URL} | ${'v1'}       | ${twoStepWorkflow} | ${true}           | ${false}
+      ${'plumber v1 explicit, 1 step'}     | ${PLUMBER_URL} | ${'v1'}       | ${oneStepWorkflow} | ${false}          | ${true}
       ${'generic v1 by default, 1 step'}   | ${GENERIC_URL} | ${undefined}  | ${oneStepWorkflow} | ${true}           | ${true}
       ${'generic v1 explicit, 1 step'}     | ${GENERIC_URL} | ${'v1'}       | ${oneStepWorkflow} | ${true}           | ${true}
       ${'generic v4, 1 step'}              | ${GENERIC_URL} | ${'v4'}       | ${oneStepWorkflow} | ${true}           | ${true}

@@ -139,6 +139,28 @@ describe('webhook and workflow compatibility', () => {
     },
   )
 
+  it('rejects switching a multi-step form with a pinned V1 format to a Plumber URL', async () => {
+    // A stored webhookFormat is always respected at delivery, so a Plumber
+    // URL no longer exempts the form from the V1/multi-step conflict.
+    const { form, user } = await dbHandler.insertMultirespondentForm({
+      formOptions: {
+        status: FormStatus.Private,
+        workflow: [persistedStep(), persistedStep()],
+        webhook: {
+          url: genericUrl,
+          isRetryEnabled: false,
+          webhookFormat: 'v1',
+        },
+      },
+    })
+    const session = await createAuthedSession(user.email, supertest(app))
+    const response = await session
+      .patch(`/admin/forms/${form._id}/settings`)
+      .send({ webhook: { url: 'https://plumber.gov.sg/webhooks/abc' } })
+    expect(response.status).toBe(400)
+    expect(response.body).toEqual({ message: conflictMessage })
+  })
+
   it.each(
     cases.flatMap((testCase) =>
       ['settings', 'webhooksettings'].map((endpoint) => ({
