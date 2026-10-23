@@ -172,6 +172,12 @@ export const validateMultirespondentRemindBody = celebrate({
   [Segments.BODY]: multirespondentSubmissionKeySchema,
 })
 
+export const validateGetMultirespondentSubmissionQuery = celebrate({
+  // RATIONALE: optional so that links sent before step tokens, and clients
+  // that do not pass the token yet, still load.
+  [Segments.QUERY]: Joi.object({ stepToken: Joi.string().optional() }),
+})
+
 const retrieveMultirespondentSubmissionIfExists = (
   submissionId?: string,
 ): ResultAsync<
@@ -625,7 +631,7 @@ export const validateMultirespondentSubmission = async (
                 // If it's the first submission, just check that response fields C editable fields
                 if (!previousSubmission) {
                   return nonEditableFieldIdsWithResponses.length === 0
-                    ? ok(undefined)
+                    ? ok({ previousResponses: undefined, visibleFieldIds })
                     : err(
                         new ProcessingError(
                           'Attempted to submit response on a non-editable field',
@@ -679,11 +685,49 @@ export const validateMultirespondentSubmission = async (
                   previousResponses,
                 ).filter((fieldId) => !editableFieldIds.includes(fieldId))
 
-                for (const fieldId of previousNonEditableFieldIdsWithResponses) {
-                  // ensure that respondents cannot alter a non-editable field by omitting the field in the submission by re-inserting the previous fields that are non-editable
-                  if (!req.body.responses[fieldId]) {
-                    req.body.responses[fieldId] = previousResponses[fieldId]
+                const omittedPreviousFieldIds =
+                  previousNonEditableFieldIdsWithResponses.filter(
+                    (fieldId) => !req.body.responses[fieldId],
+                  )
+
+                // RATIONALE: a step may change an answer that hides a field
+                // answered by a later step, e.g. after the workflow is sent
+                // back. Copying that stored answer back would fail the hidden
+                // field checks, so drop it instead. Visibility is evaluated
+                // on the merged responses, which are what gets stored, so
+                // omitting a non-editable answer that drives logic cannot
+                // hide (and drop) anything; only the step's own edits can.
+                const mergedResponses = {
+                  ...Object.fromEntries(
+                    omittedPreviousFieldIds.map((fieldId) => [
+                      fieldId,
+                      previousResponses[fieldId],
+                    ]),
+                  ),
+                  ...req.body.responses,
+                }
+                const mergedVisibleFieldIdsResult = getVisibleFieldIdsV3(
+                  adaptV4ToV3(
+                    mergedResponses as FieldResponsesV4,
+                  ) as unknown as FieldResponsesV3,
+                  formPropertiesForLogicComputation,
+                )
+                if (mergedVisibleFieldIdsResult.isErr()) {
+                  return err(mergedVisibleFieldIdsResult.error)
+                }
+                const mergedVisibleFieldIds = mergedVisibleFieldIdsResult.value
+
+                for (const fieldId of omittedPreviousFieldIds) {
+                  if (!mergedVisibleFieldIds.has(fieldId)) {
+                    logger.info({
+                      message:
+                        'Dropped previous response on a non-editable field now hidden by logic',
+                      meta: { ...logMeta, fieldId },
+                    })
+                    continue
                   }
+                  // ensure that respondents cannot alter a non-editable field by omitting the field in the submission by re-inserting the previous fields that are non-editable
+                  req.body.responses[fieldId] = previousResponses[fieldId]
                 }
 
                 return Result.combine(
@@ -741,11 +785,12 @@ export const validateMultirespondentSubmission = async (
 
                     return ok(undefined)
                   }),
-                ).map(() => {
-                  return previousResponses
-                })
+                ).map(() => ({
+                  previousResponses,
+                  visibleFieldIds: mergedVisibleFieldIds,
+                }))
               })
-              .andThen((previousResponses) => {
+              .andThen(({ previousResponses, visibleFieldIds }) => {
                 return validateMrfFieldResponses({
                   formId,
                   visibleFieldIds,

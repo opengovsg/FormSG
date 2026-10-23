@@ -71,6 +71,8 @@ export const enSG: PublicForm = {
           'The link you used is no longer valid. Please contact the form admin that gave you this link.',
         workflowStopped:
           'This workflow has been stopped. Please contact the form admin that gave you this link.',
+        stepLinkSuperseded:
+          'This link is no longer valid. The form admin may have sent this response back to an earlier step. Please use the latest link you were sent.',
         invalidWorkflowType:
           'Invalid workflow type encountered. Please contact the form admin and try again later.',
         expectedResponseNotFound:

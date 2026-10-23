@@ -294,6 +294,7 @@ SubmissionSchema.statics.findEncryptedOrMultirespondentSubmissionById =
         mrfVersion: 1,
         ...buildAdminSubmittedStepsMongoProjection(),
         encryptedStepToken: 1,
+        stepTokenHash: 1,
         workflowEvents: 1,
         stoppedAt: 1,
       })

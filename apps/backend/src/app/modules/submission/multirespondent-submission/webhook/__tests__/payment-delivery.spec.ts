@@ -824,10 +824,12 @@ describe('[GATE] payment webhook delivery', () => {
       await waitFor(() => queued.length > 0)
       expect(queued).toHaveLength(1)
       const message = JSON.parse(queued[0])
-      expect(message.snapshotRef).toEqual(
-        format === 'V1'
-          ? { submissionIndex: 0, contentFormat: 'v1' }
-          : undefined,
+      const { snapshotToken, ...snapshotRef } = message.snapshotRef ?? {}
+      expect(snapshotRef).toEqual(
+        format === 'V1' ? { submissionIndex: 0, contentFormat: 'v1' } : {},
+      )
+      expect(typeof snapshotToken).toBe(
+        format === 'V1' ? 'string' : 'undefined',
       )
       form.webhook!.url = after
       await form.save()

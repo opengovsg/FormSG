@@ -9,6 +9,7 @@ import {
   SnapshotDataIntegrityError,
   SnapshotFormatNotRecordedError,
   SnapshotReadError,
+  SnapshotSupersededError,
 } from './submission-snapshot.errors'
 import { readSnapshot } from './submission-snapshot.store'
 import {
@@ -25,6 +26,7 @@ export type SnapshotViewError =
   | SnapshotReadError
   | SnapshotAccessDeniedError
   | SnapshotFormatNotRecordedError
+  | SnapshotSupersededError
 
 export const getRecordedPayloadPolicy = ({
   snapshotRef,
@@ -71,11 +73,16 @@ export const resolveSnapshotWebhookView = ({
     pendingSubmissionId,
     snapshotRef,
   }
-  const { submissionIndex, contentFormat } = snapshotRef
+  const { submissionIndex, contentFormat, snapshotToken } = snapshotRef
 
   const recordedTokensForSubmissionIndex =
     submittedStepSnapshotTokens?.[submissionIndex]
   const token = recordedTokensForSubmissionIndex?.[contentFormat]
+  // Checked first: after a send back the step may not be submitted again yet,
+  // so no token is recorded at submissionIndex.
+  if (snapshotToken && snapshotToken !== token) {
+    return errAsync(new SnapshotSupersededError(undefined, meta))
+  }
   if (!token) {
     return errAsync(new SnapshotFormatNotRecordedError(undefined, meta))
   }
