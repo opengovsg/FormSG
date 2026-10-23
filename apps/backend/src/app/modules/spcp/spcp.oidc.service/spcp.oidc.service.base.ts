@@ -24,7 +24,6 @@ import {
   JwtPayload,
   JwtPayloadFromCookie,
   ParsedSpcpParams,
-  SingpassJwtPayloadFromCookie,
   SpcpCookies,
   SpcpDomainSettings,
 } from '../spcp.types'
@@ -141,10 +140,7 @@ export abstract class SpcpOidcServiceClass {
 
   abstract extractJwtPayload(
     jwt: string,
-  ): ResultAsync<
-    CorppassJwtPayloadFromCookie | SingpassJwtPayloadFromCookie,
-    VerifyJwtError | InvalidJwtError
-  >
+  ): ResultAsync<CorppassJwtPayloadFromCookie, VerifyJwtError | InvalidJwtError>
 
   abstract getCookieDuration(rememberMe: boolean): number
 

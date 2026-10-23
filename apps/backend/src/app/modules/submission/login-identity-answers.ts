@@ -23,7 +23,7 @@ export const getLoginIdentityValuesFromCookies = (
 ): ResultAsync<LoginIdentityValues, ApplicationError> => {
   switch (authType) {
     case FormAuthType.CP: {
-      const oidcService = getOidcService(FormAuthType.CP)
+      const oidcService = getOidcService()
       return oidcService
         .extractJwt(cookies)
         .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))

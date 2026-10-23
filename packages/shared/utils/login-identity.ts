@@ -110,8 +110,6 @@ export const getLoginIdentityAttrsForAuthType = (
       return [MyInfoAttribute.UinFin]
     case FormAuthType.CP:
       return [CorppassAttribute.Uid, CorppassAttribute.Uen]
-    // Singpass-only login is being removed, so it gets no identity fields.
-    case FormAuthType.SP:
     case FormAuthType.NIL:
       return []
   }

@@ -632,7 +632,7 @@ grep_search("functionName", includePattern: "**/*.ts")
 ### 5. Authentication Context
 
 Singapore-specific:
-- **SingPass**: Citizen authentication
+- **SingPass**: Citizen authentication (via MyInfo FAPI)
 - **CorpPass**: Corporate authentication
 - **sgID**: Public officer login for admins (not used for form respondents)
 - **MyInfo**: Auto-prefill from government data

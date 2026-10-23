@@ -29,7 +29,7 @@ import { getFilteredResponses } from './submission.utils'
 
 export type NdiUserInfo =
   | {
-      authType: FormAuthType.SP | FormAuthType.MyInfo
+      authType: FormAuthType.MyInfo
       uinFin: string
     }
   | { authType: FormAuthType.CP; uinFin: string; userInfo: string }
@@ -45,7 +45,6 @@ export default class ParsedResponsesObject {
      * destructured variable switch cases.
      */
     switch (info.authType) {
-      case FormAuthType.SP:
       case FormAuthType.MyInfo:
         this.ndiResponses = createSingpassParsedResponses(info.uinFin)
         break

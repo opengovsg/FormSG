@@ -23,7 +23,6 @@ import * as FormService from 'src/app/modules/form/form.service'
 import { MyInfoService } from 'src/app/modules/myinfo/myinfo.service'
 import * as MyInfoUtil from 'src/app/modules/myinfo/myinfo.util'
 import * as OidcService from 'src/app/modules/spcp/spcp.oidc.service/index'
-import { OidcServiceType } from 'src/app/modules/spcp/spcp.oidc.service/spcp.oidc.service.types'
 import * as EncryptSubmissionService from 'src/app/modules/submission/encrypt-submission/encrypt-submission.service'
 import * as VerifiedContentService from 'src/app/modules/verified-content/verified-content.service'
 import {
@@ -113,7 +112,7 @@ describe('encrypt-submission.controller', () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         extractJwtPayload: (_arg1) =>
           okAsync(merge(MOCK_JWT_PAYLOAD, MOCK_COOKIE_TIMESTAMP)),
-      } as OidcServiceType<FormAuthType.SP>)
+      } as unknown as ReturnType<typeof OidcService.getOidcService>)
 
       MockMailService.sendSubmissionToAdmin.mockResolvedValue(okAsync(true))
     })
@@ -144,14 +143,14 @@ describe('encrypt-submission.controller', () => {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           extractJwtPayload: (_arg1) =>
             okAsync(merge(MOCK_JWT_PAYLOAD_1, MOCK_COOKIE_TIMESTAMP)),
-        } as OidcServiceType<FormAuthType.CP>)
+        } as unknown as ReturnType<typeof OidcService.getOidcService>)
         .mockReturnValueOnce({
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           extractJwt: (_arg1) => ok('jwt'),
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           extractJwtPayload: (_arg1) =>
             okAsync(merge(MOCK_JWT_PAYLOAD_2, MOCK_COOKIE_TIMESTAMP)),
-        } as OidcServiceType<FormAuthType.CP>)
+        } as unknown as ReturnType<typeof OidcService.getOidcService>)
 
       const mockFormId = new ObjectId()
       const mockCpAuthTypeAndIsSingleSubmissionEnabledForm = {
@@ -225,14 +224,14 @@ describe('encrypt-submission.controller', () => {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           extractJwtPayload: (_arg1) =>
             okAsync(merge(MOCK_JWT_PAYLOAD_1, MOCK_COOKIE_TIMESTAMP)),
-        } as OidcServiceType<FormAuthType.CP>)
+        } as unknown as ReturnType<typeof OidcService.getOidcService>)
         .mockReturnValueOnce({
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           extractJwt: (_arg1) => ok('jwt'),
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           extractJwtPayload: (_arg1) =>
             okAsync(merge(MOCK_JWT_PAYLOAD_2, MOCK_COOKIE_TIMESTAMP)),
-        } as OidcServiceType<FormAuthType.CP>)
+        } as unknown as ReturnType<typeof OidcService.getOidcService>)
 
       const mockFormId = new ObjectId()
       const mockCpAuthTypeAndIsSingleSubmissionEnabledForm = {
@@ -280,63 +279,6 @@ describe('encrypt-submission.controller', () => {
       ).not.toEqual(saveIfSubmitterIdIsUniqueSpy.mock.calls[1][2].submitterId)
     })
 
-    it('should hash submitterId for SP form', async () => {
-      // Arrange
-      const saveIfSubmitterIdIsUniqueSpy = jest
-        .spyOn(EncryptSubmission, 'saveIfSubmitterIdIsUnique')
-        .mockResolvedValueOnce(null)
-
-      const mockFormId = new ObjectId()
-      const mockSpAuthTypeAndIsSingleSubmissionEnabledForm = {
-        _id: mockFormId,
-        title: 'some form',
-        authType: FormAuthType.SP,
-        isSingleSubmission: true,
-        form_fields: [] as FormFieldSchema[],
-        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
-      } as IPopulatedEncryptedForm
-
-      const mockReq = merge(
-        expressHandler.mockRequest({
-          params: { formId: String(mockFormId) },
-          body: {
-            responses: [],
-          },
-        }),
-        {
-          formsg: {
-            encryptedPayload: {
-              encryptedContent: 'encryptedContent',
-              version: 1,
-            },
-            formDef: {
-              authType: FormAuthType.SP,
-            },
-            encryptedFormDef: mockSpAuthTypeAndIsSingleSubmissionEnabledForm,
-          } as unknown as EncryptSubmissionDto,
-        } as unknown as FormCompleteDto,
-      ) as unknown as SubmitEncryptModeFormHandlerRequest
-      const mockRes = expressHandler.mockResponse()
-
-      // Act
-      await submitEncryptModeFormForTest(mockReq, mockRes)
-
-      // Assert that submitterId is uppercased and then hashed
-      expect(saveIfSubmitterIdIsUniqueSpy).toHaveBeenCalledTimes(1)
-      expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][1]).toEqual(
-        generateHashedSubmitterId(
-          MOCK_JWT_PAYLOAD.userName.toUpperCase(),
-          String(mockFormId),
-        ),
-      )
-      expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][2].submitterId).toEqual(
-        generateHashedSubmitterId(
-          MOCK_JWT_PAYLOAD.userName.toUpperCase(),
-          String(mockFormId),
-        ),
-      )
-    })
-
     it('should hash submitterId for CP form', async () => {
       // Arrange
       const MOCK_JWT_PAYLOAD = {
@@ -351,7 +293,7 @@ describe('encrypt-submission.controller', () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         extractJwtPayload: (_arg1) =>
           okAsync(merge(MOCK_JWT_PAYLOAD, MOCK_COOKIE_TIMESTAMP)),
-      } as OidcServiceType<FormAuthType.CP>)
+      } as unknown as ReturnType<typeof OidcService.getOidcService>)
 
       const saveIfSubmitterIdIsUniqueSpy = jest
         .spyOn(EncryptSubmission, 'saveIfSubmitterIdIsUnique')
@@ -412,6 +354,7 @@ describe('encrypt-submission.controller', () => {
   describe('submitterId whitelisting', () => {
     const MOCK_JWT_PAYLOAD = {
       userName: 'submitterId',
+      userInfo: 'S1234567A',
       rememberMe: false,
     }
     const MOCK_COOKIE_TIMESTAMP = {
@@ -425,7 +368,7 @@ describe('encrypt-submission.controller', () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         extractJwtPayload: (_arg1) =>
           okAsync(merge(MOCK_JWT_PAYLOAD, MOCK_COOKIE_TIMESTAMP)),
-      } as OidcServiceType<FormAuthType.SP>)
+      } as unknown as ReturnType<typeof OidcService.getOidcService>)
 
       MockMailService.sendSubmissionToAdmin.mockResolvedValue(okAsync(true))
     })
@@ -443,10 +386,10 @@ describe('encrypt-submission.controller', () => {
         'performEncryptPostSubmissionActions',
       )
       const mockFormId = new ObjectId()
-      const mockSpAuthTypeAndIsSingleSubmissionEnabledForm = {
+      const mockCpAuthTypeAndIsSingleSubmissionEnabledForm = {
         _id: mockFormId,
         title: 'some form',
-        authType: FormAuthType.SP,
+        authType: FormAuthType.CP,
         isSingleSubmission: false,
         whitelistedSubmitterIds: {
           isWhitelistEnabled: true,
@@ -470,9 +413,9 @@ describe('encrypt-submission.controller', () => {
               version: 1,
             },
             formDef: {
-              authType: FormAuthType.SP,
+              authType: FormAuthType.CP,
             },
-            encryptedFormDef: mockSpAuthTypeAndIsSingleSubmissionEnabledForm,
+            encryptedFormDef: mockCpAuthTypeAndIsSingleSubmissionEnabledForm,
           } as unknown as EncryptSubmissionDto,
         } as unknown as FormCompleteDto,
       ) as unknown as SubmitEncryptModeFormHandlerRequest
@@ -518,10 +461,10 @@ describe('encrypt-submission.controller', () => {
         'performEncryptPostSubmissionActions',
       )
       const mockFormId = new ObjectId()
-      const mockSpAuthTypeAndIsSingleSubmissionEnabledForm = {
+      const mockCpAuthTypeAndIsSingleSubmissionEnabledForm = {
         _id: mockFormId,
         title: 'some form',
-        authType: FormAuthType.SP,
+        authType: FormAuthType.CP,
         isSingleSubmission: true,
         whitelistedSubmitterIds: {
           isWhitelistEnabled: true,
@@ -545,9 +488,9 @@ describe('encrypt-submission.controller', () => {
               version: 1,
             },
             formDef: {
-              authType: FormAuthType.SP,
+              authType: FormAuthType.CP,
             },
-            encryptedFormDef: mockSpAuthTypeAndIsSingleSubmissionEnabledForm,
+            encryptedFormDef: mockCpAuthTypeAndIsSingleSubmissionEnabledForm,
           } as unknown as EncryptSubmissionDto,
         } as unknown as FormCompleteDto,
       ) as unknown as SubmitEncryptModeFormHandlerRequest
@@ -572,7 +515,7 @@ describe('encrypt-submission.controller', () => {
       // Assert that user is logged out
       expect(mockRes.clearCookie).toHaveBeenCalledWith(
         getCookieNameByAuthType(
-          mockSpAuthTypeAndIsSingleSubmissionEnabledForm.authType as FormAuthType.SP,
+          mockCpAuthTypeAndIsSingleSubmissionEnabledForm.authType as FormAuthType.CP,
         ),
       )
 
@@ -593,10 +536,10 @@ describe('encrypt-submission.controller', () => {
         'performEncryptPostSubmissionActions',
       )
       const mockFormId = new ObjectId()
-      const mockSpAuthTypeAndIsSingleSubmissionEnabledForm = {
+      const mockCpAuthTypeAndIsSingleSubmissionEnabledForm = {
         _id: mockFormId,
         title: 'some form',
-        authType: FormAuthType.SP,
+        authType: FormAuthType.CP,
         isSingleSubmission: false,
         whitelistedSubmitterIds: {
           isWhitelistEnabled: true,
@@ -620,9 +563,9 @@ describe('encrypt-submission.controller', () => {
               version: 1,
             },
             formDef: {
-              authType: FormAuthType.SP,
+              authType: FormAuthType.CP,
             },
-            encryptedFormDef: mockSpAuthTypeAndIsSingleSubmissionEnabledForm,
+            encryptedFormDef: mockCpAuthTypeAndIsSingleSubmissionEnabledForm,
           } as unknown as EncryptSubmissionDto,
         } as unknown as FormCompleteDto,
       ) as unknown as SubmitEncryptModeFormHandlerRequest
@@ -655,6 +598,7 @@ describe('encrypt-submission.controller', () => {
   describe('single submission per submitterId', () => {
     const MOCK_JWT_PAYLOAD = {
       userName: 'submitterId',
+      userInfo: 'S1234567A',
       rememberMe: false,
     }
     const MOCK_COOKIE_TIMESTAMP = {
@@ -668,7 +612,7 @@ describe('encrypt-submission.controller', () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         extractJwtPayload: (_arg1) =>
           okAsync(merge(MOCK_JWT_PAYLOAD, MOCK_COOKIE_TIMESTAMP)),
-      } as OidcServiceType<FormAuthType.SP>)
+      } as unknown as ReturnType<typeof OidcService.getOidcService>)
 
       MockMailService.sendSubmissionToAdmin.mockResolvedValue(okAsync(true))
     })
@@ -689,10 +633,10 @@ describe('encrypt-submission.controller', () => {
       )
 
       const mockFormId = new ObjectId()
-      const mockSpAuthTypeAndIsSingleSubmissionEnabledForm = {
+      const mockCpAuthTypeAndIsSingleSubmissionEnabledForm = {
         _id: mockFormId,
         title: 'some form',
-        authType: FormAuthType.SP,
+        authType: FormAuthType.CP,
         isSingleSubmission: true,
         form_fields: [] as FormFieldSchema[],
         emails: ['test@example.com'],
@@ -713,9 +657,9 @@ describe('encrypt-submission.controller', () => {
               version: 1,
             },
             formDef: {
-              authType: FormAuthType.SP,
+              authType: FormAuthType.CP,
             },
-            encryptedFormDef: mockSpAuthTypeAndIsSingleSubmissionEnabledForm,
+            encryptedFormDef: mockCpAuthTypeAndIsSingleSubmissionEnabledForm,
           } as unknown as EncryptSubmissionDto,
         } as unknown as FormCompleteDto,
       ) as unknown as SubmitEncryptModeFormHandlerRequest
@@ -734,7 +678,7 @@ describe('encrypt-submission.controller', () => {
       // Assert that user is logged out
       expect(mockRes.clearCookie).toHaveBeenCalledWith(
         getCookieNameByAuthType(
-          mockSpAuthTypeAndIsSingleSubmissionEnabledForm.authType as FormAuthType.SP,
+          mockCpAuthTypeAndIsSingleSubmissionEnabledForm.authType as FormAuthType.CP,
         ),
       )
 
@@ -749,10 +693,10 @@ describe('encrypt-submission.controller', () => {
 
       // Arrange
       const mockFormId = new ObjectId()
-      const mockSpAuthTypeAndIsSingleSubmissionEnabledForm = {
+      const mockCpAuthTypeAndIsSingleSubmissionEnabledForm = {
         _id: mockFormId,
         title: 'some form',
-        authType: FormAuthType.SP,
+        authType: FormAuthType.CP,
         isSingleSubmission: true,
         form_fields: [] as FormFieldSchema[],
         getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
@@ -772,9 +716,9 @@ describe('encrypt-submission.controller', () => {
               version: 1,
             },
             formDef: {
-              authType: FormAuthType.SP,
+              authType: FormAuthType.CP,
             },
-            encryptedFormDef: mockSpAuthTypeAndIsSingleSubmissionEnabledForm,
+            encryptedFormDef: mockCpAuthTypeAndIsSingleSubmissionEnabledForm,
           } as unknown as EncryptSubmissionDto,
         } as unknown as FormCompleteDto,
       ) as unknown as SubmitEncryptModeFormHandlerRequest
@@ -800,11 +744,11 @@ describe('encrypt-submission.controller', () => {
 
       // Arrange
       const mockFormId = new ObjectId()
-      const mockSpAuthTypeAndIsSingleSubmissionEnabledAndIsSubmitterIdCollectionEnabledForm =
+      const mockCpAuthTypeAndIsSingleSubmissionEnabledAndIsSubmitterIdCollectionEnabledForm =
         {
           _id: mockFormId,
           title: 'some form',
-          authType: FormAuthType.SP,
+          authType: FormAuthType.CP,
           isSingleSubmission: true,
           isSubmitterIdCollectionEnabled: true,
           form_fields: [] as FormFieldSchema[],
@@ -825,10 +769,10 @@ describe('encrypt-submission.controller', () => {
               version: 1,
             },
             formDef: {
-              authType: FormAuthType.SP,
+              authType: FormAuthType.CP,
             },
             encryptedFormDef:
-              mockSpAuthTypeAndIsSingleSubmissionEnabledAndIsSubmitterIdCollectionEnabledForm,
+              mockCpAuthTypeAndIsSingleSubmissionEnabledAndIsSubmitterIdCollectionEnabledForm,
           } as unknown as EncryptSubmissionDto,
         } as unknown as FormCompleteDto,
       ) as unknown as SubmitEncryptModeFormHandlerRequest
@@ -881,65 +825,9 @@ describe('encrypt-submission.controller', () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         extractJwtPayload: (_arg1) =>
           okAsync(merge(MOCK_JWT_PAYLOAD, MOCK_COOKIE_TIMESTAMP)),
-      } as OidcServiceType<FormAuthType.SP>)
+      } as unknown as ReturnType<typeof OidcService.getOidcService>)
 
       MockMailService.sendSubmissionToAdmin.mockResolvedValue(okAsync(true))
-    })
-
-    it('should store login nric in verifiedContent if form isSubmitterIdCollectionEnabled is true for SP authType', async () => {
-      // Arrange
-      const mockFormId = new ObjectId()
-      const mockSpAuthTypeAndSubmitterIdCollectionEnabledForm = {
-        _id: mockFormId,
-        title: 'some form',
-        authType: FormAuthType.SP,
-        isSubmitterIdCollectionEnabled: true,
-        form_fields: [] as FormFieldSchema[],
-        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
-      } as IPopulatedEncryptedForm
-
-      const MOCK_REQ = merge(
-        expressHandler.mockRequest({
-          params: { formId: 'some id' },
-          body: {
-            responses: [],
-          },
-        }),
-        {
-          formsg: {
-            encryptedPayload: {
-              encryptedContent: 'encryptedContent',
-              version: 1,
-            },
-            formDef: {
-              authType: FormAuthType.SP,
-            },
-            encryptedFormDef: mockSpAuthTypeAndSubmitterIdCollectionEnabledForm,
-          } as unknown as EncryptSubmissionDto,
-        } as unknown as FormCompleteDto,
-      ) as unknown as SubmitEncryptModeFormHandlerRequest
-      const mockRes = expressHandler.mockResponse()
-      const expectedVerifiedContent = { uinFin: MOCK_NRIC, userInfo: undefined }
-
-      // Act
-      await submitEncryptModeFormForTest(MOCK_REQ, mockRes)
-      // Assert
-      // that verified content is generated since submitter login id is collected
-      expect(
-        MockVerifiedContentService.getVerifiedContent,
-      ).toHaveBeenCalledWith({
-        type: mockSpAuthTypeAndSubmitterIdCollectionEnabledForm.authType,
-        data: expectedVerifiedContent,
-      })
-
-      // that the saved submission is contains the correct verified content
-      const savedSubmission = await EncryptSubmission.findOne()
-
-      expect(savedSubmission).toBeDefined()
-      expect(savedSubmission).not.toBeNull()
-      expect(savedSubmission?.verifiedContent).toEqual(
-        JSON.stringify(expectedVerifiedContent),
-      )
     })
 
     it('should store login nric and uen in verifiedContent if form isSubmitterIdCollectionEnabled is true for CP authType', async () => {
@@ -950,7 +838,7 @@ describe('encrypt-submission.controller', () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         extractJwtPayload: (_arg1) =>
           okAsync(merge(MOCK_JWT_CP_PAYLOAD, MOCK_COOKIE_TIMESTAMP)),
-      } as OidcServiceType<FormAuthType.CP>)
+      } as unknown as ReturnType<typeof OidcService.getOidcService>)
 
       const mockFormId = new ObjectId()
       const mockCpAuthTypeAndSubmitterIdCollectionEnabledForm = {
@@ -1011,55 +899,6 @@ describe('encrypt-submission.controller', () => {
       )
     })
 
-    it('should not collect nric if form isSubmitterIdCollectionEnabled is undefined for SP authType', async () => {
-      // Arrange
-      const mockFormId = new ObjectId()
-      const mockSpAuthTypeAndNricMaskingEnabledForm = {
-        _id: mockFormId,
-        title: 'some form',
-        authType: FormAuthType.SP,
-        form_fields: [] as FormFieldSchema[],
-        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
-      } as IPopulatedEncryptedForm
-
-      const MOCK_REQ = merge(
-        expressHandler.mockRequest({
-          params: { formId: 'some id' },
-          body: {
-            responses: [],
-          },
-        }),
-        {
-          formsg: {
-            encryptedPayload: {
-              encryptedContent: 'encryptedContent',
-              version: 1,
-            },
-            formDef: {
-              authType: FormAuthType.SP,
-            },
-            encryptedFormDef: mockSpAuthTypeAndNricMaskingEnabledForm,
-          } as unknown as EncryptSubmissionDto,
-        } as unknown as FormCompleteDto,
-      ) as unknown as SubmitEncryptModeFormHandlerRequest
-      const mockRes = expressHandler.mockResponse()
-
-      // Act
-      await submitEncryptModeFormForTest(MOCK_REQ, mockRes)
-
-      // Assert
-      // that verified content is not generated
-      expect(
-        MockVerifiedContentService.getVerifiedContent,
-      ).not.toHaveBeenCalled()
-      // that the saved submission is does not contain verified content
-      const savedSubmission = await EncryptSubmission.findOne()
-
-      expect(savedSubmission).toBeDefined()
-      expect(savedSubmission).not.toBeNull()
-      expect(savedSubmission!.verifiedContent).toBeUndefined()
-    })
-
     it('should not collect nric or uen if form isSubmitterIdCollectionEnabled is false for CP authType', async () => {
       // Arrange
       MockOidcService.getOidcService.mockReturnValue({
@@ -1068,7 +907,7 @@ describe('encrypt-submission.controller', () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         extractJwtPayload: (_arg1) =>
           okAsync(merge(MOCK_JWT_CP_PAYLOAD, MOCK_COOKIE_TIMESTAMP)),
-      } as OidcServiceType<FormAuthType.CP>)
+      } as unknown as ReturnType<typeof OidcService.getOidcService>)
 
       const mockFormId = new ObjectId()
       const mockSpAuthTypeAndNricMaskingEnabledForm = {

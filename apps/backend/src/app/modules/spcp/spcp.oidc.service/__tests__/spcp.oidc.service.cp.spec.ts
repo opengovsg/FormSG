@@ -35,7 +35,11 @@ import {
 import { CpOidcClient } from '../../spcp.oidc.client'
 import { SpcpOidcBaseClientCache } from '../../spcp.oidc.client.cache'
 import { Refresh } from '../../spcp.oidc.client.types'
-import { ExtractedCorppassNDIPayload, JwtName } from '../../spcp.types'
+import {
+  ExtractedCorppassNDIPayload,
+  JwtName,
+  SpcpCookies,
+} from '../../spcp.types'
 import { CpOidcServiceClass } from '../spcp.oidc.service.cp'
 import { CpOidcProps } from '../spcp.oidc.service.types'
 
@@ -197,12 +201,12 @@ describe('spcp.oidc.service', () => {
         mockCpOidcClient,
         MOCK_PARAMS_CP,
       )
-      const MOCK_COOKIES_SP_ONLY = {
-        [JwtName.SP]: 'mockSpJwt',
-      }
+      const MOCK_COOKIES_WITHOUT_CP = {
+        jwtMyInfo: 'mockMyInfoJwt',
+      } as unknown as SpcpCookies
 
       // Act
-      const result = cpOidcServiceClass.extractJwt(MOCK_COOKIES_SP_ONLY)
+      const result = cpOidcServiceClass.extractJwt(MOCK_COOKIES_WITHOUT_CP)
 
       // Assert
       expect(result._unsafeUnwrapErr()).toEqual(new MissingJwtError())

@@ -28,7 +28,7 @@ describe('public-form.utils', () => {
         getLoginIdentityValues(FormAuthType.MyInfo, { userName: 'S1234567D' }),
       ).toEqual({ [MyInfoAttribute.UinFin]: 'S1234567D' })
       expect(
-        getLoginIdentityValues(FormAuthType.SP, { userName: 'S1234567D' }),
+        getLoginIdentityValues(FormAuthType.NIL, { userName: 'S1234567D' }),
       ).toEqual({})
     })
 
