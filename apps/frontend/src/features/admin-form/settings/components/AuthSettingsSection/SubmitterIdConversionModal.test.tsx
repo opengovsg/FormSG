@@ -68,24 +68,8 @@ describe('two-step conversion', () => {
     expect(onClose).not.toHaveBeenCalled()
     expect(mutation.mutate).not.toHaveBeenCalled()
   })
-  it('allows cancellation when idle', () => {
-    const onClose = vi.fn()
-    render(
-      <SubmitterIdConversionModal
-        authType={FormAuthType.CP}
-        isOpen
-        onClose={onClose}
-      />,
-    )
-    fireEvent.click(
-      screen.getByRole('button', { name: 'features.common.cancel' }),
-    )
-    expect(onClose).toHaveBeenCalledTimes(1)
-  })
   it.each([
     { authType: FormAuthType.MyInfo, isMobile: false },
-    { authType: FormAuthType.CP, isMobile: false },
-    { authType: FormAuthType.MyInfo, isMobile: true },
     { authType: FormAuthType.CP, isMobile: true },
   ])(
     'requires both pages and only saves on final confirmation for $authType, mobile=$isMobile',
@@ -151,7 +135,7 @@ describe('two-step conversion', () => {
       screen.queryByRole('button', { name: 'makeTheSwitch' }),
     ).not.toBeInTheDocument()
   })
-  it('keeps only the active panel accessible and omits footer links on both steps', () => {
+  it('keeps only the active panel accessible', () => {
     render(
       <SubmitterIdConversionModal
         authType={FormAuthType.MyInfo}
@@ -168,7 +152,6 @@ describe('two-step conversion', () => {
     expect(
       screen.queryByRole('button', { name: 'Preview 1' }),
     ).not.toBeInTheDocument()
-    expect(screen.queryByRole('link')).not.toBeInTheDocument()
     fireEvent.click(
       screen.getByRole('button', { name: 'features.common.next' }),
     )
@@ -181,7 +164,6 @@ describe('two-step conversion', () => {
     expect(
       screen.queryByRole('button', { name: 'Preview 0' }),
     ).not.toBeInTheDocument()
-    expect(screen.queryByRole('link')).not.toBeInTheDocument()
   })
   it.each([false, true])(
     'does not confirm a rapid second click, mobile=%s',

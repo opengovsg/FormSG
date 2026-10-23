@@ -123,12 +123,19 @@ describe('identity picker conversion entry', () => {
       'false',
     )
   })
-  it.each(['auth', 'limit'])('preserves the %s blocker', (blocker) => {
-    if (blocker === 'auth') state.form.authType = FormAuthType.CP
-    else state.atLimit = true
-    renderSection(FormAuthType.MyInfo)
+  const expectBlocked = () => {
     expect(screen.getByRole('button')).toBeDisabled()
     fireEvent.click(screen.getByRole('button'))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  }
+  it('blocks attrs the form login does not offer', () => {
+    state.form.authType = FormAuthType.CP
+    renderSection(FormAuthType.MyInfo)
+    expectBlocked()
+  })
+  it('blocks the picker at the login field limit', () => {
+    state.atLimit = true
+    renderSection()
+    expectBlocked()
   })
 })
