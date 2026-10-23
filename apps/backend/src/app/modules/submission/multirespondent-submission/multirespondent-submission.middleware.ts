@@ -146,7 +146,6 @@ const submitMultirespondentSubmissionBodySchema =
       amount_cents: Joi.number()
         .integer()
         .positive()
-        .min(paymentConfig.minPaymentAmountCents)
         .max(paymentConfig.maxPaymentAmountCents),
     }),
   })
