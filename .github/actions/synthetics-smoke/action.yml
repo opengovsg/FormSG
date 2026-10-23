@@ -18,10 +18,18 @@ runs:
     # The suite lives in Datadog, status "paused" so it never alerts on its own
     # schedule; CI triggers are the only runs. Every test routes its requests
     # through the START_URL variable, which points them at the environment
-    # under test:
-    #   nev-jju-pik  homepage serves (status, content-type, #root, latency)
-    #   uar-ap6-m4w  backend API responds (GET /api/v3/client/env)
-    #   rwb-ah7-7yh  landing page renders in a real browser
+    # under test. Test definitions are kept as code in .github/synthetics/
+    # (synced via sync.sh); ids.json there maps each definition to the
+    # public_id of the Datadog test it manages.
+    - name: Resolve test ids
+      id: ids
+      shell: bash
+      run: |
+        {
+          echo 'public-ids<<EOF'
+          jq -r '.[]' "$GITHUB_ACTION_PATH/../../synthetics/ids.json"
+          echo 'EOF'
+        } >>"$GITHUB_OUTPUT"
     - name: Run smoke suite
       uses: DataDog/synthetics-ci-github-action@7039855343386c30068a97ca381e68ea405e8539 # v4.1.1
       with:
@@ -29,10 +37,7 @@ runs:
         app-key: ${{ inputs.dd-app-key }}
         datadog-site: datadoghq.com
         subdomain: ogp
-        public-ids: |
-          nev-jju-pik
-          uar-ap6-m4w
-          rwb-ah7-7yh
+        public-ids: ${{ steps.ids.outputs.public-ids }}
         variables: START_URL=${{ inputs.url }}
         fail-on-timeout: 'true'
         fail-on-critical-errors: 'true'

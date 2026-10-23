@@ -134,6 +134,9 @@ await() {
           ;;
         build_failed | update_failed | canceled | deactivated)
           echo "deploy of $sha ended with status: $status" >&2
+          echo "--- last build log lines ---" >&2
+          render GET "/logs?ownerId=$OWNER_ID&resource=$id&type=build&limit=60" |
+            jq -r '.logs[]?.message // empty' >&2 || true
           output status "$status"
           return 1
           ;;

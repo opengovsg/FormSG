@@ -1,0 +1,53 @@
+{
+  "name": "[formsg-smoke] Landing page renders",
+  "type": "browser",
+  "status": "paused",
+  "message": "CI smoke test — runs only via CI triggers (release gate + PR previews), never on a Datadog schedule.",
+  "tags": ["team:formsg", "ci:formsg-smoke", "managed-by:formsg-repo"],
+  "locations": ["aws:ap-southeast-1"],
+  "config": {
+    "request": {
+      "method": "GET",
+      "url": "{{ START_URL }}"
+    },
+    "variables": [],
+    "configVariables": [
+      {
+        "name": "START_URL",
+        "type": "text",
+        "pattern": "https://stg.form.gov.sg",
+        "example": "https://stg.form.gov.sg"
+      }
+    ]
+  },
+  "options": {
+    "device_ids": ["chrome.laptop_large"],
+    "tick_every": 604800,
+    "min_failure_duration": 0,
+    "retry": {
+      "count": 1,
+      "interval": 1000
+    }
+  },
+  "steps": [
+    {
+      "type": "assertElementPresent",
+      "name": "Root app container is rendered",
+      "allowFailure": false,
+      "timeout": 60,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": "#root"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
