@@ -9,18 +9,20 @@ interface AuthSettingsDisabledExplanationTextProps {
   isFormPublic: boolean
   containsMyInfoFields: boolean
   containsLoginIdentityFields: boolean
+  isSubmitterIdCollectionEnabled?: boolean
   formResponseMode?: string
 }
 
 const FORM_IS_PUBLIC_DISABLED_EXPLANATION_TEXT =
   'To change Singpass settings, close your form to new responses.'
 const FORM_HAS_MYINFO_FIELDS =
-  'For changes to your Singpass authentication mode, remove all existing Myinfo fields.'
+  'To change your Singpass authentication mode, remove all existing Myinfo fields.'
 
 export const AuthSettingsDisabledExplanationText = ({
   isFormPublic,
   containsMyInfoFields,
   containsLoginIdentityFields,
+  isSubmitterIdCollectionEnabled = false,
   formResponseMode,
 }: AuthSettingsDisabledExplanationTextProps) => {
   const { t } = useTranslation()
@@ -36,11 +38,14 @@ export const AuthSettingsDisabledExplanationText = ({
     infoboxTextArray.push(FORM_IS_PUBLIC_DISABLED_EXPLANATION_TEXT)
   }
 
-  if (containsMyInfoFields) {
+  if (
+    containsMyInfoFields ||
+    (containsLoginIdentityFields && !isSubmitterIdCollectionEnabled)
+  ) {
     infoboxTextArray.push(FORM_HAS_MYINFO_FIELDS)
   }
 
-  if (containsLoginIdentityFields) {
+  if (containsLoginIdentityFields && isSubmitterIdCollectionEnabled) {
     infoboxTextArray.push(
       t(
         'features.adminForm.settings.singpass.submitterIdCollection.loginFieldsLockAuth',
@@ -49,7 +54,7 @@ export const AuthSettingsDisabledExplanationText = ({
   }
 
   const infoboxTextComponent = infoboxTextArray.length ? (
-    infoboxTextArray.length > 2 ? (
+    infoboxTextArray.length > 1 ? (
       <InlineMessage mb="1rem">
         <List styleType="disc" pl="1.5rem" m={0}>
           {infoboxTextArray.map((text, i) => (
