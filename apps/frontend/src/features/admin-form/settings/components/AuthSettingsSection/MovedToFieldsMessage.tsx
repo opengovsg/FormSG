@@ -1,37 +1,18 @@
-import { ReactNode } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { RefObject } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link as ReactLink, useParams } from 'react-router-dom'
 import { Stack, Text } from '@chakra-ui/react'
 
 import { FormAuthType } from 'formsg-shared/types/form'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
+import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
-import Link from '~components/Link'
 
 import {
   FieldListTabIndex,
   openFieldListTabState,
 } from '~features/admin-form/create/builder-and-design/constants'
-
-// Trans fills in the link text from the translation.
-const BuilderLink = ({
-  formId,
-  tab,
-  children,
-}: {
-  formId?: string
-  tab: FieldListTabIndex
-  children?: ReactNode
-}) => (
-  <Link
-    as={ReactLink}
-    to={`${ADMINFORM_ROUTE}/${formId}`}
-    state={openFieldListTabState(tab)}
-  >
-    {children}
-  </Link>
-)
 
 /**
  * Tells admins looking for the "Collect NRIC/FIN/UENs" toggle that it is now
@@ -39,8 +20,10 @@ const BuilderLink = ({
  */
 export const MovedToFieldsMessage = ({
   authType,
+  actionRef,
 }: {
   authType: FormAuthType
+  actionRef?: RefObject<HTMLAnchorElement>
 }): JSX.Element => {
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.settings.singpass.submitterIdCollection',
@@ -52,17 +35,18 @@ export const MovedToFieldsMessage = ({
 
   return (
     <InlineMessage>
-      <Stack spacing={0}>
-        <Text>
-          <Trans
-            t={t}
-            i18nKey={`${login}.movedToFields`}
-            components={{
-              builderLink: <BuilderLink formId={formId} tab={tab} />,
-            }}
-          />
-        </Text>
+      <Stack spacing="0.75rem" align="flex-start">
+        <Text>{t(`${login}.movedToFields`)}</Text>
         <Text>{t('otherFormsAutoConvertNotice')}</Text>
+        <Button
+          as={ReactLink}
+          ref={actionRef}
+          variant="outline"
+          to={`${ADMINFORM_ROUTE}/${formId}`}
+          state={openFieldListTabState(tab)}
+        >
+          {t(`${login}.goToFields`)}
+        </Button>
       </Stack>
     </InlineMessage>
   )

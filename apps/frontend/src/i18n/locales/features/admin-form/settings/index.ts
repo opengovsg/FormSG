@@ -11,27 +11,34 @@ export type HasTitle = {
 }
 
 type SubmitterIdCollectionLoginStrings = {
+  switchHint: string
+  stopTitle: string
+  stopDescription: string
+  collectLaterDescription: string
   movedToFields: string
+  goToFields: string
   modalTitle: string
-  modalBody: string
-  warning: string
+  outputTitle: string
+  collectionExplanation: string
 }
 
 export interface SingpassSettingsStrings extends HasTitle {
   submitterIdCollection: {
     toggleLabel: string
     convert: string
+    learnMore: string
+    stopCollecting: string
+    makeTheSwitch: string
     closeFormToConvert: string
     loginFieldsLockAuth: string
     removeIdentityFieldsFirst: string
-    stopHint: string
     autoConvertNotice: string
     otherFormsAutoConvertNotice: string
     preview: {
-      title: string
-      before: string
-      after: string
-      settingsTitle: string
+      howYouCollect: string
+      automationWarning: string
+      checkFullChanges: string
+      responsesUnchanged: string
     }
     singpass: SubmitterIdCollectionLoginStrings
     corppass: SubmitterIdCollectionLoginStrings

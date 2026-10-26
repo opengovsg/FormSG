@@ -21,3 +21,7 @@ export const augmentFieldWithQuestionNo = (
   )
   return fields
 }
+
+export const getNextQuestionNumber = (formFields: FormFieldDto[]): number =>
+  formFields.filter((field) => !NON_RESPONSE_FIELD_SET.has(field.fieldType))
+    .length + 1

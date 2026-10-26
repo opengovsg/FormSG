@@ -1,6 +1,8 @@
 import { Box } from '@chakra-ui/react'
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
+import { featureFlags } from 'formsg-shared/constants'
 import {
   AdminFormDto,
   BasicField,
@@ -60,6 +62,16 @@ const FORM = {
   workflow: WORKFLOW,
 } as unknown as Partial<AdminFormDto>
 
+const redesignOn = new GrowthBook({
+  features: { [featureFlags.workflowBuilderRedesign]: { defaultValue: true } },
+})
+
+const withRedesignOn = (Story: StoryFn) => (
+  <GrowthBookProvider growthbook={redesignOn}>
+    <Story />
+  </GrowthBookProvider>
+)
+
 export default {
   title: 'Features/AdminForm/Responses/WorkflowActions/StopWorkflowModal',
   component: StopWorkflowModal,
@@ -115,3 +127,20 @@ const Template: StoryFn<StopWorkflowModalProps> = (args) => (
 
 export const Default = Template.bind({})
 Default.parameters = { argos: { modes: viewportModes('mobile') } }
+
+export const Redesign = Template.bind({})
+Redesign.decorators = [withRedesignOn]
+
+export const NoEmailFields = Template.bind({})
+NoEmailFields.decorators = [withRedesignOn]
+NoEmailFields.parameters = {
+  msw: [
+    ...createFormBuilderMocks({ ...FORM, form_fields: [] }),
+    getAdminFormSettings({
+      mode: FormResponseMode.Multirespondent,
+      overrides: { emails: [], stepsToNotify: [] } as Partial<FormSettings>,
+    }),
+    getUser(),
+  ],
+}
+NoEmailFields.args = { responses: [] }

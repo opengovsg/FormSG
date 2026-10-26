@@ -1,133 +1,105 @@
-import { Trans, useTranslation } from 'react-i18next'
-import {
-  ButtonGroup,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Stack,
-  Text,
-  useDisclosure,
-} from '@chakra-ui/react'
+import { useTranslation } from 'react-i18next'
+import { BiLinkExternal } from 'react-icons/bi'
+import { Stack, Text, useDisclosure } from '@chakra-ui/react'
 
 import { FormAuthType, FormSettings } from 'formsg-shared/types/form'
-import { getLoginIdentityAttrsForAuthType } from 'formsg-shared/utils/login-identity'
 
 import { GUIDE_NRIC_FIELD } from '~constants/links'
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
-import Link from '~components/Link'
-import { ModalCloseButton } from '~components/Modal'
+import Toggle from '~components/Toggle'
 
 import { useMutateFormSettings } from '../../mutations'
 
-import { ConversionPreview } from './ConversionPreview'
-import { FormSubmitterIdCollectionToggle } from './FormNricCollectionToggle'
+import { StopSubmitterIdCollectionModal } from './StopSubmitterIdCollectionModal'
+import { SubmitterIdConversionModal } from './SubmitterIdConversionModal'
 
 interface SubmitterIdCollectionSettingProps {
   settings: FormSettings
   isFormPublic: boolean
   nextQuestionNumber?: number
+  onStoppedCollecting?: () => void
 }
 
 export const SubmitterIdCollectionSetting = ({
   settings,
   isFormPublic,
   nextQuestionNumber,
+  onStoppedCollecting,
 }: SubmitterIdCollectionSettingProps): JSX.Element => {
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.settings.singpass.submitterIdCollection',
   })
-  const { t: tCommon } = useTranslation()
   const convertModal = useDisclosure()
-  const { mutateConvertSubmitterIdCollection } = useMutateFormSettings()
-
-  const attrs = getLoginIdentityAttrsForAuthType(settings.authType)
+  const stopModal = useDisclosure()
+  const { mutateIsSubmitterIdCollectionEnabled } = useMutateFormSettings()
+  const isSaving = mutateIsSubmitterIdCollectionEnabled.isLoading
   const login = settings.authType === FormAuthType.CP ? 'corppass' : 'singpass'
+
+  const handleStopCollecting = async () => {
+    if (isSaving || isFormPublic) return
+    try {
+      // Await the save even if its cache update unmounts this modal.
+      await mutateIsSubmitterIdCollectionEnabled.mutateAsync(false)
+      stopModal.onClose()
+      onStoppedCollecting?.()
+    } catch {
+      // The mutation reports the error; keep the modal open to retry.
+    }
+  }
 
   return (
     <Stack spacing="1rem">
-      <FormSubmitterIdCollectionToggle settings={settings} isDisabled />
-      <InlineMessage variant="warning">
+      <Toggle
+        containerStyles={{ opacity: isFormPublic ? 0.8 : 1 }}
+        isDisabled={isFormPublic || isSaving}
+        isLoading={isSaving}
+        isChecked={!!settings.isSubmitterIdCollectionEnabled}
+        label={t('toggleLabel')}
+        onChange={stopModal.onOpen}
+      />
+      <InlineMessage variant="info">
         <Stack spacing="0.75rem" align="flex-start">
-          <Stack spacing={0}>
-            <Text>{t('stopHint')}</Text>
-            <Text>
-              <Trans
-                t={t}
-                i18nKey="autoConvertNotice"
-                components={{
-                  guideLink: (
-                    <Link
-                      href={GUIDE_NRIC_FIELD}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    />
-                  ),
-                }}
-              />
-            </Text>
+          <Text>
+            {t(`${login}.switchHint`)} {t('autoConvertNotice')}
+          </Text>
+          <Stack direction={{ base: 'column', sm: 'row' }} spacing="0.5rem">
+            <Button
+              variant="outline"
+              onClick={convertModal.onOpen}
+              isDisabled={isFormPublic}
+            >
+              {t('convert')}
+            </Button>
+            <Button
+              as="a"
+              href={GUIDE_NRIC_FIELD}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="clear"
+              rightIcon={<BiLinkExternal aria-hidden />}
+            >
+              {t('learnMore')}
+            </Button>
           </Stack>
-          <Button
-            variant="outline"
-            onClick={convertModal.onOpen}
-            isDisabled={isFormPublic}
-          >
-            {t('convert')}
-          </Button>
           {isFormPublic ? (
             <Text textStyle="caption-1">{t('closeFormToConvert')}</Text>
           ) : null}
         </Stack>
       </InlineMessage>
-      <Modal
+      <StopSubmitterIdCollectionModal
+        authType={settings.authType}
+        isOpen={stopModal.isOpen}
+        isSaving={isSaving}
+        onClose={stopModal.onClose}
+        onConfirm={handleStopCollecting}
+      />
+      <SubmitterIdConversionModal
+        authType={settings.authType}
         isOpen={convertModal.isOpen}
         onClose={convertModal.onClose}
-        returnFocusOnClose={false}
-      >
-        <ModalOverlay />
-        <ModalContent>
-          <ModalCloseButton />
-          <ModalHeader>{t(`${login}.modalTitle`)}</ModalHeader>
-          <ModalBody>
-            <Stack spacing="1rem">
-              <Text color="secondary.500">{t(`${login}.modalBody`)}</Text>
-              <ConversionPreview
-                attrs={attrs}
-                nextQuestionNumber={nextQuestionNumber}
-              />
-              <InlineMessage variant="warning">
-                <Text>
-                  <Trans
-                    t={t}
-                    i18nKey={`${login}.warning`}
-                    components={{ bold: <strong /> }}
-                  />
-                </Text>
-              </InlineMessage>
-            </Stack>
-          </ModalBody>
-          <ModalFooter>
-            <ButtonGroup>
-              <Button
-                variant="clear"
-                colorScheme="secondary"
-                onClick={convertModal.onClose}
-              >
-                {tCommon('features.common.cancel')}
-              </Button>
-              <Button
-                isLoading={mutateConvertSubmitterIdCollection.isLoading}
-                onClick={() => mutateConvertSubmitterIdCollection.mutate()}
-              >
-                {t('convert')}
-              </Button>
-            </ButtonGroup>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+        nextQuestionNumber={nextQuestionNumber}
+      />
     </Stack>
   )
 }

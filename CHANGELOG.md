@@ -2,6 +2,63 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.54.7](https://github.com/opengovsg/formsg/compare/v9.54.6...v9.54.7) (2026-10-26)
+
+
+### Bug Fixes
+
+* improve NRIC/FIN and UEN field migration UX (#10350) ([#10350](https://github.com/opengovsg/formsg/commit/74a75d6d34ae50598dd74ce124f19a445eb80ae6))
+
+## [9.54.6](https://github.com/opengovsg/formsg/compare/v9.54.5...v9.54.6) (2026-10-23)
+
+
+### Bug Fixes
+
+* **payments:** honor global_min_amount_override on MRF submissions (#10378) ([#10378](https://github.com/opengovsg/formsg/commit/17ab7894cb47f14c580b31206af227b393c2e5ab))
+
+## [9.54.5](https://github.com/opengovsg/formsg/compare/v9.54.4...v9.54.5) (2026-10-22)
+
+
+### Bug Fixes
+
+* **docker:** pin virus scanner base image to node 22.23.4 (#10376) ([#10376](https://github.com/opengovsg/formsg/commit/cff7d39f315b88e97138d5b4fcb4d76bb300d464))
+
+## [9.54.4](https://github.com/opengovsg/formsg/compare/v9.54.3...v9.54.4) (2026-10-22)
+
+
+### Bug Fixes
+
+* **docker:** bump pnpm use-node-version pin to 22.23.4 (#10374) ([#10374](https://github.com/opengovsg/formsg/commit/12269386b29011fc5adcbafeffeb688ce6858ca6))
+
+## [9.54.3](https://github.com/opengovsg/formsg/compare/v9.54.2...v9.54.3) (2026-10-22)
+
+
+### Bug Fixes
+
+* **docker:** force cstdint include so canvas compiles under GCC 15 (#10372) ([#10372](https://github.com/opengovsg/formsg/commit/b754425077ce46e530e7cf4f7d70b3a2de230b7d))
+
+## [9.54.2](https://github.com/opengovsg/formsg/compare/v9.54.1...v9.54.2) (2026-10-22)
+
+
+### Bug Fixes
+
+* **security:** bump Node.js to 22.23.4 for Brotli decoder RCE (#10370) ([#10370](https://github.com/opengovsg/formsg/commit/6b4a0d2216d30f031d6e007aa401c7ff06d893d5))
+
+## [9.54.1](https://github.com/opengovsg/formsg/compare/v9.54.0...v9.54.1) (2026-10-22)
+
+
+### Bug Fixes
+
+* **children:** clear and lock sub-fields a MyInfo record leaves blank (#10357) ([#10357](https://github.com/opengovsg/formsg/commit/c3a1beae020ac9304eb8e10364183fa08b0e4cc7))
+* **drawer:** dim the drawer when a modal opens over it (#10355) ([#10355](https://github.com/opengovsg/formsg/commit/f39f3506eed0977f08b3ec7475c376e2a479c77d))
+* **workflow-actions:** send the completion email to reassigned people (#10359) ([#10359](https://github.com/opengovsg/formsg/commit/fb9928baec6d64f8e7fe956b40d09bdeb981d04d))
+* **workflow-actions:** show the Stop modal's recipient dropdowns above the modal (#10356) ([#10356](https://github.com/opengovsg/formsg/commit/16485dd8118469bcb7b75f54de16ab4345748629))
+
+
+### Dependencies
+
+* **deps:** bump follow-redirects override to ^1.16.1 (#10366) ([#10366](https://github.com/opengovsg/formsg/commit/e44b19cf3b061826fb4b08e491a4f6a450a1c11d))
+
 ## [9.54.0](https://github.com/opengovsg/formsg/compare/v9.53.0...v9.54.0) (2026-10-21)
 
 

@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Divider, Stack } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
@@ -52,6 +53,18 @@ export const AuthSettingsSingpassSection = ({
   const offersIdentityFields =
     getLoginIdentityAttrsForAuthType(settings.authType).length > 0
 
+  const fieldsActionRef = useRef<HTMLAnchorElement>(null)
+  const [shouldFocusFields, setShouldFocusFields] = useState(false)
+  useEffect(() => {
+    if (!shouldFocusFields || !usesIdentityFields) return
+    // Wait for the outgoing modal's focus restoration cleanup to finish.
+    const frame = requestAnimationFrame(() => {
+      fieldsActionRef.current?.focus()
+      setShouldFocusFields(false)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [shouldFocusFields, usesIdentityFields])
+
   return (
     <>
       <SingpassAuthOptionsRadio
@@ -66,6 +79,7 @@ export const AuthSettingsSingpassSection = ({
               settings={settings}
               isFormPublic={isFormPublic}
               nextQuestionNumber={nextQuestionNumber}
+              onStoppedCollecting={() => setShouldFocusFields(true)}
             />
           ) : isToggleLockedByIdentityFields ? (
             <Stack spacing="1rem">
@@ -85,7 +99,10 @@ export const AuthSettingsSingpassSection = ({
           <Divider my="2.5rem" />
           <Stack spacing="1rem">
             <FormSubmitterIdCollectionToggle settings={settings} isDisabled />
-            <MovedToFieldsMessage authType={settings.authType} />
+            <MovedToFieldsMessage
+              authType={settings.authType}
+              actionRef={fieldsActionRef}
+            />
           </Stack>
         </>
       )}
