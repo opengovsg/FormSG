@@ -12,6 +12,7 @@ import {
 import {
   BasicField,
   ChildrenCompoundFieldBase,
+  FormFieldDto,
   FormResponseMode,
   MyInfoAttribute as InternalAttr,
   MyInfoAttribute,
@@ -24,6 +25,7 @@ import { hasProp } from 'formsg-shared/utils/has-prop'
 import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
+import { compact, uniq } from 'lodash'
 import moment from 'moment'
 import { FlattenMaps } from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
@@ -129,6 +131,8 @@ export const hashFieldValues = (
       return
     }
     if (!field.myInfo?.attr || !field.fieldValue || !field.disabled) return
+    // The login's NRIC/FIN comes from the login session, not a hash check.
+    if (field.myInfo.attr === MyInfoAttribute.UinFin) return
     readOnlyHashPromises[field.myInfo.attr] = bcrypt.hash(
       field.fieldValue.toString(),
       HASH_SALT_ROUNDS,
@@ -333,6 +337,21 @@ export const getMyInfoAttr = (
   }
   return field.myInfo?.attr
 }
+
+/**
+ * Unique MyInfo attributes to request for the given fields, with compound
+ * fields exploded into their sub-attributes.
+ */
+export const getUniqueMyInfoAttrsForFields = (
+  fields: readonly (IFieldSchema | FlattenMaps<IFieldSchema> | FormFieldDto)[],
+): InternalAttr[] =>
+  compact(
+    uniq(
+      fields.flatMap((field) =>
+        getMyInfoAttr(field as FlattenMaps<IFieldSchema>),
+      ),
+    ),
+  ) as InternalAttr[]
 
 /**
  * Helper function to get a MyInfo child's hash key inside an IHashes.

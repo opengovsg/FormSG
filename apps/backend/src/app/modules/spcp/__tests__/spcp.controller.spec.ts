@@ -462,6 +462,35 @@ describe('spcp.controller', () => {
         )
       })
 
+      it('sends a later-step login that lost its binding back to its step, not Step 1', async () => {
+        // Arrange
+        const submissionId = 'a'.repeat(24)
+        const nonce = 'b'.repeat(32)
+        mockCpOidcServiceClass.parseState.mockReturnValueOnce(
+          ok({
+            formId: MOCK_TARGET,
+            destination: `/${MOCK_TARGET}?queryId=abc&mrfStepSubmissionId=${submissionId}`,
+            rememberMe: false,
+            cookieDuration: MOCK_COOKIE_AGE,
+            nonce,
+          }),
+        )
+        const mockRes = expressHandler.mockResponse()
+
+        // Act
+        await loginHandler(MOCK_CPOIDC_LOGIN_REQ, mockRes, jest.fn())
+
+        // Assert
+        expect(mockRes.cookie).toHaveBeenCalledWith('isLoginError', true)
+        expect(mockRes.redirect).toHaveBeenCalledWith(
+          `/${MOCK_TARGET}/edit/${submissionId}?queryId=abc`,
+        )
+        expect(
+          mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+        ).not.toHaveBeenCalled()
+        expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
+      })
+
       it('should set the cookie with the correct params and redirect to the destination', async () => {
         // Arrange
         mockCpOidcServiceClass.jwtName = JwtName.CP

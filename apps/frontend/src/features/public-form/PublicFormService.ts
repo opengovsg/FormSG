@@ -12,6 +12,7 @@ import {
   PaymentFieldsDto,
 } from 'formsg-shared/types/field'
 import {
+  MrfStepAuthSessionDto,
   ProductItem,
   PublicFormAuthLogoutDto,
   PublicFormAuthRedirectDto,
@@ -109,6 +110,61 @@ export const logoutPublicForm = async (
 ): Promise<PublicFormAuthLogoutDto> => {
   return ApiService.get<PublicFormAuthLogoutDto>(
     `${PUBLIC_FORMS_ENDPOINT}/auth/${authType}/logout`,
+  ).then(({ data }) => data)
+}
+
+const getMrfStepAuthEndpoint = (formId: string, submissionId: string) =>
+  `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/${submissionId}/auth`
+
+/**
+ * Gets the login redirect url for the pending step of an MRF submission.
+ * The step token goes in the body, never the url.
+ * @returns redirect url for the step's login
+ */
+export const getMrfStepAuthRedirectUrl = async ({
+  formId,
+  submissionId,
+  stepToken,
+  encodedQuery,
+}: {
+  formId: string
+  submissionId: string
+  stepToken?: string
+  encodedQuery?: string
+}): Promise<PublicFormAuthRedirectDto['redirectURL']> => {
+  return ApiService.post<PublicFormAuthRedirectDto>(
+    `${getMrfStepAuthEndpoint(formId, submissionId)}/redirect`,
+    { stepToken, encodedQuery },
+  ).then(({ data }) => data.redirectURL)
+}
+
+/**
+ * Gets the login requirement and session for the pending step of an MRF
+ * submission, completing a MyInfo login started for that step.
+ */
+export const getMrfStepAuthSession = async ({
+  formId,
+  submissionId,
+  stepToken,
+}: {
+  formId: string
+  submissionId: string
+  stepToken?: string
+}): Promise<MrfStepAuthSessionDto> => {
+  return ApiService.post<MrfStepAuthSessionDto>(
+    `${getMrfStepAuthEndpoint(formId, submissionId)}/session`,
+    { stepToken },
+  ).then(({ data }) => data)
+}
+
+/** Logs out of the pending step of this MRF submission only. */
+export const logoutMrfStep = async (
+  formId: string,
+  submissionId: string,
+): Promise<PublicFormAuthLogoutDto> => {
+  return ApiService.post<PublicFormAuthLogoutDto>(
+    `${getMrfStepAuthEndpoint(formId, submissionId)}/logout`,
+    {},
   ).then(({ data }) => data)
 }
 

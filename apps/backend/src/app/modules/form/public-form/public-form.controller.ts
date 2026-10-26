@@ -66,8 +66,11 @@ import * as FormService from '../form.service'
 import * as PublicFormService from './public-form.service'
 import {
   getLoginIdentityValues,
+  getStepOneMyInfoAttrs,
+  getStepOneMyInfoFields,
   mapFormAuthError,
   mapRouteError,
+  mergePrefilledFields,
   prefillLoginIdentityFields,
 } from './public-form.utils'
 
@@ -385,7 +388,7 @@ export const handleGetPublicForm: ControllerHandler<
         await MyInfoService.prefillAndSaveMyInfoFields(
           form._id,
           myInfoFields,
-          form.toJSON().form_fields,
+          getStepOneMyInfoFields(form),
         )
 
       if (prefilledFieldsResult.isErr()) {
@@ -414,12 +417,17 @@ export const handleGetPublicForm: ControllerHandler<
           spcpSession,
           form: {
             ...publicForm,
-            form_fields: withLoginIdentities(prefilledFields as FormFieldDto[]),
+            form_fields: withLoginIdentities(
+              mergePrefilledFields(
+                form.toJSON().form_fields as FormFieldDto[],
+                prefilledFields as FormFieldDto[],
+              ),
+            ),
           },
           isIntranetUser,
           myInfoChildrenBirthRecords: (
             myInfoFields as MyInfoData
-          ).getChildrenBirthRecords(form.getUniqueMyInfoAttrs()),
+          ).getChildrenBirthRecords(getStepOneMyInfoAttrs(form)),
         })
     }
     default: {
@@ -568,7 +576,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
           return MyInfoFapiService.startLogin({
             formId,
             encodedQuery,
-            requestedAttributes: form.getUniqueMyInfoAttrs(),
+            requestedAttributes: getStepOneMyInfoAttrs(form),
             includeSponsoredChildren: shouldFetchSponsoredChildren(
               form,
               isMrfChildrenEnabled,

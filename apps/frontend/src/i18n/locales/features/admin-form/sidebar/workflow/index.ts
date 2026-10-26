@@ -154,7 +154,22 @@ export interface Workflow {
     placeholder: string
     placeholderRedesign: string
     autoAddHelperTextRedesign: string
-    stepOneOnlyHelperText: string
+    loginFieldsHelperText: string
+  }
+  stepLogin: {
+    title: string
+    enable: string
+    enableDescription: string
+    singpass: string
+    corppass: string
+    none: string
+    esrvcIdLabel: string
+    esrvcIdPlaceholder: string
+    esrvcIdWhitespace: string
+    removeFieldsFirst: string
+    manageRestrictions: string
+    closeFormToEdit: string
+    inactiveLabel: string
   }
   addField: {
     fields: string
