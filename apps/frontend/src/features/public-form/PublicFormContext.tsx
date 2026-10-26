@@ -21,6 +21,7 @@ import { FormFieldValues } from '~templates/Field'
 
 import { PrefillMap } from './components/FormFields/FormFields'
 import { decryptSubmission } from './utils/decryptSubmission'
+import { MrfStepAuthTarget } from './mutations'
 
 export type SubmissionData = {
   /** Submission id */
@@ -48,6 +49,8 @@ export interface PublicFormContextProps
   miniHeaderRef: RefObject<HTMLDivElement>
   formId: string
   previousSubmissionId?: string
+  /** Set when a later MRF step has its own login, which replaces Step 1's. */
+  mrfStepAuthTarget?: MrfStepAuthTarget
   /** Whether form authentication is required. */
   isAuthRequired: boolean
   /**

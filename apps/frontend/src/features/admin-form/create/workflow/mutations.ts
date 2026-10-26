@@ -5,12 +5,13 @@ import { useParams } from 'react-router-dom'
 import {
   AdminFormDto,
   FormResponseMode,
-  FormWorkflowStep,
+  FormWorkflowStepWriteDto,
 } from 'formsg-shared/types/form'
 
 import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
+import { adminFormSettingsKeys } from '~features/admin-form/settings/queries'
 import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedbackContainer/adminFeedbackStore'
 
 import { useAdminFormWorkflow } from './hooks/useAdminFormWorkflow'
@@ -33,6 +34,13 @@ export const useWorkflowMutations = () => {
   const adminFormKey = adminFormKeys.id(formId)
   const toast = useToast({ status: 'success', isClosable: true })
 
+  // A step save may also change Step 1's form-level login, which Settings
+  // reads from its own query, so both re-render from one source after a save.
+  const invalidateFormQueries = useCallback(() => {
+    void queryClient.invalidateQueries(adminFormKey)
+    void queryClient.invalidateQueries(adminFormSettingsKeys.id(formId))
+  }, [adminFormKey, formId, queryClient])
+
   const handleError = useCallback(
     (error: Error) => {
       toast.closeAll()
@@ -45,7 +53,7 @@ export const useWorkflowMutations = () => {
   )
 
   const createStepMutation = useMutation(
-    (createStepBody: FormWorkflowStep) =>
+    (createStepBody: FormWorkflowStepWriteDto) =>
       createWorkflowStep(formId, createStepBody),
     {
       onSuccess: (updatedWorkflow) => {
@@ -57,6 +65,7 @@ export const useWorkflowMutations = () => {
           }
           return { ...prev, workflow: updatedWorkflow }
         })
+        invalidateFormQueries()
         toast({
           description: 'The step was successfully created.',
         })
@@ -112,7 +121,7 @@ export const useWorkflowMutations = () => {
       updateStepBody,
     }: {
       stepNumber: number
-      updateStepBody: FormWorkflowStep
+      updateStepBody: FormWorkflowStepWriteDto
     }) => updateWorkflowStep(formId, stepNumber, updateStepBody),
     {
       onSuccess: (updatedWorkflow) => {
@@ -124,6 +133,7 @@ export const useWorkflowMutations = () => {
           }
           return { ...prev, workflow: updatedWorkflow }
         })
+        invalidateFormQueries()
         toast({
           description: 'The step was successfully updated.',
         })

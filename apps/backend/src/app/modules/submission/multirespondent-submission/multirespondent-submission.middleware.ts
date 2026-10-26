@@ -19,7 +19,12 @@ import {
   SubmissionType,
 } from 'formsg-shared/types'
 import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'
+import {
+  getStepAuthType,
+  hasStepLoginConfig,
+} from 'formsg-shared/utils/step-login'
 import { StatusCodes } from 'http-status-codes'
+import { uniq } from 'lodash'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
@@ -55,6 +60,7 @@ import * as FormService from '../../form/form.service'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
 import * as PaymentsService from '../../payments/payments.service'
+import { MissingJwtError } from '../../spcp/spcp.errors'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { createNdiResponsesV4FromRecord } from '../../spcp/spcp.util'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
@@ -104,6 +110,12 @@ import {
   validateMrfFieldResponses,
 } from './multirespondent-submission.utils'
 import { resolveMrfMyInfoReadOnlyFields } from './myinfo-read-only-fields'
+import {
+  clearMrfStepAuthCookie,
+  getLoginIdentityValue,
+  resolveMrfStepAuth,
+  verifyMrfStepAuthCookie,
+} from './step-auth'
 import * as stepToken from './step-token'
 
 const logger = createLoggerWithLabel(module)
@@ -313,6 +325,114 @@ export const createFormsgAndRetrieveForm = (
             })
         })
     })
+}
+
+/**
+ * Authenticates the respondent for the pending step of a submission whose
+ * saved workflow uses step login, before any response is processed. The
+ * snapshot decides, never the live form or the rollout flag, so a protected
+ * step is never treated as unprotected.
+ */
+export const verifyMrfStepAuth = (
+  req: ProcessedMultirespondentSubmissionHandlerRequest,
+  res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
+  next: NextFunction,
+) => {
+  const { formDef, mrfSubmission } = req.formsg
+  if (!mrfSubmission || !hasStepLoginConfig(mrfSubmission)) return next()
+  const logMeta = {
+    action: 'verifyMrfStepAuth',
+    formId: String(formDef._id),
+    submissionId: String(mrfSubmission._id),
+    ...createReqMeta(req),
+  }
+
+  const resolvedResult = resolveMrfStepAuth(
+    String(formDef._id),
+    mrfSubmission,
+    { stepToken: req.body.stepToken },
+  )
+  if (resolvedResult.isErr()) {
+    logger.warn({
+      message: 'Failed to resolve MRF step login',
+      meta: logMeta,
+      error: resolvedResult.error,
+    })
+    return sendRouteError(res, mapRouteError(resolvedResult.error))
+  }
+  const resolved = resolvedResult.value
+  if (!resolved.context) {
+    req.formsg.stepAuth = resolved
+    return next()
+  }
+
+  const sessionResult = verifyMrfStepAuthCookie(
+    req.cookies ?? {},
+    resolved.context,
+  )
+  if (sessionResult.isErr()) {
+    logger.warn({
+      message: 'MRF step respondent is not logged in for this step',
+      meta: logMeta,
+      error: sessionResult.error,
+    })
+    if (!(sessionResult.error instanceof MissingJwtError)) {
+      clearMrfStepAuthCookie(res, resolved.context)
+    }
+    return sendRouteError(res, mapRouteError(sessionResult.error), {
+      spcpSubmissionFailure: true,
+    })
+  }
+  req.formsg.stepAuth = { ...resolved, session: sessionResult.value }
+  return next()
+}
+
+/**
+ * Fills this step's login identity answers from its verified login, before
+ * logic and validation. Submitted, omitted, URL-prefilled and draft values
+ * never replace them. They are ordinary answers: no verified content and no
+ * provenance; the read-only list marks them `[Myinfo]`.
+ */
+export const fillLoginIdentityResponses = (
+  req: ProcessedMultirespondentSubmissionHandlerRequest,
+  res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
+  next: NextFunction,
+) => {
+  const { stepAuth } = req.formsg
+  if (!stepAuth) return next()
+
+  const filled: string[] = []
+  for (const field of stepAuth.stepFields) {
+    if (!isLoginIdentityField(field)) continue
+    const fieldId = String(field._id)
+    const value = stepAuth.session
+      ? getLoginIdentityValue(field, stepAuth.session)
+      : undefined
+    if (!value) {
+      // Fail closed rather than accept a typed identity.
+      if (field.required || !stepAuth.session) {
+        logger.error({
+          message: 'MRF step login did not provide a required identity',
+          meta: {
+            action: 'fillLoginIdentityResponses',
+            formId: req.params.formId,
+            submissionId: req.params.submissionId,
+            fieldId,
+          },
+        })
+        return sendRouteError(res, mapRouteError(new MissingSubmitterIdError()))
+      }
+      delete req.body.responses[fieldId]
+      continue
+    }
+    req.body.responses[fieldId] = {
+      fieldType: field.fieldType,
+      answer: { value },
+    } as ParsedClearFormFieldResponseV4
+    filled.push(fieldId)
+  }
+  req.formsg.loginFilledFieldIds = filled
+  return next()
 }
 
 type IdTaggedParsedClearAttachmentResponseV4 =
@@ -589,9 +709,16 @@ export const validateMultirespondentSubmission = async (
           return getVisibleFieldIdsV3(
             responsesV3ForLogic,
             formPropertiesForLogicComputation,
-          ).andThen((visibleFieldIds) =>
+          ).andThen((visibleFieldIds) => {
+            // Login identities feed logic for every step field, but are only
+            // kept where logic shows the field.
+            for (const fieldId of req.formsg.loginFilledFieldIds ?? []) {
+              if (!visibleFieldIds.has(fieldId)) {
+                delete req.body.responses[fieldId]
+              }
+            }
             // Step 1: Check prevent submission logic
-            getLogicUnitPreventingSubmitV3(
+            return getLogicUnitPreventingSubmitV3(
               responsesV3ForLogic,
               formPropertiesForLogicComputation,
               visibleFieldIds,
@@ -753,14 +880,19 @@ export const validateMultirespondentSubmission = async (
                   responses: req.body.responses,
                   previousResponses,
                   workflowStep,
-                  formAuthType: req.formsg.formDef.authType,
+                  stepAuthType: getStepAuthType(
+                    req.formsg.formDef,
+                    workflow,
+                    workflowStep,
+                  ),
+                  stepFieldIds: new Set(editableFieldIds),
                   // Fail closed: without a growthbook instance, Children
                   // responses are rejected.
                   isMrfChildrenEnabled:
                     req.growthbook?.isOn(featureFlags.mrfChildren) ?? false,
                 })
-              }),
-          )
+              })
+          })
         },
       )
       .map(() => next())
@@ -902,8 +1034,9 @@ export const setCurrentWorkflowStep = async (
  * answers client-side.
  *
  * Must run before encryptSubmission, which snapshots the responses into the
- * stored encryptedContent. MyInfo prefill only happens on the first step, so
- * updates to an existing submission (mrfSubmission present) skip the check.
+ * stored encryptedContent. Step 1 checks the form-level MyInfo login; a later
+ * step with its own MyInfo login checks only its fields against the hashes
+ * scoped to that step's login session.
  *
  * On success, records the verification outcome as response provenance:
  * answers whose hash keys were verified get provenance.myinfoVerified
@@ -915,16 +1048,18 @@ export const verifyMyInfoHashes = async (
   next: NextFunction,
 ) => {
   const { formId } = req.params
-  const { formDef, mrfSubmission } = req.formsg
-
-  if (formDef.authType !== FormAuthType.MyInfo || mrfSubmission) {
-    return next()
-  }
-
+  const { formDef, mrfSubmission, stepAuth } = req.formsg
   const logMeta = {
     action: 'verifyMyInfoHashes',
     formId,
     ...createReqMeta(req),
+  }
+
+  if (mrfSubmission) {
+    return stepAuth ? verifyStepMyInfoHashes(req, res, next, logMeta) : next()
+  }
+  if (formDef.authType !== FormAuthType.MyInfo) {
+    return next()
   }
 
   return extractMyInfoLoginJwt(req.cookies)
@@ -961,6 +1096,88 @@ export const verifyMyInfoHashes = async (
       logger.error({
         message: 'Error verifying MyInfo hashes',
         meta: logMeta,
+        error,
+      })
+      return sendRouteError(res, mapRouteError(error), {
+        spcpSubmissionFailure: true,
+      })
+    })
+}
+
+/**
+ * A later step checks only its own MyInfo answers, against the hashes saved
+ * for its login session. Verified MyInfo answers and login-filled identities
+ * join the stored read-only list, which only grows.
+ */
+const verifyStepMyInfoHashes = (
+  req: ProcessedMultirespondentSubmissionHandlerRequest,
+  res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
+  next: NextFunction,
+  logMeta: { action: string } & Record<string, unknown>,
+) => {
+  const { formId } = req.params
+  const { mrfSubmission, stepAuth, loginFilledFieldIds = [] } = req.formsg
+  const session = stepAuth?.session
+  if (!stepAuth || !session) return next()
+
+  const withReadOnly = (verifiedFieldIds: string[]) => {
+    req.formsg.myInfoVerifiedFieldIds = verifiedFieldIds
+    req.formsg.myInfoReadOnlyFields = uniq([
+      ...(mrfSubmission?.myInfoReadOnlyFields ?? []),
+      ...verifiedFieldIds,
+      ...loginFilledFieldIds,
+    ])
+    return next()
+  }
+  if (session.authType !== FormAuthType.MyInfo) return withReadOnly([])
+
+  // Stored fields carry ObjectIds; response keys are strings.
+  const stepFieldIds = new Set(
+    stepAuth.stepFields.map(({ _id }) => String(_id)),
+  )
+  const stepResponses = Object.fromEntries(
+    Object.entries(req.body.responses ?? {}).filter(([id]) =>
+      stepFieldIds.has(id),
+    ),
+  )
+  // Identities come from the login session, so only profile answers have hashes.
+  const hashCheckFields = stepAuth.stepFields.filter(
+    (field) => !isLoginIdentityField(field),
+  )
+  const hashCheckResponses = adaptV4ResponsesForMyInfoHashCheck(
+    stepResponses,
+    hashCheckFields,
+  )
+  // A step without prefilled read-only answers saved nothing to check.
+  if (hashCheckResponses.length === 0) return withReadOnly([])
+
+  return MyInfoService.fetchMyInfoHashes(session.userName, formId, {
+    authSessionId: session.myInfoAuthSessionId as string,
+    workflowStep: stepAuth.workflowStep,
+  })
+    .andThen((hashes) =>
+      MyInfoService.checkMyInfoHashes(hashCheckResponses, hashes),
+    )
+    .andThen((verifiedKeys) =>
+      reconcileChildTypesWithChildTypeAnswers(
+        stepResponses,
+        hashCheckFields,
+        verifiedKeys,
+      ).map(() => verifiedKeys),
+    )
+    .map((verifiedKeys) => {
+      stampMyInfoVerifiedOnResponses(stepResponses, verifiedKeys)
+      return withReadOnly(
+        resolveMrfMyInfoReadOnlyFields({
+          verifiedKeys,
+          responses: stepResponses,
+        }),
+      )
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error verifying MRF step MyInfo hashes',
+        meta: { ...logMeta, workflowStep: stepAuth.workflowStep },
         error,
       })
       return sendRouteError(res, mapRouteError(error), {
@@ -1183,11 +1400,10 @@ export const handleNdiResponses = async (
   const isSingpassAuthType =
     authType === FormAuthType.CP || authType === FormAuthType.MyInfo
 
-  // 1. Handle Ndi data for current step
-  if (
-    isSingpassAuthType &&
-    stepNumber === 1 // TODO: update to handle when subsequent steps are Singpass-enabled
-  ) {
+  // 1. Handle Ndi data for current step. Only Step 1's form-level login writes
+  // verified content; a later step's login fills ordinary answers instead and
+  // carries earlier verified content forward below.
+  if (isSingpassAuthType && stepNumber === 1) {
     let userName
     let userInfo
     let jwtPayloadResult

@@ -53,6 +53,7 @@ import {
   isLoginField,
   isMyInfoDataField,
 } from 'formsg-shared/utils/login-identity'
+import { formUsesAuthType } from 'formsg-shared/utils/step-login'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import { compact, omit, pick, uniq } from 'lodash'
@@ -667,9 +668,16 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         validate: [
           {
             validator: function (this: IFormSchema) {
+              // Any step's Singpass login may fill Myinfo fields; the
+              // pre-validate hook checks each field's owning step.
               return (
-                this.authType === FormAuthType.MyInfo ||
-                !(this.form_fields ?? []).some(isMyInfoDataField)
+                formUsesAuthType(
+                  {
+                    authType: this.authType ?? FormAuthType.NIL,
+                    workflow: this.get('workflow'),
+                  },
+                  FormAuthType.MyInfo,
+                ) || !(this.form_fields ?? []).some(isMyInfoDataField)
               )
             },
             message: 'Myinfo fields need Singpass login.',

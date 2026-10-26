@@ -1,6 +1,8 @@
 import {
+  FirstStepLoginInput,
   FormFieldDto,
-  FormWorkflowStep,
+  FormWorkflowStepAuth,
+  FormWorkflowStepBase,
   FormWorkflowStepDynamic,
   FormWorkflowStepStatic,
   WorkflowType,
@@ -24,7 +26,7 @@ export enum GuidedWrapUp {
   Done = 'done',
 }
 
-export type EditStepInputs = FormWorkflowStep & {
+export type EditStepInputs = Omit<FormWorkflowStepBase, 'auth'> & {
   _id: string
   workflow_type: WorkflowType
   emails?: FormWorkflowStepStatic['emails']
@@ -32,4 +34,9 @@ export type EditStepInputs = FormWorkflowStep & {
   approval_field?: FormFieldDto['_id']
   conditional_field?: FormFieldDto['_id']
   step_name: FormWorkflowStepStatic['step_name']
+  // Steps 2+ only. Null or undefined means no login.
+  auth?: FormWorkflowStepAuth | null
+  // Step 1 only. Set once the admin changes Step 1's login in the editor, so
+  // an untouched step leaves the form-level login alone.
+  first_step_login?: FirstStepLoginInput
 }

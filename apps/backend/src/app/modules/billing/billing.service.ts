@@ -6,6 +6,7 @@ import {
   FormBillingStatistic,
   ILoginSchema,
   IPopulatedForm,
+  LoginAuth,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getLoginModel from '../../models/login.server.model'
@@ -51,24 +52,30 @@ export const getSpLoginStats = (
 /**
  * Adds a login record for a form with authentication to the database.
  * @param form Form populated with admin and agency data
+ * @param login the login to bill; defaults to the form-level login (Step 1).
+ * A later MRF step's Corppass login passes its own e-service ID.
  * @return The Login document saved to the database
  */
 export const recordLoginByForm = (
   form: IPopulatedForm,
+  login?: LoginAuth,
 ): ResultAsync<ILoginSchema, FormHasNoAuthError | DatabaseError> => {
   const logMeta = {
     action: 'recordLoginByForm',
     formId: form._id,
   }
-  if (form.authType === FormAuthType.NIL) {
+  if ((login?.authType ?? form.authType) === FormAuthType.NIL) {
     return errAsync(new FormHasNoAuthError())
   }
-  return ResultAsync.fromPromise(LoginModel.addLoginFromForm(form), (error) => {
-    logger.error({
-      message: 'Error adding login to database',
-      meta: logMeta,
-      error,
-    })
-    return new DatabaseError(getMongoErrorMessage(error))
-  })
+  return ResultAsync.fromPromise(
+    LoginModel.addLoginFromForm(form, login),
+    (error) => {
+      logger.error({
+        message: 'Error adding login to database',
+        meta: logMeta,
+        error,
+      })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  )
 }

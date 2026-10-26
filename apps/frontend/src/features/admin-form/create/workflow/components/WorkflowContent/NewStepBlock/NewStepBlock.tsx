@@ -6,7 +6,7 @@ import { Stack, Text, useDisclosure } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants'
-import { FormWorkflowStep } from 'formsg-shared/types'
+import { FormWorkflowStepWriteDto } from 'formsg-shared/types'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
 import Button from '~components/Button'
@@ -110,7 +110,7 @@ export const NewStepBlock = () => {
   }
 
   const handleSubmit = useCallback(
-    (step: FormWorkflowStep) =>
+    (step: FormWorkflowStepWriteDto) =>
       createStepMutation.mutate(step, {
         onSuccess: () => {
           setCompletedStep(newStepNumber)
