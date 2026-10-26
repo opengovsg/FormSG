@@ -55,12 +55,6 @@ MyInfoHashSchema.index({
   form: 1,
   uinFin: 1,
 })
-MyInfoHashSchema.index({
-  form: 1,
-  uinFin: 1,
-  authSessionId: 1,
-  workflowStep: 1,
-})
 MyInfoHashSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
 
 // Scoped hashes belong to one later-step login; Step 1 (and storage mode)
