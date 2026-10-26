@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.54.7](https://github.com/opengovsg/formsg/compare/v9.54.6...v9.54.7) (2026-10-26)
+
+
+### Bug Fixes
+
+* improve NRIC/FIN and UEN field migration UX (#10350) ([#10350](https://github.com/opengovsg/formsg/commit/74a75d6d34ae50598dd74ce124f19a445eb80ae6))
+
 ## [9.54.6](https://github.com/opengovsg/formsg/compare/v9.54.5...v9.54.6) (2026-10-23)
 
 
