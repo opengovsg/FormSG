@@ -64,7 +64,7 @@ jobs:
           version=$(jq -r .version < packages/sdk/package.json)
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "tag=sdk-v${version}" >> "$GITHUB_OUTPUT"
-          if npm view "${{ env.SDK_PACKAGE }}@${version}" version >/dev/null 2>&1; then
+          if npm view "${SDK_PACKAGE}@${version}" version >/dev/null 2>&1; then
             echo "Version ${version} already published on npm; skipping release."
             echo "should-publish=false" >> "$GITHUB_OUTPUT"
           else
@@ -101,15 +101,19 @@ jobs:
 
       - name: Extract release notes from changelog
         if: ${{ steps.version.outputs.should-publish == 'true' }}
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          awk '/^## \['"${{ steps.version.outputs.version }}"'\]/{flag=1; next} /^## \[/{flag=0} flag' \
+          awk '/^## \['"$VERSION"'\]/{flag=1; next} /^## \[/{flag=0} flag' \
             packages/sdk/CHANGELOG.md > .sdk_release_notes.md
 
       - name: Create GitHub release
         if: ${{ steps.version.outputs.should-publish == 'true' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          gh release create "${{ steps.version.outputs.tag }}" \
-            --title "SDK v${{ steps.version.outputs.version }}" \
+          gh release create "$TAG" \
+            --title "SDK v$VERSION" \
             --notes-file .sdk_release_notes.md

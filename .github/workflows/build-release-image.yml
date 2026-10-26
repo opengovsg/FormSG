@@ -58,8 +58,10 @@ jobs:
 
       - name: Check if release image already exists
         id: check-exists
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
         run: |
-          IMAGE="${{ env.IMAGE_NAME }}:release-${{ steps.version.outputs.tag }}"
+          IMAGE="$IMAGE_NAME:release-$TAG"
           if docker manifest inspect "$IMAGE" > /dev/null 2>&1; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "Release image already exists: $IMAGE"

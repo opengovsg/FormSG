@@ -247,8 +247,9 @@ jobs:
           languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
-      - run: pnpm test:backend:ci --shard=${{ matrix.shard }}/3
+      - run: pnpm test:backend:ci --shard="$SHARD/3"
         env:
+          SHARD: ${{ matrix.shard }}
           DD_TAGS: layer:backend
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
           AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
