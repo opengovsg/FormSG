@@ -27,7 +27,8 @@ jobs:
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           BRANCH: ${{ github.event.pull_request.head.ref }}
-        run: .github/scripts/render-preview.sh up "formsg-pr-${{ github.event.pull_request.number }}" "$BRANCH"
+          PR: ${{ github.event.pull_request.number }}
+        run: .github/scripts/render-preview.sh up "formsg-pr-$PR" "$BRANCH"
       - if: steps.render.outputs.created == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -54,7 +55,8 @@ jobs:
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           SHA: ${{ github.event.pull_request.head.sha }}
-        run: .github/scripts/render-preview.sh wake "formsg-pr-${{ github.event.pull_request.number }}" "$SHA"
+          PR: ${{ github.event.pull_request.number }}
+        run: .github/scripts/render-preview.sh wake "formsg-pr-$PR" "$SHA"
       - if: steps.render.outputs.woke == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -90,7 +92,8 @@ jobs:
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           SHA: ${{ github.event.pull_request.head.sha }}
-        run: .github/scripts/render-preview.sh await "formsg-pr-${{ github.event.pull_request.number }}" "$SHA"
+          PR: ${{ github.event.pull_request.number }}
+        run: .github/scripts/render-preview.sh await "formsg-pr-$PR" "$SHA"
       - uses: ./.github/actions/synthetics-smoke
         with:
           url: ${{ steps.await.outputs.url }}
@@ -109,4 +112,5 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-        run: .github/scripts/render-preview.sh down "formsg-pr-${{ github.event.pull_request.number }}"
+          PR: ${{ github.event.pull_request.number }}
+        run: .github/scripts/render-preview.sh down "formsg-pr-$PR"

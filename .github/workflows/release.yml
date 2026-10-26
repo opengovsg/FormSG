@@ -83,7 +83,7 @@ jobs:
       # locally. .internal.versionrc.js excludes packages/sdk, so this commit
       # never touches the SDK. Same config the laptop flow used.
       - name: Bump app version, regenerate changelog and tag
-        run: pnpm dlx commit-and-tag-version@${{ env.CTV_VERSION }} --config .internal.versionrc.js
+        run: pnpm dlx "commit-and-tag-version@$CTV_VERSION" --config .internal.versionrc.js
 
       - name: Resolve release version
         id: version
@@ -93,9 +93,9 @@ jobs:
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
         run: |
-          version="${{ steps.version.outputs.tag }}"
-          ./scripts/generate_test_checklist.sh "${version#v}" CHANGELOG.md >> "$GITHUB_STEP_SUMMARY"
+          ./scripts/generate_test_checklist.sh "${TAG#v}" CHANGELOG.md >> "$GITHUB_STEP_SUMMARY"
 
       # Cuts the SDK release the way release_prep.sh did: bump
       # packages/sdk/package.json, update packages/sdk/CHANGELOG.md and create a
@@ -111,7 +111,7 @@ jobs:
             echo "No new SDK commits since ${last_sdk_tag}; skipping SDK release."
             echo "tag=" >> "$GITHUB_OUTPUT"
           else
-            pnpm dlx commit-and-tag-version@${{ env.CTV_VERSION }} --config .external.versionrc.js
+            pnpm dlx "commit-and-tag-version@$CTV_VERSION" --config .external.versionrc.js
             echo "tag=sdk-v$(jq -r .version packages/sdk/package.json)" >> "$GITHUB_OUTPUT"
           fi
 
@@ -119,25 +119,29 @@ jobs:
       # bump commit. The downstream jobs check out these tags, so they must be on
       # the remote before this job finishes.
       - name: Push commits and tags
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          SDK_TAG: ${{ steps.sdk.outputs.tag }}
         run: |
           git push origin HEAD:develop
-          git push origin "refs/tags/${{ steps.version.outputs.tag }}"
-          if [[ -n "${{ steps.sdk.outputs.tag }}" ]]; then
-            git push origin "refs/tags/${{ steps.sdk.outputs.tag }}"
+          git push origin "refs/tags/$TAG"
+          if [[ -n "$SDK_TAG" ]]; then
+            git push origin "refs/tags/$SDK_TAG"
           fi
 
       - name: Update GitHub Releases page
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
         run: |
-          if gh release view "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
-            echo "Updating existing GitHub release ${{ steps.version.outputs.tag }} with regenerated release notes."
-            gh api "repos/${{ github.repository }}/releases/generate-notes" \
-              -f "tag_name=${{ steps.version.outputs.tag }}" \
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Updating existing GitHub release $TAG with regenerated release notes."
+            gh api "repos/$GITHUB_REPOSITORY/releases/generate-notes" \
+              -f "tag_name=$TAG" \
               --jq .body > .release_notes.md
-            gh release edit "${{ steps.version.outputs.tag }}" --notes-file .release_notes.md
+            gh release edit "$TAG" --notes-file .release_notes.md
           else
-            gh release create "${{ steps.version.outputs.tag }}" \
+            gh release create "$TAG" \
               --verify-tag \
               --generate-notes
           fi

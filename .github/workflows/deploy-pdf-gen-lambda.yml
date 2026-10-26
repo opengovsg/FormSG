@@ -64,4 +64,6 @@ jobs:
         run: pnpm sam-build
       - name: Deploy with SAM
         working-directory: ./services/pdf-gen-sparticuz
-        run: pnpm run sam-deploy --config-env ${{ inputs.environment }} --no-confirm-changeset --no-fail-on-empty-changeset
+        env:
+          DEPLOY_ENV: ${{ inputs.environment }}
+        run: pnpm run sam-deploy --config-env "$DEPLOY_ENV" --no-confirm-changeset --no-fail-on-empty-changeset
