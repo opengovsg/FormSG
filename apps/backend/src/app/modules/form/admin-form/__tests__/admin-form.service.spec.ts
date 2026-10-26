@@ -4403,6 +4403,7 @@ describe('admin-form.service', () => {
         // Arrange
         const mockForm = {
           _id: new ObjectId().toHexString(),
+          authType: FormAuthType.MyInfo,
           responseMode: FormResponseMode.Multirespondent,
           form_fields: MOCK_FORM_FIELDS,
           workflow: [
@@ -4428,9 +4429,10 @@ describe('admin-form.service', () => {
         )
 
         // Assert
-        expect(result.isErr()).toBe(true)
-        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
-          MalformedParametersError,
+        expect(result._unsafeUnwrapErr()).toEqual(
+          new MalformedParametersError(
+            'Remove the Myinfo fields from this step first.',
+          ),
         )
       })
 
@@ -4452,6 +4454,7 @@ describe('admin-form.service', () => {
         ]
         const mockForm = {
           _id: mockFormId,
+          authType: FormAuthType.MyInfo,
           responseMode: FormResponseMode.Multirespondent,
           form_fields: MOCK_FORM_FIELDS,
           workflow: [mockUpdatedWorkflow[0]],
@@ -4495,6 +4498,7 @@ describe('admin-form.service', () => {
         ]
         const mockForm = {
           _id: mockFormId,
+          authType: FormAuthType.MyInfo,
           responseMode: FormResponseMode.Multirespondent,
           form_fields: MOCK_FORM_FIELDS,
           workflow: [],
@@ -4654,6 +4658,7 @@ describe('admin-form.service', () => {
         // Arrange
         const mockForm = {
           _id: new ObjectId().toHexString(),
+          authType: FormAuthType.MyInfo,
           responseMode: FormResponseMode.Multirespondent,
           form_fields: MOCK_FORM_FIELDS,
           workflow: [
@@ -4687,9 +4692,10 @@ describe('admin-form.service', () => {
         )
 
         // Assert
-        expect(result.isErr()).toBe(true)
-        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
-          MalformedParametersError,
+        expect(result._unsafeUnwrapErr()).toEqual(
+          new MalformedParametersError(
+            'Remove the Myinfo fields from this step first.',
+          ),
         )
       })
 
@@ -4712,6 +4718,7 @@ describe('admin-form.service', () => {
         ]
         const mockForm = {
           _id: mockFormId,
+          authType: FormAuthType.MyInfo,
           responseMode: FormResponseMode.Multirespondent,
           form_fields: MOCK_FORM_FIELDS,
           workflow: mockWorkflow,
@@ -4829,17 +4836,78 @@ describe('admin-form.service', () => {
       },
     )
 
-    it('rejects assigning an identity to a later step', async () => {
+    it('rejects assigning an identity to a later step without a login', async () => {
       const write = jest.spyOn(MultirespondentFormModel, 'findOneAndUpdate')
       const result = await AdminFormService.updateFormWorkflowStep(
         makeForm(FormStatus.Private),
         1,
         { ...nextStep, edit: [identityId, regularId] } as any,
       )
-      expect(result._unsafeUnwrapErr().message).toContain(
-        'UEN fields can only be filled in by Step 1.',
+      expect(result._unsafeUnwrapErr().message).toBe(
+        'Remove the Myinfo fields from this step first.',
       )
       expect(write).not.toHaveBeenCalled()
+    })
+
+    it('saves a later-step login with the step and drops the request-only keys', async () => {
+      const write = jest
+        .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
+        // @ts-ignore
+        .mockReturnValue({
+          exec: jest.fn().mockResolvedValue({ _id: 'form', workflow: [] }),
+        })
+      const auth = { auth_type: FormAuthType.CP, esrvc_id: 'ESRVC' }
+      const stepOne = { ...firstStep, edit: [regularId] }
+      const form = makeForm(FormStatus.Private)
+      ;(form as unknown as { workflow: unknown[] }).workflow = [
+        stepOne,
+        nextStep,
+      ]
+      const result = await AdminFormService.updateFormWorkflowStep(
+        form,
+        1,
+        {
+          ...nextStep,
+          edit: [identityId],
+          auth,
+          first_step_login: undefined,
+        } as any,
+        true,
+      )
+      expect(result.isOk()).toBe(true)
+      expect(write).toHaveBeenCalledWith(
+        expect.anything(),
+        { workflow: [stepOne, { ...nextStep, edit: [identityId], auth }] },
+        expect.anything(),
+      )
+    })
+
+    it('writes first_step_login to the form-level login in the same update', async () => {
+      const write = jest
+        .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
+        // @ts-ignore
+        .mockReturnValue({
+          exec: jest.fn().mockResolvedValue({ _id: 'form', workflow: [] }),
+        })
+      const result = await AdminFormService.updateFormWorkflowStep(
+        makeForm(FormStatus.Private),
+        0,
+        {
+          ...firstStep,
+          edit: [regularId],
+          first_step_login: { auth_type: FormAuthType.NIL, esrvc_id: '' },
+        } as any,
+      )
+      expect(result.isOk()).toBe(true)
+      expect(write).toHaveBeenCalledWith(
+        expect.anything(),
+        {
+          workflow: [{ ...firstStep, edit: [regularId] }, nextStep],
+          authType: FormAuthType.NIL,
+          esrvcId: '',
+        },
+        expect.anything(),
+      )
     })
   })
 

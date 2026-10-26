@@ -3,6 +3,7 @@ import { Router } from 'express'
 import { rateLimitConfig } from '../../../../config/config'
 import * as EncryptSubmissionController from '../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
 import * as MultirespondentSubmissionController from '../../../../modules/submission/multirespondent-submission/multirespondent-submission.controller'
+import * as MrfStepAuthController from '../../../../modules/submission/multirespondent-submission/step-auth.controller'
 import * as SubmissionController from '../../../../modules/submission/submission.controller'
 import * as WogaaController from '../../../../modules/wogaa/wogaa.controller'
 import { limitRate } from '../../../../utils/limit-rate'
@@ -77,6 +78,49 @@ PublicFormsSubmissionsRouter.route(
     limitRate({ max: rateLimitConfig.submissions }),
     MultirespondentSubmissionController.handleUpdateMultirespondentSubmission,
   )
+
+/**
+ * Login for the pending step of a multirespondent submission, using the
+ * step's own saved login. The step token travels in the body, never the URL.
+ * @route POST /forms/:formId/submissions/:submissionId/auth/redirect
+ * @returns 200 with the provider redirect URL
+ * @returns 400 when the step has no login or a Corppass step has no e-service ID
+ * @returns 403 when the step token is invalid
+ * @returns 409 when the submission is completed or rejected
+ */
+PublicFormsSubmissionsRouter.route(
+  '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/auth/redirect',
+).post(
+  limitRate({ max: rateLimitConfig.submissions }),
+  MrfStepAuthController.handleMrfStepAuthRedirect,
+)
+
+/**
+ * The pending step's login requirement and, once logged in, its session and
+ * the fields that login prefills. Completes a MyInfo login bound to the step.
+ * @route POST /forms/:formId/submissions/:submissionId/auth/session
+ * @returns 200 with the step's login requirement and session
+ * @returns 403 when the step token is invalid
+ * @returns 409 when the submission is completed or rejected
+ */
+PublicFormsSubmissionsRouter.route(
+  '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/auth/session',
+).post(
+  limitRate({ max: rateLimitConfig.submissions }),
+  MrfStepAuthController.handleMrfStepAuthSession,
+)
+
+/**
+ * Logs out of the pending step of one multirespondent submission.
+ * @route POST /forms/:formId/submissions/:submissionId/auth/logout
+ * @returns 200 when logged out
+ */
+PublicFormsSubmissionsRouter.route(
+  '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/auth/logout',
+).post(
+  limitRate({ max: rateLimitConfig.submissions }),
+  MrfStepAuthController.handleMrfStepAuthLogout,
+)
 
 /**
  * Get S3 presigned post data for attachments in a submission.

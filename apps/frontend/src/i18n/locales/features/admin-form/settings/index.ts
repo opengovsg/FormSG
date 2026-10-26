@@ -43,6 +43,11 @@ export interface SingpassSettingsStrings extends HasTitle {
     singpass: SubmitterIdCollectionLoginStrings
     corppass: SubmitterIdCollectionLoginStrings
   }
+  stepLogin: {
+    stepHeader: string
+    removeFieldsFirst: string
+    editStep: string
+  }
 }
 
 export interface SettingsTabsStrings {

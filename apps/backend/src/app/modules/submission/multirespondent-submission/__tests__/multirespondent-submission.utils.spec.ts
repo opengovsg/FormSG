@@ -501,7 +501,7 @@ describe('multirespondent-submission.utils', () => {
     // Defaults for tests that are not exercising the Children gate.
     const CHILDREN_GATE_CLOSED = {
       workflowStep: 0,
-      formAuthType: FormAuthType.NIL,
+      stepAuthType: FormAuthType.NIL,
       isMrfChildrenEnabled: false,
     }
 
@@ -533,7 +533,7 @@ describe('multirespondent-submission.utils', () => {
 
       const actWithGate = (gate: {
         workflowStep: number
-        formAuthType: FormAuthType
+        stepAuthType: FormAuthType
         isMrfChildrenEnabled: boolean
       }) =>
         validateMrfFieldResponses({
@@ -547,7 +547,7 @@ describe('multirespondent-submission.utils', () => {
       it('should return error when the mrf-children flag is off', () => {
         const result = actWithGate({
           workflowStep: 0,
-          formAuthType: FormAuthType.MyInfo,
+          stepAuthType: FormAuthType.MyInfo,
           isMrfChildrenEnabled: false,
         })
 
@@ -561,7 +561,7 @@ describe('multirespondent-submission.utils', () => {
       it('should return error when the submission is not the initial step and there is no previous response', () => {
         const result = actWithGate({
           workflowStep: 1,
-          formAuthType: FormAuthType.MyInfo,
+          stepAuthType: FormAuthType.MyInfo,
           isMrfChildrenEnabled: true,
         })
 
@@ -583,7 +583,7 @@ describe('multirespondent-submission.utils', () => {
             JSON.stringify(mockResponses),
           ) as ParsedClearFormFieldResponsesV4,
           workflowStep: 1,
-          formAuthType: FormAuthType.MyInfo,
+          stepAuthType: FormAuthType.MyInfo,
           isMrfChildrenEnabled: true,
         })
 
@@ -605,7 +605,7 @@ describe('multirespondent-submission.utils', () => {
           responses: tampered,
           previousResponses: mockResponses,
           workflowStep: 1,
-          formAuthType: FormAuthType.MyInfo,
+          stepAuthType: FormAuthType.MyInfo,
           isMrfChildrenEnabled: true,
         })
 
@@ -619,7 +619,7 @@ describe('multirespondent-submission.utils', () => {
       it('should return error when the form is not MyInfo-authed', () => {
         const result = actWithGate({
           workflowStep: 0,
-          formAuthType: FormAuthType.SP,
+          stepAuthType: FormAuthType.SP,
           isMrfChildrenEnabled: true,
         })
 
@@ -634,7 +634,7 @@ describe('multirespondent-submission.utils', () => {
 
         const result = actWithGate({
           workflowStep: 0,
-          formAuthType: FormAuthType.MyInfo,
+          stepAuthType: FormAuthType.MyInfo,
           isMrfChildrenEnabled: true,
         })
 

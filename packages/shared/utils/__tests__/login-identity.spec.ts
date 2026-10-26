@@ -199,13 +199,33 @@ describe('getLoginIdentityConfigErrors', () => {
       form_fields: [nricIdentity],
     }
 
-    it('rejects login identity fields on later steps', () => {
+    it('checks a later step identity field against that step login', () => {
       expect(
         getLoginIdentityConfigErrors({
           ...mrfForm,
           workflow: [{ edit: [] }, { edit: ['nric'] }],
         }),
-      ).toEqual(['NRIC/FIN fields can only be filled in by Step 1.'])
+      ).toEqual(['NRIC/FIN fields need Singpass login.'])
+      expect(
+        getLoginIdentityConfigErrors({
+          ...mrfForm,
+          authType: FormAuthType.NIL,
+          workflow: [
+            { edit: [] },
+            { edit: ['nric'], auth: { auth_type: FormAuthType.MyInfo } },
+          ],
+        }),
+      ).toEqual([])
+      expect(
+        getLoginIdentityConfigErrors({
+          ...mrfForm,
+          form_fields: [uenIdentity],
+          workflow: [
+            { edit: [] },
+            { edit: ['uen'], auth: { auth_type: FormAuthType.MyInfo } },
+          ],
+        }),
+      ).toEqual(['UEN fields need Corppass login.'])
     })
 
     it('accepts a field that no step owns', () => {

@@ -21,7 +21,11 @@ export type LoginIdentityCandidate = {
   corppass?: { attr?: string } | null
 }
 
-type LoginIdentityStep = { edit: readonly unknown[] }
+type LoginIdentityStep = {
+  edit: readonly unknown[]
+  // Steps after Step 1 may carry their own login; Step 1 never does.
+  auth?: { auth_type: FormAuthType; esrvc_id?: string } | null
+}
 
 /** Names admins see in the builder and errors, and new fields' questions. */
 export const LOGIN_IDENTITY_LABELS: Record<LoginIdentityAttribute, string> = {
@@ -93,8 +97,12 @@ export const isMyInfoDataField = (field: LoginIdentityCandidate): boolean =>
 export const isLoginField = (field: LoginIdentityCandidate): boolean =>
   isMyInfoDataField(field) || isLoginIdentityField(field)
 
-/** Fields filled only by the first respondent. */
-export const isStepOneOnlyField = (field: LoginIdentityCandidate): boolean =>
+/**
+ * Fields a login fills: MyInfo data fields and login identity fields. Their
+ * owning step's login (Step 1's form-level login, or a later step's own
+ * `auth`) fills them; respondents never type them.
+ */
+export const isLoginFilledField = (field: LoginIdentityCandidate): boolean =>
   !!field.myInfo?.attr || isLoginIdentityField(field)
 
 /**
@@ -132,15 +140,42 @@ type LoginIdentityCollectionForm = {
 }
 
 /**
- * Whether the field's owning step fills it. A form without a workflow treats
- * its first respondent as the owner of every field.
+ * Whether the given step owns the field, i.e. its edit list holds it. A form
+ * without a workflow treats its first respondent as the owner of every field.
  */
+export const isLoginIdentityFieldOwnedByStep = (
+  field: LoginIdentityCandidate,
+  workflow: readonly LoginIdentityStep[] | null | undefined,
+  stepIndex: number,
+): boolean => {
+  const steps = workflow ?? []
+  if (steps.length === 0) return stepIndex === 0
+  return !!steps[stepIndex]?.edit.some((id) => String(id) === String(field._id))
+}
+
+/** The login of the step that owns the field, if any step does. */
+export const getLoginIdentityFieldOwnerAuthType = (
+  field: LoginIdentityCandidate,
+  form: { authType: FormAuthType },
+  workflow: readonly LoginIdentityStep[] | null | undefined,
+): FormAuthType | undefined => {
+  const steps = workflow ?? []
+  if (steps.length === 0) return form.authType
+  const fieldId = String(field._id)
+  const index = steps.findIndex((step) =>
+    step.edit.some((id) => String(id) === fieldId),
+  )
+  if (index === -1) return undefined
+  return index === 0
+    ? form.authType
+    : (steps[index].auth?.auth_type ?? FormAuthType.NIL)
+}
+
+/** Whether Step 1 fills the field. Step 1's login is the form-level login. */
 export const isLoginIdentityFieldOwned = (
   field: LoginIdentityCandidate,
   workflow: readonly LoginIdentityStep[] = [],
-): boolean =>
-  workflow.length === 0 ||
-  workflow[0].edit.some((id) => String(id) === String(field._id))
+): boolean => isLoginIdentityFieldOwnedByStep(field, workflow, 0)
 
 /**
  * Whether submissions record the respondent's login identity: through the
@@ -227,15 +262,20 @@ export const getLoginIdentityConfigErrors = ({
     )
   }
 
-  const allowedAttrs = getLoginIdentityAttrsForAuthType(authType)
-  const laterStepFieldIds = new Set(
-    workflow.slice(1).flatMap((step) => step.edit.map(String)),
-  )
-
   for (const { field, attr } of identityFields) {
     const label = LOGIN_IDENTITY_LABELS[attr]
 
-    if (!allowedAttrs.includes(attr)) {
+    // The owning step's login must be able to fill the field. With a
+    // workflow, an unassigned field collects nothing and needs no login.
+    const ownerAuthType = getLoginIdentityFieldOwnerAuthType(
+      field,
+      { authType },
+      workflow,
+    )
+    if (
+      ownerAuthType !== undefined &&
+      !getLoginIdentityAttrsForAuthType(ownerAuthType).includes(attr)
+    ) {
       errors.push(
         attr === MyInfoAttribute.UinFin
           ? `${label} fields need Singpass login.`
@@ -244,10 +284,6 @@ export const getLoginIdentityConfigErrors = ({
     }
     if (field.myInfo && field.corppass) {
       errors.push(`${label} fields can't also be MyInfo fields.`)
-    }
-
-    if (laterStepFieldIds.has(String(field._id))) {
-      errors.push(`${label} fields can only be filled in by Step 1.`)
     }
   }
   return errors

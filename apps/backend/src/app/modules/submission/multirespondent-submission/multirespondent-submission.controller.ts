@@ -87,6 +87,7 @@ import {
   createPublicMultirespondentSubmissionDto,
   getMrfCookieName,
 } from './multirespondent-submission.utils'
+import { clearMrfStepAuthCookie } from './step-auth'
 
 const logger = createLoggerWithLabel(module)
 const Payment = getPaymentModel(mongoose)
@@ -460,7 +461,12 @@ const updateMultirespondentSubmission = async (
     formId,
   }
 
-  const { formDef: currentForm, snapshottedFormDef } = req.formsg
+  const {
+    formDef: currentForm,
+    snapshottedFormDef,
+    mrfSubmission,
+    stepAuth,
+  } = req.formsg
 
   if (!snapshottedFormDef) {
     return sendRouteError(res, mapRouteError(new SubmissionFailedError()))
@@ -500,6 +506,14 @@ const updateMultirespondentSubmission = async (
       submissionId,
       snapshottedFormDef,
       encryptedPayload,
+      // Steps with login only advance from the step this request was checked against.
+      expectedPrevious:
+        stepAuth && mrfSubmission
+          ? {
+              workflowStep: mrfSubmission.workflowStep,
+              stepTokenHash: mrfSubmission.stepTokenHash,
+            }
+          : undefined,
       logMeta,
       growthbook: req.growthbook,
     })
@@ -525,6 +539,11 @@ const updateMultirespondentSubmission = async (
 
   const { submission, snapshot } =
     updateMultiRespondentFormSubmissionResult.value
+
+  // The step is done, so its login cannot be reused.
+  if (stepAuth?.context) {
+    clearMrfStepAuthCookie(res, stepAuth.context)
+  }
 
   // Send success back to client
   res.json({
@@ -574,7 +593,9 @@ export const handleUpdateMultirespondentSubmission = [
   ReceiverMiddleware.receiveMultirespondentSubmission,
   MultirespondentSubmissionMiddleware.validateUpdateMultirespondentSubmissionParams,
   MultirespondentSubmissionMiddleware.createFormsgAndRetrieveForm,
+  MultirespondentSubmissionMiddleware.verifyMrfStepAuth,
   MultirespondentSubmissionMiddleware.scanAndRetrieveAttachments,
+  MultirespondentSubmissionMiddleware.fillLoginIdentityResponses,
   MultirespondentSubmissionMiddleware.validateMultirespondentSubmission,
   MultirespondentSubmissionMiddleware.verifyMyInfoHashes,
   MultirespondentSubmissionMiddleware.setCurrentWorkflowStep,
