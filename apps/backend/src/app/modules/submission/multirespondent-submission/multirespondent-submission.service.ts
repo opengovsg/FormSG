@@ -1079,7 +1079,10 @@ export const createMultiRespondentFormSubmission = ({
             buildV4Snapshot({
               ...snapshotBase,
               ...v4OnlyContent,
-              formFields: buildWebhookFormFields(form.form_fields),
+              formFields: buildWebhookFormFields(
+                form.form_fields,
+                encryptedPayload.myInfoReadOnlyFields ?? [],
+              ),
               encryptedContent,
               encryptedSubmissionSecretKey,
             }),
@@ -2000,6 +2003,7 @@ export const updateMultiRespondentFormSubmission = ({
               encryptedSubmissionSecretKey,
               formFields: buildWebhookFormFields(
                 snapshottedFormDef.form_fields,
+                submission.myInfoReadOnlyFields ?? [],
               ),
               verifiedContent,
               attachmentMetadata: Object.fromEntries(

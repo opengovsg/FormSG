@@ -1007,7 +1007,10 @@ MultirespondentSubmissionSchema.methods.getWebhookView = async function (
     encryptedSubmissionSecretKey: this.encryptedSubmissionSecretKey,
     ...(contentFormat === 'v4'
       ? {
-          formFields: buildWebhookFormFields(this.form_fields),
+          formFields: buildWebhookFormFields(
+            this.form_fields,
+            this.myInfoReadOnlyFields ?? [],
+          ),
         }
       : {}),
     verifiedContent: this.verifiedContent,

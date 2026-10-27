@@ -4092,7 +4092,7 @@ describe('multirespondent-submission.service', () => {
       {
         scenario: 'verified read-only MyInfo',
         readOnly: true,
-        expectedQuestion: 'Q1',
+        expectedQuestion: '[Myinfo] Q1',
       },
     ])(
       'creates a first-step snapshot with $scenario labels and saves its retry token',
@@ -4143,7 +4143,7 @@ describe('multirespondent-submission.service', () => {
       {
         scenario: 'verified read-only MyInfo',
         readOnly: true,
-        expectedQuestion: 'Q1',
+        expectedQuestion: '[Myinfo] Q1',
       },
     ])(
       'snapshots the next step with saved $scenario labels and records its retry token',

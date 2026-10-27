@@ -69,6 +69,24 @@ describe('V4 webhook question metadata', () => {
     expect(buildWebhookFormFields([])).toEqual({})
   })
 
+  it('prefixes [Myinfo] on questions of fields in myInfoReadOnlyFields', () => {
+    const metadata = buildWebhookFormFields(fields, ['country'])
+
+    expect(metadata).toEqual({
+      name: { question: 'Original name question' },
+      country: { question: '[Myinfo] Birth country' },
+    })
+  })
+
+  it('does not prefix a read-only field without a Myinfo or Corppass attribute', () => {
+    const metadata = buildWebhookFormFields(fields, ['name'])
+
+    expect(metadata).toEqual({
+      name: { question: 'Original name question' },
+      country: { question: 'Birth country' },
+    })
+  })
+
   it('replays the original question titles after snapshot serialization', () => {
     // Prepare: the live row has a newer question than the persisted snapshot.
     const formFields = buildWebhookFormFields(fields)
