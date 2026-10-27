@@ -5,6 +5,7 @@ env:
   PNPM_VERSION: '10.30.3'
   # One Argos project, one build per Storybook: ARGOS_BUILD_NAME keeps their
   # screenshots and baselines apart.
+  # Test PR: forces a full run to check #10389 removed the flaky diffs. Do not merge.
 
 on:
   push:
