@@ -247,7 +247,6 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
               onChange: () => trigger('allowedFileTypes'),
             })}
             label="Restrict file types"
-            description="Respondents can only upload the types you choose."
           />
           {watchedHasAllowedFileTypes ? (
             <Stack spacing="1rem" mt="1rem">
@@ -256,9 +255,7 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
                 isRequired
                 isInvalid={!!errors.allowedFileTypes}
               >
-                <FormLabel description="One per line. Remove the types you don't want.">
-                  Accepted file types
-                </FormLabel>
+                <FormLabel>File types allowed</FormLabel>
                 <Textarea
                   {...register(
                     'allowedFileTypes',
