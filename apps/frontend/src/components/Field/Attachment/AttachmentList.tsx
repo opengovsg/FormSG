@@ -154,12 +154,11 @@ export const AttachmentList = ({
             </Box>
           ) : null}
         </Stack>
-        <Text color="secondary.400" textStyle="body-2" mt="0.5rem">
-          {files.length} {files.length === 1 ? 'file' : 'files'}
-          {maxTotalSize
-            ? ` · ${getReadableFileSize(totalSize)} of ${getReadableFileSize(maxTotalSize)}`
-            : null}
-        </Text>
+        {maxTotalSize ? (
+          <Text color="secondary.400" textStyle="body-2" mt="0.5rem">
+            Maximum attachment size: {getReadableFileSize(maxTotalSize)}
+          </Text>
+        ) : null}
       </Box>
     </AttachmentStylesProvider>
   )
