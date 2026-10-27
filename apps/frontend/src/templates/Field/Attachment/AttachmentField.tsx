@@ -152,7 +152,8 @@ export const AttachmentField = ({
             {maxFiles > 1 ? (
               <AttachmentList
                 name={rest.name}
-                value={rest.value as File[] | undefined}
+                // The form value is typed as one file; a multi-file field holds a list.
+                value={rest.value as unknown as File[] | undefined}
                 onChange={(files) => {
                   clearErrors(fieldName)
                   // Empty list counts as no answer, so "required" still works.
