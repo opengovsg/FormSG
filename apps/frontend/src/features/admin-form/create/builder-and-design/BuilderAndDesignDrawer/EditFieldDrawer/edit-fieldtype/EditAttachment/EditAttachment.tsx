@@ -249,7 +249,7 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
             label="Restrict file types"
           />
           {watchedHasAllowedFileTypes ? (
-            <Stack spacing="1rem" mt="1rem">
+            <Stack spacing="1rem" mt="1.5rem">
               <FormControl
                 isReadOnly={isLoading}
                 isRequired
@@ -261,7 +261,6 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
                     'allowedFileTypes',
                     allowedFileTypesValidationRule,
                   )}
-                  minH="12rem"
                 />
                 <FormErrorMessage>
                   {errors?.allowedFileTypes?.message}
