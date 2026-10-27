@@ -1198,6 +1198,69 @@ describe('multirespondent-submission.utils', () => {
       ])
     })
 
+    it('should prefix [Myinfo] when the response carries provenance.myinfoVerified', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'Name',
+          fieldType: BasicField.ShortText,
+        } as IShortTextFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'PHUA CHU KANG' },
+          question: 'Name',
+          provenance: { myinfoVerified: true },
+        },
+      } as any
+
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+      })
+
+      expect(result).toEqual([
+        {
+          question: '[Myinfo] Name',
+          answer: 'PHUA CHU KANG',
+          fieldType: BasicField.ShortText,
+        },
+      ])
+    })
+
+    it('should not prefix [Myinfo] when includeVerifiedPrefix is false', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'Name',
+          fieldType: BasicField.ShortText,
+        } as IShortTextFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'PHUA CHU KANG' },
+          question: 'Name',
+          provenance: { myinfoVerified: true },
+        },
+      } as any
+
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+        includeVerifiedPrefix: false,
+      })
+
+      expect(result).toEqual([
+        {
+          question: 'Name',
+          answer: 'PHUA CHU KANG',
+          fieldType: BasicField.ShortText,
+        },
+      ])
+    })
+
     it('should expand children fields into one pair per child attribute', () => {
       const formFields: FormFieldSchema[] = [
         {
@@ -1921,6 +1984,56 @@ describe('multirespondent-submission.utils', () => {
           },
         ]),
       )
+    })
+
+    it('should carry raw question text for myinfoVerified responses, children included', () => {
+      const formFields = [
+        {
+          _id: '1',
+          title: 'Name',
+          fieldType: BasicField.ShortText,
+        } as unknown as FormFieldSchema,
+        {
+          _id: '2',
+          title: 'Children',
+          fieldType: BasicField.Children,
+          childrenSubFields: [MyInfoChildAttributes.ChildName],
+        } as unknown as FormFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.ShortText,
+          question: 'Name',
+          provenance: { myinfoVerified: true },
+          answer: { value: 'PHUA CHU KANG' },
+        },
+        '2': {
+          fieldType: BasicField.Children,
+          question: 'Children',
+          provenance: { myinfoVerified: true },
+          answer: {
+            child0: {
+              value: {
+                [MyInfoChildAttributes.ChildName]: {
+                  value: 'Phua Chu King',
+                },
+              },
+            },
+          },
+        },
+      } as unknown as FieldResponsesV4
+
+      const result = JSON.parse(
+        buildMrfResponseJson({ ...BASE_ARGS, formFields, responses }),
+      )
+
+      expect(result).toEqual(
+        expect.arrayContaining([
+          { question: 'Name', answer: 'PHUA CHU KANG' },
+          { question: 'Child 1 Name', answer: 'Phua Chu King' },
+        ]),
+      )
+      expect(JSON.stringify(result)).not.toContain('[Myinfo]')
     })
 
     it('should prepend Form ID as the first entry, before Response ID and Timestamp', () => {

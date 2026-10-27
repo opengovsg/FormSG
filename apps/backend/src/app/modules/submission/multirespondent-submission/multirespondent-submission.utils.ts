@@ -621,6 +621,13 @@ const getQuestionAnswerPairsForOneField = ({
 }): QuestionAnswerPair[] => {
   // V4 responses embed question text in response.question
   let questionTitle = response.question || formField.title
+  // Hash-verified Myinfo answers carry provenance.myinfoVerified (stamped
+  // server-side at verification time); mark them the way encrypt mode marks
+  // hashed answers. The JSON dump passes includeVerifiedPrefix=false because
+  // machine consumers need raw question text.
+  if (includeVerifiedPrefix && response.provenance?.myinfoVerified) {
+    questionTitle = `${MYINFO_PREFIX}${questionTitle}`
+  }
   let answer = ''
   const questionAnswerPairs: QuestionAnswerPair[] = []
 
@@ -758,9 +765,10 @@ const getQuestionAnswerPairsForOneField = ({
       // bypass response.question, so re-apply the [Myinfo] prefix for
       // hash-verified answers (encrypt mode gates on hashedFields the same
       // way).
-      const childMyInfoPrefix = response.provenance?.myinfoVerified
-        ? MYINFO_PREFIX
-        : ''
+      const childMyInfoPrefix =
+        includeVerifiedPrefix && response.provenance?.myinfoVerified
+          ? MYINFO_PREFIX
+          : ''
       Object.keys(childrenAnswer)
         .sort()
         .forEach((childKey, childIdx) => {
