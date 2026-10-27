@@ -340,25 +340,19 @@ export const Step2FixedEmailEmpty = {
 export const Step2ConditionalRoutingEmpty = {
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const canvas = within(canvasElement)
-    await waitFor(
-      async () =>
-        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
-      {
-        timeout: 5000,
-      },
-    )
-    await waitFor(
-      async () => {
-        await userEvent.click(
-          await canvas.getByText(
-            'Emails assigned to options in a Dropdown field',
-          ),
-        )
-      },
-      {
-        timeout: 5000,
-      },
-    )
+    const conditionalRouting = canvas.getByRole('radio', {
+      name: /Emails assigned to options in a Dropdown field/,
+    })
+    // The radio is disabled while the form loads, and clicking a disabled
+    // radio is a silent no-op, so wait for it before clicking.
+    await waitFor(() => expect(conditionalRouting).toBeEnabled(), {
+      timeout: 5000,
+    })
+    await userEvent.click(conditionalRouting)
+    await expect(conditionalRouting).toBeChecked()
+    await expect(
+      await canvas.findByPlaceholderText('Select a field'),
+    ).toBeVisible()
   },
   args: {
     stepNumber: 1,
