@@ -1375,6 +1375,39 @@ describe('Multirespondent Submission Middleware', () => {
       ])
     })
 
+    it('stamps provenance.myinfoVerified on verified identity answers', async () => {
+      const mockNext = jest.fn()
+      const mockReq = createIdentityMockReq('FOREIGN12345')
+
+      await verifyLoginIdentityAnswers(
+        mockReq,
+        createMockRes() as any,
+        mockNext,
+      )
+
+      expect(mockNext).toHaveBeenCalled()
+      expect(mockReq.body.responses[UID_FIELD_ID].provenance).toEqual({
+        myinfoVerified: true,
+      })
+      expect(mockReq.body.responses[UEN_FIELD_ID].provenance).toEqual({
+        myinfoVerified: true,
+      })
+    })
+
+    it('does not stamp provenance when verification is rejected', async () => {
+      const mockNext = jest.fn()
+      const mockReq = createIdentityMockReq('S9999999Z')
+
+      await verifyLoginIdentityAnswers(
+        mockReq,
+        createMockRes() as any,
+        mockNext,
+      )
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockReq.body.responses[UID_FIELD_ID].provenance).toEqual({})
+    })
+
     it('rejects an identity answer that differs from the login', async () => {
       const mockNext = jest.fn()
       const mockRes = createMockRes()
