@@ -138,3 +138,98 @@ export const getInvalidFileExtensionsInZip = (
   }
   return checkZipForInvalidFiles(file)
 }
+
+/**
+ * PROTOTYPE (attachments-v2): presets an admin picks to restrict an attachment
+ * field's file types. Each preset is filtered against VALID_EXTENSIONS, so a
+ * type only appears once it is on the global list.
+ */
+export const ATTACHMENT_FILE_TYPE_PRESETS = [
+  { id: 'pdf', label: 'PDF', extensions: ['.pdf'] },
+  {
+    id: 'images',
+    label: 'Images',
+    extensions: [
+      '.bmp',
+      '.gif',
+      '.jfif',
+      '.jpeg',
+      '.jpg',
+      '.pcx',
+      '.png',
+      '.psd',
+      '.svg',
+      '.tif',
+      '.tiff',
+    ],
+  },
+  {
+    id: 'documents',
+    label: 'Documents',
+    extensions: ['.doc', '.docx', '.dot', '.odt', '.rtf', '.sxw', '.txt'],
+  },
+  {
+    id: 'spreadsheets',
+    label: 'Spreadsheets',
+    extensions: ['.csv', '.ods', '.sxc', '.xls', '.xlsx'],
+  },
+  {
+    id: 'presentations',
+    label: 'Presentations',
+    extensions: ['.odp', '.pot', '.pps', '.ppsx', '.ppt', '.pptx', '.sxi'],
+  },
+  {
+    id: 'audioVideo',
+    label: 'Audio and video',
+    extensions: [
+      '.avi',
+      '.m4a',
+      '.mov',
+      '.mp3',
+      '.mp4',
+      '.mpeg',
+      '.mpg',
+      '.wav',
+      '.wmv',
+    ],
+  },
+  { id: 'archives', label: 'Archives', extensions: ['.gz', '.tar', '.zip'] },
+].map((preset) => ({
+  ...preset,
+  extensions: preset.extensions.filter((ext) => VALID_EXTENSIONS.includes(ext)),
+}))
+
+export type AttachmentFileTypeSelection = {
+  presets: string[]
+  advanced: string[]
+}
+
+/** Turns chosen presets plus Advanced picks into one sorted extension list. */
+export const expandFileTypes = ({
+  presets,
+  advanced,
+}: AttachmentFileTypeSelection): string[] => {
+  const fromPresets = ATTACHMENT_FILE_TYPE_PRESETS.filter((p) =>
+    presets.includes(p.id),
+  ).flatMap((p) => p.extensions)
+  return uniq([...fromPresets, ...advanced]).sort()
+}
+
+/**
+ * Reverse of expandFileTypes: presets whose every extension is in the saved
+ * list show as ticked; anything left over shows under Advanced.
+ */
+export const splitFileTypes = (
+  saved: string[],
+): AttachmentFileTypeSelection => {
+  const presets = ATTACHMENT_FILE_TYPE_PRESETS.filter(
+    (p) =>
+      p.extensions.length > 0 &&
+      p.extensions.every((ext) => saved.includes(ext)),
+  )
+  const covered = presets.flatMap((p) => p.extensions)
+  return {
+    presets: presets.map((p) => p.id),
+    advanced: saved.filter((ext) => !covered.includes(ext)).sort(),
+  }
+}

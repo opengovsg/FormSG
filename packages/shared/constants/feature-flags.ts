@@ -42,6 +42,7 @@ export const featureFlags = {
   isNricFieldEnabled: 'is-nric-field-enabled' as const,
   delightfulDashboard: 'delightful-dashboard' as const,
   suiteLauncher: 'suite-launcher' as const,
+  attachmentsV2: 'attachments-v2' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {
