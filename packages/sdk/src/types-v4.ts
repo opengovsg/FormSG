@@ -11,9 +11,11 @@ export type ResponseProvenance = {
   submittedAt?: string
   stepNumber?: number
   /**
-   * Server-stamped after the submitted answer was verified against the MyInfo
-   * hashes saved at prefill time. Never client-supplied; absent when no
-   * verification happened (e.g. user-filled child records).
+   * Server-stamped after the submitted answer was verified: a MyInfo answer
+   * against the hashes saved at prefill time, or an NRIC/UEN identity answer
+   * against the Singpass/Corppass login. Never client-supplied; absent when
+   * no verification happened (e.g. user-filled child records). Submissions
+   * made before this covered all MyInfo fields carry it on Children only.
    */
   myinfoVerified?: boolean
 }
