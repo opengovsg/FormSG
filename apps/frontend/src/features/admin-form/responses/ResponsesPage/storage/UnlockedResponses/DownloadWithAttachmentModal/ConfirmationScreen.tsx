@@ -13,13 +13,31 @@ import {
   Text,
   Wrap,
 } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
+
+import { featureFlags } from 'formsg-shared/constants'
+import { BasicField } from 'formsg-shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import { DropdownMenuLayerProvider, SingleSelect } from '~components/Dropdown'
+import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import { ModalCloseButton } from '~components/Modal'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
+
 import { DownloadOptions, isCsvOnlyDownload } from '../../types'
+
+const FOLDER_NAME_FIELD_TYPES: BasicField[] = [
+  BasicField.ShortText,
+  BasicField.Email,
+  BasicField.Nric,
+  BasicField.Number,
+  BasicField.Mobile,
+  BasicField.Dropdown,
+  BasicField.Date,
+]
 
 const InlineTextListItem = ({
   children,
@@ -40,6 +58,7 @@ interface ConfirmationScreenProps {
   isDownloading: boolean
   responsesCount: number
   downloadOptions: DownloadOptions
+  onDownloadOptionsChange?: (options: DownloadOptions) => void
   isCsvFollowingTable?: boolean
   isResponsesCountHidden?: boolean
 }
@@ -52,8 +71,17 @@ export const ConfirmationScreen = ({
   responsesCount,
   isCsvFollowingTable,
   isResponsesCountHidden,
+  onDownloadOptionsChange,
 }: ConfirmationScreenProps): JSX.Element => {
   const isCsvOnly = isCsvOnlyDownload(downloadOptions)
+  // PROTOTYPE (attachments-v2): one zip, with folders named by a field answer.
+  const isOneZip =
+    useFeatureIsOn(featureFlags.attachmentsV2) &&
+    (downloadOptions.isDownloadAttachments || downloadOptions.isDownloadPdf)
+  const { data: adminForm } = useAdminForm()
+  const folderNameFieldItems = (adminForm?.form_fields ?? [])
+    .filter((field) => FOLDER_NAME_FIELD_TYPES.includes(field.fieldType))
+    .map((field) => ({ value: field._id, label: field.title }))
   const isMobile = useIsMobile()
   const { t: confirmationScreenTranslation } = useTranslation('translation', {
     keyPrefix:
@@ -110,7 +138,41 @@ export const ConfirmationScreen = ({
           {downloadOptions.isDownloadCsv && isCsvFollowingTable ? (
             <Text>{confirmationScreenTranslation('csvAppliesTableView')}</Text>
           ) : undefined}
-          {downloadOptions.isDownloadAttachments ? (
+          {isOneZip ? (
+            <Text>
+              Everything downloads as one zip file
+              {downloadOptions.isDownloadCsv ? ': the CSV, and' : ' with'}{' '}
+              {downloadOptions.isDownloadAttachments
+                ? `a folder for each response holding its ${downloadOptions.isDownloadPdf ? 'PDF and attachments' : 'attachments'}.`
+                : 'every PDF.'}{' '}
+              If you cancel, nothing is saved.
+            </Text>
+          ) : null}
+          {isOneZip && downloadOptions.isDownloadAttachments ? (
+            <Stack spacing="0.5rem">
+              <FormLabel
+                isRequired={false}
+                description="Folders are named by this answer, then the Response ID. Blank answers use the Response ID only."
+              >
+                Name folders by
+              </FormLabel>
+              <DropdownMenuLayerProvider value="popover">
+                <SingleSelect
+                  name="folderNameFieldId"
+                  placeholder="Response ID only"
+                  items={folderNameFieldItems}
+                  value={downloadOptions.folderNameFieldId ?? ''}
+                  onChange={(fieldId) =>
+                    onDownloadOptionsChange?.({
+                      ...downloadOptions,
+                      folderNameFieldId: fieldId || undefined,
+                    })
+                  }
+                />
+              </DropdownMenuLayerProvider>
+            </Stack>
+          ) : null}
+          {!isOneZip && downloadOptions.isDownloadAttachments ? (
             <Text>
               <Trans
                 t={confirmationScreenTranslation}
@@ -118,7 +180,7 @@ export const ConfirmationScreen = ({
               />
             </Text>
           ) : undefined}
-          {downloadOptions.isDownloadPdf ? (
+          {!isOneZip && downloadOptions.isDownloadPdf ? (
             <Text>
               <Trans
                 t={confirmationScreenTranslation}

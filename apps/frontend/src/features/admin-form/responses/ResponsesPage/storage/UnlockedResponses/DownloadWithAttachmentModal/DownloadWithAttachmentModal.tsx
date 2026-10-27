@@ -35,6 +35,7 @@ export interface DownloadWithAttachmentModalProps extends Pick<
   initialState?: [DownloadWithAttachmentFlowStates, number]
   downloadMetadata?: DownloadResult | CanceledResult
   downloadOptions: DownloadOptions
+  onDownloadOptionsChange?: (options: DownloadOptions) => void
   isCsvFollowingTable?: boolean
   isResponsesCountHidden?: boolean
 }
@@ -61,6 +62,7 @@ export const DownloadWithAttachmentModal = ({
   downloadPercentage,
   downloadMetadata,
   downloadOptions,
+  onDownloadOptionsChange,
   isCsvFollowingTable,
   isResponsesCountHidden,
   initialState = INITIAL_STEP_STATE,
@@ -111,6 +113,7 @@ export const DownloadWithAttachmentModal = ({
           {currentStep === DownloadWithAttachmentFlowStates.Confirmation && (
             <ConfirmationScreen
               downloadOptions={downloadOptions}
+              onDownloadOptionsChange={onDownloadOptionsChange}
               isCsvFollowingTable={isCsvFollowingTable}
               isResponsesCountHidden={isResponsesCountHidden}
               isDownloading={isDownloading}
