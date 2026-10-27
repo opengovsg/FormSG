@@ -98,7 +98,6 @@ export const StopWorkflowModal = ({
       title={t(`${I18N_PREFIX}.title`)}
       description={t(`${I18N_PREFIX}.description`)}
       isBeta
-      notifiedEmails={notifiedEmails}
       confirmLabel={t(`${I18N_PREFIX}.confirm`)}
       confirmColorScheme="danger"
       isConfirmLoading={isLoading}

@@ -43,6 +43,7 @@ export interface ResponsesIndividualResponse {
       title: string
       description: string
       label: string
+      requiredEmail: string
       invalidEmail: string
       alreadyAssigned: string
       confirm: string

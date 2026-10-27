@@ -29,9 +29,13 @@ export const AddAssigneeModal = ({
 }: AddAssigneeModalProps): JSX.Element => {
   const { t } = useTranslation()
   const [emails, setEmails] = useState<string[]>([])
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
 
   useEffect(() => {
-    if (isOpen) setEmails([])
+    if (isOpen) {
+      setEmails([])
+      setHasAttemptedSubmit(false)
+    }
   }, [isOpen])
 
   const entered = Array.from(
@@ -42,7 +46,7 @@ export const AddAssigneeModal = ({
   const toAdd = entered.filter(
     (email) => isEmail(email) && !assigned.has(email),
   )
-  const error = entered.some((email) => !isEmail(email))
+  const validationError = entered.some((email) => !isEmail(email))
     ? t(`${I18N_PREFIX}.invalidEmail`)
     : alreadyAssigned.length > 0
       ? t(`${I18N_PREFIX}.alreadyAssigned`, {
@@ -50,6 +54,18 @@ export const AddAssigneeModal = ({
           count: alreadyAssigned.length,
         })
       : undefined
+  const error =
+    validationError ??
+    (hasAttemptedSubmit && entered.length === 0
+      ? t(`${I18N_PREFIX}.requiredEmail`)
+      : undefined)
+
+  const handleConfirm = () => {
+    if (isLoading) return
+    setHasAttemptedSubmit(true)
+    if (toAdd.length === 0 || validationError) return
+    onConfirm(toAdd)
+  }
 
   return (
     <WorkflowActionModal
@@ -58,11 +74,10 @@ export const AddAssigneeModal = ({
       title={t(`${I18N_PREFIX}.title`)}
       description={t(`${I18N_PREFIX}.description`)}
       isBeta
-      notifiedEmails={toAdd}
       confirmLabel={t(`${I18N_PREFIX}.confirm`)}
-      isConfirmDisabled={toAdd.length === 0 || !!error}
+      isConfirmDisabled={!!validationError}
       isConfirmLoading={isLoading}
-      onConfirm={() => onConfirm(toAdd)}
+      onConfirm={handleConfirm}
     >
       <FormControl isInvalid={!!error}>
         <FormLabel isRequired>{t(`${I18N_PREFIX}.label`)}</FormLabel>
