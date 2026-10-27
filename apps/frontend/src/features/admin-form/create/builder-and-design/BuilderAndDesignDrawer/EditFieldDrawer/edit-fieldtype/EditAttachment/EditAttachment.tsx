@@ -20,7 +20,7 @@ import {
   GUIDE_EMAIL_RELIABILITY,
 } from '~constants/links'
 import { createBaseValidationRules } from '~utils/fieldValidation'
-import { MultiSelect, SingleSelect } from '~components/Dropdown'
+import { SingleSelect } from '~components/Dropdown'
 import type { ComboboxItem } from '~components/Dropdown/types'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -33,6 +33,7 @@ import { useCreateTabForm } from '~features/admin-form/create/builder-and-design
 import { getAttachmentSizeLimit } from '~features/admin-form/create/builder-and-design/utils/getAttachmentSizeLimit'
 
 import { CreatePageDrawerContentContainer } from '../../../../../common'
+import { SPLIT_TEXTAREA_TRANSFORM } from '../common/constants'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
@@ -53,9 +54,17 @@ type EditAttachmentKeys = (typeof EDIT_ATTACHMENT_FIELD_KEYS)[number]
 // PROTOTYPE (attachments-v2): form-only inputs for the two new field settings.
 type EditAttachmentInputs = Pick<AttachmentFieldBase, EditAttachmentKeys> & {
   hasAllowedFileTypes: boolean
-  allowedFileTypes: string[]
+  allowedFileTypes: string
   allowMultipleAttachments: boolean
 }
+
+/** Tidies one line of the box: "PDF" or "pdf" becomes ".pdf". */
+const normaliseExtension = (line: string) => {
+  const ext = line.trim().toLowerCase()
+  return ext.startsWith('.') ? ext : `.${ext}`
+}
+const toExtensions = (text: string) =>
+  SPLIT_TEXTAREA_TRANSFORM.output(text).map(normaliseExtension)
 
 const transformAttachmentFieldToEditForm = (
   field: AttachmentFieldBase,
@@ -63,7 +72,13 @@ const transformAttachmentFieldToEditForm = (
   return {
     ...pick(field, EDIT_ATTACHMENT_FIELD_KEYS),
     hasAllowedFileTypes: !!field.allowedFileTypes?.length,
-    allowedFileTypes: field.allowedFileTypes ?? [],
+    // An unrestricted field starts with every allowed type, so turning the
+    // toggle on shows the full list for the admin to trim.
+    allowedFileTypes: SPLIT_TEXTAREA_TRANSFORM.input(
+      field.allowedFileTypes?.length
+        ? field.allowedFileTypes
+        : VALID_EXTENSIONS,
+    ),
     allowMultipleAttachments: !!field.allowMultipleAttachments,
   }
 }
@@ -79,7 +94,9 @@ const transformAttachmentEditFormToField = (
     ...rest
   } = inputs
   return extend({}, originalField, rest, {
-    allowedFileTypes: hasAllowedFileTypes ? allowedFileTypes : undefined,
+    allowedFileTypes: hasAllowedFileTypes
+      ? toExtensions(allowedFileTypes)
+      : undefined,
     allowMultipleAttachments: allowMultipleAttachments || undefined,
   })
 }
@@ -111,10 +128,19 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
 
   const allowedFileTypesValidationRule = useMemo(
     (): RegisterOptions<EditAttachmentInputs, 'allowedFileTypes'> => ({
-      validate: (types) =>
-        !getValues('hasAllowedFileTypes') ||
-        types.length > 0 ||
-        'Choose at least one file type',
+      validate: (text) => {
+        if (!getValues('hasAllowedFileTypes')) return true
+        const types = toExtensions(text)
+        if (types.length === 0) return 'Keep at least one file type'
+        const invalid = types.filter((ext) => !VALID_EXTENSIONS.includes(ext))
+        if (invalid.length > 0) {
+          return `These aren't accepted file types: ${invalid.join(', ')}`
+        }
+        return (
+          new Set(types).size === types.length ||
+          'Please remove duplicate file types'
+        )
+      },
     }),
     [getValues],
   )
@@ -225,23 +251,25 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
           />
           {watchedHasAllowedFileTypes ? (
             <Stack spacing="1rem" mt="1rem">
-              <Controller
-                control={control}
-                name="allowedFileTypes"
-                rules={allowedFileTypesValidationRule}
-                render={({ field: { value, onChange, ...rest } }) => (
-                  <MultiSelect
-                    {...rest}
-                    items={VALID_EXTENSIONS}
-                    values={value}
-                    placeholder="Search or select file types"
-                    onChange={onChange}
-                  />
-                )}
-              />
-              <FormErrorMessage>
-                {errors?.allowedFileTypes?.message}
-              </FormErrorMessage>
+              <FormControl
+                isReadOnly={isLoading}
+                isRequired
+                isInvalid={!!errors.allowedFileTypes}
+              >
+                <FormLabel description="One per line. Remove the types you don't want.">
+                  Accepted file types
+                </FormLabel>
+                <Textarea
+                  {...register(
+                    'allowedFileTypes',
+                    allowedFileTypesValidationRule,
+                  )}
+                  minH="12rem"
+                />
+                <FormErrorMessage>
+                  {errors?.allowedFileTypes?.message}
+                </FormErrorMessage>
+              </FormControl>
               {form?.status === FormStatus.Public ? (
                 <InlineMessage variant="warning">
                   This form is open. Respondents may no longer be able to upload
