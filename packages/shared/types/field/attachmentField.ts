@@ -20,10 +20,11 @@ export interface AttachmentFieldBase extends FieldBase {
    */
   allowedFileTypes?: string[]
   /**
-   * PROTOTYPE (attachments-v2): most files a respondent can attach, 1 to 10.
-   * Absent means 1. Not yet in the Mongoose schema.
+   * PROTOTYPE (attachments-v2): respondents can attach any number of files,
+   * within the field's size limit. Absent means one file. Not yet in the
+   * Mongoose schema.
    */
-  maxFiles?: number
+  allowMultipleAttachments?: boolean
 }
 
 export type AttachmentSizeMapType = {

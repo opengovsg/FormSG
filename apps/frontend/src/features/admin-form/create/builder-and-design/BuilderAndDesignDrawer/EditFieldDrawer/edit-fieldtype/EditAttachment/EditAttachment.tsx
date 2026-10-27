@@ -12,7 +12,6 @@ import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { extend, pick } from 'lodash'
 
 import { featureFlags } from 'formsg-shared/constants'
-import { MAX_ATTACHMENTS_PER_FIELD } from 'formsg-shared/constants/file'
 import { FormResponseMode, FormStatus } from 'formsg-shared/types'
 import {
   AttachmentFieldBase,
@@ -80,7 +79,7 @@ const transformAttachmentFieldToEditForm = (
     hasAllowedFileTypes: !!field.allowedFileTypes?.length,
     fileTypePresets: presets,
     fileTypesAdvanced: advanced,
-    allowMultipleAttachments: (field.maxFiles ?? 1) > 1,
+    allowMultipleAttachments: !!field.allowMultipleAttachments,
   }
 }
 
@@ -102,7 +101,7 @@ const transformAttachmentEditFormToField = (
           advanced: fileTypesAdvanced,
         })
       : undefined,
-    maxFiles: allowMultipleAttachments ? MAX_ATTACHMENTS_PER_FIELD : undefined,
+    allowMultipleAttachments: allowMultipleAttachments || undefined,
   })
 }
 
@@ -130,7 +129,6 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
 
   const isAttachmentsV2 = useFeatureIsOn(featureFlags.attachmentsV2)
   const watchedHasAllowedFileTypes = watch('hasAllowedFileTypes')
-  const watchedAllowMultipleAttachments = watch('allowMultipleAttachments')
 
   const fileTypePresetsValidationRule = useMemo(
     (): RegisterOptions<EditAttachmentInputs, 'fileTypePresets'> => ({
@@ -313,7 +311,7 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
           <Toggle
             {...register('allowMultipleAttachments')}
             label="Allow respondent to add multiple attachments"
-            description={`Respondents can attach up to ${MAX_ATTACHMENTS_PER_FIELD} files. The size limit is shared across them.`}
+            description="Respondents can attach as many files as fit within the size limit."
           />
         </FormControl>
       ) : null}
@@ -323,8 +321,8 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
         isInvalid={!!errors.attachmentSize}
       >
         <FormLabel isRequired>
-          {isAttachmentsV2 && watchedAllowMultipleAttachments
-            ? 'Maximum total size'
+          {isAttachmentsV2
+            ? 'Maximum size of attachment(s)'
             : t('features.adminForm.sidebar.fields.attachment.maximumSize')}
         </FormLabel>
         <Skeleton isLoaded={!!form}>

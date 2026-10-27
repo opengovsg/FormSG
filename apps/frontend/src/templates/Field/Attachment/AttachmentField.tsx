@@ -57,7 +57,7 @@ export const AttachmentField = ({
   const acceptedTypesText = allowedFileTypes
     ? `Accepted file types: ${allowedFileTypes.join(', ')}`
     : undefined
-  const maxFiles = isAttachmentsV2 ? (schema.maxFiles ?? 1) : 1
+  const isMultiple = isAttachmentsV2 && !!schema.allowMultipleAttachments
 
   const { clearErrors, setError, control } =
     useFormContext<AttachmentFieldInput>()
@@ -149,7 +149,7 @@ export const AttachmentField = ({
         control={control}
         render={({ field: { onChange, ...rest } }) => (
           <>
-            {maxFiles > 1 ? (
+            {isMultiple ? (
               <AttachmentList
                 name={rest.name}
                 // The form value is typed as one file; a multi-file field holds a list.
@@ -161,7 +161,6 @@ export const AttachmentField = ({
                 }}
                 onError={setErrorMessage}
                 accept={allowedFileTypes ?? VALID_EXTENSIONS}
-                maxFiles={maxFiles}
                 maxTotalSize={maxSizeInBytes}
                 invalidTypeHint={acceptedTypesText}
                 colorScheme={`theme-${colorTheme}`}

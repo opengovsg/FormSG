@@ -25,8 +25,6 @@ export interface AttachmentListProps {
   onChange: (files: File[]) => void
   onError?: (errMsg: string) => void
   accept?: DropzoneProps['accept']
-  /** Most files the field takes. */
-  maxFiles: number
   /** Size limit in bytes, shared by every file in the field. */
   maxTotalSize?: number
   /** Appended to the error when a file's type is not accepted. */
@@ -42,7 +40,6 @@ export const AttachmentList = ({
   onChange,
   onError,
   accept,
-  maxFiles,
   maxTotalSize,
   invalidTypeHint,
   colorScheme,
@@ -70,9 +67,6 @@ export const AttachmentList = ({
       }
 
       const nextFiles = [...files, ...acceptedFiles]
-      if (nextFiles.length > maxFiles) {
-        return onError?.(`You can attach up to ${maxFiles} files`)
-      }
       const nextTotal = nextFiles.reduce((sum, file) => sum + file.size, 0)
       if (maxTotalSize && nextTotal > maxTotalSize) {
         return onError?.(
@@ -101,16 +95,7 @@ export const AttachmentList = ({
       }
       onChange(nextFiles)
     },
-    [
-      accept,
-      files,
-      invalidTypeHint,
-      maxFiles,
-      maxTotalSize,
-      onChange,
-      onError,
-      t,
-    ],
+    [accept, files, invalidTypeHint, maxTotalSize, onChange, onError, t],
   )
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -150,7 +135,7 @@ export const AttachmentList = ({
               handleReplaceFile={() => undefined}
             />
           ))}
-          {files.length < maxFiles ? (
+          {!maxTotalSize || totalSize < maxTotalSize ? (
             <Box {...getRootProps()} role="button" __css={styles.dropzone}>
               <AttachmentDropzone
                 isDragActive={isDragActive}
@@ -164,7 +149,7 @@ export const AttachmentList = ({
           ) : null}
         </Stack>
         <Text color="secondary.400" textStyle="body-2" mt="0.5rem">
-          {files.length} of {maxFiles} files
+          {files.length} {files.length === 1 ? 'file' : 'files'}
           {maxTotalSize
             ? ` · ${getReadableFileSize(totalSize)} of ${getReadableFileSize(maxTotalSize)}`
             : null}

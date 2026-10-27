@@ -2,7 +2,6 @@ import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { featureFlags } from 'formsg-shared/constants'
-import { MAX_ATTACHMENTS_PER_FIELD } from 'formsg-shared/constants/file'
 import {
   AttachmentFieldBase,
   AttachmentSize,
@@ -114,7 +113,7 @@ V2RestrictedOnPublicForm.parameters = {
 
 export const V2MultipleAttachments = V2Template.bind({})
 V2MultipleAttachments.args = {
-  field: { ...DEFAULT_ATTACHMENT_FIELD, maxFiles: MAX_ATTACHMENTS_PER_FIELD },
+  field: { ...DEFAULT_ATTACHMENT_FIELD, allowMultipleAttachments: true },
 }
 V2MultipleAttachments.parameters = { msw: v2FormMocks() }
 
