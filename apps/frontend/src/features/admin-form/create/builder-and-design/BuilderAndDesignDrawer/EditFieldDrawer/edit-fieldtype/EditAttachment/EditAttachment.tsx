@@ -131,10 +131,9 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
       validate: (text) => {
         if (!getValues('hasAllowedFileTypes')) return true
         const types = toExtensions(text)
-        if (types.length === 0) return 'Keep at least one file type'
-        const invalid = types.filter((ext) => !VALID_EXTENSIONS.includes(ext))
-        if (invalid.length > 0) {
-          return `These aren't accepted file types: ${invalid.join(', ')}`
+        if (types.length === 0) return 'Please enter at least one file type'
+        if (types.some((ext) => !VALID_EXTENSIONS.includes(ext))) {
+          return 'Please enter only valid file types starting with .'
         }
         return (
           new Set(types).size === types.length ||
