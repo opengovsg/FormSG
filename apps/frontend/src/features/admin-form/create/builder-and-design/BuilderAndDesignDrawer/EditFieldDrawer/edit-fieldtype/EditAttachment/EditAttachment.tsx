@@ -1,13 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import {
-  CheckboxGroup,
-  FormControl,
-  Skeleton,
-  Stack,
-  Text,
-} from '@chakra-ui/react'
+import { FormControl, Skeleton, Stack } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { extend, pick } from 'lodash'
 
@@ -19,19 +13,13 @@ import {
   BasicField,
   FormFieldDto,
 } from 'formsg-shared/types/field'
-import {
-  ATTACHMENT_FILE_TYPE_PRESETS,
-  expandFileTypes,
-  splitFileTypes,
-  VALID_EXTENSIONS,
-} from 'formsg-shared/utils/file-validation'
+import { VALID_EXTENSIONS } from 'formsg-shared/utils/file-validation'
 
 import {
   ACCEPTED_FILETYPES_SPREADSHEET,
   GUIDE_EMAIL_RELIABILITY,
 } from '~constants/links'
 import { createBaseValidationRules } from '~utils/fieldValidation'
-import Checkbox from '~components/Checkbox'
 import { MultiSelect, SingleSelect } from '~components/Dropdown'
 import type { ComboboxItem } from '~components/Dropdown/types'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -65,20 +53,17 @@ type EditAttachmentKeys = (typeof EDIT_ATTACHMENT_FIELD_KEYS)[number]
 // PROTOTYPE (attachments-v2): form-only inputs for the two new field settings.
 type EditAttachmentInputs = Pick<AttachmentFieldBase, EditAttachmentKeys> & {
   hasAllowedFileTypes: boolean
-  fileTypePresets: string[]
-  fileTypesAdvanced: string[]
+  allowedFileTypes: string[]
   allowMultipleAttachments: boolean
 }
 
 const transformAttachmentFieldToEditForm = (
   field: AttachmentFieldBase,
 ): EditAttachmentInputs => {
-  const { presets, advanced } = splitFileTypes(field.allowedFileTypes ?? [])
   return {
     ...pick(field, EDIT_ATTACHMENT_FIELD_KEYS),
     hasAllowedFileTypes: !!field.allowedFileTypes?.length,
-    fileTypePresets: presets,
-    fileTypesAdvanced: advanced,
+    allowedFileTypes: field.allowedFileTypes ?? [],
     allowMultipleAttachments: !!field.allowMultipleAttachments,
   }
 }
@@ -89,18 +74,12 @@ const transformAttachmentEditFormToField = (
 ): AttachmentFieldBase => {
   const {
     hasAllowedFileTypes,
-    fileTypePresets,
-    fileTypesAdvanced,
+    allowedFileTypes,
     allowMultipleAttachments,
     ...rest
   } = inputs
   return extend({}, originalField, rest, {
-    allowedFileTypes: hasAllowedFileTypes
-      ? expandFileTypes({
-          presets: fileTypePresets,
-          advanced: fileTypesAdvanced,
-        })
-      : undefined,
+    allowedFileTypes: hasAllowedFileTypes ? allowedFileTypes : undefined,
     allowMultipleAttachments: allowMultipleAttachments || undefined,
   })
 }
@@ -130,14 +109,11 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
   const isAttachmentsV2 = useFeatureIsOn(featureFlags.attachmentsV2)
   const watchedHasAllowedFileTypes = watch('hasAllowedFileTypes')
 
-  const fileTypePresetsValidationRule = useMemo(
-    (): RegisterOptions<EditAttachmentInputs, 'fileTypePresets'> => ({
-      validate: (presets) =>
+  const allowedFileTypesValidationRule = useMemo(
+    (): RegisterOptions<EditAttachmentInputs, 'allowedFileTypes'> => ({
+      validate: (types) =>
         !getValues('hasAllowedFileTypes') ||
-        expandFileTypes({
-          presets,
-          advanced: getValues('fileTypesAdvanced'),
-        }).length > 0 ||
+        types.length > 0 ||
         'Choose at least one file type',
     }),
     [getValues],
@@ -238,11 +214,11 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
       {isAttachmentsV2 ? (
         <FormControl
           isReadOnly={isLoading}
-          isInvalid={!!errors.fileTypePresets}
+          isInvalid={!!errors.allowedFileTypes}
         >
           <Toggle
             {...register('hasAllowedFileTypes', {
-              onChange: () => trigger('fileTypePresets'),
+              onChange: () => trigger('allowedFileTypes'),
             })}
             label="Restrict file types"
             description="Respondents can only upload the types you choose."
@@ -251,50 +227,20 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
             <Stack spacing="1rem" mt="1rem">
               <Controller
                 control={control}
-                name="fileTypePresets"
-                rules={fileTypePresetsValidationRule}
-                render={({ field: { value, onChange } }) => (
-                  <CheckboxGroup value={value} onChange={onChange}>
-                    <Stack spacing="0.5rem">
-                      {ATTACHMENT_FILE_TYPE_PRESETS.filter(
-                        (preset) => preset.extensions.length > 0,
-                      ).map((preset) => (
-                        <Checkbox key={preset.id} value={preset.id}>
-                          {preset.label}
-                          <Text
-                            as="span"
-                            textStyle="caption-1"
-                            color="grey.500"
-                          >
-                            {' '}
-                            {preset.extensions.join(' ')}
-                          </Text>
-                        </Checkbox>
-                      ))}
-                    </Stack>
-                  </CheckboxGroup>
+                name="allowedFileTypes"
+                rules={allowedFileTypesValidationRule}
+                render={({ field: { value, onChange, ...rest } }) => (
+                  <MultiSelect
+                    {...rest}
+                    items={VALID_EXTENSIONS}
+                    values={value}
+                    placeholder="Search or select file types"
+                    onChange={onChange}
+                  />
                 )}
               />
-              <FormControl isReadOnly={isLoading}>
-                <FormLabel>Or pick specific file types</FormLabel>
-                <Controller
-                  control={control}
-                  name="fileTypesAdvanced"
-                  render={({ field: { value, onChange, ...rest } }) => (
-                    <MultiSelect
-                      {...rest}
-                      items={VALID_EXTENSIONS}
-                      values={value}
-                      onChange={(values) => {
-                        onChange(values)
-                        trigger('fileTypePresets')
-                      }}
-                    />
-                  )}
-                />
-              </FormControl>
               <FormErrorMessage>
-                {errors?.fileTypePresets?.message}
+                {errors?.allowedFileTypes?.message}
               </FormErrorMessage>
               {form?.status === FormStatus.Public ? (
                 <InlineMessage variant="warning">
