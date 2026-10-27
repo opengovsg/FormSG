@@ -1007,7 +1007,7 @@ export const createFormBuilderMocks = (
     return http.get<{ formId: string }, never, { form: AdminFormDto }>(
       '/api/v3/admin/forms/:formId',
       async ({ params }) => {
-        await MswDelay(delay)
+        await MswDelay(delay ?? 0)
         return HttpResponse.json(
           { form: { ...form, _id: params.formId as FormId } },
           {
@@ -1040,7 +1040,7 @@ export const createFormBuilderMocks = (
           url.searchParams.get('to') ?? `${form.form_fields.length}`,
         )
         form.form_fields = insertAt(form.form_fields, newIndex, newField)
-        await MswDelay(delay)
+        await MswDelay(delay ?? 0)
         return HttpResponse.json(newField, { status: 200 })
       },
     )
@@ -1059,7 +1059,7 @@ export const createFormBuilderMocks = (
           (field) => field._id === params.fieldId,
         )
         form.form_fields.splice(index, 1, body)
-        await MswDelay(delay)
+        await MswDelay(delay ?? 0)
         return HttpResponse.json(body, { status: 200 })
       },
     )
@@ -1084,7 +1084,7 @@ export const createFormBuilderMocks = (
           parseInt(url.searchParams.get('to')!),
         )
 
-        await MswDelay(delay)
+        await MswDelay(delay ?? 0)
         return HttpResponse.json(form.form_fields, { status: 200 })
       },
     )
@@ -1094,7 +1094,7 @@ export const createFormBuilderMocks = (
     return http.post<{ formId: string; fieldId: string }, never, FormFieldDto>(
       '/api/v3/admin/forms/:formId/fields/:fieldId/duplicate',
       async ({ params }) => {
-        await MswDelay(delay)
+        await MswDelay(delay ?? 0)
         const fieldToCopyIndex = form.form_fields.findIndex(
           (field) => field._id === params.fieldId,
         )
@@ -1120,7 +1120,7 @@ export const createFormBuilderMocks = (
       )
       form.form_fields.splice(fieldToDeleteIndex, 1)
 
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return new HttpResponse(null, { status: 200 })
     })
   }
@@ -1144,7 +1144,7 @@ export const getStorageSubmissionMetadataResponse = (
     async ({ request }) => {
       const url = new URL(request.url)
       const pageNum = parseInt(url.searchParams.get('page') ?? '1')
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(
         merge(
           {
@@ -1168,7 +1168,7 @@ export const getMultiRespondentSubmissionMetadataResponse = (
     async ({ request }) => {
       const url = new URL(request.url)
       const pageNum = parseInt(url.searchParams.get('page') ?? '1')
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(
         merge(
           {
@@ -1192,7 +1192,7 @@ export const createLogic = (delay?: number | 'infinite') => {
         ...body,
         _id: cuid(),
       }
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(newLogic, { status: 200 })
     },
   )
@@ -1202,7 +1202,7 @@ export const deleteLogic = (delay?: number | 'infinite') => {
   return http.delete<{ formId: string; logicId: string }>(
     '/api/v3/admin/forms/:formId/logic/:logicId',
     async () => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(null, { status: 200 })
     },
   )

@@ -19,7 +19,7 @@ export const getAdminFormSubmissions = ({
   return http.get<{ formId: string }, never, number>(
     '/api/v3/admin/forms/:formId/submissions/count',
     async () => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(override ?? 20, { status: 200 })
     },
   )
@@ -77,7 +77,7 @@ export const getStorageSubmission = ({
   >(
     '/api/v3/admin/forms/:formId/submissions/:submissionId',
     async ({ params }) => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(
         {
           submissionType: SubmissionType.Encrypt,

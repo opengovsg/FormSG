@@ -20,7 +20,7 @@ export const getLandingStats = ({
   return http.get<never, never, Partial<AnalyticStatsDto>>(
     '/api/v3/analytics/statistics',
     async () => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(merge({}, MOCK_STATS, overrides))
     },
   )

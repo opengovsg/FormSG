@@ -13,7 +13,7 @@ export const envHandlers = [
   http.get<never, never, Partial<ClientEnvVars>>(
     '/api/v3/client/env',
     async () => {
-      await MswDelay()
+      await MswDelay(0)
       return HttpResponse.json(MOCK_ENVS)
     },
   ),
