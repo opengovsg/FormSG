@@ -460,9 +460,13 @@ export const stampMyInfoVerifiedOnResponses = (
   // each individual subfield.
   const verified = Array.from(verifiedKeys)
   for (const [fieldId, response] of Object.entries(responses)) {
-    // TODO: implement stamping for all Myinfo fields
+    // Regular MyInfo fields verify under their field id; Children verify
+    // under composite per-child hash keys prefixed by the field id.
     const childKeyPrefix = `${MyInfoAttribute.ChildrenBirthRecords}.${fieldId}.`
-    if (verified.some((key) => key.startsWith(childKeyPrefix))) {
+    if (
+      verifiedKeys.has(fieldId) ||
+      verified.some((key) => key.startsWith(childKeyPrefix))
+    ) {
       response.provenance = { ...response.provenance, myinfoVerified: true }
     }
   }

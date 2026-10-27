@@ -270,6 +270,24 @@ describe('MRF Children MyInfo hash check parity', () => {
       expect(responses[FIELD_ID].provenance).toEqual({ myinfoVerified: true })
     })
 
+    it('should stamp provenance.myinfoVerified when a regular MyInfo field verifies under its field id', () => {
+      const regularFieldId = new ObjectId().toHexString()
+      const responses = {
+        [regularFieldId]: {
+          fieldType: BasicField.ShortText,
+          question: 'Name',
+          provenance: {},
+          answer: { value: 'PHUA CHU KANG' },
+        },
+      } as unknown as ParsedClearFormFieldResponsesV4
+
+      stampMyInfoVerifiedOnResponses(responses, new Set([regularFieldId]))
+
+      expect(responses[regularFieldId].provenance).toEqual({
+        myinfoVerified: true,
+      })
+    })
+
     it('should not stamp when no verified key belongs to the field (user-filled child pass-through)', () => {
       const responses = makeV4Responses()
       const otherFieldKey = getMyInfoChildHashKey(
