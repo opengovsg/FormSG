@@ -4,6 +4,7 @@ import { BiHeading, BiRadioCircleMarked } from 'react-icons/bi'
 import { FormControl } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 import { useArgs } from 'storybook/preview-api'
+import { expect, screen } from 'storybook/test'
 
 import { fixedHeightDecorator } from '~utils/storybook'
 import Button from '~components/Button'
@@ -93,6 +94,11 @@ export const HasValueSelected = Template.bind({})
 HasValueSelected.args = {
   value: itemToValue(INITIAL_COMBOBOX_ITEMS[0]),
   initialIsOpen: true,
+}
+// The virtualised list renders the first options, measures them, then the
+// rest, so wait for the last one that fits.
+HasValueSelected.play = async () => {
+  await expect(await screen.findByRole('option', { name: 'Bat' })).toBeVisible()
 }
 
 export const StringValues = Template.bind({})

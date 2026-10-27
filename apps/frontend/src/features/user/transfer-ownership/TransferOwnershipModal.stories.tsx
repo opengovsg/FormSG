@@ -23,7 +23,6 @@ export default {
     layout: 'fullscreen',
     // Pages fill the viewport; fit-to-content would crop them.
     argos: { fitToContent: false },
-    // Prevent flaky tests due to modal animating in.
     msw: [
       getUser({ delay: 0, mockUser: MOCK_USER }),
       getAdminForms.empty(),

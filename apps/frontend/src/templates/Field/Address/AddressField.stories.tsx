@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react-vite'
-import { userEvent, within } from 'storybook/test'
+import { http, HttpResponse } from 'msw'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 
 import { BasicField } from 'formsg-shared/types/field'
 
@@ -191,11 +192,34 @@ ValidPostalCodeApiFail.args = {
   },
 }
 
+// OneMap is a live third-party API, so answer it locally with no results.
+ValidPostalCodeApiFail.parameters = {
+  msw: {
+    handlers: {
+      oneMap: http.get(
+        'https://www.onemap.gov.sg/api/common/elastic/search',
+        () =>
+          HttpResponse.json({
+            found: 0,
+            totalNumPages: 0,
+            pageNum: 1,
+            results: [],
+          }),
+      ),
+    },
+  },
+}
 ValidPostalCodeApiFail.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement)
+  const findAddress = canvas.getByRole('button', { name: /Find Address/i })
 
-  // Simulate clicking the "Submit" button
-  userEvent.click(canvas.getByRole('button', { name: /Find Address/i }))
+  await userEvent.click(findAddress)
+  const [error] = await canvas.findAllByText(
+    'Address cannot be found. Please fill in details manually',
+  )
+  await expect(error).toBeVisible()
+  // The button stays disabled for 2s after a lookup to throttle requests.
+  await waitFor(() => expect(findAddress).toBeEnabled(), { timeout: 3000 })
 }
 
 export const DisabledHighContrast = Template.bind({})

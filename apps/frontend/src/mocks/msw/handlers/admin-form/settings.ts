@@ -28,7 +28,7 @@ export const getAdminFormView = ({
   return http.get<{ formId: string }, never, AdminFormViewDto>(
     '/api/v3/admin/forms/:formId',
     async ({ params }) => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(
         createMockForm({
           _id: params.formId as FormId,
@@ -59,7 +59,7 @@ export const getAdminFormSettings = ({
   return http.get<{ formId: string }, never>(
     '/api/v3/admin/forms/:formId/settings',
     async ({ params }) => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(
         pick(
           createMockForm({
@@ -88,7 +88,7 @@ export const patchAdminFormSettings = ({
     '/api/v3/admin/forms/:formId/settings',
     async ({ params, request }) => {
       const body = await request.json()
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(
         pick(
           createMockForm({
@@ -115,7 +115,7 @@ export const getAdminFormStripeValidate = ({
   return http.get<{ formId: string }, never>(
     '/api/v3/admin/forms/:formId/stripe/validate',
     async () => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(
         { account: { charges_enabled: true } },
         { status: 200 },
