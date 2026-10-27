@@ -5,7 +5,6 @@ import {
   useFormContext,
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Text } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
@@ -182,11 +181,6 @@ export const AttachmentField = ({
                 showRemove={!schema.disabled}
               />
             )}
-            {acceptedTypesText ? (
-              <Text color="secondary.400" textStyle="body-2" mt="0.5rem">
-                {acceptedTypesText}
-              </Text>
-            ) : null}
           </>
         )}
         name={fieldName}
