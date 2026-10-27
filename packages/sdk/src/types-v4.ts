@@ -80,6 +80,7 @@ export type FieldResponseV4 = {
   fieldType: FieldType
   answer: AnswerV4
   question: string
+  subFields?: Record<string, SubFieldMeta>
   provenance: ResponseProvenance
   previousAnswers?: PreviousAnswer[]
   myInfo?: MyInfoMetaV4
@@ -92,6 +93,7 @@ type BaseFieldResponseV4 = {
   previousAnswers?: PreviousAnswer[]
   myInfo?: MyInfoMetaV4
   question: string
+  subFields?: Record<string, SubFieldMeta>
 }
 
 export type StringFieldResponseV4 = BaseFieldResponseV4 & {
@@ -170,7 +172,11 @@ export type FormFieldV4 =
 
 export type FormFieldsV4 = Record<string, FormFieldV4>
 
+/** Labels for components of a field, keyed by their stable IDs. */
+export type SubFieldMeta = { question: string }
+
 export type FormFieldMeta = {
+  subFields?: Record<string, SubFieldMeta>
   question: string
   myInfo?: { attr: string }
 }
@@ -186,7 +192,7 @@ export type AdaptV3ToV4Options = {
 
 export interface DecryptParamsV4 extends DecryptParamsV3 {
   /** Original question titles from the submission snapshot. */
-  formFields?: Record<string, Pick<FormFieldMeta, 'question'>>
+  formFields?: Record<string, Pick<FormFieldMeta, 'question' | 'subFields'>>
   attachmentDownloadUrls?: EncryptedAttachmentRecords
 }
 
