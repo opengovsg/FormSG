@@ -5,8 +5,11 @@ import {
   useFormContext,
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { Text } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { MB } from 'formsg-shared/constants/file'
 import { FormColorTheme } from 'formsg-shared/types'
 import { VALID_EXTENSIONS } from 'formsg-shared/utils/file-validation'
@@ -14,6 +17,7 @@ import { VALID_EXTENSIONS } from 'formsg-shared/utils/file-validation'
 import { useAttachmentValidationRules } from '~utils/fieldValidation'
 import fileArrayBuffer from '~utils/fileArrayBuffer'
 import Attachment from '~components/Field/Attachment'
+import { AttachmentList } from '~components/Field/Attachment/AttachmentList'
 
 import { PublicFormContext } from '~features/public-form/PublicFormContext'
 
@@ -43,6 +47,17 @@ export const AttachmentField = ({
     schema,
     disableRequiredValidation,
   )
+
+  // PROTOTYPE (attachments-v2): per-field file types and multi-upload.
+  const isAttachmentsV2 = useFeatureIsOn(featureFlags.attachmentsV2)
+  const allowedFileTypes =
+    isAttachmentsV2 && schema.allowedFileTypes?.length
+      ? schema.allowedFileTypes
+      : undefined
+  const acceptedTypesText = allowedFileTypes
+    ? `Accepted file types: ${allowedFileTypes.join(', ')}`
+    : undefined
+  const maxFiles = isAttachmentsV2 ? (schema.maxFiles ?? 1) : 1
 
   const { clearErrors, setError, control } =
     useFormContext<AttachmentFieldInput>()
@@ -133,18 +148,46 @@ export const AttachmentField = ({
       <Controller
         control={control}
         render={({ field: { onChange, ...rest } }) => (
-          <Attachment
-            {...rest}
-            colorScheme={`theme-${colorTheme}`}
-            maxSize={maxSizeInBytes}
-            accept={VALID_EXTENSIONS}
-            showFileSize
-            onChange={handleFileChange(onChange)}
-            onError={setErrorMessage}
-            title={`${schema.questionNumber}. ${schema.title}`}
-            showDownload={showDownload}
-            showRemove={!schema.disabled}
-          />
+          <>
+            {maxFiles > 1 ? (
+              <AttachmentList
+                name={rest.name}
+                value={rest.value as File[] | undefined}
+                onChange={(files) => {
+                  clearErrors(fieldName)
+                  // Empty list counts as no answer, so "required" still works.
+                  onChange(files.length ? files : undefined)
+                }}
+                onError={setErrorMessage}
+                accept={allowedFileTypes ?? VALID_EXTENSIONS}
+                maxFiles={maxFiles}
+                maxTotalSize={maxSizeInBytes}
+                invalidTypeHint={acceptedTypesText}
+                colorScheme={`theme-${colorTheme}`}
+                title={`${schema.questionNumber}. ${schema.title}`}
+                isDisabled={schema.disabled}
+              />
+            ) : (
+              <Attachment
+                {...rest}
+                colorScheme={`theme-${colorTheme}`}
+                maxSize={maxSizeInBytes}
+                accept={allowedFileTypes ?? VALID_EXTENSIONS}
+                invalidTypeHint={acceptedTypesText}
+                showFileSize
+                onChange={handleFileChange(onChange)}
+                onError={setErrorMessage}
+                title={`${schema.questionNumber}. ${schema.title}`}
+                showDownload={showDownload}
+                showRemove={!schema.disabled}
+              />
+            )}
+            {acceptedTypesText ? (
+              <Text color="secondary.400" textStyle="body-2" mt="0.5rem">
+                {acceptedTypesText}
+              </Text>
+            ) : null}
+          </>
         )}
         name={fieldName}
         rules={validationRules}

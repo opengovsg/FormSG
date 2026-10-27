@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { AttachmentSize, BasicField } from 'formsg-shared/types/field'
 
 import Button from '~components/Button'
@@ -41,7 +43,7 @@ const baseSchema: AttachmentFieldSchema = {
 }
 
 interface StoryAttachmentFieldProps extends AttachmentFieldProps {
-  defaultValue?: File
+  defaultValue?: File | File[]
 }
 
 const Template: StoryFn<StoryAttachmentFieldProps> = ({
@@ -56,7 +58,11 @@ const Template: StoryFn<StoryAttachmentFieldProps> = ({
 
   const [submitValues, setSubmitValues] = useState<string>()
 
-  const onSubmit = (values: Record<string, File | undefined>) => {
+  const onSubmit = (values: Record<string, File | File[] | undefined>) => {
+    const value = values[args.schema._id]
+    if (Array.isArray(value)) {
+      return setSubmitValues(value.map((file) => file.name).join(', '))
+    }
     const stringifyFile = (obj?: File) => {
       const replacer = []
       for (const key in obj) {
@@ -64,9 +70,7 @@ const Template: StoryFn<StoryAttachmentFieldProps> = ({
       }
       return JSON.stringify(obj, replacer)
     }
-    setSubmitValues(
-      stringifyFile(values[args.schema._id]) || 'Nothing was selected',
-    )
+    setSubmitValues(stringifyFile(value) || 'Nothing was selected')
   }
 
   useEffect(() => {
@@ -120,4 +124,38 @@ DisabledHighContrast.args = {
   schema: { ...baseSchema, disabled: true },
   isHighContrast: true,
   defaultValue: new File(['examplebtyes'], 'example.txt'),
+}
+
+// PROTOTYPE (attachments-v2): the V2 stories force the flag on.
+const attachmentsV2On = new GrowthBook({
+  features: { [featureFlags.attachmentsV2]: { defaultValue: true } },
+})
+const V2Template: StoryFn<StoryAttachmentFieldProps> = (args) => (
+  <GrowthBookProvider growthbook={attachmentsV2On}>
+    <Template {...args} />
+  </GrowthBookProvider>
+)
+
+export const V2RestrictedToPdf = V2Template.bind({})
+V2RestrictedToPdf.args = {
+  schema: { ...baseSchema, allowedFileTypes: ['.pdf'] },
+}
+
+export const V2MultipleFiles = V2Template.bind({})
+V2MultipleFiles.args = {
+  schema: {
+    ...baseSchema,
+    maxFiles: 5,
+    attachmentSize: AttachmentSize.SevenMb,
+  },
+}
+
+export const V2MultipleFilesAttached = V2Template.bind({})
+V2MultipleFilesAttached.args = {
+  ...V2MultipleFiles.args,
+  defaultValue: [
+    new File(['a'.repeat(1_200_000)], 'passport.pdf'),
+    new File(['b'.repeat(2_400_000)], 'photo.jpg'),
+    new File(['c'.repeat(600_000)], 'payslip.pdf'),
+  ],
 }
