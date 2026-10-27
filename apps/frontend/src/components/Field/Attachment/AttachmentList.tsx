@@ -76,7 +76,7 @@ export const AttachmentList = ({
       const nextTotal = nextFiles.reduce((sum, file) => sum + file.size, 0)
       if (maxTotalSize && nextTotal > maxTotalSize) {
         return onError?.(
-          `These files add up to ${getReadableFileSize(nextTotal)}, over the ${getReadableFileSize(maxTotalSize)} limit for this question`,
+          `You have exceeded the file size limit, please upload files below ${getReadableFileSize(maxTotalSize)} in total`,
         )
       }
       for (const file of acceptedFiles) {
