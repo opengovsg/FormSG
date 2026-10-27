@@ -1,23 +1,38 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { FormControl, Skeleton } from '@chakra-ui/react'
+import {
+  CheckboxGroup,
+  FormControl,
+  Skeleton,
+  Stack,
+  Text,
+} from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { extend, pick } from 'lodash'
 
-import { FormResponseMode } from 'formsg-shared/types'
+import { featureFlags } from 'formsg-shared/constants'
+import { FormResponseMode, FormStatus } from 'formsg-shared/types'
 import {
   AttachmentFieldBase,
   AttachmentSize,
   BasicField,
   FormFieldDto,
 } from 'formsg-shared/types/field'
+import {
+  ATTACHMENT_FILE_TYPE_PRESETS,
+  expandFileTypes,
+  splitFileTypes,
+  VALID_EXTENSIONS,
+} from 'formsg-shared/utils/file-validation'
 
 import {
   ACCEPTED_FILETYPES_SPREADSHEET,
   GUIDE_EMAIL_RELIABILITY,
 } from '~constants/links'
 import { createBaseValidationRules } from '~utils/fieldValidation'
-import { SingleSelect } from '~components/Dropdown'
+import Checkbox from '~components/Checkbox'
+import { MultiSelect, SingleSelect } from '~components/Dropdown'
 import type { ComboboxItem } from '~components/Dropdown/types'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -47,19 +62,56 @@ const EDIT_ATTACHMENT_FIELD_KEYS = [
 
 type EditAttachmentKeys = (typeof EDIT_ATTACHMENT_FIELD_KEYS)[number]
 
-type EditAttachmentInputs = Pick<AttachmentFieldBase, EditAttachmentKeys>
+// PROTOTYPE (attachments-v2): form-only inputs for the two new field settings.
+type EditAttachmentInputs = Pick<AttachmentFieldBase, EditAttachmentKeys> & {
+  hasAllowedFileTypes: boolean
+  fileTypePresets: string[]
+  fileTypesAdvanced: string[]
+  maxFiles: string
+}
+
+const MAX_FILES_OPTIONS: ComboboxItem[] = Array.from(
+  { length: 10 },
+  (_, i) => ({
+    value: String(i + 1),
+    label: i === 0 ? '1 file' : `${i + 1} files`,
+  }),
+)
 
 const transformAttachmentFieldToEditForm = (
   field: AttachmentFieldBase,
 ): EditAttachmentInputs => {
-  return pick(field, EDIT_ATTACHMENT_FIELD_KEYS)
+  const { presets, advanced } = splitFileTypes(field.allowedFileTypes ?? [])
+  return {
+    ...pick(field, EDIT_ATTACHMENT_FIELD_KEYS),
+    hasAllowedFileTypes: !!field.allowedFileTypes?.length,
+    fileTypePresets: presets,
+    fileTypesAdvanced: advanced,
+    maxFiles: String(field.maxFiles ?? 1),
+  }
 }
 
 const transformAttachmentEditFormToField = (
   inputs: EditAttachmentInputs,
   originalField: AttachmentFieldBase,
 ): AttachmentFieldBase => {
-  return extend({}, originalField, inputs)
+  const {
+    hasAllowedFileTypes,
+    fileTypePresets,
+    fileTypesAdvanced,
+    maxFiles,
+    ...rest
+  } = inputs
+  const maxFilesNumber = Number(maxFiles)
+  return extend({}, originalField, rest, {
+    allowedFileTypes: hasAllowedFileTypes
+      ? expandFileTypes({
+          presets: fileTypePresets,
+          advanced: fileTypesAdvanced,
+        })
+      : undefined,
+    maxFiles: maxFilesNumber > 1 ? maxFilesNumber : undefined,
+  })
 }
 
 export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
@@ -75,6 +127,7 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
     isLoading,
     handleCancel,
     trigger,
+    watch,
   } = useEditFieldForm<EditAttachmentInputs, AttachmentFieldBase>({
     field,
     transform: {
@@ -82,6 +135,23 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
       output: transformAttachmentEditFormToField,
     },
   })
+
+  const isAttachmentsV2 = useFeatureIsOn(featureFlags.attachmentsV2)
+  const watchedHasAllowedFileTypes = watch('hasAllowedFileTypes')
+  const watchedMaxFiles = Number(watch('maxFiles'))
+
+  const fileTypePresetsValidationRule = useMemo(
+    (): RegisterOptions<EditAttachmentInputs, 'fileTypePresets'> => ({
+      validate: (presets) =>
+        !getValues('hasAllowedFileTypes') ||
+        expandFileTypes({
+          presets,
+          advanced: getValues('fileTypesAdvanced'),
+        }).length > 0 ||
+        'Choose at least one file type',
+    }),
+    [getValues],
+  )
 
   const requiredValidationRule = useMemo(
     () =>
@@ -175,13 +245,102 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
       <FormControl isReadOnly={isLoading}>
         <Toggle {...register('required')} label="Required" />
       </FormControl>
+      {isAttachmentsV2 ? (
+        <FormControl
+          isReadOnly={isLoading}
+          isInvalid={!!errors.fileTypePresets}
+        >
+          <Toggle
+            {...register('hasAllowedFileTypes', {
+              onChange: () => trigger('fileTypePresets'),
+            })}
+            label="Restrict file types"
+            description="Respondents can only upload the types you choose."
+          />
+          {watchedHasAllowedFileTypes ? (
+            <Stack spacing="1rem" mt="1rem">
+              <Controller
+                control={control}
+                name="fileTypePresets"
+                rules={fileTypePresetsValidationRule}
+                render={({ field: { value, onChange } }) => (
+                  <CheckboxGroup value={value} onChange={onChange}>
+                    <Stack spacing="0.5rem">
+                      {ATTACHMENT_FILE_TYPE_PRESETS.filter(
+                        (preset) => preset.extensions.length > 0,
+                      ).map((preset) => (
+                        <Checkbox key={preset.id} value={preset.id}>
+                          {preset.label}
+                          <Text
+                            as="span"
+                            textStyle="caption-1"
+                            color="grey.500"
+                          >
+                            {' '}
+                            {preset.extensions.join(' ')}
+                          </Text>
+                        </Checkbox>
+                      ))}
+                    </Stack>
+                  </CheckboxGroup>
+                )}
+              />
+              <FormControl isReadOnly={isLoading}>
+                <FormLabel>Or pick specific file types</FormLabel>
+                <Controller
+                  control={control}
+                  name="fileTypesAdvanced"
+                  render={({ field: { value, onChange, ...rest } }) => (
+                    <MultiSelect
+                      {...rest}
+                      items={VALID_EXTENSIONS}
+                      values={value}
+                      onChange={(values) => {
+                        onChange(values)
+                        trigger('fileTypePresets')
+                      }}
+                    />
+                  )}
+                />
+              </FormControl>
+              <FormErrorMessage>
+                {errors?.fileTypePresets?.message}
+              </FormErrorMessage>
+              {form?.status === FormStatus.Public ? (
+                <InlineMessage variant="warning">
+                  This form is open. Respondents may no longer be able to upload
+                  files they could before.
+                </InlineMessage>
+              ) : null}
+            </Stack>
+          ) : null}
+        </FormControl>
+      ) : null}
+      {isAttachmentsV2 && form?.responseMode !== FormResponseMode.Email ? (
+        <FormControl isReadOnly={isLoading}>
+          <FormLabel isRequired>Maximum number of files</FormLabel>
+          <Controller
+            control={control}
+            name="maxFiles"
+            render={({ field }) => (
+              <SingleSelect
+                isClearable={false}
+                items={MAX_FILES_OPTIONS}
+                {...field}
+              />
+            )}
+          />
+        </FormControl>
+      ) : null}
       <FormControl
         id="attachmentSize"
         isReadOnly={isLoading}
         isInvalid={!!errors.attachmentSize}
       >
         <FormLabel isRequired>
-          {t('features.adminForm.sidebar.fields.attachment.maximumSize')}
+          {isAttachmentsV2 && watchedMaxFiles > 1
+            ? 'Maximum total size'
+            : t('features.adminForm.sidebar.fields.attachment.maximumSize')}
         </FormLabel>
         <Skeleton isLoaded={!!form}>
           <Controller

@@ -1,9 +1,13 @@
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
+import { featureFlags } from 'formsg-shared/constants'
 import {
   AttachmentFieldBase,
   AttachmentSize,
   BasicField,
+  FormResponseMode,
+  FormStatus,
 } from 'formsg-shared/types'
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
@@ -76,6 +80,42 @@ AttachmentExceedQuota.parameters = {
     ),
   ],
 }
+
+// PROTOTYPE (attachments-v2): the V2 stories force the flag on.
+const attachmentsV2On = new GrowthBook({
+  features: { [featureFlags.attachmentsV2]: { defaultValue: true } },
+})
+const V2Template: StoryFn<StoryArgs> = ({ field }) => (
+  <GrowthBookProvider growthbook={attachmentsV2On}>
+    <EditAttachment field={field} />
+  </GrowthBookProvider>
+)
+
+// Storage-mode private form, so "Maximum number of files" shows and the
+// live-form warning only appears in its own story.
+const v2FormMocks = (status = FormStatus.Private) =>
+  createFormBuilderMocks({ responseMode: FormResponseMode.Encrypt, status }, 0)
+
+export const V2Default = V2Template.bind({})
+V2Default.parameters = { msw: v2FormMocks() }
+
+export const V2RestrictedToPdf = V2Template.bind({})
+V2RestrictedToPdf.args = {
+  field: { ...DEFAULT_ATTACHMENT_FIELD, allowedFileTypes: ['.msg', '.pdf'] },
+}
+V2RestrictedToPdf.parameters = { msw: v2FormMocks() }
+
+export const V2RestrictedOnPublicForm = V2Template.bind({})
+V2RestrictedOnPublicForm.args = V2RestrictedToPdf.args
+V2RestrictedOnPublicForm.parameters = {
+  msw: v2FormMocks(FormStatus.Public),
+}
+
+export const V2MultipleFiles = V2Template.bind({})
+V2MultipleFiles.args = {
+  field: { ...DEFAULT_ATTACHMENT_FIELD, maxFiles: 5 },
+}
+V2MultipleFiles.parameters = { msw: v2FormMocks() }
 
 export const AttachmentWithinQuota = Template.bind({})
 AttachmentWithinQuota.parameters = {
