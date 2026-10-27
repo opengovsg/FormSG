@@ -7,7 +7,7 @@ import {
   WorkflowStatus,
 } from 'formsg-shared/types'
 
-import { getMobileViewParameters } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { SendBackModal, SendBackModalProps } from './SendBackModal'
 
@@ -23,7 +23,8 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    chromatic: { delay: 200 },
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
   args: {
     isOpen: true,
@@ -73,6 +74,4 @@ const Template: StoryFn<SendBackModalProps> = (args) => (
 )
 
 export const Default = Template.bind({})
-
-export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
+Default.parameters = { argos: { modes: viewportModes('mobile') } }
