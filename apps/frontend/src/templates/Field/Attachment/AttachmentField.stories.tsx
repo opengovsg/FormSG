@@ -159,3 +159,11 @@ V2MultipleFilesAttached.args = {
     new File(['c'.repeat(600_000)], 'payslip.pdf'),
   ],
 }
+
+// A field switched to multiple attachments can still start with one file,
+// e.g. a restored draft. It shows as a one-item list.
+export const V2MultipleFilesStartingWithOneFile = V2Template.bind({})
+V2MultipleFilesStartingWithOneFile.args = {
+  ...V2MultipleFiles.args,
+  defaultValue: new File(['a'.repeat(800_000)], 'draft-photo.jpg'),
+}

@@ -21,7 +21,7 @@ import {
 
 export interface AttachmentListProps {
   name: string
-  value: File[] | undefined | null
+  value: File[] | File | string | undefined | null
   onChange: (files: File[]) => void
   onError?: (errMsg: string) => void
   accept?: DropzoneProps['accept']
@@ -47,7 +47,13 @@ export const AttachmentList = ({
   isDisabled,
 }: AttachmentListProps): JSX.Element => {
   const { t } = useTranslation()
-  const files = useMemo(() => value ?? [], [value])
+  // The form can start this field as '' or a single File (e.g. a restored
+  // draft from before the field allowed several), so only trust real lists.
+  const files = useMemo<File[]>(() => {
+    if (Array.isArray(value)) return value
+    if (value instanceof File) return [value]
+    return []
+  }, [value])
   const totalSize = files.reduce((sum, file) => sum + file.size, 0)
 
   const handleDrop = useCallback<NonNullable<DropzoneProps['onDrop']>>(
