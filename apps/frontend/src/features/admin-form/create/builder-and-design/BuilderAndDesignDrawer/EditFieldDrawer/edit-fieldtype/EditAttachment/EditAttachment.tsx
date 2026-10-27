@@ -12,6 +12,7 @@ import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { extend, pick } from 'lodash'
 
 import { featureFlags } from 'formsg-shared/constants'
+import { MAX_ATTACHMENTS_PER_FIELD } from 'formsg-shared/constants/file'
 import { FormResponseMode, FormStatus } from 'formsg-shared/types'
 import {
   AttachmentFieldBase,
@@ -67,16 +68,8 @@ type EditAttachmentInputs = Pick<AttachmentFieldBase, EditAttachmentKeys> & {
   hasAllowedFileTypes: boolean
   fileTypePresets: string[]
   fileTypesAdvanced: string[]
-  maxFiles: string
+  allowMultipleAttachments: boolean
 }
-
-const MAX_FILES_OPTIONS: ComboboxItem[] = Array.from(
-  { length: 10 },
-  (_, i) => ({
-    value: String(i + 1),
-    label: i === 0 ? '1 file' : `${i + 1} files`,
-  }),
-)
 
 const transformAttachmentFieldToEditForm = (
   field: AttachmentFieldBase,
@@ -87,7 +80,7 @@ const transformAttachmentFieldToEditForm = (
     hasAllowedFileTypes: !!field.allowedFileTypes?.length,
     fileTypePresets: presets,
     fileTypesAdvanced: advanced,
-    maxFiles: String(field.maxFiles ?? 1),
+    allowMultipleAttachments: (field.maxFiles ?? 1) > 1,
   }
 }
 
@@ -99,10 +92,9 @@ const transformAttachmentEditFormToField = (
     hasAllowedFileTypes,
     fileTypePresets,
     fileTypesAdvanced,
-    maxFiles,
+    allowMultipleAttachments,
     ...rest
   } = inputs
-  const maxFilesNumber = Number(maxFiles)
   return extend({}, originalField, rest, {
     allowedFileTypes: hasAllowedFileTypes
       ? expandFileTypes({
@@ -110,7 +102,7 @@ const transformAttachmentEditFormToField = (
           advanced: fileTypesAdvanced,
         })
       : undefined,
-    maxFiles: maxFilesNumber > 1 ? maxFilesNumber : undefined,
+    maxFiles: allowMultipleAttachments ? MAX_ATTACHMENTS_PER_FIELD : undefined,
   })
 }
 
@@ -138,7 +130,7 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
 
   const isAttachmentsV2 = useFeatureIsOn(featureFlags.attachmentsV2)
   const watchedHasAllowedFileTypes = watch('hasAllowedFileTypes')
-  const watchedMaxFiles = Number(watch('maxFiles'))
+  const watchedAllowMultipleAttachments = watch('allowMultipleAttachments')
 
   const fileTypePresetsValidationRule = useMemo(
     (): RegisterOptions<EditAttachmentInputs, 'fileTypePresets'> => ({
@@ -318,17 +310,10 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
       ) : null}
       {isAttachmentsV2 && form?.responseMode !== FormResponseMode.Email ? (
         <FormControl isReadOnly={isLoading}>
-          <FormLabel isRequired>Maximum number of files</FormLabel>
-          <Controller
-            control={control}
-            name="maxFiles"
-            render={({ field }) => (
-              <SingleSelect
-                isClearable={false}
-                items={MAX_FILES_OPTIONS}
-                {...field}
-              />
-            )}
+          <Toggle
+            {...register('allowMultipleAttachments')}
+            label="Allow respondent to add multiple attachments"
+            description={`Respondents can attach up to ${MAX_ATTACHMENTS_PER_FIELD} files. The size limit is shared across them.`}
           />
         </FormControl>
       ) : null}
@@ -338,7 +323,7 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
         isInvalid={!!errors.attachmentSize}
       >
         <FormLabel isRequired>
-          {isAttachmentsV2 && watchedMaxFiles > 1
+          {isAttachmentsV2 && watchedAllowMultipleAttachments
             ? 'Maximum total size'
             : t('features.adminForm.sidebar.fields.attachment.maximumSize')}
         </FormLabel>

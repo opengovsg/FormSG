@@ -5,6 +5,7 @@ import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { featureFlags } from 'formsg-shared/constants'
+import { MAX_ATTACHMENTS_PER_FIELD } from 'formsg-shared/constants/file'
 import { AttachmentSize, BasicField } from 'formsg-shared/types/field'
 
 import Button from '~components/Button'
@@ -145,7 +146,7 @@ export const V2MultipleFiles = V2Template.bind({})
 V2MultipleFiles.args = {
   schema: {
     ...baseSchema,
-    maxFiles: 5,
+    maxFiles: MAX_ATTACHMENTS_PER_FIELD,
     attachmentSize: AttachmentSize.SevenMb,
   },
 }
