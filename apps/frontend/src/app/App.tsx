@@ -1,6 +1,6 @@
 import { Inspector, InspectParams } from 'react-dev-inspector'
 import { HelmetProvider } from 'react-helmet-async'
-import { QueryClient, QueryClientProvider } from 'react-query'
+import { QueryClient, QueryClientProvider, setLogger } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
 import { ChakraProvider } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
@@ -8,6 +8,7 @@ import { datadogLogs } from '@datadog/browser-logs'
 import { theme } from '~theme/index'
 import { AuthProvider } from '~contexts/AuthContext'
 import { GrowthBookProvider } from '~contexts/GrowthbookContext'
+import { reactQueryLogger } from '~utils/reactQueryLogger'
 import { HttpError } from '~services/ApiService'
 
 import { TurnstileChallengeProvider } from '~features/turnstile/TurnstileChallengeProvider'
@@ -30,6 +31,10 @@ const queryClient = new QueryClient({
     },
   },
 })
+
+// Expected 4xx API errors must not reach console.error, or Datadog RUM
+// reports them as client-side errors. See reactQueryLogger.
+setLogger(reactQueryLogger)
 
 // Init Datadog browser logs
 datadogLogs.init({
