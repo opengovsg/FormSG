@@ -91,8 +91,7 @@ const V2Template: StoryFn<StoryArgs> = ({ field }) => (
   </GrowthBookProvider>
 )
 
-// Storage-mode private form, so "Maximum number of files" shows and the
-// live-form warning only appears in its own story.
+// Storage-mode form, so the multiple attachments toggle shows.
 const v2FormMocks = (status = FormStatus.Private) =>
   createFormBuilderMocks({ responseMode: FormResponseMode.Encrypt, status }, 0)
 
@@ -104,12 +103,6 @@ V2RestrictedToPdf.args = {
   field: { ...DEFAULT_ATTACHMENT_FIELD, allowedFileTypes: ['.msg', '.pdf'] },
 }
 V2RestrictedToPdf.parameters = { msw: v2FormMocks() }
-
-export const V2RestrictedOnPublicForm = V2Template.bind({})
-V2RestrictedOnPublicForm.args = V2RestrictedToPdf.args
-V2RestrictedOnPublicForm.parameters = {
-  msw: v2FormMocks(FormStatus.Public),
-}
 
 export const V2MultipleAttachments = V2Template.bind({})
 V2MultipleAttachments.args = {

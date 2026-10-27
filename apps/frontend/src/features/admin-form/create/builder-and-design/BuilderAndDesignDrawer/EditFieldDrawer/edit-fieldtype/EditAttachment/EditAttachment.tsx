@@ -6,7 +6,7 @@ import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { extend, pick } from 'lodash'
 
 import { featureFlags } from 'formsg-shared/constants'
-import { FormResponseMode, FormStatus } from 'formsg-shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
 import {
   AttachmentFieldBase,
   AttachmentSize,
@@ -266,12 +266,6 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
                   {errors?.allowedFileTypes?.message}
                 </FormErrorMessage>
               </FormControl>
-              {form?.status === FormStatus.Public ? (
-                <InlineMessage variant="warning">
-                  This form is open. Respondents may no longer be able to upload
-                  files they could before.
-                </InlineMessage>
-              ) : null}
             </Stack>
           ) : null}
         </FormControl>
