@@ -52,7 +52,7 @@ export interface ResponsesIndividualResponse {
     stopModal: {
       title: string
       description: string
-      notifyHeading: string
+      label: string
       confirm: string
       toastSuccess: string
     }
