@@ -233,6 +233,10 @@ export const getStepLoginConfigErrors = ({
 export const MYINFO_FIELDS_NEED_SINGPASS_STEP =
   "Myinfo fields need a step with Singpass login. Set a step's login to Singpass, or remove the Myinfo fields."
 
+/** For a form left without steps, e.g. after deleting the workflow. */
+export const MYINFO_FIELDS_NEED_FORM_SINGPASS =
+  'Myinfo fields need Singpass login. Remove the Myinfo fields, or turn on Singpass in Settings first.'
+
 /**
  * Login problems the form's save hooks would reject, for writes that skip
  * them (workflow, settings and duplicate writes). Mirrors the `form_fields`
@@ -257,7 +261,11 @@ export const getResultingLoginErrors = ({
   const myInfoErrors =
     form_fields.some(isMyInfoDataField) &&
     !formUsesAuthType({ authType, workflow: steps }, FormAuthType.MyInfo)
-      ? [MYINFO_FIELDS_NEED_SINGPASS_STEP]
+      ? [
+          steps.length > 0
+            ? MYINFO_FIELDS_NEED_SINGPASS_STEP
+            : MYINFO_FIELDS_NEED_FORM_SINGPASS,
+        ]
       : []
   return [
     ...getLoginIdentityConfigErrors({

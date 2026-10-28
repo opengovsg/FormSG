@@ -8,7 +8,10 @@ import {
   MyInfoAttribute,
   WorkflowType,
 } from 'formsg-shared/types'
-import { MYINFO_FIELDS_NEED_SINGPASS_STEP } from 'formsg-shared/utils/step-login'
+import {
+  MYINFO_FIELDS_NEED_FORM_SINGPASS,
+  MYINFO_FIELDS_NEED_SINGPASS_STEP,
+} from 'formsg-shared/utils/step-login'
 import { merge } from 'lodash'
 import mongoose from 'mongoose'
 
@@ -113,7 +116,7 @@ describe('workflow deletion', () => {
       const actual = await deleteFormWorkflow(form)
 
       expect(actual._unsafeUnwrapErr()).toEqual(
-        new MalformedParametersError(MYINFO_FIELDS_NEED_SINGPASS_STEP),
+        new MalformedParametersError(MYINFO_FIELDS_NEED_FORM_SINGPASS),
       )
       const stored = await FormModel.findById(form._id)
       expect(

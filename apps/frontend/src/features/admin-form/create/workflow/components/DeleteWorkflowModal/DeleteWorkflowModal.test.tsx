@@ -9,7 +9,7 @@ import {
   FormStatus,
   MyInfoAttribute,
 } from 'formsg-shared/types'
-import { MYINFO_FIELDS_NEED_SINGPASS_STEP } from 'formsg-shared/utils/step-login'
+import { MYINFO_FIELDS_NEED_FORM_SINGPASS } from 'formsg-shared/utils/step-login'
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 
@@ -145,7 +145,7 @@ describe('DeleteWorkflowModal login check', () => {
 
     // Assert
     expect(
-      await screen.findByText(MYINFO_FIELDS_NEED_SINGPASS_STEP),
+      await screen.findByText(MYINFO_FIELDS_NEED_FORM_SINGPASS),
     ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /delete/i })).toBeDisabled()
   })
