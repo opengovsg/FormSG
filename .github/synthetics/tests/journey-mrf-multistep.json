@@ -2,7 +2,7 @@
   "name": "[formsg-smoke] MRF multi-step: workflow invite, step 2 via email link",
   "type": "browser",
   "status": "paused",
-  "message": "CI smoke journey \u2014 create MRF form with a 2-step workflow (step 2 = static email), publish, submit step 1 publicly, open the 'Action required' invitation from the mailbox, complete step 2. Runs only via CI triggers. Steps named PLACEHOLDER must be recorded once in the Datadog UI (email OTP extraction has no public API schema), then reconciled with sync.sh pull.",
+  "message": "CI smoke journey — create MRF form with a 2-step workflow (step 2 = static email), publish, submit step 1 publicly, open the 'Action required' invitation from the mailbox, complete step 2. Runs only via CI triggers. Steps named PLACEHOLDER must be recorded once in the Datadog UI (email OTP extraction has no public API schema), then reconciled with sync.sh pull.",
   "tags": [
     "team:formsg",
     "ci:formsg-smoke",
@@ -110,10 +110,6 @@
             }
           },
           "options": {
-            "retry": {
-              "count": 5,
-              "interval": 10000
-            },
             "extract_values": [
               {
                 "name": "OTP_RESPONSE",
@@ -953,7 +949,7 @@
     },
     {
       "type": "assertPageContains",
-      "name": "Step 2 accepted \u2014 workflow complete",
+      "name": "Step 2 accepted — workflow complete",
       "timeout": 120,
       "params": {
         "value": "Response ID:"

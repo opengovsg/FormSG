@@ -2,7 +2,7 @@
   "name": "[formsg-smoke] Core CUJ: create, publish, submit, view, download (MRF)",
   "type": "browser",
   "status": "paused",
-  "message": "CI smoke journey \u2014 OTP login, create MRF form (no workflow), add fields, publish, public submission with attachment + verified email + respondent copy, then unlock results and export CSV. Runs only via CI triggers. Steps named PLACEHOLDER must be recorded once in the Datadog UI (email OTP extraction has no public API schema), then reconciled with sync.sh pull.",
+  "message": "CI smoke journey — OTP login, create MRF form (no workflow), add fields, publish, public submission with attachment + verified email + respondent copy, then unlock results and export CSV. Runs only via CI triggers. Steps named PLACEHOLDER must be recorded once in the Datadog UI (email OTP extraction has no public API schema), then reconciled with sync.sh pull.",
   "tags": [
     "team:formsg",
     "ci:formsg-smoke",
@@ -118,10 +118,6 @@
             }
           },
           "options": {
-            "retry": {
-              "count": 5,
-              "interval": 10000
-            },
             "extract_values": [
               {
                 "name": "OTP_RESPONSE",
