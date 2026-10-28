@@ -22,6 +22,11 @@
         "type": "email",
         "pattern": "3h3-5yd-uxe.{{ numeric(10) }}@synthetics.dtdg.co",
         "example": "3h3-5yd-uxe.0000000000@synthetics.dtdg.co"
+      },
+      {
+        "name": "FORMSG_SYNTHETIC_OTP_LAMBDA_SECRET",
+        "type": "global",
+        "id": "59963953-ff6e-4c02-bcce-74eafdc42102"
       }
     ],
     "configVariables": [
@@ -61,7 +66,7 @@
             ]
           }
         },
-        "value": "{{ EMAIL }}"
+        "value": "internal-testing+mrf@open.gov.sg"
       }
     },
     {
@@ -83,14 +88,54 @@
       }
     },
     {
-      "type": "extractFromEmailBody",
-      "name": "Login OTP email: extract code into LOGIN_OTP",
-      "timeout": 120,
+      "type": "runApiTest",
+      "name": "Retrieve login OTP from internal-testing mailbox",
+      "timeout": 180,
       "params": {
-        "pattern": {
-          "type": "regex",
-          "value": "(?<=-<strong>)[A-Z0-9]{8}(?=</strong>)"
-        },
+        "request": {
+          "config": {
+            "assertions": [
+              {
+                "operator": "is",
+                "type": "statusCode",
+                "target": 200
+              }
+            ],
+            "request": {
+              "headers": {
+                "X-FormSG-Shared-Secret": "{{ FORMSG_SYNTHETIC_OTP_LAMBDA_SECRET }}"
+              },
+              "method": "GET",
+              "url": "https://ltspmhqnt74sycneytbc5vjoeu0zmgnk.lambda-url.ap-southeast-1.on.aws/?to=internal-testing%2Bmrf@open.gov.sg"
+            }
+          },
+          "options": {
+            "retry": {
+              "count": 5,
+              "interval": 10000
+            },
+            "extract_values": [
+              {
+                "name": "OTP_RESPONSE",
+                "parser": {
+                  "type": "raw"
+                },
+                "secure": false,
+                "type": "http_body"
+              }
+            ],
+            "httpVersion": "http1"
+          },
+          "subtype": "http"
+        }
+      }
+    },
+    {
+      "type": "extractFromJavascript",
+      "name": "Extract login OTP into LOGIN_OTP",
+      "timeout": 60,
+      "params": {
+        "code": "return JSON.parse(vars.OTP_RESPONSE).otp",
         "variable": {
           "name": "LOGIN_OTP",
           "example": ""
