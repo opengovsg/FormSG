@@ -21,11 +21,22 @@ describe('resolveMrfMyInfoReadOnlyFields', () => {
     ).toEqual(['name'])
   })
 
-  it('does not treat composite child verification keys as field IDs', () => {
+  it('resolves composite child verification keys to their Children field ID', () => {
     expect(
       resolveMrfMyInfoReadOnlyFields({
         verifiedKeys: new Set([
           'childrenbirthrecords.children.childname.0.CHILD',
+        ]),
+        responses,
+      }),
+    ).toEqual(['children'])
+  })
+
+  it('ignores composite child keys of fields that were not submitted', () => {
+    expect(
+      resolveMrfMyInfoReadOnlyFields({
+        verifiedKeys: new Set([
+          'childrenbirthrecords.notsubmitted.childname.0.CHILD',
         ]),
         responses,
       }),

@@ -971,8 +971,10 @@ export const verifyMyInfoHashes = async (
 
 /**
  * Checks Step 1 login identity answers against the login, like
- * verifyMyInfoHashes. Verified fields join myInfoReadOnlyFields, so outputs
- * mark them `[Myinfo]`. Must run before encryptSubmission.
+ * verifyMyInfoHashes. Verified fields join myInfoReadOnlyFields and get
+ * provenance.myinfoVerified stamped, so every output marks them `[Myinfo]`
+ * (read-time surfaces read the list; email outputs read provenance). Must run
+ * before encryptSubmission.
  */
 export const verifyLoginIdentityAnswers = async (
   req: ProcessedMultirespondentSubmissionHandlerRequest,
@@ -1007,6 +1009,9 @@ export const verifyLoginIdentityAnswers = async (
         ...(req.formsg.myInfoReadOnlyFields ?? []),
         ...verifiedFieldIds,
       ]
+      // Email outputs read provenance, not the read-only list, so record the
+      // verification there too — same '[Myinfo]' product marker either way.
+      stampMyInfoVerifiedOnResponses(responses, new Set(verifiedFieldIds))
       return next()
     })
     .mapErr((error) => {

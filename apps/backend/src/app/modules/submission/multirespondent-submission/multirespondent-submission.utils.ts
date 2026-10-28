@@ -16,7 +16,6 @@ import {
   FormMetadata,
   FormWorkflowStepDto,
   MultirespondentSubmissionDto,
-  MyInfoAttribute,
   MyInfoChildAttributes,
   MyInfoChildrenScope,
   PublicMultirespondentSubmissionDto,
@@ -71,6 +70,7 @@ import { buildMrfMetadata } from '../submission.utils'
 import { projectSubmittedStepForAdmin } from '../submitted-step-visibility'
 
 import { MrfJwtPayload } from './multirespondent-submission.types'
+import { isMyInfoVerifiedFieldId } from './myinfo-read-only-fields'
 
 export const isSubmissionMultirespondentMode = (
   submission: ISubmissionSchema,
@@ -458,11 +458,8 @@ export const stampMyInfoVerifiedOnResponses = (
   // NOTE: MyInfo Children subfields are all assumed to be uneditable, so the
   // myinfoVerified stamp applies to the root children field rather than to
   // each individual subfield.
-  const verified = Array.from(verifiedKeys)
   for (const [fieldId, response] of Object.entries(responses)) {
-    // TODO: implement stamping for all Myinfo fields
-    const childKeyPrefix = `${MyInfoAttribute.ChildrenBirthRecords}.${fieldId}.`
-    if (verified.some((key) => key.startsWith(childKeyPrefix))) {
+    if (isMyInfoVerifiedFieldId(fieldId, verifiedKeys)) {
       response.provenance = { ...response.provenance, myinfoVerified: true }
     }
   }
@@ -617,6 +614,13 @@ const getQuestionAnswerPairsForOneField = ({
 }): QuestionAnswerPair[] => {
   // V4 responses embed question text in response.question
   let questionTitle = response.question || formField.title
+  // Hash-verified Myinfo answers carry provenance.myinfoVerified (stamped
+  // server-side at verification time); mark them the way encrypt mode marks
+  // hashed answers. The JSON dump passes includeVerifiedPrefix=false because
+  // machine consumers need raw question text.
+  if (includeVerifiedPrefix && response.provenance?.myinfoVerified) {
+    questionTitle = `${MYINFO_PREFIX}${questionTitle}`
+  }
   let answer = ''
   const questionAnswerPairs: QuestionAnswerPair[] = []
 
@@ -754,9 +758,10 @@ const getQuestionAnswerPairsForOneField = ({
       // bypass response.question, so re-apply the [Myinfo] prefix for
       // hash-verified answers (encrypt mode gates on hashedFields the same
       // way).
-      const childMyInfoPrefix = response.provenance?.myinfoVerified
-        ? MYINFO_PREFIX
-        : ''
+      const childMyInfoPrefix =
+        includeVerifiedPrefix && response.provenance?.myinfoVerified
+          ? MYINFO_PREFIX
+          : ''
       Object.keys(childrenAnswer)
         .sort()
         .forEach((childKey, childIdx) => {

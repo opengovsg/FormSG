@@ -352,7 +352,7 @@ const childNames = Object.values(childrenField?.answer ?? {}).map(
 
 ### Other properties
 
-- `provenance` is always present and usually `{}`. On Myinfo children fields, `provenance.myinfoVerified` is `true` when FormSG checked the answer against Myinfo.
+- `provenance` is always present and usually `{}`. `provenance.myinfoVerified` is `true` when FormSG verified the answer — a Myinfo answer against the Myinfo data saved at prefill, or an NRIC/UEN identity answer against the Singpass or Corppass login. Submissions made before this covered all Myinfo fields carry it on Myinfo children fields only.
 - `myInfo?: { attr }` is optional metadata. It can be absent even on Myinfo-prefilled fields, so identify Myinfo fields by ID.
 
 ## Handle multi-step workflows

@@ -47,10 +47,10 @@ describe('Multirespondent Submission Model', () => {
     {
       scenario: 'a verified read-only MyInfo field',
       readOnly: true,
-      expectedQuestion: 'Birth country',
+      expectedQuestion: '[Myinfo] Birth country',
     },
   ])(
-    'uses the saved question label for $scenario',
+    'uses the saved question label, [Myinfo]-prefixed when verified, for $scenario',
     async ({ readOnly, expectedQuestion }) => {
       // Prepare: the form definition identifies MyInfo fields; the saved row records verification.
       const fieldId = new ObjectId().toHexString()

@@ -40,6 +40,7 @@ describe('V4 webhook field metadata', () => {
       _id: 'children',
       title: 'Children',
       fieldType: BasicField.Children,
+      myInfo: { attr: MyInfoAttribute.ChildrenBirthRecords },
     },
     {
       _id: 'country',
@@ -103,6 +104,21 @@ describe('V4 webhook field metadata', () => {
 
   it('returns an empty metadata map when the saved form has no fields', () => {
     expect(buildWebhookFormFields([])).toEqual({})
+  })
+
+  it('prefixes [Myinfo] on questions of fields in myInfoReadOnlyFields', () => {
+    const metadata = buildWebhookFormFields(fields, ['country', 'children'])
+
+    expect(metadata.country).toEqual({ question: '[Myinfo] Birth country' })
+    expect(metadata.children).toEqual({ question: '[Myinfo] Children' })
+    expect(metadata.name).toEqual({ question: 'Original name question' })
+  })
+
+  it('does not prefix a read-only field without a Myinfo or Corppass attribute', () => {
+    const metadata = buildWebhookFormFields(fields, ['name'])
+
+    expect(metadata.name).toEqual({ question: 'Original name question' })
+    expect(metadata.country).toEqual({ question: 'Birth country' })
   })
 
   it('uses question titles and table column names from the saved snapshot after form edits', () => {
