@@ -63,9 +63,11 @@ jobs:
         run: |
           gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "Render preview woken by a push and deploying: $URL"
 
-  # Blocking smoke check on the preview: waits for Render to finish deploying
-  # the head SHA (previews auto-deploy on push, so `up`/`wake` may be skipped),
-  # then runs the Datadog synthetics CI smoke suite against the preview URL.
+  # On-demand smoke check on the preview, triggered by adding the
+  # `preview-smoke` label (remove and re-add to re-run; the develop release
+  # flow runs the suite against staging by default). Waits for Render to
+  # finish deploying the head SHA, then runs the Datadog synthetics CI smoke
+  # suite against the preview URL.
   smoke:
     name: Synthetics smoke on preview
     concurrency:
@@ -79,9 +81,8 @@ jobs:
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.state == 'open' &&
       contains(github.event.pull_request.labels.*.name, 'render-preview') &&
-      (github.event.action == 'synchronize' ||
-       github.event.action == 'reopened' ||
-       github.event.label.name == 'render-preview')
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'preview-smoke'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
