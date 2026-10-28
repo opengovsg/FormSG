@@ -275,7 +275,6 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
           <Toggle
             {...register('allowMultipleAttachments')}
             label="Allow respondent to add multiple attachments"
-            description="Respondents can attach as many files as fit within the size limit."
           />
         </FormControl>
       ) : null}
