@@ -21,6 +21,7 @@ import {
 } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
 
+import { useResultsNavLayout } from '../components/FormResultsNavbar'
 import { useFormFeedback, useFormIssues } from '../queries'
 
 import { useIssueTableColumns } from './issue/IssueTable'
@@ -83,6 +84,7 @@ interface FeedbackPageTranslations {
 }
 
 export const FeedbackPage = (): JSX.Element => {
+  const { contentPr } = useResultsNavLayout()
   const { t } = useTranslation()
   const translations: FeedbackPageTranslations = t(
     'features.adminForm.feedback.feedbackPage',
@@ -182,11 +184,7 @@ export const FeedbackPage = (): JSX.Element => {
   }
 
   return (
-    <Flex
-      flexDir="column"
-      pb="1.5rem"
-      pr={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
-    >
+    <Flex flexDir="column" pb="1.5rem" pr={contentPr}>
       <Flex
         direction={{ base: 'column', sm: 'row' }}
         mb="1rem"

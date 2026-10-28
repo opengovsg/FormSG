@@ -3,7 +3,7 @@ import { Container, Flex } from '@chakra-ui/react'
 
 import { FormActivationSvg } from '~features/admin-form/settings/components/FormActivationSvg'
 
-import { resultsNavBleed } from '../../components/FormResultsNavbar'
+import { useResultsNavLayout } from '../../components/FormResultsNavbar'
 import { SecretKeyVerification } from '../../components/SecretKeyVerification'
 import { EmptyResponses } from '../common/EmptyResponses'
 
@@ -12,6 +12,7 @@ import { UnlockedResponses } from './UnlockedResponses'
 
 export const StorageResponsesTab = (): JSX.Element => {
   const { t } = useTranslation()
+  const { bleed: resultsNavBleed } = useResultsNavLayout()
   const { totalResponsesCount, secretKey } = useStorageResponsesContext()
 
   if (totalResponsesCount === 0) {

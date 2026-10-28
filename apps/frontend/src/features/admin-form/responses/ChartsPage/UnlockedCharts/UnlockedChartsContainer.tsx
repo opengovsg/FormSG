@@ -21,6 +21,7 @@ import {
 import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { DecryptedSubmission } from '../../AdminSubmissionsService'
+import { useResultsNavLayout } from '../../components/FormResultsNavbar'
 import { useStorageResponsesContext } from '../../ResponsesPage/storage'
 import { useAllSubmissionData } from '../queries'
 
@@ -90,6 +91,7 @@ const aggregateWordCloud = (
 }
 
 export const UnlockedChartsContainer = () => {
+  const { contentPr } = useResultsNavLayout()
   const { t } = useTranslation()
   const { data: form, isLoading: isFormLoading } = useAdminForm()
   const { dateRange, setDateRange } = useStorageResponsesContext()
@@ -144,7 +146,7 @@ export const UnlockedChartsContainer = () => {
     : []
 
   return (
-    <Flex flexDir="column" pr={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}>
+    <Flex flexDir="column" pr={contentPr}>
       <Flex
         direction={{ base: 'column', sm: 'row' }}
         justifySelf={{ base: 'start', sm: 'end' }}

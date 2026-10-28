@@ -4,12 +4,13 @@ import { Flex, Text } from '@chakra-ui/react'
 import { OGP_POSTMAN } from '~constants/links'
 import Link from '~components/Link'
 
-import { resultsNavBleed } from '../../components/FormResultsNavbar'
+import { useResultsNavLayout } from '../../components/FormResultsNavbar'
 
 import { EmptyFeedbackSvgr } from './EmptyFeedbackSvgr'
 
 export const EmptyFeedback = (): JSX.Element => {
   const { t } = useTranslation()
+  const { bleed: resultsNavBleed } = useResultsNavLayout()
 
   return (
     <Flex
