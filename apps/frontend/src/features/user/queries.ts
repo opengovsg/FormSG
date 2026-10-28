@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 import { UserDto } from 'formsg-shared/types/user'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
+import { useBlockRefetchOnClientError } from '~hooks/useBlockRefetchOnClientError'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { HttpError } from '~services/ApiService'
 
@@ -24,6 +25,7 @@ export const useUser = ({
 }: { enabled?: boolean } = {}): UseUserReturn => {
   const [, setIsLocalStorageAuthenticated] =
     useLocalStorage<boolean>(LOGGED_IN_KEY)
+  const blockRefetchOptions = useBlockRefetchOnClientError(userKeys.base)
 
   const {
     data: user,
@@ -39,6 +41,7 @@ export const useUser = ({
     },
     // 10 minutes staletime, do not need to retrieve so often.
     staleTime: 600000,
+    ...blockRefetchOptions,
   })
 
   return {

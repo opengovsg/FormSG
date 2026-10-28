@@ -8,6 +8,7 @@ import { AdminFormDto, PreviewFormViewDto } from 'formsg-shared/types/form/form'
 import { ApiError } from '~typings/core'
 
 import { MONGODB_ID_REGEX } from '~constants/routes'
+import { useBlockRefetchOnClientError } from '~hooks/useBlockRefetchOnClientError'
 
 import { useUser } from '~features/user/queries'
 
@@ -59,11 +60,13 @@ export const useAdminFormWithId = (
     ReturnType<typeof adminFormKeys.id>
   >,
 ): UseQueryResult<AdminFormDto, ApiError> => {
-  return useQuery(
+  const blockRefetchOptions = useBlockRefetchOnClientError(
     adminFormKeys.id(formId),
-    () => getAdminFormView(formId),
-    props,
   )
+  return useQuery(adminFormKeys.id(formId), () => getAdminFormView(formId), {
+    ...props,
+    ...blockRefetchOptions,
+  })
 }
 
 /**
