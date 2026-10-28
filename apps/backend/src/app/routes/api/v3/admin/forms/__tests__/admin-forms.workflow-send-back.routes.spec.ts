@@ -34,10 +34,10 @@ let flagsOn: string[] = []
 
 const routerWithGrowthbook = Router()
 routerWithGrowthbook.use((req, _res, next) => {
-  ;(
-    req as unknown as { growthbook: { isOn: (flag: string) => boolean } }
-  ).growthbook = {
-    isOn: (flag) => flagsOn.includes(flag),
+  ;(req as unknown as { growthbook: unknown }).growthbook = {
+    isOn: (flag: string) => flagsOn.includes(flag),
+    getAttributes: () => ({}),
+    setAttributes: async () => undefined,
   }
   next()
 })
