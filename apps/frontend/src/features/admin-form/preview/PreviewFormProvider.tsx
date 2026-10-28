@@ -36,7 +36,7 @@ import { useEnv } from '../../env/queries'
 import { axiosDebugFlow } from '../../public-form/utils'
 import { usePreviewFormMutations } from '../common/mutations'
 
-import { PREVIEW_MOCK_UINFIN } from './constants'
+import { getPreviewMockLoginId } from './constants'
 import { pickPrecedingStepValues } from './pickPrecedingStepValues'
 import {
   getPreviewStepLabel,
@@ -366,10 +366,11 @@ export const PreviewFormProvider = ({
     return {
       ...data,
       form: { ...data.form, authType },
+      // Step 1's mock session may be the other provider's, so never reuse it.
       spcpSession:
         authType === FormAuthType.NIL
           ? undefined
-          : (data.spcpSession ?? { userName: PREVIEW_MOCK_UINFIN }),
+          : { userName: getPreviewMockLoginId(authType) },
     }
   }, [data, previewWorkflow, currentWorkflowStepNumber])
 
