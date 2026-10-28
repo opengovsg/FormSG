@@ -50,7 +50,6 @@ import {
   createLoginIdentityField,
   getLoginIdentityAttr,
   getLoginIdentityAttrsForAuthType,
-  getLoginIdentityConfigErrors,
   isLoginIdentityField,
   LOGIN_IDENTITY_LABELS,
   LoginIdentityCandidate,
@@ -59,7 +58,10 @@ import {
   isMFinSeriesValid,
   isNricValid,
 } from 'formsg-shared/utils/nric-validation'
-import { getStepLoginConfigErrors } from 'formsg-shared/utils/step-login'
+import {
+  getResultingLoginErrors,
+  hasLaterStepLogin,
+} from 'formsg-shared/utils/step-login'
 import { isUenValid } from 'formsg-shared/utils/uen-validation'
 import {
   getIncompleteStepNumbers,
@@ -704,6 +706,9 @@ type DuplicateFormOpts = {
   formOrigins?: FormMetadata['formOrigins']
 }
 
+export const LATER_STEP_LOGIN_DUPLICATE_MODE_ERROR =
+  'This form uses login on later workflow steps, so it can only be duplicated as a multi-respondent form.'
+
 /**
  * Duplicates given formId and replace owner with newAdminId.
  * @param originalForm the form to be duplicated
@@ -717,11 +722,32 @@ export const duplicateForm = (
   newAdminId: string,
   overrideParams: DuplicateFormOverwriteDto,
   opts?: DuplicateFormOpts,
-): ResultAsync<IFormDocument, FormNotFoundError | DatabaseError> => {
+): ResultAsync<
+  IFormDocument,
+  FormNotFoundError | DatabaseError | MalformedParametersError
+> => {
   const overrideProps = processDuplicateOverrideProps(
     overrideParams,
     newAdminId,
   )
+  // Without a workflow, Step 1's login would have to fill the fields later steps fill in.
+  if (
+    isFormMultirespondent(originalForm) &&
+    overrideProps.responseMode !== FormResponseMode.Multirespondent &&
+    hasLaterStepLogin(originalForm.workflow) &&
+    getResultingLoginErrors({
+      authType: originalForm.authType,
+      responseMode: overrideProps.responseMode,
+      isSubmitterIdCollectionEnabled:
+        originalForm.isSubmitterIdCollectionEnabled,
+      form_fields: originalForm.form_fields,
+      workflow: [],
+    }).length > 0
+  ) {
+    return errAsync(
+      new MalformedParametersError(LATER_STEP_LOGIN_DUPLICATE_MODE_ERROR),
+    )
+  }
   const { workspaceId, overrideEmails, isFromTemplate, formOrigins } =
     opts ?? {}
 
@@ -1680,24 +1706,16 @@ const checkResultingWorkflowIsAllowed = (
   workflow: FormWorkflowDto,
   authType: FormAuthType = form.authType,
 ): Result<true, MalformedParametersError> => {
-  // Workflow query updates bypass the form's document validation hook.
-  const identityErrors = getLoginIdentityConfigErrors({
+  // Workflow query updates bypass the form's document validation hooks.
+  const loginErrors = getResultingLoginErrors({
     authType,
     responseMode: form.responseMode,
     isSubmitterIdCollectionEnabled: form.isSubmitterIdCollectionEnabled,
     form_fields: form.form_fields,
     workflow,
   })
-  if (identityErrors.length) {
-    return err(new MalformedParametersError(identityErrors.join(' ')))
-  }
-  const [stepLoginError] = getStepLoginConfigErrors({
-    form: { authType },
-    formFields: form.form_fields,
-    workflow,
-  })
-  if (stepLoginError) {
-    return err(new MalformedParametersError(stepLoginError))
+  if (loginErrors.length) {
+    return err(new MalformedParametersError(loginErrors.join(' ')))
   }
 
   if (
@@ -2075,6 +2093,7 @@ export const deleteFormWorkflow = (
   | FormNotFoundError
   | FormInvalidResponseModeError
   | FormOpenToResponsesError
+  | MalformedParametersError
 > => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
@@ -2091,6 +2110,11 @@ export const deleteFormWorkflow = (
       ),
     )
   }
+
+  // Step 1 then fills in every field, so its login must fill the login
+  // fields later steps' logins did.
+  const check = checkResultingWorkflowIsAllowed(originalForm, [])
+  if (check.isErr()) return errAsync(check.error)
 
   const originalMrfForm = originalForm as IPopulatedMultirespondentForm
 

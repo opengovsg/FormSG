@@ -155,6 +155,7 @@ const handleCpStepLogin = async ({
   const { userName, userInfo } = jwtPayloadResult.value
   setMrfStepAuthCookie(res, {
     ...stepResult.value.context,
+    authType: FormAuthType.CP,
     userName,
     userInfo,
   })

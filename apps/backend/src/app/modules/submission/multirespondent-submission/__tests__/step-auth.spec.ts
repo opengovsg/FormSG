@@ -243,6 +243,7 @@ describe('step-auth', () => {
         const res = expressHandler.mockResponse()
         setMrfStepAuthCookie(res, {
           ...CONTEXT,
+          authType: FormAuthType.CP,
           userName: 'UEN',
           userInfo: 'UID',
         })
@@ -304,7 +305,8 @@ describe('step-auth', () => {
       expect(
         getLoginIdentityValue(nric, {
           authType: FormAuthType.MyInfo,
-          userName: 'S1234567D',
+          uinFin: 'S1234567D',
+          myInfoAuthSessionId: 'fapi-session-id',
         }),
       ).toBe('S1234567D')
     })
@@ -323,7 +325,7 @@ describe('step-auth', () => {
     const MYINFO_SESSION = {
       ...CONTEXT,
       authType: FormAuthType.MyInfo as const,
-      userName: 'S1234567D',
+      uinFin: 'S1234567D',
       myInfoAuthSessionId: 'fapi-session-id',
     }
     const mintCookie = (session = MYINFO_SESSION) => {
@@ -354,7 +356,7 @@ describe('step-auth', () => {
       )
 
       expect(result._unsafeUnwrap()).toMatchObject({
-        userName: 'S1234567D',
+        uinFin: 'S1234567D',
         myInfoAuthSessionId: 'fapi-session-id',
       })
     })
@@ -461,6 +463,7 @@ describe('step-auth', () => {
       const res = expressHandler.mockResponse()
       setMrfStepAuthCookie(res, {
         ...CONTEXT,
+        authType: FormAuthType.CP,
         userName: 'UEN',
         userInfo: 'UID',
       })

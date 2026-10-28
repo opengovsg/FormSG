@@ -8,6 +8,7 @@ import get from 'lodash/get'
 import simplur from 'simplur'
 
 import { FormAuthType, FormResponseMode } from 'formsg-shared/types/form'
+import { getStepAuthType } from 'formsg-shared/utils/step-login'
 
 import { usePreviewForm } from '~/features/admin-form/common/queries'
 import { FormNotFound } from '~/features/public-form/components/FormNotFound'
@@ -35,6 +36,7 @@ import { useEnv } from '../../env/queries'
 import { axiosDebugFlow } from '../../public-form/utils'
 import { usePreviewFormMutations } from '../common/mutations'
 
+import { PREVIEW_MOCK_UINFIN } from './constants'
 import { pickPrecedingStepValues } from './pickPrecedingStepValues'
 import {
   getPreviewStepLabel,
@@ -114,14 +116,6 @@ export const PreviewFormProvider = ({
   }, [data?.form.form_fields, toast, vfnToastIdRef])
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
-
-  const isAuthRequired = useMemo(
-    () =>
-      !!data?.form &&
-      data.form.authType !== FormAuthType.NIL &&
-      !data.spcpSession,
-    [data?.form, data?.spcpSession],
-  )
 
   const {
     submitEmailModeFormMutation,
@@ -358,6 +352,32 @@ export const PreviewFormProvider = ({
       ? formWorkflow[currentWorkflowStepNumber]
       : undefined
 
+  // A previewed later step shows its own login, mocked as logged in, never
+  // Step 1's. Step 1 keeps the form-level login.
+  const stepData = useMemo(() => {
+    if (!data || !previewWorkflow || currentWorkflowStepNumber === 0) {
+      return data
+    }
+    const authType = getStepAuthType(
+      data.form,
+      previewWorkflow,
+      currentWorkflowStepNumber,
+    )
+    return {
+      ...data,
+      form: { ...data.form, authType },
+      spcpSession:
+        authType === FormAuthType.NIL
+          ? undefined
+          : (data.spcpSession ?? { userName: PREVIEW_MOCK_UINFIN }),
+    }
+  }, [data, previewWorkflow, currentWorkflowStepNumber])
+
+  const isAuthRequired =
+    !!stepData?.form &&
+    stepData.form.authType !== FormAuthType.NIL &&
+    !stepData.spcpSession
+
   useEffect(() => {
     if (!previewWorkflow) return
     const canonicalSearchParams = withPreviewStep(
@@ -500,7 +520,7 @@ export const PreviewFormProvider = ({
           ? handlePreviewWorkflowStepChange
           : undefined,
         ...commonFormValues,
-        ...data,
+        ...stepData,
         ...rest,
       }}
     >

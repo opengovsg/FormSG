@@ -11,6 +11,7 @@ import {
   getLoginIdentityConfigErrors,
 } from 'formsg-shared/utils/login-identity'
 import {
+  getResultingLoginErrors,
   getStepAuthType,
   getStepFields,
   getStepFieldsNeedingLogin,
@@ -115,12 +116,19 @@ export const checkFormLoginWrite = (
     if (getStepFieldsNeedingLogin(stepOneFields, update.authType).length > 0) {
       return err(new MalformedParametersError(REMOVE_MYINFO_FIELDS_FIRST))
     }
-    const [configError] = getStepLoginConfigErrors({
-      form: { authType: update.authType },
-      formFields: form.form_fields ?? [],
+  }
+  // Includes Myinfo fields no step's login fills any more.
+  if (update.authType !== form.authType) {
+    const loginErrors = getResultingLoginErrors({
+      authType: update.authType,
+      responseMode: form.responseMode,
+      isSubmitterIdCollectionEnabled: form.isSubmitterIdCollectionEnabled,
+      form_fields: form.form_fields,
       workflow,
     })
-    if (configError) return err(new MalformedParametersError(configError))
+    if (loginErrors.length > 0) {
+      return err(new MalformedParametersError(loginErrors.join(' ')))
+    }
   }
   return ok(true)
 }

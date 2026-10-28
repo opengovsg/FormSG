@@ -13,13 +13,17 @@ import {
 } from '@chakra-ui/react'
 
 import Button from '~components/Button'
+import InlineMessage from '~components/InlineMessage'
 import { ModalCloseButton } from '~components/Modal'
+
+import { useAdminForm } from '~features/admin-form/common/queries'
 
 import {
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../adminWorkflowStore'
 import { useWorkflowMutations } from '../../mutations'
+import { getDeleteLoginError } from '../../utils/deleteLoginError'
 
 interface DeleteStepModalProps {
   onClose: () => void
@@ -33,8 +37,11 @@ export const DeleteStepModal = ({
   stepNumber,
 }: DeleteStepModalProps): JSX.Element => {
   const { t } = useTranslation()
+  const { data: form } = useAdminForm()
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
   const { deleteStepMutation } = useWorkflowMutations()
+  // The API refuses the same delete; say why before the admin tries.
+  const loginError = getDeleteLoginError(form, stepNumber)
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -81,9 +88,14 @@ export const DeleteStepModal = ({
         <ModalCloseButton isDisabled={deleteStepMutation.isLoading} />
         <ModalHeader color="secondary.700">{title}</ModalHeader>
         <ModalBody whiteSpace="pre-wrap">
-          <Text textStyle="body-2" color="secondary.500">
-            {description}
-          </Text>
+          <Stack spacing="1rem">
+            <Text textStyle="body-2" color="secondary.500">
+              {description}
+            </Text>
+            {loginError ? (
+              <InlineMessage variant="error">{loginError}</InlineMessage>
+            ) : null}
+          </Stack>
         </ModalBody>
         <ModalFooter>
           <Stack
@@ -103,6 +115,7 @@ export const DeleteStepModal = ({
               colorScheme="danger"
               onClick={handleDelete}
               isLoading={deleteStepMutation.isLoading}
+              isDisabled={!!loginError}
             >
               {confirm}
             </Button>

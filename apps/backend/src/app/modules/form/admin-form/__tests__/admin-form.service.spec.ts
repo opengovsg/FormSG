@@ -780,6 +780,80 @@ describe('admin-form.service', () => {
           DROPDOWN_FIELD_OPTIONS_TO_RECIPIENTS_MAP,
         )
       })
+
+      describe('with login on a later step', () => {
+        const MYINFO_FIELD = {
+          _id: 'myInfoNameFieldId',
+          fieldType: BasicField.ShortText,
+          title: 'Name',
+          myInfo: { attr: MyInfoAttribute.Name },
+        }
+        const MOCK_STEP_LOGIN_FORM = {
+          ...MOCK_MRF_FORM,
+          authType: FormAuthType.NIL,
+          form_fields: [...MOCK_MRF_FORM_FIELDS, MYINFO_FIELD],
+          workflow: [
+            MOCK_MRF_WORKFLOW[0],
+            {
+              ...MOCK_MRF_WORKFLOW[1],
+              edit: [MYINFO_FIELD._id],
+              auth: { auth_type: FormAuthType.MyInfo },
+            },
+          ],
+        }
+        const makeMockForm = (source: object) =>
+          ({
+            ...source,
+            getDuplicateParams: jest.fn().mockReturnValue({}),
+          }) as unknown as IFormDocument
+
+        it('should refuse to duplicate into storage mode', async () => {
+          const createSpy = jest.spyOn(FormModel, 'create')
+
+          const result = await AdminFormService.duplicateForm(
+            makeMockForm(MOCK_STEP_LOGIN_FORM),
+            new ObjectId().toHexString(),
+            MOCK_ENCRYPT_OVERRIDE_PARAMS,
+          )
+
+          expect(result._unsafeUnwrapErr()).toEqual(
+            new MalformedParametersError(
+              AdminFormService.LATER_STEP_LOGIN_DUPLICATE_MODE_ERROR,
+            ),
+          )
+          expect(createSpy).not.toHaveBeenCalled()
+        })
+
+        it('should duplicate as a multi-respondent form', async () => {
+          const mockForm = makeMockForm(MOCK_STEP_LOGIN_FORM)
+          jest
+            .spyOn(FormModel, 'create')
+            .mockResolvedValueOnce(mockForm as never)
+
+          const result = await AdminFormService.duplicateForm(
+            mockForm,
+            new ObjectId().toHexString(),
+            OVERRIDE_PARAMS,
+          )
+
+          expect(result.isOk()).toBe(true)
+        })
+
+        it('should duplicate into storage mode when later steps have no login', async () => {
+          const mockForm = makeMockForm(MOCK_MRF_FORM)
+          jest
+            .spyOn(FormModel, 'create')
+            .mockResolvedValueOnce(mockForm as never)
+
+          const result = await AdminFormService.duplicateForm(
+            mockForm,
+            new ObjectId().toHexString(),
+            MOCK_ENCRYPT_OVERRIDE_PARAMS,
+          )
+
+          expect(result.isOk()).toBe(true)
+        })
+      })
     })
 
     it('should successfully duplicate form', async () => {
