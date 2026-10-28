@@ -2,7 +2,7 @@
 
 This folder contains definitions for the `ci:formsg-smoke` suite, managed as code. The tests run two ways:
 1. **only via CI triggers** — the release gate (`release.yml` → `smoke-stg`, against stg, blocking all prod deploys)
-2. **PR previews** (`render-preview.yml`, against the Render preview URL). 
+2. **PR previews** (`render-preview.yml`, against the Render preview URL) — on demand: add the `preview-smoke` label to a PR that has a `render-preview` up; remove and re-add it to re-run.
 
 Tests are kept `status: paused` in Datadog so they never run on a Datadog schedule or alert on their own.
 
@@ -10,8 +10,11 @@ Tests are kept `status: paused` in Datadog so they never run on a Datadog schedu
 
 - `tests/*.json` — one Datadog Synthetics API test definition per file.
 - `ids.json` — maps each file's basename to the `public_id` of the Datadog
-  test it manages. The smoke composite action
-  (`.github/actions/synthetics-smoke`) builds its trigger list from this file.
+  test it manages, so `sync.sh` can update tests in place. Triggering is
+  separate: the smoke composite action (`.github/actions/synthetics-smoke`)
+  runs whatever carries the `ci:formsg-smoke` tag in Datadog — tagging a
+  test adds it to the gate (including the release gate, immediately, even
+  for tests created from an unmerged PR).
 - `sync.sh` — `push` creates/updates the tests in Datadog; `pull` overwrites
   the local files from the live definitions.
 
@@ -30,14 +33,15 @@ Editing an existing test: change its JSON, open a PR. On merge to develop,
 
 Adding a test: add the JSON, open a PR. The sync workflow runs on the PR,
 creates the test in Datadog, and commits the new `ids.json` entry back to
-the PR branch — so the test can be shaken down on the PR preview before it
-joins the release gate (the gate reads `ids.json` from develop, so new
-tests only gate prod after merge). The commit-back doesn't re-trigger the
-preview; re-run it (or push again) to exercise the new test. Duplication is
-prevented by name: before creating, `sync.sh push` adopts any live test
-with the same `name`, so re-runs (or a lost ids.json entry) update rather
-than duplicate. Keep test names unique. Abandoned PRs can leave orphan
-paused tests in Datadog; delete them in the UI if they bother you.
+the PR branch. Shake it down on the PR preview with the `preview-smoke`
+label. Note the suite is tag-scoped, so a newly created `ci:formsg-smoke`
+test joins the release gate as soon as sync creates it — before the PR
+merges; if it's not ready to gate prod, leave the tag off until it is.
+Duplication is prevented by name: before creating, `sync.sh push` adopts
+any live test with the same `name`, so re-runs (or a lost ids.json entry)
+update rather than duplicate. Keep test names unique. Abandoned PRs can
+leave orphan paused tests in Datadog; delete them in the UI if they bother
+you.
 
 You can also run `sync.sh push` locally with your own
 `DD_API_KEY`/`DD_APP_KEY` (needs `synthetics_read` + `synthetics_write`) —
@@ -62,15 +66,21 @@ proves SES + pdf-gen. Then `sync.sh pull` and commit the canonical JSON;
 future pushes preserve it. Until recorded, the journey simply lacks that
 one assertion — everything else runs.
 
-The journeys log in as a fresh throwaway `@synthetics.dtdg.co` user per run
-(the domain is whitelisted as an agency in stg only) and create their own
-form, so every run leaves one orphan user + form + submission in the stg
-database. Tolerated for now; add a cleanup job if it ever matters.
+The journeys log in as `internal-testing+cuj@` / `+mrf@open.gov.sg` (plus
+addresses so concurrent tests don't fish out each other's OTPs). The login
+OTP is fetched by a `runApiTest` step calling the `internal-testing-get-email-otp`
+Lambda (formsg-private), which reads the shared Gmail inbox; its shared
+secret lives in the `FORMSG_SYNTHETIC_OTP_LAMBDA_SECRET` Datadog global
+variable — never inline in these definitions (public repo). Respondent-side
+emails (verified email field, MRF step-2 invite) still use a per-run
+Datadog `@synthetics.dtdg.co` mailbox, which needs no agency whitelisting.
+Each run leaves its `[smoke]` form + submission behind in the account;
+tolerated for now; add a cleanup job if it ever matters.
 
-A push that changes definitions AND triggers a preview races the sync
-workflow against the preview smoke run — a transient
-`Unknown variable name` or `UnknownTestError` on such a run can be a
-mid-update trigger; re-run the preview before digging deeper.
+Trigger smoke only after the sync workflow finishes pushing changed
+definitions — a `preview-smoke` label added mid-sync can hit half-updated
+tests (`Unknown variable name` / `UnknownTestError`); re-add the label
+before digging deeper.
 
 Known flake surfaces: GrowthBook flags that reshape the create-form modal
 and workflow builder (`mrfCutover`, `enablePaperTrackingSetUpPage`, workflow
