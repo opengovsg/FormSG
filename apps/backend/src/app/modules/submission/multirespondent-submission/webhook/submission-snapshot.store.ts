@@ -26,6 +26,16 @@ import {
 const logger = createLoggerWithLabel(module)
 
 const MAX_WRITE_ATTEMPTS = 2
+const MAX_TRANSIENT_ATTEMPTS = 3
+const TRANSIENT_RETRY_BASE_DELAY_MS = 200
+
+const TRANSIENT_NETWORK_ERROR_CODES = new Set([
+  'EAI_AGAIN',
+  'ECONNREFUSED',
+  'ECONNRESET',
+  'EPIPE',
+  'ETIMEDOUT',
+])
 
 type SnapshotKeyParams = {
   formId: string
@@ -60,6 +70,18 @@ const isAccessDenied = (error: unknown): error is S3ServiceException => {
   return error instanceof S3ServiceException && error.name === 'AccessDenied'
 }
 
+const isTransientNetworkError = (
+  error: unknown,
+): error is NodeJS.ErrnoException =>
+  error instanceof Error &&
+  typeof (error as NodeJS.ErrnoException).code === 'string' &&
+  TRANSIENT_NETWORK_ERROR_CODES.has(
+    (error as NodeJS.ErrnoException).code as string,
+  )
+
+const delay = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms))
+
 export const writeSnapshot = (
   snapshot: SubmissionSnapshot,
 ): ResultAsync<{ token: string; key: string }, SnapshotWriteError> => {
@@ -67,6 +89,7 @@ export const writeSnapshot = (
 
   const attempt = (
     attemptsLeft: number,
+    transientAttemptsLeft: number,
   ): ResultAsync<{ token: string; key: string }, SnapshotWriteError> => {
     const token = crypto.randomUUID()
     const key = buildSnapshotKey({
@@ -112,7 +135,29 @@ export const writeSnapshot = (
               ),
             )
           }
-          return attempt(attemptsLeft - 1)
+          return attempt(attemptsLeft - 1, transientAttemptsLeft)
+        }
+
+        if (isTransientNetworkError(error) && transientAttemptsLeft > 1) {
+          logger.warn({
+            message: 'Snapshot write hit a transient network error, retrying',
+            meta: {
+              action: 'writeSnapshot',
+              contentFormat: snapshot.contentFormat,
+              formId: snapshot.formId,
+              submissionId: snapshot.submissionId,
+              submissionIndex: snapshot.submissionIndex,
+              errorCode: error.code,
+              transientAttemptsLeft: transientAttemptsLeft - 1,
+            },
+            error,
+          })
+          const backoffMs =
+            TRANSIENT_RETRY_BASE_DELAY_MS *
+            (MAX_TRANSIENT_ATTEMPTS - transientAttemptsLeft + 1)
+          return ResultAsync.fromSafePromise(delay(backoffMs)).andThen(() =>
+            attempt(attemptsLeft, transientAttemptsLeft - 1),
+          )
         }
 
         logger.error({
@@ -130,7 +175,7 @@ export const writeSnapshot = (
       })
   }
 
-  return attempt(MAX_WRITE_ATTEMPTS)
+  return attempt(MAX_WRITE_ATTEMPTS, MAX_TRANSIENT_ATTEMPTS)
 }
 
 export const readSnapshot = ({

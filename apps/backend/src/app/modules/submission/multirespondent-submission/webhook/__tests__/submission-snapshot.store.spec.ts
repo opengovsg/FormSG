@@ -69,6 +69,12 @@ const mockS3Error = (name: string, httpStatusCode: number) =>
         $metadata: { httpStatusCode },
       })
 
+const mockTransientNetworkError = (code: string) =>
+  Object.assign(
+    new Error(`getaddrinfo ${code} s3.ap-southeast-1.amazonaws.com`),
+    { code, syscall: 'getaddrinfo' },
+  )
+
 // Helper to make a resolved/rejected aws-sdk promise shape.
 const putResolves = () => jest.fn().mockReturnValue(Promise.resolve({}))
 const putRejectsThen = (
@@ -173,7 +179,7 @@ describe('writeSnapshot', () => {
     expect(result._unsafeUnwrap().token).toBe('tok-win')
   })
 
-  it('should fail loud with SnapshotWriteError on a non-collision rejection (no retry)', async () => {
+  it('should fail loud with SnapshotWriteError on a non-retryable rejection (no retry)', async () => {
     const snapshot = makeSnapshot()
     const putObject = putRejectsThen({
       reject: mockS3Error('AccessDenied', 403),
@@ -184,8 +190,44 @@ describe('writeSnapshot', () => {
     const result = await writeSnapshot(snapshot)
 
     expect(result.isErr()).toBe(true)
-    expect(putObject).toHaveBeenCalledTimes(1) // no retry on non-412
+    expect(putObject).toHaveBeenCalledTimes(1) // no retry on non-412, non-transient
     expect(result._unsafeUnwrapErr()).toBeInstanceOf(SnapshotWriteError)
+  })
+
+  it('should retry a transient network error and succeed', async () => {
+    const snapshot = makeSnapshot()
+    const putObject = putRejectsThen(
+      { reject: mockTransientNetworkError('EAI_AGAIN') },
+      { resolve: {} },
+    )
+    ;(AwsConfig.s3.send as jest.Mock) = putObject
+    mockTokens()
+
+    const result = await writeSnapshot(snapshot)
+
+    expect(result.isOk()).toBe(true)
+    expect(putObject).toHaveBeenCalledTimes(2)
+    // IfNoneMatch on EVERY attempt => a write that silently landed server-side
+    // before the network error is never clobbered under the same key.
+    putObject.mock.calls.forEach((call) =>
+      expect(call[0].input.IfNoneMatch).toBe('*'),
+    )
+  })
+
+  it('should fail loud when transient network errors persist beyond the retry bound', async () => {
+    const snapshot = makeSnapshot()
+    const putObject = jest
+      .fn()
+      .mockReturnValue(Promise.reject(mockTransientNetworkError('EAI_AGAIN')))
+    ;(AwsConfig.s3.send as jest.Mock) = putObject
+    mockTokens()
+
+    const result = await writeSnapshot(snapshot)
+
+    expect(result.isErr()).toBe(true)
+    expect(result._unsafeUnwrapErr()).toBeInstanceOf(SnapshotWriteError)
+    // Bounded: capped at MAX_TRANSIENT_ATTEMPTS (3), not infinite.
+    expect(putObject).toHaveBeenCalledTimes(3)
   })
 
   it('should fail loud when a persistent 412 exceeds the retry bound', async () => {
