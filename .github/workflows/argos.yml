@@ -123,7 +123,14 @@ jobs:
             pnpm test-storybook --shard "$SHARD/4"
           elif [ -n "$STORIES" ]; then
             # shellcheck disable=SC2086
-            pnpm test-storybook --shard "$SHARD/4" $STORIES
+            set -- $STORIES
+            # Vitest rejects more shards than files, so a PR reaching fewer
+            # than 4 story files splits them over that many shards and the
+            # rest upload nothing.
+            TOTAL=$(( $# < 4 ? $# : 4 ))
+            if [ "$SHARD" -le "$TOTAL" ]; then
+              pnpm test-storybook --shard "$SHARD/$TOTAL" "$@"
+            fi
           fi
         env:
           FULL: ${{ steps.scope.outputs.full }}
