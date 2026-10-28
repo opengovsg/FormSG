@@ -1,6 +1,7 @@
 import { createAuthedSession } from '__tests__/integration/helpers/express-auth'
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { GrowthBook } from '@growthbook/growthbook'
 import { ObjectId } from 'bson'
 import { Router } from 'express'
 import {
@@ -29,11 +30,14 @@ jest.mock('nodemailer', () => ({
 jest.mock('src/app/modules/spcp/spcp.oidc.client.ts')
 
 let isFlagOn = true
+let realGrowthbook: GrowthBook | undefined
 
 const routerWithGrowthbook = Router()
 routerWithGrowthbook.use((req, _res, next) => {
-  ;(req as unknown as { growthbook: { isOn: () => boolean } }).growthbook = {
+  ;(req as unknown as { growthbook: unknown }).growthbook = realGrowthbook ?? {
     isOn: () => isFlagOn,
+    getAttributes: () => ({}),
+    setAttributes: async () => undefined,
   }
   next()
 })
@@ -64,6 +68,7 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/stop', () => {
     request = await createAuthedSession(user.email, request)
     defaultUser = user
     isFlagOn = true
+    realGrowthbook = undefined
   })
   afterEach(async () => {
     await dbHandler.clearDatabase()
@@ -161,6 +166,47 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/stop', () => {
     expect(response.status).toEqual(403)
     const stored = await MultirespondentSubmission.findById(submission._id)
     expect(stored?.stoppedAt).toBeUndefined()
+  })
+
+  describe('with the flag targeted by admin email', () => {
+    const initGrowthbook = async (allowedEmails: string[]) => {
+      realGrowthbook = new GrowthBook()
+      await realGrowthbook.init({
+        payload: {
+          features: {
+            'workflow-actions': {
+              defaultValue: true,
+              rules: [
+                {
+                  condition: { adminEmail: { $nin: allowedEmails } },
+                  force: false,
+                },
+              ],
+            },
+          },
+        },
+      })
+    }
+
+    it('lets an allowlisted admin stop the workflow', async () => {
+      await initGrowthbook([defaultUser.email])
+      const form = await createForm()
+      const submission = await createSubmission(form._id)
+
+      const response = await stop(form._id, submission._id, [])
+
+      expect(response.status).toEqual(200)
+    })
+
+    it('returns 403 for an admin outside the allowlist', async () => {
+      await initGrowthbook(['someone-else@test.gov.sg'])
+      const form = await createForm()
+      const submission = await createSubmission(form._id)
+
+      const response = await stop(form._id, submission._id, [])
+
+      expect(response.status).toEqual(403)
+    })
   })
 
   it('returns 403 for a read-only collaborator', async () => {

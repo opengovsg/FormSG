@@ -30,6 +30,11 @@ export const checkWorkflowActionAllowed = ({
       if (form.responseMode !== FormResponseMode.Multirespondent) {
         return errAsync(new FormInvalidResponseModeError())
       }
+      void growthbook?.setAttributes({
+        ...growthbook.getAttributes(),
+        formId,
+        adminEmail: user.email,
+      })
       if (!growthbook?.isOn(featureFlags.workflowActions)) {
         return errAsync(new MrfWorkflowActionsUnavailableError())
       }
