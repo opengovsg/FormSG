@@ -16,7 +16,6 @@ import {
   FormMetadata,
   FormWorkflowStepDto,
   MultirespondentSubmissionDto,
-  MyInfoAttribute,
   MyInfoChildAttributes,
   MyInfoChildrenScope,
   PublicMultirespondentSubmissionDto,
@@ -71,6 +70,7 @@ import { buildMrfMetadata } from '../submission.utils'
 import { projectSubmittedStepForAdmin } from '../submitted-step-visibility'
 
 import { MrfJwtPayload } from './multirespondent-submission.types'
+import { isMyInfoVerifiedFieldId } from './myinfo-read-only-fields'
 
 export const isSubmissionMultirespondentMode = (
   submission: ISubmissionSchema,
@@ -458,15 +458,8 @@ export const stampMyInfoVerifiedOnResponses = (
   // NOTE: MyInfo Children subfields are all assumed to be uneditable, so the
   // myinfoVerified stamp applies to the root children field rather than to
   // each individual subfield.
-  const verified = Array.from(verifiedKeys)
   for (const [fieldId, response] of Object.entries(responses)) {
-    // Regular MyInfo fields verify under their field id; Children verify
-    // under composite per-child hash keys prefixed by the field id.
-    const childKeyPrefix = `${MyInfoAttribute.ChildrenBirthRecords}.${fieldId}.`
-    if (
-      verifiedKeys.has(fieldId) ||
-      verified.some((key) => key.startsWith(childKeyPrefix))
-    ) {
+    if (isMyInfoVerifiedFieldId(fieldId, verifiedKeys)) {
       response.provenance = { ...response.provenance, myinfoVerified: true }
     }
   }
