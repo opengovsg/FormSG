@@ -320,7 +320,7 @@ AdminFormBuilderWithAdditionalRowsTableField.play = async ({
         // Find the HighlightableFlex by looking for the field container that contains the table field
         // The HighlightableFlex is the clickable wrapper around the field with role="button"
         const highlightableFlex = canvas.getByRole('button', {
-          name: (content, element) => {
+          name: (content) => {
             // Look for a button that contains the table field title
             // The HighlightableFlex wraps the entire field including its title
             return content.includes('Table field for test')
