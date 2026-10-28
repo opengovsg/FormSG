@@ -1,13 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  BiChevronsLeft,
-  BiChevronsRight,
-  BiExtension,
-  BiGitMerge,
-  BiQuestionMark,
-} from 'react-icons/bi'
-import { Box, Divider, Stack } from '@chakra-ui/react'
+import { BiExtension, BiGitMerge, BiQuestionMark } from 'react-icons/bi'
+import { Divider, Stack } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants'
@@ -17,7 +11,6 @@ import { MultiParty, PhHandsClapping } from '~assets/icons'
 import { BxsDockTop } from '~assets/icons/BxsDockTop'
 import { BxsWidget } from '~assets/icons/BxsWidget'
 import { FORM_GUIDE } from '~constants/links'
-import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
@@ -32,6 +25,11 @@ import { useUser } from '~features/user/queries'
 import { getShowFeatureFlagLastSeen } from '~features/user/utils'
 
 import {
+  AdminFormSideNav,
+  SideNavCollapseControl,
+} from '../../../common/AdminFormSideNav/AdminFormSideNav'
+import { useSideNavCollapse } from '../../../common/AdminFormSideNav/useSideNavCollapse'
+import {
   isDirtySelector,
   useDirtyFieldStore,
 } from '../../builder-and-design/useDirtyFieldStore'
@@ -45,7 +43,7 @@ import { DrawerTabIcon } from './DrawerTabIcon'
 
 export const CreatePageSidebar = (): JSX.Element | null => {
   const { t } = useTranslation()
-  const isMobile = useIsMobile()
+  const { isMobile, isCollapsed, toggle } = useSideNavCollapse()
   const showNavLabels = useFeatureIsOn(featureFlags.sidebarNavLabels)
   const showIntegrationTab = useFeatureIsOn(featureFlags.suiteLauncher)
 
@@ -71,9 +69,6 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     reportSidebarWidth,
   } = useCreatePageSidebar()
 
-  const [wantsCollapsed, setWantsCollapsed] = useState(false)
-  const isCollapsed = isMobile && wantsCollapsed
-
   const sidebarRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
     if (isCollapsed) {
@@ -90,7 +85,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     const observer = new ResizeObserver(report)
     observer.observe(sidebar)
     return () => observer.disconnect()
-  }, [isCollapsed, reportSidebarWidth])
+  }, [isCollapsed, reportSidebarWidth, showNavLabels])
 
   const handleDrawerBuilderClick = useCallback(() => {
     // Always show create field drawer when sidebar icon is tapped on mobile.
@@ -153,40 +148,45 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     />
   ) : null
 
-  const collapseLabel = isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
   const collapseToggle = !isMobile ? null : (
-    <Tooltip label={collapseLabel} placement="right">
-      <IconButton
-        variant="solid"
-        colorScheme="subtle"
-        size="lg"
-        alignSelf="center"
-        icon={isCollapsed ? <BiChevronsRight /> : <BiChevronsLeft />}
-        borderRadius="full"
-        aria-label={collapseLabel}
-        data-dd-action-name="create_builder.sidebar.toggle_collapse"
-        onClick={() => setWantsCollapsed((wasCollapsed) => !wasCollapsed)}
-      />
-    </Tooltip>
+    <SideNavCollapseControl
+      isCollapsed={isCollapsed}
+      onClick={toggle}
+      trackingLabel="create_builder.sidebar.toggle_collapse"
+    />
   )
 
-  if (isCollapsed) {
-    return (
-      <Box
-        pos="fixed"
-        bottom="1rem"
-        left="0.5rem"
-        zIndex="docked"
-        data-testid="sidebar-collapse-toggle"
-      >
-        {collapseToggle}
-      </Box>
-    )
-  }
+  if (isCollapsed) return collapseToggle
+
+  const sidebarFooter = (
+    <Stack spacing="0.5rem">
+      <Tooltip label="Help" placement="right">
+        <IconButton
+          variant="solid"
+          colorScheme="subtle"
+          size="lg"
+          // Keep the round button from stretching to the (wider) sidebar width.
+          alignSelf="center"
+          icon={<BiQuestionMark />}
+          borderRadius="full"
+          aria-label="Help"
+          data-dd-action-name="create_builder.drawer_tab.help"
+          onClick={(e) => {
+            e.preventDefault()
+            window.open(FORM_GUIDE)
+          }}
+        />
+      </Tooltip>
+      {collapseToggle}
+    </Stack>
+  )
+
+  const Sidebar = showNavLabels ? AdminFormSideNav : Stack
 
   return (
-    <Stack
+    <Sidebar
       ref={sidebarRef}
+      {...(showNavLabels ? { footer: sidebarFooter } : {})}
       bg="white"
       pos="sticky"
       top={0}
@@ -274,26 +274,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           </>
         )}
       </Stack>
-      <Stack spacing="0.5rem">
-        <Tooltip label="Help" placement="right">
-          <IconButton
-            variant="solid"
-            colorScheme="subtle"
-            size="lg"
-            // Keep the round button from stretching to the (wider) sidebar width.
-            alignSelf="center"
-            icon={<BiQuestionMark />}
-            borderRadius="full"
-            aria-label="Help"
-            data-dd-action-name="create_builder.drawer_tab.help"
-            onClick={(e) => {
-              e.preventDefault()
-              window.open(FORM_GUIDE)
-            }}
-          />
-        </Tooltip>
-        {collapseToggle}
-      </Stack>
-    </Stack>
+      {!showNavLabels && sidebarFooter}
+    </Sidebar>
   )
 }
