@@ -894,6 +894,20 @@ const workflowEventSchema = new Schema(
       type: [String],
       default: [],
     },
+    content: {
+      type: new Schema(
+        {
+          encryptedContent: { type: String, required: true },
+          encryptedSubmissionSecretKey: { type: String, required: true },
+          submissionPublicKey: { type: String, required: true },
+          verifiedContent: { type: String },
+          attachmentMetadata: { type: Map, of: String },
+          version: { type: Number, required: true },
+        },
+        { _id: false },
+      ),
+      default: undefined,
+    },
     created: {
       type: Date,
       required: true,

@@ -10,8 +10,18 @@ export type IAdminWorkflowEvent = AdminWorkflowEventBase & {
   created: Date
 }
 
+export type StepSubmittedContent = {
+  encryptedContent: string
+  encryptedSubmissionSecretKey: string
+  submissionPublicKey: string
+  verifiedContent?: string
+  attachmentMetadata?: Map<string, string>
+  version: number
+}
+
 export type IStepSubmittedEvent = StepSubmittedEventBase & {
   created: Date
+  content?: StepSubmittedContent
 }
 
 export type IWorkflowEvent = IAdminWorkflowEvent | IStepSubmittedEvent

@@ -977,7 +977,16 @@ export const createMultiRespondentFormSubmission = ({
         workflowStep: 0,
         mrfVersion,
         submittedSteps: [submittedStepMeta],
-        workflowEvents: [buildStepSubmittedEvent(1, submittedStepMeta)],
+        workflowEvents: [
+          buildStepSubmittedEvent(1, submittedStepMeta, {
+            encryptedContent,
+            encryptedSubmissionSecretKey,
+            submissionPublicKey,
+            verifiedContent,
+            attachmentMetadata,
+            version,
+          }),
+        ],
         stepTokenHash,
         encryptedStepToken,
       }
@@ -1217,7 +1226,16 @@ export const createMultiRespondentFormPendingSubmission = ({
       workflowStep: 0,
       mrfVersion,
       submittedSteps: [submittedStepMeta],
-      workflowEvents: [buildStepSubmittedEvent(1, submittedStepMeta)],
+      workflowEvents: [
+        buildStepSubmittedEvent(1, submittedStepMeta, {
+          encryptedContent,
+          encryptedSubmissionSecretKey,
+          submissionPublicKey,
+          verifiedContent,
+          attachmentMetadata,
+          version,
+        }),
+      ],
       stepTokenHash,
       encryptedStepToken,
       paymentId,
@@ -2034,13 +2052,24 @@ export const updateMultiRespondentFormSubmission = ({
         // RATIONALE: push, never assign, so the save sends $push and keeps
         // admin events written since this document was read.
         submission.workflowEvents.push(
-          buildStepSubmittedEvent(submissionIndex + 1, {
-            ...submittedStepMeta,
-            // A rejection ends the workflow, so the next step is never sent.
-            nextStepRecipientEmails: isStepRejected
-              ? []
-              : nextStepRecipientEmails,
-          }),
+          buildStepSubmittedEvent(
+            submissionIndex + 1,
+            {
+              ...submittedStepMeta,
+              // A rejection ends the workflow, so the next step is never sent.
+              nextStepRecipientEmails: isStepRejected
+                ? []
+                : nextStepRecipientEmails,
+            },
+            {
+              encryptedContent,
+              encryptedSubmissionSecretKey,
+              submissionPublicKey,
+              verifiedContent,
+              attachmentMetadata,
+              version,
+            },
+          ),
         )
 
         return ResultAsync.fromPromise(

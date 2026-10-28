@@ -450,6 +450,10 @@ describe('[GATE] payment webhook delivery', () => {
         stepNumber: 1,
         emails: [],
         created: expect.any(Date),
+        content: expect.objectContaining({
+          encryptedContent: 'native-v4-content',
+          verifiedContent: 'native-v4-verified-content',
+        }),
       },
     ])
   })

@@ -13,6 +13,7 @@ import {
   IAdminWorkflowEvent,
   IStepSubmittedEvent,
   IWorkflowEvent,
+  StepSubmittedContent,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { getMultirespondentSubmissionModel } from '../../models/submission.server.model'
@@ -53,12 +54,14 @@ export const buildWorkflowEvent = ({
 export const buildStepSubmittedEvent = (
   stepNumber: number,
   step: SubmittedStep,
+  content: StepSubmittedContent,
 ): IStepSubmittedEvent => ({
   type: WorkflowEventType.StepSubmitted,
   outcome: step.isApproval ? step.status : WorkflowStatus.COMPLETED,
   stepNumber,
   emails: step.nextStepRecipientEmails ?? [],
   created: new Date(step.submittedAt),
+  content,
 })
 
 /**

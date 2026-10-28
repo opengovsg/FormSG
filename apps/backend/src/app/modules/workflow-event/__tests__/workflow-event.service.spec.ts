@@ -34,6 +34,12 @@ const stepSubmitted: IStepSubmittedEvent = {
   stepNumber: 2,
   emails: ['next@example.com'],
   created: new Date('2026-10-08T00:00:00.000Z'),
+  content: {
+    encryptedContent: 'encrypted content',
+    encryptedSubmissionSecretKey: 'secret key',
+    submissionPublicKey: 'public key',
+    version: 3,
+  },
 }
 
 describe('workflow-event.service', () => {

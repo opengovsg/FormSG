@@ -4179,6 +4179,13 @@ describe('multirespondent-submission.service', () => {
       },
       mrfVersion: 1,
     })
+    const savedContent = (encryptedContent = 'encrypted-content') =>
+      expect.objectContaining({
+        encryptedContent,
+        encryptedSubmissionSecretKey: 'encrypted-submission-secret-key',
+        submissionPublicKey: 'submission-public-key',
+        version: 2,
+      })
     const Model = getMultirespondentSubmissionModel(mongoose)
     const createLegacyRowAtStepTwo = () =>
       Model.create({
@@ -4234,6 +4241,7 @@ describe('multirespondent-submission.service', () => {
           stepNumber: 1,
           emails: ['second@example.com'],
           created: expect.any(Date),
+          content: savedContent(),
         },
       ])
     })
@@ -4251,8 +4259,28 @@ describe('multirespondent-submission.service', () => {
           stepNumber: 2,
           emails: ['third@example.com'],
           created: expect.any(Date),
+          content: savedContent(),
         },
       ])
+    })
+
+    it('keeps the answers each step saved on its event', async () => {
+      const row = await createLegacyRowAtStepTwo()
+      await submitStep(row._id, 1)
+
+      await updateMultiRespondentFormSubmission({
+        submissionId: String(row._id),
+        snapshottedFormDef: formDef as unknown as SnapshottedFormDef,
+        encryptedPayload: { ...payload(2), encryptedContent: 'amended' },
+        logMeta: { action: 'test' },
+      })
+
+      const saved = await Model.findById(row._id).lean()
+      expect(
+        saved?.workflowEvents?.map((event) =>
+          'content' in event ? event.content : undefined,
+        ),
+      ).toEqual([savedContent(), savedContent('amended')])
     })
 
     it('records no recipients when the last step is submitted', async () => {
@@ -4322,6 +4350,7 @@ describe('multirespondent-submission.service', () => {
             stepNumber: 2,
             emails,
             created: expect.any(Date),
+            content: savedContent(),
           },
         ])
       },
@@ -4393,6 +4422,7 @@ describe('multirespondent-submission.service', () => {
           stepNumber: 1,
           emails: ['second@example.com'],
           created: expect.any(Date),
+          content: savedContent(),
         },
       ])
     })
