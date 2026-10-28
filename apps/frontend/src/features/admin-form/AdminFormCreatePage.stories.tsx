@@ -112,18 +112,19 @@ DesktopFieldsWithAcceptDeny.parameters = {
     },
   },
 }
-DesktopFieldsWithAcceptDeny.decorators = [
-  (Story) => {
-    const store = useMagicFormBuilderStore.getState()
-    store.recentlyCreatedFieldIds = {
+// The store is a module singleton shared by every story the page renders, so
+// clear it afterwards or later stories open with the accept/deny prompt.
+DesktopFieldsWithAcceptDeny.beforeEach = () => {
+  useMagicFormBuilderStore.setState({
+    recentlyCreatedFieldIds: {
       [ADMIN_FORM_CREATE_PAGE_FORM_ID]: new Set(
         MOCK_FORM_FIELDS.slice(0, 5).map((field) => field._id),
       ),
-    }
-
-    return <Story />
-  },
-]
+    },
+  })
+  return () =>
+    useMagicFormBuilderStore.setState({ recentlyCreatedFieldIds: {} })
+}
 
 export const DesktopLoading = Template.bind({})
 DesktopLoading.parameters = {
