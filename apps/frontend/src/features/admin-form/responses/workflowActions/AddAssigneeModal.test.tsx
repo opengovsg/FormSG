@@ -64,7 +64,8 @@ describe('AddAssigneeModal', () => {
     await userEvent.click(screen.getByRole('button', { name: CONFIRM }))
 
     expect(screen.queryByText(REQUIRED)).not.toBeInTheDocument()
-    expect(onConfirm).toHaveBeenCalledExactlyOnceWith(['new@agency.gov.sg'])
+    expect(onConfirm).toHaveBeenCalledTimes(1)
+    expect(onConfirm).toHaveBeenCalledWith(['new@agency.gov.sg'])
   })
 
   it('clears the empty-field error when the modal is reopened', async () => {
