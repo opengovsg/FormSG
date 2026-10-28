@@ -214,6 +214,8 @@ export const handleSpcpOidcLogin: (
     authType === FormAuthType.CP && nonce
       ? req.cookies?.[getCpStepBindingCookieName(nonce)]
       : undefined
+  // Absent when the destination carries no query string.
+  const destinationQuery: string | undefined = destination.split('?')[1]
   if (nonce && typeof bindingToken === 'string' && bindingToken) {
     clearCpStepBindingCookie(res, nonce)
     return handleCpStepLogin({
@@ -223,7 +225,7 @@ export const handleSpcpOidcLogin: (
       bindingToken,
       nonce,
       formId,
-      query: destination.split('?')[1],
+      query: destinationQuery,
       logMeta,
     })
   }
@@ -231,7 +233,7 @@ export const handleSpcpOidcLogin: (
   // the respondent back to that step to log in again, never through Step 1.
   const stepLoginSubmissionId =
     authType === FormAuthType.CP
-      ? getMrfStepLoginSubmissionId(destination.split('?')[1])
+      ? getMrfStepLoginSubmissionId(destinationQuery)
       : undefined
   if (stepLoginSubmissionId) {
     logger.warn({
@@ -243,7 +245,7 @@ export const handleSpcpOidcLogin: (
       getMrfContinuationDestination({
         formId,
         submissionId: stepLoginSubmissionId,
-        query: destination.split('?')[1],
+        query: destinationQuery,
       }),
     )
   }

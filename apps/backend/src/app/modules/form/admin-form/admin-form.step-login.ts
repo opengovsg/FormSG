@@ -18,6 +18,7 @@ import {
   getStepLoginConfigErrors,
   StepLoginStep,
 } from 'formsg-shared/utils/step-login'
+import { omit } from 'lodash'
 import { err, ok, Result } from 'neverthrow'
 
 import { IPopulatedForm } from '../../../../types'
@@ -150,10 +151,8 @@ const toFormLoginUpdate = (
 export const toSavedWorkflowStep = <T extends FormWorkflowStepWriteDto>(
   step: T,
 ): Omit<T, 'auth' | 'first_step_login'> & { auth?: FormWorkflowStepAuth } => {
-  const { auth, ...rest } = step
-  delete rest.first_step_login
-  const saved = rest as Omit<T, 'auth' | 'first_step_login'>
-  return auth ? { ...saved, auth } : saved
+  const saved = omit(step, ['auth', 'first_step_login'])
+  return step.auth ? { ...saved, auth: step.auth } : saved
 }
 
 /**

@@ -72,19 +72,9 @@ export const getStepAuthType = (
     ? form.authType
     : ((workflow ?? [])[stepIndex]?.auth?.auth_type ?? FormAuthType.NIL)
 
-/** The Corppass e-service ID a step logs in with. */
-export const getStepEsrvcId = (
-  form: Pick<StepLoginForm, 'authType'> & { esrvcId?: string },
-  workflow: readonly StepLoginStep[] | null | undefined,
-  stepIndex: number,
-): string | undefined =>
-  stepIndex === 0
-    ? form.esrvcId
-    : ((workflow ?? [])[stepIndex]?.auth?.esrvc_id ?? undefined)
-
 export const hasLaterStepLogin = (
-  workflow: readonly StepLoginStep[] | null | undefined = [],
-): boolean => (workflow ?? []).slice(1).some((step) => !!step?.auth)
+  workflow: readonly StepLoginStep[] | null | undefined,
+): boolean => (workflow ?? []).slice(1).some((step) => !!step.auth)
 
 /** Whether Step 1 or any later step uses the given login. */
 export const formUsesAuthType = (

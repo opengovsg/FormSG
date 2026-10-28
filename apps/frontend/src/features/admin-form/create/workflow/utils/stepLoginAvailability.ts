@@ -29,11 +29,15 @@ export const isLaterStepLoginAvailable = (
  * Whether Step 1 or, once later-step logins are available, any later step
  * uses the login. With the flag off this is the form-level login, as today.
  */
-export const formUsesLogin = (
-  form: AdminFormDto | undefined,
-  authType: FormAuthType,
-  isFlagOn: boolean,
-): boolean => {
+export const formUsesLogin = ({
+  form,
+  authType,
+  isFlagOn,
+}: {
+  form: AdminFormDto | undefined
+  authType: FormAuthType
+  isFlagOn: boolean
+}): boolean => {
   if (!form) return false
   if (!isLaterStepLoginAvailable(form, isFlagOn)) {
     return form.authType === authType

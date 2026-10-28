@@ -5,6 +5,7 @@ import { Link as ReactLink, useParams } from 'react-router-dom'
 import { Text } from '@chakra-ui/react'
 
 import {
+  FirstStepLoginInput,
   FormAuthType,
   FormStatus,
   StepLoginAuthType,
@@ -36,7 +37,8 @@ interface LoginBlockProps {
   isLoading: boolean
 }
 
-type EditedLogin = { auth_type: FormAuthType; esrvc_id?: string }
+// Step 1 falls back to the form-level login
+type ShownLogin = { auth_type: FormAuthType; esrvc_id?: string }
 
 /**
  * A step's login, saved with the step. Step 1 edits the form-level login
@@ -63,7 +65,7 @@ export const LoginBlock = ({
 
   if (!form) return null
 
-  const login: EditedLogin = isFirstStep
+  const login: ShownLogin = isFirstStep
     ? (editedFirstStepLogin ?? {
         auth_type: form.authType,
         esrvc_id: form.esrvcId,
@@ -72,9 +74,9 @@ export const LoginBlock = ({
 
   const isFormPublic = form.status === FormStatus.Public
 
-  const write = (next: EditedLogin) => {
+  const write = (next: FirstStepLoginInput) => {
     const value = {
-      auth_type: next.auth_type as StepLoginAuthType,
+      auth_type: next.auth_type,
       ...(next.auth_type === FormAuthType.CP && next.esrvc_id !== undefined
         ? { esrvc_id: next.esrvc_id }
         : {}),
@@ -111,11 +113,12 @@ export const LoginBlock = ({
       <Text style={textStyles.h4}>{t(`${COPY_KEY}.title`)}</Text>
       <StepLoginControls
         idPrefix={`step-${stepNumber}-login`}
-        authType={login.auth_type as StepLoginAuthType}
+        authType={login.auth_type}
         esrvcId={login.esrvc_id ?? ''}
         onAuthTypeChange={handleAuthTypeChange}
+        // The e-service ID field only shows while Corppass is picked.
         onEsrvcIdChange={(esrvcId) =>
-          write({ auth_type: login.auth_type, esrvc_id: esrvcId })
+          write({ auth_type: FormAuthType.CP, esrvc_id: esrvcId })
         }
         isDisabled={isFormPublic}
         isLoading={isLoading}

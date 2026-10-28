@@ -58,11 +58,11 @@ export const FormAuth = ({
   }, [form])
 
   const isMobile = useIsMobile()
-  const { handleLoginMutation } = usePublicAuthMutations(
+  const { handleLoginMutation } = usePublicAuthMutations({
     formId,
     authType,
-    mrfStepAuthTarget,
-  )
+    mrfStep: mrfStepAuthTarget,
+  })
   const displayedAuthTypeText = getDispayedAuthTypeText(authType, t)
 
   return (

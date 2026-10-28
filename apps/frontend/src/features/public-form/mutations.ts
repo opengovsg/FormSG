@@ -38,11 +38,15 @@ export type MrfStepAuthTarget = {
   stepToken?: string
 }
 
-export const usePublicAuthMutations = (
-  formId: string,
-  authType?: Exclude<FormAuthType, FormAuthType.NIL>,
-  mrfStep?: MrfStepAuthTarget,
-) => {
+export const usePublicAuthMutations = ({
+  formId,
+  authType,
+  mrfStep,
+}: {
+  formId: string
+  authType?: Exclude<FormAuthType, FormAuthType.NIL>
+  mrfStep?: MrfStepAuthTarget
+}) => {
   const { storePrefillQuery } = useStorePrefillQuery()
 
   const toast = useToast({ status: 'success', isClosable: true })

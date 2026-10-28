@@ -1741,7 +1741,7 @@ const checkResultingWorkflowIsAllowed = (
 export const createWorkflowStep = (
   originalForm: IPopulatedForm,
   newWorkflowStep: FormWorkflowStepWriteDto,
-  isStepLoginEnabled = false,
+  { isStepLoginEnabled = false }: { isStepLoginEnabled?: boolean } = {},
 ): ResultAsync<
   FormWorkflowDto,
   | DatabaseError
@@ -1905,7 +1905,7 @@ export const updateFormWorkflowStep = (
   originalForm: IPopulatedForm,
   stepNumber: number,
   updatedWorkflowStep: FormWorkflowStepWriteDto,
-  isStepLoginEnabled = false,
+  { isStepLoginEnabled = false }: { isStepLoginEnabled?: boolean } = {},
 ): ResultAsync<
   FormWorkflowDto,
   | DatabaseError
