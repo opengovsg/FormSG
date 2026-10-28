@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.58.0](https://github.com/opengovsg/formsg/compare/v9.57.1...v9.58.0) (2026-10-28)
+
+
+### Features
+
+* **admin-form:** align settings and results navigation (#10380) ([#10380](https://github.com/opengovsg/formsg/commit/cdd11986bed53955d60cc28633b12cca9111fe70))
+* **admin-form:** share the labelled navigation rail (#10381) ([#10381](https://github.com/opengovsg/formsg/commit/7d13384c075ecd0fa1f773688b9a6eed17637755))
+* **results:** ask for CSAT after a successful download (#10408) ([#10408](https://github.com/opengovsg/formsg/commit/f371672f5373525ca2a7798bc8c5e3ba8469a34d))
+
+
+### Bug Fixes
+
+* **results:** keep toolbar labels down to 1120px wide windows (#10405) ([#10405](https://github.com/opengovsg/formsg/commit/f40cc59cd272261cdd012ce97e98044d94e1bcfd))
+* **workflow-actions:** clarify assign and stop dialogs (#10390) ([#10390](https://github.com/opengovsg/formsg/commit/02e6d0978f117809e774abcd609f77bd00834a44))
+
 ## [9.57.1](https://github.com/opengovsg/formsg/compare/v9.57.0...v9.57.1) (2026-10-28)
 
 
