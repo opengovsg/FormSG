@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.4.0](https://github.com/opengovsg/formsg/compare/sdk-v8.3.0...sdk-v8.4.0) (2026-10-28)
+
+
+### Features
+
+* **mrf:** [Myinfo] prefix for all verified responses across email and V4 webhook outputs (#10388) ([#10388](https://github.com/opengovsg/formsg/commit/a9e5fe011a245a20b9abc9a4430333a8715a4472))
+
 ## [8.3.0](https://github.com/opengovsg/formsg/compare/sdk-v8.2.1...sdk-v8.3.0) (2026-10-27)
 
 
