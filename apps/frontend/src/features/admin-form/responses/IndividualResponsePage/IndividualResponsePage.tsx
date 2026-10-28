@@ -1,4 +1,12 @@
-import { memo, ReactNode, useCallback, useMemo } from 'react'
+import {
+  memo,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiDownload, BiLinkExternal } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
@@ -6,9 +14,14 @@ import {
   Box,
   Icon,
   Link,
+  SimpleGrid,
   Skeleton,
   Stack,
   StackDivider,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
   Text,
 } from '@chakra-ui/react'
 
@@ -20,6 +33,7 @@ import {
 
 import Button from '~components/Button'
 import Spinner from '~components/Spinner'
+import { Tab } from '~components/Tabs'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { FormActivationSvg } from '~features/admin-form/settings/components/FormActivationSvg'
@@ -47,9 +61,11 @@ import {
 } from '../workflowActions'
 
 import { DecryptedRow } from './DecryptedRow'
+import { getResponseScrollContainer } from './getResponseScrollContainer'
 import { useMutateDownloadAttachments } from './mutations'
 import { PaymentSection } from './PaymentSection'
 import { useIndividualSubmission } from './queries'
+import { ResponseOverview } from './ResponseOverview'
 
 const LoadingDecryption = memo(() => {
   return (
@@ -90,17 +106,14 @@ const StackRow = ({
   linkLabel?: string
 }) => {
   return (
-    <Stack
-      spacing={{ base: '0', md: '0.5rem' }}
-      direction={{ base: 'column', md: 'row' }}
-    >
+    <Stack spacing="0.25rem" direction="column">
       <Text
         as="span"
         textStyle="subhead-1"
         whiteSpace="nowrap"
         data-dd-privacy="allow"
       >
-        {label}:
+        {label}
       </Text>
       {/* minW 0 lets the flex item shrink so long URLs wrap instead of overflowing the drawer. */}
       <Skeleton isLoaded={!isLoading && !isError} minW={0}>
@@ -134,10 +147,33 @@ const StackRow = ({
 }
 
 export const IndividualResponsePage = (): JSX.Element => {
-  const { t } = useTranslation()
   const { submissionId, formId } = useParams()
   if (!submissionId) throw new Error('Missing submissionId')
   if (!formId) throw new Error('Missing formId')
+  return (
+    <IndividualResponseContent
+      key={`${formId}/${submissionId}`}
+      formId={formId}
+      submissionId={submissionId}
+    />
+  )
+}
+
+const IndividualResponseContent = ({
+  formId,
+  submissionId,
+}: {
+  formId: string
+  submissionId: string
+}): JSX.Element => {
+  const { t } = useTranslation()
+  const [tab, setTab] = useState(0)
+  const pageRef = useRef<HTMLDivElement>(null)
+  const scrollToTop = useCallback(() => {
+    const container = getResponseScrollContainer(pageRef.current)
+    if (container) container.scrollTop = 0
+  }, [])
+  useEffect(scrollToTop, [scrollToTop])
 
   const { data: form } = useAdminForm()
 
@@ -226,24 +262,9 @@ export const IndividualResponsePage = (): JSX.Element => {
   const workflowCurrentStepNumber = data?.mrf?.workflowCurrentStepNumber
   const workflowNumTotalSteps = data?.mrf?.workflowNumTotalSteps
 
-  return (
-    <Stack
-      px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
-      spacing={{ base: '1.5rem', md: '2.5rem' }}
-      data-dd-privacy="mask"
-    >
-      {hasWorkflow ? (
-        <WorkflowActionsSection
-          submissionId={submissionId}
-          mrf={data?.mrf}
-          history={data?.workflowHistory}
-          responses={data?.responses}
-          submissionSecretKey={data?.submissionSecretKey}
-          stepToken={data?.stepToken}
-          isLoading={isLoading || isError}
-        />
-      ) : null}
-      <Stack bg="primary.100" p="1.5rem" textStyle="body-1">
+  const overview = (
+    <Stack spacing="1rem" textStyle="body-1">
+      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
         <StackRow
           label="Response ID"
           value={submissionId}
@@ -258,8 +279,10 @@ export const IndividualResponsePage = (): JSX.Element => {
           isLoading={isLoading}
           isError={isError}
         />
-        {hasWorkflow ? (
-          <>
+      </SimpleGrid>
+      {hasWorkflow ? (
+        <>
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
             <StackRow
               label={MRF_WORKFLOW_STATUS_LABEL}
               value={responseMrfStatus}
@@ -287,71 +310,75 @@ export const IndividualResponsePage = (): JSX.Element => {
               isLoading={isLoading}
               isError={isError}
             />
-            <StackRow
-              label={MRF_STATUS_TRACKING_LABEL}
-              value={''}
-              statusTrackerUrl={`${window.location.origin}/${getStatusTrackerPath(formId, submissionId)}`}
-              linkLabel={
-                isWorkflowActionsOn
-                  ? t(
-                      'features.adminForm.responses.individualResponse.statusTrackingLinkLabel',
-                    )
-                  : undefined
-              }
-              isLoading={isLoading}
-              isError={isError}
-            />
-          </>
-        ) : null}
-        {attachmentDownloadUrls.size > 0 && (
-          <Stack
-            spacing={{ base: '0', md: '0.5rem' }}
-            direction={{ base: 'column', md: 'row' }}
-          >
-            <Text
-              as="span"
-              textStyle="subhead-1"
-              py={{ base: '0', md: '0.25rem' }}
-            >
-              {t('features.common.attachments')}:
-            </Text>
-            <Skeleton isLoaded={!isLoading && !isError}>
-              <Button
-                data-dd-action-name="Click on attachment field download button"
-                variant="link"
-                isDisabled={downloadAttachmentsAsZipMutation.isLoading}
-                onClick={handleDownload}
-                rightIcon={
-                  downloadAttachmentsAsZipMutation.isLoading ? (
-                    <Spinner fontSize="1.5rem" />
-                  ) : (
-                    <BiDownload fontSize="1.5rem" />
+          </SimpleGrid>
+          <StackRow
+            label={MRF_STATUS_TRACKING_LABEL}
+            value={''}
+            statusTrackerUrl={`${window.location.origin}/${getStatusTrackerPath(formId, submissionId)}`}
+            linkLabel={
+              isWorkflowActionsOn
+                ? t(
+                    'features.adminForm.responses.individualResponse.statusTrackingLinkLabel',
                   )
-                }
-              >
-                {t(
-                  'features.adminForm.responses.individualResponse.downloadAttachmentsAsZip',
-                  { attachmentSize: attachmentDownloadUrls.size },
-                )}
-              </Button>
-            </Skeleton>
-          </Stack>
-        )}
-        {form?.responseMode === FormResponseMode.Multirespondent &&
-          // Pre-mode-migration encrypt submissions have no submission secret
-          // key, so no valid response link can be built for them.
-          data?.submissionSecretKey &&
-          user?.betaFlags?.mrfAdminSubmissionKey && (
-            <StackRow
-              label={t(
-                'features.adminForm.responses.individualResponse.responseLinkLabel',
+                : undefined
+            }
+            isLoading={isLoading}
+            isError={isError}
+          />
+        </>
+      ) : null}
+      {attachmentDownloadUrls.size > 0 && (
+        <Stack
+          spacing={{ base: '0', md: '0.5rem' }}
+          direction={{ base: 'column', md: 'row' }}
+        >
+          <Text
+            as="span"
+            textStyle="subhead-1"
+            py={{ base: '0', md: '0.25rem' }}
+          >
+            {t('features.common.attachments')}:
+          </Text>
+          <Skeleton isLoaded={!isLoading && !isError}>
+            <Button
+              data-dd-action-name="Click on attachment field download button"
+              variant="link"
+              isDisabled={downloadAttachmentsAsZipMutation.isLoading}
+              onClick={handleDownload}
+              rightIcon={
+                downloadAttachmentsAsZipMutation.isLoading ? (
+                  <Spinner fontSize="1.5rem" />
+                ) : (
+                  <BiDownload fontSize="1.5rem" />
+                )
+              }
+            >
+              {t(
+                'features.adminForm.responses.individualResponse.downloadAttachmentsAsZip',
+                { attachmentSize: attachmentDownloadUrls.size },
               )}
-              value={responseLinkWithKey}
-              isLoading={isLoading}
-              isError={isError}
-            />
-          )}
-      </Stack>
+            </Button>
+          </Skeleton>
+        </Stack>
+      )}
+      {form?.responseMode === FormResponseMode.Multirespondent &&
+        // Pre-mode-migration encrypt submissions have no submission secret
+        // key, so no valid response link can be built for them.
+        data?.submissionSecretKey &&
+        user?.betaFlags?.mrfAdminSubmissionKey && (
+          <StackRow
+            label={t(
+              'features.adminForm.responses.individualResponse.responseLinkLabel',
+            )}
+            value={responseLinkWithKey}
+            isLoading={isLoading}
+            isError={isError}
+          />
+        )}
+    </Stack>
+  )
+  const responses = (
+    <>
       {isLoading || isError ? (
         <LoadingDecryption />
       ) : (
@@ -369,11 +396,63 @@ export const IndividualResponsePage = (): JSX.Element => {
           {data?.payment && (
             <PaymentSection payment={data.payment} formId={formId} />
           )}
-          {hasWorkflow && isWorkflowActionsOn ? (
-            <WorkflowActivityLog history={data?.workflowHistory} />
-          ) : null}
         </>
       )}
-    </Stack>
+    </>
+  )
+  return (
+    <Box
+      ref={pageRef}
+      px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+      data-dd-privacy="mask"
+    >
+      {hasWorkflow ? (
+        <WorkflowActionsSection
+          overview={overview}
+          submissionId={submissionId}
+          mrf={data?.mrf}
+          history={data?.workflowHistory}
+          responses={data?.responses}
+          submissionSecretKey={data?.submissionSecretKey}
+          stepToken={data?.stepToken}
+          isLoading={isLoading || isError}
+        />
+      ) : (
+        <ResponseOverview>{overview}</ResponseOverview>
+      )}
+      {hasWorkflow && isWorkflowActionsOn ? (
+        <Tabs
+          index={tab}
+          onChange={setTab}
+          variant="line-light"
+          isLazy
+          lazyBehavior="keepMounted"
+          mt="1.5rem"
+        >
+          <TabList>
+            <Tab>
+              {t(
+                'features.adminForm.responses.individualResponse.responsesTab',
+              )}
+            </Tab>
+            <Tab>
+              {t('features.adminForm.responses.individualResponse.activityTab')}
+            </Tab>
+          </TabList>
+          <TabPanels pt="1.5rem">
+            <TabPanel>{responses}</TabPanel>
+            <TabPanel>
+              {isLoading || isError ? (
+                <LoadingDecryption />
+              ) : (
+                <WorkflowActivityLog history={data?.workflowHistory} />
+              )}
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
+      ) : (
+        <Box mt="1.5rem">{responses}</Box>
+      )}
+    </Box>
   )
 }
