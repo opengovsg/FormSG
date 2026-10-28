@@ -5,7 +5,10 @@ import {
   FormResponseMode,
   MyInfoAttribute,
 } from 'formsg-shared/types'
-import { MYINFO_FIELDS_NEED_SINGPASS_STEP } from 'formsg-shared/utils/step-login'
+import {
+  MYINFO_FIELDS_NEED_FORM_SINGPASS,
+  MYINFO_FIELDS_NEED_SINGPASS_STEP,
+} from 'formsg-shared/utils/step-login'
 
 import { getDeleteLoginError } from './deleteLoginError'
 
@@ -30,7 +33,7 @@ const makeForm = (authType: FormAuthType) =>
 describe('getDeleteLoginError', () => {
   it('blocks deleting the workflow when Step 1 cannot fill the Myinfo fields', () => {
     expect(getDeleteLoginError(makeForm(FormAuthType.NIL))).toBe(
-      MYINFO_FIELDS_NEED_SINGPASS_STEP,
+      MYINFO_FIELDS_NEED_FORM_SINGPASS,
     )
   })
 
