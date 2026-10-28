@@ -1,7 +1,12 @@
 import { Meta, StoryFn } from '@storybook/react-vite'
 import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
 
-import { PaymentChannel, PaymentType, UserId } from 'formsg-shared/types'
+import {
+  BasicField,
+  PaymentChannel,
+  PaymentType,
+  UserId,
+} from 'formsg-shared/types'
 import {
   AdminFormDto,
   FormAuthType,
@@ -85,6 +90,32 @@ export default {
 } as Meta
 
 const Template: StoryFn = () => <CreatePage />
+
+const MOCK_IMAGE_FIELD_COUNT = MOCK_FORM_FIELDS.filter(
+  (field) => field.fieldType === BasicField.Image,
+).length
+
+// The mock Image fields point at URLs that 404. Until each request fails,
+// ImageField shows a 10rem skeleton, taller than the error box that replaces
+// it. Chakra's Image loads through `new Image()`, so Argos's image
+// stabilization never sees the request, and Argos sizes the full-page capture
+// before it shoots: a capture mid-load came out taller, with blank space at the
+// bottom and fixed overlays pushed down.
+const waitForImageFieldsToSettle: StoryFn['play'] = async ({
+  canvasElement,
+}) => {
+  const canvas = within(canvasElement)
+  // The form's 40-odd fields render before the images are even requested,
+  // which outlasts waitFor's 1s default under parallel test load.
+  await waitFor(
+    () =>
+      expect(
+        canvas.getAllByText('This image could not be displayed'),
+      ).toHaveLength(MOCK_IMAGE_FIELD_COUNT),
+    { timeout: 10000 },
+  )
+}
+
 export const DesktopEmpty = Template.bind({})
 DesktopEmpty.parameters = {
   argos: { modes: viewportModes('tablet', 'mobile') },
@@ -101,6 +132,7 @@ DesktopAllFields.parameters = {
     },
   },
 }
+DesktopAllFields.play = waitForImageFieldsToSettle
 
 export const DesktopFieldsWithAcceptDeny = Template.bind({})
 DesktopFieldsWithAcceptDeny.parameters = {
@@ -112,18 +144,20 @@ DesktopFieldsWithAcceptDeny.parameters = {
     },
   },
 }
-DesktopFieldsWithAcceptDeny.decorators = [
-  (Story) => {
-    const store = useMagicFormBuilderStore.getState()
-    store.recentlyCreatedFieldIds = {
+// The store is a module singleton shared by every story the page renders, so
+// clear it afterwards or later stories open with the accept/deny prompt.
+DesktopFieldsWithAcceptDeny.beforeEach = () => {
+  useMagicFormBuilderStore.setState({
+    recentlyCreatedFieldIds: {
       [ADMIN_FORM_CREATE_PAGE_FORM_ID]: new Set(
         MOCK_FORM_FIELDS.slice(0, 5).map((field) => field._id),
       ),
-    }
-
-    return <Story />
-  },
-]
+    },
+  })
+  return () =>
+    useMagicFormBuilderStore.setState({ recentlyCreatedFieldIds: {} })
+}
+DesktopFieldsWithAcceptDeny.play = waitForImageFieldsToSettle
 
 export const DesktopLoading = Template.bind({})
 DesktopLoading.parameters = {
@@ -143,6 +177,7 @@ TabletAllFields.parameters = {
   },
 }
 TabletAllFields.globals = getTabletViewGlobals()
+TabletAllFields.play = waitForImageFieldsToSettle
 export const TabletLoading = Template.bind({})
 TabletLoading.parameters = {
   mockdate: new Date('2024-09-11T13:00:00.000Z'),
@@ -162,6 +197,7 @@ MobileAllFields.parameters = {
   },
 }
 MobileAllFields.globals = getMobileViewGlobals()
+MobileAllFields.play = waitForImageFieldsToSettle
 
 export const AllFieldsFieldsHiddenByLogic = Template.bind({})
 AllFieldsFieldsHiddenByLogic.parameters = {
@@ -172,6 +208,7 @@ AllFieldsFieldsHiddenByLogic.parameters = {
     responseMode: FormResponseMode.Email,
   }),
 }
+AllFieldsFieldsHiddenByLogic.play = waitForImageFieldsToSettle
 
 export const FormWithWebhook = Template.bind({})
 FormWithWebhook.parameters = {
@@ -283,7 +320,7 @@ AdminFormBuilderWithAdditionalRowsTableField.play = async ({
         // Find the HighlightableFlex by looking for the field container that contains the table field
         // The HighlightableFlex is the clickable wrapper around the field with role="button"
         const highlightableFlex = canvas.getByRole('button', {
-          name: (content, element) => {
+          name: (content) => {
             // Look for a button that contains the table field title
             // The HighlightableFlex wraps the entire field including its title
             return content.includes('Table field for test')
