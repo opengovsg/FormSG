@@ -96,7 +96,7 @@ describe('sendBackMultirespondentSubmission', () => {
     expect(result._unsafeUnwrap().recipientEmails).toEqual(['lead@example.com'])
   })
 
-  it('records the send back with the steps it undid', async () => {
+  it('records the send back', async () => {
     const submission = await createSubmission()
 
     await sendBack(submission._id, 2, 4, 'Please fix the address')
@@ -110,20 +110,33 @@ describe('sendBackMultirespondentSubmission', () => {
         fromStepNumber: 4,
         emails: ['lead@example.com'],
         remarks: 'Please fix the address',
-        undoneSteps: [
-          expect.objectContaining({
-            stepNumber: 2,
-            submittedAt: '2026-10-08T02:00:00.000Z',
-            isApproval: false,
-            nextStepRecipientEmails: ['finance@example.com'],
-          }),
-          expect.objectContaining({
-            stepNumber: 3,
-            isApproval: true,
-            status: WorkflowStatus.APPROVED,
-          }),
-        ],
       }),
+    ])
+  })
+
+  it('keeps the step submitted events of the steps it undid', async () => {
+    const stepSubmittedEvents = SUBMITTED_STEPS.map((step, index) => ({
+      type: WorkflowEventType.StepSubmitted,
+      outcome: step.status ?? WorkflowStatus.COMPLETED,
+      stepNumber: index + 1,
+      emails: step.nextStepRecipientEmails,
+      created: new Date(step.submittedAt),
+    }))
+    const submission = await createSubmission({
+      workflowEvents: stepSubmittedEvents,
+    })
+
+    await sendBack(submission._id, 2)
+
+    const stored = await MultirespondentSubmission.findById(submission._id)
+    expect(stored?.submittedSteps).toHaveLength(1)
+    expect(
+      stored?.workflowEvents?.map(({ type, stepNumber }) => [type, stepNumber]),
+    ).toEqual([
+      [WorkflowEventType.StepSubmitted, 1],
+      [WorkflowEventType.StepSubmitted, 2],
+      [WorkflowEventType.StepSubmitted, 3],
+      [WorkflowEventType.SentBack, 2],
     ])
   })
 

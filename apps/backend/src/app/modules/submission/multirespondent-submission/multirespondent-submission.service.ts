@@ -2602,17 +2602,6 @@ export const sendBackMultirespondentSubmission = ({
       }
 
       const keptSteps = submittedSteps.slice(0, targetStepNumber - 1)
-      const undoneSteps = submittedSteps
-        .slice(targetStepNumber - 1)
-        .map((step, index) => ({
-          stepNumber: targetStepNumber + index,
-          submittedAt: step.submittedAt,
-          isApproval: step.isApproval,
-          ...('status' in step && step.status ? { status: step.status } : {}),
-          ...(step.nextStepRecipientEmails
-            ? { nextStepRecipientEmails: step.nextStepRecipientEmails }
-            : {}),
-        }))
       const recipientEmails = Array.from(
         new Set(
           (keptSteps[keptSteps.length - 1].nextStepRecipientEmails ?? []).map(
@@ -2624,18 +2613,11 @@ export const sendBackMultirespondentSubmission = ({
         submission,
         pendingStepNumber,
         keptSteps,
-        undoneSteps,
         recipientEmails,
       })
     })
     .andThen(
-      ({
-        submission,
-        pendingStepNumber,
-        keptSteps,
-        undoneSteps,
-        recipientEmails,
-      }) => {
+      ({ submission, pendingStepNumber, keptSteps, recipientEmails }) => {
         // The old link must stop working, so the step's people get a new one.
         const stepToken = StepToken.generate()
         return ResultAsync.fromPromise(
@@ -2666,7 +2648,6 @@ export const sendBackMultirespondentSubmission = ({
                   fromStepNumber: pendingStepNumber,
                   emails: recipientEmails,
                   ...(remarks ? { remarks } : {}),
-                  undoneSteps,
                 }),
               },
               $inc: { __v: 1 },

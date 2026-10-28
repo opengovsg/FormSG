@@ -200,7 +200,7 @@ describe('workflow-event.service', () => {
   })
 
   describe('toWorkflowEventDtos for a send back', () => {
-    it('carries the step it came from, the remarks and the undone steps', () => {
+    it('carries the step it came from and the remarks', () => {
       const [dto] = WorkflowEventService.toWorkflowEventDtos([
         {
           type: WorkflowEventType.SentBack,
@@ -209,13 +209,6 @@ describe('workflow-event.service', () => {
           stepNumber: 2,
           fromStepNumber: 3,
           remarks: 'Fix it',
-          undoneSteps: [
-            {
-              stepNumber: 2,
-              submittedAt: '2026-10-08T02:00:00.000Z',
-              isApproval: false,
-            },
-          ],
           emails: ['lead@example.com'],
           created: new Date('2026-10-09T00:00:00.000Z'),
         },
@@ -226,7 +219,6 @@ describe('workflow-event.service', () => {
         stepNumber: 2,
         fromStepNumber: 3,
         remarks: 'Fix it',
-        undoneSteps: [{ stepNumber: 2 }],
       })
     })
   })

@@ -40,7 +40,7 @@ export const buildWorkflowEvent = ({
   emails: string[]
 } & Pick<
   IAdminWorkflowEvent,
-  'fromStepNumber' | 'remarks' | 'undoneSteps'
+  'fromStepNumber' | 'remarks'
 >): IAdminWorkflowEvent => ({
   type,
   actorId: actor._id,
@@ -121,7 +121,6 @@ const toAdminWorkflowEventDto = (
     ? {
         fromStepNumber: event.fromStepNumber,
         remarks: event.remarks,
-        undoneSteps: event.undoneSteps,
       }
     : {}),
   created: new Date(event.created).toISOString() as DateString,

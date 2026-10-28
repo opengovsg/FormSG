@@ -919,22 +919,6 @@ const workflowEventSchema = new Schema(
     remarks: {
       type: String,
     },
-    undoneSteps: {
-      type: [
-        {
-          _id: false,
-          stepNumber: { type: Number, min: 1, required: true },
-          submittedAt: { type: String, required: true },
-          isApproval: { type: Boolean, required: true },
-          status: {
-            type: String,
-            enum: [WorkflowStatus.APPROVED, WorkflowStatus.REJECTED],
-          },
-          nextStepRecipientEmails: { type: [String], default: undefined },
-        },
-      ],
-      default: undefined,
-    },
   },
   { _id: false },
 )

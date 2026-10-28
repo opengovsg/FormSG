@@ -9,18 +9,6 @@ export enum WorkflowEventType {
   SentBack = 'sent_back',
 }
 
-/**
- * A step submission a send back undid, kept on the event so the activity log
- * still shows it once the step is no longer in `submittedSteps`.
- */
-export type UndoneWorkflowStep = {
-  stepNumber: number
-  submittedAt: string
-  isApproval: boolean
-  status?: WorkflowStatus.APPROVED | WorkflowStatus.REJECTED
-  nextStepRecipientEmails?: string[]
-}
-
 export type AdminWorkflowEventType = Exclude<
   WorkflowEventType,
   WorkflowEventType.StepSubmitted
@@ -36,8 +24,6 @@ export type AdminWorkflowEventBase = {
   fromStepNumber?: number
   /** Send back only: the admin's remarks, emailed to the step's people. */
   remarks?: string
-  /** Send back only: the step submissions it undid, oldest first. */
-  undoneSteps?: UndoneWorkflowStep[]
 }
 
 export type StepSubmittedEventBase = {
