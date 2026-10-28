@@ -4,11 +4,6 @@ import {
   WorkflowEventType,
 } from 'formsg-shared/types'
 
-export type DecryptedResponseLike = {
-  _id: string
-  answer?: unknown
-}
-
 export type WorkflowHistory = {
   submittedSteps: AdminSubmittedStep[]
   workflow: { _id: string; step_name?: string }[]
@@ -39,42 +34,5 @@ export const getStepRecipients = ({
           event.stepNumber === stepNumber,
       )
       .flatMap((event) => event.emails),
-  ])
-}
-
-export const getStopNotifiedEmails = ({
-  history,
-  events,
-  responses = [],
-  otherEmails,
-  stepOneEmailFieldId,
-  stepIdsToNotify,
-}: {
-  history: WorkflowHistory
-  events?: WorkflowEventDto[]
-  responses?: DecryptedResponseLike[]
-  otherEmails: string[]
-  stepOneEmailFieldId?: string
-  stepIdsToNotify: string[]
-}): string[] => {
-  const pendingStepNumber = history.submittedSteps.length + 1
-  const stepOneAnswer = responses.find(
-    ({ _id }) => _id === stepOneEmailFieldId,
-  )?.answer
-
-  return unique([
-    ...otherEmails,
-    ...(typeof stepOneAnswer === 'string' && stepOneAnswer
-      ? [stepOneAnswer]
-      : []),
-    ...history.workflow.flatMap((step, index) =>
-      stepIdsToNotify.includes(step._id) && index + 1 <= pendingStepNumber
-        ? getStepRecipients({
-            submittedSteps: history.submittedSteps,
-            events,
-            stepNumber: index + 1,
-          })
-        : [],
-    ),
   ])
 }
