@@ -128,19 +128,9 @@ export const AttachmentList = ({
   return (
     <AttachmentStylesProvider value={styles}>
       <Box __css={styles.container}>
+        {/* Dropzone first, then the size limit, then the files, as most
+            multi-file uploaders do. */}
         <Stack spacing="0.5rem">
-          {files.map((file, index) => (
-            <AttachmentFileInfo
-              key={`${file.name}-${index}`}
-              file={file}
-              showRemove={!isDisabled}
-              handleRemoveFile={() =>
-                onChange(files.filter((_, i) => i !== index))
-              }
-              handleDownloadFile={() => downloadFile(file)}
-              handleReplaceFile={() => undefined}
-            />
-          ))}
           {!maxTotalSize || totalSize < maxTotalSize ? (
             <Box {...getRootProps()} role="button" __css={styles.dropzone}>
               <AttachmentDropzone
@@ -153,12 +143,24 @@ export const AttachmentList = ({
               />
             </Box>
           ) : null}
+          {maxTotalSize ? (
+            <Text color="secondary.400" textStyle="body-2">
+              Maximum attachment size: {getReadableFileSize(maxTotalSize)}
+            </Text>
+          ) : null}
+          {files.map((file, index) => (
+            <AttachmentFileInfo
+              key={`${file.name}-${index}`}
+              file={file}
+              showRemove={!isDisabled}
+              handleRemoveFile={() =>
+                onChange(files.filter((_, i) => i !== index))
+              }
+              handleDownloadFile={() => downloadFile(file)}
+              handleReplaceFile={() => undefined}
+            />
+          ))}
         </Stack>
-        {maxTotalSize ? (
-          <Text color="secondary.400" textStyle="body-2" mt="0.5rem">
-            Maximum attachment size: {getReadableFileSize(maxTotalSize)}
-          </Text>
-        ) : null}
       </Box>
     </AttachmentStylesProvider>
   )
