@@ -28,6 +28,7 @@ const baseStyleDialog = defineStyle({
     content: '""',
     position: 'absolute',
     inset: 0,
+    zIndex: 'overlay',
     bg: 'transparent',
     pointerEvents: 'none',
     transition: 'background-color 0.15s',
