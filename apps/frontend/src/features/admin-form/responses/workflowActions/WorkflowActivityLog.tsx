@@ -1,6 +1,15 @@
-import { ReactNode } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
-import { Circle, Flex, Stack, Text } from '@chakra-ui/react'
+import { useTranslation } from 'react-i18next'
+import { IconType } from 'react-icons'
+import {
+  BiBell,
+  BiCheck,
+  BiFile,
+  BiSend,
+  BiStopCircle,
+  BiUserPlus,
+  BiX,
+} from 'react-icons/bi'
+import { Box, Stack, Text } from '@chakra-ui/react'
 import { formatInTimeZone } from 'date-fns-tz'
 
 import { WorkflowEventType, WorkflowStatus } from 'formsg-shared/types'
@@ -12,55 +21,15 @@ import { WorkflowHistory } from './getStopNotifiedEmails'
 import { WORKFLOW_ACTIONS_I18N } from './i18n'
 
 const I18N_PREFIX = `${WORKFLOW_ACTIONS_I18N}.activityLog` as const
-const BOLD = { bold: <Text as="b" /> }
-
 type ActivityLogKey =
   keyof ResponsesIndividualResponse['workflowActions']['activityLog']
-
-const formatActivityTimestamp = (iso: string): string =>
-  formatInTimeZone(
-    new Date(iso),
-    'Asia/Singapore',
-    'EEE, d MMM yyyy, hh:mm:ss a',
-  )
-
-type ActivityTone = 'step' | 'complete' | 'reminder' | 'negative' | 'neutral'
-
-const TONE_COLORS: Record<ActivityTone, string> = {
-  step: 'primary.500',
-  complete: 'success.500',
-  reminder: 'warning.500',
-  negative: 'danger.500',
-  neutral: 'neutral.400',
-}
-
 interface ActivityEntry {
+  id: string
   at: string
-  title: ReactNode
-  tone: ActivityTone
+  title: string
+  icon: IconType
+  notificationRecipients?: string[]
 }
-
-const ActivityLogEntry = ({
-  title,
-  timestamp,
-  tone,
-}: {
-  title: ReactNode
-  timestamp: string
-  tone: ActivityTone
-}) => (
-  <Flex gap="0.75rem" align="flex-start">
-    <Circle size="0.5rem" mt="0.5rem" flexShrink={0} bg={TONE_COLORS[tone]} />
-    <Stack spacing="0.125rem">
-      <Text textStyle="body-2" color="secondary.700">
-        {title}
-      </Text>
-      <Text textStyle="caption-1" color="secondary.400">
-        {timestamp}
-      </Text>
-    </Stack>
-  </Flex>
-)
 
 export const WorkflowActivityLog = ({
   history = { submittedSteps: [], workflow: [] },
@@ -69,7 +38,6 @@ export const WorkflowActivityLog = ({
 }): JSX.Element => {
   const { t } = useTranslation()
   const { submittedSteps, workflow, workflowEvents: events = [] } = history
-
   const stepValues = (stepNumber: number) => {
     const name = workflow[stepNumber - 1]?.step_name?.trim()
     return {
@@ -77,111 +45,208 @@ export const WorkflowActivityLog = ({
       stepName: name ? t(`${I18N_PREFIX}.stepNameLabel`, { name }) : '',
     }
   }
-
   const entry = (
+    id: string,
     at: string,
     key: ActivityLogKey,
     values: Record<string, string>,
-    tone: ActivityTone,
+    icon: IconType,
   ): ActivityEntry => ({
+    id,
     at,
-    tone,
-    title: (
-      <Trans
-        i18nKey={`${I18N_PREFIX}.${key}`}
-        values={values}
-        components={BOLD}
-      />
-    ),
+    title: t(`${I18N_PREFIX}.${key}`, values),
+    icon,
   })
 
-  const stepEntries = submittedSteps.map((step, index) => {
+  // Sort source records before expanding them, so equal-time action/sending
+  // pairs stay adjacent and preserve the existing submitted-steps-first order.
+  const stepGroups = submittedSteps.map((step, index) => {
+    const id = `step-${index}`
     const recipients =
       'nextStepRecipientEmails' in step
         ? (step.nextStepRecipientEmails ?? [])
         : []
-    const sentTo = index < workflow.length - 1 && recipients.length > 0
     const status = 'status' in step ? step.status : undefined
-    const key: ActivityLogKey =
-      status === WorkflowStatus.REJECTED
-        ? 'stepNotApproved'
-        : status === WorkflowStatus.APPROVED
-          ? sentTo
-            ? 'stepApprovedSentTo'
-            : 'stepApproved'
-          : sentTo
-            ? 'stepCompletedSentTo'
-            : 'stepCompleted'
-    const isLastStep = index === workflow.length - 1
-    const tone: ActivityTone =
-      status === WorkflowStatus.REJECTED
-        ? 'negative'
-        : isLastStep
-          ? 'complete'
-          : 'step'
-    return entry(
-      step.submittedAt,
-      key,
-      {
-        ...stepValues(index + 1),
-        recipients: formatEmailList(recipients),
-      },
-      tone,
-    )
+    const rejected = status === WorkflowStatus.REJECTED
+    const approved = status === WorkflowStatus.APPROVED
+    const entries = [
+      entry(
+        id,
+        step.submittedAt,
+        rejected
+          ? 'stepRejected'
+          : approved
+            ? 'stepApproved'
+            : index === 0
+              ? 'submitted'
+              : 'stepSubmitted',
+        stepValues(index + 1),
+        rejected ? BiX : approved ? BiCheck : BiFile,
+      ),
+    ]
+    if (!rejected && index < workflow.length - 1 && recipients.length) {
+      entries.push(
+        entry(
+          `${id}-sent`,
+          step.submittedAt,
+          'stepSent',
+          {
+            ...stepValues(index + 2),
+            recipients: formatEmailList(recipients),
+          },
+          BiSend,
+        ),
+      )
+    }
+    return { at: step.submittedAt, entries }
   })
-
-  const eventEntries = events.map((event) => {
+  const eventGroups = events.map((event, index) => {
+    const id = `event-${index}`
+    const actor = event.actorEmail
+      ? t(`${I18N_PREFIX}.actorClause`, { actor: event.actorEmail })
+      : ''
+    let entries: ActivityEntry[]
     switch (event.type) {
       case WorkflowEventType.AssigneesAdded:
-        return entry(
-          event.created,
-          'assigneeAdded',
-          {
-            emails: formatEmailList(event.emails),
-            ...stepValues(event.stepNumber),
-            actor: event.actorEmail,
-          },
-          'neutral',
-        )
+        entries = [
+          entry(
+            id,
+            event.created,
+            'assigneeAdded',
+            {
+              ...stepValues(event.stepNumber),
+              emails: formatEmailList(event.emails),
+              actor,
+            },
+            BiUserPlus,
+          ),
+        ]
+        break
       case WorkflowEventType.ReminderSent:
-        return entry(
-          event.created,
-          'reminderSent',
-          {
-            recipients: formatEmailList(event.emails),
-            actor: event.actorEmail,
-          },
-          'reminder',
-        )
+        entries = [
+          entry(
+            id,
+            event.created,
+            'reminderTriggered',
+            { ...stepValues(event.stepNumber), actor },
+            BiBell,
+          ),
+        ]
+        if (event.emails.length) {
+          entries.push(
+            entry(
+              `${id}-sent`,
+              event.created,
+              'reminderSent',
+              {
+                ...stepValues(event.stepNumber),
+                recipients: formatEmailList(event.emails),
+              },
+              BiSend,
+            ),
+          )
+        }
+        break
       case WorkflowEventType.Stopped:
-        return entry(
-          event.created,
-          'stopped',
-          { actor: event.actorEmail },
-          'negative',
-        )
+        entries = [
+          {
+            ...entry(id, event.created, 'stopped', { actor }, BiStopCircle),
+            notificationRecipients: event.emails,
+          },
+        ]
+        break
     }
+    return { at: event.created, entries }
   })
-
-  const entries = [...stepEntries, ...eventEntries].sort((a, b) =>
-    a.at.localeCompare(b.at),
-  )
+  const entries = [...stepGroups, ...eventGroups]
+    .sort((a, b) => a.at.localeCompare(b.at))
+    .flatMap((group) => group.entries)
 
   return (
-    <Stack spacing="1rem" pb="2.5rem" data-dd-privacy="mask">
-      <Text textStyle="subhead-1" color="secondary.700">
-        {t(`${I18N_PREFIX}.title`)}
-      </Text>
-      <Stack spacing="1rem">
-        {entries.map(({ at, title, tone }, index) => (
-          <ActivityLogEntry
-            key={`${at}-${index}`}
-            title={title}
-            timestamp={formatActivityTimestamp(at)}
-            tone={tone}
-          />
-        ))}
-      </Stack>
-    </Stack>
+    <Box
+      as="ol"
+      listStyleType="none"
+      m={0}
+      p={0}
+      pb="2.5rem"
+      aria-label={t(`${I18N_PREFIX}.title`)}
+      data-dd-privacy="mask"
+    >
+      {entries.map(
+        ({ id, at, title, icon: EventIcon, notificationRecipients }, index) => (
+          <Box
+            as="li"
+            key={id}
+            position="relative"
+            pb={index === entries.length - 1 ? 0 : '2rem'}
+          >
+            {index !== entries.length - 1 && (
+              <Box
+                position="absolute"
+                left="15px"
+                top="1rem"
+                bottom="-1rem"
+                w="2px"
+                bg="neutral.300"
+                aria-hidden
+              />
+            )}
+            <Box
+              position="absolute"
+              top={0}
+              left={0}
+              boxSize="2rem"
+              bg="secondary.100"
+              color="secondary.500"
+              borderRadius="full"
+              borderWidth="3px"
+              borderColor="white"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              aria-hidden
+            >
+              <EventIcon fontSize="1.25rem" />
+            </Box>
+            <Stack ml="3rem" spacing="0.75rem" minW={0}>
+              <Box>
+                <Text
+                  as="h3"
+                  textStyle="subhead-1"
+                  pt="0.125rem"
+                  overflowWrap="anywhere"
+                >
+                  {title}
+                </Text>
+                <Text
+                  as="time"
+                  dateTime={at}
+                  display="block"
+                  textStyle="body-2"
+                  color="secondary.400"
+                  mt="0.25rem"
+                >
+                  {formatInTimeZone(
+                    new Date(at),
+                    'Asia/Singapore',
+                    'EEE, d MMM yyyy, hh:mm:ss a',
+                  )}
+                </Text>
+              </Box>
+              {!!notificationRecipients?.length && (
+                <Box bg="secondary.100" p="1rem" borderRadius="8px">
+                  <Text textStyle="subhead-2" mb="0.25rem">
+                    {t(`${I18N_PREFIX}.notificationRecipients`)}
+                  </Text>
+                  <Text textStyle="body-2" overflowWrap="anywhere">
+                    {formatEmailList(notificationRecipients)}
+                  </Text>
+                </Box>
+              )}
+            </Stack>
+          </Box>
+        ),
+      )}
+    </Box>
   )
 }
