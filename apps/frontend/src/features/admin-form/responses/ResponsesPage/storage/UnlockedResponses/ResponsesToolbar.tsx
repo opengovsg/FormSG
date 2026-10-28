@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { BiSave } from 'react-icons/bi'
-import { Flex, useBreakpointValue, useDisclosure } from '@chakra-ui/react'
+import { Flex, useDisclosure, useMediaQuery } from '@chakra-ui/react'
 
 import { MAX_SAVED_VIEWS } from 'formsg-shared/constants'
 
@@ -27,8 +27,10 @@ export const ResponsesToolbar = (): JSX.Element => {
     { returnObjects: true },
   )
   const saveViewModal = useDisclosure()
-  const isIconOnly =
-    useBreakpointValue({ base: true, xl: false }, { ssr: false }) ?? true
+  const [hasRoomForLabels] = useMediaQuery('(min-width: 70em)', {
+    ssr: false,
+  })
+  const isIconOnly = !hasRoomForLabels
   const {
     columnOptions,
     currentViewState,
