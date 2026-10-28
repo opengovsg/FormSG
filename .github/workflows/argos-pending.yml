@@ -1,0 +1,46 @@
+name: 'Argos review pending'
+
+# Argos reports a build whose changes await review as a red `failure`, and has
+# no setting to change that. Re-post that one status as yellow `pending` under
+# the same context and link, so an unreviewed diff reads as "needs a look"
+# rather than "broken". Approving in Argos posts `success`, which replaces it;
+# a rejection says "rejected" and stays red.
+#
+# Statuses posted with GITHUB_TOKEN trigger no workflows, so this cannot loop.
+# `status` workflows only run from the default branch.
+
+on: status
+
+permissions: {}
+
+jobs:
+  pending:
+    if: >-
+      github.event.state == 'failure' &&
+      startsWith(github.event.context, 'argos/') &&
+      contains(github.event.description, 'waiting for your decision')
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+    steps:
+      - name: Re-post as pending
+        run: |
+          # An approval landing before this job starts must not be overwritten.
+          latest=$(gh api "repos/$REPO/commits/$SHA/statuses" |
+            jq -r --arg ctx "$CONTEXT" 'map(select(.context == $ctx)) | .[0].state')
+          if [ "$latest" != failure ]; then
+            echo "Latest $CONTEXT status is $latest; leaving it."
+            exit 0
+          fi
+          gh api "repos/$REPO/statuses/$SHA" \
+            -f state=pending \
+            -f context="$CONTEXT" \
+            -f description="$DESCRIPTION" \
+            -f target_url="$TARGET_URL"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.event.sha }}
+          CONTEXT: ${{ github.event.context }}
+          DESCRIPTION: ${{ github.event.description }}
+          TARGET_URL: ${{ github.event.target_url }}
