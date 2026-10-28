@@ -9,6 +9,7 @@ import {
   getResultingLoginErrors,
   getStepLoginConfigErrors,
   hasStepLoginConfig,
+  MYINFO_FIELDS_NEED_FORM_SINGPASS,
   MYINFO_FIELDS_NEED_SINGPASS_STEP,
 } from '../step-login'
 
@@ -243,7 +244,8 @@ describe('step-login', () => {
         }),
       ).toEqual([
         'UEN fields need Corppass login.',
-        MYINFO_FIELDS_NEED_SINGPASS_STEP,
+        // No steps are left, so the message must not point to one
+        MYINFO_FIELDS_NEED_FORM_SINGPASS,
       ])
     })
 
