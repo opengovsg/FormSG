@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.57.0](https://github.com/opengovsg/formsg/compare/v9.56.0...v9.57.0) (2026-10-28)
+
+
+### Features
+
+* clarify workflow activity events and icons (#10354) ([#10354](https://github.com/opengovsg/formsg/commit/3888fbcf11d086c220c48bd0caf48643d0842c25))
+* organise response drawer layout and actions (#10353) ([#10353](https://github.com/opengovsg/formsg/commit/2d6e32afa18705e30eda77f003501221d2f607a4))
+
+
+### Bug Fixes
+
+* **frontend:** stop runaway client-side query refetches feeding RUM errors (#10394) ([#10394](https://github.com/opengovsg/formsg/commit/5f32c0ef5e55971aa449de11a3eddbf1f7382320))
+
+
+### Dependencies
+
+* **deps:** bump vulnerable dependencies flagged by Endor and Dependabot (#10395) ([#10395](https://github.com/opengovsg/formsg/commit/20d71273288aa8a8eaeda7d65afa63ff1800ccd7))
+
 ## [9.56.0](https://github.com/opengovsg/formsg/compare/v9.55.0...v9.56.0) (2026-10-28)
 
 
