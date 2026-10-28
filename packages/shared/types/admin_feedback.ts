@@ -1,6 +1,11 @@
 import { UserDto } from './user'
 
-export type AdminFeedbackTriggerSource = 'field-edit' | 'publish' | 'workflow'
+export type AdminFeedbackTriggerSource =
+  | 'field-edit'
+  | 'publish'
+  | 'workflow'
+  | 'download-v1'
+  | 'download-v2'
 
 /** The 1-5 CSAT scale. Deliberately distinct from the legacy thumbs data. */
 export type AdminCsatScore = 1 | 2 | 3 | 4 | 5
