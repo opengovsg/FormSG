@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.56.0](https://github.com/opengovsg/formsg/compare/v9.55.0...v9.56.0) (2026-10-28)
+
+
+### Features
+
+* **mrf:** [Myinfo] prefix for all verified responses across email and V4 webhook outputs (#10388) ([#10388](https://github.com/opengovsg/formsg/commit/a9e5fe011a245a20b9abc9a4430333a8715a4472))
+
+
+### Bug Fixes
+
+* **storybook:** make Argos screenshots deterministic (#10389) ([#10389](https://github.com/opengovsg/formsg/commit/c629a7daa955cdf7edcb1e4e612ebedf02a4e56e))
+* **storybook:** settle flaky AdminFormCreatePage Argos captures (#10397) ([#10397](https://github.com/opengovsg/formsg/commit/804b4eb0579bebe8ee82c0836d466c4e9731c4f7))
+
+
+### CI
+
+* **argos:** shard affected stories over at most one shard per file (#10398) ([#10398](https://github.com/opengovsg/formsg/commit/a8a48e1276babe1eaa9e8505050154c70a44767e))
+
 ## [9.55.0](https://github.com/opengovsg/formsg/compare/v9.54.7...v9.55.0) (2026-10-27)
 
 
