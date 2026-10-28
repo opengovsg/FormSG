@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.57.1](https://github.com/opengovsg/formsg/compare/v9.57.0...v9.57.1) (2026-10-28)
+
+
+### Bug Fixes
+
+* **workflow-actions:** evaluate the flag with the acting admin's email (#10404) ([#10404](https://github.com/opengovsg/formsg/commit/9f5de2c99cc92d2effded763c4d5883bfa573e73))
+
 ## [9.57.0](https://github.com/opengovsg/formsg/compare/v9.56.0...v9.57.0) (2026-10-28)
 
 
