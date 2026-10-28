@@ -1,6 +1,6 @@
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { ChakraProvider } from '@chakra-ui/react'
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import {
@@ -14,6 +14,8 @@ import i18n from '~/i18n/i18n'
 
 import { theme } from '~theme/index'
 
+import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedbackContainer/adminFeedbackStore'
+
 import { DownloadButton } from './DownloadButton'
 import { ResponsesViewState } from './savedViews'
 
@@ -21,6 +23,11 @@ const FORM_ID = '0123456789abcdef01234567'
 
 const mockLogAnalyticsEvent = vi.fn()
 const mockMutate = vi.fn()
+let mockOnSuccess: (result: {
+  successCount: number
+  expectedCount: number
+  errorCount: number
+}) => void = () => undefined
 let mockIsDelightful = true
 let mockContext: Record<string, unknown> = {}
 
@@ -44,10 +51,17 @@ vi.mock('../StorageResponsesContext', () => ({
 }))
 
 vi.mock('../useDecryptionWorkers', () => ({
-  default: () => ({
-    handleBulkDownloadMutation: { mutate: mockMutate, isLoading: false },
-    abortDecryption: vi.fn(),
-  }),
+  default: ({
+    mutateProps,
+  }: {
+    mutateProps: { onSuccess: typeof mockOnSuccess }
+  }) => {
+    mockOnSuccess = mutateProps.onSuccess
+    return {
+      handleBulkDownloadMutation: { mutate: mockMutate, isLoading: false },
+      abortDecryption: vi.fn(),
+    }
+  },
 }))
 
 vi.mock('~templates/NavigationPrompt', () => ({
@@ -201,5 +215,53 @@ describe('DownloadButton analytics events', () => {
         }),
       }),
     )
+  })
+})
+
+describe('DownloadButton CSAT trigger', () => {
+  beforeAll(() => i18n.changeLanguage(Language.ENGLISH))
+  beforeEach(() => useAdminFeedbackStore.getState().reset())
+
+  const finishDownload = (successCount: number, errorCount = 0) =>
+    act(() =>
+      mockOnSuccess({
+        successCount,
+        expectedCount: successCount + errorCount,
+        errorCount,
+      }),
+    )
+
+  it.each([
+    [false, 'download-v1'],
+    [true, 'download-v2'],
+  ])(
+    'asks for CSAT after a full download (v2: %s)',
+    (isDelightful, triggerSource) => {
+      renderButton({ isDelightful })
+
+      finishDownload(12)
+
+      expect(useAdminFeedbackStore.getState()).toMatchObject({
+        isEligible: true,
+        triggerSource,
+        formId: FORM_ID,
+      })
+    },
+  )
+
+  it('does not ask after a partly failed download', () => {
+    renderButton()
+
+    finishDownload(10, 2)
+
+    expect(useAdminFeedbackStore.getState().isEligible).toBe(false)
+  })
+
+  it('does not ask when nothing was decrypted', () => {
+    renderButton()
+
+    finishDownload(0)
+
+    expect(useAdminFeedbackStore.getState().isEligible).toBe(false)
   })
 })

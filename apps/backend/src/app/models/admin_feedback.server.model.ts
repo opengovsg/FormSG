@@ -41,7 +41,7 @@ const AdminFeedbackSchema = new Schema<
     },
     triggerSource: {
       type: String,
-      enum: ['field-edit', 'publish', 'workflow'],
+      enum: ['field-edit', 'publish', 'workflow', 'download-v1', 'download-v2'],
     },
     formId: {
       type: Schema.Types.ObjectId,

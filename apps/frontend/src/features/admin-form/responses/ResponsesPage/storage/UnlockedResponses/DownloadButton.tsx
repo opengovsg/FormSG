@@ -30,6 +30,7 @@ import { NavigationPrompt } from '~templates/NavigationPrompt'
 import { CSV_BUFFER_MAX_RESPONSES } from '~features/admin-form/responses/constants'
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 import { logAnalyticsEvent } from '~features/analytics/AnalyticsEventService'
+import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedbackContainer/adminFeedbackStore'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 import {
@@ -302,6 +303,14 @@ export const DownloadButton = ({
             ]}response[|s] [was|were] decrypted. ${errorCount} failed.`,
           })
           return
+        }
+        if (successCount > 0) {
+          useAdminFeedbackStore
+            .getState()
+            .setEligible(
+              isDelightfulDashboard ? 'download-v2' : 'download-v1',
+              formId,
+            )
         }
         toast({
           description: simplur`Success. ${successCount}/${expectedCount} ${[

@@ -25,7 +25,13 @@ const valdiateSubmitAdminFeedbackParams = celebrate({
       csat: Joi.number().integer().min(1).max(5),
       comment: Joi.string(),
       triggerSource: Joi.string()
-        .valid('field-edit', 'publish', 'workflow')
+        .valid(
+          'field-edit',
+          'publish',
+          'workflow',
+          'download-v1',
+          'download-v2',
+        )
         .optional(),
       formId: Joi.string().optional(),
     })

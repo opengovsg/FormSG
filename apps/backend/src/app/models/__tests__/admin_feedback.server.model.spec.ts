@@ -101,7 +101,13 @@ describe('form_feedback.server.model', () => {
     })
 
     it('should accept all valid triggerSource values', async () => {
-      for (const source of ['field-edit', 'publish', 'workflow']) {
+      for (const source of [
+        'field-edit',
+        'publish',
+        'workflow',
+        'download-v1',
+        'download-v2',
+      ]) {
         const actual = await FeedbackModel.create({
           ...DEFAULT_PARAMS,
           triggerSource: source,

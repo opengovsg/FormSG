@@ -3354,6 +3354,40 @@ describe('admin-form.form.routes', () => {
       expect(resp.body.message).toEqual('Validation failed')
     })
 
+    it.each(['download-v1', 'download-v2'])(
+      'should store and tag a %s triggerSource',
+      async (triggerSource) => {
+        // Arrange
+        const distributionSpy = jest.spyOn(statsdClient, 'distribution')
+
+        // Act
+        const resp = await request
+          .post(`/admin/forms/feedback`)
+          .send({ csat: MOCK_CSAT, triggerSource })
+
+        // Assert
+        expect(resp.status).toBe(200)
+        expect(resp.body.feedback.triggerSource).toEqual(triggerSource)
+        expect(distributionSpy).toHaveBeenCalledWith(
+          'formsg.users.feedback.csat',
+          MOCK_CSAT,
+          1,
+          expect.objectContaining({ triggerSource }),
+        )
+      },
+    )
+
+    it('should return 400 for an unknown triggerSource', async () => {
+      // Act
+      const resp = await request
+        .post(`/admin/forms/feedback`)
+        .send({ csat: MOCK_CSAT, triggerSource: 'download' })
+
+      // Assert
+      expect(resp.status).toBe(400)
+      expect(resp.body.message).toEqual('Validation failed')
+    })
+
     it('should return 400 when rating is out of 0-1 range', async () => {
       // Act
       const resp = await request
