@@ -1,45 +1,77 @@
-import { composeStories } from '@storybook/react-vite'
-import { act, fireEvent, screen, waitFor } from '@testing-library/react'
+import { screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
-import * as stories from './StopWorkflowModal.stories'
+import { render } from '~/test-utils'
 
-vi.mock('react-virtuoso', () => ({
-  Virtuoso: ({
-    data = [],
-    itemContent,
-  }: {
-    data?: unknown[]
-    itemContent: (index: number, item: unknown) => React.ReactNode
-  }) => <>{data.map((item, index) => itemContent(index, item))}</>,
+import { StopWorkflowModal } from './StopWorkflowModal'
+
+const INVALID =
+  'features.adminForm.responses.individualResponse.workflowActions.addAssigneeModal.invalidEmail'
+
+const CONFIRM =
+  'features.adminForm.responses.individualResponse.workflowActions.stopModal.confirm'
+
+let mockSettingsEmails: string[] | undefined
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (key: string) => key }),
 }))
 
-const { NoEmailFields } = composeStories(stories)
+vi.mock('~features/admin-form/settings/queries', () => ({
+  useAdminFormSettings: () => ({
+    data: mockSettingsEmails ? { emails: mockSettingsEmails } : undefined,
+  }),
+}))
 
-const ADD_EMAIL_FIELD = { name: /add an email field/i }
+const showModal = (onConfirm: (emails: string[]) => void) =>
+  render(<StopWorkflowModal isOpen onClose={vi.fn()} onConfirm={onConfirm} />)
 
-const openEmailFieldSelect = async () => {
-  const [select] = await screen.findAllByRole(
-    'combobox',
-    {},
-    { timeout: 10000 },
-  )
-  await waitFor(() => expect(select).toBeEnabled())
-  await act(async () => {
-    fireEvent.click(select)
-  })
+const typeEmails = async (text: string) => {
+  await userEvent.type(screen.getByRole('textbox'), text)
 }
 
-describe('StopWorkflowModal Email field select', () => {
-  it('offers to add an Email field when the form has none', async () => {
-    await NoEmailFields.run()
-    expect(screen.queryByText('Who will be notified')).not.toBeInTheDocument()
-    expect(
-      screen.getByText('Select who to notify when the workflow is stopped'),
-    ).toBeInTheDocument()
-    await openEmailFieldSelect()
+describe('StopWorkflowModal', () => {
+  beforeEach(() => {
+    mockSettingsEmails = undefined
+  })
 
-    expect(
-      await screen.findByRole('option', ADD_EMAIL_FIELD),
-    ).toBeInTheDocument()
-  }, 20000)
+  it("prefills the form's notification emails and sends them on stop", async () => {
+    mockSettingsEmails = ['records@agency.gov.sg']
+    const onConfirm = vi.fn()
+    showModal(onConfirm)
+
+    expect(screen.getByText('records@agency.gov.sg')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: CONFIRM }))
+
+    expect(onConfirm).toHaveBeenCalledWith(['records@agency.gov.sg'])
+  })
+
+  it('stops without notifying anyone when the field is empty', async () => {
+    const onConfirm = vi.fn()
+    showModal(onConfirm)
+
+    await userEvent.click(screen.getByRole('button', { name: CONFIRM }))
+
+    expect(onConfirm).toHaveBeenCalledWith([])
+  })
+
+  it('lowercases and dedupes typed emails', async () => {
+    const onConfirm = vi.fn()
+    showModal(onConfirm)
+
+    await typeEmails('Lead@Agency.gov.sg,lead@agency.gov.sg,')
+    await userEvent.click(screen.getByRole('button', { name: CONFIRM }))
+
+    expect(onConfirm).toHaveBeenCalledWith(['lead@agency.gov.sg'])
+  })
+
+  it('shows the Assign error and blocks stopping for an invalid email', async () => {
+    const onConfirm = vi.fn()
+    showModal(onConfirm)
+
+    await typeEmails('not-an-email,')
+
+    expect(screen.getByText(INVALID)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: CONFIRM })).toBeDisabled()
+  })
 })

@@ -1,27 +1,15 @@
-import { useEffect, useMemo } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Text } from '@chakra-ui/react'
-import { uniq } from 'lodash'
+import { FormControl, FormErrorMessage } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
-import { WorkflowEventDto } from 'formsg-shared/types'
 import { MultirespondentFormSettings } from 'formsg-shared/types/form'
 
-import {
-  MrfEmailRecipientsFieldGroup,
-  MrfEmailRecipientsFormData,
-  OTHER_PARTIES_EMAIL_INPUT_NAME,
-  STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME,
-  WORKFLOW_EMAIL_MULTISELECT_NAME,
-} from '~features/admin-form/settings/components/MrfEmailRecipientsFieldGroup'
+import FormLabel from '~components/FormControl/FormLabel'
+import { TagInput } from '~components/TagInput'
+
 import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 
-import {
-  DecryptedResponseLike,
-  getStopNotifiedEmails,
-  WorkflowHistory,
-} from './getStopNotifiedEmails'
 import { WORKFLOW_ACTIONS_I18N } from './i18n'
 import { WorkflowActionModal } from './WorkflowActionModal'
 
@@ -32,9 +20,6 @@ export interface StopWorkflowModalProps {
   onClose: () => void
   onConfirm: (notifiedEmails: string[]) => void
   isLoading?: boolean
-  history: WorkflowHistory
-  events?: WorkflowEventDto[]
-  responses?: DecryptedResponseLike[]
 }
 
 export const StopWorkflowModal = ({
@@ -42,54 +27,21 @@ export const StopWorkflowModal = ({
   onClose,
   onConfirm,
   isLoading,
-  history,
-  events,
-  responses,
 }: StopWorkflowModalProps): JSX.Element => {
   const { t } = useTranslation()
   const { data: settings } = useAdminFormSettings<MultirespondentFormSettings>()
-
-  const { control, reset, getValues, setValue } =
-    useForm<MrfEmailRecipientsFormData>()
+  const [emails, setEmails] = useState<string[]>([])
 
   useEffect(() => {
-    if (!isOpen) return
-    reset({
-      [WORKFLOW_EMAIL_MULTISELECT_NAME]: settings?.stepsToNotify ?? [],
-      [OTHER_PARTIES_EMAIL_INPUT_NAME]: settings?.emails ?? [],
-      [STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME]:
-        settings?.stepOneEmailNotificationFieldId ?? '',
-    })
-  }, [isOpen, reset, settings])
+    if (isOpen) setEmails(settings?.emails ?? [])
+  }, [isOpen, settings])
 
-  const [stepIdsToNotify, otherEmails, stepOneEmailFieldId] = useWatch({
-    control,
-    name: [
-      WORKFLOW_EMAIL_MULTISELECT_NAME,
-      OTHER_PARTIES_EMAIL_INPUT_NAME,
-      STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME,
-    ],
-  })
-
-  const notifiedEmails = useMemo(
-    () =>
-      getStopNotifiedEmails({
-        history,
-        events,
-        responses,
-        otherEmails: (otherEmails ?? []).filter((email) => isEmail(email)),
-        stepOneEmailFieldId,
-        stepIdsToNotify: stepIdsToNotify ?? [],
-      }),
-    [
-      history,
-      events,
-      responses,
-      otherEmails,
-      stepOneEmailFieldId,
-      stepIdsToNotify,
-    ],
+  const entered = Array.from(
+    new Set(emails.map((email) => email.trim().toLowerCase())),
   )
+  const error = entered.some((email) => !isEmail(email))
+    ? t(`${WORKFLOW_ACTIONS_I18N}.addAssigneeModal.invalidEmail`)
+    : undefined
 
   return (
     <WorkflowActionModal
@@ -100,33 +52,30 @@ export const StopWorkflowModal = ({
       isBeta
       confirmLabel={t(`${I18N_PREFIX}.confirm`)}
       confirmColorScheme="danger"
+      isConfirmDisabled={!!error}
       isConfirmLoading={isLoading}
-      onConfirm={() => onConfirm(notifiedEmails)}
+      onConfirm={() => onConfirm(entered)}
     >
-      <Box mt="-1.5rem">
-        <MrfEmailRecipientsFieldGroup
-          heading={
-            <Text textStyle="body-1" textColor="secondary.700" mb="1.5rem">
-              {t(`${I18N_PREFIX}.notifyHeading`)}
-            </Text>
+      <FormControl isInvalid={!!error}>
+        <FormLabel>{t(`${I18N_PREFIX}.label`)}</FormLabel>
+        <TagInput
+          value={emails}
+          onChange={(values) =>
+            setEmails(values.filter((value) => value.trim() !== ''))
           }
-          control={control}
-          isDisabled={false}
-          isHighContrast
-          otherPartiesPlaceholder="me@example.com"
-          onOtherPartiesBlur={() =>
-            setValue(
-              OTHER_PARTIES_EMAIL_INPUT_NAME,
-              uniq(
-                (getValues(OTHER_PARTIES_EMAIL_INPUT_NAME) ?? []).filter(
-                  (email) => isEmail(email),
-                ),
-              ),
-            )
-          }
-          hideOtherPartiesTooltip
+          placeholder={emails.length > 0 ? undefined : 'me@example.com'}
+          tagValidation={isEmail}
         />
-      </Box>
+        {error ? (
+          <FormErrorMessage>{error}</FormErrorMessage>
+        ) : (
+          <FormLabel.Description color="secondary.400" mt="0.5rem">
+            {t(
+              'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.descriptionRedesign',
+            )}
+          </FormLabel.Description>
+        )}
+      </FormControl>
     </WorkflowActionModal>
   )
 }

@@ -57,7 +57,7 @@ export const enSG: ResponsesIndividualResponse = {
       title: 'Stop this workflow',
       description:
         'No one will be able to respond to any more steps. You can still view and download responses already submitted.',
-      notifyHeading: 'Select who to notify when the workflow is stopped',
+      label: 'Email addresses of who to notify',
       confirm: 'Stop workflow',
       toastSuccess: 'The workflow was successfully stopped.',
     },

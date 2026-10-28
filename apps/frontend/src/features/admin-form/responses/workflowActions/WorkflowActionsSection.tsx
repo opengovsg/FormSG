@@ -14,11 +14,7 @@ import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 import { ResponseOverview } from '../IndividualResponsePage/ResponseOverview'
 
 import { AddAssigneeModal } from './AddAssigneeModal'
-import {
-  DecryptedResponseLike,
-  getStepRecipients,
-  WorkflowHistory,
-} from './getStopNotifiedEmails'
+import { getStepRecipients, WorkflowHistory } from './getStopNotifiedEmails'
 import { WORKFLOW_ACTIONS_I18N } from './i18n'
 import { useAddAssigneesMutation, useStopWorkflowMutation } from './mutations'
 import { RemindButton } from './RemindButton'
@@ -30,7 +26,6 @@ interface WorkflowActionsSectionProps {
   submissionId: string
   mrf: SubmissionMrfMetadata
   history?: WorkflowHistory
-  responses?: DecryptedResponseLike[]
   submissionSecretKey?: string
   stepToken?: string
   isLoading: boolean
@@ -41,7 +36,6 @@ export const WorkflowActionsSection = ({
   submissionId,
   mrf,
   history = { submittedSteps: [], workflow: [] },
-  responses,
   submissionSecretKey,
   stepToken,
   isLoading,
@@ -150,9 +144,6 @@ export const WorkflowActionsSection = ({
         onClose={stopModal.onClose}
         onConfirm={handleStop}
         isLoading={stopMutation.isLoading}
-        history={history}
-        events={events}
-        responses={responses}
       />
     </>
   )
