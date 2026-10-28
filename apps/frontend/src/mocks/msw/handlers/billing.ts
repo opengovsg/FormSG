@@ -109,7 +109,7 @@ export const getBillingInfo = ({
   return http.get<never, never, BillingInfoDto>(
     '/api/v3/billings',
     async () => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(generateBillingMeta(), { status: 200 })
     },
   )

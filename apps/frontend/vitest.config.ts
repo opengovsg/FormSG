@@ -99,6 +99,7 @@ export default defineConfig((configEnv) => {
             ],
             test: {
               name: 'storybook',
+              setupFiles: ['./.storybook/vitest.setup.ts'],
               // Each worker is a Chromium page; unbounded, this exhausts memory.
               maxWorkers: 2,
               browser: {

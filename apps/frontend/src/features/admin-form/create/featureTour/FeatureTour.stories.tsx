@@ -1,4 +1,5 @@
 import { Meta, StoryFn } from '@storybook/react-vite'
+import { expect, screen, waitFor } from 'storybook/test'
 
 import { AdminFormDto } from 'formsg-shared/types/form'
 
@@ -38,3 +39,9 @@ export default {
 const Template: StoryFn = () => <CreatePage />
 
 export const AdminFormBuilderFeatureTour = Template.bind({})
+// The tour starts once the user and form have loaded.
+AdminFormBuilderFeatureTour.play = async () => {
+  const next = await screen.findByRole('button', { name: 'Next' })
+  // The tooltip is in the DOM before it is positioned and shown.
+  await waitFor(() => expect(next).toBeVisible())
+}

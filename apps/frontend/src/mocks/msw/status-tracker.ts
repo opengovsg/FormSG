@@ -58,7 +58,7 @@ export const getStatusTrackerDataResponse = ({
       }
 
       const { submissionId } = params
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json({
         ...BASE_STATUS_TRACKER_DATA,
         responseId: submissionId,

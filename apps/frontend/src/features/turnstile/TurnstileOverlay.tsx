@@ -55,6 +55,9 @@ const TurnstileOverlay = ({
         <ModalBody py="2rem" display="flex" justifyContent="center">
           {turnstileSiteKey ? (
             <Turnstile
+              // Cloudflare's iframe renders on its own schedule, so it is
+              // hidden from visual snapshots.
+              data-visual-test="transparent"
               siteKey={turnstileSiteKey!}
               onSuccess={onSuccess}
               onError={onError}

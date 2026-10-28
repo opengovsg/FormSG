@@ -249,13 +249,21 @@ jobs:
 
       - name: Replace variables in task definition file
         id: replace-variables
+        env:
+          TASK_DEF_PATH: ${{ inputs.ecs-task-definition-path }}
+          AWS_ACCOUNT_ID: ${{ secrets.aws-account-id }}
+          DD_ENV: ${{ inputs.dd-env }}
+          FORMSG_APP_RESERVED_CPU: ${{ inputs.formsg-app-reserved-cpu }}
+          ECS_CPU: ${{ inputs.ecs-cpu }}
+          ECS_MEMORY: ${{ inputs.ecs-memory }}
+          ENVIRONMENT_SITE_NAME: ${{ inputs.environment-site-name }}
         run: |
-          sed -i "s/<AWS_ACCOUNT_ID>/${{ secrets.aws-account-id }}/g" ${{ inputs.ecs-task-definition-path }}
-          sed -i 's/<DD_ENV>/${{ inputs.dd-env }}/g' ${{ inputs.ecs-task-definition-path }}
-          sed -i 's/<FORMSG_APP_RESERVED_CPU>/${{ inputs.formsg-app-reserved-cpu }}/g' ${{ inputs.ecs-task-definition-path }}
-          sed -i 's/<CPU>/${{ inputs.ecs-cpu }}/g' ${{ inputs.ecs-task-definition-path }}
-          sed -i 's/<MEMORY>/${{ inputs.ecs-memory }}/g' ${{ inputs.ecs-task-definition-path }}
-          sed -i 's/<ENVIRONMENT_SITE_NAME>/${{ inputs.environment-site-name }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i "s/<AWS_ACCOUNT_ID>/${AWS_ACCOUNT_ID}/g" "$TASK_DEF_PATH"
+          sed -i "s/<DD_ENV>/${DD_ENV}/g" "$TASK_DEF_PATH"
+          sed -i "s/<FORMSG_APP_RESERVED_CPU>/${FORMSG_APP_RESERVED_CPU}/g" "$TASK_DEF_PATH"
+          sed -i "s/<CPU>/${ECS_CPU}/g" "$TASK_DEF_PATH"
+          sed -i "s/<MEMORY>/${ECS_MEMORY}/g" "$TASK_DEF_PATH"
+          sed -i "s/<ENVIRONMENT_SITE_NAME>/${ENVIRONMENT_SITE_NAME}/g" "$TASK_DEF_PATH"
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         # Create a new task definition file with the image to be deployed
@@ -287,14 +295,15 @@ jobs:
       - name: Upload Datadog sourcemaps
         env:
           DATADOG_API_KEY: ${{ secrets.DD_API_KEY }}
+          APP_URL: ${{ inputs.app-url }}
         run: |
           curl -L --fail "https://github.com/DataDog/datadog-ci/releases/download/v5.11.0/datadog-ci_linux-x64" --output /usr/local/bin/datadog-ci
           chmod +x /usr/local/bin/datadog-ci
           datadog-ci sourcemaps upload /tmp/s3static \
             --service=formsg-react \
-            --release-version=${{ env.APP_VERSION }} \
-            --minified-path-prefix=${{ inputs.app-url }} \
-            --repository-url=${{ github.server_url }}/${{ github.repository }}
+            --release-version="$APP_VERSION" \
+            --minified-path-prefix="$APP_URL" \
+            --repository-url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a # v1.4.11

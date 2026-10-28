@@ -43,7 +43,7 @@ export const getAdminFormFeedback = ({
   return http.get<{ formId: string }, never, FormFeedbackMetaDto>(
     '/api/v3/admin/forms/:formId/feedback',
     async () => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(generateFormFeedbackMeta(), { status: 200 })
     },
   )

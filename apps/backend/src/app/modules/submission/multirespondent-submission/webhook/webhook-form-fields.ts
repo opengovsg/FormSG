@@ -1,5 +1,5 @@
 import type { FormFieldMeta } from '@opengovsg/formsg-sdk'
-import { FormFieldDto } from 'formsg-shared/types'
+import { BasicField, FormFieldDto } from 'formsg-shared/types'
 import { getVerifiedQuestionPrefix } from 'formsg-shared/utils/myinfo-prefix'
 
 import { FormFieldSchema } from 'src/types/field'
@@ -10,12 +10,13 @@ import { FormFieldSchema } from 'src/types/field'
  * so the two formats cannot disagree. The server strips `question` from
  * stored V4 responses, and the SDK backfills it from this map at decrypt
  * time, so prefixing here hands consumers prefixed question text without any
- * SDK or consumer change.
+ * SDK or consumer change. Table fields also carry their column labels as
+ * subFields; columns are never Myinfo-verified, so they stay unprefixed.
  */
 export const buildWebhookFormFields = (
   fields: (FormFieldDto | FormFieldSchema)[],
   myInfoReadOnlyFieldIds: readonly string[] = [],
-): Record<string, Pick<FormFieldMeta, 'question'>> => {
+): Record<string, Pick<FormFieldMeta, 'question' | 'subFields'>> => {
   const readOnly: ReadonlySet<string> = new Set(
     myInfoReadOnlyFieldIds.map(String),
   )
@@ -31,6 +32,14 @@ export const buildWebhookFormFields = (
           field as Parameters<typeof getVerifiedQuestionPrefix>[0],
           readOnly,
         )}${field.title}`,
+        ...(field.fieldType === BasicField.Table && {
+          subFields: Object.fromEntries(
+            field.columns.map((column) => [
+              String(column._id),
+              { question: column.title },
+            ]),
+          ),
+        }),
       },
     ]),
   )

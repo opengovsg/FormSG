@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.55.0](https://github.com/opengovsg/formsg/compare/v9.54.7...v9.55.0) (2026-10-27)
+
+
+### Features
+
+* **webhooks:** include table column labels in V4 metadata (#10344) ([#10344](https://github.com/opengovsg/formsg/commit/87e6160517ce2073dbcb7ad85c9a329ef1561f8f))
+
+
+### Bug Fixes
+
+* **ci:** harden scripts (#10385) ([#10385](https://github.com/opengovsg/formsg/commit/384a0e84229a19bd97eb2e07f6aeefadaf9769d8))
+
+## [9.54.7](https://github.com/opengovsg/formsg/compare/v9.54.6...v9.54.7) (2026-10-26)
+
+
+### Bug Fixes
+
+* improve NRIC/FIN and UEN field migration UX (#10350) ([#10350](https://github.com/opengovsg/formsg/commit/74a75d6d34ae50598dd74ce124f19a445eb80ae6))
+
 ## [9.54.6](https://github.com/opengovsg/formsg/compare/v9.54.5...v9.54.6) (2026-10-23)
 
 

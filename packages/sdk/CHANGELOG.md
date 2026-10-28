@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.3.0](https://github.com/opengovsg/formsg/compare/sdk-v8.2.1...sdk-v8.3.0) (2026-10-27)
+
+
+### Features
+
+* **webhooks:** include table column labels in V4 metadata (#10344) ([#10344](https://github.com/opengovsg/formsg/commit/87e6160517ce2073dbcb7ad85c9a329ef1561f8f))
+
 ## [8.2.1](https://github.com/opengovsg/formsg/compare/sdk-v8.2.0...sdk-v8.2.1) (2026-10-08)
 
 

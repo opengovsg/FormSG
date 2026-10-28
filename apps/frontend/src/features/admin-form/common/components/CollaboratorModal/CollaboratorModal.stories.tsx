@@ -37,7 +37,6 @@ export default {
     layout: 'fullscreen',
     // Pages fill the viewport; fit-to-content would crop them.
     argos: { fitToContent: false },
-    // Prevent flaky tests due to modal animating in.
     msw: baseMswRoutes,
   },
 } as Meta

@@ -6,7 +6,7 @@ export const featureFlagHandlers = [
   http.get<never, never, string[]>(
     '/api/v3/feature-flags/enabled',
     async () => {
-      await MswDelay()
+      await MswDelay(0)
       return HttpResponse.json(MOCK_FEATURE_FLAGS)
     },
   ),

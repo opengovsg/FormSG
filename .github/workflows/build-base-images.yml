@@ -63,16 +63,18 @@ jobs:
       - name: Check if images already exist
         id: check-exists
         if: ${{ !inputs.force-rebuild }}
+        env:
+          DEPS_HASH: ${{ steps.deps-hash.outputs.hash }}
         run: |
           BUILD_EXISTS=false
           RUNTIME_EXISTS=false
 
-          if docker manifest inspect "${{ env.IMAGE_NAME }}:build-${{ steps.deps-hash.outputs.hash }}" > /dev/null 2>&1; then
+          if docker manifest inspect "$IMAGE_NAME:build-$DEPS_HASH" > /dev/null 2>&1; then
             BUILD_EXISTS=true
             echo "build-base image already exists"
           fi
 
-          if docker manifest inspect "${{ env.IMAGE_NAME }}:runtime-${{ steps.deps-hash.outputs.hash }}" > /dev/null 2>&1; then
+          if docker manifest inspect "$IMAGE_NAME:runtime-$DEPS_HASH" > /dev/null 2>&1; then
             RUNTIME_EXISTS=true
             echo "runtime-base image already exists"
           fi
@@ -118,6 +120,8 @@ jobs:
 
       - name: Set outputs
         id: set-outputs
+        env:
+          DEPS_HASH: ${{ steps.deps-hash.outputs.hash }}
         run: |
-          echo "build-image=${{ env.IMAGE_NAME }}:build-${{ steps.deps-hash.outputs.hash }}" >> "$GITHUB_OUTPUT"
-          echo "runtime-image=${{ env.IMAGE_NAME }}:runtime-${{ steps.deps-hash.outputs.hash }}" >> "$GITHUB_OUTPUT"
+          echo "build-image=$IMAGE_NAME:build-$DEPS_HASH" >> "$GITHUB_OUTPUT"
+          echo "runtime-image=$IMAGE_NAME:runtime-$DEPS_HASH" >> "$GITHUB_OUTPUT"

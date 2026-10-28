@@ -32,7 +32,8 @@ jobs:
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           SHA: ${{ steps.pr.outputs.sha }}
-        run: .github/scripts/render-preview.sh wake "formsg-pr-${{ github.event.issue.number }}" "$SHA"
+          PR: ${{ github.event.issue.number }}
+        run: .github/scripts/render-preview.sh wake "formsg-pr-$PR" "$SHA"
       - env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR: ${{ github.event.issue.number }}

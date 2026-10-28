@@ -33,7 +33,7 @@ export const getPreviewFormResponse = ({
           }
         },
       ) as PreviewFormViewDto
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(response)
     },
   )
@@ -51,7 +51,7 @@ export const getPreviewFormErrorResponse = ({
   return http.get<{ formId: string }>(
     '/api/v3/admin/forms/:formId/preview',
     async () => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json({ message }, { status })
     },
   )

@@ -4,7 +4,7 @@ import CryptoV4 from '../src/crypto-v4'
 import { MissingPublicKeyError } from '../src/errors'
 import { SIGNING_KEYS } from '../src/resource/signing-keys'
 
-const { cryptoV4 } = formsg({ mode: 'test' })
+const { cryptoV3, cryptoV4 } = formsg({ mode: 'test' })
 const responses: FieldResponsesV4 = {
   name: {
     fieldType: 'textfield',
@@ -189,4 +189,117 @@ it('returns null when the signing public key cannot verify V4 webhook verified c
 
   // Assert: unverified content makes the whole decryption result null.
   expect(result).toBeNull()
+})
+
+it.each([
+  { scenario: 'missing', question: undefined },
+  { scenario: 'empty', question: '' },
+  { scenario: 'already present', question: 'Encrypted table question' },
+])(
+  'adds table column names without changing answers when the question is $scenario',
+  ({ question }) => {
+    const keys = cryptoV4.generate()
+    const table = {
+      fieldType: 'table' as const,
+      ...(question !== undefined && { question }),
+      answer: {
+        rowB: { rowNum: 1, value: { member: 'Bob', age: 9 } },
+        rowA: { rowNum: 0, value: { member: 'Alice', age: 10 } },
+      },
+      provenance: {},
+    }
+    const encrypted = cryptoV3.encrypt({ table }, keys.publicKey)
+    const subFields = { member: { question: 'Name' }, age: { question: 'Age' } }
+    const formFields = { table: { question: 'Household', subFields } }
+    const result = cryptoV4.decrypt(keys.secretKey, {
+      ...encrypted,
+      version: 4,
+      formFields,
+    })
+    expect(result?.responses.table).toEqual({
+      ...table,
+      question: question || 'Household',
+      subFields,
+    })
+  }
+)
+
+it('keeps table column names already present in the encrypted response', () => {
+  const keys = cryptoV4.generate()
+  const table = {
+    fieldType: 'table' as const,
+    question: 'Household',
+    subFields: { member: { question: 'Original name' } },
+    answer: { row: { rowNum: 0, value: { member: 'Alice' } } },
+    provenance: {},
+  }
+  const encrypted = cryptoV4.encrypt({ table }, keys.publicKey)
+  const result = cryptoV4.decrypt(keys.secretKey, {
+    ...encrypted,
+    version: 4,
+    formFields: {
+      table: {
+        question: 'Household',
+        subFields: { member: { question: 'Replacement' } },
+      },
+    },
+  })
+  expect(result?.responses.table).toEqual(table)
+})
+
+it.each([
+  { scenario: 'no field metadata', formFields: undefined, question: '' },
+  {
+    scenario: 'question titles but no column names',
+    formFields: { table: { question: 'Household' } },
+    question: 'Household',
+  },
+])('decrypts V4 webhooks with $scenario', ({ formFields, question }) => {
+  const keys = cryptoV4.generate()
+  const table = {
+    fieldType: 'table' as const,
+    question: '',
+    answer: { row: { rowNum: 0, value: { member: 'Alice' } } },
+    provenance: { stepNumber: 0 },
+  }
+  const encrypted = cryptoV4.encrypt({ table }, keys.publicKey)
+  const result = cryptoV4.decrypt(keys.secretKey, {
+    ...encrypted,
+    version: 4,
+    formFields,
+  })
+  expect(result?.responses.table).toStrictEqual({ ...table, question })
+})
+
+it('adds table column names only to submitted fields with matching metadata', () => {
+  const keys = cryptoV4.generate()
+  const table = {
+    fieldType: 'table' as const,
+    question: '',
+    answer: { row: { rowNum: 0, value: { member: 'Alice' } } },
+    provenance: { stepNumber: 0 },
+  }
+  const submitted = {
+    withoutMetadata: table,
+    household: table,
+    name: responses.name,
+  }
+  const encrypted = cryptoV4.encrypt(submitted, keys.publicKey)
+  const subFields = { member: { question: 'Member name' } }
+  const result = cryptoV4.decrypt(keys.secretKey, {
+    ...encrypted,
+    version: 4,
+    formFields: {
+      unanswered: {
+        question: 'Unanswered table',
+        subFields: { member: { question: 'Other name' } },
+      },
+      household: { question: 'Household', subFields },
+      name: { question: 'Name' },
+    },
+  })
+  expect(result?.responses).toStrictEqual({
+    ...submitted,
+    household: { ...table, question: 'Household', subFields },
+  })
 })

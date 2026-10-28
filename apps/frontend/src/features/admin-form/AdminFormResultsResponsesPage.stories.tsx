@@ -6,7 +6,7 @@ import {
 } from 'react-router-dom'
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
-import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
 
 import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types/form'
@@ -149,7 +149,7 @@ StorageFormUnlocked.parameters = {
     modes: viewportModes('tablet', 'mobile'),
   },
 }
-StorageFormUnlocked.play = async ({ canvasElement }) => {
+const unlockResponses = async (canvasElement: HTMLElement) => {
   const canvas = within(canvasElement)
 
   await waitFor(
@@ -163,6 +163,14 @@ StorageFormUnlocked.play = async ({ canvasElement }) => {
   await userEvent.click(
     canvas.getByRole('button', { name: /unlock responses/i }),
   )
+}
+StorageFormUnlocked.play = async ({ canvasElement }) => {
+  await unlockResponses(canvasElement)
+  await expect(
+    await within(canvasElement).findByRole('button', {
+      name: 'Download options',
+    }),
+  ).toBeVisible()
 }
 
 const delightfulDashboardGrowthBook = new GrowthBook({
@@ -295,7 +303,14 @@ StorageFormResponseDrawer.decorators = [
     </GrowthBookProvider>
   ),
 ]
-StorageFormResponseDrawer.play = StorageFormUnlocked.play
+StorageFormResponseDrawer.play = async ({ canvasElement }) => {
+  await unlockResponses(canvasElement)
+  const drawer = await screen.findByRole('dialog')
+  // Skeletons keep the response hidden until it is decrypted.
+  await waitFor(() =>
+    expect(within(drawer).getByText(MOCK_SUBMISSION_ID)).toBeVisible(),
+  )
+}
 
 export const StorageFormResponseDrawerLongNumber = DrawerTemplate.bind({})
 StorageFormResponseDrawerLongNumber.args = { responseNumber: 123456789 }
@@ -303,7 +318,7 @@ StorageFormResponseDrawerLongNumber.parameters =
   StorageFormResponseDrawer.parameters
 StorageFormResponseDrawerLongNumber.decorators =
   StorageFormResponseDrawer.decorators
-StorageFormResponseDrawerLongNumber.play = StorageFormUnlocked.play
+StorageFormResponseDrawerLongNumber.play = StorageFormResponseDrawer.play
 
 export const Loading = Template.bind({})
 Loading.parameters = {
