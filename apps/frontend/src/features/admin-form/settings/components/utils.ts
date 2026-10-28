@@ -3,6 +3,7 @@ import {
   FormAuthType,
   FormResponseMode,
 } from 'formsg-shared/types'
+import { StepLoginForm } from 'formsg-shared/utils/step-login'
 
 /**
  * Only CorpPass requires esrvcid as other options will use FormSG's
@@ -26,11 +27,7 @@ export const isEsrvcidRequired = (authType: FormAuthType) => {
  * cannot open until every Corppass step has one.
  */
 export const hasCorppassStepWithoutEsrvcId = (
-  form: Pick<AdminFormDto, 'responseMode'> & {
-    workflow?: readonly {
-      auth?: { auth_type: FormAuthType; esrvc_id?: string } | null
-    }[]
-  },
+  form: Pick<AdminFormDto, 'responseMode'> & Pick<StepLoginForm, 'workflow'>,
 ): boolean =>
   form.responseMode === FormResponseMode.Multirespondent &&
   (form.workflow ?? [])

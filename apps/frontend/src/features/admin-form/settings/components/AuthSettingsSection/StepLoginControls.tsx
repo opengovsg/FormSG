@@ -26,7 +26,7 @@ export const hasEsrvcIdWhitespace = (esrvcId: string): boolean =>
   /\s/.test(esrvcId)
 
 export interface StepLoginControlsProps {
-  authType: StepLoginAuthType
+  authType: FormAuthType
   esrvcId: string
   onAuthTypeChange: (authType: StepLoginAuthType) => void
   onEsrvcIdChange: (esrvcId: string) => void

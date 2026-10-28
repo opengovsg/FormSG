@@ -4946,7 +4946,7 @@ describe('admin-form.service', () => {
           auth,
           first_step_login: undefined,
         } as any,
-        true,
+        { isStepLoginEnabled: true },
       )
       expect(result.isOk()).toBe(true)
       expect(write).toHaveBeenCalledWith(

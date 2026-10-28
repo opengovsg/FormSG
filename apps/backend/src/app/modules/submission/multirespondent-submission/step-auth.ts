@@ -5,7 +5,6 @@ import {
   FormAuthType,
   FormFieldDto,
   WorkflowStatus,
-  WorkflowStepAuthType,
 } from 'formsg-shared/types'
 import {
   getLoginIdentityAttr,
@@ -14,6 +13,7 @@ import {
 import { getStepFields, SourceField } from 'formsg-shared/utils/step-login'
 import jwt, { TokenExpiredError } from 'jsonwebtoken'
 import { err, ok, Result } from 'neverthrow'
+import { z } from 'zod'
 
 import {
   Environment,
@@ -83,40 +83,59 @@ const MRF_STEP_AUTH_SIGNING_KEY = createHmac('sha256', config.sessionSecret)
   .update('mrf-step-auth')
   .digest()
 
-/** Binds a later step's login to one submission, step and provider. */
-export type MrfStepAuthContext = {
-  formId: string
-  submissionId: string
+const NonEmptyString = z.string().min(1)
+
+// Signed into the step login cookie and the Corppass step binding, so these
+// schemas both type and parse them.
+const MrfStepAuthContextSchema = z.object({
+  formId: NonEmptyString,
+  submissionId: NonEmptyString,
   // Zero-indexed step of the submission's saved workflow
-  workflowStep: number
-  authType: WorkflowStepAuthType
-  stepTokenHash?: string
-}
+  workflowStep: z.number().int(),
+  authType: z.union([
+    z.literal(FormAuthType.MyInfo),
+    z.literal(FormAuthType.CP),
+  ]),
+  stepTokenHash: NonEmptyString.optional(),
+})
 
 // Step 2+ login cookie (Step 1 uses MyInfoCookie and jwtCp)
-type MyInfoStepLogin = {
-  authType: FormAuthType.MyInfo
-  uinFin: string
+const MyInfoStepLoginSchema = z.object({
+  authType: z.literal(FormAuthType.MyInfo),
+  uinFin: NonEmptyString,
   // Consumed MyInfo FAPI session; scopes this login's MyInfo hashes
-  myInfoAuthSessionId: string
-}
+  myInfoAuthSessionId: NonEmptyString,
+})
 
-type CorppassStepLogin = {
-  authType: FormAuthType.CP
+const CorppassStepLoginSchema = z.object({
+  authType: z.literal(FormAuthType.CP),
   // Entity UEN
-  userName: string
+  userName: NonEmptyString,
   // Representative UID
-  userInfo: string
-}
+  userInfo: NonEmptyString,
+})
 
-type StepLoginIdentity = MyInfoStepLogin | CorppassStepLogin
+const JwtTimesSchema = z.object({ iat: z.number(), exp: z.number() })
+
+const VerifiedMrfStepAuthSchema = z.discriminatedUnion('authType', [
+  MrfStepAuthContextSchema.merge(MyInfoStepLoginSchema).merge(JwtTimesSchema),
+  MrfStepAuthContextSchema.merge(CorppassStepLoginSchema).merge(JwtTimesSchema),
+])
+
+const CpStepBindingSchema = MrfStepAuthContextSchema.extend({
+  nonce: z.string(),
+})
+
+/** Binds a later step's login to one submission, step and provider. */
+export type MrfStepAuthContext = z.infer<typeof MrfStepAuthContextSchema>
+
+type StepLoginIdentity =
+  | z.infer<typeof MyInfoStepLoginSchema>
+  | z.infer<typeof CorppassStepLoginSchema>
 
 export type MrfStepAuthCookiePayload = MrfStepAuthContext & StepLoginIdentity
 
-type VerifiedMrfStepAuth = MrfStepAuthCookiePayload & {
-  iat: number
-  exp: number
-}
+type VerifiedMrfStepAuth = z.infer<typeof VerifiedMrfStepAuthSchema>
 
 export type ResolvedMrfStepAuth = {
   workflowStep: number
@@ -392,37 +411,6 @@ export const clearMrfStepAuthCookie = (
   }
 }
 
-const isNonEmptyString = (value: unknown): value is string =>
-  typeof value === 'string' && value.length > 0
-
-const isMrfStepAuthContext = (value: unknown): value is MrfStepAuthContext => {
-  if (typeof value !== 'object' || value === null) return false
-  const context = value as Record<string, unknown>
-  return (
-    isNonEmptyString(context.formId) &&
-    isNonEmptyString(context.submissionId) &&
-    Number.isInteger(context.workflowStep) &&
-    (context.authType === FormAuthType.MyInfo ||
-      context.authType === FormAuthType.CP) &&
-    (context.stepTokenHash === undefined ||
-      isNonEmptyString(context.stepTokenHash))
-  )
-}
-
-const isVerifiedMrfStepAuth = (
-  value: unknown,
-): value is VerifiedMrfStepAuth => {
-  if (!isMrfStepAuthContext(value)) return false
-  const session = value as Record<string, unknown>
-  if (typeof session.iat !== 'number' || typeof session.exp !== 'number') {
-    return false
-  }
-  return value.authType === FormAuthType.CP
-    ? isNonEmptyString(session.userName) && isNonEmptyString(session.userInfo)
-    : isNonEmptyString(session.uinFin) &&
-        isNonEmptyString(session.myInfoAuthSessionId)
-}
-
 /**
  * Verifies the continuation cookie for the step the caller resolved. Callers
  * should clear the cookie on VerifyJwtError or InvalidJwtError.
@@ -448,12 +436,12 @@ export const verifyMrfStepAuthCookie = (
         audience: MRF_STEP_AUTH_AUDIENCE,
       }),
     () => new VerifyJwtError(),
-  )().andThen((decoded) =>
-    isVerifiedMrfStepAuth(decoded) &&
-    isSameMrfStepAuthContext(decoded, expected)
-      ? ok(decoded)
-      : err(new InvalidJwtError()),
-  )
+  )().andThen((decoded) => {
+    const parsed = VerifiedMrfStepAuthSchema.safeParse(decoded)
+    return parsed.success && isSameMrfStepAuthContext(parsed.data, expected)
+      ? ok(parsed.data)
+      : err(new InvalidJwtError())
+  })
 }
 
 export const getCpStepBindingCookieName = (nonce: string): string =>
@@ -510,22 +498,14 @@ export const verifyCpStepBinding = (
         }),
       (error) => error,
     )().andThen((decoded) => {
-      if (
-        !isMrfStepAuthContext(decoded) ||
-        !('nonce' in decoded) ||
-        decoded.nonce !== nonce
-      ) {
+      const parsed = CpStepBindingSchema.safeParse(decoded)
+      if (!parsed.success) {
         return err(new InvalidJwtError())
       }
-      const { formId, submissionId, workflowStep, authType, stepTokenHash } =
-        decoded
-      return ok<MrfStepAuthContext, unknown>({
-        formId,
-        submissionId,
-        workflowStep,
-        authType,
-        ...(stepTokenHash ? { stepTokenHash } : {}),
-      })
+      const { nonce: boundNonce, ...context } = parsed.data
+      return boundNonce === nonce
+        ? ok<MrfStepAuthContext, unknown>(context)
+        : err(new InvalidJwtError())
     })
 
   return verify(false).orElse((error) => {

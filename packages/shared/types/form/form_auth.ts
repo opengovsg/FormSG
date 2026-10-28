@@ -1,6 +1,7 @@
 import type { FormFieldDto } from '../field'
 
-import type { FormAuthType, PublicFormViewDto } from './form'
+import type { PublicFormViewDto } from './form'
+import type { StepLoginAuthType } from './workflow'
 
 export type PublicFormAuthRedirectDto = { redirectURL: string }
 
@@ -21,7 +22,7 @@ export type MrfStepAuthSessionDto = {
   // Zero-indexed
   workflowStep: number
   // NIL when the step has no login
-  authType: FormAuthType
+  authType: StepLoginAuthType
   // This step's fields only. Login-filled identities are always included,
   // MyInfo profile values only right after a MyInfo login.
   prefilledFields?: FormFieldDto[]

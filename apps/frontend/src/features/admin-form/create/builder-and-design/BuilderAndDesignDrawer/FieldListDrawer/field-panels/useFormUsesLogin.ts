@@ -24,7 +24,7 @@ export const useFormUsesLogin = () => {
 
   const usesLogin = useCallback(
     (authType: FormAuthType): boolean =>
-      formUsesLogin(form, authType, isFlagOn),
+      formUsesLogin({ form, authType, isFlagOn }),
     [form, isFlagOn],
   )
 
