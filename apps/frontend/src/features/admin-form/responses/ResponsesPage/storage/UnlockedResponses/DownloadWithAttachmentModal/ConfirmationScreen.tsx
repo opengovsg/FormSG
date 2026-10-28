@@ -52,6 +52,44 @@ const InlineTextListItem = ({
   </ListItem>
 )
 
+// Loads the form only when shown, so views without a form id still render.
+const FolderNamePicker = ({
+  downloadOptions,
+  onDownloadOptionsChange,
+}: Pick<
+  ConfirmationScreenProps,
+  'downloadOptions' | 'onDownloadOptionsChange'
+>): JSX.Element => {
+  const { data: adminForm } = useAdminForm()
+  const folderNameFieldItems = (adminForm?.form_fields ?? [])
+    .filter((field) => FOLDER_NAME_FIELD_TYPES.includes(field.fieldType))
+    .map((field) => ({ value: field._id, label: field.title }))
+  return (
+    <Stack spacing="0.5rem">
+      <FormLabel
+        isRequired={false}
+        description="Folders are named by this answer, then the Response ID. Blank answers use the Response ID only."
+      >
+        Name folders by
+      </FormLabel>
+      <DropdownMenuLayerProvider value="popover">
+        <SingleSelect
+          name="folderNameFieldId"
+          placeholder="Response ID only"
+          items={folderNameFieldItems}
+          value={downloadOptions.folderNameFieldId ?? ''}
+          onChange={(fieldId) =>
+            onDownloadOptionsChange?.({
+              ...downloadOptions,
+              folderNameFieldId: fieldId || undefined,
+            })
+          }
+        />
+      </DropdownMenuLayerProvider>
+    </Stack>
+  )
+}
+
 interface ConfirmationScreenProps {
   onCancel: () => void
   onDownload: () => void
@@ -78,10 +116,6 @@ export const ConfirmationScreen = ({
   const isOneZip =
     useFeatureIsOn(featureFlags.attachmentsV2) &&
     (downloadOptions.isDownloadAttachments || downloadOptions.isDownloadPdf)
-  const { data: adminForm } = useAdminForm()
-  const folderNameFieldItems = (adminForm?.form_fields ?? [])
-    .filter((field) => FOLDER_NAME_FIELD_TYPES.includes(field.fieldType))
-    .map((field) => ({ value: field._id, label: field.title }))
   const isMobile = useIsMobile()
   const { t: confirmationScreenTranslation } = useTranslation('translation', {
     keyPrefix:
@@ -149,28 +183,10 @@ export const ConfirmationScreen = ({
             </Text>
           ) : null}
           {isOneZip && downloadOptions.isDownloadAttachments ? (
-            <Stack spacing="0.5rem">
-              <FormLabel
-                isRequired={false}
-                description="Folders are named by this answer, then the Response ID. Blank answers use the Response ID only."
-              >
-                Name folders by
-              </FormLabel>
-              <DropdownMenuLayerProvider value="popover">
-                <SingleSelect
-                  name="folderNameFieldId"
-                  placeholder="Response ID only"
-                  items={folderNameFieldItems}
-                  value={downloadOptions.folderNameFieldId ?? ''}
-                  onChange={(fieldId) =>
-                    onDownloadOptionsChange?.({
-                      ...downloadOptions,
-                      folderNameFieldId: fieldId || undefined,
-                    })
-                  }
-                />
-              </DropdownMenuLayerProvider>
-            </Stack>
+            <FolderNamePicker
+              downloadOptions={downloadOptions}
+              onDownloadOptionsChange={onDownloadOptionsChange}
+            />
           ) : null}
           {!isOneZip && downloadOptions.isDownloadAttachments ? (
             <Text>
