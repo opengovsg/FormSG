@@ -31,6 +31,7 @@ import {
   FormStatus,
   FormWebhookResponseModeSettings,
   FormWebhookSettings,
+  FormWorkflowDto,
   Language,
   LogicConditionState,
   LogicDto,
@@ -577,11 +578,14 @@ MultirespondentFormSchema.methods.getWhitelistedSubmitterIds = function () {
 MultirespondentFormSchema.methods.getDuplicateParams = function (
   overrideProps: OverrideProps,
 ) {
-  const newForm = pick(this, [
-    ...FORM_SCHEMA_COMMON_DUPLICATE_PARAMS,
-    'workflow',
-  ]) as PickDuplicateForm
-  return { ...newForm, ...overrideProps }
+  const newForm = pick(this, FORM_SCHEMA_COMMON_DUPLICATE_PARAMS)
+  // Later steps keep their login but not their Corppass e-service ID
+  const sourceWorkflow: FormWorkflowDto = this.toObject().workflow ?? []
+  const workflow = sourceWorkflow.map((step) =>
+    step.auth ? { ...step, auth: omit(step.auth, 'esrvc_id') } : step,
+  )
+  return { ...newForm, workflow, ...overrideProps } as PickDuplicateForm &
+    OverrideProps
 }
 
 const MultirespondentFormWorkflowPath = MultirespondentFormSchema.path(

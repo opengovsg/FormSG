@@ -538,7 +538,21 @@ export const PublicFormProvider = ({
         workflow: encryptedPreviousSubmission.workflow,
       },
     }
-    if (!pendingStepAuthType) return snapshotData
+    // A later step without its own login has no login at all. Step 1's login
+    // and session must not carry over to it.
+    if (!pendingStepAuthType) {
+      return {
+        ...snapshotData,
+        form: {
+          ...snapshotData.form,
+          authType: FormAuthType.NIL,
+          isSubmitterIdCollectionEnabled: false,
+        },
+        spcpSession: undefined,
+        myInfoChildrenBirthRecords: undefined,
+        errorCodes: undefined,
+      }
+    }
 
     // A later step with its own login never uses Step 1's session. If its
     // session can't be read, submission still enforces the step's login.

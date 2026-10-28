@@ -1107,7 +1107,7 @@ describe('Multirespondent Submission Middleware', () => {
           ],
           session: {
             authType: FormAuthType.MyInfo,
-            userName: 'S1234567D',
+            uinFin: 'S1234567D',
             myInfoAuthSessionId: 'auth-session',
           },
         },

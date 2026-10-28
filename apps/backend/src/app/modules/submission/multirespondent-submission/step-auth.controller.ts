@@ -268,7 +268,8 @@ export const _handleMrfStepAuthSession: ControllerHandler<
 
       const session = {
         ...context,
-        userName: uinFin,
+        authType: FormAuthType.MyInfo as const,
+        uinFin,
         myInfoAuthSessionId: fapiSessionId,
       }
       setMrfStepAuthCookie(res, session)
@@ -332,7 +333,10 @@ export const _handleMrfStepAuthSession: ControllerHandler<
   return res.json({
     ...policy,
     spcpSession: {
-      userName: session.userName,
+      userName:
+        session.authType === FormAuthType.MyInfo
+          ? session.uinFin
+          : session.userName,
       iat: session.iat,
       exp: session.exp,
     },

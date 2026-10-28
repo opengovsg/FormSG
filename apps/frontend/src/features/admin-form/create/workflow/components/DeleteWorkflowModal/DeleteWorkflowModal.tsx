@@ -19,6 +19,7 @@ import { FormStatus } from 'formsg-shared/types'
 
 import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
 import Button from '~components/Button'
+import InlineMessage from '~components/InlineMessage'
 import { ModalCloseButton } from '~components/Modal'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -28,6 +29,7 @@ import {
   useAdminWorkflowStore,
 } from '../../adminWorkflowStore'
 import { useWorkflowMutations } from '../../mutations'
+import { getDeleteLoginError } from '../../utils/deleteLoginError'
 
 interface DeleteWorkflowModalProps {
   isOpen: boolean
@@ -91,6 +93,8 @@ export const DeleteWorkflowModal = ({
   const dialogRef = useRef<HTMLDivElement>(null)
 
   const isFormOpen = form?.status === FormStatus.Public
+  // Step 1 then fills in every field. The API refuses the same delete.
+  const loginError = isFormOpen ? undefined : getDeleteLoginError(form)
 
   // Full literal keys rather than an interpolated path: i18next types its keys
   // off string literals, and building the path up would drop that checking.
@@ -147,6 +151,11 @@ export const DeleteWorkflowModal = ({
               {copy.description}
             </Text>
           )}
+          {loginError ? (
+            <InlineMessage variant="error" mt="1rem">
+              {loginError}
+            </InlineMessage>
+          ) : null}
         </ModalBody>
         <ModalFooter>
           <Stack
@@ -169,6 +178,7 @@ export const DeleteWorkflowModal = ({
                 colorScheme="danger"
                 onClick={handleDelete}
                 isLoading={isLoading}
+                isDisabled={!!loginError}
               >
                 {copy.confirm}
               </Button>

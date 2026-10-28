@@ -1,5 +1,6 @@
 import {
   FormAuthType,
+  FormResponseMode,
   FormWorkflowStepAuth,
   WorkflowStepAuthType,
 } from '../types/form'
@@ -7,7 +8,9 @@ import {
 import {
   getLoginIdentityAttr,
   getLoginIdentityAttrsForAuthType,
+  getLoginIdentityConfigErrors,
   isLoginIdentityField,
+  isMyInfoDataField,
   LOGIN_IDENTITY_LABELS,
   LoginIdentityCandidate,
 } from './login-identity'
@@ -225,6 +228,52 @@ export const getStepLoginConfigErrors = ({
     }
   }
   return errors
+}
+
+export const MYINFO_FIELDS_NEED_SINGPASS_STEP =
+  "Myinfo fields need a step with Singpass login. Set a step's login to Singpass, or remove the Myinfo fields."
+
+/**
+ * Login problems the form's save hooks would reject, for writes that skip
+ * them (workflow, settings and duplicate writes). Mirrors the `form_fields`
+ * Myinfo validator, `getLoginIdentityConfigErrors` and
+ * `getStepLoginConfigErrors`.
+ */
+export const getResultingLoginErrors = ({
+  authType,
+  responseMode,
+  isSubmitterIdCollectionEnabled,
+  form_fields = [],
+  workflow,
+}: {
+  authType: FormAuthType
+  responseMode: FormResponseMode
+  isSubmitterIdCollectionEnabled?: boolean
+  form_fields?: readonly SourceField[]
+  workflow?: readonly StepLoginStep[] | null
+}): string[] => {
+  const steps = workflow ?? []
+  // Any step's Singpass login may fill Myinfo fields.
+  const myInfoErrors =
+    form_fields.some(isMyInfoDataField) &&
+    !formUsesAuthType({ authType, workflow: steps }, FormAuthType.MyInfo)
+      ? [MYINFO_FIELDS_NEED_SINGPASS_STEP]
+      : []
+  return [
+    ...getLoginIdentityConfigErrors({
+      authType,
+      responseMode,
+      isSubmitterIdCollectionEnabled,
+      form_fields,
+      workflow: steps,
+    }),
+    ...getStepLoginConfigErrors({
+      form: { authType },
+      formFields: form_fields,
+      workflow: steps,
+    }),
+    ...myInfoErrors,
+  ]
 }
 
 export { isLoginIdentityField }

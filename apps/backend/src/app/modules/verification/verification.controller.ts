@@ -1,4 +1,5 @@
 import { celebrate, Joi, Segments } from 'celebrate'
+import { Response } from 'express'
 import { OTP_REGEX } from 'formsg-shared/constants'
 import {
   ErrorDto,
@@ -20,9 +21,15 @@ import { setFormTags } from '../datadog/datadog.utils'
 import * as FormService from '../form/form.service'
 import { MyInfoService } from '../myinfo/myinfo.service'
 import * as MyInfoUtil from '../myinfo/myinfo.util'
+import { InvalidJwtError, VerifyJwtError } from '../spcp/spcp.errors'
 import { getOidcService } from '../spcp/spcp.oidc.service'
+import { getMultirespondentSubmission } from '../submission/multirespondent-submission/multirespondent-submission.service'
 import { MrfJwtPayload } from '../submission/multirespondent-submission/multirespondent-submission.types'
 import { getMrfCookieName } from '../submission/multirespondent-submission/multirespondent-submission.utils'
+import {
+  clearMrfStepAuthCookie,
+  resolveMrfStepAuth,
+} from '../submission/multirespondent-submission/step-auth'
 import * as SubmissionService from '../submission/submission.service'
 
 import { MrfJwtValidationError } from './verification.errors'
@@ -41,6 +48,39 @@ const buildErrorDto = ({
   ...(errorMessageKey ? { messageKey: errorMessageKey } : {}),
   ...(errorMessageParams ? { messageParams: errorMessageParams } : {}),
 })
+
+/**
+ * Checks the login of the MRF step a continuing respondent fills in, read from
+ * the submission's saved workflow. Steps without their own login pass.
+ */
+const verifyMrfStepLoginForOtp = ({
+  formId,
+  submissionId,
+  cookies,
+  res,
+  logMeta,
+}: {
+  formId: string
+  submissionId: string
+  cookies: Record<string, string | undefined>
+  res: Response
+  logMeta: { action: string; [other: string]: unknown }
+}) =>
+  getMultirespondentSubmission(submissionId)
+    .andThen((submission) =>
+      resolveMrfStepAuth(formId, submission, { stepAuthCookies: cookies }),
+    )
+    .mapErr((error) => {
+      logger.warn({
+        message: 'Failed to verify MRF step login for OTP',
+        meta: logMeta,
+        error,
+      })
+      if (error instanceof VerifyJwtError || error instanceof InvalidJwtError) {
+        clearMrfStepAuthCookie(res, { formId, submissionId })
+      }
+      return error
+    })
 
 /**
  * Handler for POST /forms/:formId/fieldverifications
@@ -130,9 +170,8 @@ export const _handleGenerateOtp: ControllerHandler<
       .andThen((form) => FormService.isFormPublic(form).map(() => form))
       // Step 3: Verify SPCP/MyInfo, if form requires it
       .andThen((form) => {
-        // If previousSubmissionId exists, this means it is coming from a 2+ step MRF workflow
-        // verify MRF JWT and skip SPCP/MyInfo since Singpass is currently only enabled for MRF first step
-        // TODO: revisit this logic when Singpass is enabled for all MRF steps (fix is to run validation check if step is Singpass-enabled)
+        // A previousSubmissionId means a later MRF step. Verify the MRF JWT,
+        // then that step's own login. The form-level login is Step 1's only.
         if (previousSubmissionId) {
           const mrfCookie =
             req.cookies[getMrfCookieName({ formId, previousSubmissionId })]
@@ -191,7 +230,7 @@ export const _handleGenerateOtp: ControllerHandler<
                     )
                   }
 
-                  // MRF JWT is valid, skip SPCP/MyInfo verification
+                  // MRF JWT is valid; the step's own login is checked next
                   return okAsync(form)
                 })
                 .mapErr((error) => {
@@ -203,6 +242,16 @@ export const _handleGenerateOtp: ControllerHandler<
                   return error
                 })
             })
+            .andThen(() =>
+              verifyMrfStepLoginForOtp({
+                formId,
+                submissionId: previousSubmissionId,
+                cookies: req.cookies ?? {},
+                res,
+                logMeta,
+              }),
+            )
+            .map(() => form)
         }
 
         // No previousSubmissionId, proceed with SPCP/MyInfo verification

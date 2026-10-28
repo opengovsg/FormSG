@@ -93,14 +93,25 @@ export type MrfStepAuthContext = {
   stepTokenHash?: string
 }
 
-export type MrfStepAuthCookiePayload = MrfStepAuthContext & {
-  // NRIC/FIN for MyInfo, entity UEN for Corppass
-  userName: string
-  // Corppass representative UID
-  userInfo?: string
+// Step 2+ login cookie (Step 1 uses MyInfoCookie and jwtCp)
+type MyInfoStepLogin = {
+  authType: FormAuthType.MyInfo
+  uinFin: string
   // Consumed MyInfo FAPI session; scopes this login's MyInfo hashes
-  myInfoAuthSessionId?: string
+  myInfoAuthSessionId: string
 }
+
+type CorppassStepLogin = {
+  authType: FormAuthType.CP
+  // Entity UEN
+  userName: string
+  // Representative UID
+  userInfo: string
+}
+
+type StepLoginIdentity = MyInfoStepLogin | CorppassStepLogin
+
+export type MrfStepAuthCookiePayload = MrfStepAuthContext & StepLoginIdentity
 
 type VerifiedMrfStepAuth = MrfStepAuthCookiePayload & {
   iat: number
@@ -243,15 +254,10 @@ export const resolveMrfStepAuth = (
   return ok(loginStep)
 }
 
-type StepLoginIdentity = Pick<
-  MrfStepAuthCookiePayload,
-  'authType' | 'userName' | 'userInfo'
->
-
 /**
  * The authenticated value a login identity field records, if any. MyInfo
- * NRIC/FIN and the Corppass UEN are the session's userName; the Corppass
- * representative UID is its userInfo.
+ * NRIC/FIN is the session's uinFin; the Corppass UEN is its userName and the
+ * representative UID its userInfo.
  */
 export const getLoginIdentityValue = (
   field: SourceField,
@@ -263,6 +269,9 @@ export const getLoginIdentityValue = (
     !getLoginIdentityAttrsForAuthType(session.authType).includes(attr)
   ) {
     return undefined
+  }
+  if (session.authType === FormAuthType.MyInfo) {
+    return session.uinFin
   }
   return attr === CorppassAttribute.Uid ? session.userInfo : session.userName
 }
@@ -343,12 +352,18 @@ export const setMrfStepAuthCookie = (
     formId: session.formId,
     submissionId: session.submissionId,
     workflowStep: session.workflowStep,
-    authType: session.authType,
     ...(session.stepTokenHash ? { stepTokenHash: session.stepTokenHash } : {}),
-    userName: session.userName,
-    ...(isCorppass
-      ? { userInfo: session.userInfo }
-      : { myInfoAuthSessionId: session.myInfoAuthSessionId }),
+    ...(session.authType === FormAuthType.CP
+      ? {
+          authType: session.authType,
+          userName: session.userName,
+          userInfo: session.userInfo,
+        }
+      : {
+          authType: session.authType,
+          uinFin: session.uinFin,
+          myInfoAuthSessionId: session.myInfoAuthSessionId,
+        }),
   }
   const token = jwt.sign(payload, MRF_STEP_AUTH_SIGNING_KEY, {
     algorithm: 'HS256',
@@ -399,16 +414,13 @@ const isVerifiedMrfStepAuth = (
 ): value is VerifiedMrfStepAuth => {
   if (!isMrfStepAuthContext(value)) return false
   const session = value as Record<string, unknown>
-  if (
-    !isNonEmptyString(session.userName) ||
-    typeof session.iat !== 'number' ||
-    typeof session.exp !== 'number'
-  ) {
+  if (typeof session.iat !== 'number' || typeof session.exp !== 'number') {
     return false
   }
   return value.authType === FormAuthType.CP
-    ? isNonEmptyString(session.userInfo)
-    : isNonEmptyString(session.myInfoAuthSessionId)
+    ? isNonEmptyString(session.userName) && isNonEmptyString(session.userInfo)
+    : isNonEmptyString(session.uinFin) &&
+        isNonEmptyString(session.myInfoAuthSessionId)
 }
 
 /**
