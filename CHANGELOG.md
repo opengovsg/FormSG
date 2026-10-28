@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.58.1](https://github.com/opengovsg/formsg/compare/v9.58.0...v9.58.1) (2026-10-28)
+
+
+### Bug Fixes
+
+* retry transient failures behind submission 5xxs (#10410) ([#10410](https://github.com/opengovsg/formsg/commit/d59a0cc3748d994974006b29921d7c1f115285f4))
+
 ## [9.58.0](https://github.com/opengovsg/formsg/compare/v9.57.1...v9.58.0) (2026-10-28)
 
 
