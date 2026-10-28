@@ -55,7 +55,9 @@ export const FormFieldsContainer = (): JSX.Element | null => {
       return (
         <FormAuth
           authType={form.authType}
-          isSubmitterIdCollectionEnabled={isSubmitterIdCollected(form)}
+          isSubmitterIdCollectionEnabled={
+            mrfStepAuthTarget ? undefined : isSubmitterIdCollected(form)
+          }
           hasSingleSubmissionValidationError={
             hasSingleSubmissionValidationError
           }

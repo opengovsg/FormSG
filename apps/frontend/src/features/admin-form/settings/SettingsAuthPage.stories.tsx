@@ -341,7 +341,10 @@ PrivateStorageMyInfoUpdateWhitelistValidationErrorForm.parameters = {
 // Multi-respondent forms get one collapsible section per workflow step once
 // later steps can log in.
 const stepLoginOn = new GrowthBook({
-  features: { [featureFlags.mrfStepLogin]: { defaultValue: true } },
+  features: {
+    [featureFlags.mrfStepLogin]: { defaultValue: true },
+    [featureFlags.isNricFieldEnabled]: { defaultValue: true },
+  },
 })
 
 const withStepLoginOn = (Story: StoryFn) => (

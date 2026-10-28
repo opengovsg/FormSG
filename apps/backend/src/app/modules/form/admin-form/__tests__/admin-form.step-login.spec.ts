@@ -8,6 +8,7 @@ import {
   MyInfoAttribute,
   WorkflowType,
 } from 'formsg-shared/types'
+import { MYINFO_FIELDS_NEED_SINGPASS_STEP } from 'formsg-shared/utils/step-login'
 
 import { MalformedParametersError } from 'src/app/modules/core/core.errors'
 import {
@@ -54,6 +55,11 @@ const FORM_FIELDS = [
   },
   { _id: PLAIN_FIELD_ID, fieldType: BasicField.ShortText, title: 'Plain' },
 ]
+
+// Without a Singpass step, a Myinfo data field fails the form's validator.
+const FIELDS_WITHOUT_MYINFO_DATA = FORM_FIELDS.filter(
+  ({ _id }) => _id !== MYINFO_FIELD_ID,
+)
 
 const step = (edit: string[], extra: Record<string, unknown> = {}) => ({
   _id: new ObjectId().toHexString(),
@@ -394,6 +400,7 @@ describe('admin-form.step-login', () => {
 
     it('maps first_step_login to the form-level login', () => {
       const result = update({
+        form: makeForm({ form_fields: FIELDS_WITHOUT_MYINFO_DATA }),
         stepNumber: 0,
         next: {
           first_step_login: { auth_type: FormAuthType.CP, esrvc_id: 'ESRVC' },
@@ -407,6 +414,7 @@ describe('admin-form.step-login', () => {
     it('checks the identity rules against the login Step 1 would end up with', () => {
       const form = makeForm({
         authType: FormAuthType.MyInfo,
+        form_fields: FIELDS_WITHOUT_MYINFO_DATA,
         workflow: [step([NRIC_FIELD_ID]), step([])],
       })
       // No login-filled field in the way: the generic check runs.
@@ -484,6 +492,21 @@ describe('admin-form.step-login', () => {
         [step([]), step([MYINFO_FIELD_ID], { auth: SINGPASS })],
       )
       expect(result.isOk()).toBe(true)
+    })
+
+    it('blocks removing Step 1 login when no step fills an unassigned Myinfo field', () => {
+      const singpassForm = makeForm({
+        authType: FormAuthType.MyInfo,
+        form_fields: FORM_FIELDS.filter(({ _id }) => _id === MYINFO_FIELD_ID),
+      })
+      const result = checkFormLoginWrite(
+        singpassForm,
+        { authType: FormAuthType.NIL },
+        [step([]), step([])],
+      )
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new MalformedParametersError(MYINFO_FIELDS_NEED_SINGPASS_STEP),
+      )
     })
   })
 })

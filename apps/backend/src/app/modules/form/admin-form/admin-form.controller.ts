@@ -1700,20 +1700,14 @@ const guidedModeOf = (form: IPopulatedForm): boolean | undefined =>
   isFormMultirespondent(form) ? !!form.hasUsedGuidedMode : undefined
 
 // Admin gate only: respondent paths honour a saved step login regardless.
+// Later-step login fills NRIC/FIN/UEN fields, so it also needs that flag.
 const isMrfStepLoginEnabledFor = (
   growthbook: GrowthBook | undefined,
   user: IPopulatedUser,
   formId: string,
-): boolean => {
-  // Match frontend targeting for the signed-in admin, including collaborators.
-  void growthbook?.setAttributes({
-    ...growthbook.getAttributes(),
-    formId,
-    adminEmail: user.email,
-    adminAgency: user.agency?.shortName,
-  })
-  return growthbook?.isOn(featureFlags.mrfStepLogin) ?? false
-}
+): boolean =>
+  isNricFieldEnabledFor(growthbook, user, formId) &&
+  (growthbook?.isOn(featureFlags.mrfStepLogin) ?? false)
 
 export const _handleCreateWorkflowStep: ControllerHandler<
   { formId: string },

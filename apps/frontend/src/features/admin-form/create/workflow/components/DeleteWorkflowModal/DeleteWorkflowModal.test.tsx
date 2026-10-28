@@ -1,7 +1,15 @@
 import { composeStory, Meta, StoryFn } from '@storybook/react-vite'
 import { act, render, screen, waitFor } from '@testing-library/react'
 
-import { FormResponseMode, FormStatus } from 'formsg-shared/types'
+import {
+  AdminFormDto,
+  BasicField,
+  FormAuthType,
+  FormResponseMode,
+  FormStatus,
+  MyInfoAttribute,
+} from 'formsg-shared/types'
+import { MYINFO_FIELDS_NEED_SINGPASS_STEP } from 'formsg-shared/utils/step-login'
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 
@@ -23,14 +31,18 @@ const meta = {
   decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
 } as Meta
 
-const buildParameters = (status: FormStatus) => ({
+const buildParameters = (
+  status: FormStatus,
+  overrides: Partial<AdminFormDto> = {},
+) => ({
   msw: {
     handlers: {
       default: createFormBuilderMocks({
         responseMode: FormResponseMode.Multirespondent,
         status,
         workflow: [],
-      }),
+        ...overrides,
+      } as Partial<AdminFormDto>),
     },
   },
 })
@@ -64,9 +76,10 @@ const template =
 const buildStory = (
   entryPoint: 'workflow-card' | 'first-step',
   status: FormStatus,
+  overrides: Partial<AdminFormDto> = {},
 ) => {
   const story = template(entryPoint)
-  story.parameters = buildParameters(status)
+  story.parameters = buildParameters(status, overrides)
   return composeStory(story, meta)
 }
 
@@ -106,4 +119,34 @@ describe('DeleteWorkflowModal initial focus', () => {
       }
     },
   )
+})
+
+describe('DeleteWorkflowModal login check', () => {
+  it('explains and blocks a delete that leaves Myinfo fields without a login', async () => {
+    // Arrange: Step 1 has no login; Step 2's Singpass login fills a Myinfo field
+    const Story = buildStory('workflow-card', FormStatus.Private, {
+      authType: FormAuthType.NIL,
+      form_fields: [
+        {
+          _id: 'name',
+          fieldType: BasicField.ShortText,
+          title: 'Name',
+          myInfo: { attr: MyInfoAttribute.Name },
+        },
+      ],
+      workflow: [
+        { _id: 's1', edit: [] },
+        { _id: 's2', edit: ['name'], auth: { auth_type: FormAuthType.MyInfo } },
+      ],
+    } as unknown as Partial<AdminFormDto>)
+    await act(async () => {
+      render(<Story />)
+    })
+
+    // Assert
+    expect(
+      await screen.findByText(MYINFO_FIELDS_NEED_SINGPASS_STEP),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /delete/i })).toBeDisabled()
+  })
 })

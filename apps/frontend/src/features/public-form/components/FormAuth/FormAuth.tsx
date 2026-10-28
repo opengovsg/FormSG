@@ -37,7 +37,8 @@ const getDispayedAuthTypeText = (
 
 export interface FormAuthProps {
   authType: Exclude<FormAuthType, FormAuthType.NIL>
-  isSubmitterIdCollectionEnabled: boolean
+  // Step 1 only. Undefined on a later MRF step's login, which shows no notice.
+  isSubmitterIdCollectionEnabled?: boolean
   hasSingleSubmissionValidationError: boolean
   hasRespondentNotWhitelistedError: boolean
 }

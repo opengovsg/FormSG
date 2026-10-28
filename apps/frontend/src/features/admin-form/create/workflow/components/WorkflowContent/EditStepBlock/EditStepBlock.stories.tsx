@@ -751,6 +751,7 @@ const stepLoginOn = new GrowthBook({
   features: {
     [featureFlags.workflowBuilderRedesign]: { defaultValue: true },
     [featureFlags.mrfStepLogin]: { defaultValue: true },
+    [featureFlags.isNricFieldEnabled]: { defaultValue: true },
   },
 })
 

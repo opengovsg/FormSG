@@ -6,14 +6,17 @@ import {
   getStepEsrvcId,
   getStepFields,
   getStepFieldsNeedingLogin,
+  getResultingLoginErrors,
   getStepLoginConfigErrors,
   hasStepLoginConfig,
+  MYINFO_FIELDS_NEED_SINGPASS_STEP,
 } from '../step-login'
 
 import {
   BasicField,
   CorppassAttribute,
   FormAuthType,
+  FormResponseMode,
   MyInfoAttribute,
 } from '../../types'
 
@@ -201,6 +204,71 @@ describe('step-login', () => {
           workflow: [{ edit: [] }, { edit: [] }],
         }),
       ).toEqual([])
+    })
+  })
+
+  describe('getResultingLoginErrors', () => {
+    const mrf = {
+      authType: FormAuthType.NIL,
+      responseMode: FormResponseMode.Multirespondent,
+    }
+
+    it('passes when a later Singpass step fills the Myinfo fields', () => {
+      expect(
+        getResultingLoginErrors({
+          ...mrf,
+          form_fields: [plain, name],
+          workflow: [{ edit: ['plain'] }, singpassStep],
+        }),
+      ).toEqual([])
+    })
+
+    it('rejects Myinfo fields once no step has Singpass login', () => {
+      // Step 2 was deleted: its Myinfo field is now unassigned
+      expect(
+        getResultingLoginErrors({
+          ...mrf,
+          form_fields: [plain, name],
+          workflow: [{ edit: ['plain'] }],
+        }),
+      ).toEqual([MYINFO_FIELDS_NEED_SINGPASS_STEP])
+    })
+
+    it('rejects login fields left on a no-login Step 1 when the workflow is deleted', () => {
+      expect(
+        getResultingLoginErrors({
+          ...mrf,
+          form_fields: [name, uenIdentity],
+          workflow: [],
+        }),
+      ).toEqual([
+        'UEN fields need Corppass login.',
+        MYINFO_FIELDS_NEED_SINGPASS_STEP,
+      ])
+    })
+
+    it('passes when Step 1 keeps a Singpass login without a workflow', () => {
+      expect(
+        getResultingLoginErrors({
+          ...mrf,
+          authType: FormAuthType.MyInfo,
+          form_fields: [name, nricIdentity],
+          workflow: [],
+        }),
+      ).toEqual([])
+    })
+
+    it('includes step login errors', () => {
+      expect(
+        getResultingLoginErrors({
+          ...mrf,
+          form_fields: [name],
+          workflow: [{ edit: ['name'] }, singpassStep],
+        }),
+      ).toEqual([
+        '"Name" can only be filled in by one step.',
+        'Step 1 needs Singpass login to fill in "Name".',
+      ])
     })
   })
 })

@@ -1151,8 +1151,8 @@ const verifyStepMyInfoHashes = (
   // A step without prefilled read-only answers saved nothing to check.
   if (hashCheckResponses.length === 0) return withReadOnly([])
 
-  return MyInfoService.fetchMyInfoHashes(session.userName, formId, {
-    authSessionId: session.myInfoAuthSessionId as string,
+  return MyInfoService.fetchMyInfoHashes(session.uinFin, formId, {
+    authSessionId: session.myInfoAuthSessionId,
     workflowStep: stepAuth.workflowStep,
   })
     .andThen((hashes) =>
