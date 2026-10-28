@@ -111,7 +111,8 @@
     "gen:theme-typings": "chakra-cli tokens --template augmentation src/theme/index.ts || true",
     "start": "vite",
     "build": "pnpm exec tsc && vite build",
-    "test": "vitest --project=unit",
+    "test": "vitest run --project=unit --project=unit-tsx",
+    "test:watch": "vitest --project=unit --project=unit-tsx",
     "test-storybook": "vitest run --project=storybook",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
@@ -161,8 +162,8 @@
     "@typescript-eslint/eslint-plugin": "^8.19.1",
     "@typescript-eslint/parser": "^8.19.1",
     "@vitejs/plugin-react": "^4.3.1",
-    "@vitest/browser": "^4.1.12",
-    "@vitest/browser-playwright": "^4.1.12",
+    "@vitest/browser": "^5.0.0",
+    "@vitest/browser-playwright": "^5.0.0",
     "env-cmd": "^10.1.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^8.10.0",
@@ -184,7 +185,7 @@
     "vite": "^6.4.3",
     "vite-plugin-svgr": "^4.2.0",
     "vite-tsconfig-paths": "^4.3.2",
-    "vitest": "^4.1.12"
+    "vitest": "^5.0.0"
   },
   "proxy": "http://localhost:5001",
   "msw": {

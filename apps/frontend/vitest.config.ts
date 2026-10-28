@@ -20,25 +20,66 @@ const stubExports = (specifier: string) => {
     .join(';')}`
 }
 
+// .tsx tests render components and may rely on the global Storybook decorator
+// (Chakra/React Query/Router/MSW) even without calling composeStories directly
+// (e.g. DeleteWorkflowModal.test.tsx). Only plain .test.ts files are safely thin.
+const baseUnitTest = {
+  globals: true,
+  environment: 'jsdom' as const, // For storybook tests to work properly
+  // Threads are cheaper to spin up than forked processes. This suite has no
+  // canvas/native-module usage that would need process isolation.
+  pool: 'threads' as const,
+}
+
+/** MSW socket teardown can throw read EINVAL when dd-trace instruments net in CI. */
+function isMswSocketTeardownNoise(error: Error & { code?: string }): boolean {
+  if (error.code !== 'EINVAL') return false
+  const stack = error.stack ?? ''
+  return (
+    error.message.includes('read') ||
+    stack.includes('@mswjs/interceptors') ||
+    stack.includes('MockHttpSocket')
+  )
+}
+
 export default defineConfig((configEnv) => {
   const appConfig = viteConfig(configEnv)
   return mergeConfig(
     appConfig,
     defineConfig({
       test: {
-        // Global option: it has no effect inside a project.
+        // Root-only options (Vitest 5 NonProjectOptions); ignored inside projects[].
         dangerouslyIgnoreUnhandledErrors: true, // there's some flakey unhandlederror surfaced by vitest, but there isn't enough information to discern if it is a real issue. Actual test failures, will still fail the tests.
+        onUnhandledError(error) {
+          if (isMswSocketTeardownNoise(error as Error & { code?: string })) {
+            return false
+          }
+        },
         projects: [
           {
             extends: true,
             test: {
+              ...baseUnitTest,
               name: 'unit',
-              setupFiles: ['./vitest-setup.ts'],
-              globals: true,
-              environment: 'jsdom', // For storybook tests to work properly
+              include: ['src/**/*.test.ts'],
+              setupFiles: ['./vitest-setup.thin.ts'],
             },
           },
           {
+            extends: true,
+            test: {
+              ...baseUnitTest,
+              // Kept separate from the browser `storybook` project below.
+              name: 'unit-tsx',
+              include: ['src/**/*.test.tsx'],
+              setupFiles: ['./vitest-setup.ts'],
+            },
+          },
+          {
+            // Vitest 5 extends an inline project from this file by default.
+            // This project already spreads the app config, so inheriting again
+            // would register every Vite plugin twice.
+            extends: false,
             // Runs every story in a real browser and screenshots it for Argos.
             // Reuses the app's aliases and plugins. The Node polyfills are kept
             // for app code (csv-string needs `stream`), but they shim
