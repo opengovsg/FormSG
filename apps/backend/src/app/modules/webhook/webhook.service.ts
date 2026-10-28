@@ -247,11 +247,16 @@ export const sendWebhook = (
 
 export type WebhookType = 'zapier' | 'plumber' | 'generic'
 
+// TEST ONLY — DO NOT MERGE: lets webhook.site receive V4 payloads by riding
+// the plumber classification below. Remove this commit before merging.
+const TEST_ONLY_V4_WEBHOOK_URL_REGEX = /^https:\/\/webhook\.site\//
+
 export const getWebhookType = (webhookUrl: string): WebhookType => {
   const isZapier = /^https:\/\/hooks\.zapier\.com\//
   const webhookType = isZapier.test(webhookUrl)
     ? 'zapier'
-    : PLUMBER_WEBHOOK_URL_REGEX.test(webhookUrl)
+    : PLUMBER_WEBHOOK_URL_REGEX.test(webhookUrl) ||
+        TEST_ONLY_V4_WEBHOOK_URL_REGEX.test(webhookUrl)
       ? 'plumber'
       : 'generic'
   return webhookType
