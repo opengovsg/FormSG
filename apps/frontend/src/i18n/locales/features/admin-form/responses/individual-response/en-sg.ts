@@ -41,21 +41,22 @@ export const enSG: ResponsesIndividualResponse = {
     },
     reassignButton: 'Reassign',
     addAssigneeModal: {
-      title: 'Add assignee',
+      title: 'Assign new people to this step',
       description:
-        'Add someone to respond to this step. Current assignees can still respond.',
-      label: 'Add assignee',
-      invalidEmail: 'Please enter a valid email',
+        'We’ll email them a link to complete this step. People already assigned to this step can still respond.',
+      label: 'Email addresses of new people',
+      requiredEmail: 'Enter at least one email address',
+      invalidEmail: 'Enter a valid email',
       alreadyAssigned:
         '{emails} {count, plural, one {is} other {are}} already assigned to this step.',
-      confirm: 'Add assignee',
+      confirm: 'Assign new people',
       toastSuccess:
-        '{count, plural, one {The new assignee was} other {The new assignees were}} successfully added.',
+        '{count, plural, one {The new person can} other {The new people can}} now respond to this step.',
     },
     stopModal: {
-      title: 'Stop this workflow?',
+      title: 'Stop this workflow',
       description:
-        'No further actions can be taken, and its status will change to Stopped. Responses will stay available to view and download.',
+        'No one will be able to respond to any more steps. You can still view and download responses already submitted.',
       notifyHeading: 'Select who to notify when the workflow is stopped',
       confirm: 'Stop workflow',
       toastSuccess: 'The workflow was successfully stopped.',

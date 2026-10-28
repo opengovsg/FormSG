@@ -30,7 +30,7 @@ export interface WorkflowActionModalProps {
   description: string
   isBeta?: boolean
   children?: ReactNode
-  notifiedEmails: string[]
+  notifiedEmails?: string[]
   confirmLabel: string
   confirmColorScheme?: ThemingProps['colorScheme']
   isConfirmDisabled?: boolean
@@ -91,17 +91,21 @@ export const WorkflowActionModal = ({
                   {children}
                 </>
               ) : null}
-              <Divider />
-              <Stack spacing="0.25rem">
-                <Text textStyle="subhead-2" color="secondary.700">
-                  {t(`${WORKFLOW_ACTIONS_I18N}.whoIsNotifiedLabel`)}
-                </Text>
-                <Text textStyle="body-2" color="secondary.500">
-                  {notifiedEmails.length > 0
-                    ? formatEmailList(notifiedEmails)
-                    : t(`${WORKFLOW_ACTIONS_I18N}.whoIsNotifiedNone`)}
-                </Text>
-              </Stack>
+              {notifiedEmails ? (
+                <>
+                  <Divider />
+                  <Stack spacing="0.25rem">
+                    <Text textStyle="subhead-2" color="secondary.700">
+                      {t(`${WORKFLOW_ACTIONS_I18N}.whoIsNotifiedLabel`)}
+                    </Text>
+                    <Text textStyle="body-2" color="secondary.500">
+                      {notifiedEmails.length > 0
+                        ? formatEmailList(notifiedEmails)
+                        : t(`${WORKFLOW_ACTIONS_I18N}.whoIsNotifiedNone`)}
+                    </Text>
+                  </Stack>
+                </>
+              ) : null}
             </Stack>
           </DropdownMenuLayerProvider>
         </ModalBody>

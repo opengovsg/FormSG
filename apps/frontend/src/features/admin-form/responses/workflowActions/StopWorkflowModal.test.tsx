@@ -32,6 +32,10 @@ const openEmailFieldSelect = async () => {
 describe('StopWorkflowModal Email field select', () => {
   it('offers to add an Email field when the form has none', async () => {
     await NoEmailFields.run()
+    expect(screen.queryByText('Who will be notified')).not.toBeInTheDocument()
+    expect(
+      screen.getByText('Select who to notify when the workflow is stopped'),
+    ).toBeInTheDocument()
     await openEmailFieldSelect()
 
     expect(
