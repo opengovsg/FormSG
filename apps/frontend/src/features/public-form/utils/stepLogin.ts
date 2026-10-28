@@ -5,8 +5,8 @@ import {
   StrippedFormWorkflowDto,
   WorkflowStepAuthType,
 } from 'formsg-shared/types/form'
-import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'
-import { getStepFields, SourceField } from 'formsg-shared/utils/step-login'
+import { isMyInfoDataField } from 'formsg-shared/utils/login-identity'
+import { getStepFields } from 'formsg-shared/utils/step-login'
 
 /**
  * The saved login of the step a continuing respondent fills in, if any.
@@ -44,15 +44,9 @@ export const mergeStepLoginSession = ({
   )
   // Identity fields come back on every session read; MyInfo data fields
   // only right after the login, so their absence means the profile is gone.
-  const hasMyInfoProfile = stepFields.every((field) => {
-    // Table fields carry no myInfo, so the structural type is needed here.
-    const source = field as SourceField
-    return (
-      !source.myInfo?.attr ||
-      isLoginIdentityField(source) ||
-      prefilledFields.has(field._id)
-    )
-  })
+  const hasMyInfoProfile = stepFields.every(
+    (field) => !isMyInfoDataField(field) || prefilledFields.has(field._id),
+  )
 
   return {
     formFields: formFields.map(

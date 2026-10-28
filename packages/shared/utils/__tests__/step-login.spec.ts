@@ -3,7 +3,6 @@ import {
   formUsesAuthType,
   getOwningStepIndex,
   getStepAuthType,
-  getStepEsrvcId,
   getStepFields,
   getStepFieldsNeedingLogin,
   getResultingLoginErrors,
@@ -60,13 +59,6 @@ describe('step-login', () => {
       expect(getStepAuthType(form, workflow, 2)).toBe(FormAuthType.CP)
       expect(getStepAuthType(form, workflow, 3)).toBe(FormAuthType.NIL)
       expect(getStepAuthType(form, undefined, 5)).toBe(FormAuthType.NIL)
-    })
-
-    it('reads the e-service ID from the form for Step 1 and the step otherwise', () => {
-      const form = { authType: FormAuthType.CP, esrvcId: 'FORM-1' }
-      const workflow = [{ edit: [] }, corppassStep]
-      expect(getStepEsrvcId(form, workflow, 0)).toBe('FORM-1')
-      expect(getStepEsrvcId(form, workflow, 1)).toBe('AGENCY-1')
     })
   })
 

@@ -490,15 +490,15 @@ export const PublicFormProvider = ({
   let submissionSecretKey = ''
   try {
     submissionSecretKey = decodeURIComponent(searchParams.get('key') ?? '')
-  } catch (e) {
-    console.log(e)
+  } catch (error) {
+    datadogLogs.logger.warn('Malformed MRF submission key in url', { error })
   }
 
   let stepToken = ''
   try {
     stepToken = decodeURIComponent(searchParams.get('token') ?? '')
-  } catch (e) {
-    console.log(e)
+  } catch (error) {
+    datadogLogs.logger.warn('Malformed MRF step token in url', { error })
   }
 
   // Only a pending step saved with its own login uses the step login flow.
@@ -1072,11 +1072,10 @@ export const PublicFormProvider = ({
     })
   }
 
-  const { handleLogoutMutation } = usePublicAuthMutations(
+  const { handleLogoutMutation } = usePublicAuthMutations({
     formId,
-    undefined,
-    mrfStepAuthTarget,
-  )
+    mrfStep: mrfStepAuthTarget,
+  })
 
   const handleLogout = useCallback(() => {
     if (!data?.form || data.form.authType === FormAuthType.NIL) return

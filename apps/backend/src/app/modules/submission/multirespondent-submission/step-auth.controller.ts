@@ -117,50 +117,58 @@ export const _handleMrfStepAuthRedirect: ControllerHandler<
       if (!context) {
         return errAsync(new AuthTypeMismatchError(FormAuthType.NIL))
       }
-      if (context.authType === FormAuthType.MyInfo) {
-        // Fail closed: without a growthbook instance, only birth records are fetched.
-        const isMrfChildrenEnabled =
-          req.growthbook?.isOn(featureFlags.mrfChildren) ?? false
-        return MyInfoFapiService.startLogin({
-          formId,
-          encodedQuery,
-          requestedAttributes: getUniqueMyInfoAttrsForFields(stepFields),
-          includeSponsoredChildren: shouldFetchSponsoredChildren(
-            form,
-            isMrfChildrenEnabled,
-          ),
-          mrfContext: toMyInfoMrfContext(context),
-        }).map(({ sessionId, redirectUrl }) => {
-          setMyInfoFapiSessionCookie(res, sessionId)
-          return redirectUrl
-        })
-      }
-      if (!esrvcId) {
-        return errAsync(new FormAuthNoEsrvcIdError(formId))
-      }
-      // Always nonce-scoped: the nonce names both the PKCE and binding cookies.
-      const nonce = randomBytes(16).toString('hex')
-      const oidcService = getOidcService(FormAuthType.CP)
-      return oidcService
-        .createRedirectUrl(
-          getRedirectTargetSpcpOidc(
+      switch (context.authType) {
+        case FormAuthType.MyInfo: {
+          // Fail closed: without a growthbook instance, only birth records are fetched.
+          const isMrfChildrenEnabled =
+            req.growthbook?.isOn(featureFlags.mrfChildren) ?? false
+          return MyInfoFapiService.startLogin({
             formId,
-            FormAuthType.CP,
-            false,
-            withMrfStepLoginMarker(encodedQuery, submissionId),
-            nonce,
-          ),
-          esrvcId,
-        )
-        .map(({ redirectUrl, codeVerifier }) => {
-          res.cookie(
-            oidcService.getCodeVerifierCookieName(nonce),
-            codeVerifier,
-            oidcService.getCodeVerifierCookieOptions(),
-          )
-          setCpStepBindingCookie(res, context, nonce)
-          return redirectUrl
-        })
+            encodedQuery,
+            requestedAttributes: getUniqueMyInfoAttrsForFields(stepFields),
+            includeSponsoredChildren: shouldFetchSponsoredChildren(
+              form,
+              isMrfChildrenEnabled,
+            ),
+            mrfContext: toMyInfoMrfContext(context),
+          }).map(({ sessionId, redirectUrl }) => {
+            setMyInfoFapiSessionCookie(res, sessionId)
+            return redirectUrl
+          })
+        }
+        case FormAuthType.CP: {
+          if (!esrvcId) {
+            return errAsync(new FormAuthNoEsrvcIdError(formId))
+          }
+          // Always nonce-scoped: the nonce names both the PKCE and binding cookies.
+          const nonce = randomBytes(16).toString('hex')
+          const oidcService = getOidcService(FormAuthType.CP)
+          return oidcService
+            .createRedirectUrl(
+              getRedirectTargetSpcpOidc(
+                formId,
+                FormAuthType.CP,
+                false,
+                withMrfStepLoginMarker(encodedQuery, submissionId),
+                nonce,
+              ),
+              esrvcId,
+            )
+            .map(({ redirectUrl, codeVerifier }) => {
+              res.cookie(
+                oidcService.getCodeVerifierCookieName(nonce),
+                codeVerifier,
+                oidcService.getCodeVerifierCookieOptions(),
+              )
+              setCpStepBindingCookie(res, context, nonce)
+              return redirectUrl
+            })
+        }
+        default: {
+          const exhaustiveCheck: never = context.authType
+          return exhaustiveCheck
+        }
+      }
     })
     .map((redirectURL) => {
       logger.info({

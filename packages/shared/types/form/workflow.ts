@@ -22,10 +22,7 @@ export interface FormWorkflowStepAuth {
 }
 
 /** Logins Step 1 may use, written through the form-level settings. */
-export type StepLoginAuthType =
-  | FormAuthType.NIL
-  | FormAuthType.MyInfo
-  | FormAuthType.CP
+export type StepLoginAuthType = FormAuthType.NIL | WorkflowStepAuthType
 
 /**
  * Step 1's login as sent with a step save. Request-only: it is written to the

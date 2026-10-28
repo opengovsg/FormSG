@@ -1739,11 +1739,9 @@ export const _handleCreateWorkflowStep: ControllerHandler<
       // Step 3: User has permissions, proceed to create form field with provided body.
       .andThen((form) => {
         hasUsedGuidedMode = guidedModeOf(form)
-        return AdminFormService.createWorkflowStep(
-          form,
-          workflowStepToCreate,
+        return AdminFormService.createWorkflowStep(form, workflowStepToCreate, {
           isStepLoginEnabled,
-        )
+        })
       })
       .map((updatedWorkflow) => {
         if (hasUsedGuidedMode) {
@@ -1819,7 +1817,7 @@ const _handleUpdateWorkflowStep: ControllerHandler<
         retrievedForm,
         stepNumber,
         updatedWorkflowStep,
-        isStepLoginEnabled,
+        { isStepLoginEnabled },
       )
     })
     .map((updatedWorkflow) => {

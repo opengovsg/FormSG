@@ -1,8 +1,5 @@
 import { AdminFormDto, FormResponseMode } from 'formsg-shared/types'
-import {
-  getResultingLoginErrors,
-  SourceField,
-} from 'formsg-shared/utils/step-login'
+import { getResultingLoginErrors } from 'formsg-shared/utils/step-login'
 
 /**
  * Why deleting would leave login-filled fields without a login to fill them,
@@ -23,8 +20,7 @@ export const getDeleteLoginError = (
     authType: form.authType,
     responseMode: form.responseMode,
     isSubmitterIdCollectionEnabled: form.isSubmitterIdCollectionEnabled,
-    // Table fields carry no myInfo, so the structural type is needed here.
-    form_fields: form.form_fields as SourceField[],
+    form_fields: form.form_fields,
     workflow: resultingWorkflow,
   })
   return errors.length > 0 ? errors.join(' ') : undefined

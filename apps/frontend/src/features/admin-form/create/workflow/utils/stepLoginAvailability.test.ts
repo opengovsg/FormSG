@@ -60,18 +60,36 @@ describe('isLaterStepLoginAvailable', () => {
 
 describe('formUsesLogin', () => {
   it('reads only the form-level login while the flag is off', () => {
-    expect(formUsesLogin(mrfForm(), FormAuthType.CP, false)).toBe(false)
     expect(
-      formUsesLogin(
-        mrfForm({ authType: FormAuthType.CP }),
-        FormAuthType.CP,
-        false,
-      ),
+      formUsesLogin({
+        form: mrfForm(),
+        authType: FormAuthType.CP,
+        isFlagOn: false,
+      }),
+    ).toBe(false)
+    expect(
+      formUsesLogin({
+        form: mrfForm({ authType: FormAuthType.CP }),
+        authType: FormAuthType.CP,
+        isFlagOn: false,
+      }),
     ).toBe(true)
   })
 
   it('counts later steps once they can log in', () => {
-    expect(formUsesLogin(mrfForm(), FormAuthType.CP, true)).toBe(true)
-    expect(formUsesLogin(mrfForm(), FormAuthType.MyInfo, true)).toBe(false)
+    expect(
+      formUsesLogin({
+        form: mrfForm(),
+        authType: FormAuthType.CP,
+        isFlagOn: true,
+      }),
+    ).toBe(true)
+    expect(
+      formUsesLogin({
+        form: mrfForm(),
+        authType: FormAuthType.MyInfo,
+        isFlagOn: true,
+      }),
+    ).toBe(false)
   })
 })
