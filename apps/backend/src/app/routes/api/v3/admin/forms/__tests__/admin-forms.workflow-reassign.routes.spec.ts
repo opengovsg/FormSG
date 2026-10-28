@@ -31,8 +31,10 @@ let isFlagOn = true
 
 const routerWithGrowthbook = Router()
 routerWithGrowthbook.use((req, _res, next) => {
-  ;(req as unknown as { growthbook: { isOn: () => boolean } }).growthbook = {
+  ;(req as unknown as { growthbook: unknown }).growthbook = {
     isOn: () => isFlagOn,
+    getAttributes: () => ({}),
+    setAttributes: async () => undefined,
   }
   next()
 })
