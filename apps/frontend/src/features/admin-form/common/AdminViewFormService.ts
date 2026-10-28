@@ -25,7 +25,7 @@ import {
   filterHiddenInputs,
 } from '~features/public-form/utils'
 
-import { PREVIEW_MOCK_UINFIN } from '../preview/constants'
+import { getPreviewMockLoginId } from '../preview/constants'
 
 // endpoint exported for testing
 export const ADMIN_FORM_ENDPOINT = '/admin/forms'
@@ -60,7 +60,7 @@ export const previewForm = async (
       // and if server has not already sent back a mock authenticated state.
       if (data.form.authType !== FormAuthType.NIL && !data.spcpSession) {
         data.spcpSession = {
-          userName: PREVIEW_MOCK_UINFIN,
+          userName: getPreviewMockLoginId(data.form.authType),
         }
       }
 
@@ -91,7 +91,7 @@ export const viewFormTemplate = async (
       // and if server has not already sent back a mock authenticated state.
       if (data.form.authType !== FormAuthType.NIL && !data.spcpSession) {
         data.spcpSession = {
-          userName: PREVIEW_MOCK_UINFIN,
+          userName: getPreviewMockLoginId(data.form.authType),
         }
       }
 
