@@ -16,6 +16,7 @@ import { WorkflowEventType, WorkflowStatus } from 'formsg-shared/types'
 
 import type { ResponsesIndividualResponse } from '~/i18n/locales/features/admin-form/responses/individual-response'
 
+import { formatEmailList } from './formatEmailList'
 import { WorkflowHistory } from './getStopNotifiedEmails'
 import { WORKFLOW_ACTIONS_I18N } from './i18n'
 
@@ -91,7 +92,7 @@ export const WorkflowActivityLog = ({
           'stepSent',
           {
             ...stepValues(index + 2),
-            recipients: recipients.join(', '),
+            recipients: formatEmailList(recipients),
           },
           BiSend,
         ),
@@ -114,7 +115,7 @@ export const WorkflowActivityLog = ({
             'assigneeAdded',
             {
               ...stepValues(event.stepNumber),
-              emails: event.emails.join(', '),
+              emails: formatEmailList(event.emails),
               actor,
             },
             BiUserPlus,
@@ -139,7 +140,7 @@ export const WorkflowActivityLog = ({
               'reminderSent',
               {
                 ...stepValues(event.stepNumber),
-                recipients: event.emails.join(', '),
+                recipients: formatEmailList(event.emails),
               },
               BiSend,
             ),
@@ -238,7 +239,7 @@ export const WorkflowActivityLog = ({
                     {t(`${I18N_PREFIX}.notificationRecipients`)}
                   </Text>
                   <Text textStyle="body-2" overflowWrap="anywhere">
-                    {notificationRecipients.join(', ')}
+                    {formatEmailList(notificationRecipients)}
                   </Text>
                 </Box>
               )}

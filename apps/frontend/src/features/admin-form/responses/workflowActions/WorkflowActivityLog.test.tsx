@@ -78,9 +78,9 @@ describe('WorkflowActivityLog', () => {
     expect(titles()).toEqual([
       'Step 1 submitted',
       'Step 2 · Team lead sent to lead@agency.gov.sg',
-      'new@agency.gov.sg, other@agency.gov.sg added to Step 2 · Team lead by admin@agency.gov.sg',
+      'new@agency.gov.sg and other@agency.gov.sg added to Step 2 · Team lead by admin@agency.gov.sg',
       'Reminder triggered for Step 2 · Team lead by admin@agency.gov.sg',
-      'Reminder for Step 2 · Team lead sent to lead@agency.gov.sg, new@agency.gov.sg',
+      'Reminder for Step 2 · Team lead sent to lead@agency.gov.sg and new@agency.gov.sg',
       'Workflow stopped by admin@agency.gov.sg',
     ])
     const items = screen.getAllByRole('listitem')
