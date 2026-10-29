@@ -2,6 +2,7 @@ import { ReactNode, useRef, useState } from 'react'
 import { useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 import {
+  FormControl,
   Modal,
   ModalBody,
   ModalContent,
@@ -22,6 +23,7 @@ import { getStepFieldsNeedingLogin } from 'formsg-shared/utils/step-login'
 
 import Button from '~components/Button'
 import { DropdownMenuLayerProvider, SingleSelect } from '~components/Dropdown'
+import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 import { ModalCloseButton } from '~components/Modal'
 
@@ -183,14 +185,12 @@ export const FieldLoginGate = ({ children }: { children: ReactNode }) => {
                     : ''}
                 </Text>
                 {hasWorkflow ? (
-                  <>
-                    <Text
-                      as="label"
-                      id="field-login-step-label"
-                      htmlFor="field-login-step"
-                    >
-                      Enable authentication on
-                    </Text>
+                  <FormControl
+                    id="field-login-step"
+                    isRequired
+                    isDisabled={isSaving}
+                  >
+                    <FormLabel>Enable authentication on</FormLabel>
                     <SingleSelect
                       name="field-login-step"
                       value={stepIndex}
@@ -205,7 +205,7 @@ export const FieldLoginGate = ({ children }: { children: ReactNode }) => {
                         label: `Step ${index + 1}${item.step_name ? `: ${item.step_name}` : ''}`,
                       }))}
                     />
-                  </>
+                  </FormControl>
                 ) : (
                   <Text>
                     Your form will use {label} instead of its current login
@@ -213,10 +213,12 @@ export const FieldLoginGate = ({ children }: { children: ReactNode }) => {
                   </Text>
                 )}
                 {provider === FormAuthType.CP && (
-                  <>
-                    <Text as="label" htmlFor="field-login-service">
-                      Corppass e-service ID
-                    </Text>
+                  <FormControl
+                    id="field-login-service"
+                    isDisabled={isSaving}
+                    isInvalid={hasEsrvcIdWhitespace(esrvcId)}
+                  >
+                    <FormLabel>Corppass e-service ID</FormLabel>
                     <Input
                       id="field-login-service"
                       value={esrvcId}
@@ -228,7 +230,7 @@ export const FieldLoginGate = ({ children }: { children: ReactNode }) => {
                         The e-service ID must not contain spaces.
                       </Text>
                     )}
-                  </>
+                  </FormControl>
                 )}
                 {form?.status === FormStatus.Public && (
                   <Text color="danger.500" role="alert">

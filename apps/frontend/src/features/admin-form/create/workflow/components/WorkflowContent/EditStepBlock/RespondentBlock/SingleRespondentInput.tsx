@@ -314,18 +314,17 @@ export const SingleRespondentInput = ({
           )}
         </Box>
       )}
-      <Text
-        mt="0.5rem"
-        textStyle="body-2"
-        color={error ? 'danger.500' : 'secondary.400'}
-        role={error ? 'alert' : undefined}
-      >
-        {error ||
-          errors.workflow_type?.message ||
-          errors.field?.message ||
-          errors.emails?.message ||
-          'Type email addresses separated by commas, or choose an Email or Dropdown field.'}
-      </Text>
+      {error ||
+      errors.workflow_type?.message ||
+      errors.field?.message ||
+      errors.emails?.message ? (
+        <Text mt="0.5rem" textStyle="body-2" color="danger.500" role="alert">
+          {error ||
+            errors.workflow_type?.message ||
+            errors.field?.message ||
+            errors.emails?.message}
+        </Text>
+      ) : null}
       {workflowType === WorkflowType.Conditional && (
         <Box mt="0.75rem">
           <ConditionalRoutingOption

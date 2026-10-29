@@ -208,7 +208,7 @@ describe('field builder enable-login gate', () => {
   it('includes Corppass service configuration on the chosen step', async () => {
     setup()
     fireEvent.click(screen.getByText('Add UEN'))
-    fireEvent.change(screen.getByLabelText('Corppass e-service ID'), {
+    fireEvent.change(screen.getByLabelText(/Corppass e-service ID/), {
       target: { value: 'service-123' },
     })
     fireEvent.change(screen.getByLabelText('Enable authentication on'), {
@@ -246,7 +246,7 @@ describe('field builder enable-login gate', () => {
     state.form.responseMode = FormResponseMode.Encrypt
     setup()
     fireEvent.click(screen.getByText('Add UEN'))
-    fireEvent.change(screen.getByLabelText('Corppass e-service ID'), {
+    fireEvent.change(screen.getByLabelText(/Corppass e-service ID/), {
       target: { value: 'service-123' },
     })
     fireEvent.click(

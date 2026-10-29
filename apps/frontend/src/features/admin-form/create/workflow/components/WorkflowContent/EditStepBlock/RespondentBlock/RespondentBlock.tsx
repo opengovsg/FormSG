@@ -85,7 +85,14 @@ export const RespondentBlock = ({
           isRequired
           isInvalid={!!errors.workflow_type}
         >
-          <FormLabel style={textStyles.h4}>
+          <FormLabel
+            style={textStyles.h4}
+            description={
+              isRedesign && isLoginShown && !isActiveSection
+                ? 'Type email addresses separated by commas, or choose an Email or Dropdown field.'
+                : undefined
+            }
+          >
             {t(
               isRedesign
                 ? 'features.adminForm.sidebar.workflow.respondentBlock.selectRedesign'

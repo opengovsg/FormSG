@@ -4,12 +4,13 @@ import { useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 import {
   Box,
+  Divider,
   Stack,
-  Tab,
   TabList,
   TabPanel,
   TabPanels,
   Tabs,
+  Text,
 } from '@chakra-ui/react'
 
 import {
@@ -22,6 +23,7 @@ import {
 } from 'formsg-shared/types'
 
 import InlineMessage from '~components/InlineMessage'
+import { Tab } from '~components/Tabs'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
@@ -48,6 +50,7 @@ import { SpotlightGroup } from '../../Spotlight'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { ApprovalsBlock } from './ApprovalsBlock'
+import { EditStepBlockContainer } from './EditStepBlockContainer'
 import { GuidedActionGroup } from './GuidedActionGroup'
 import { LoginBlock } from './LoginBlock'
 import { QuestionsBlock } from './QuestionsBlock'
@@ -333,23 +336,29 @@ export const EditStepBlock = ({
 
   const useProposedTabs = isRedesign && isLoginShown && !isGuided
   const tabbedSections = (
-    <Tabs
-      key="step-settings"
-      index={activeTab}
-      onChange={setActiveTab}
-      mt="1.5rem"
-    >
-      <TabList mx={{ base: '1.5rem', md: '2rem' }}>
-        <Tab>Fields to fill</Tab>
-        <Tab isDisabled={isFirstStep}>Approvals</Tab>
-        <Tab>Singpass</Tab>
-      </TabList>
+    <Tabs key="step-settings" index={activeTab} onChange={setActiveTab}>
+      <Box px={{ base: '1.5rem', md: '2rem' }}>
+        <TabList mx="-0.25rem" w="100%">
+          <Tab>Fields to fill</Tab>
+          <Tab>Approvals</Tab>
+          <Tab>Singpass</Tab>
+        </TabList>
+        <Divider w="auto" mx={{ base: '-1.5rem', md: '-2rem' }} />
+      </Box>
       <TabPanels>
         <TabPanel px="0" pt="1.5rem">
           {questionsSection}
         </TabPanel>
         <TabPanel px="0" pt="1.5rem">
-          {approvalsSection}
+          {isFirstStep ? (
+            <EditStepBlockContainer>
+              <Text color="secondary.400">
+                Only Step 2 onwards can approve a submission.
+              </Text>
+            </EditStepBlockContainer>
+          ) : (
+            approvalsSection
+          )}
         </TabPanel>
         <TabPanel px="0" pt="1.5rem">
           {loginSection}
@@ -433,9 +442,23 @@ export const EditStepBlock = ({
       transitionProperty="common"
       transitionDuration="normal"
     >
-      <SpotlightGroup activeIndex={reveal.activeIndex} isEnabled={isGuided}>
-        {sections.slice(0, visibleCount)}
-      </SpotlightGroup>
+      {useProposedTabs ? (
+        <Stack spacing="1.5rem" pt="1.5rem">
+          {sections
+            .slice(0, -1)
+            .flatMap((section, index) =>
+              index === 0
+                ? [section]
+                : [<Divider key={`intro-divider-${index}`} />, section],
+            )}
+          {tabbedSections}
+          <Divider />
+        </Stack>
+      ) : (
+        <SpotlightGroup activeIndex={reveal.activeIndex} isEnabled={isGuided}>
+          {sections.slice(0, visibleCount)}
+        </SpotlightGroup>
+      )}
       {saveError ? (
         <Box px="2rem" pt="1rem">
           <InlineMessage variant="error">{saveError}</InlineMessage>
