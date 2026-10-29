@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useCallback, useRef, useState } from 'react'
 import { BiPencil } from 'react-icons/bi'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
@@ -10,12 +10,6 @@ import {
   Divider,
   Flex,
   Icon,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Stack,
   Text,
 } from '@chakra-ui/react'
@@ -34,12 +28,15 @@ import {
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { ADMINFORM_ROUTE } from '~constants/routes'
-import Button from '~components/Button'
 import Link from '~components/Link'
-import { ModalCloseButton } from '~components/Modal'
-import { Tag } from '~components/Tag'
 
+import {
+  saveBeforeNavigation,
+  useRegisterNavigationSave,
+} from '~features/admin-form/common/navigationSave'
+import { NavigationSaveGuard } from '~features/admin-form/common/NavigationSaveGuard'
 import { OPEN_WORKFLOW_TAB_STATE } from '~features/admin-form/create/common/OpenWorkflowTabOnArrival'
+import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 import { StepLabel } from '~features/admin-form/create/workflow/components/WorkflowContent/StepLabel'
 import { useWorkflowSurfaces } from '~features/admin-form/create/workflow/hooks/useWorkflowSurfaces'
 
@@ -61,7 +58,15 @@ export const StepLoginAccordion = ({
   const [openIndex, setOpenIndex] = useState(-1)
   const [isDirty, setIsDirty] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  const [pendingIndex, setPendingIndex] = useState<number | null>(null)
+  const saveRef = useRef<(() => Promise<boolean>) | null>(null)
+  const registerSave = useCallback((save: (() => Promise<boolean>) | null) => {
+    saveRef.current = save
+  }, [])
+  useRegisterNavigationSave({
+    isDirty,
+    isSaving,
+    save: () => saveRef.current?.() ?? Promise.resolve(false),
+  })
   const applyChange = (index: number) => {
     setIsDirty(false)
     if (index === -2)
@@ -72,13 +77,15 @@ export const StepLoginAccordion = ({
   }
   const requestChange = (index: number) => {
     if (isSaving) return
-    if (isDirty) setPendingIndex(index)
-    else applyChange(index)
+    void saveBeforeNavigation().then((saved) => {
+      if (saved) applyChange(index)
+    })
   }
   const loginForm = { authType: settings.authType, esrvcId: settings.esrvcId }
 
   return (
     <Stack spacing="2rem">
+      <NavigationSaveGuard />
       <Box>
         <Text textStyle="body-1">
           Manage authentication for each step in your workflow.{' '}
@@ -149,7 +156,7 @@ export const StepLoginAccordion = ({
                         {!isExpanded ? (
                           <Box pl="4.25rem">
                             {label ? (
-                              <Tag colorScheme="secondary">{label}</Tag>
+                              <LogicBadge>{label}</LogicBadge>
                             ) : (
                               <Text textStyle="body-2" color="secondary.400">
                                 Singpass authentication not enabled
@@ -179,6 +186,7 @@ export const StepLoginAccordion = ({
                           onClose={() => setOpenIndex(-1)}
                           onDirtyChange={setIsDirty}
                           onSavingChange={setIsSaving}
+                          onSaveReady={registerSave}
                         />
                       ) : null}
                     </AccordionPanel>
@@ -189,33 +197,6 @@ export const StepLoginAccordion = ({
           )
         })}
       </Accordion>
-      <Modal
-        isOpen={pendingIndex !== null}
-        onClose={() => setPendingIndex(null)}
-      >
-        <ModalOverlay />
-        <ModalContent>
-          <ModalCloseButton />
-          <ModalHeader>Discard unsaved changes?</ModalHeader>
-          <ModalBody>
-            Your authentication changes have not been saved.
-          </ModalBody>
-          <ModalFooter gap="1rem">
-            <Button variant="clear" onClick={() => setPendingIndex(null)}>
-              Keep editing
-            </Button>
-            <Button
-              colorScheme="danger"
-              onClick={() => {
-                if (pendingIndex !== null) applyChange(pendingIndex)
-                setPendingIndex(null)
-              }}
-            >
-              Discard changes
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
     </Stack>
   )
 }

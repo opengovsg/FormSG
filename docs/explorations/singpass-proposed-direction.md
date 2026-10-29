@@ -84,3 +84,61 @@ Independent safety review caught a same-status race between field-source changes
 Verification note: one broad route-test attempt hit an HTTP parser error in an unchanged unauthenticated DELETE test; the clean rerun passed all 172 route tests. The earlier millisecond timestamp assertion also passed on rerun. Neither unrelated test was modified. Browser smoke checks used simulated authentication; real Singpass/Corppass was not exercised.
 
 Final review of implementation commit 2765abf33 against 269056103: Standards, Spec and Divergent reviews reported no actionable findings. Architecture/safety review independently confirmed the field/workflow race fix and found no remaining blocker. Review was read-only; automated and browser checks are recorded separately above.
+
+## Revised implementation contract, 29 October 2026
+
+## Pinned implementation decisions, 29 October 2026
+
+These decisions supersede earlier draft-versus-publish rules and conflicting descriptions below. Implementation alignment is pending. The supplied transcript is a discussion summary, not evidence of current code behaviour.
+
+1. **Adding authentication fields:** block addition unless the form already has the matching authentication provider. For workflow forms, at least one step must use that provider. A Singpass step does not enable Corppass fields, or vice versa. Remove the previously approved “Add without enabling yet” path.
+2. **Assignment:** each individual Singpass/Corppass field may be assigned to at most one workflow step. This is per field instance, not per Myinfo attribute.
+3. **Unassigned fields:** authentication fields may remain unassigned, including when publishing, provided at least one workflow step has their matching provider. Assignment and provider availability are separate constraints.
+4. **Deleting a mixed-authentication workflow:** allow deletion through a guided confirmation. The admin chooses Singpass or Corppass, then reviews the fields of the other provider that will be deleted from the form. Confirming removes those fields and the workflow. “Delete fields” here means remove their form definitions, not merely unassign them. Cancellation must not apply the proposed changes.
+
+5. **Last provider removed:** when changing or deleting the final step using a provider, confirm deletion of the form fields that depend on it. List the affected fields. Cancellation preserves the existing configuration and fields.
+6. **Deleting a single-provider workflow:** retain its sole provider and all compatible fields as form-level settings, even if that provider was previously configured on a later step. Skip the provider picker. With no providers, retain no authentication.
+7. **Navigation saving:** include saving when navigating away in this implementation. Exact navigation boundaries, failure handling and confirmation timing remain open below. This replaces the earlier recommendation to defer navigation saving.
+
+8. **Navigation save boundaries and failures:** save valid edits when leaving a card, switching Create/Settings, or leaving the editor through application navigation. If saving fails, stop navigation and retain the edits with a visible error. Show saving progress. Browser/tab closure can warn about unsaved changes but cannot guarantee a completed save.
+9. **Confirmation timing:** show destructive authentication-change confirmation immediately on selection. Confirmation stages the changes; Save or navigation commits them. Cancellation restores the prior selection. If another step still supplies the old provider, only unassign incompatible fields from the changed step, retaining their definitions.
+10. **Live forms:** allow authentication-field additions when a matching provider already exists. Require form closure before whole-workflow deletion or an authentication change that deletes fields.
+11. **Corppass configuration on workflow deletion:** reuse the existing e-service ID automatically if all retained Corppass steps share it. If IDs differ, ask the admin which existing configuration to retain.
+12. **Deleted-field references:** list affected logic/routing rules in confirmation and clean up references using existing field-deletion behaviour. Historical responses remain untouched.
+
+13. **Missing-provider palette behaviour:** follow the existing FormSG interaction rather than introducing an enable-and-add modal. Keep the provider tab accessible under its existing visibility rules; disable its field options when no matching provider exists. Show the existing guidance to enable the provider in Settings. For workflow forms, provider availability means any step uses it. There is no “Add without enabling yet” path.
+
+### Code evidence for palette behaviour
+
+Read-only inspection of cached `origin/develop` (`532bb4d19`, 27 October) and `origin/feat/mrf-step-login-all-steps` (`c09fd82d8`, 28 October) found that missing authentication disables the field options, not the provider tab. The tab itself is disabled only while loading. Corppass tab visibility additionally depends on its existing feature flag and supported form mode. Guidance says “Enable {Singpass/Corppass} in the Settings tab to access these fields.” These local refs do not establish the currently deployed UI.
+
+The current follow-up branch intentionally removed that field-option gating and added `FieldLoginGate`; that behaviour must be revised to match the new decision.
+
+14. **Save and Cancel remain:** keep both buttons alongside navigation saving. Invalid input stops navigation and highlights errors. Cancel discards the card draft, including staged field deletions. Failed saves preserve edits and prevent navigation.
+15. **Step 1 restrictions when deleting a workflow:** retain the one-response limit and eligible-respondent list when the resulting form keeps the original Step 1 provider. If that provider changes, reset those restrictions and disclose the reset in the final confirmation.
+16. **Superseded publication notice:** unassigned authentication fields alone must not trigger the old “Finish authentication setup before publishing” warning. Revise readiness validation to use provider availability and maximum-one matching assignment. Correct the notice layout wherever a legitimate remaining error still needs displaying.
+
+### Implementation safeguards
+
+- Commit workflow removal, chosen form-level authentication, incompatible-field deletion, reference cleanup and restriction resets together. A failed operation must not partially delete fields or leave authentication inconsistent.
+- Retain existing stale-configuration protection: if another edit changes the configuration, report the conflict and require a refreshed confirmation rather than deleting a newly changed set of fields.
+- Historical responses are never deleted by these configuration changes.
+
+### Approval status
+
+The user confirmed the full plan on 29 October 2026 and authorised implementation. Verification is in progress. This section supersedes conflicting historical descriptions below; those older sections are not the implementation contract.
+
+## Final revised-policy verification, 29 October 2026
+
+The implementation now follows the revised provider-availability policy, replacing the earlier incomplete-draft/mandatory-owner experiment. Latest UI refinements also supersede the older Step 1 Approvals explanation: Step 1 has only Fields to fill and Singpass tabs. Settings uses the workflow's exact LogicBadge for provider chips. Successful full settings saves show “Authentication settings saved.” for explicit and navigation saves; failures and partial restriction saves do not.
+
+- Shared validation: 37 tests across step-login and login-identity suites.
+- Backend: six model/service suites passed 399 cases; the final guided-deletion suite adds two further regression cases, bringing the distinct unit coverage to 401. Four route/validator suites passed 189 cases.
+- Frontend: 58 focused tests across 11 files passed, covering field availability, optional ownership, destructive confirmation/cancellation, publication, navigation save/failure and success-toast suppression.
+- Frontend typecheck and backend build-config typecheck passed. Changed-file lint has no errors; the two existing EditStepBlock Fast Refresh warnings remain.
+- Browser checks: missing-provider palette options disabled with Settings guidance; matching later-provider fields available on a public form; unassigned fields publishable; warning contents stacked; mixed-provider deletion and CP configuration selection with Back and no writes before confirmation; desktop/mobile previews; Settings card navigation writes once and displays a success toast.
+- Independent Standards review found no actionable issue. Spec/Divergent review identified legacy SP/MyInfo provider-family retention, fixed with regression coverage. Safety/Architecture recheck found no remaining actionable finding, including scalar stale-write guards and legacy records missing schema defaults.
+
+Evidence: /private/tmp/revised-shared-tests-final.log, revised-backend-tests-complete.log, revised-backend-routes-complete.log, revised-frontend-complete.log, revised-frontend-complete-types.log, revised-palette-browser.log, revised-publish-browser.log, revised-deletion-browser.log and revised-settings-navigation-browser.log. Step 1 tab browser checks passed with exactly two tabs on Step 1 and three on later steps (revised-step1-tabs-browser.log); the 11 workflow regression tests passed again after this refinement (revised-step1-final-tests.log).
+
+Limits: Storybook authentication is simulated; real Singpass/Corppass was not exercised. Browser close warns about unsaved edits but cannot guarantee an asynchronous save. Step 1 restriction saves still use existing separate endpoints and explicitly report partial failure. No production deployment or automatic migration of existing forms was performed. The broad backend test-file typecheck limitation recorded above remains separate from the passing build-config check.

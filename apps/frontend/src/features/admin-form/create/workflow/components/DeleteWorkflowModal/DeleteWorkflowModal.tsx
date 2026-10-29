@@ -1,8 +1,8 @@
-import { useCallback, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
-  ListItem,
+  Box,
   Modal,
   ModalBody,
   ModalContent,
@@ -11,16 +11,18 @@ import {
   ModalOverlay,
   Stack,
   Text,
-  UnorderedList,
   useBreakpointValue,
 } from '@chakra-ui/react'
 
-import { FormStatus } from 'formsg-shared/types'
+import { FormAuthType, FormResponseMode, FormStatus } from 'formsg-shared/types'
+import { getFieldSourceProvider } from 'formsg-shared/utils/step-login'
 
 import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 import { ModalCloseButton } from '~components/Modal'
+import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
+import Radio from '~components/Radio'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -29,37 +31,18 @@ import {
   useAdminWorkflowStore,
 } from '../../adminWorkflowStore'
 import { useWorkflowMutations } from '../../mutations'
-import { getDeleteLoginError } from '../../utils/deleteLoginError'
+import {
+  getAffectedAuthFieldRules,
+  getWorkflowAuthOptions,
+} from '../../utils/authFieldRemoval'
 
 interface DeleteWorkflowModalProps {
   isOpen: boolean
   onClose: () => void
-  /**
-   * Which delete button opened this. Named rather than a boolean so the reason
-   * the copy differs is readable here, without opening the call site.
-   */
   entryPoint: 'workflow-card' | 'first-step'
 }
 
-/**
- * Confirms deleting a form's entire workflow.
- *
- * Shown from two places that mean the same thing: the workflow card's own
- * delete button, and the delete button on step 1. A workflow without its first
- * step has no entry point, so deleting step 1 is deleting the workflow, and
- * offering two different modals for one outcome would suggest otherwise.
- *
- * One modal, but it speaks two ways. Entering from step 1 says so in the title,
- * since the surprise to head off is that a step delete removed everything;
- * entering from the card needs no such explanation, because the button already
- * said workflow. The consequences below the title are identical either way.
- *
- * Both of those assume the form is closed. Deleting the workflow while
- * respondents may be part-way through it is refused by the API, so when the
- * form is open the modal's job is not to warn but to send the admin to the one
- * place they can do something about it. That state reads the same from either
- * entry point: it is about the form's status, not about what was clicked.
- */
+/** Resolve authentication before collapsing all respondents into one form. */
 export const DeleteWorkflowModal = ({
   isOpen,
   onClose,
@@ -68,94 +51,236 @@ export const DeleteWorkflowModal = ({
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { formId } = useParams()
-  const { data: form } = useAdminForm()
+  const { data: loadedForm } = useAdminForm()
+  const [baselineForm, setBaselineForm] = useState(loadedForm)
+  const wasOpen = useRef(false)
+  useEffect(() => {
+    if (isOpen && !wasOpen.current) setBaselineForm(loadedForm)
+    wasOpen.current = isOpen
+  }, [isOpen, loadedForm])
+  const form =
+    baselineForm?.responseMode === FormResponseMode.Multirespondent
+      ? baselineForm
+      : undefined
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
   const { deleteWorkflowMutation } = useWorkflowMutations()
-
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
     md: 'md',
   })
-
-  // Chakra's focus lock takes the first tabbable element when it is not told
-  // otherwise, and that is the close button, since it is ModalContent's first
-  // child regardless of sitting in the top right corner.
-  //
-  // Focus goes to the dialog rather than to any of the buttons. Our Button and
-  // CloseButton themes paint `_focus` rather than `_focusVisible`, so a
-  // programmatically focused button shows its ring even though the admin
-  // opened the modal by clicking, and a ring sitting on an action on open reads
-  // as though something has already been chosen. The dialog carries no focus
-  // style, so nothing lights up, focus is still inside the lock, and screen
-  // readers announce the title and the consequences from role and
-  // aria-describedby.
   const dialogRef = useRef<HTMLDivElement>(null)
-
+  const options = form ? getWorkflowAuthOptions(form) : []
+  const providers = [...new Set(options.map((option) => option.authType))]
+  const needsPicker = providers.length > 1 || options.length > 1
+  const [panel, setPanel] = useState(0)
+  const [selectedProvider, setSelectedProvider] = useState<
+    FormAuthType.MyInfo | FormAuthType.CP
+  >()
+  const [selectedEsrvcId, setSelectedEsrvcId] = useState<string>()
+  useEffect(() => {
+    if (!isOpen) return
+    setPanel(0)
+    setSelectedProvider(undefined)
+    setSelectedEsrvcId(undefined)
+  }, [isOpen])
+  const retainedProvider =
+    selectedProvider ?? (providers.length === 1 ? providers[0] : undefined)
+  const cpOptions = options.filter(
+    (option) => option.authType === FormAuthType.CP,
+  )
+  const retainedEsrvcId =
+    selectedEsrvcId ??
+    (cpOptions.length === 1 ? cpOptions[0].esrvcId : undefined)
+  const selectionReady =
+    (providers.length === 0 || retainedProvider !== undefined) &&
+    (retainedProvider !== FormAuthType.CP || retainedEsrvcId !== undefined)
+  const deletedFields =
+    form?.form_fields.filter((field) => {
+      const provider = getFieldSourceProvider(field)
+      return provider && provider !== retainedProvider
+    }) ?? []
+  const rules = form
+    ? getAffectedAuthFieldRules(
+        form,
+        deletedFields.map((field) => field._id),
+      )
+    : []
+  const resetRestrictions =
+    form &&
+    (retainedProvider ?? FormAuthType.NIL) !==
+      (form.authType === FormAuthType.SP ? FormAuthType.MyInfo : form.authType)
   const isFormOpen = form?.status === FormStatus.Public
-  // Step 1 then fills in every field. The API refuses the same delete.
-  const loginError = isFormOpen ? undefined : getDeleteLoginError(form)
-
-  // Full literal keys rather than an interpolated path: i18next types its keys
-  // off string literals, and building the path up would drop that checking.
-  const copyKey = isFormOpen
-    ? 'features.adminForm.sidebar.workflow.conditionalRouting.modals.closeFormFirst'
-    : entryPoint === 'first-step'
-      ? 'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteFirstStep'
-      : 'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteWorkflow'
-
-  const copy = t(copyKey, { returnObjects: true })
-
-  const handleGoToSettings = useCallback(() => {
-    navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_SETTINGS_SUBROUTE}`)
-  }, [navigate, formId])
-
-  const handleDelete = useCallback(() => {
-    // Set here rather than in onSuccess: this component is unmounted by the
-    // time that fires, since the card it belongs to is gone with the workflow.
-    setToInactive()
-    return deleteWorkflowMutation.mutate(undefined, { onSuccess: onClose })
-  }, [setToInactive, deleteWorkflowMutation, onClose])
-
   const isLoading = deleteWorkflowMutation.isLoading
-
+  const showPicker = !isFormOpen && needsPicker && panel === 0
+  const copy = t(
+    isFormOpen
+      ? 'features.adminForm.sidebar.workflow.conditionalRouting.modals.closeFormFirst'
+      : entryPoint === 'first-step'
+        ? 'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteFirstStep'
+        : 'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteWorkflow',
+    { returnObjects: true },
+  )
+  const close = () => {
+    if (!isLoading) onClose()
+  }
+  const handleDelete = () => {
+    if (!selectionReady || isLoading) return
+    deleteWorkflowMutation.mutate(
+      {
+        ...(retainedProvider &&
+        !(form?.authType === FormAuthType.SP && providers.length === 1)
+          ? { retained_auth_type: retainedProvider }
+          : {}),
+        ...(retainedProvider === FormAuthType.CP
+          ? { retained_esrvc_id: retainedEsrvcId }
+          : {}),
+        expected_last_modified: form?.lastModified,
+        delete_auth_field_ids: deletedFields.map((field) => field._id),
+      },
+      {
+        onSuccess: () => {
+          setToInactive()
+          onClose()
+        },
+      },
+    )
+  }
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={close}
       size={modalSize}
       closeOnOverlayClick={!isLoading}
+      closeOnEsc={!isLoading}
       initialFocusRef={dialogRef}
+      scrollBehavior="inside"
     >
       <ModalOverlay />
       <ModalContent ref={dialogRef}>
         <ModalCloseButton isDisabled={isLoading} />
-        <ModalHeader color="secondary.700">{copy.title}</ModalHeader>
-        <ModalBody whiteSpace="pre-wrap">
-          {/* The two delete states list their consequences; closeFormFirst has
-              a single sentence, and one sentence set as a lone bullet reads as
-              a list that lost its other items. Discriminating on the shape of
-              the copy keeps that decision with the copy itself. */}
-          {Array.isArray(copy.description) ? (
-            <UnorderedList styleType="disc" spacing={2}>
-              {copy.description.map((consequence) => (
-                <ListItem key={consequence}>
-                  <Text textStyle="body-2" color="secondary.500">
-                    {consequence}
+        <ModalHeader color="secondary.700">
+          {showPicker ? 'Choose authentication to keep' : copy.title}
+        </ModalHeader>
+        <ModalBody>
+          <Stack spacing="1rem">
+            {!isFormOpen && needsPicker ? (
+              <ProgressIndicator numIndicators={2} currActiveIdx={panel} />
+            ) : null}
+            {showPicker ? (
+              <>
+                <Text>
+                  Your form will have one respondent after deleting the
+                  workflow. Choose which authentication it should keep.
+                </Text>
+                {providers.length > 1 ? (
+                  <Radio.RadioGroup
+                    value={retainedProvider ?? ''}
+                    onChange={(value: FormAuthType.MyInfo | FormAuthType.CP) =>
+                      setSelectedProvider(value)
+                    }
+                  >
+                    {providers.map((provider) => (
+                      <Radio
+                        key={provider}
+                        value={provider}
+                        allowDeselect={false}
+                      >
+                        {provider === FormAuthType.CP ? 'Corppass' : 'Singpass'}
+                      </Radio>
+                    ))}
+                  </Radio.RadioGroup>
+                ) : (
+                  <Text>Keep Corppass authentication.</Text>
+                )}
+                {retainedProvider === FormAuthType.CP &&
+                cpOptions.length > 1 ? (
+                  <Box>
+                    <Text mb="0.75rem">
+                      Choose the Corppass e-service ID to keep.
+                    </Text>
+                    <Radio.RadioGroup
+                      value={
+                        selectedEsrvcId === ''
+                          ? '__empty-esrvc-id__'
+                          : (selectedEsrvcId ?? '')
+                      }
+                      onChange={(value) =>
+                        setSelectedEsrvcId(
+                          value === '__empty-esrvc-id__' ? '' : value,
+                        )
+                      }
+                    >
+                      {cpOptions.map((option) => (
+                        <Radio
+                          key={option.esrvcId}
+                          value={option.esrvcId || '__empty-esrvc-id__'}
+                          allowDeselect={false}
+                        >
+                          {option.esrvcId || 'No e-service ID configured'}
+                        </Radio>
+                      ))}
+                    </Radio.RadioGroup>
+                  </Box>
+                ) : null}
+              </>
+            ) : isFormOpen ? (
+              <Text>{copy.description}</Text>
+            ) : (
+              <>
+                {entryPoint === 'first-step' ? (
+                  <Text>Deleting Step 1 deletes the entire workflow.</Text>
+                ) : null}
+                <Text>
+                  All workflow steps, approvals and workflow routing will be
+                  removed. The form will keep{' '}
+                  {retainedProvider === FormAuthType.CP
+                    ? 'Corppass'
+                    : retainedProvider === FormAuthType.MyInfo
+                      ? 'Singpass'
+                      : 'no'}{' '}
+                  authentication.
+                </Text>
+                {deletedFields.length ? (
+                  <>
+                    <Text textStyle="subhead-1">
+                      These fields will be deleted from your form:
+                    </Text>
+                    {deletedFields.map((field) => (
+                      <Text key={field._id}>{field.title}</Text>
+                    ))}
+                  </>
+                ) : (
+                  <Text>All form fields will be kept.</Text>
+                )}
+                {rules.length ? (
+                  <>
+                    <Text>
+                      References to these fields will also be removed from:
+                    </Text>
+                    {rules.map((rule) => (
+                      <Text key={rule}>{rule}</Text>
+                    ))}
+                  </>
+                ) : null}
+                {resetRestrictions ? (
+                  <Text>
+                    The original Step 1 eligibility list and one-response limit
+                    will be reset because its authentication provider is
+                    changing.
                   </Text>
-                </ListItem>
-              ))}
-            </UnorderedList>
-          ) : (
-            <Text textStyle="body-2" color="secondary.500">
-              {copy.description}
-            </Text>
-          )}
-          {loginError ? (
-            <InlineMessage variant="error" mt="1rem">
-              {loginError}
-            </InlineMessage>
-          ) : null}
+                ) : null}
+                <Text>Historical responses will not be deleted.</Text>
+              </>
+            )}
+            {deleteWorkflowMutation.isError ? (
+              <InlineMessage variant="error">
+                {deleteWorkflowMutation.error instanceof Error
+                  ? deleteWorkflowMutation.error.message
+                  : 'The workflow could not be deleted. Your changes have not been applied.'}
+              </InlineMessage>
+            ) : null}
+          </Stack>
         </ModalBody>
         <ModalFooter>
           <Stack
@@ -167,18 +292,40 @@ export const DeleteWorkflowModal = ({
               variant="clear"
               colorScheme="secondary"
               isDisabled={isLoading}
-              onClick={onClose}
+              onClick={
+                !showPicker && needsPicker && !isFormOpen
+                  ? () => setPanel(0)
+                  : close
+              }
             >
-              {copy.cancel}
+              {!showPicker && needsPicker && !isFormOpen ? 'Back' : copy.cancel}
             </Button>
             {isFormOpen ? (
-              <Button onClick={handleGoToSettings}>{copy.confirm}</Button>
+              <Button
+                onClick={() =>
+                  navigate(
+                    `${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_SETTINGS_SUBROUTE}`,
+                  )
+                }
+              >
+                {copy.confirm}
+              </Button>
+            ) : showPicker ? (
+              <Button
+                onClick={() => {
+                  setPanel(1)
+                  dialogRef.current?.focus()
+                }}
+                isDisabled={!selectionReady}
+              >
+                Next
+              </Button>
             ) : (
               <Button
                 colorScheme="danger"
                 onClick={handleDelete}
                 isLoading={isLoading}
-                isDisabled={!!loginError}
+                isDisabled={!selectionReady}
               >
                 {copy.confirm}
               </Button>

@@ -10,8 +10,8 @@ import {
   TabPanel,
   TabPanels,
   Tabs,
-  Text,
 } from '@chakra-ui/react'
+import isEqual from 'lodash/isEqual'
 
 import {
   FirstStepLoginInput,
@@ -25,7 +25,12 @@ import {
 import InlineMessage from '~components/InlineMessage'
 import { Tab } from '~components/Tabs'
 
-import { adminFormKeys } from '~features/admin-form/common/queries'
+import { getAdminFormView } from '~features/admin-form/common/AdminViewFormService'
+import { useRegisterNavigationSave } from '~features/admin-form/common/navigationSave'
+import {
+  adminFormKeys,
+  useAdminForm,
+} from '~features/admin-form/common/queries'
 import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
 import { saveStepOneLoginRestrictions } from '~features/admin-form/settings/components/AuthSettingsSection/StepOneLoginRestrictions'
 import { adminFormSettingsKeys } from '~features/admin-form/settings/queries'
@@ -50,7 +55,6 @@ import { SpotlightGroup } from '../../Spotlight'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { ApprovalsBlock } from './ApprovalsBlock'
-import { EditStepBlockContainer } from './EditStepBlockContainer'
 import { GuidedActionGroup } from './GuidedActionGroup'
 import { LoginBlock } from './LoginBlock'
 import { QuestionsBlock } from './QuestionsBlock'
@@ -135,6 +139,12 @@ export const buildWorkflowStep = (
   if (isFirstStep) {
     return {
       _id: inputs._id,
+      ...(inputs.expected_last_modified
+        ? { expected_last_modified: inputs.expected_last_modified }
+        : {}),
+      ...(inputs.delete_auth_field_ids?.length
+        ? { delete_auth_field_ids: inputs.delete_auth_field_ids }
+        : {}),
       workflow_type: WorkflowType.Static,
       edit: inputs.edit,
       approval_field: inputs.approval_field,
@@ -153,6 +163,12 @@ export const buildWorkflowStep = (
     auth?: FormWorkflowStepAuth
   } = {
     _id: inputs._id,
+    ...(inputs.expected_last_modified
+      ? { expected_last_modified: inputs.expected_last_modified }
+      : {}),
+    ...(inputs.delete_auth_field_ids?.length
+      ? { delete_auth_field_ids: inputs.delete_auth_field_ids }
+      : {}),
     workflow_type: inputs.workflow_type,
     edit: inputs.edit,
     approval_field: inputs.approval_field,
@@ -232,6 +248,8 @@ export const EditStepBlock = ({
   const [saveError, setSaveError] = useState('')
   const { formId } = useParams()
   const queryClient = useQueryClient()
+  const { data: originalForm } = useAdminForm()
+  const [destructiveSaveBaseline] = useState(originalForm)
   const _isLoading = isLoading || isUserLoading || isSavingRestrictions
 
   const wrapperRef = useRef<HTMLDivElement | null>(null)
@@ -250,6 +268,10 @@ export const EditStepBlock = ({
   const { isDirty } = formMethods.formState
 
   const [activeTab, setActiveTab] = useState(0)
+  useEffect(() => setActiveTab(0), [stepNumber])
+
+  const saveSucceeded = useRef(false)
+  const pendingNavigationSave = useRef<Promise<boolean> | null>(null)
 
   const handleSubmit = formMethods.handleSubmit(
     async (inputs: EditStepInputs) => {
@@ -268,6 +290,35 @@ export const EditStepBlock = ({
       setSaveError('')
       let didSaveStep = false
       try {
+        if (inputs.delete_auth_field_ids?.length) {
+          if (!formId || !destructiveSaveBaseline)
+            throw new Error(
+              'Reload the workflow before confirming field deletion.',
+            )
+          const latest = await getAdminFormView(formId)
+          if (
+            !('workflow' in latest) ||
+            !('workflow' in destructiveSaveBaseline)
+          )
+            throw new Error(
+              'This form changed. Reload the workflow before deleting fields.',
+            )
+          const reviewedKeys = [
+            'authType',
+            'esrvcId',
+            'workflow',
+            'form_fields',
+            'form_logics',
+          ] as const
+          if (
+            reviewedKeys.some(
+              (key) => !isEqual(latest[key], destructiveSaveBaseline[key]),
+            )
+          )
+            throw new Error(
+              'This form changed while you were editing. Cancel and reopen the step to review the fields and rules before deleting them.',
+            )
+        }
         await onSubmit(step, async () => {
           didSaveStep = true
           if (
@@ -287,6 +338,7 @@ export const EditStepBlock = ({
             inputs.first_step_restrictions.value,
           )
         })
+        saveSucceeded.current = true
       } catch (error) {
         cancelPendingSwitch()
         setSaveError(
@@ -311,6 +363,25 @@ export const EditStepBlock = ({
       cancelPendingSwitch()
     },
   )
+
+  const saveForNavigation = (): Promise<boolean> => {
+    if (pendingNavigationSave.current) return pendingNavigationSave.current
+    if (_isLoading) return Promise.resolve(false)
+    saveSucceeded.current = false
+    pendingNavigationSave.current = handleSubmit()
+      .then(() => saveSucceeded.current)
+      .finally(() => {
+        pendingNavigationSave.current = null
+      })
+    return pendingNavigationSave.current
+  }
+
+  useRegisterNavigationSave({
+    enabled: isLoginShown,
+    isDirty,
+    isSaving: _isLoading,
+    save: saveForNavigation,
+  })
 
   const hasSubmittedForPendingSwitch = useRef(false)
 
@@ -346,7 +417,7 @@ export const EditStepBlock = ({
       <Box px={{ base: '1.5rem', md: '2rem' }}>
         <TabList mx="-0.25rem" w="100%">
           <Tab>Fields to fill</Tab>
-          <Tab>Approvals</Tab>
+          {!isFirstStep && <Tab>Approvals</Tab>}
           <Tab>Singpass</Tab>
         </TabList>
         <Divider w="auto" mx={{ base: '-1.5rem', md: '-2rem' }} />
@@ -355,17 +426,11 @@ export const EditStepBlock = ({
         <TabPanel px="0" pt="1.5rem">
           {questionsSection}
         </TabPanel>
-        <TabPanel px="0" pt="1.5rem">
-          {isFirstStep ? (
-            <EditStepBlockContainer>
-              <Text color="secondary.400">
-                Only Step 2 onwards can approve a submission.
-              </Text>
-            </EditStepBlockContainer>
-          ) : (
-            approvalsSection
-          )}
-        </TabPanel>
+        {!isFirstStep && (
+          <TabPanel px="0" pt="1.5rem">
+            {approvalsSection}
+          </TabPanel>
+        )}
         <TabPanel px="0" pt="1.5rem">
           {loginSection}
         </TabPanel>
@@ -422,7 +487,7 @@ export const EditStepBlock = ({
     }
 
     hasSubmittedForPendingSwitch.current = true
-    handleSubmit()
+    void saveForNavigation()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingSwitchTo])
 
@@ -482,12 +547,12 @@ export const EditStepBlock = ({
             onBack={reveal.goBack}
             onCancel={setToInactive}
             onContinue={reveal.advance}
-            onDone={handleSubmit}
+            onDone={() => void saveForNavigation()}
           />
         ) : (
           <SaveActionGroup
             isLoading={_isLoading}
-            handleSubmit={handleSubmit}
+            handleSubmit={() => void saveForNavigation()}
             handleDelete={
               !isFirstStep || isRedesign ? handleOpenDeleteModal : undefined
             }

@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Text } from '@chakra-ui/react'
 
 import {
+  AdminMultirespondentFormDto,
   FirstStepLoginInput,
   FormAuthType,
   FormResponseMode,
@@ -11,7 +12,6 @@ import {
   MultirespondentFormSettings,
   StepLoginAuthType,
 } from 'formsg-shared/types'
-import { getStepFieldsNeedingLogin } from 'formsg-shared/utils/step-login'
 
 import { textStyles } from '~theme/textStyles'
 
@@ -24,9 +24,12 @@ import {
 } from '~features/admin-form/settings/components/AuthSettingsSection/StepOneLoginRestrictions'
 import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 
-import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { EditStepInputs } from '../../../types'
+import {
+  getAffectedAuthFieldRules,
+  getAuthSwitchConsequences,
+} from '../../../utils/authFieldRemoval'
 import { useIsSpotlightActiveSection } from '../../Spotlight'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
@@ -58,7 +61,7 @@ export const LoginBlock = ({
   const isRedesign = useIsWorkflowBuilderRedesign()
   const isGuidedSection = useIsSpotlightActiveSection()
   const { data: form } = useAdminForm()
-  const { formFields = [] } = useAdminFormWorkflow()
+  const confirmationBaseline = useRef(form?.lastModified)
   const { watch, setValue } = formMethods
   const [pendingAuthType, setPendingAuthType] = useState<StepLoginAuthType>()
   const [hasUnassignedFields, setHasUnassignedFields] = useState(false)
@@ -99,39 +102,55 @@ export const LoginBlock = ({
     }
   }
 
-  const incompatibleFields =
+  const consequences =
     pendingAuthType === undefined
-      ? []
-      : getStepFieldsNeedingLogin(
-          formFields.filter((field) => pickedFieldIds.includes(field._id)),
+      ? { deletedFields: [], unassignedFields: [] }
+      : getAuthSwitchConsequences(
+          form as AdminMultirespondentFormDto,
+          stepNumber,
           pendingAuthType,
+          pickedFieldIds,
         )
+  const isDeletingFields = consequences.deletedFields.length > 0
+  const confirmationFields = isDeletingFields
+    ? consequences.deletedFields
+    : consequences.unassignedFields
   const handleAuthTypeChange = (next: StepLoginAuthType) => {
     if (isFormPublic || isLoading || next === login.auth_type) return
-    const stepFields = formFields.filter((field) =>
-      pickedFieldIds.includes(field._id),
+    const proposed = getAuthSwitchConsequences(
+      form as AdminMultirespondentFormDto,
+      stepNumber,
+      next,
+      pickedFieldIds,
     )
-    if (getStepFieldsNeedingLogin(stepFields, next).length > 0) {
+    if (proposed.deletedFields.length || proposed.unassignedFields.length) {
       setPendingAuthType(next)
       return
     }
+    setValue('delete_auth_field_ids', [], { shouldDirty: true })
+    setValue('expected_last_modified', undefined, { shouldDirty: true })
     write({ auth_type: next, esrvc_id: login.esrvc_id })
   }
   const confirmSwitch = () => {
     if (pendingAuthType === undefined || isFormPublic || isLoading) return
     const incompatibleIds = new Set(
-      incompatibleFields.map((field) => field._id),
+      consequences.unassignedFields.map((field) => field._id),
     )
     setValue(
       FIELDS_TO_EDIT_NAME,
       pickedFieldIds.filter((id) => !incompatibleIds.has(id)),
-      {
-        shouldDirty: true,
-        shouldValidate: true,
-      },
+      { shouldDirty: true, shouldValidate: true },
     )
+    setValue(
+      'delete_auth_field_ids',
+      consequences.deletedFields.map((field) => field._id),
+      { shouldDirty: true },
+    )
+    setValue('expected_last_modified', confirmationBaseline.current, {
+      shouldDirty: true,
+    })
     write({ auth_type: pendingAuthType, esrvc_id: login.esrvc_id })
-    setHasUnassignedFields(incompatibleFields.length > 0)
+    setHasUnassignedFields(consequences.unassignedFields.length > 0)
     setPendingAuthType(undefined)
   }
 
@@ -140,7 +159,12 @@ export const LoginBlock = ({
       <AuthSwitchConfirmation
         currentAuthType={login.auth_type}
         nextAuthType={pendingAuthType}
-        fields={incompatibleFields}
+        fields={confirmationFields}
+        deleteFields={isDeletingFields}
+        affectedRules={getAffectedAuthFieldRules(
+          form as AdminMultirespondentFormDto,
+          consequences.deletedFields.map((field) => field._id),
+        )}
         onClose={() => setPendingAuthType(undefined)}
         onConfirm={confirmSwitch}
       />
@@ -162,8 +186,8 @@ export const LoginBlock = ({
       />
       {hasUnassignedFields ? (
         <Text textStyle="body-2" color="secondary.400">
-          Incompatible fields are now unassigned in this draft. Assign them to a
-          matching step or delete them before publishing.
+          Incompatible fields are unassigned in this draft. Confirmed field
+          deletions apply only when you save or navigate away.
         </Text>
       ) : null}
       {isFirstStep && login.auth_type !== FormAuthType.NIL ? (

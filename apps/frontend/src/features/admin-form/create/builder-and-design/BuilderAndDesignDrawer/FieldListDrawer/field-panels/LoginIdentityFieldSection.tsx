@@ -11,7 +11,6 @@ import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 
-import { useIsMrfStepLoginEnabled } from '~features/admin-form/create/workflow/hooks/useIsMrfStepLoginEnabled'
 import { SubmitterIdConversionModal } from '~features/admin-form/settings/components/AuthSettingsSection/SubmitterIdConversionModal'
 import { getNextQuestionNumber } from '~features/form/utils'
 
@@ -69,8 +68,6 @@ export const LoginIdentityMessage = ({
   const { data: form } = useCreateTabForm()
   const { isAtLimit } = useLoginFieldLimit()
   const { offersIdentityAttr } = useFormUsesLogin()
-  const canEnableLogin = useIsMrfStepLoginEnabled()
-  if (canEnableLogin && !isAtLimit) return null
   if (!form) return null
 
   const isLoginMissing = !offersIdentityAttr(attrs[0])
@@ -120,7 +117,6 @@ export const LoginIdentityFieldSection = ({
   const { data: form, isLoading } = useCreateTabForm()
   const { isAtLimit } = useLoginFieldLimit()
 
-  const canEnableLogin = useIsMrfStepLoginEnabled()
   const filteredAttrs = useOfferedLoginIdentityAttrs(attrs, searchValue)
   const { offersIdentityAttr } = useFormUsesLogin()
   if (!form || filteredAttrs.length === 0) return null
@@ -130,10 +126,7 @@ export const LoginIdentityFieldSection = ({
   const mustCloseToConvert =
     isCollectedBySettings && form.status === FormStatus.Public
   const isSectionDisabled =
-    isLoading ||
-    (!canEnableLogin && isLoginMissing) ||
-    isAtLimit ||
-    mustCloseToConvert
+    isLoading || isLoginMissing || isAtLimit || mustCloseToConvert
 
   const options = filteredAttrs.map(({ attr, originalIndex }) => (
     <DraggableLoginIdentityFieldListOption

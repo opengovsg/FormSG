@@ -1906,7 +1906,7 @@ export const handleDeleteWorkflow: ControllerHandler<
     )
     .andThen((retrievedForm) => {
       hasUsedGuidedMode = guidedModeOf(retrievedForm)
-      return AdminFormService.deleteFormWorkflow(retrievedForm)
+      return AdminFormService.deleteFormWorkflow(retrievedForm, req.body ?? {})
     })
     .map((updatedWorkflow) => {
       if (hasUsedGuidedMode) {
@@ -1963,7 +1963,11 @@ export const handleDeleteWorkflowStep: ControllerHandler<
     )
     .andThen((retrievedForm) => {
       hasUsedGuidedMode = guidedModeOf(retrievedForm)
-      return AdminFormService.deleteFormWorkflowStep(retrievedForm, stepNumber)
+      return AdminFormService.deleteFormWorkflowStep(
+        retrievedForm,
+        stepNumber,
+        req.body ?? {},
+      )
     })
     .map((updatedWorkflow) => {
       if (hasUsedGuidedMode) {

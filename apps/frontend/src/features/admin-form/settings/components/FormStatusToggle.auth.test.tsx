@@ -81,10 +81,11 @@ beforeEach(() => {
     ],
   }
 })
-it('blocks publication of an unresolved authentication field and names the field', () => {
+it('blocks publication when no step supplies the required provider and names the field', () => {
+  state.form.authType = FormAuthType.NIL
   setup()
   expect(screen.getByRole('checkbox')).toBeDisabled()
-  expect(screen.getByText(/Company UEN.*must be assigned/)).toBeInTheDocument()
+  expect(screen.getAllByText(/Company UEN.*Corppass/).length).toBeGreaterThan(0)
   expect(screen.queryByText('Activation confirmation')).not.toBeInTheDocument()
   expect(state.mutate).not.toHaveBeenCalled()
 })
@@ -120,4 +121,38 @@ it('allows closing while the form cache still has the previous private draft', (
   expect(toggle).not.toBeDisabled()
   fireEvent.click(toggle)
   expect(state.mutate).toHaveBeenCalledWith(FormStatus.Private)
+})
+
+it('allows publication with an unassigned authentication field when a matching provider exists', () => {
+  setup()
+  const toggle = screen.getByRole('checkbox')
+  expect(toggle).not.toBeDisabled()
+  expect(
+    screen.queryByText('Finish authentication setup before publishing'),
+  ).not.toBeInTheDocument()
+  fireEvent.click(toggle)
+  expect(screen.getByText('Activation confirmation')).toBeInTheDocument()
+})
+it('allows unassigned fields supplied by a later step with a different provider from Step 1', () => {
+  state.form.authType = FormAuthType.MyInfo
+  state.form.workflow = [
+    {
+      _id: 'requester',
+      workflow_type: WorkflowType.Static,
+      edit: [],
+      emails: [],
+    },
+    {
+      _id: 'company',
+      workflow_type: WorkflowType.Static,
+      edit: [],
+      emails: ['officer@example.gov.sg'],
+      auth: { auth_type: FormAuthType.CP, esrvc_id: 'service' },
+    },
+  ]
+  setup()
+  expect(screen.getByRole('checkbox')).not.toBeDisabled()
+  expect(
+    screen.queryByText('Finish authentication setup before publishing'),
+  ).not.toBeInTheDocument()
 })

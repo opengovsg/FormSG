@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 import { Box, Stack, Text } from '@chakra-ui/react'
@@ -18,12 +18,17 @@ import {
   getStepFieldsNeedingLogin,
 } from 'formsg-shared/utils/step-login'
 
+import { useToast } from '~hooks/useToast'
 import InlineMessage from '~components/InlineMessage'
 
 import { getAdminFormView } from '~features/admin-form/common/AdminViewFormService'
 import { adminFormKeys } from '~features/admin-form/common/queries'
 import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
 import { updateWorkflowStep } from '~features/admin-form/create/workflow/FormWorkflowService'
+import {
+  getAffectedAuthFieldRules,
+  getAuthSwitchConsequences,
+} from '~features/admin-form/create/workflow/utils/authFieldRemoval'
 
 import { adminFormSettingsKeys } from '../../queries'
 
@@ -44,6 +49,7 @@ interface StepAuthSettingsEditorProps {
   onClose: () => void
   onDirtyChange: (dirty: boolean) => void
   onSavingChange: (saving: boolean) => void
+  onSaveReady?: (save: (() => Promise<boolean>) | null) => void
 }
 
 /** The editor exists only while its card is open, so Cancel discards all drafts. */
@@ -55,9 +61,11 @@ export const StepAuthSettingsEditor = ({
   onClose,
   onDirtyChange,
   onSavingChange,
+  onSaveReady,
 }: StepAuthSettingsEditorProps): JSX.Element => {
   const { formId } = useParams()
   const queryClient = useQueryClient()
+  const toast = useToast({ status: 'success', isClosable: true })
   const originalAuth = getStepAuthType(settings, form.workflow, stepIndex)
   const [authType, setAuthType] = useState<StepLoginAuthType>(
     originalAuth === FormAuthType.SP ? FormAuthType.MyInfo : originalAuth,
@@ -67,6 +75,7 @@ export const StepAuthSettingsEditor = ({
   )
   const [baseline] = useState(settings)
   const [baselineStep] = useState(step)
+  const [baselineForm] = useState(form)
   const [draftFieldIds, setDraftFieldIds] = useState(step.edit)
   const [pendingAuthType, setPendingAuthType] = useState<StepLoginAuthType>()
   const [restrictions, setRestrictions] = useState(() =>
@@ -74,6 +83,7 @@ export const StepAuthSettingsEditor = ({
   )
   const [isParsing, setIsParsing] = useState(false)
   const [error, setError] = useState('')
+  const [deletedFieldIds, setDeletedFieldIds] = useState<string[]>([])
   const [hasLoginChanges, setHasLoginChanges] = useState(false)
   const isPublic = form.status === FormStatus.Public
 
@@ -102,6 +112,17 @@ export const StepAuthSettingsEditor = ({
           'This step has changed since you opened it. Cancel and reopen the card to review the latest settings.',
         )
       }
+      if (
+        deletedFieldIds.length &&
+        (!isEqual(latest.form_fields, baselineForm.form_fields) ||
+          !isEqual(latest.form_logics, baselineForm.form_logics) ||
+          !isEqual(latest.workflow, baselineForm.workflow) ||
+          latest.authType !== baselineForm.authType ||
+          latest.esrvcId !== baselineForm.esrvcId)
+      )
+        throw new Error(
+          'This form changed after you reviewed the fields to delete. Cancel and reopen the card to review the latest changes.',
+        )
       const fields = latest.form_fields.filter((field) =>
         draftFieldIds.includes(field._id),
       )
@@ -117,6 +138,8 @@ export const StepAuthSettingsEditor = ({
           stepIndex,
           stepIndex === 0
             ? {
+                delete_auth_field_ids: deletedFieldIds,
+                expected_last_modified: baselineForm.lastModified,
                 _id: latestStep._id,
                 workflow_type: WorkflowType.Static,
                 emails: [],
@@ -136,6 +159,8 @@ export const StepAuthSettingsEditor = ({
               }
             : {
                 ...latestStep,
+                delete_auth_field_ids: deletedFieldIds,
+                expected_last_modified: baselineForm.lastModified,
                 edit: draftFieldIds,
                 auth:
                   authType === FormAuthType.NIL
@@ -171,6 +196,7 @@ export const StepAuthSettingsEditor = ({
     },
     {
       onSuccess: () => {
+        toast({ description: 'Authentication settings saved.' })
         onDirtyChange(false)
         onClose()
       },
@@ -185,29 +211,41 @@ export const StepAuthSettingsEditor = ({
     setHasLoginChanges(true)
     onDirtyChange(true)
   }
-  const pendingFields =
+  const consequences =
     pendingAuthType === undefined
-      ? []
-      : getStepFieldsNeedingLogin(
-          form.form_fields.filter((field) => draftFieldIds.includes(field._id)),
+      ? { deletedFields: [], unassignedFields: [] }
+      : getAuthSwitchConsequences(
+          form,
+          stepIndex,
           pendingAuthType,
+          draftFieldIds,
         )
+  const isDeletingFields = consequences.deletedFields.length > 0
+  const pendingFields = isDeletingFields
+    ? consequences.deletedFields
+    : consequences.unassignedFields
   const changeAuth = (next: StepLoginAuthType) => {
     if (isPublic || isLoading || next === authType) return
-    const incompatible = getStepFieldsNeedingLogin(
-      form.form_fields.filter((field) => draftFieldIds.includes(field._id)),
+    const proposed = getAuthSwitchConsequences(
+      form,
+      stepIndex,
       next,
+      draftFieldIds,
     )
-    if (incompatible.length) {
+    if (proposed.deletedFields.length || proposed.unassignedFields.length) {
       setPendingAuthType(next)
       return
     }
+    setDeletedFieldIds([])
     applyAuth(next)
   }
   const confirmSwitch = () => {
     if (pendingAuthType === undefined || isPublic || isLoading) return
-    const incompatibleIds = new Set(pendingFields.map((field) => field._id))
+    const incompatibleIds = new Set(
+      consequences.unassignedFields.map((field) => field._id),
+    )
     setDraftFieldIds((ids) => ids.filter((id) => !incompatibleIds.has(id)))
+    setDeletedFieldIds(consequences.deletedFields.map((field) => field._id))
     applyAuth(pendingAuthType)
     setPendingAuthType(undefined)
   }
@@ -219,12 +257,58 @@ export const StepAuthSettingsEditor = ({
     setError('')
   }
 
+  const inFlightSave = useRef<Promise<boolean> | null>(null)
+  const save = async (): Promise<boolean> => {
+    if (inFlightSave.current) return inFlightSave.current
+    if (pendingAuthType !== undefined) {
+      setError(
+        'Confirm or cancel the authentication change before leaving this card.',
+      )
+      return false
+    }
+    if (
+      isPublic ||
+      isParsing ||
+      (authType === FormAuthType.CP && hasEsrvcIdWhitespace(esrvcId))
+    ) {
+      setError(
+        isParsing
+          ? 'Wait for the eligible respondent list to finish checking.'
+          : 'Check the authentication settings before saving.',
+      )
+      return false
+    }
+    setError('')
+    onSavingChange(true)
+    const request = saveMutation
+      .mutateAsync()
+      .then(() => true)
+      .catch(() => false)
+    inFlightSave.current = request
+    try {
+      return await request
+    } finally {
+      inFlightSave.current = null
+    }
+  }
+  const saveRef = useRef(save)
+  saveRef.current = save
+  useEffect(() => {
+    onSaveReady?.(() => saveRef.current())
+    return () => onSaveReady?.(null)
+  }, [onSaveReady])
+
   return (
     <Stack spacing="0">
       <AuthSwitchConfirmation
         currentAuthType={authType}
         nextAuthType={pendingAuthType}
         fields={pendingFields}
+        deleteFields={isDeletingFields}
+        affectedRules={getAffectedAuthFieldRules(
+          form,
+          consequences.deletedFields.map((field) => field._id),
+        )}
         onClose={() => setPendingAuthType(undefined)}
         onConfirm={confirmSwitch}
       />
@@ -260,8 +344,9 @@ export const StepAuthSettingsEditor = ({
         ) : null}
         {draftFieldIds.length < baselineStep.edit.length ? (
           <Text textStyle="body-2" color="secondary.400">
-            Incompatible fields will be unassigned when you save. Assign them to
-            a matching step or delete them before publishing.
+            {deletedFieldIds.length
+              ? 'Confirmed fields will be deleted from the form when you save or navigate away.'
+              : 'Incompatible fields will be unassigned when you save or navigate away. They remain in the form.'}
           </Text>
         ) : null}
         {error ? (
@@ -281,9 +366,7 @@ export const StepAuthSettingsEditor = ({
             (authType === FormAuthType.CP && hasEsrvcIdWhitespace(esrvcId))
           }
           handleSubmit={() => {
-            setError('')
-            onSavingChange(true)
-            saveMutation.mutate()
+            void save()
           }}
           handleCancel={() => {
             onDirtyChange(false)

@@ -152,7 +152,10 @@ describe('admin-form.step-login', () => {
 
     it('rejects auth when creating the first step', () => {
       const result = update({
-        form: makeForm({ workflow: [] }),
+        form: makeForm({
+          workflow: [],
+          form_fields: FORM_FIELDS.filter(({ _id }) => _id !== UEN_FIELD_ID),
+        }),
         stepNumber: 0,
         next: { auth: SINGPASS },
       })
@@ -173,7 +176,10 @@ describe('admin-form.step-login', () => {
 
     it('allows first_step_login when creating into an empty workflow', () => {
       const result = update({
-        form: makeForm({ workflow: [] }),
+        form: makeForm({
+          workflow: [],
+          form_fields: FORM_FIELDS.filter(({ _id }) => _id !== UEN_FIELD_ID),
+        }),
         stepNumber: 0,
         next: { first_step_login: { auth_type: FormAuthType.MyInfo } },
       })
@@ -399,7 +405,11 @@ describe('admin-form.step-login', () => {
 
     it('maps first_step_login to the form-level login', () => {
       const result = update({
-        form: makeForm({ form_fields: FIELDS_WITHOUT_MYINFO_DATA }),
+        form: makeForm({
+          form_fields: FIELDS_WITHOUT_MYINFO_DATA.filter(
+            ({ _id }) => _id !== NRIC_FIELD_ID,
+          ),
+        }),
         stepNumber: 0,
         next: {
           first_step_login: { auth_type: FormAuthType.CP, esrvc_id: 'ESRVC' },
@@ -425,7 +435,7 @@ describe('admin-form.step-login', () => {
           first_step_login: { auth_type: FormAuthType.NIL },
         },
       })
-      expect(result.isOk()).toBe(true)
+      expect(result.isErr()).toBe(true)
     })
   })
 
@@ -461,7 +471,7 @@ describe('admin-form.step-login', () => {
         step([UEN_FIELD_ID]),
       ])
       expect(result._unsafeUnwrapErr().message).toContain(
-        REMOVE_MYINFO_FIELDS_FIRST,
+        'UEN fields need Corppass login.',
       )
     })
 
@@ -493,7 +503,7 @@ describe('admin-form.step-login', () => {
       expect(result.isOk()).toBe(true)
     })
 
-    it('allows removing Step 1 login while unassigned Myinfo fields remain in the draft', () => {
+    it('rejects removing the final Singpass provider while unassigned fields remain', () => {
       const singpassForm = makeForm({
         authType: FormAuthType.MyInfo,
         form_fields: FORM_FIELDS.filter(({ _id }) => _id === MYINFO_FIELD_ID),
@@ -503,7 +513,7 @@ describe('admin-form.step-login', () => {
         { authType: FormAuthType.NIL },
         [step([]), step([])],
       )
-      expect(result.isOk()).toBe(true)
+      expect(result.isErr()).toBe(true)
     })
   })
 })

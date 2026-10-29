@@ -103,7 +103,6 @@ export const checkFormLoginWrite = (
     isSubmitterIdCollectionEnabled: form.isSubmitterIdCollectionEnabled,
     form_fields: form.form_fields,
     workflow,
-    allowMissingLogin: form.status !== FormStatus.Public,
   })
   if (identityErrors.length > 0) {
     return err(new MalformedParametersError(identityErrors.join(' ')))
@@ -127,7 +126,6 @@ export const checkFormLoginWrite = (
       isSubmitterIdCollectionEnabled: form.isSubmitterIdCollectionEnabled,
       form_fields: form.form_fields,
       workflow,
-      allowIncompleteDraft: form.status !== FormStatus.Public,
     })
     if (loginErrors.length > 0) {
       return err(new MalformedParametersError(loginErrors.join(' ')))
@@ -146,14 +144,22 @@ const toFormLoginUpdate = (
       }
     : undefined
 
+const REQUEST_ONLY_STEP_KEYS = [
+  'auth',
+  'first_step_login',
+  'expected_last_modified',
+  'delete_auth_field_ids',
+] as const
+type RequestOnlyStepKey = (typeof REQUEST_ONLY_STEP_KEYS)[number]
+
 /**
- * The step as it is saved: `first_step_login` is request-only and a null
- * `auth` means no login.
+ * The step as it is saved: `first_step_login`, `expected_last_modified` and
+ * `delete_auth_field_ids` are request-only, and a null `auth` means no login.
  */
 export const toSavedWorkflowStep = <T extends FormWorkflowStepWriteDto>(
   step: T,
-): Omit<T, 'auth' | 'first_step_login'> & { auth?: FormWorkflowStepAuth } => {
-  const saved = omit(step, ['auth', 'first_step_login'])
+): Omit<T, RequestOnlyStepKey> & { auth?: FormWorkflowStepAuth } => {
+  const saved = omit(step, REQUEST_ONLY_STEP_KEYS)
   return step.auth ? { ...saved, auth: step.auth } : saved
 }
 

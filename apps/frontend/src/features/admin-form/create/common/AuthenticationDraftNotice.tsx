@@ -1,4 +1,4 @@
-import { ListItem, Text, UnorderedList } from '@chakra-ui/react'
+import { Box, ListItem, Text, UnorderedList } from '@chakra-ui/react'
 
 import InlineMessage from '~components/InlineMessage'
 
@@ -13,18 +13,20 @@ export const AuthenticationDraftNotice = (): JSX.Element | null => {
       variant="warning"
       mb="1.5rem"
     >
-      <Text textStyle="subhead-2">
-        Finish authentication setup before publishing
-      </Text>
-      <Text textStyle="body-2">
-        You can keep editing this draft. Configure matching authentication for
-        these fields, or delete the unused fields.
-      </Text>
-      <UnorderedList mt="0.5rem" spacing="0.25rem">
-        {errors.map((error) => (
-          <ListItem key={error}>{error}</ListItem>
-        ))}
-      </UnorderedList>
+      <Box minW={0}>
+        <Text textStyle="subhead-2">
+          Finish authentication setup before publishing
+        </Text>
+        <Text textStyle="body-2">
+          Configure matching authentication for these fields, or delete the
+          unused fields.
+        </Text>
+        <UnorderedList mt="0.5rem" spacing="0.25rem">
+          {errors.map((error) => (
+            <ListItem key={error}>{error}</ListItem>
+          ))}
+        </UnorderedList>
+      </Box>
     </InlineMessage>
   )
 }

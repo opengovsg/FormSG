@@ -24,10 +24,12 @@ import { StepAuthSettingsEditor } from './StepAuthSettingsEditor'
 
 const requests = vi.hoisted(() => ({
   update: vi.fn(),
+  toast: vi.fn(),
   form: vi.fn(),
   single: vi.fn(),
   whitelist: vi.fn(),
 }))
+vi.mock('~hooks/useToast', () => ({ useToast: () => requests.toast }))
 vi.mock('~features/admin-form/common/AdminViewFormService', () => ({
   getAdminFormView: requests.form,
 }))
@@ -135,6 +137,7 @@ const setup = (stepIndex = 1, currentForm = form) => {
 
 describe('step authentication drafts', () => {
   beforeEach(() => {
+    requests.toast.mockReset()
     requests.form.mockReset().mockResolvedValue(form)
     requests.update.mockReset().mockResolvedValue(steps)
     requests.single.mockReset().mockResolvedValue(settings)
@@ -160,10 +163,16 @@ describe('step authentication drafts', () => {
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
     expect(requests.update).toHaveBeenCalledWith('form', 1, {
       ...steps[1],
+      delete_auth_field_ids: [],
+      expected_last_modified: undefined,
       auth: { auth_type: FormAuthType.CP, esrvc_id: 'agency-service' },
     })
     expect(requests.single).not.toHaveBeenCalled()
     expect(requests.whitelist).not.toHaveBeenCalled()
+    expect(requests.toast).toHaveBeenCalledTimes(1)
+    expect(requests.toast).toHaveBeenCalledWith({
+      description: 'Authentication settings saved.',
+    })
   })
 
   it('leaves the card open and reports a failed save', async () => {
@@ -172,6 +181,7 @@ describe('step authentication drafts', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Use Corppass' }))
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('Save failed')
+    expect(requests.toast).not.toHaveBeenCalled()
     expect(onClose).not.toHaveBeenCalled()
   })
 
@@ -203,6 +213,7 @@ describe('step authentication drafts', () => {
       'The login was saved, but some Step 1 restrictions could not be saved.',
     )
     expect(requests.single).toHaveBeenCalledWith('form', true)
+    expect(requests.toast).not.toHaveBeenCalled()
     expect(onClose).not.toHaveBeenCalled()
   })
 
@@ -237,7 +248,9 @@ describe('step authentication drafts', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Use Singpass' }))
     let dialog = screen.getByRole('dialog')
     expect(within(dialog).getByText('Organisation UEN')).toBeInTheDocument()
-    expect(within(dialog).getByText(/kept in your form/)).toBeInTheDocument()
+    expect(
+      within(dialog).getByText(/deleted from your form/),
+    ).toBeInTheDocument()
     fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
     expect(screen.getByTestId('provider')).toHaveTextContent(FormAuthType.CP)
     expect(requests.update).not.toHaveBeenCalled()
@@ -245,7 +258,7 @@ describe('step authentication drafts', () => {
     dialog = screen.getByRole('dialog')
     fireEvent.click(
       within(dialog).getByRole('button', {
-        name: 'Unassign fields and switch to Singpass',
+        name: 'Delete fields and switch to Singpass',
       }),
     )
     expect(requests.update).not.toHaveBeenCalled()
@@ -257,6 +270,8 @@ describe('step authentication drafts', () => {
     expect(requests.update).toHaveBeenCalledWith('form', 1, {
       ...current.workflow[1],
       edit: ['plain'],
+      delete_auth_field_ids: ['uen'],
+      expected_last_modified: undefined,
       auth: { auth_type: FormAuthType.MyInfo },
     })
     expect(current.form_fields.map((field) => field._id)).toEqual([
@@ -273,7 +288,7 @@ describe('step authentication drafts', () => {
     )
     fireEvent.click(
       within(screen.getByRole('dialog')).getByRole('button', {
-        name: 'Unassign fields and turn off',
+        name: 'Delete fields and turn off',
       }),
     )
     expect(screen.getByTestId('provider')).toHaveTextContent(FormAuthType.NIL)
@@ -304,7 +319,7 @@ describe('step authentication drafts', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Use Corppass' }))
     fireEvent.click(
       within(screen.getByRole('dialog')).getByRole('button', {
-        name: 'Unassign fields and switch to Corppass',
+        name: 'Delete fields and switch to Corppass',
       }),
     )
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
@@ -314,6 +329,7 @@ describe('step authentication drafts', () => {
       0,
       expect.objectContaining({
         edit: [],
+        delete_auth_field_ids: ['name'],
         first_step_login: { auth_type: FormAuthType.CP, esrvc_id: '' },
       }),
     )

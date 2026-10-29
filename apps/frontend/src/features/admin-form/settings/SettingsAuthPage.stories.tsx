@@ -1,5 +1,6 @@
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
+import { http, HttpResponse } from 'msw'
 
 import { featureFlags } from 'formsg-shared/constants'
 import { BasicField, PaymentChannel } from 'formsg-shared/types'
@@ -9,11 +10,14 @@ import {
   FormResponseMode,
   FormSettings,
   FormStatus,
+  FormWorkflowStepDto,
+  FormWorkflowStepWriteDto,
   WorkflowType,
 } from 'formsg-shared/types/form'
 
 import {
   createFormBuilderMocks,
+  createMockForm,
   getAdminFormSettings,
   MOCK_FORM_FIELDS_WITH_MYINFO,
   patchAdminFormSettings,
@@ -395,20 +399,46 @@ const MRF_STEP_LOGIN_FORM: Partial<AdminFormDto> = {
   ],
 }
 
-const buildMrfStepLoginMswRoutes = (overrides: Partial<FormSettings>) => [
-  ...createFormBuilderMocks({
+const buildMrfStepLoginMswRoutes = (overrides: Partial<FormSettings>) => {
+  const current = createMockForm({
     ...MRF_STEP_LOGIN_FORM,
     status: overrides.status ?? FormStatus.Private,
-  }),
-  getAdminFormSettings({
-    overrides: { authType: FormAuthType.MyInfo, ...overrides },
-    mode: FormResponseMode.Multirespondent,
-  }),
-  patchAdminFormSettings({
-    overrides: { authType: FormAuthType.MyInfo, ...overrides },
-    mode: FormResponseMode.Multirespondent,
-  }),
-]
+  }).form
+  return [
+    http.get('/api/v3/admin/forms/:formId', () =>
+      HttpResponse.json({ form: current }),
+    ),
+    http.get('/api/v3/admin/forms/:formId/settings', () =>
+      HttpResponse.json(current),
+    ),
+    http.put(
+      '/api/v3/admin/forms/:formId/workflow/:stepNumber',
+      async ({ request, params }) => {
+        if (current.responseMode !== FormResponseMode.Multirespondent)
+          return new HttpResponse(null, { status: 400 })
+        const { first_step_login, ...step } =
+          (await request.json()) as FormWorkflowStepWriteDto
+        delete step.delete_auth_field_ids
+        delete step.expected_last_modified
+        if (first_step_login) {
+          current.authType = first_step_login.auth_type
+          current.esrvcId = first_step_login.esrvc_id ?? ''
+        }
+        current.workflow[Number(params.stepNumber)] =
+          step as FormWorkflowStepDto
+        return HttpResponse.json(current.workflow)
+      },
+    ),
+    ...createFormBuilderMocks({
+      ...MRF_STEP_LOGIN_FORM,
+      status: overrides.status ?? FormStatus.Private,
+    }),
+    patchAdminFormSettings({
+      overrides: { authType: FormAuthType.MyInfo, ...overrides },
+      mode: FormResponseMode.Multirespondent,
+    }),
+  ]
+}
 
 export const PrivateMrfStepLoginAccordion = Template.bind({})
 PrivateMrfStepLoginAccordion.decorators = [withStepLoginOn]

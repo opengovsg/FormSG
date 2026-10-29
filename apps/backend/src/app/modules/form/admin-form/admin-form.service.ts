@@ -15,6 +15,7 @@ import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
 import {
   AdminDashboardFormMetaDto,
   BasicField,
+  DeleteWorkflowAuthDto,
   DropdownFieldBase,
   DuplicateFormOverwriteDto,
   EndPageUpdateDto,
@@ -137,6 +138,12 @@ import {
   isFormMultirespondent,
 } from '../form.utils'
 
+import {
+  getDeletionReferenceGuard,
+  getRetainedWorkflowAuth,
+  prepareAuthFieldDeletion,
+  sameAuthenticationProvider,
+} from './admin-form.auth-field-deletion'
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
   EditFieldError,
@@ -1715,7 +1722,6 @@ const checkResultingWorkflowIsAllowed = (
     isSubmitterIdCollectionEnabled: form.isSubmitterIdCollectionEnabled,
     form_fields: form.form_fields,
     workflow,
-    allowIncompleteDraft: form.status !== FormStatus.Public,
   })
   if (loginErrors.length) {
     return err(new MalformedParametersError(loginErrors.join(' ')))
@@ -2015,12 +2021,28 @@ export const updateFormWorkflowStep = (
   const stepToSave = toSavedWorkflowStep(
     updatedWorkflowStep,
   ) as FormWorkflowDto[0]
-  const updatedWorkflow = originalMrfForm.workflow.map((step, index) =>
+  let updatedWorkflow = originalMrfForm.workflow.map((step, index) =>
     index === stepNumber ? stepToSave : step,
   )
 
+  const deletion = prepareAuthFieldDeletion(
+    originalForm,
+    updatedWorkflow,
+    updatedWorkflowStep.first_step_login?.auth_type ?? originalForm.authType,
+    updatedWorkflowStep.delete_auth_field_ids,
+    updatedWorkflowStep.expected_last_modified,
+  )
+  if (deletion.isErr()) return errAsync(deletion.error)
+  updatedWorkflow = deletion.value.workflow
+  const checkedForm = {
+    ...(typeof originalForm.toObject === 'function'
+      ? originalForm.toObject()
+      : originalForm),
+    form_fields: deletion.value.form_fields,
+  } as IPopulatedForm
+
   const loginCheck = checkWorkflowStepLoginWrite({
-    form: originalForm,
+    form: checkedForm,
     stepNumber,
     step: updatedWorkflowStep,
     resultingWorkflow: updatedWorkflow,
@@ -2030,7 +2052,7 @@ export const updateFormWorkflowStep = (
   const { formLogin } = loginCheck.value
 
   const check = checkResultingWorkflowIsAllowed(
-    originalForm,
+    checkedForm,
     updatedWorkflow,
     formLogin?.authType,
   )
@@ -2045,13 +2067,25 @@ export const updateFormWorkflowStep = (
       {
         _id: originalMrfForm._id,
         ...getCheckedAuthenticationConfigFilter(originalForm),
+        ...(deletion.value.ids.length
+          ? getDeletionReferenceGuard(originalForm)
+          : {}),
         ...getCheckedWebhookFilterIfMultistepWorkflow(
           originalForm,
           updatedWorkflow.length,
         ),
       },
       // Step 1's login is saved with the step so neither lands without the other.
-      { workflow: updatedWorkflow, ...formLogin },
+      {
+        workflow: updatedWorkflow,
+        ...formLogin,
+        ...(deletion.value.ids.length
+          ? {
+              form_fields: deletion.value.form_fields,
+              form_logics: deletion.value.form_logics,
+            }
+          : {}),
+      },
       {
         new: true,
         runValidators: true,
@@ -2101,6 +2135,7 @@ export const updateFormWorkflowStep = (
  */
 export const deleteFormWorkflow = (
   originalForm: IPopulatedForm,
+  input: DeleteWorkflowAuthDto = {},
 ): ResultAsync<
   FormWorkflowDto,
   | DatabaseError
@@ -2126,12 +2161,29 @@ export const deleteFormWorkflow = (
     )
   }
 
-  // Step 1 then fills in every field, so its login must fill the login
-  // fields later steps' logins did.
-  const check = checkResultingWorkflowIsAllowed(originalForm, [])
-  if (check.isErr()) return errAsync(check.error)
-
   const originalMrfForm = originalForm as IPopulatedMultirespondentForm
+  const retained = getRetainedWorkflowAuth(originalMrfForm, input)
+  if (retained.isErr()) return errAsync(retained.error)
+  const deletion = prepareAuthFieldDeletion(
+    originalForm,
+    [],
+    retained.value.authType,
+    input.delete_auth_field_ids,
+    input.expected_last_modified,
+  )
+  if (deletion.isErr()) return errAsync(deletion.error)
+  const checkedForm = {
+    ...(typeof originalForm.toObject === 'function'
+      ? originalForm.toObject()
+      : originalForm),
+    form_fields: deletion.value.form_fields,
+  } as IPopulatedForm
+  const check = checkResultingWorkflowIsAllowed(
+    checkedForm,
+    [],
+    retained.value.authType,
+  )
+  if (check.isErr()) return errAsync(check.error)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
     originalForm.responseMode,
@@ -2142,8 +2194,23 @@ export const deleteFormWorkflow = (
       {
         _id: originalMrfForm._id,
         ...getCheckedAuthenticationConfigFilter(originalForm),
+        ...getDeletionReferenceGuard(originalForm),
       },
-      { workflow: [] },
+      {
+        workflow: [],
+        ...retained.value,
+        form_fields: deletion.value.form_fields,
+        form_logics: deletion.value.form_logics,
+        ...(!sameAuthenticationProvider(
+          retained.value.authType,
+          originalForm.authType,
+        )
+          ? {
+              isSingleSubmission: false,
+              whitelistedSubmitterIds: { isWhitelistEnabled: false },
+            }
+          : {}),
+      },
       { new: true, runValidators: true },
     ).exec(),
     (error) => {
@@ -2168,6 +2235,10 @@ export const deleteFormWorkflow = (
 export const deleteFormWorkflowStep = (
   originalForm: IPopulatedForm,
   stepNumber: number,
+  input: Pick<
+    DeleteWorkflowAuthDto,
+    'delete_auth_field_ids' | 'expected_last_modified'
+  > = {},
 ): ResultAsync<
   FormWorkflowDto,
   DatabaseError | FormChangedWhileEditingError
@@ -2194,11 +2265,26 @@ export const deleteFormWorkflowStep = (
     return errAsync(new MalformedParametersError('Invalid step number'))
   }
 
-  const updatedWorkflow = originalWorkflow.filter(
+  let updatedWorkflow = originalWorkflow.filter(
     (_step, index) => index !== targetStepNumber,
   )
 
-  const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow)
+  const deletion = prepareAuthFieldDeletion(
+    originalForm,
+    updatedWorkflow,
+    originalForm.authType,
+    input.delete_auth_field_ids,
+    input.expected_last_modified,
+  )
+  if (deletion.isErr()) return errAsync(deletion.error)
+  updatedWorkflow = deletion.value.workflow
+  const checkedForm = {
+    ...(typeof originalForm.toObject === 'function'
+      ? originalForm.toObject()
+      : originalForm),
+    form_fields: deletion.value.form_fields,
+  } as IPopulatedForm
+  const check = checkResultingWorkflowIsAllowed(checkedForm, updatedWorkflow)
   if (check.isErr()) return errAsync(check.error)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
@@ -2210,12 +2296,23 @@ export const deleteFormWorkflowStep = (
       {
         _id: originalMrfForm._id,
         ...getCheckedAuthenticationConfigFilter(originalForm),
+        ...(deletion.value.ids.length
+          ? getDeletionReferenceGuard(originalForm)
+          : {}),
         ...getCheckedWebhookFilterIfMultistepWorkflow(
           originalForm,
           updatedWorkflow.length,
         ),
       },
-      { workflow: updatedWorkflow },
+      {
+        workflow: updatedWorkflow,
+        ...(deletion.value.ids.length
+          ? {
+              form_fields: deletion.value.form_fields,
+              form_logics: deletion.value.form_logics,
+            }
+          : {}),
+      },
       {
         new: true,
         runValidators: true,

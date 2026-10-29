@@ -147,7 +147,7 @@ describe('Form login identity fields', () => {
     ])
   })
 
-  it('requires an MRF identity field to be assigned before publishing', async () => {
+  it('allows an unassigned MRF identity field when its provider exists', async () => {
     const form = await MultirespondentForm.create({
       ...storageForm({
         authType: FormAuthType.MyInfo,
@@ -161,9 +161,7 @@ describe('Form login identity fields', () => {
     form.status = FormStatus.Public
     form.set('workflow', [{ workflow_type: 'static', emails: [], edit: [] }])
 
-    await expect(form.save()).rejects.toThrow(
-      'must be assigned to a step with Singpass',
-    )
+    await expect(form.save()).resolves.toBeDefined()
     form.set('workflow', [
       { workflow_type: 'static', emails: [], edit: [nricIdentityField._id] },
     ])
@@ -171,18 +169,15 @@ describe('Form login identity fields', () => {
     await expect(form.save()).resolves.toBeDefined()
   })
 
-  it('accepts both provider field types in a closed providerless draft', async () => {
-    const form = await EncryptedForm.create(
-      storageForm({
-        authType: FormAuthType.NIL,
-        form_fields: [nricIdentityField, uenIdentityField],
-      }),
-    )
-    expect(form.status).toBe(FormStatus.Private)
-    form.status = FormStatus.Public
-    await expect(form.save()).rejects.toThrow(
-      'authentication before publishing',
-    )
+  it('rejects providerless authentication fields even in a closed draft', async () => {
+    await expect(
+      EncryptedForm.create(
+        storageForm({
+          authType: FormAuthType.NIL,
+          form_fields: [nricIdentityField, uenIdentityField],
+        }),
+      ),
+    ).rejects.toThrow('needs a step with')
   })
 
   it('publishes a valid mixed-provider workflow through the checked settings update', async () => {
@@ -220,7 +215,7 @@ describe('Form login identity fields', () => {
 
   it('refuses a stale private field addition after publication', async () => {
     const form = await EncryptedForm.create(
-      storageForm({ authType: FormAuthType.NIL, form_fields: [] }),
+      storageForm({ authType: FormAuthType.CP, form_fields: [] }),
     )
     await EncryptedForm.updateOne(
       { _id: form._id },
@@ -424,9 +419,7 @@ describe('Form login identity fields', () => {
             form_fields: myInfoDataFields(1),
           }),
         ),
-      ).rejects.toThrow(
-        '"Name" needs Singpass authentication before publishing.',
-      )
+      ).rejects.toThrow('"Name" needs a step with Singpass authentication.')
     })
   })
 })

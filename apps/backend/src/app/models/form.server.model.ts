@@ -682,15 +682,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
               // Any step's Singpass login may fill Myinfo fields; the
               // pre-validate hook checks each field's owning step.
               return (
-                this.status !== FormStatus.Public ||
                 formUsesAuthType(
                   {
                     authType: this.authType ?? FormAuthType.NIL,
                     workflow: this.get('workflow'),
                   },
                   FormAuthType.MyInfo,
-                ) ||
-                !(this.form_fields ?? []).some(isMyInfoDataField)
+                ) || !(this.form_fields ?? []).some(isMyInfoDataField)
               )
             },
             message: 'Myinfo fields need Singpass login.',
@@ -1747,7 +1745,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         ? getLoginFieldPublishErrors(loginConfig)
         : getResultingLoginErrors({
             ...loginConfig,
-            allowIncompleteDraft: true,
           })
     if (loginIdentityErrors.length > 0) {
       const validationError = this.invalidate(

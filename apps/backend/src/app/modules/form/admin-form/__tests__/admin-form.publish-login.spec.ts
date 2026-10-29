@@ -69,7 +69,7 @@ describe('authentication publication gate', () => {
     })
     expect(result._unsafeUnwrapErr()).toBeInstanceOf(MalformedParametersError)
     expect(result._unsafeUnwrapErr().message).toContain(
-      '"Company registration" must be assigned to a step with Corppass',
+      '"Company registration" needs a step with Corppass',
     )
     expect(write).not.toHaveBeenCalled()
   })
@@ -80,7 +80,7 @@ describe('authentication publication gate', () => {
       { status: FormStatus.Public },
     )
     expect(result._unsafeUnwrapErr().message).toContain(
-      '"Company registration" needs Corppass',
+      '"Company registration" needs a step with Corppass',
     )
     expect(write).not.toHaveBeenCalled()
   })
@@ -98,27 +98,17 @@ describe('authentication publication gate', () => {
     expect(result._unsafeUnwrapErr().message).toContain('Step 1 needs Corppass')
     expect(write).not.toHaveBeenCalled()
   })
-  it('allows a closed flat draft to change its provider while fields remain', async () => {
-    const settings = { authType: FormAuthType.MyInfo }
-    const write = mockWrite(StorageForm, { getSettings: () => settings })
-    const original = form({
-      responseMode: FormResponseMode.Encrypt,
-      authType: FormAuthType.CP,
-    })
-    const result = await updateFormSettings(original, {
-      authType: FormAuthType.MyInfo,
-    })
-    expect(result._unsafeUnwrap()).toEqual(settings)
-    expect(write).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: FormStatus.Private,
+  it('rejects a provider switch that would orphan flat fields without confirmed deletion', async () => {
+    const write = mockWrite(StorageForm, null)
+    const result = await updateFormSettings(
+      form({
+        responseMode: FormResponseMode.Encrypt,
         authType: FormAuthType.CP,
-        'form_fields.0._id': fieldId,
-        'form_fields.0.corppass.attr': CorppassAttribute.Uen,
       }),
-      expect.anything(),
-      expect.anything(),
+      { authType: FormAuthType.MyInfo },
     )
+    expect(result.isErr()).toBe(true)
+    expect(write).not.toHaveBeenCalled()
   })
   it('compares the authentication configuration it checked before publishing', async () => {
     const original = form({
@@ -164,8 +154,10 @@ describe('authentication publication gate', () => {
       FormChangedWhileEditingError,
     )
   })
-  it('does not allow an unassigned Myinfo field just because some step uses Singpass', async () => {
-    const write = mockWrite(MrfForm, null)
+  it('allows an unassigned Myinfo field when a step uses Singpass', async () => {
+    const write = mockWrite(MrfForm, {
+      getSettings: () => ({ status: FormStatus.Public }),
+    })
     const result = await updateFormSettings(
       form({
         authType: FormAuthType.MyInfo,
@@ -180,9 +172,7 @@ describe('authentication publication gate', () => {
       }),
       { status: FormStatus.Public },
     )
-    expect(result._unsafeUnwrapErr().message).toContain(
-      '"Verified name" must be assigned',
-    )
-    expect(write).not.toHaveBeenCalled()
+    expect(result.isOk()).toBe(true)
+    expect(write).toHaveBeenCalled()
   })
 })

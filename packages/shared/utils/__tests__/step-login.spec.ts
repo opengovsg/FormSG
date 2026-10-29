@@ -225,7 +225,7 @@ describe('step-login', () => {
           form_fields: [plain, name],
           workflow: [{ edit: ['plain'] }],
         }),
-      ).toEqual([MYINFO_FIELDS_NEED_SINGPASS_STEP])
+      ).toEqual(expect.arrayContaining([MYINFO_FIELDS_NEED_SINGPASS_STEP]))
     })
 
     it('rejects login fields left on a no-login Step 1 when the workflow is deleted', () => {
@@ -235,11 +235,13 @@ describe('step-login', () => {
           form_fields: [name, uenIdentity],
           workflow: [],
         }),
-      ).toEqual([
-        'UEN fields need Corppass login.',
-        // No steps are left, so the message must not point to one
-        MYINFO_FIELDS_NEED_FORM_SINGPASS,
-      ])
+      ).toEqual(
+        expect.arrayContaining([
+          'UEN fields need Corppass login.',
+          // No steps are left, so the message must not point to one
+          MYINFO_FIELDS_NEED_FORM_SINGPASS,
+        ]),
+      )
     })
 
     it('passes when Step 1 keeps a Singpass login without a workflow', () => {
@@ -268,128 +270,71 @@ describe('step-login', () => {
   })
 })
 
-describe('draft and publish authentication rules', () => {
-  const draft = {
-    authType: FormAuthType.NIL,
+describe('authentication provider availability and optional ownership', () => {
+  const form = {
+    authType: FormAuthType.MyInfo,
     responseMode: FormResponseMode.Multirespondent,
     form_fields: [name, uenIdentity, plain],
-    workflow: [{ edit: ['plain'] }],
+    workflow: [{ edit: [] }, { ...corppassStep, edit: [] }],
   }
-  it('allows missing providers for unassigned draft fields', () => {
-    expect(
-      getResultingLoginErrors({ ...draft, allowIncompleteDraft: true }),
-    ).toEqual([])
+  it('allows every auth field to remain unassigned when both providers exist', () => {
+    expect(getResultingLoginErrors(form)).toEqual([])
+    expect(getLoginFieldPublishErrors(form)).toEqual([])
   })
-  it('does not relax assigned-field compatibility in drafts', () => {
+  it('rejects providerless fields even when the old draft option is supplied', () => {
     expect(
       getResultingLoginErrors({
-        ...draft,
-        workflow: [{ edit: ['uen'] }],
+        ...form,
+        workflow: [{ edit: [] }],
         allowIncompleteDraft: true,
       }),
     ).toEqual(
       expect.arrayContaining([
-        expect.stringContaining('Step 1 needs Corppass'),
+        expect.stringContaining('"UEN" needs a step with Corppass'),
       ]),
     )
   })
-  it('lists both unassigned provider fields at publication', () => {
-    const errors = getLoginFieldPublishErrors(draft)
-    expect(errors).toEqual(
-      expect.arrayContaining([
-        expect.stringContaining(
-          '"Name" must be assigned to a step with Singpass',
-        ),
-        expect.stringContaining(
-          '"UEN" must be assigned to a step with Corppass',
-        ),
-      ]),
-    )
-    expect(errors.join(' ')).not.toContain('"Plain"')
-  })
-  it('rejects authentication fields on an empty MRF workflow even with form login', () => {
+  it('rejects assigning one field to multiple steps', () => {
     expect(
       getLoginFieldPublishErrors({
-        ...draft,
-        authType: FormAuthType.MyInfo,
+        ...form,
+        workflow: [
+          { edit: ['name'] },
+          { edit: ['name'], auth: { auth_type: FormAuthType.MyInfo } },
+          corppassStep,
+        ],
+      }),
+    ).toContain('"Name" can only be filled in by one step.')
+  })
+  it('rejects an owner with the wrong provider even if the provider exists elsewhere', () => {
+    expect(
+      getLoginFieldPublishErrors({
+        ...form,
+        workflow: [{ edit: ['uen'] }, corppassStep],
+      }),
+    ).toContain('Step 1 needs Corppass login to fill in "UEN".')
+  })
+  it('treats an empty workflow as implicit ownership by the form respondent', () => {
+    expect(
+      getLoginFieldPublishErrors({
+        ...form,
         form_fields: [name],
         workflow: [],
       }),
-    ).toEqual(
-      expect.arrayContaining([
-        expect.stringContaining('"Name" must be assigned'),
-      ]),
-    )
-  })
-  it('accepts mixed-provider fields assigned to their matching steps', () => {
-    expect(
-      getLoginFieldPublishErrors({
-        ...draft,
-        authType: FormAuthType.MyInfo,
-        workflow: [{ edit: ['name'] }, corppassStep],
-      }),
     ).toEqual([])
   })
-  it('does not require ordinary fields to be assigned', () => {
-    expect(
-      getLoginFieldPublishErrors({
-        ...draft,
-        form_fields: [plain],
-        workflow: [],
-      }),
-    ).toEqual([])
-  })
-  it.each([FormResponseMode.Encrypt, FormResponseMode.Email])(
-    'allows providerless Myinfo fields in closed %s drafts',
-    (responseMode) => {
-      expect(
-        getResultingLoginErrors({
-          authType: FormAuthType.NIL,
-          responseMode,
-          form_fields: [name],
-          allowIncompleteDraft: true,
-        }),
-      ).toEqual([])
-      expect(
-        getLoginFieldPublishErrors({
-          authType: FormAuthType.NIL,
-          responseMode,
-          form_fields: [name],
-        }),
-      ).toEqual(
-        expect.arrayContaining([
-          expect.stringContaining('"Name" needs Singpass'),
-        ]),
-      )
-    },
-  )
-  it('allows flat Corppass fields in drafts but requires its provider at publication', () => {
-    const flat = {
-      authType: FormAuthType.NIL,
-      responseMode: FormResponseMode.Encrypt,
-      form_fields: [uenIdentity],
-    }
-    expect(
-      getResultingLoginErrors({ ...flat, allowIncompleteDraft: true }),
-    ).toEqual([])
-    expect(getLoginFieldPublishErrors(flat)).toEqual(
-      expect.arrayContaining([expect.stringContaining('"UEN" needs Corppass')]),
-    )
-    expect(
-      getLoginFieldPublishErrors({ ...flat, authType: FormAuthType.CP }),
-    ).toEqual([])
-  })
-  it('preserves storage/MRF-only identity restrictions in drafts', () => {
+  it('rejects flat fields whose provider is missing', () => {
     expect(
       getResultingLoginErrors({
+        ...form,
         authType: FormAuthType.NIL,
-        responseMode: FormResponseMode.Email,
-        form_fields: [uenIdentity],
-        allowIncompleteDraft: true,
+        responseMode: FormResponseMode.Encrypt,
+        workflow: [],
       }),
     ).toEqual(
       expect.arrayContaining([
-        expect.stringContaining('only available in storage mode'),
+        expect.stringContaining('"Name" needs a step with Singpass'),
+        expect.stringContaining('"UEN" needs a step with Corppass'),
       ]),
     )
   })

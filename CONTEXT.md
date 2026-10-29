@@ -7,7 +7,7 @@ One person's turn in a multirespondent form. The step selects its respondent sou
 How a step identifies its recipient: specified email addresses, an Email field, or email recipients mapped to a Dropdown field's options. Step 1 is available through the form link.
 
 ## Login-filled field
-A field populated from Singpass, Corppass or Myinfo data. A particular field instance belongs to one workflow step. Separate instances of the same attribute may belong to different steps.
+A field populated from Singpass, Corppass or Myinfo data. A particular field instance may be unassigned or belong to one workflow step. Its provider must be enabled somewhere in the form, independently of its assignment. Separate instances of the same attribute may belong to different steps.
 
 ## Field addition and assignment
 Adding a field makes it part of the form. Assigning a field chooses which workflow step fills it. Unassigning a field keeps it in the form.

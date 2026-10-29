@@ -4898,7 +4898,7 @@ describe('admin-form.service', () => {
       }) as unknown as IPopulatedForm
 
     it.each([FormStatus.Public, FormStatus.Private])(
-      'only allows unassigning an identity on a closed %s form',
+      'allows unassigning an identity on a %s form while its provider remains',
       async (status) => {
         const write = jest
           .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
@@ -4911,7 +4911,7 @@ describe('admin-form.service', () => {
           0,
           { ...firstStep, edit: [regularId] } as any,
         )
-        const shouldSucceed = status === FormStatus.Private
+        const shouldSucceed = true
         expect(result.isOk()).toBe(shouldSucceed)
         expect(write.mock.calls.length).toBe(Number(shouldSucceed))
       },
@@ -4970,8 +4970,14 @@ describe('admin-form.service', () => {
         .mockReturnValue({
           exec: jest.fn().mockResolvedValue({ _id: 'form', workflow: [] }),
         })
+      const original = makeForm(FormStatus.Private)
+      const retainedStep = { ...nextStep, auth: { auth_type: FormAuthType.CP } }
+      ;(original as unknown as { workflow: unknown[] }).workflow = [
+        firstStep,
+        retainedStep,
+      ]
       const result = await AdminFormService.updateFormWorkflowStep(
-        makeForm(FormStatus.Private),
+        original,
         0,
         {
           ...firstStep,
@@ -4983,7 +4989,7 @@ describe('admin-form.service', () => {
       expect(write).toHaveBeenCalledWith(
         expect.anything(),
         {
-          workflow: [{ ...firstStep, edit: [regularId] }, nextStep],
+          workflow: [{ ...firstStep, edit: [regularId] }, retainedStep],
           authType: FormAuthType.NIL,
           esrvcId: '',
         },

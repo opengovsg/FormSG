@@ -27,7 +27,6 @@ import {
   CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
 } from '~features/admin-form/create/builder-and-design/constants'
 import { MYINFO_FIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
-import { useIsMrfStepLoginEnabled } from '~features/admin-form/create/workflow/hooks/useIsMrfStepLoginEnabled'
 import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../../../builder-and-design/useCreateTabForm'
@@ -66,9 +65,7 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
 
   const { isAtLimit } = useLoginFieldLimit()
   const { usesLogin } = useFormUsesLogin()
-  const canEnableLogin = useIsMrfStepLoginEnabled()
-  const isMyInfoDisabled =
-    !form || (!canEnableLogin && !usesLogin(FormAuthType.MyInfo)) || isAtLimit
+  const isMyInfoDisabled = !form || !usesLogin(FormAuthType.MyInfo) || isAtLimit
   const isDisabled = isMyInfoDisabled || isLoading
 
   const filteredCreateMyInfoPersonalFields = filterFieldsBySearchValue(
@@ -273,8 +270,6 @@ const MyInfoMessage = (): JSX.Element | null => {
   const { isAtLimit } = useLoginFieldLimit()
   const { usesLogin } = useFormUsesLogin()
   const isSingpassUsed = usesLogin(FormAuthType.MyInfo)
-  const canEnableLogin = useIsMrfStepLoginEnabled()
-  if (canEnableLogin && !isAtLimit) return null
 
   return form ? (
     <Box px="1.5rem" pt="2rem" pb="1.5rem">

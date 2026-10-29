@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
@@ -35,21 +36,31 @@ vi.mock(
     ),
   }),
 )
+const save = vi.fn(async () => true)
+
 vi.mock('./StepAuthSettingsEditor', () => ({
   StepAuthSettingsEditor: ({
     stepIndex,
     onClose,
     onDirtyChange,
+    onSaveReady,
   }: {
     stepIndex: number
     onClose: () => void
     onDirtyChange: (value: boolean) => void
-  }) => (
-    <div data-testid={`editor-${stepIndex}`}>
-      <button onClick={() => onDirtyChange(true)}>Change login</button>
-      <button onClick={onClose}>Cancel editor</button>
-    </div>
-  ),
+    onSaveReady: (save: (() => Promise<boolean>) | null) => void
+  }) => {
+    useEffect(() => {
+      onSaveReady(save)
+      return () => onSaveReady(null)
+    }, [onSaveReady])
+    return (
+      <div data-testid={`editor-${stepIndex}`}>
+        <button onClick={() => onDirtyChange(true)}>Change login</button>
+        <button onClick={onClose}>Cancel editor</button>
+      </div>
+    )
+  },
 }))
 
 const settings = { authType: FormAuthType.MyInfo } as FormSettings
@@ -88,6 +99,7 @@ const setup = () =>
   )
 
 describe('workflow-shaped authentication settings', () => {
+  beforeEach(() => save.mockClear())
   it('starts collapsed, shows all provider states, and connects the cards with arrows', () => {
     setup()
     expect(screen.queryByTestId('editor-0')).not.toBeInTheDocument()
@@ -105,31 +117,27 @@ describe('workflow-shaped authentication settings', () => {
   it('opens one card at a time and cancelling collapses it', async () => {
     setup()
     fireEvent.click(screen.getByRole('button', { name: /1 Requester/ }))
-    expect(screen.getByTestId('editor-0')).toBeInTheDocument()
+    await screen.findByTestId('editor-0')
     fireEvent.click(screen.getByRole('button', { name: /2 Approver/ }))
+    await screen.findByTestId('editor-1')
     expect(screen.queryByTestId('editor-0')).not.toBeInTheDocument()
-    expect(screen.getByTestId('editor-1')).toBeInTheDocument()
     fireEvent.click(
       await screen.findByRole('button', { name: 'Cancel editor' }),
     )
     expect(screen.queryByTestId('editor-1')).not.toBeInTheDocument()
   })
 
-  it('asks before discarding an edited card when another card is selected', async () => {
+  it('saves before switching edited cards and keeps the current card on failure', async () => {
+    save.mockResolvedValueOnce(false).mockResolvedValueOnce(true)
     setup()
     fireEvent.click(screen.getByRole('button', { name: /1 Requester/ }))
     fireEvent.click(await screen.findByRole('button', { name: 'Change login' }))
     fireEvent.click(screen.getByRole('button', { name: /2 Approver/ }))
-    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(1))
     expect(screen.getByTestId('editor-0')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Keep editing' }))
-    await waitFor(() =>
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
-    )
-    expect(screen.getByTestId('editor-0')).toBeInTheDocument()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /2 Approver/ }))
-    fireEvent.click(screen.getByRole('button', { name: 'Discard changes' }))
+    await screen.findByTestId('editor-1')
     expect(screen.queryByTestId('editor-0')).not.toBeInTheDocument()
-    expect(screen.getByTestId('editor-1')).toBeInTheDocument()
   })
 })

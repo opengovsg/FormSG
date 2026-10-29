@@ -124,7 +124,10 @@ const draftLoginFields: FormFieldDto[] = [
     corppass: { attr: CorppassAttribute.Uen },
   },
 ]
-const authenticationDraftParameters = (isAssigned: boolean) => {
+const authenticationDraftParameters = (
+  isAssigned: boolean,
+  hasProvider = true,
+) => {
   const workflow: FormWorkflowStepDto[] = [
     {
       _id: '61e6857c9c794b0012f1fa01',
@@ -139,7 +142,9 @@ const authenticationDraftParameters = (isAssigned: boolean) => {
       step_name: 'Company representative',
       emails: ['representative@example.gov.sg'],
       edit: isAssigned ? [draftLoginFields[1]._id] : [],
-      auth: { auth_type: FormAuthType.CP, esrvc_id: 'demo-service' },
+      auth: hasProvider
+        ? { auth_type: FormAuthType.CP, esrvc_id: 'demo-service' }
+        : undefined,
     },
   ]
   const overrides: Partial<AdminFormDto> = {
@@ -167,8 +172,16 @@ const authenticationDraftParameters = (isAssigned: boolean) => {
     },
   }
 }
-/** A draft can keep the UEN field, but publication waits for its matching owner. */
+/** Recovery state for an existing inconsistent form with no matching provider. */
 export const AuthenticationDraftNotReady = Template.bind({})
-AuthenticationDraftNotReady.parameters = authenticationDraftParameters(false)
+AuthenticationDraftNotReady.parameters = authenticationDraftParameters(
+  false,
+  false,
+)
 export const AuthenticationReadyToPublish = Template.bind({})
 AuthenticationReadyToPublish.parameters = authenticationDraftParameters(true)
+
+/** Unassigned authentication fields are valid when any step supplies their provider. */
+export const UnassignedAuthenticationReadyToPublish = Template.bind({})
+UnassignedAuthenticationReadyToPublish.parameters =
+  authenticationDraftParameters(false)

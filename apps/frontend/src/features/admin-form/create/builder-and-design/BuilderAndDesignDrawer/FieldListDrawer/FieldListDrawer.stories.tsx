@@ -101,7 +101,7 @@ const resetProposed = () => {
   ]
 }
 resetProposed()
-export const ProposedEnableInModal = {
+export const MissingProviderFieldsDisabled = {
   beforeEach: resetProposed,
   decorators: [
     (Story: StoryFn) => (
@@ -138,6 +138,46 @@ export const ProposedEnableInModal = {
             } as FormWorkflowStepDto
             return HttpResponse.json(proposedSteps)
           },
+        ),
+      ],
+    },
+  },
+}
+
+/** Matching authentication on a later step enables additions even on a live form. */
+export const MatchingLaterProviderPublic = {
+  ...MissingProviderFieldsDisabled,
+  parameters: {
+    msw: {
+      handlers: [
+        http.get('/api/v3/admin/forms/:formId', ({ params }) =>
+          HttpResponse.json(
+            createMockForm({
+              _id: params.formId as FormId,
+              responseMode: FormResponseMode.Multirespondent,
+              status: FormStatus.Public,
+              authType: FormAuthType.MyInfo,
+              isSubmitterIdCollectionEnabled: false,
+              form_fields: [],
+              workflow: [
+                {
+                  _id: '61e6857c9c794b0012f1c6f8',
+                  workflow_type: WorkflowType.Static,
+                  emails: [],
+                  edit: [],
+                  step_name: 'Requester',
+                },
+                {
+                  _id: '61e6857c9c794b0012f1c6f9',
+                  workflow_type: WorkflowType.Static,
+                  emails: ['officer@example.gov.sg'],
+                  edit: [],
+                  step_name: 'Officer',
+                  auth: { auth_type: FormAuthType.CP, esrvc_id: 'service' },
+                },
+              ],
+            }),
+          ),
         ),
       ],
     },

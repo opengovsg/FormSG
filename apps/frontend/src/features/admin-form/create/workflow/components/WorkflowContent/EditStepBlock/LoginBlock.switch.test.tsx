@@ -31,7 +31,20 @@ const fields = [
 const state = vi.hoisted(() => ({ status: 'PRIVATE' }))
 vi.mock('~features/admin-form/common/queries', () => ({
   useAdminForm: () => ({
-    data: { authType: FormAuthType.MyInfo, status: state.status },
+    data: {
+      authType: FormAuthType.MyInfo,
+      status: state.status,
+      form_fields: fields,
+      form_logics: [],
+      workflow: [
+        { _id: 'one', edit: [] },
+        {
+          _id: 'step',
+          edit: ['uen', 'plain'],
+          auth: { auth_type: FormAuthType.CP },
+        },
+      ],
+    },
   }),
 }))
 vi.mock('~features/admin-form/settings/queries', () => ({
@@ -115,16 +128,17 @@ describe('workflow authentication switch confirmation', () => {
     expect(onSave).not.toHaveBeenCalled()
   })
 
-  it('unassigns only incompatible fields in the draft and saves them with the provider', async () => {
+  it('stages deletion of last-provider fields with the provider change', async () => {
     render(<Harness />)
     fireEvent.click(screen.getByRole('button', { name: 'Use Singpass' }))
     fireEvent.click(
       within(screen.getByRole('dialog')).getByRole('button', {
-        name: 'Unassign fields and switch to Singpass',
+        name: 'Delete fields and switch to Singpass',
       }),
     )
     expect(draft().auth).toEqual({ auth_type: FormAuthType.MyInfo })
     expect(draft().edit).toEqual(['plain'])
+    expect(draft().delete_auth_field_ids).toEqual(['uen'])
     expect(draft().approval_field).toBe('approval')
     expect(draft().is_approval_enabled).toBe(true)
     expect(draft().emails).toEqual(['approver@example.gov.sg'])
@@ -138,6 +152,7 @@ describe('workflow authentication switch confirmation', () => {
     expect(onSave.mock.calls[0][0]).toEqual(
       expect.objectContaining({
         edit: ['plain'],
+        delete_auth_field_ids: ['uen'],
         auth: { auth_type: FormAuthType.MyInfo },
       }),
     )
@@ -150,11 +165,12 @@ describe('workflow authentication switch confirmation', () => {
     )
     fireEvent.click(
       within(screen.getByRole('dialog')).getByRole('button', {
-        name: 'Unassign fields and turn off',
+        name: 'Delete fields and turn off',
       }),
     )
     expect(draft().auth).toBeNull()
     expect(draft().edit).toEqual(['plain'])
+    expect(draft().delete_auth_field_ids).toEqual(['uen'])
     expect(fields).toHaveLength(2)
     view.unmount()
     state.status = FormStatus.Public
