@@ -1,13 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BiChevronDown, BiChevronRight, BiX } from 'react-icons/bi'
+import { BiChevronRight, BiX } from 'react-icons/bi'
 import { useDebounce } from 'react-use'
 import {
-  Box,
   Flex,
   Icon,
   InputGroup,
   InputRightElement,
+  Popover,
+  PopoverBody,
+  PopoverContent,
+  PopoverTrigger,
+  Portal,
   Text,
 } from '@chakra-ui/react'
 
@@ -27,8 +31,9 @@ interface ColumnFilterRowProps {
 }
 
 /**
- * A column in the Filter menu: clicking it opens a field below it whose text
- * filters the table to rows whose value in that column contains it.
+ * A column in the Filter menu: clicking it opens a field beside it, or below it
+ * when the window is too narrow. The field's text filters the table to rows
+ * whose value in that column contains it.
  */
 export const ColumnFilterRow = ({
   label,
@@ -70,71 +75,85 @@ export const ColumnFilterRow = ({
   }
 
   return (
-    <Box>
-      <Flex
-        as="button"
-        type="button"
-        align="center"
-        gap="0.5rem"
-        w="100%"
-        px="1rem"
-        py="0.625rem"
-        textAlign="left"
-        bg={isOpen ? 'primary.100' : undefined}
-        _hover={{ bg: 'primary.100' }}
-        aria-expanded={isOpen}
-        onClick={isOpen ? handleClose : onOpen}
-      >
-        <Text flex={1} minW={0} noOfLines={1} textStyle="body-1" title={label}>
-          {label}
-        </Text>
-        {text ? (
-          <Badge variant="subtle" colorScheme="primary" flexShrink={0}>
-            {filterApplied}
-          </Badge>
-        ) : null}
-        <Icon
-          as={isOpen ? BiChevronDown : BiChevronRight}
-          fontSize="1.25rem"
-          flexShrink={0}
-        />
-      </Flex>
-      {isOpen ? (
-        <Box px="1rem" py="0.5rem">
-          <InputGroup>
-            <Input
-              ref={inputRef}
-              autoFocus
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              // RATIONALE: key presses bubble to the Filter menu, whose
-              // typeahead would take focus from the field, and whose Escape
-              // would close the menu.
-              onKeyDown={(event) => {
-                event.stopPropagation()
-                if (event.key === 'Enter' || event.key === 'Escape') {
-                  handleClose()
-                }
-              }}
-              placeholder={filterPlaceholder}
-              aria-label={label}
-            />
-            {draft ? (
-              <InputRightElement>
-                <IconButton
-                  aria-label={clearFilter}
-                  size="sm"
-                  variant="clear"
-                  colorScheme="secondary"
-                  color="secondary.300"
-                  icon={<BiX fontSize="1.25rem" />}
-                  onClick={handleClear}
-                />
-              </InputRightElement>
-            ) : null}
-          </InputGroup>
-        </Box>
-      ) : null}
-    </Box>
+    <Popover
+      isOpen={isOpen}
+      onOpen={onOpen}
+      onClose={handleClose}
+      placement="right-start"
+      modifiers={[
+        { name: 'flip', options: { fallbackPlacements: ['bottom-start'] } },
+      ]}
+      isLazy
+    >
+      <PopoverTrigger>
+        <Flex
+          as="button"
+          type="button"
+          align="center"
+          gap="0.5rem"
+          w="100%"
+          px="1rem"
+          py="0.625rem"
+          textAlign="left"
+          bg={isOpen ? 'primary.100' : undefined}
+          _hover={{ bg: 'primary.100' }}
+          aria-expanded={isOpen}
+        >
+          <Text
+            flex={1}
+            minW={0}
+            noOfLines={1}
+            textStyle="body-1"
+            title={label}
+          >
+            {label}
+          </Text>
+          {text ? (
+            <Badge variant="subtle" colorScheme="primary" flexShrink={0}>
+              {filterApplied}
+            </Badge>
+          ) : null}
+          <Icon as={BiChevronRight} fontSize="1.25rem" flexShrink={0} />
+        </Flex>
+      </PopoverTrigger>
+      <Portal>
+        <PopoverContent w="16rem" bg="white">
+          <PopoverBody p="0.75rem">
+            <InputGroup>
+              <Input
+                ref={inputRef}
+                autoFocus
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                // RATIONALE: the popover is portalled but React still bubbles its
+                // key presses to the Filter menu, whose typeahead would take
+                // focus from the field, and whose Escape would close the menu.
+                onKeyDown={(event) => {
+                  event.stopPropagation()
+                  if (event.key === 'Enter' || event.key === 'Escape') {
+                    handleClose()
+                  }
+                }}
+                placeholder={filterPlaceholder}
+                aria-label={label}
+              />
+              {draft ? (
+                <InputRightElement>
+                  <IconButton
+                    aria-label={clearFilter}
+                    size="sm"
+                    variant="clear"
+                    colorScheme="secondary"
+                    color="secondary.300"
+                    icon={<BiX fontSize="1.25rem" />}
+                    onClick={handleClear}
+                  />
+                </InputRightElement>
+              ) : null}
+            </InputGroup>
+          </PopoverBody>
+        </PopoverContent>
+      </Portal>
+    </Popover>
   )
 }
