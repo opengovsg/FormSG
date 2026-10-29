@@ -8,12 +8,8 @@ import {
   DraggableStateSnapshot,
 } from '@hello-pangea/dnd'
 
-import { FormAuthType, FormResponseMode } from 'formsg-shared/types'
-import {
-  AllowedMyInfoFieldOption,
-  BasicField,
-  MyInfoAttribute,
-} from 'formsg-shared/types/field'
+import { FormResponseMode } from 'formsg-shared/types'
+import { AllowedMyInfoFieldOption, BasicField } from 'formsg-shared/types/field'
 import {
   createLoginIdentityField,
   LOGIN_IDENTITY_LABELS,
@@ -37,8 +33,6 @@ import {
   getFieldCreationMeta,
   getMyInfoFieldCreationMeta,
 } from '../../utils/fieldCreation'
-
-import { useFieldLoginGate } from './FieldLoginContext'
 
 const getDraggableAnimationProps = (
   provided: DraggableProvided,
@@ -80,7 +74,6 @@ interface DraggableMyInfoFieldOptionProps extends Omit<
   FieldOptionProps,
   'isActive'
 > {
-  isDragDisabled?: boolean
   index: number
   fieldType: AllowedMyInfoFieldOption
 }
@@ -183,12 +176,11 @@ export const DraggableMyInfoFieldListOption = ({
   fieldType,
   index,
   isDisabled,
-  isDragDisabled,
   ...props
 }: DraggableMyInfoFieldOptionProps): JSX.Element => (
   <Draggable
     index={index}
-    isDragDisabled={isDisabled || isDragDisabled}
+    isDragDisabled={isDisabled}
     disableInteractiveElementBlocking
     draggableId={fieldType}
   >
@@ -279,13 +271,9 @@ export const MyInfoFieldOption = forwardRef<MyInfoFieldOptionProps, 'button'>(
 
     const updateCreateState = useFieldBuilderStore(updateCreateStateSelector)
 
-    const requestLogin = useFieldLoginGate()
     const handleClick = useCallback(() => {
-      if (isDisabled) return
-      const add = () => updateCreateState(newFieldMeta, numFields)
-      if (requestLogin) requestLogin(FormAuthType.MyInfo, add)
-      else add()
-    }, [newFieldMeta, numFields, updateCreateState, isDisabled, requestLogin])
+      if (!isDisabled) updateCreateState(newFieldMeta, numFields)
+    }, [newFieldMeta, numFields, updateCreateState, isDisabled])
 
     return (
       <FieldListOption
@@ -319,30 +307,11 @@ export const LoginIdentityFieldOption = forwardRef<
 
   const updateCreateState = useFieldBuilderStore(updateCreateStateSelector)
 
-  const requestLogin = useFieldLoginGate()
   const handleClick = useCallback(() => {
     if (isDisabled) return
     if (onConvert) onConvert()
-    else {
-      const add = () => updateCreateState(newFieldMeta, numFields)
-      if (requestLogin)
-        requestLogin(
-          attr === MyInfoAttribute.UinFin
-            ? FormAuthType.MyInfo
-            : FormAuthType.CP,
-          add,
-        )
-      else add()
-    }
-  }, [
-    newFieldMeta,
-    numFields,
-    updateCreateState,
-    isDisabled,
-    onConvert,
-    requestLogin,
-    attr,
-  ])
+    else updateCreateState(newFieldMeta, numFields)
+  }, [newFieldMeta, numFields, updateCreateState, isDisabled, onConvert])
 
   return (
     <FieldListOption

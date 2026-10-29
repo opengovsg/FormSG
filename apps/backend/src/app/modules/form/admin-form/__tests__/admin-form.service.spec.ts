@@ -824,31 +824,23 @@ describe('admin-form.service', () => {
           expect(createSpy).not.toHaveBeenCalled()
         })
 
-        it('should duplicate as a multi-respondent form', async () => {
-          const mockForm = makeMockForm(MOCK_STEP_LOGIN_FORM)
-          jest
-            .spyOn(FormModel, 'create')
-            .mockResolvedValueOnce(mockForm as never)
-
-          const result = await AdminFormService.duplicateForm(
-            mockForm,
-            new ObjectId().toHexString(),
-            OVERRIDE_PARAMS,
-          )
-
-          expect(result.isOk()).toBe(true)
-        })
-
-        it('should duplicate into storage mode when later steps have no login', async () => {
-          const mockForm = makeMockForm(MOCK_MRF_FORM)
-          jest
-            .spyOn(FormModel, 'create')
-            .mockResolvedValueOnce(mockForm as never)
-
-          const result = await AdminFormService.duplicateForm(
-            mockForm,
-            new ObjectId().toHexString(),
+        it.each([
+          ['as a multi-respondent form', MOCK_STEP_LOGIN_FORM, OVERRIDE_PARAMS],
+          [
+            'into storage mode when later steps have no login',
+            MOCK_MRF_FORM,
             MOCK_ENCRYPT_OVERRIDE_PARAMS,
+          ],
+        ])('should duplicate %s', async (_, source, overrideParams) => {
+          const mockForm = makeMockForm(source)
+          jest
+            .spyOn(FormModel, 'create')
+            .mockResolvedValueOnce(mockForm as never)
+
+          const result = await AdminFormService.duplicateForm(
+            mockForm,
+            new ObjectId().toHexString(),
+            overrideParams,
           )
 
           expect(result.isOk()).toBe(true)
@@ -4911,9 +4903,8 @@ describe('admin-form.service', () => {
           0,
           { ...firstStep, edit: [regularId] } as any,
         )
-        const shouldSucceed = true
-        expect(result.isOk()).toBe(shouldSucceed)
-        expect(write.mock.calls.length).toBe(Number(shouldSucceed))
+        expect(result.isOk()).toBe(true)
+        expect(write).toHaveBeenCalledTimes(1)
       },
     )
 
@@ -4959,40 +4950,6 @@ describe('admin-form.service', () => {
       expect(write).toHaveBeenCalledWith(
         expect.anything(),
         { workflow: [stepOne, { ...nextStep, edit: [identityId], auth }] },
-        expect.anything(),
-      )
-    })
-
-    it('writes first_step_login to the form-level login in the same update', async () => {
-      const write = jest
-        .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
-        // @ts-ignore
-        .mockReturnValue({
-          exec: jest.fn().mockResolvedValue({ _id: 'form', workflow: [] }),
-        })
-      const original = makeForm(FormStatus.Private)
-      const retainedStep = { ...nextStep, auth: { auth_type: FormAuthType.CP } }
-      ;(original as unknown as { workflow: unknown[] }).workflow = [
-        firstStep,
-        retainedStep,
-      ]
-      const result = await AdminFormService.updateFormWorkflowStep(
-        original,
-        0,
-        {
-          ...firstStep,
-          edit: [regularId],
-          first_step_login: { auth_type: FormAuthType.NIL, esrvc_id: '' },
-        } as any,
-      )
-      expect(result.isOk()).toBe(true)
-      expect(write).toHaveBeenCalledWith(
-        expect.anything(),
-        {
-          workflow: [{ ...firstStep, edit: [regularId] }, retainedStep],
-          authType: FormAuthType.NIL,
-          esrvcId: '',
-        },
         expect.anything(),
       )
     })

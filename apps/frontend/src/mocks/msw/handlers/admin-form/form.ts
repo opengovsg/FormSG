@@ -7,8 +7,10 @@ import { AgencyId } from 'formsg-shared/types/agency'
 import {
   AttachmentSize,
   BasicField,
+  CorppassAttribute,
   FieldCreateDto,
   FormFieldDto,
+  MyInfoAttribute,
   RatingShape,
   TableFieldBase,
   TableFieldDto,
@@ -882,6 +884,30 @@ export const MOCK_FORM_FIELDS_WITH_MYINFO = [
   ...MOCK_FORM_FIELDS,
   ...MOCK_MYINFO_FIELDS,
 ]
+
+/** A Myinfo field, which needs a step with Singpass login. */
+export const MOCK_MYINFO_NAME_FIELD: FormFieldDto = {
+  _id: '620115cf3bc125001349f902',
+  title: 'Verified name',
+  description: '',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.ShortText,
+  allowPrefill: false,
+  ValidationOptions: { selectedValidation: null, customVal: null },
+  myInfo: { attr: MyInfoAttribute.Name },
+}
+
+/** A Corppass UEN field, which needs a step with Corppass login. */
+export const MOCK_CORPPASS_UEN_FIELD: FormFieldDto = {
+  _id: '620115cf3bc125001349f903',
+  title: 'Organisation UEN',
+  description: '',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.Uen,
+  corppass: { attr: CorppassAttribute.Uen },
+}
 
 export const MOCK_FORM_LOGICS = [
   // Note: this logic is actually invalid since the if field cannot be a show

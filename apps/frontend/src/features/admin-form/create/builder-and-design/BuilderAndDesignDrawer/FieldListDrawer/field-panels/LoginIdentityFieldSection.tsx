@@ -134,7 +134,7 @@ export const LoginIdentityFieldSection = ({
       index={originalIndex}
       attr={attr}
       isDisabled={isSectionDisabled}
-      isDragDisabled={isCollectedBySettings || isLoginMissing}
+      isDragDisabled={isCollectedBySettings}
       onConvert={isCollectedBySettings ? convertModal.onOpen : undefined}
     />
   ))

@@ -13,10 +13,11 @@ import { Box, Stack, Text } from '@chakra-ui/react'
 import { formatInTimeZone } from 'date-fns-tz'
 
 import {
-  FormAuthType,
   WorkflowEventType,
   WorkflowStatus,
+  WorkflowStepAuthType,
 } from 'formsg-shared/types'
+import { STEP_LOGIN_PROVIDER_LABELS } from 'formsg-shared/utils/step-login'
 
 import type { ResponsesIndividualResponse } from '~/i18n/locales/features/admin-form/responses/individual-response'
 
@@ -36,7 +37,7 @@ interface ActivityEntry {
   icon: IconType
   notificationRecipients?: string[]
   // The provider verified for a submitted step, never today's workflow setting
-  authType?: FormAuthType.MyInfo | FormAuthType.CP
+  authType?: WorkflowStepAuthType
 }
 
 export const WorkflowActivityLog = ({
@@ -234,7 +235,7 @@ export const WorkflowActivityLog = ({
                 </Text>
                 {authType && (
                   <Tag mt="0.25rem" colorScheme="secondary">
-                    {authType === FormAuthType.CP ? 'Corppass' : 'Singpass'}
+                    {STEP_LOGIN_PROVIDER_LABELS[authType]}
                   </Tag>
                 )}
                 <Text

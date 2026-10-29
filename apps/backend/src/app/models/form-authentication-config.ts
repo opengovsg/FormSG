@@ -16,7 +16,7 @@ export const getCheckedAuthenticationConfigFilter = (form: IFormDocument) => {
   const fields = form.form_fields ?? []
   filter[`form_fields.${fields.length}`] = { $exists: false }
   fields.forEach((field, index) => {
-    const sourceField = field as LoginIdentityCandidate
+    const sourceField: LoginIdentityCandidate = field
     const prefix = `form_fields.${index}`
     filter[`${prefix}._id`] = field._id
     filter[`${prefix}.fieldType`] = field.fieldType

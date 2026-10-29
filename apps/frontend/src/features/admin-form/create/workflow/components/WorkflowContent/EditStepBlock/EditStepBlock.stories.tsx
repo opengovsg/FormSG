@@ -761,11 +761,11 @@ const withStepLoginOn = (Story: StoryFn) => (
   </GrowthBookProvider>
 )
 
-const mrfSingpassFormView = (status = FormStatus.Private) => [
+const mrfSingpassFormView = [
   getAdminFormView({
     mode: FormResponseMode.Multirespondent,
     overrides: {
-      status,
+      status: FormStatus.Private,
       authType: FormAuthType.MyInfo,
       form_fields: [form_field_1, form_field_3, form_field_5, myinfo_field],
       workflow: [
@@ -803,7 +803,7 @@ export const Step1Login = {
     },
   },
   decorators: [withStepLoginOn],
-  parameters: { msw: { handlers: mrfSingpassFormView() } },
+  parameters: { msw: { handlers: mrfSingpassFormView } },
 }
 
 export const Step2LoginSingpass = {
@@ -817,7 +817,7 @@ export const Step2LoginSingpass = {
     },
   },
   decorators: [withStepLoginOn],
-  parameters: { msw: { handlers: mrfSingpassFormView() } },
+  parameters: { msw: { handlers: mrfSingpassFormView } },
 }
 
 export const Step3LoginCorppass = {
@@ -831,43 +831,5 @@ export const Step3LoginCorppass = {
     },
   },
   decorators: [withStepLoginOn],
-  parameters: { msw: { handlers: mrfSingpassFormView() } },
-}
-
-export const Step2LoginOnPublicForm = {
-  ...Step2LoginSingpass,
-  parameters: { msw: { handlers: mrfSingpassFormView(FormStatus.Public) } },
-}
-
-/** The last Singpass provider: changing it asks to delete its authentication fields. */
-export const LastProviderSwitch = {
-  ...Step1Login,
-  parameters: {
-    msw: {
-      handlers: [
-        getAdminFormView({
-          mode: FormResponseMode.Multirespondent,
-          overrides: {
-            status: FormStatus.Private,
-            authType: FormAuthType.MyInfo,
-            form_fields: [form_field_1, form_field_3, myinfo_field],
-            workflow: [
-              {
-                _id: '61e6857c9c794b0012f1c6f8',
-                workflow_type: WorkflowType.Static,
-                emails: [],
-                edit: [form_field_1._id, myinfo_field._id],
-              },
-              {
-                _id: '61e6857c9c794b0012f1c6f9',
-                workflow_type: WorkflowType.Static,
-                emails: ['approver@example.gov.sg'],
-                edit: [form_field_3._id],
-              },
-            ],
-          },
-        }),
-      ],
-    },
-  },
+  parameters: { msw: { handlers: mrfSingpassFormView } },
 }

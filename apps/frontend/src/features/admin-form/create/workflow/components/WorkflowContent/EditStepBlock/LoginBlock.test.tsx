@@ -158,7 +158,7 @@ describe('workflow authentication switch confirmation', () => {
     )
   })
 
-  it('can turn authentication off without deleting form fields, while public forms stay protected', () => {
+  it('stages deletion of last-provider fields when turning authentication off, and locks the login on public forms', () => {
     const view = render(<Harness />)
     fireEvent.click(
       screen.getByRole('button', { name: 'Turn off authentication' }),

@@ -5,7 +5,11 @@ import {
   NricFieldBase,
   UenFieldBase,
 } from '../types/field'
-import { FormAuthType, FormResponseMode } from '../types/form'
+import {
+  FormAuthType,
+  FormResponseMode,
+  FormWorkflowStepAuth,
+} from '../types/form'
 
 /**
  * Identities a Step 1 login fills into a field: MyInfo NRIC/FIN on an NRIC
@@ -24,7 +28,7 @@ export type LoginIdentityCandidate = {
 type LoginIdentityStep = {
   edit: readonly unknown[]
   // Steps after Step 1 may carry their own login; Step 1 never does.
-  auth?: { auth_type: FormAuthType; esrvc_id?: string } | null
+  auth?: FormWorkflowStepAuth | null
 }
 
 /** Names admins see in the builder and errors, and new fields' questions. */
@@ -140,17 +144,20 @@ type LoginIdentityCollectionForm = {
 }
 
 /**
- * Whether the given step owns the field, i.e. its edit list holds it. A form
- * without a workflow treats its first respondent as the owner of every field.
+ * The step whose edit list holds the field, if any. A form without a
+ * workflow treats its first respondent as the owner of every field.
  */
-export const isLoginIdentityFieldOwnedByStep = (
-  field: LoginIdentityCandidate,
-  workflow: readonly LoginIdentityStep[] | null | undefined,
-  stepIndex: number,
-): boolean => {
+export const getOwningStepIndex = (
+  field: { _id?: unknown },
+  workflow: readonly Pick<LoginIdentityStep, 'edit'>[] | null | undefined,
+): number | undefined => {
   const steps = workflow ?? []
-  if (steps.length === 0) return stepIndex === 0
-  return !!steps[stepIndex]?.edit.some((id) => String(id) === String(field._id))
+  if (steps.length === 0) return 0
+  const fieldId = String(field._id)
+  const index = steps.findIndex((step) =>
+    step.edit.some((id) => String(id) === fieldId),
+  )
+  return index === -1 ? undefined : index
 }
 
 /** The login of the step that owns the field, if any step does. */
@@ -159,23 +166,18 @@ export const getLoginIdentityFieldOwnerAuthType = (
   form: { authType: FormAuthType },
   workflow: readonly LoginIdentityStep[] | null | undefined,
 ): FormAuthType | undefined => {
-  const steps = workflow ?? []
-  if (steps.length === 0) return form.authType
-  const fieldId = String(field._id)
-  const index = steps.findIndex((step) =>
-    step.edit.some((id) => String(id) === fieldId),
-  )
-  if (index === -1) return undefined
+  const index = getOwningStepIndex(field, workflow)
+  if (index === undefined) return undefined
   return index === 0
     ? form.authType
-    : (steps[index].auth?.auth_type ?? FormAuthType.NIL)
+    : (workflow?.[index]?.auth?.auth_type ?? FormAuthType.NIL)
 }
 
 /** Whether Step 1 fills the field. Step 1's login is the form-level login. */
 export const isLoginIdentityFieldOwned = (
   field: LoginIdentityCandidate,
-  workflow: readonly LoginIdentityStep[] = [],
-): boolean => isLoginIdentityFieldOwnedByStep(field, workflow, 0)
+  workflow?: readonly LoginIdentityStep[],
+): boolean => getOwningStepIndex(field, workflow) === 0
 
 /**
  * Whether submissions record the respondent's login identity: through the
@@ -240,10 +242,8 @@ export const getLoginIdentityConfigErrors = ({
   isSubmitterIdCollectionEnabled,
   form_fields = [],
   workflow = [],
-  allowMissingLogin = false,
 }: LoginIdentityCollectionForm & {
   responseMode: FormResponseMode
-  allowMissingLogin?: boolean
 }): string[] => {
   const identityFields = form_fields.flatMap((field) => {
     const attr = getLoginIdentityAttr(field)
@@ -275,7 +275,6 @@ export const getLoginIdentityConfigErrors = ({
       workflow,
     )
     if (
-      !allowMissingLogin &&
       ownerAuthType !== undefined &&
       !getLoginIdentityAttrsForAuthType(ownerAuthType).includes(attr)
     ) {

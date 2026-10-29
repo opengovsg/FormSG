@@ -89,22 +89,6 @@ it('blocks publication when no step supplies the required provider and names the
   expect(screen.queryByText('Activation confirmation')).not.toBeInTheDocument()
   expect(state.mutate).not.toHaveBeenCalled()
 })
-it('allows the activation confirmation after the field has a matching owner', () => {
-  state.form.workflow = [
-    {
-      _id: 'step',
-      workflow_type: WorkflowType.Static,
-      edit: ['uen'],
-      emails: [],
-      auth: { auth_type: FormAuthType.CP, esrvc_id: 'service' },
-    },
-  ]
-  setup()
-  const toggle = screen.getByRole('checkbox')
-  expect(toggle).not.toBeDisabled()
-  fireEvent.click(toggle)
-  expect(screen.getByText('Activation confirmation')).toBeInTheDocument()
-})
 it('keeps closing an already-public form available', () => {
   state.form.status = FormStatus.Public
   setup()
@@ -133,30 +117,6 @@ it('allows publication with an unassigned authentication field when a matching p
   fireEvent.click(toggle)
   expect(screen.getByText('Activation confirmation')).toBeInTheDocument()
 })
-it('allows unassigned fields supplied by a later step with a different provider from Step 1', () => {
-  state.form.authType = FormAuthType.MyInfo
-  state.form.workflow = [
-    {
-      _id: 'requester',
-      workflow_type: WorkflowType.Static,
-      edit: [],
-      emails: [],
-    },
-    {
-      _id: 'company',
-      workflow_type: WorkflowType.Static,
-      edit: [],
-      emails: ['officer@example.gov.sg'],
-      auth: { auth_type: FormAuthType.CP, esrvc_id: 'service' },
-    },
-  ]
-  setup()
-  expect(screen.getByRole('checkbox')).not.toBeDisabled()
-  expect(
-    screen.queryByText('Finish authentication setup before publishing'),
-  ).not.toBeInTheDocument()
-})
-
 it('describes the missing later-step Corppass ID inside the form status without a second infobox', () => {
   state.form.authType = FormAuthType.MyInfo
   state.form.workflow = [

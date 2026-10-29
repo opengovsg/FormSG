@@ -81,7 +81,6 @@ export const StepLoginAccordion = ({
       if (saved) applyChange(index)
     })
   }
-  const loginForm = { authType: settings.authType, esrvcId: settings.esrvcId }
 
   return (
     <Stack spacing="2rem">
@@ -100,7 +99,7 @@ export const StepLoginAccordion = ({
         onChange={(index) => requestChange(index as number)}
       >
         {form.workflow.map((step, stepIndex) => {
-          const authType = getStepAuthType(loginForm, form.workflow, stepIndex)
+          const authType = getStepAuthType(settings, form.workflow, stepIndex)
           const label = isWorkflowStepAuthType(authType)
             ? STEP_LOGIN_PROVIDER_LABELS[authType]
             : authType === FormAuthType.SP

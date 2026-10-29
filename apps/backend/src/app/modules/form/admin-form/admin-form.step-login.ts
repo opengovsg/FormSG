@@ -46,13 +46,13 @@ export const REMOVE_MYINFO_FIELDS_FIRST =
 export const CLOSE_FORM_BEFORE_LOGIN_CHANGE =
   'Close your form to new responses before changing its login settings'
 
-export type StepLoginWriteError =
+type StepLoginWriteError =
   | MalformedParametersError
   | ForbiddenFormError
   | FormOpenToResponsesError
 
 /** Form-level login as `first_step_login` writes it. */
-export type FormLoginUpdate = {
+type FormLoginUpdate = {
   authType: FormAuthType
   esrvcId?: string
 }
@@ -184,7 +184,7 @@ export const checkWorkflowStepLoginWrite = ({
   if (form.responseMode !== FormResponseMode.Multirespondent) return ok({})
 
   const isFirstStep = stepNumber === 0
-  const nextAuth = step.auth ?? undefined
+  const nextAuth = step.auth
   if (isFirstStep && nextAuth) {
     return err(new MalformedParametersError(STEP_ONE_LOGIN_IN_SETTINGS))
   }
@@ -192,7 +192,7 @@ export const checkWorkflowStepLoginWrite = ({
     return err(new MalformedParametersError(FIRST_STEP_LOGIN_ONLY_ON_STEP_ONE))
   }
 
-  const savedAuth = getSavedWorkflow(form)[stepNumber]?.auth ?? undefined
+  const savedAuth = getSavedWorkflow(form)[stepNumber]?.auth
   const isAuthChanged = !isSameAuth(savedAuth, nextAuth)
   // Adding a login or switching provider is new adoption; keeping, removing
   // or re-keying a saved one is maintenance.

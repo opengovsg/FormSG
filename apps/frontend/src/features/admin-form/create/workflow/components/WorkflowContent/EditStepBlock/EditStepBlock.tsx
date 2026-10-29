@@ -11,7 +11,6 @@ import {
   TabPanels,
   Tabs,
 } from '@chakra-ui/react'
-import isEqual from 'lodash/isEqual'
 
 import {
   FirstStepLoginInput,
@@ -50,6 +49,7 @@ import { useIsStepLoginShown } from '../../../hooks/useIsStepLoginShown'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
 import { EditStepInputs } from '../../../types'
+import { hasReviewedFormChanged } from '../../../utils/authFieldRemoval'
 import { getGuidedSecondaryAction } from '../../../utils/guidedStepPolicy'
 import { SpotlightGroup } from '../../Spotlight'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
@@ -92,7 +92,7 @@ const normaliseEsrvcId = (
 }
 
 /** A later step's login as sent: absent when the step has none. */
-export const normaliseStepAuth = (
+const normaliseStepAuth = (
   auth: FormWorkflowStepAuth | null | undefined,
 ): FormWorkflowStepAuth | undefined =>
   auth
@@ -130,6 +130,15 @@ export const buildWorkflowStep = (
     inputs.step_name = undefined
   }
 
+  const fieldDeletion = {
+    ...(inputs.expected_last_modified
+      ? { expected_last_modified: inputs.expected_last_modified }
+      : {}),
+    ...(inputs.delete_auth_field_ids?.length
+      ? { delete_auth_field_ids: inputs.delete_auth_field_ids }
+      : {}),
+  }
+
   // Step 1 is always "anyone with the link", represented as a static step with
   // no emails. Legacy forms (pre #7794) may still store step 1 as dynamic with
   // a `field` that can point at a deleted email field, which the backend
@@ -139,12 +148,7 @@ export const buildWorkflowStep = (
   if (isFirstStep) {
     return {
       _id: inputs._id,
-      ...(inputs.expected_last_modified
-        ? { expected_last_modified: inputs.expected_last_modified }
-        : {}),
-      ...(inputs.delete_auth_field_ids?.length
-        ? { delete_auth_field_ids: inputs.delete_auth_field_ids }
-        : {}),
+      ...fieldDeletion,
       workflow_type: WorkflowType.Static,
       edit: inputs.edit,
       approval_field: inputs.approval_field,
@@ -163,12 +167,7 @@ export const buildWorkflowStep = (
     auth?: FormWorkflowStepAuth
   } = {
     _id: inputs._id,
-    ...(inputs.expected_last_modified
-      ? { expected_last_modified: inputs.expected_last_modified }
-      : {}),
-    ...(inputs.delete_auth_field_ids?.length
-      ? { delete_auth_field_ids: inputs.delete_auth_field_ids }
-      : {}),
+    ...fieldDeletion,
     workflow_type: inputs.workflow_type,
     edit: inputs.edit,
     approval_field: inputs.approval_field,
@@ -303,18 +302,7 @@ export const EditStepBlock = ({
             throw new Error(
               'This form changed. Reload the workflow before deleting fields.',
             )
-          const reviewedKeys = [
-            'authType',
-            'esrvcId',
-            'workflow',
-            'form_fields',
-            'form_logics',
-          ] as const
-          if (
-            reviewedKeys.some(
-              (key) => !isEqual(latest[key], destructiveSaveBaseline[key]),
-            )
-          )
+          if (hasReviewedFormChanged(latest, destructiveSaveBaseline))
             throw new Error(
               'This form changed while you were editing. Cancel and reopen the step to review the fields and rules before deleting them.',
             )

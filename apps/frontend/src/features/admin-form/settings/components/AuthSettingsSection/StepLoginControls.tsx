@@ -15,7 +15,7 @@ import { EsrvcHelperText } from './EsrvcHelperText'
 const COPY_KEY = 'features.adminForm.sidebar.workflow.stepLogin'
 
 // Turning login on picks Singpass, as the form-level toggle does.
-export const DEFAULT_STEP_LOGIN_AUTH_TYPE = FormAuthType.MyInfo
+const DEFAULT_STEP_LOGIN_AUTH_TYPE = FormAuthType.MyInfo
 
 const LOGIN_OPTIONS = [
   [FormAuthType.MyInfo, `${COPY_KEY}.singpass`],
@@ -30,15 +30,10 @@ export interface StepLoginControlsProps {
   esrvcId: string
   onAuthTypeChange: (authType: StepLoginAuthType) => void
   onEsrvcIdChange: (esrvcId: string) => void
-  // Settings saves on blur; the editor saves with the step.
-  onEsrvcIdBlur?: () => void
   isDisabled: boolean
   isLoading?: boolean
-  isEsrvcIdLoading?: boolean
   // Why the controls are disabled, if any; shown above the toggle.
   notice?: string
-  // Shown under the controls, e.g. a login change the step's fields block.
-  errorMessage?: React.ReactNode
   // Heading-style toggle label, as in the workflow editor.
   isTitleToggle?: boolean
   idPrefix: string
@@ -54,12 +49,9 @@ export const StepLoginControls = ({
   esrvcId,
   onAuthTypeChange,
   onEsrvcIdChange,
-  onEsrvcIdBlur,
   isDisabled,
   isLoading = false,
-  isEsrvcIdLoading = false,
   notice,
-  errorMessage,
   isTitleToggle = false,
   idPrefix,
 }: StepLoginControlsProps): JSX.Element => {
@@ -109,7 +101,6 @@ export const StepLoginControls = ({
                 <FormControl
                   id={esrvcIdInputId}
                   isDisabled={isDisabled}
-                  isReadOnly={isEsrvcIdLoading}
                   isInvalid={isEsrvcIdInvalid}
                 >
                   <Stack
@@ -126,7 +117,6 @@ export const StepLoginControls = ({
                       value={esrvcId}
                       placeholder={t(`${COPY_KEY}.esrvcIdPlaceholder`)}
                       onChange={(e) => onEsrvcIdChange(e.target.value)}
-                      onBlur={onEsrvcIdBlur}
                     />
                     <FormErrorMessage>
                       {t(`${COPY_KEY}.esrvcIdWhitespace`)}
@@ -137,11 +127,6 @@ export const StepLoginControls = ({
             </Box>
           ))}
         </Radio.RadioGroup>
-      ) : null}
-      {errorMessage ? (
-        <InlineMessage variant="error" mt="1rem">
-          {errorMessage}
-        </InlineMessage>
       ) : null}
     </Box>
   )

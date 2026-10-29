@@ -8,7 +8,10 @@ import { Environment } from '../../../../types'
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { ControllerHandler } from '../../core/core.types'
-import { getMrfContinuationDestination } from '../../submission/multirespondent-submission/step-auth'
+import {
+  decodeQuery,
+  getMrfContinuationDestination,
+} from '../../submission/multirespondent-submission/step-auth'
 
 import {
   MYINFO_FAPI_SESSION_COOKIE_IDENTITY,
@@ -219,15 +222,6 @@ const recordFailure = async (
       meta: { ...meta, reason: 'persist_failed' },
       error: result.error,
     })
-  }
-}
-
-const decodeQuery = (encodedQuery?: string): string | undefined => {
-  if (!encodedQuery) return undefined
-  try {
-    return Buffer.from(encodedQuery, 'base64').toString('utf8')
-  } catch {
-    return undefined
   }
 }
 

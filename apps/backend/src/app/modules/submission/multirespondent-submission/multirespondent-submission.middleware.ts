@@ -21,7 +21,7 @@ import {
 import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'
 import {
   getStepAuthType,
-  hasStepLoginConfig,
+  hasLaterStepLogin,
 } from 'formsg-shared/utils/step-login'
 import { StatusCodes } from 'http-status-codes'
 import { uniq } from 'lodash'
@@ -113,6 +113,7 @@ import { resolveMrfMyInfoReadOnlyFields } from './myinfo-read-only-fields'
 import {
   clearMrfStepAuthCookie,
   getLoginIdentityValue,
+  ResolvedMrfStepAuth,
   resolveMrfStepAuth,
   verifyMrfStepAuthCookie,
 } from './step-auth'
@@ -339,7 +340,8 @@ export const verifyMrfStepAuth = (
   next: NextFunction,
 ) => {
   const { formDef, mrfSubmission } = req.formsg
-  if (!mrfSubmission || !hasStepLoginConfig(mrfSubmission)) return next()
+  if (!mrfSubmission || !hasLaterStepLogin(mrfSubmission.workflow))
+    return next()
   const logMeta = {
     action: 'verifyMrfStepAuth',
     formId: String(formDef._id),
@@ -1056,7 +1058,9 @@ export const verifyMyInfoHashes = async (
   }
 
   if (mrfSubmission) {
-    return stepAuth ? verifyStepMyInfoHashes(req, res, next, logMeta) : next()
+    return stepAuth
+      ? verifyStepMyInfoHashes(req, res, next, logMeta, stepAuth)
+      : next()
   }
   if (formDef.authType !== FormAuthType.MyInfo) {
     return next()
@@ -1114,14 +1118,14 @@ const verifyStepMyInfoHashes = (
   res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
   next: NextFunction,
   logMeta: { action: string } & Record<string, unknown>,
+  stepAuth: ResolvedMrfStepAuth,
 ) => {
   const { formId } = req.params
-  const { mrfSubmission, stepAuth, loginFilledFieldIds = [] } = req.formsg
-  const session = stepAuth?.session
-  if (!stepAuth || !session) return next()
+  const { mrfSubmission, loginFilledFieldIds = [] } = req.formsg
+  const { session } = stepAuth
+  if (!session) return next()
 
   const withReadOnly = (verifiedFieldIds: string[]) => {
-    req.formsg.myInfoVerifiedFieldIds = verifiedFieldIds
     req.formsg.myInfoReadOnlyFields = uniq([
       ...(mrfSubmission?.myInfoReadOnlyFields ?? []),
       ...verifiedFieldIds,

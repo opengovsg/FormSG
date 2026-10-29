@@ -127,8 +127,18 @@ describe('WorkflowActivityLog', () => {
     expect(screen.getAllByText('Corppass')).toHaveLength(1)
   })
 
-  it('omits authentication tags for old or unauthenticated submissions', () => {
-    render(<WorkflowActivityLog history={history} />)
+  it('omits authentication tags for old or unauthenticated submissions, even if a step now has a login', () => {
+    render(
+      <WorkflowActivityLog
+        history={{
+          ...history,
+          workflow: history.workflow.map((step) => ({
+            ...step,
+            auth: { auth_type: FormAuthType.CP, esrvc_id: 'service' },
+          })),
+        }}
+      />,
+    )
     expect(screen.queryByText('Singpass')).not.toBeInTheDocument()
     expect(screen.queryByText('Corppass')).not.toBeInTheDocument()
   })

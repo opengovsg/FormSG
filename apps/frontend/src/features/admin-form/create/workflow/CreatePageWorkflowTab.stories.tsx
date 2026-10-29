@@ -5,7 +5,6 @@ import { featureFlags } from 'formsg-shared/constants'
 import {
   AttachmentSize,
   BasicField,
-  CorppassAttribute,
   FormFieldDto,
   MyInfoAttribute,
 } from 'formsg-shared/types/field'
@@ -22,6 +21,8 @@ import {
 import {
   createFormBuilderMocks,
   getAdminFormSettings,
+  MOCK_CORPPASS_UEN_FIELD,
+  MOCK_MYINFO_NAME_FIELD,
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 import { getUser } from '~/mocks/msw/handlers/user'
@@ -629,7 +630,7 @@ SingleStepV4Webhook.parameters = webhookWorkflowParameters(
   'v4',
 )
 
-const proposedDirectionFlags = new GrowthBook({
+const stepLoginFlags = new GrowthBook({
   features: {
     [featureFlags.workflowBuilderRedesign]: { defaultValue: true },
     [featureFlags.mrfStepLogin]: { defaultValue: true },
@@ -637,7 +638,7 @@ const proposedDirectionFlags = new GrowthBook({
   },
 })
 
-const proposalFields: FormFieldDto[] = [
+const stepLoginFields: FormFieldDto[] = [
   { ...form_field_5, title: 'Requester email' },
   { ...form_field_6, title: 'Approver email' },
   { ...form_field_1, title: 'Approve this request?' },
@@ -650,47 +651,27 @@ const proposalFields: FormFieldDto[] = [
     fieldType: BasicField.Nric,
     myInfo: { attr: MyInfoAttribute.UinFin },
   },
-  {
-    _id: '620115cf3bc125001349f902',
-    title: 'Verified name',
-    description: '',
-    required: true,
-    disabled: false,
-    fieldType: BasicField.ShortText,
-    ValidationOptions: {
-      customVal: null,
-      selectedValidation: null,
-    },
-    myInfo: { attr: MyInfoAttribute.Name },
-  },
-  {
-    _id: '620115cf3bc125001349f903',
-    title: 'Organisation UEN',
-    description: '',
-    required: true,
-    disabled: false,
-    fieldType: BasicField.Uen,
-    corppass: { attr: CorppassAttribute.Uen },
-  },
+  MOCK_MYINFO_NAME_FIELD,
+  MOCK_CORPPASS_UEN_FIELD,
 ]
 
-/** Team discussion entry point. Saved cards open into the proposed three-tab editor. */
-export const ProposedDirection = Template.bind({})
-ProposedDirection.decorators = [
+/** Singpass and Corppass logins on different steps. */
+export const StepLoginMixedProviders = Template.bind({})
+StepLoginMixedProviders.decorators = [
   (Story: StoryFn) => (
-    <GrowthBookProvider growthbook={proposedDirectionFlags}>
+    <GrowthBookProvider growthbook={stepLoginFlags}>
       <Story />
     </GrowthBookProvider>
   ),
 ]
-ProposedDirection.parameters = {
+StepLoginMixedProviders.parameters = {
   msw: {
     handlers: [
       ...buildMswRoutes({
         ...FORM_WITH_WORKFLOW,
         status: FormStatus.Private,
         authType: FormAuthType.MyInfo,
-        form_fields: proposalFields,
+        form_fields: stepLoginFields,
         workflow: [
           {
             _id: '61e6857c9c794b0012f1c6f8',
@@ -704,7 +685,7 @@ ProposedDirection.parameters = {
             workflow_type: WorkflowType.Static,
             emails: ['approver@agency.gov.sg'],
             step_name: 'Approving officer',
-            edit: [form_field_1._id, '620115cf3bc125001349f903'],
+            edit: [form_field_1._id, MOCK_CORPPASS_UEN_FIELD._id],
             approval_field: form_field_1._id,
             is_approval_enabled: true,
             auth: { auth_type: FormAuthType.CP },
@@ -731,9 +712,5 @@ ProposedDirection.parameters = {
       }),
       patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
     ],
-  },
-  documentation: {
-    storyDescription:
-      'Proposed direction for team discussion: single person input, three workflow tabs, Singpass and Corppass on different steps. Open Step 2 and select Verified name to explore switch-and-unassign. Requester NRIC/FIN stays visible as Assigned to Step 1. Step 3 demonstrates enable-and-assign. Step 1 contains form restrictions.',
   },
 }

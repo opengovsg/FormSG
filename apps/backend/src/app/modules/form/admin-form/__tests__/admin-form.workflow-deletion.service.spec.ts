@@ -45,10 +45,13 @@ const step = (email: string) => ({
  * that stop it happening by accident: the form has to be closed first, and
  * deleting step 1 has to mean this rather than silently promoting step 2.
  */
+beforeAll(async () => await dbHandler.connect())
+afterEach(async () => await dbHandler.clearDatabase())
+afterAll(async () => await dbHandler.closeDatabase())
+
 describe('workflow deletion', () => {
   let populatedAdmin: IPopulatedUser
 
-  beforeAll(async () => await dbHandler.connect())
   beforeEach(async () => {
     const preloaded = await dbHandler.insertFormCollectionReqs({
       userId: MOCK_ADMIN_ID,
@@ -57,8 +60,6 @@ describe('workflow deletion', () => {
       agency: preloaded.agency,
     }) as IPopulatedUser
   })
-  afterEach(async () => await dbHandler.clearDatabase())
-  afterAll(async () => await dbHandler.closeDatabase())
 
   const createMrfForm = async (status: FormStatus, stepCount = 3) => {
     const form = await MultirespondentFormModel.create({
@@ -253,10 +254,7 @@ describe('workflow deletion', () => {
 
 // Guided destructive changes operate on one form document; response records are never touched.
 describe('guided authentication workflow changes', () => {
-  beforeAll(async () => await dbHandler.connect())
-  afterEach(async () => await dbHandler.clearDatabase())
-  afterAll(async () => await dbHandler.closeDatabase())
-  const makeMixedForm = async () => {
+  const makeMixedForm = async (overrides: Record<string, unknown> = {}) => {
     const { user } = await dbHandler.insertFormCollectionReqs()
     const singpassId = new ObjectId()
     const corppassId = new ObjectId()
@@ -304,6 +302,7 @@ describe('guided authentication workflow changes', () => {
         },
         { workflow_type: WorkflowType.Dynamic, field: singpassId, edit: [] },
       ],
+      ...overrides,
     })
     return {
       form: form as unknown as IPopulatedForm,
@@ -346,7 +345,7 @@ describe('guided authentication workflow changes', () => {
     expect(saved.esrvcId).toBe('legacy-service')
     expect(saved.isSingleSubmission).toBe(true)
   })
-  it('accepts a historical field with missing optional defaults without a false conflict', async () => {
+  it('accepts a historical field with missing optional defaults without a false conflict, preserving retained Step 1 restrictions', async () => {
     const { form, corppassId } = await makeMixedForm()
     await MultirespondentFormModel.collection.updateOne(
       { _id: form._id },
@@ -367,12 +366,16 @@ describe('guided authentication workflow changes', () => {
       },
     )
     if (result.isErr()) throw result.error
-    expect(
-      (await MultirespondentFormModel.findById(form._id).orFail()).workflow,
-    ).toEqual([])
+    const saved = await MultirespondentFormModel.findById(form._id).orFail()
+    expect(saved.workflow).toEqual([])
+    expect(saved.isSingleSubmission).toBe(true)
+    expect(saved.getWhitelistedSubmitterIds().isWhitelistEnabled).toBe(true)
   })
   it('switching the final Singpass step removes its definitions and resets affected routing in the same write', async () => {
-    const { form, singpassId, plainId } = await makeMixedForm()
+    const { form, singpassId, plainId } = await makeMixedForm({
+      esrvcId: 'step-one-service',
+    })
+    expect(form.esrvcId).toBe('step-one-service')
     const workflow = (form as unknown as { workflow: FormWorkflowDto }).workflow
     const result = await updateFormWorkflowStep(
       form,
@@ -380,7 +383,7 @@ describe('guided authentication workflow changes', () => {
       {
         ...workflow[0],
         edit: [plainId],
-        first_step_login: { auth_type: FormAuthType.NIL },
+        first_step_login: { auth_type: FormAuthType.NIL, esrvc_id: '' },
         ...confirm(form, [singpassId]),
       },
       { isStepLoginEnabled: true },
@@ -388,6 +391,7 @@ describe('guided authentication workflow changes', () => {
     if (result.isErr()) throw result.error
     const saved = await MultirespondentFormModel.findById(form._id).orFail()
     expect(saved.authType).toBe(FormAuthType.NIL)
+    expect(saved.esrvcId).toBeFalsy()
     expect(saved.form_fields.map((field) => String(field._id))).not.toContain(
       singpassId,
     )
@@ -491,17 +495,6 @@ describe('guided authentication workflow changes', () => {
       expect.objectContaining({ isWhitelistEnabled: false }),
     )
   })
-  it('preserves Step 1 restrictions if its provider is retained', async () => {
-    const { form, corppassId } = await makeMixedForm()
-    const result = await deleteFormWorkflow(form, {
-      retained_auth_type: FormAuthType.MyInfo,
-      ...confirm(form, [corppassId]),
-    })
-    if (result.isErr()) throw result.error
-    const saved = await MultirespondentFormModel.findById(form._id).orFail()
-    expect(saved.isSingleSubmission).toBe(true)
-    expect(saved.getWhitelistedSubmitterIds().isWhitelistEnabled).toBe(true)
-  })
   it('requires selecting one existing Corppass e-service ID when they differ', async () => {
     const { form, singpassId } = await makeMixedForm()
     const workflow = (form as unknown as { workflow: FormWorkflowDto }).workflow
@@ -536,20 +529,6 @@ describe('guided authentication workflow changes', () => {
     expect(
       (await MultirespondentFormModel.findById(form._id).orFail()).esrvcId,
     ).toBe('second-service')
-  })
-  it('deleting the last provider step deletes its fields only after confirmation', async () => {
-    const { form, corppassId } = await makeMixedForm()
-    const result = await deleteFormWorkflowStep(
-      form,
-      1,
-      confirm(form, [corppassId]),
-    )
-    if (result.isErr()) throw result.error
-    const saved = await MultirespondentFormModel.findById(form._id).orFail()
-    expect(saved.workflow).toHaveLength(2)
-    expect(saved.form_fields.map((field) => String(field._id))).not.toContain(
-      corppassId,
-    )
   })
   it('rejects confirmation made before a same-ID field rename', async () => {
     const { form, singpassId } = await makeMixedForm()

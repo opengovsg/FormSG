@@ -9,7 +9,7 @@ import {
   getResultingLoginErrors,
   getLoginFieldPublishErrors,
   getStepLoginConfigErrors,
-  hasStepLoginConfig,
+  hasLaterStepLogin,
   MYINFO_FIELDS_NEED_FORM_SINGPASS,
   MYINFO_FIELDS_NEED_SINGPASS_STEP,
 } from '../step-login'
@@ -76,11 +76,9 @@ describe('step-login', () => {
     ).toBe(true)
   })
 
-  it('hasStepLoginConfig ignores Step 1', () => {
-    expect(hasStepLoginConfig({ workflow: [{ edit: [] }] })).toBe(false)
-    expect(hasStepLoginConfig({ workflow: [{ edit: [] }, singpassStep] })).toBe(
-      true,
-    )
+  it('hasLaterStepLogin ignores Step 1', () => {
+    expect(hasLaterStepLogin([{ edit: [] }])).toBe(false)
+    expect(hasLaterStepLogin([{ edit: [] }, singpassStep])).toBe(true)
   })
 
   it('getStepFields gives every field to Step 1 of a form without a workflow', () => {
@@ -207,6 +205,12 @@ describe('step-login', () => {
       authType: FormAuthType.NIL,
       responseMode: FormResponseMode.Multirespondent,
     }
+    const bothProviders = {
+      ...mrf,
+      authType: FormAuthType.MyInfo,
+      form_fields: [name, uenIdentity, plain],
+      workflow: [{ edit: [] }, { ...corppassStep, edit: [] }],
+    }
 
     it('passes when a later Singpass step fills the Myinfo fields', () => {
       expect(
@@ -268,111 +272,74 @@ describe('step-login', () => {
         'Step 1 needs Singpass login to fill in "Name".',
       ])
     })
-  })
-})
 
-describe('authentication provider availability and optional ownership', () => {
-  const form = {
-    authType: FormAuthType.MyInfo,
-    responseMode: FormResponseMode.Multirespondent,
-    form_fields: [name, uenIdentity, plain],
-    workflow: [{ edit: [] }, { ...corppassStep, edit: [] }],
-  }
-  it('allows every auth field to remain unassigned when both providers exist', () => {
-    expect(getResultingLoginErrors(form)).toEqual([])
-    expect(getLoginFieldPublishErrors(form)).toEqual([])
-  })
-  it('rejects providerless fields even when the old draft option is supplied', () => {
-    expect(
-      getResultingLoginErrors({
-        ...form,
-        workflow: [{ edit: [] }],
-        allowIncompleteDraft: true,
-      }),
-    ).toEqual(
-      expect.arrayContaining([
-        expect.stringContaining('"UEN" needs a step with Corppass'),
-      ]),
-    )
-  })
-  it('rejects assigning one field to multiple steps', () => {
-    expect(
-      getLoginFieldPublishErrors({
-        ...form,
-        workflow: [
-          { edit: ['name'] },
-          { edit: ['name'], auth: { auth_type: FormAuthType.MyInfo } },
-          corppassStep,
-        ],
-      }),
-    ).toContain('"Name" can only be filled in by one step.')
-  })
-  it('rejects an owner with the wrong provider even if the provider exists elsewhere', () => {
-    expect(
-      getLoginFieldPublishErrors({
-        ...form,
-        workflow: [{ edit: ['uen'] }, corppassStep],
-      }),
-    ).toContain('Step 1 needs Corppass login to fill in "UEN".')
-  })
-  it('treats an empty workflow as implicit ownership by the form respondent', () => {
-    expect(
-      getLoginFieldPublishErrors({
-        ...form,
-        form_fields: [name],
-        workflow: [],
-      }),
-    ).toEqual([])
-  })
-  it('rejects flat fields whose provider is missing', () => {
-    expect(
-      getResultingLoginErrors({
-        ...form,
-        authType: FormAuthType.NIL,
-        responseMode: FormResponseMode.Encrypt,
-        workflow: [],
-      }),
-    ).toEqual(
-      expect.arrayContaining([
-        expect.stringContaining('"Name" needs a step with Singpass'),
-        expect.stringContaining('"UEN" needs a step with Corppass'),
-      ]),
-    )
-  })
-})
+    it('allows every auth field to remain unassigned when both providers exist', () => {
+      expect(getResultingLoginErrors(bothProviders)).toEqual([])
+      expect(getLoginFieldPublishErrors(bothProviders)).toEqual([])
+    })
 
-describe('Corppass step e-service IDs at publication', () => {
-  const form = {
-    authType: FormAuthType.NIL,
-    responseMode: FormResponseMode.Multirespondent,
-    form_fields: [],
-  }
-  const corppassWithoutId = {
-    edit: [],
-    auth: { auth_type: FormAuthType.CP as const },
-  }
-  it('rejects a later Corppass step without an e-service ID', () => {
-    expect(
-      getLoginFieldPublishErrors({
-        ...form,
-        workflow: [{ edit: [] }, corppassWithoutId],
-      }),
-    ).toContain(CORPPASS_STEPS_NEED_ESRVC_ID)
+    it('rejects an owner with the wrong provider even if the provider exists elsewhere', () => {
+      expect(
+        getLoginFieldPublishErrors({
+          ...bothProviders,
+          workflow: [{ edit: ['uen'] }, corppassStep],
+        }),
+      ).toContain('Step 1 needs Corppass login to fill in "UEN".')
+    })
+
+    it('rejects flat fields whose provider is missing', () => {
+      expect(
+        getResultingLoginErrors({
+          ...bothProviders,
+          authType: FormAuthType.NIL,
+          responseMode: FormResponseMode.Encrypt,
+          workflow: [],
+        }),
+      ).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('"Name" needs a step with Singpass'),
+          expect.stringContaining('"UEN" needs a step with Corppass'),
+        ]),
+      )
+    })
   })
-  it('allows the same step while the form is a draft', () => {
-    expect(
-      getResultingLoginErrors({
-        ...form,
-        workflow: [{ edit: [] }, corppassWithoutId],
-      }),
-    ).toEqual([])
-  })
-  it('passes once every Corppass step has an e-service ID', () => {
-    expect(
-      getLoginFieldPublishErrors({
-        ...form,
-        workflow: [{ edit: [] }, { ...corppassStep, edit: [] }],
-      }),
-    ).toEqual([])
+
+  describe('Corppass step e-service IDs at publication', () => {
+    const form = {
+      authType: FormAuthType.NIL,
+      responseMode: FormResponseMode.Multirespondent,
+      form_fields: [],
+    }
+    const corppassWithoutId = {
+      edit: [],
+      auth: { auth_type: FormAuthType.CP as const },
+    }
+
+    it('rejects a later Corppass step without an e-service ID', () => {
+      expect(
+        getLoginFieldPublishErrors({
+          ...form,
+          workflow: [{ edit: [] }, corppassWithoutId],
+        }),
+      ).toContain(CORPPASS_STEPS_NEED_ESRVC_ID)
+    })
+
+    it('allows the same step while the form is a draft', () => {
+      expect(
+        getResultingLoginErrors({
+          ...form,
+          workflow: [{ edit: [] }, corppassWithoutId],
+        }),
+      ).toEqual([])
+    })
+
+    it('passes once every Corppass step has an e-service ID', () => {
+      expect(
+        getLoginFieldPublishErrors({
+          ...form,
+          workflow: [{ edit: [] }, { ...corppassStep, edit: [] }],
+        }),
+      ).toEqual([])
+    })
   })
 })

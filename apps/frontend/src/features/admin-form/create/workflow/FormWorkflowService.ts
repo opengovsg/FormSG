@@ -1,7 +1,7 @@
 import {
-  FormAuthType,
   FormWorkflowDto,
   FormWorkflowStepWriteDto,
+  WorkflowStepAuthType,
 } from 'formsg-shared/types/form'
 
 import { ApiService } from '~services/ApiService'
@@ -23,7 +23,7 @@ export interface AuthFieldDeletionConfirmation {
   delete_auth_field_ids?: string[]
 }
 export interface DeleteWorkflowOptions extends AuthFieldDeletionConfirmation {
-  retained_auth_type?: FormAuthType.MyInfo | FormAuthType.CP
+  retained_auth_type?: WorkflowStepAuthType
   retained_esrvc_id?: string
 }
 

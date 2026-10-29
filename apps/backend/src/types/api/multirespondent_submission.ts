@@ -53,8 +53,6 @@ export type MultirespondentFormLoadedDto = {
   stepAuth?: ResolvedMrfStepAuth
   // This step's identity answers, filled from its verified login.
   loginFilledFieldIds?: string[]
-  // This step's MyInfo answers that matched their scoped hashes.
-  myInfoVerifiedFieldIds?: string[]
 }
 
 export type MultirespondentFormCompleteDto = MultirespondentFormLoadedDto & {

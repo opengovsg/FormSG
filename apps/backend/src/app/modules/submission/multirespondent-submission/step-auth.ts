@@ -47,14 +47,11 @@ const PREFILL_QUERY_ID_KEY = 'queryId'
 // lost its binding cookie must not be handled as a Step 1 login.
 const MRF_STEP_LOGIN_QUERY_KEY = 'mrfStepSubmissionId'
 
-const decodeQuery = (encodedQuery?: string): string => {
-  if (!encodedQuery) return ''
-  try {
-    return Buffer.from(encodedQuery, 'base64').toString('utf8')
-  } catch {
-    return ''
-  }
-}
+/** Base64 decoding of a string never throws. */
+export const decodeQuery = (encodedQuery?: string): string | undefined =>
+  encodedQuery
+    ? Buffer.from(encodedQuery, 'base64').toString('utf8')
+    : undefined
 
 /** The login's encodedQuery with the later-step marker added. */
 export const withMrfStepLoginMarker = (
