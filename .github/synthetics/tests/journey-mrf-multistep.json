@@ -3,14 +3,8 @@
   "type": "browser",
   "status": "paused",
   "message": "CI smoke journey — create MRF form with a 2-step workflow (step 2 = static email), publish, submit step 1 publicly, open the 'Action required' invitation from the mailbox, complete step 2. Runs only via CI triggers. Steps named PLACEHOLDER must be recorded once in the Datadog UI (email OTP extraction has no public API schema), then reconciled with sync.sh pull.",
-  "tags": [
-    "team:formsg",
-    "ci:formsg-smoke",
-    "managed-by:formsg-repo"
-  ],
-  "locations": [
-    "aws:ap-southeast-1"
-  ],
+  "tags": ["team:formsg", "ci:formsg-smoke", "managed-by:formsg-repo"],
+  "locations": ["aws:ap-southeast-1"],
   "config": {
     "request": {
       "method": "GET",
@@ -39,9 +33,7 @@
     ]
   },
   "options": {
-    "device_ids": [
-      "chrome.laptop_large"
-    ],
+    "device_ids": ["chrome.laptop_large"],
     "tick_every": 604800,
     "min_failure_duration": 0,
     "retry": {
@@ -298,6 +290,44 @@
           }
         }
       }
+    },
+    {
+      "type": "click",
+      "name": "Form origin: pick 'New' (screen absent when enablePaperTrackingSetUpPage flag is off)",
+      "timeout": 15,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//label[.//input[@value='new']]"
+              }
+            ]
+          }
+        }
+      },
+      "allowFailure": true
+    },
+    {
+      "type": "click",
+      "name": "Form origin: next step (absent when enablePaperTrackingSetUpPage flag is off)",
+      "timeout": 15,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "css",
+                "value": "[data-dd-action-name='dashboard.create.origin_next']"
+              }
+            ]
+          }
+        }
+      },
+      "allowFailure": true
     },
     {
       "type": "extractFromJavascript",
