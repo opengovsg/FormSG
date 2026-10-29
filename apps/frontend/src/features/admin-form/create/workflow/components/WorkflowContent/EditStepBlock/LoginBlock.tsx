@@ -1,29 +1,32 @@
 import { useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Link as ReactLink, useParams } from 'react-router-dom'
 import { Text } from '@chakra-ui/react'
 
 import {
   FirstStepLoginInput,
   FormAuthType,
+  FormResponseMode,
   FormStatus,
+  MultirespondentFormSettings,
   StepLoginAuthType,
 } from 'formsg-shared/types'
 import { getStepFieldsNeedingLogin } from 'formsg-shared/utils/step-login'
 
 import { textStyles } from '~theme/textStyles'
-import {
-  ADMINFORM_ROUTE,
-  ADMINFORM_SETTINGS_SINGPASS_SUBROUTE,
-} from '~constants/routes'
-import Link from '~components/Link'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { StepLoginControls } from '~features/admin-form/settings/components/AuthSettingsSection/StepLoginControls'
+import {
+  createStepOneLoginRestrictionsDraft,
+  StepOneLoginRestrictions,
+} from '~features/admin-form/settings/components/AuthSettingsSection/StepOneLoginRestrictions'
+import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
+import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { EditStepInputs } from '../../../types'
+import { useIsSpotlightActiveSection } from '../../Spotlight'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { FIELDS_TO_EDIT_NAME } from './EditStepBlock'
@@ -52,7 +55,8 @@ export const LoginBlock = ({
   isLoading,
 }: LoginBlockProps): JSX.Element | null => {
   const { t } = useTranslation()
-  const { formId } = useParams()
+  const isRedesign = useIsWorkflowBuilderRedesign()
+  const isGuidedSection = useIsSpotlightActiveSection()
   const { data: form } = useAdminForm()
   const { formFields = [] } = useAdminFormWorkflow()
   const { watch, setValue } = formMethods
@@ -110,7 +114,9 @@ export const LoginBlock = ({
 
   return (
     <EditStepBlockContainer>
-      <Text style={textStyles.h4}>{t(`${COPY_KEY}.title`)}</Text>
+      {!isRedesign || isGuidedSection ? (
+        <Text style={textStyles.h4}>{t(`${COPY_KEY}.title`)}</Text>
+      ) : null}
       <StepLoginControls
         idPrefix={`step-${stepNumber}-login`}
         authType={login.auth_type}
@@ -125,16 +131,51 @@ export const LoginBlock = ({
         notice={isFormPublic ? t(`${COPY_KEY}.closeFormToEdit`) : undefined}
         errorMessage={blockedMessage}
       />
-      {isFirstStep ? (
-        <Link
-          as={ReactLink}
-          to={`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_SETTINGS_SINGPASS_SUBROUTE}`}
-          textStyle="body-2"
-          alignSelf="flex-start"
-        >
-          {t(`${COPY_KEY}.manageRestrictions`)}
-        </Link>
+      {isFirstStep && login.auth_type !== FormAuthType.NIL ? (
+        <WorkflowStepOneRestrictions
+          formMethods={formMethods}
+          isDisabled={isFormPublic || isLoading}
+        />
       ) : null}
     </EditStepBlockContainer>
+  )
+}
+
+const WorkflowStepOneRestrictions = ({
+  formMethods,
+  isDisabled,
+}: {
+  formMethods: UseFormReturn<EditStepInputs>
+  isDisabled: boolean
+}) => {
+  const { data: settings } = useAdminFormSettings<MultirespondentFormSettings>()
+  const draft = formMethods.watch('first_step_restrictions')
+  if (!settings || settings.responseMode !== FormResponseMode.Multirespondent)
+    return null
+  return (
+    <StepOneLoginRestrictions
+      settings={settings}
+      value={draft?.value ?? createStepOneLoginRestrictionsDraft(settings)}
+      isDisabled={isDisabled}
+      onParsingChange={(parsing) =>
+        formMethods.setValue('first_step_restrictions_parsing', parsing)
+      }
+      onChange={(patch) =>
+        formMethods.setValue(
+          'first_step_restrictions',
+          {
+            baselineIsSingleSubmission:
+              draft?.baselineIsSingleSubmission ??
+              !!settings.isSingleSubmission,
+            value: {
+              ...(draft?.value ??
+                createStepOneLoginRestrictionsDraft(settings)),
+              ...patch,
+            },
+          },
+          { shouldDirty: true },
+        )
+      }
+    />
   )
 }

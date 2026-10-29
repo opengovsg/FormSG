@@ -343,6 +343,7 @@ PrivateStorageMyInfoUpdateWhitelistValidationErrorForm.parameters = {
 const stepLoginOn = new GrowthBook({
   features: {
     [featureFlags.mrfStepLogin]: { defaultValue: true },
+    [featureFlags.workflowBuilderRedesign]: { defaultValue: true },
     [featureFlags.isNricFieldEnabled]: { defaultValue: true },
   },
 })
@@ -380,6 +381,7 @@ const MRF_STEP_LOGIN_FORM: Partial<AdminFormDto> = {
       _id: '61e6857c9c794b0012f1c6f9',
       workflow_type: WorkflowType.Static,
       emails: ['test_1@tech.gov.sg'],
+      step_name: 'Approving officer',
       edit: [],
       auth: { auth_type: FormAuthType.CP, esrvc_id: 'STORYBOOK-TEST' },
     },
@@ -387,13 +389,17 @@ const MRF_STEP_LOGIN_FORM: Partial<AdminFormDto> = {
       _id: '61e6857c9c794b0012f1c6fa',
       workflow_type: WorkflowType.Static,
       emails: ['test_2@tech.gov.sg'],
+      step_name: 'Processing officer',
       edit: [],
     },
   ],
 }
 
 const buildMrfStepLoginMswRoutes = (overrides: Partial<FormSettings>) => [
-  ...createFormBuilderMocks(MRF_STEP_LOGIN_FORM),
+  ...createFormBuilderMocks({
+    ...MRF_STEP_LOGIN_FORM,
+    status: overrides.status ?? FormStatus.Private,
+  }),
   getAdminFormSettings({
     overrides: { authType: FormAuthType.MyInfo, ...overrides },
     mode: FormResponseMode.Multirespondent,

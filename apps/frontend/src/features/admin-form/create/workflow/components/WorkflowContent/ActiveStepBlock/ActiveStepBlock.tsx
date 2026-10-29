@@ -51,18 +51,19 @@ export const ActiveStepBlock = ({
   const cancelPendingSwitch = useAdminWorkflowStore(cancelPendingSwitchSelector)
 
   const handleSubmit = useCallback(
-    (step: FormWorkflowStepWriteDto) => {
+    async (step: FormWorkflowStepWriteDto, afterSave?: () => Promise<void>) => {
       handleTracking(step, stepNumber)
-      updateStepMutation.mutate(
-        {
+      try {
+        await updateStepMutation.mutateAsync({
           stepNumber,
           updateStepBody: step,
-        },
-        {
-          onSuccess: completeSave,
-          onError: cancelPendingSwitch,
-        },
-      )
+        })
+        await afterSave?.()
+        completeSave()
+      } catch (error) {
+        cancelPendingSwitch()
+        throw error
+      }
     },
     [updateStepMutation, stepNumber, completeSave, cancelPendingSwitch],
   )

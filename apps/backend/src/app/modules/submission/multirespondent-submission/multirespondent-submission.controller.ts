@@ -506,6 +506,7 @@ const updateMultirespondentSubmission = async (
       submissionId,
       snapshottedFormDef,
       encryptedPayload,
+      authenticatedAuthType: stepAuth?.session?.authType,
       // Steps with login only advance from the step this request was checked against.
       expectedPrevious:
         stepAuth && mrfSubmission

@@ -1,6 +1,16 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Box, Stack } from '@chakra-ui/react'
+import { useQueryClient } from 'react-query'
+import { useParams } from 'react-router-dom'
+import {
+  Box,
+  Stack,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+} from '@chakra-ui/react'
 
 import {
   FirstStepLoginInput,
@@ -11,7 +21,12 @@ import {
   WorkflowType,
 } from 'formsg-shared/types'
 
+import InlineMessage from '~components/InlineMessage'
+
+import { adminFormKeys } from '~features/admin-form/common/queries'
 import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
+import { saveStepOneLoginRestrictions } from '~features/admin-form/settings/components/AuthSettingsSection/StepOneLoginRestrictions'
+import { adminFormSettingsKeys } from '~features/admin-form/settings/queries'
 import { useUser } from '~features/user/queries'
 
 import {
@@ -41,7 +56,10 @@ import { StepNameBlock } from './StepNameBlock'
 
 export interface EditLogicBlockProps {
   defaultValues?: Partial<EditStepInputs>
-  onSubmit: (inputs: FormWorkflowStepWriteDto) => void
+  onSubmit: (
+    inputs: FormWorkflowStepWriteDto,
+    afterSave?: () => Promise<void>,
+  ) => void | Promise<void>
 
   stepNumber: number
   submitButtonLabel: string
@@ -207,7 +225,11 @@ export const EditStepBlock = ({
     },
   })
   const { user, isLoading: isUserLoading } = useUser()
-  const _isLoading = isLoading || isUserLoading
+  const [isSavingRestrictions, setIsSavingRestrictions] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const { formId } = useParams()
+  const queryClient = useQueryClient()
+  const _isLoading = isLoading || isUserLoading || isSavingRestrictions
 
   const wrapperRef = useRef<HTMLDivElement | null>(null)
 
@@ -224,14 +246,62 @@ export const EditStepBlock = ({
 
   const { isDirty } = formMethods.formState
 
-  const handleSubmit = formMethods.handleSubmit((inputs: EditStepInputs) => {
-    const step = buildWorkflowStep(inputs, isFirstStep)
-    if (!step) {
+  const [activeTab, setActiveTab] = useState(0)
+
+  const handleSubmit = formMethods.handleSubmit(
+    async (inputs: EditStepInputs) => {
+      if (inputs.first_step_restrictions_parsing) {
+        setSaveError(
+          'Wait for the eligible respondent list to finish checking.',
+        )
+        cancelPendingSwitch()
+        return
+      }
+      const step = buildWorkflowStep(inputs, isFirstStep)
+      if (!step) {
+        cancelPendingSwitch()
+        return
+      }
+      setSaveError('')
+      let didSaveStep = false
+      try {
+        await onSubmit(step, async () => {
+          didSaveStep = true
+          if (!isFirstStep || !inputs.first_step_restrictions || !formId) return
+          setIsSavingRestrictions(true)
+          await saveStepOneLoginRestrictions(
+            formId,
+            {
+              isSingleSubmission:
+                inputs.first_step_restrictions.baselineIsSingleSubmission,
+            },
+            inputs.first_step_restrictions.value,
+          )
+        })
+      } catch (error) {
+        cancelPendingSwitch()
+        setSaveError(
+          didSaveStep
+            ? 'The step was saved, but some Step 1 restrictions could not be saved. Check the current settings and try again.'
+            : error instanceof Error
+              ? error.message
+              : 'The step could not be saved. Please try again.',
+        )
+      } finally {
+        setIsSavingRestrictions(false)
+        if (formId && inputs.first_step_restrictions) {
+          void queryClient.invalidateQueries(adminFormKeys.id(formId))
+          void queryClient.invalidateQueries(adminFormSettingsKeys.id(formId))
+        }
+      }
+    },
+    (errors) => {
+      if (errors.approval_field || errors.is_approval_enabled) setActiveTab(1)
+      else if (errors.auth || errors.first_step_login) setActiveTab(2)
+      else setActiveTab(0)
       cancelPendingSwitch()
-      return
-    }
-    onSubmit(step)
-  }, cancelPendingSwitch)
+    },
+  )
 
   const hasSubmittedForPendingSwitch = useRef(false)
 
@@ -261,6 +331,33 @@ export const EditStepBlock = ({
     />
   )
 
+  const useProposedTabs = isRedesign && isLoginShown && !isGuided
+  const tabbedSections = (
+    <Tabs
+      key="step-settings"
+      index={activeTab}
+      onChange={setActiveTab}
+      mt="1.5rem"
+    >
+      <TabList mx={{ base: '1.5rem', md: '2rem' }}>
+        <Tab>Fields to fill</Tab>
+        <Tab isDisabled={isFirstStep}>Approvals</Tab>
+        <Tab>Singpass</Tab>
+      </TabList>
+      <TabPanels>
+        <TabPanel px="0" pt="1.5rem">
+          {questionsSection}
+        </TabPanel>
+        <TabPanel px="0" pt="1.5rem">
+          {approvalsSection}
+        </TabPanel>
+        <TabPanel px="0" pt="1.5rem">
+          {loginSection}
+        </TabPanel>
+      </TabPanels>
+    </Tabs>
+  )
+
   const sections: JSX.Element[] = [
     <StepNameBlock
       key="name"
@@ -276,9 +373,11 @@ export const EditStepBlock = ({
     />,
     // Login follows the respondent in both orders: who fills the step, then
     // how they log in, then what they do.
-    ...(isRedesign
-      ? [loginSection, approvalsSection, questionsSection]
-      : [loginSection, questionsSection, approvalsSection]
+    ...(useProposedTabs
+      ? [tabbedSections]
+      : isRedesign
+        ? [loginSection, approvalsSection, questionsSection]
+        : [loginSection, questionsSection, approvalsSection]
     ).filter((section): section is JSX.Element => section !== null),
   ]
 
@@ -337,6 +436,11 @@ export const EditStepBlock = ({
       <SpotlightGroup activeIndex={reveal.activeIndex} isEnabled={isGuided}>
         {sections.slice(0, visibleCount)}
       </SpotlightGroup>
+      {saveError ? (
+        <Box px="2rem" pt="1rem">
+          <InlineMessage variant="error">{saveError}</InlineMessage>
+        </Box>
+      ) : null}
       <Box pt="1.5rem">
         {isGuided ? (
           <GuidedActionGroup
@@ -345,7 +449,7 @@ export const EditStepBlock = ({
               canCancel: !isFirstStep,
             })}
             isOnLastSection={reveal.isOnLastSection}
-            isLoading={isLoading}
+            isLoading={_isLoading}
             onBack={reveal.goBack}
             onCancel={setToInactive}
             onContinue={reveal.advance}

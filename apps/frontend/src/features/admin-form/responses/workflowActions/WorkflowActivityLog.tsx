@@ -3,9 +3,15 @@ import { Trans, useTranslation } from 'react-i18next'
 import { Circle, Flex, Stack, Text } from '@chakra-ui/react'
 import { formatInTimeZone } from 'date-fns-tz'
 
-import { WorkflowEventType, WorkflowStatus } from 'formsg-shared/types'
+import {
+  FormAuthType,
+  WorkflowEventType,
+  WorkflowStatus,
+} from 'formsg-shared/types'
 
 import type { ResponsesIndividualResponse } from '~/i18n/locales/features/admin-form/responses/individual-response'
+
+import { Tag } from '~components/Tag'
 
 import { formatEmailList } from './formatEmailList'
 import { WorkflowHistory } from './getStopNotifiedEmails'
@@ -38,16 +44,19 @@ interface ActivityEntry {
   at: string
   title: ReactNode
   tone: ActivityTone
+  authType?: FormAuthType.MyInfo | FormAuthType.CP
 }
 
 const ActivityLogEntry = ({
   title,
   timestamp,
   tone,
+  authType,
 }: {
   title: ReactNode
   timestamp: string
   tone: ActivityTone
+  authType?: FormAuthType.MyInfo | FormAuthType.CP
 }) => (
   <Flex gap="0.75rem" align="flex-start">
     <Circle size="0.5rem" mt="0.5rem" flexShrink={0} bg={TONE_COLORS[tone]} />
@@ -55,6 +64,11 @@ const ActivityLogEntry = ({
       <Text textStyle="body-2" color="secondary.700">
         {title}
       </Text>
+      {authType && (
+        <Tag alignSelf="flex-start" colorScheme="secondary">
+          {authType === FormAuthType.CP ? 'Corppass' : 'Singpass'}
+        </Tag>
+      )}
       <Text textStyle="caption-1" color="secondary.400">
         {timestamp}
       </Text>
@@ -119,15 +133,18 @@ export const WorkflowActivityLog = ({
         : isLastStep
           ? 'complete'
           : 'step'
-    return entry(
-      step.submittedAt,
-      key,
-      {
-        ...stepValues(index + 1),
-        recipients: formatEmailList(recipients),
-      },
-      tone,
-    )
+    return {
+      ...entry(
+        step.submittedAt,
+        key,
+        {
+          ...stepValues(index + 1),
+          recipients: formatEmailList(recipients),
+        },
+        tone,
+      ),
+      authType: step.authType,
+    }
   })
 
   const eventEntries = events.map((event) => {
@@ -173,12 +190,13 @@ export const WorkflowActivityLog = ({
         {t(`${I18N_PREFIX}.title`)}
       </Text>
       <Stack spacing="1rem">
-        {entries.map(({ at, title, tone }, index) => (
+        {entries.map(({ at, title, tone, authType }, index) => (
           <ActivityLogEntry
             key={`${at}-${index}`}
             title={title}
             timestamp={formatActivityTimestamp(at)}
             tone={tone}
+            authType={authType}
           />
         ))}
       </Stack>

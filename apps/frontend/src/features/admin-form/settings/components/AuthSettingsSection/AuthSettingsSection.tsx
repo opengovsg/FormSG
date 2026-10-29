@@ -78,19 +78,17 @@ export const AuthSettingsSection = ({
     <Box>
       <AuthSettingsDisabledExplanationText
         isFormPublic={isFormPublic}
-        containsMyInfoFields={containsMyInfoFields}
-        containsLoginIdentityFields={containsLoginIdentityFields}
+        containsMyInfoFields={!showStepAccordion && containsMyInfoFields}
+        containsLoginIdentityFields={
+          !showStepAccordion && containsLoginIdentityFields
+        }
         isSubmitterIdCollectionEnabled={settings.isSubmitterIdCollectionEnabled}
         // Once later steps can log in, the first-step-only notice is false.
         isMrfFirstStepOnly={isMrf && !isStepLoginFlagOn}
       />
-      <AuthSettingsDescriptionText />
+      {!showStepAccordion ? <AuthSettingsDescriptionText /> : null}
       {showStepAccordion && form ? (
-        <StepLoginAccordion
-          form={form}
-          settings={settings}
-          stepOneSettings={stepOneSettings}
-        />
+        <StepLoginAccordion form={form} settings={settings} />
       ) : (
         stepOneSettings
       )}
