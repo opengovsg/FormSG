@@ -8,6 +8,8 @@ import {
   WorkflowType,
 } from 'formsg-shared/types'
 
+import type { StepOneLoginRestrictionsDraft } from '../../settings/components/AuthSettingsSection/StepOneLoginRestrictions'
+
 export enum AdminEditWorkflowState {
   CreatingStep,
   EditingStep,
@@ -30,6 +32,8 @@ export type EditStepInputs = Omit<FormWorkflowStepBase, 'auth'> & {
   _id: string
   workflow_type: WorkflowType
   emails?: FormWorkflowStepStatic['emails']
+  // Editor-only text, never sent in buildWorkflowStep. Participates in dirty checks.
+  respondent_query?: string
   field?: FormWorkflowStepDynamic['field']
   approval_field?: FormFieldDto['_id']
   conditional_field?: FormFieldDto['_id']
@@ -39,4 +43,12 @@ export type EditStepInputs = Omit<FormWorkflowStepBase, 'auth'> & {
   // Step 1 only. Set once the admin changes Step 1's login in the editor, so
   // an untouched step leaves the form-level login alone.
   first_step_login?: FirstStepLoginInput
+  // Exact field definitions confirmed for deletion on the next step save.
+  delete_auth_field_ids?: string[]
+  expected_last_modified?: string
+  first_step_restrictions_parsing?: boolean
+  first_step_restrictions?: {
+    baselineIsSingleSubmission: boolean
+    value: StepOneLoginRestrictionsDraft
+  }
 }

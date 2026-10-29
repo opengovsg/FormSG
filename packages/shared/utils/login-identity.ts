@@ -240,8 +240,10 @@ export const getLoginIdentityConfigErrors = ({
   isSubmitterIdCollectionEnabled,
   form_fields = [],
   workflow = [],
+  allowMissingLogin = false,
 }: LoginIdentityCollectionForm & {
   responseMode: FormResponseMode
+  allowMissingLogin?: boolean
 }): string[] => {
   const identityFields = form_fields.flatMap((field) => {
     const attr = getLoginIdentityAttr(field)
@@ -273,6 +275,7 @@ export const getLoginIdentityConfigErrors = ({
       workflow,
     )
     if (
+      !allowMissingLogin &&
       ownerAuthType !== undefined &&
       !getLoginIdentityAttrsForAuthType(ownerAuthType).includes(attr)
     ) {

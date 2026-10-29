@@ -1,6 +1,17 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Box, Stack } from '@chakra-ui/react'
+import { useQueryClient } from 'react-query'
+import { useParams } from 'react-router-dom'
+import {
+  Box,
+  Divider,
+  Stack,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+} from '@chakra-ui/react'
+import isEqual from 'lodash/isEqual'
 
 import {
   FirstStepLoginInput,
@@ -11,7 +22,18 @@ import {
   WorkflowType,
 } from 'formsg-shared/types'
 
+import InlineMessage from '~components/InlineMessage'
+import { Tab } from '~components/Tabs'
+
+import { getAdminFormView } from '~features/admin-form/common/AdminViewFormService'
+import { useRegisterNavigationSave } from '~features/admin-form/common/navigationSave'
+import {
+  adminFormKeys,
+  useAdminForm,
+} from '~features/admin-form/common/queries'
 import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
+import { saveStepOneLoginRestrictions } from '~features/admin-form/settings/components/AuthSettingsSection/StepOneLoginRestrictions'
+import { adminFormSettingsKeys } from '~features/admin-form/settings/queries'
 import { useUser } from '~features/user/queries'
 
 import {
@@ -41,7 +63,10 @@ import { StepNameBlock } from './StepNameBlock'
 
 export interface EditLogicBlockProps {
   defaultValues?: Partial<EditStepInputs>
-  onSubmit: (inputs: FormWorkflowStepWriteDto) => void
+  onSubmit: (
+    inputs: FormWorkflowStepWriteDto,
+    afterSave?: () => Promise<void>,
+  ) => void | Promise<void>
 
   stepNumber: number
   submitButtonLabel: string
@@ -114,6 +139,12 @@ export const buildWorkflowStep = (
   if (isFirstStep) {
     return {
       _id: inputs._id,
+      ...(inputs.expected_last_modified
+        ? { expected_last_modified: inputs.expected_last_modified }
+        : {}),
+      ...(inputs.delete_auth_field_ids?.length
+        ? { delete_auth_field_ids: inputs.delete_auth_field_ids }
+        : {}),
       workflow_type: WorkflowType.Static,
       edit: inputs.edit,
       approval_field: inputs.approval_field,
@@ -132,6 +163,12 @@ export const buildWorkflowStep = (
     auth?: FormWorkflowStepAuth
   } = {
     _id: inputs._id,
+    ...(inputs.expected_last_modified
+      ? { expected_last_modified: inputs.expected_last_modified }
+      : {}),
+    ...(inputs.delete_auth_field_ids?.length
+      ? { delete_auth_field_ids: inputs.delete_auth_field_ids }
+      : {}),
     workflow_type: inputs.workflow_type,
     edit: inputs.edit,
     approval_field: inputs.approval_field,
@@ -207,7 +244,13 @@ export const EditStepBlock = ({
     },
   })
   const { user, isLoading: isUserLoading } = useUser()
-  const _isLoading = isLoading || isUserLoading
+  const [isSavingRestrictions, setIsSavingRestrictions] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const { formId } = useParams()
+  const queryClient = useQueryClient()
+  const { data: originalForm } = useAdminForm()
+  const [destructiveSaveBaseline] = useState(originalForm)
+  const _isLoading = isLoading || isUserLoading || isSavingRestrictions
 
   const wrapperRef = useRef<HTMLDivElement | null>(null)
 
@@ -224,14 +267,121 @@ export const EditStepBlock = ({
 
   const { isDirty } = formMethods.formState
 
-  const handleSubmit = formMethods.handleSubmit((inputs: EditStepInputs) => {
-    const step = buildWorkflowStep(inputs, isFirstStep)
-    if (!step) {
+  const [activeTab, setActiveTab] = useState(0)
+  useEffect(() => setActiveTab(0), [stepNumber])
+
+  const saveSucceeded = useRef(false)
+  const pendingNavigationSave = useRef<Promise<boolean> | null>(null)
+
+  const handleSubmit = formMethods.handleSubmit(
+    async (inputs: EditStepInputs) => {
+      if (inputs.first_step_restrictions_parsing) {
+        setSaveError(
+          'Wait for the eligible respondent list to finish checking.',
+        )
+        cancelPendingSwitch()
+        return
+      }
+      const step = buildWorkflowStep(inputs, isFirstStep)
+      if (!step) {
+        cancelPendingSwitch()
+        return
+      }
+      setSaveError('')
+      let didSaveStep = false
+      try {
+        if (inputs.delete_auth_field_ids?.length) {
+          if (!formId || !destructiveSaveBaseline)
+            throw new Error(
+              'Reload the workflow before confirming field deletion.',
+            )
+          const latest = await getAdminFormView(formId)
+          if (
+            !('workflow' in latest) ||
+            !('workflow' in destructiveSaveBaseline)
+          )
+            throw new Error(
+              'This form changed. Reload the workflow before deleting fields.',
+            )
+          const reviewedKeys = [
+            'authType',
+            'esrvcId',
+            'workflow',
+            'form_fields',
+            'form_logics',
+          ] as const
+          if (
+            reviewedKeys.some(
+              (key) => !isEqual(latest[key], destructiveSaveBaseline[key]),
+            )
+          )
+            throw new Error(
+              'This form changed while you were editing. Cancel and reopen the step to review the fields and rules before deleting them.',
+            )
+        }
+        await onSubmit(step, async () => {
+          didSaveStep = true
+          if (
+            !isFirstStep ||
+            !inputs.first_step_restrictions ||
+            !formId ||
+            inputs.first_step_login?.auth_type === FormAuthType.NIL
+          )
+            return
+          setIsSavingRestrictions(true)
+          await saveStepOneLoginRestrictions(
+            formId,
+            {
+              isSingleSubmission:
+                inputs.first_step_restrictions.baselineIsSingleSubmission,
+            },
+            inputs.first_step_restrictions.value,
+          )
+        })
+        saveSucceeded.current = true
+      } catch (error) {
+        cancelPendingSwitch()
+        setSaveError(
+          didSaveStep
+            ? 'The step was saved, but some Step 1 restrictions could not be saved. Check the current settings and try again.'
+            : error instanceof Error
+              ? error.message
+              : 'The step could not be saved. Please try again.',
+        )
+      } finally {
+        setIsSavingRestrictions(false)
+        if (formId && inputs.first_step_restrictions) {
+          void queryClient.invalidateQueries(adminFormKeys.id(formId))
+          void queryClient.invalidateQueries(adminFormSettingsKeys.id(formId))
+        }
+      }
+    },
+    (errors) => {
+      if (errors.approval_field || errors.is_approval_enabled) setActiveTab(1)
+      else if (errors.auth || errors.first_step_login) setActiveTab(2)
+      else setActiveTab(0)
       cancelPendingSwitch()
-      return
-    }
-    onSubmit(step)
-  }, cancelPendingSwitch)
+    },
+  )
+
+  const saveForNavigation = (): Promise<boolean> => {
+    if (pendingNavigationSave.current) return pendingNavigationSave.current
+    if (_isLoading) return Promise.resolve(false)
+    saveSucceeded.current = false
+    pendingNavigationSave.current = handleSubmit()
+      .then(() => saveSucceeded.current)
+      .finally(() => {
+        pendingNavigationSave.current = null
+      })
+    return pendingNavigationSave.current
+  }
+
+  useRegisterNavigationSave({
+    enabled: isLoginShown,
+    isDirty,
+    isSaving: _isLoading,
+    save: saveForNavigation,
+  })
 
   const hasSubmittedForPendingSwitch = useRef(false)
 
@@ -261,6 +411,33 @@ export const EditStepBlock = ({
     />
   )
 
+  const useProposedTabs = isRedesign && isLoginShown && !isGuided
+  const tabbedSections = (
+    <Tabs key="step-settings" index={activeTab} onChange={setActiveTab}>
+      <Box px={{ base: '1.5rem', md: '2rem' }}>
+        <TabList mx="-0.25rem" w="100%">
+          <Tab>Fields to fill</Tab>
+          {!isFirstStep && <Tab>Approvals</Tab>}
+          <Tab>Singpass</Tab>
+        </TabList>
+        <Divider w="auto" mx={{ base: '-1.5rem', md: '-2rem' }} />
+      </Box>
+      <TabPanels>
+        <TabPanel px="0" pt="1.5rem">
+          {questionsSection}
+        </TabPanel>
+        {!isFirstStep && (
+          <TabPanel px="0" pt="1.5rem">
+            {approvalsSection}
+          </TabPanel>
+        )}
+        <TabPanel px="0" pt="1.5rem">
+          {loginSection}
+        </TabPanel>
+      </TabPanels>
+    </Tabs>
+  )
+
   const sections: JSX.Element[] = [
     <StepNameBlock
       key="name"
@@ -276,9 +453,11 @@ export const EditStepBlock = ({
     />,
     // Login follows the respondent in both orders: who fills the step, then
     // how they log in, then what they do.
-    ...(isRedesign
-      ? [loginSection, approvalsSection, questionsSection]
-      : [loginSection, questionsSection, approvalsSection]
+    ...(useProposedTabs
+      ? [tabbedSections]
+      : isRedesign
+        ? [loginSection, approvalsSection, questionsSection]
+        : [loginSection, questionsSection, approvalsSection]
     ).filter((section): section is JSX.Element => section !== null),
   ]
 
@@ -308,7 +487,7 @@ export const EditStepBlock = ({
     }
 
     hasSubmittedForPendingSwitch.current = true
-    handleSubmit()
+    void saveForNavigation()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingSwitchTo])
 
@@ -334,9 +513,28 @@ export const EditStepBlock = ({
       transitionProperty="common"
       transitionDuration="normal"
     >
-      <SpotlightGroup activeIndex={reveal.activeIndex} isEnabled={isGuided}>
-        {sections.slice(0, visibleCount)}
-      </SpotlightGroup>
+      {useProposedTabs ? (
+        <Stack spacing="1.5rem" pt="1.5rem">
+          {sections
+            .slice(0, -1)
+            .flatMap((section, index) =>
+              index === 0
+                ? [section]
+                : [<Divider key={`intro-divider-${index}`} />, section],
+            )}
+          {tabbedSections}
+          <Divider />
+        </Stack>
+      ) : (
+        <SpotlightGroup activeIndex={reveal.activeIndex} isEnabled={isGuided}>
+          {sections.slice(0, visibleCount)}
+        </SpotlightGroup>
+      )}
+      {saveError ? (
+        <Box px="2rem" pt="1rem">
+          <InlineMessage variant="error">{saveError}</InlineMessage>
+        </Box>
+      ) : null}
       <Box pt="1.5rem">
         {isGuided ? (
           <GuidedActionGroup
@@ -345,16 +543,16 @@ export const EditStepBlock = ({
               canCancel: !isFirstStep,
             })}
             isOnLastSection={reveal.isOnLastSection}
-            isLoading={isLoading}
+            isLoading={_isLoading}
             onBack={reveal.goBack}
             onCancel={setToInactive}
             onContinue={reveal.advance}
-            onDone={handleSubmit}
+            onDone={() => void saveForNavigation()}
           />
         ) : (
           <SaveActionGroup
             isLoading={_isLoading}
-            handleSubmit={handleSubmit}
+            handleSubmit={() => void saveForNavigation()}
             handleDelete={
               !isFirstStep || isRedesign ? handleOpenDeleteModal : undefined
             }

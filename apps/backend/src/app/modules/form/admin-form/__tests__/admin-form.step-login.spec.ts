@@ -8,7 +8,6 @@ import {
   MyInfoAttribute,
   WorkflowType,
 } from 'formsg-shared/types'
-import { MYINFO_FIELDS_NEED_SINGPASS_STEP } from 'formsg-shared/utils/step-login'
 
 import { MalformedParametersError } from 'src/app/modules/core/core.errors'
 import {
@@ -153,7 +152,10 @@ describe('admin-form.step-login', () => {
 
     it('rejects auth when creating the first step', () => {
       const result = update({
-        form: makeForm({ workflow: [] }),
+        form: makeForm({
+          workflow: [],
+          form_fields: FORM_FIELDS.filter(({ _id }) => _id !== UEN_FIELD_ID),
+        }),
         stepNumber: 0,
         next: { auth: SINGPASS },
       })
@@ -174,7 +176,10 @@ describe('admin-form.step-login', () => {
 
     it('allows first_step_login when creating into an empty workflow', () => {
       const result = update({
-        form: makeForm({ workflow: [] }),
+        form: makeForm({
+          workflow: [],
+          form_fields: FORM_FIELDS.filter(({ _id }) => _id !== UEN_FIELD_ID),
+        }),
         stepNumber: 0,
         next: { first_step_login: { auth_type: FormAuthType.MyInfo } },
       })
@@ -400,7 +405,11 @@ describe('admin-form.step-login', () => {
 
     it('maps first_step_login to the form-level login', () => {
       const result = update({
-        form: makeForm({ form_fields: FIELDS_WITHOUT_MYINFO_DATA }),
+        form: makeForm({
+          form_fields: FIELDS_WITHOUT_MYINFO_DATA.filter(
+            ({ _id }) => _id !== NRIC_FIELD_ID,
+          ),
+        }),
         stepNumber: 0,
         next: {
           first_step_login: { auth_type: FormAuthType.CP, esrvc_id: 'ESRVC' },
@@ -426,7 +435,7 @@ describe('admin-form.step-login', () => {
           first_step_login: { auth_type: FormAuthType.NIL },
         },
       })
-      expect(result.isOk()).toBe(true)
+      expect(result.isErr()).toBe(true)
     })
   })
 
@@ -494,7 +503,7 @@ describe('admin-form.step-login', () => {
       expect(result.isOk()).toBe(true)
     })
 
-    it('blocks removing Step 1 login when no step fills an unassigned Myinfo field', () => {
+    it('rejects removing the final Singpass provider while unassigned fields remain', () => {
       const singpassForm = makeForm({
         authType: FormAuthType.MyInfo,
         form_fields: FORM_FIELDS.filter(({ _id }) => _id === MYINFO_FIELD_ID),
@@ -504,9 +513,7 @@ describe('admin-form.step-login', () => {
         { authType: FormAuthType.NIL },
         [step([]), step([])],
       )
-      expect(result._unsafeUnwrapErr()).toEqual(
-        new MalformedParametersError(MYINFO_FIELDS_NEED_SINGPASS_STEP),
-      )
+      expect(result.isErr()).toBe(true)
     })
   })
 })

@@ -119,6 +119,11 @@ export const createWorkflowStepValidator = celebrate({
     step_name: Joi.string().optional(),
     auth: workflowStepAuthValidator,
     first_step_login: firstStepLoginValidator,
+    expected_last_modified: Joi.string().isoDate().optional(),
+    delete_auth_field_ids: Joi.array()
+      .items(Joi.string().hex().length(24))
+      .unique()
+      .optional(),
   }),
   [Segments.PARAMS]: Joi.object({
     formId: Joi.string().required(),
@@ -151,6 +156,11 @@ export const updateWorkflowStepValidator = celebrate({
     step_name: Joi.string().optional(),
     auth: workflowStepAuthValidator,
     first_step_login: firstStepLoginValidator,
+    expected_last_modified: Joi.string().isoDate().optional(),
+    delete_auth_field_ids: Joi.array()
+      .items(Joi.string().hex().length(24))
+      .unique()
+      .optional(),
   }),
   [Segments.PARAMS]: Joi.object({
     formId: Joi.string().required(),

@@ -1,4 +1,8 @@
-import { SubmittedStep, WorkflowStatus } from 'formsg-shared/types'
+import {
+  FormAuthType,
+  SubmittedStep,
+  WorkflowStatus,
+} from 'formsg-shared/types'
 import { model, Schema } from 'mongoose'
 
 import {
@@ -18,6 +22,7 @@ const fullApprovalStep = {
   status: WorkflowStatus.APPROVED,
   nextStepRecipientEmails: ['next@example.com'],
   submitterId: 'SUBMITTER_ID_HASH',
+  authType: FormAuthType.MyInfo,
   snapshotTokens: { v4: 'SNAPSHOT_TOKEN_LEAF_VALUE' },
 } satisfies SubmittedStep
 
@@ -45,6 +50,7 @@ describe('projectSubmittedStepForAdmin', () => {
       submittedAt: '2026-07-22T00:00:00.000Z',
       status: WorkflowStatus.APPROVED,
       nextStepRecipientEmails: ['next@example.com'],
+      authType: FormAuthType.MyInfo,
     })
     expect(JSON.stringify(out)).not.toContain('SUBMITTER_ID_HASH')
     expect(JSON.stringify(out)).not.toContain('SNAPSHOT_TOKEN_LEAF_VALUE')
@@ -59,6 +65,7 @@ describe('projecting a mongoose subdocument', () => {
       status: String,
       nextStepRecipientEmails: [String],
       submitterId: String,
+      authType: String,
       snapshotTokens: { v4: String },
     },
     { _id: false },
@@ -109,6 +116,7 @@ describe('buildAdminSubmittedStepsMongoProjection', () => {
       'submittedSteps.submittedAt': 1,
       'submittedSteps.status': 1,
       'submittedSteps.nextStepRecipientEmails': 1,
+      'submittedSteps.authType': 1,
     })
   })
 })

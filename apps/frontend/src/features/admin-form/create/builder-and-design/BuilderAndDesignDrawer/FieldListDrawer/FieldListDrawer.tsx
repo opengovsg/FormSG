@@ -36,6 +36,7 @@ import {
   MyInfoFieldPanel,
   PaymentsInputPanel,
 } from './field-panels'
+import { FieldLoginGate } from './FieldLoginGate'
 
 const FieldSearchBar = ({
   searchValue,
@@ -87,7 +88,7 @@ export const FieldListDrawer = (): JSX.Element => {
       key: FieldListTabIndex.Basic,
     },
     {
-      header: t('builder.tabs.myInfo'),
+      header: 'Singpass',
       component: MyInfoFieldPanel,
       isHidden: false,
       isDisabled: isLoading,
@@ -124,43 +125,47 @@ export const FieldListDrawer = (): JSX.Element => {
   )
 
   return (
-    <Tabs
-      pos="relative"
-      h="100%"
-      display="flex"
-      flexDir="column"
-      index={tabPosition}
-      onChange={(position) => setFieldListTabIndex(tabsDataList[position].key)}
-      isLazy
-    >
-      <Box pt="1rem" px="1.5rem" bg="white">
-        <Flex justify="space-between">
-          <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
-            {t('builder.title')}
-          </Text>
-          <CreatePageDrawerCloseButton />
-        </Flex>
-        <FieldSearchBar
-          searchValue={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
-          placeholder={t('builder.searchPlaceholder')}
-        />
-        <TabList mt="0.5rem" mx="-0.25rem" w="100%">
+    <FieldLoginGate>
+      <Tabs
+        pos="relative"
+        h="100%"
+        display="flex"
+        flexDir="column"
+        index={tabPosition}
+        onChange={(position) =>
+          setFieldListTabIndex(tabsDataList[position].key)
+        }
+        isLazy
+      >
+        <Box pt="1rem" px="1.5rem" bg="white">
+          <Flex justify="space-between">
+            <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
+              {t('builder.title')}
+            </Text>
+            <CreatePageDrawerCloseButton />
+          </Flex>
+          <FieldSearchBar
+            searchValue={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            placeholder={t('builder.searchPlaceholder')}
+          />
+          <TabList mt="0.5rem" mx="-0.25rem" w="100%">
+            {tabsDataList.map((tab) => (
+              <Tab key={tab.key} isDisabled={tab.isDisabled}>
+                {tab.header}
+              </Tab>
+            ))}
+          </TabList>
+          <Divider w="auto" mx="-1.5rem" />
+        </Box>
+        <TabPanels pb="1rem" flex={1} overflowY="auto">
           {tabsDataList.map((tab) => (
-            <Tab key={tab.key} isDisabled={tab.isDisabled}>
-              {tab.header}
-            </Tab>
+            <TabPanel key={tab.key}>
+              <tab.component searchValue={searchValue} />
+            </TabPanel>
           ))}
-        </TabList>
-        <Divider w="auto" mx="-1.5rem" />
-      </Box>
-      <TabPanels pb="1rem" flex={1} overflowY="auto">
-        {tabsDataList.map((tab) => (
-          <TabPanel key={tab.key}>
-            <tab.component searchValue={searchValue} />
-          </TabPanel>
-        ))}
-      </TabPanels>
-    </Tabs>
+        </TabPanels>
+      </Tabs>
+    </FieldLoginGate>
   )
 }

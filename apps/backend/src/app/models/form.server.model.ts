@@ -50,11 +50,14 @@ import { reorder } from 'formsg-shared/utils/immutable-array-fns'
 import { getApplicableIfStates } from 'formsg-shared/utils/logic'
 import {
   getLoginIdentityAttr,
-  getLoginIdentityConfigErrors,
   isLoginField,
   isMyInfoDataField,
 } from 'formsg-shared/utils/login-identity'
-import { formUsesAuthType } from 'formsg-shared/utils/step-login'
+import {
+  formUsesAuthType,
+  getLoginFieldPublishErrors,
+  getResultingLoginErrors,
+} from 'formsg-shared/utils/step-login'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import { compact, omit, pick, uniq } from 'lodash'
@@ -134,6 +137,10 @@ import WorkflowStepSchema, {
   WorkflowStepDynamicSchema,
   WorkflowStepStaticSchema,
 } from './form_workflow_step.server.schema'
+import {
+  getCheckedAuthenticationConfigFilter,
+  saveWithAuthenticationConfigGuard,
+} from './form-authentication-config'
 import getUserModel from './user.server.model'
 import { isPositiveInteger } from './utils'
 
@@ -1343,9 +1350,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   FormDocumentSchema.methods.updateFormFieldById = function (
+    this: IFormDocument,
     fieldId: string,
     newField: FormFieldDto,
   ) {
+    const checkedConfig = getCheckedAuthenticationConfigFilter(this)
     const fieldToUpdate = getFormFieldById(this.form_fields, fieldId)
     if (!fieldToUpdate) return Promise.resolve(null)
 
@@ -1355,13 +1364,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       fieldToUpdate.set(newField)
     }
 
-    return this.save()
+    return saveWithAuthenticationConfigGuard(this, checkedConfig)
   }
 
   FormDocumentSchema.methods.insertFormField = function (
+    this: IFormDocument,
     newField: FormField,
     to?: number,
   ) {
+    const checkedConfig = getCheckedAuthenticationConfigFilter(this)
     const formFields = this.form_fields as Types.DocumentArray<IFieldSchema>
     // Must use undefined check since number can be 0; i.e. falsey.
     if (to !== undefined) {
@@ -1370,13 +1381,17 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     } else {
       formFields.push(newField)
     }
-    return this.save()
+    return saveWithAuthenticationConfigGuard(this, checkedConfig)
   }
 
   FormDocumentSchema.methods.insertFormFields = function (
+    this: IFormDocument,
     newFields: FormField[],
     to?: number,
+    checkedAuthenticationConfig?: Record<string, unknown>,
   ) {
+    const checkedConfig =
+      checkedAuthenticationConfig ?? getCheckedAuthenticationConfigFilter(this)
     const formFields = this.form_fields as Types.DocumentArray<IFieldSchema>
     // Must use undefined check since number can be 0; i.e. falsey.
     if (to !== undefined) {
@@ -1385,12 +1400,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     } else {
       formFields.push(...newFields)
     }
-    return this.save()
+    return saveWithAuthenticationConfigGuard(this, checkedConfig)
   }
 
   FormDocumentSchema.method<IFormDocument>(
     'duplicateFormFieldByIdAndIndex',
     function (fieldId: string, insertionIndex: number) {
+      const checkedConfig = getCheckedAuthenticationConfigFilter(this)
       const fieldToDuplicate = getFormFieldById(this.form_fields, fieldId)
       if (!fieldToDuplicate) return Promise.resolve(null)
 
@@ -1401,7 +1417,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       ) as FormFieldSchema
 
       this.form_fields.splice(insertionIndex, 0, duplicatedField)
-      return this.save()
+      return saveWithAuthenticationConfigGuard(this, checkedConfig)
     },
   )
 
@@ -1411,6 +1427,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       fieldId: string,
       newPosition: number,
     ): Promise<IFormDocument | null> {
+      const checkedConfig = getCheckedAuthenticationConfigFilter(this)
       const existingFieldPosition = this.form_fields.findIndex(
         (f) => String(f._id) === fieldId,
       )
@@ -1424,7 +1441,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         newPosition,
       )
       this.form_fields = updatedFormFields
-      return this.save()
+      return saveWithAuthenticationConfigGuard(this, checkedConfig)
     },
   )
 
@@ -1716,13 +1733,19 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       return next(validationError)
     }
 
-    const loginIdentityErrors = getLoginIdentityConfigErrors({
+    const loginConfig = {
       authType: this.authType ?? FormAuthType.NIL,
       responseMode: this.responseMode,
       isSubmitterIdCollectionEnabled: this.isSubmitterIdCollectionEnabled,
       form_fields: this.form_fields,
       workflow: this.get('workflow'),
-    })
+    }
+    const loginIdentityErrors =
+      this.status === FormStatus.Public
+        ? getLoginFieldPublishErrors(loginConfig)
+        : getResultingLoginErrors({
+            ...loginConfig,
+          })
     if (loginIdentityErrors.length > 0) {
       const validationError = this.invalidate(
         'form_fields',

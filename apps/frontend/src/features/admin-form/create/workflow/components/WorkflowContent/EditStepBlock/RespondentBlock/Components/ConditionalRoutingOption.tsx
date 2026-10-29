@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 import { useParams } from 'react-router'
 import {
+  Box,
   Button,
   FormControl,
   Stack,
@@ -43,6 +44,7 @@ import { NESTED_CONTROL_PR } from './layout'
 import { RespondentOptionProps } from './types'
 
 interface ConditionalRoutingOptionProps extends RespondentOptionProps {
+  hideSelection?: boolean
   conditionalFormFields: FormFieldWithQuestionNo<
     FormFieldDto<DropdownFieldBase>
   >[]
@@ -82,6 +84,7 @@ export const ConditionalRoutingOption = ({
   formMethods,
   selectedWorkflowType,
   conditionalFormFields,
+  hideSelection = false,
 }: ConditionalRoutingOptionProps) => {
   const { t } = useTranslation()
   const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] =
@@ -374,61 +377,20 @@ export const ConditionalRoutingOption = ({
     onOpen()
   }
 
-  return (
+  const routingConfiguration = (
     <>
-      <ConditionalRoutingMappingDeleteModal
-        isOpen={isDeleteConfirmModalOpen}
-        onClose={() => setIsDeleteConfirmModalOpen(false)}
-        handleDelete={removeOptionsToRecipientsMapping}
-      />
-      <ConditionalRoutingOptionModal
-        conditionalFieldItems={conditionalFieldItems}
-        isLoading={isLoading}
-        isOpen={isOpen}
-        onClose={onClose}
-        control={conditionalRoutingConfigControl}
-        errors={conditionalRoutingConfigErrors}
-        onDownloadCsvClick={handleSkeletonCsvDownload(formId)}
-        onSubmit={handleSubmit(
-          handleConditionalRoutingConfigSubmit(getValues('conditional_field')),
-        )}
-        isSubmitDisabled={
-          !(
-            watchConditionalRoutingConfig().csvFile &&
-            watch('conditional_field')
-          )
-        }
-        validateCsvFile={validateCsvFile}
-        existingCsv={csvFile}
-      />
-
-      <Radio
-        isDisabled={isLoading}
-        isLabelFullWidth
-        allowDeselect={false}
-        value={WorkflowType.Conditional}
-        {...register('workflow_type', workflowTypeValidation)}
-        px="0.5rem"
-        __css={{
-          _focusWithin: {
-            boxShadow: 'none',
-          },
-        }}
-      >
-        <Text mb="0.5rem">
-          {t('features.adminForm.sidebar.workflow.conditionalRouting.title')}
-        </Text>
-        {selectedWorkflowType === WorkflowType.Conditional ? (
-          <FormControl
-            pr={NESTED_CONTROL_PR}
-            id="conditional_field"
-            isRequired={!isSavePermissive}
-            isInvalid={
-              !!validateOptionsToRecipientsMapErrorMessage ||
-              !!errors.conditional_field
-            }
-          >
-            <Stack spacing="0.625rem">
+      {selectedWorkflowType === WorkflowType.Conditional ? (
+        <FormControl
+          pr={NESTED_CONTROL_PR}
+          id="conditional_field"
+          isRequired={!isSavePermissive}
+          isInvalid={
+            !!validateOptionsToRecipientsMapErrorMessage ||
+            !!errors.conditional_field
+          }
+        >
+          <Stack spacing="0.625rem">
+            <Box display={hideSelection ? 'none' : undefined}>
               <Controller
                 control={control}
                 name="conditional_field"
@@ -479,49 +441,102 @@ export const ConditionalRoutingOption = ({
                   />
                 )}
               />
-              {isSelectedConditionalFieldFound ? (
-                isOptionsToRecipientsMapAttached ? (
-                  <Attachment
-                    name={'csvFile'}
-                    onChange={() => {}}
-                    value={csvFile}
-                    showDownload
-                    showRemove={false}
-                    showReplace
-                    handleDownloadFileOverride={handleCsvDownload}
-                    handleRemoveFileOverride={() =>
-                      setIsDeleteConfirmModalOpen(true)
-                    }
-                    handleReplaceFileOverride={handleOpenModal}
-                    accept={['.csv']}
-                  />
-                ) : (
-                  <Button
-                    w="100%"
-                    variant="outline"
-                    {...(isRedesign ? EMPTY_STATE_ACTION_STYLES : {})}
-                    leftIcon={
-                      <BiPlus fontSize={isRedesign ? undefined : '1.5rem'} />
-                    }
-                    onClick={handleOpenModal}
-                    isDisabled={!isSelectedConditionalFieldFound}
-                  >
-                    {t(
-                      isRedesign
-                        ? 'features.adminForm.sidebar.workflow.conditionalRouting.addEmailsToOptionsRedesign'
-                        : 'features.adminForm.sidebar.workflow.conditionalRouting.addEmailsToOptions',
-                    )}
-                  </Button>
-                )
-              ) : null}
-            </Stack>
-            <FormErrorMessage>
-              {validateOptionsToRecipientsMapErrorMessage ||
-                errors.conditional_field?.message}
-            </FormErrorMessage>
-          </FormControl>
-        ) : null}
-      </Radio>
+            </Box>
+            {isSelectedConditionalFieldFound ? (
+              isOptionsToRecipientsMapAttached ? (
+                <Attachment
+                  name={'csvFile'}
+                  onChange={() => {}}
+                  value={csvFile}
+                  showDownload
+                  showRemove={false}
+                  showReplace
+                  handleDownloadFileOverride={handleCsvDownload}
+                  handleRemoveFileOverride={() =>
+                    setIsDeleteConfirmModalOpen(true)
+                  }
+                  handleReplaceFileOverride={handleOpenModal}
+                  accept={['.csv']}
+                />
+              ) : (
+                <Button
+                  w="100%"
+                  variant="outline"
+                  {...(isRedesign ? EMPTY_STATE_ACTION_STYLES : {})}
+                  leftIcon={
+                    <BiPlus fontSize={isRedesign ? undefined : '1.5rem'} />
+                  }
+                  onClick={handleOpenModal}
+                  isDisabled={!isSelectedConditionalFieldFound}
+                >
+                  {t(
+                    isRedesign
+                      ? 'features.adminForm.sidebar.workflow.conditionalRouting.addEmailsToOptionsRedesign'
+                      : 'features.adminForm.sidebar.workflow.conditionalRouting.addEmailsToOptions',
+                  )}
+                </Button>
+              )
+            ) : null}
+          </Stack>
+          <FormErrorMessage>
+            {validateOptionsToRecipientsMapErrorMessage ||
+              errors.conditional_field?.message}
+          </FormErrorMessage>
+        </FormControl>
+      ) : null}
+    </>
+  )
+
+  return (
+    <>
+      <ConditionalRoutingMappingDeleteModal
+        isOpen={isDeleteConfirmModalOpen}
+        onClose={() => setIsDeleteConfirmModalOpen(false)}
+        handleDelete={removeOptionsToRecipientsMapping}
+      />
+      <ConditionalRoutingOptionModal
+        conditionalFieldItems={conditionalFieldItems}
+        isLoading={isLoading}
+        isOpen={isOpen}
+        onClose={onClose}
+        control={conditionalRoutingConfigControl}
+        errors={conditionalRoutingConfigErrors}
+        onDownloadCsvClick={handleSkeletonCsvDownload(formId)}
+        onSubmit={handleSubmit(
+          handleConditionalRoutingConfigSubmit(getValues('conditional_field')),
+        )}
+        isSubmitDisabled={
+          !(
+            watchConditionalRoutingConfig().csvFile &&
+            watch('conditional_field')
+          )
+        }
+        validateCsvFile={validateCsvFile}
+        existingCsv={csvFile}
+      />
+
+      {hideSelection ? (
+        routingConfiguration
+      ) : (
+        <Radio
+          isDisabled={isLoading}
+          isLabelFullWidth
+          allowDeselect={false}
+          value={WorkflowType.Conditional}
+          {...register('workflow_type', workflowTypeValidation)}
+          px="0.5rem"
+          __css={{
+            _focusWithin: {
+              boxShadow: 'none',
+            },
+          }}
+        >
+          <Text mb="0.5rem">
+            {t('features.adminForm.sidebar.workflow.conditionalRouting.title')}
+          </Text>
+          {routingConfiguration}
+        </Radio>
+      )}
     </>
   )
 }

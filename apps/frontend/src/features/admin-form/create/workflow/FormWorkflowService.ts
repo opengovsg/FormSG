@@ -1,4 +1,5 @@
 import {
+  FormAuthType,
   FormWorkflowDto,
   FormWorkflowStepWriteDto,
 } from 'formsg-shared/types/form'
@@ -17,9 +18,23 @@ export const createWorkflowStep = (
   ).then(({ data }) => data)
 }
 
-export const deleteWorkflowStep = (formId: string, stepNumber: number) => {
+export interface AuthFieldDeletionConfirmation {
+  expected_last_modified?: string
+  delete_auth_field_ids?: string[]
+}
+export interface DeleteWorkflowOptions extends AuthFieldDeletionConfirmation {
+  retained_auth_type?: FormAuthType.MyInfo | FormAuthType.CP
+  retained_esrvc_id?: string
+}
+
+export const deleteWorkflowStep = (
+  formId: string,
+  stepNumber: number,
+  confirmation?: AuthFieldDeletionConfirmation,
+) => {
   return ApiService.delete<FormWorkflowDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/workflow/${stepNumber}`,
+    { data: confirmation },
   ).then(({ data }) => data)
 }
 
@@ -29,9 +44,13 @@ export const deleteWorkflowStep = (formId: string, stepNumber: number) => {
  * Also what deleting step 1 means — the API refuses to delete step 1 on its own
  * precisely so that this is the only way to express it.
  */
-export const deleteWorkflow = (formId: string) => {
+export const deleteWorkflow = (
+  formId: string,
+  options?: DeleteWorkflowOptions,
+) => {
   return ApiService.delete<FormWorkflowDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/workflow`,
+    { data: options },
   ).then(({ data }) => data)
 }
 

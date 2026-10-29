@@ -195,7 +195,7 @@ export const enSG: Workflow = {
     removeFieldsFirst: 'Remove the Myinfo fields from this step first.',
     manageRestrictions: 'Manage Step 1 restrictions in Settings',
     closeFormToEdit: 'To change the login, close your form to new responses.',
-    inactiveLabel: 'Login',
+    inactiveLabel: 'Singpass authentication',
   },
   addField: {
     fields: 'Add fields',

@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Modal,
@@ -12,6 +12,8 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 
+import { FormResponseMode, FormStatus } from 'formsg-shared/types'
+
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 import { ModalCloseButton } from '~components/Modal'
@@ -23,7 +25,10 @@ import {
   useAdminWorkflowStore,
 } from '../../adminWorkflowStore'
 import { useWorkflowMutations } from '../../mutations'
-import { getDeleteLoginError } from '../../utils/deleteLoginError'
+import {
+  getAffectedAuthFieldRules,
+  getRemovedStepAuthFields,
+} from '../../utils/authFieldRemoval'
 
 interface DeleteStepModalProps {
   onClose: () => void
@@ -37,11 +42,30 @@ export const DeleteStepModal = ({
   stepNumber,
 }: DeleteStepModalProps): JSX.Element => {
   const { t } = useTranslation()
-  const { data: form } = useAdminForm()
+  const { data: loadedForm } = useAdminForm()
+  const [form, setForm] = useState(loadedForm)
+  const wasOpen = useRef(false)
+  useEffect(() => {
+    if (isOpen && !wasOpen.current) setForm(loadedForm)
+    wasOpen.current = isOpen
+  }, [isOpen, loadedForm])
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
   const { deleteStepMutation } = useWorkflowMutations()
-  // The API refuses the same delete; say why before the admin tries.
-  const loginError = getDeleteLoginError(form, stepNumber)
+  const workflowForm =
+    form?.responseMode === FormResponseMode.Multirespondent ? form : undefined
+  const deletedFields = workflowForm
+    ? getRemovedStepAuthFields(workflowForm, stepNumber)
+    : []
+  const affectedRules = workflowForm
+    ? getAffectedAuthFieldRules(
+        workflowForm,
+        deletedFields.map((field) => field._id),
+      )
+    : []
+  const loginError =
+    deletedFields.length && form?.status === FormStatus.Public
+      ? 'Close your form before deleting a step that removes authentication fields.'
+      : undefined
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -62,14 +86,23 @@ export const DeleteStepModal = ({
   // aria-describedby.
   const dialogRef = useRef<HTMLDivElement>(null)
 
-  const handleDelete = useCallback(() => {
+  const handleDelete = () => {
     // Cannot be put in onSuccess since this component will be unmounted by then.
     // No big deal even if we set to inactive here.
-    setToInactive()
-    return deleteStepMutation.mutate(stepNumber, {
-      onSuccess: onClose,
-    })
-  }, [setToInactive, deleteStepMutation, stepNumber, onClose])
+    return deleteStepMutation.mutate(
+      {
+        stepNumber,
+        expected_last_modified: form?.lastModified,
+        delete_auth_field_ids: deletedFields.map((field) => field._id),
+      },
+      {
+        onSuccess: () => {
+          setToInactive()
+          onClose()
+        },
+      },
+    )
+  }
 
   const { title, description, confirm, cancel } = t(
     'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteStep',
@@ -92,6 +125,35 @@ export const DeleteStepModal = ({
             <Text textStyle="body-2" color="secondary.500">
               {description}
             </Text>
+            {deletedFields.length ? (
+              <>
+                <Text>
+                  This is the last step using its authentication provider. These
+                  fields will be deleted from your form:
+                </Text>
+                {deletedFields.map((field) => (
+                  <Text key={field._id}>{field.title}</Text>
+                ))}
+                {affectedRules.length ? (
+                  <>
+                    <Text>
+                      References to these fields will also be removed from:
+                    </Text>
+                    {affectedRules.map((rule) => (
+                      <Text key={rule}>{rule}</Text>
+                    ))}
+                  </>
+                ) : null}
+                <Text>Historical responses will not be deleted.</Text>
+              </>
+            ) : null}
+            {deleteStepMutation.isError ? (
+              <InlineMessage variant="error">
+                {deleteStepMutation.error instanceof Error
+                  ? deleteStepMutation.error.message
+                  : 'The step could not be deleted.'}
+              </InlineMessage>
+            ) : null}
             {loginError ? (
               <InlineMessage variant="error">{loginError}</InlineMessage>
             ) : null}

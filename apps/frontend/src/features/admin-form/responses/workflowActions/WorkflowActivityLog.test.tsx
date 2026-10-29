@@ -2,6 +2,7 @@ import { screen, within } from '@testing-library/react'
 
 import {
   DateString,
+  FormAuthType,
   WorkflowEventDto,
   WorkflowEventType,
   WorkflowStatus,
@@ -97,6 +98,41 @@ describe('WorkflowActivityLog', () => {
       within(items[5]).getByText('notify@agency.gov.sg'),
     ).toBeInTheDocument()
   })
+  it('shows providers recorded on submitted items, including approval submissions', () => {
+    render(
+      <WorkflowActivityLog
+        history={{
+          ...history,
+          submittedSteps: [
+            { ...history.submittedSteps[0], authType: FormAuthType.MyInfo },
+            {
+              isApproval: true,
+              status: WorkflowStatus.APPROVED,
+              submittedAt: '2026-10-08T02:00:00.000Z',
+              authType: FormAuthType.CP,
+            },
+          ],
+          workflowEvents: [
+            event(
+              WorkflowEventType.ReminderSent,
+              '2026-10-08T03:00:00.000Z',
+              [],
+            ),
+          ],
+        }}
+      />,
+    )
+
+    expect(screen.getAllByText('Singpass')).toHaveLength(1)
+    expect(screen.getAllByText('Corppass')).toHaveLength(1)
+  })
+
+  it('omits authentication tags for old or unauthenticated submissions', () => {
+    render(<WorkflowActivityLog history={history} />)
+    expect(screen.queryByText('Singpass')).not.toBeInTheDocument()
+    expect(screen.queryByText('Corppass')).not.toBeInTheDocument()
+  })
+
   it('names approval decisions without inventing actors or sending after rejection', () => {
     render(
       <WorkflowActivityLog
