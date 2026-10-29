@@ -12,7 +12,8 @@ export const FieldLoginGate = ({ children }: { children: ReactNode }) => {
   const { data: form } = useCreateTabForm()
   const enabled = useIsMrfStepLoginEnabled()
   const request: RequestField = (required, add) => {
-    if (form && formUsesLogin(form, required, enabled)) add()
+    if (form && formUsesLogin({ form, authType: required, isFlagOn: enabled }))
+      add()
   }
   return (
     <FieldLoginContext.Provider value={request}>

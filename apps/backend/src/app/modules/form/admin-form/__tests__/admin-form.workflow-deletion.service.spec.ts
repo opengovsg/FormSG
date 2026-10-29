@@ -383,7 +383,7 @@ describe('guided authentication workflow changes', () => {
         first_step_login: { auth_type: FormAuthType.NIL },
         ...confirm(form, [singpassId]),
       },
-      true,
+      { isStepLoginEnabled: true },
     )
     if (result.isErr()) throw result.error
     const saved = await MultirespondentFormModel.findById(form._id).orFail()

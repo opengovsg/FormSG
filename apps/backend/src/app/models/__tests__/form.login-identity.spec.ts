@@ -262,7 +262,7 @@ describe('Form login identity fields', () => {
         emails: [],
         edit: [String(retainedId)],
       },
-      true,
+      { isStepLoginEnabled: true },
     )
     if (workflowResult.isErr()) throw workflowResult.error
 
