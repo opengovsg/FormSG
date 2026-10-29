@@ -8,7 +8,6 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Select,
   Stack,
   Text,
 } from '@chakra-ui/react'
@@ -22,6 +21,7 @@ import {
 import { getStepFieldsNeedingLogin } from 'formsg-shared/utils/step-login'
 
 import Button from '~components/Button'
+import { DropdownMenuLayerProvider, SingleSelect } from '~components/Dropdown'
 import Input from '~components/Input'
 import { ModalCloseButton } from '~components/Modal'
 
@@ -136,16 +136,16 @@ export const FieldLoginGate = ({ children }: { children: ReactNode }) => {
         )
       } else {
         await updateFormLogin(formId, provider, esrvcId)
-        loginSaved = true
       }
+      loginSaved = true
       await Promise.all([
         queryClient.invalidateQueries(adminFormKeys.id(formId)),
         queryClient.invalidateQueries(adminFormSettingsKeys.id(formId)),
       ])
       const add = pending.current
+      add?.()
       pending.current = undefined
       setProvider(undefined)
-      add?.()
     } catch (cause) {
       if (loginSaved) {
         await queryClient.invalidateQueries(adminFormKeys.id(formId))
@@ -153,7 +153,7 @@ export const FieldLoginGate = ({ children }: { children: ReactNode }) => {
       }
       setError(
         cause instanceof Error
-          ? `${loginSaved ? 'Authentication was enabled, but field creation could not continue. ' : ''}${cause.message}`
+          ? `${loginSaved ? 'Authentication was enabled, but field creation could not continue. Cancel and add the field again. ' : ''}${cause.message}`
           : 'Could not enable authentication. Try again.',
       )
     } finally {
@@ -174,78 +174,83 @@ export const FieldLoginGate = ({ children }: { children: ReactNode }) => {
           <ModalCloseButton isDisabled={isSaving} />
           <ModalHeader>Enable {label} to use this field</ModalHeader>
           <ModalBody>
-            <Stack spacing="1rem">
-              <Text>
-                This field needs {label} authentication.
-                {hasWorkflow
-                  ? ' Adding it leaves it unassigned to a workflow step.'
-                  : ''}
-              </Text>
-              {hasWorkflow ? (
-                <>
-                  <Text as="label" htmlFor="field-login-step">
-                    Enable authentication on
-                  </Text>
-                  <Select
-                    id="field-login-step"
-                    value={stepIndex}
-                    onChange={(event) => setStepIndex(event.target.value)}
-                    isDisabled={isSaving}
-                  >
-                    {(isLaterStepLoginAvailable(form, enabled)
-                      ? workflow
-                      : workflow.slice(0, 1)
-                    ).map((item, index) => (
-                      <option key={item._id} value={index}>
-                        Step {index + 1}
-                        {item.step_name ? `: ${item.step_name}` : ''}
-                      </option>
-                    ))}
-                  </Select>
-                </>
-              ) : (
+            <DropdownMenuLayerProvider value="popover">
+              <Stack spacing="1rem">
                 <Text>
-                  Your form will use {label} instead of its current login type.
-                </Text>
-              )}
-              {provider === FormAuthType.CP && (
-                <>
-                  <Text as="label" htmlFor="field-login-service">
-                    Corppass e-service ID
-                  </Text>
-                  <Input
-                    id="field-login-service"
-                    value={esrvcId}
-                    onChange={(event) => setEsrvcId(event.target.value)}
-                    isDisabled={isSaving}
-                  />
-                  {hasEsrvcIdWhitespace(esrvcId) && (
-                    <Text color="danger.500" role="alert">
-                      The e-service ID must not contain spaces.
-                    </Text>
-                  )}
-                </>
-              )}
-              {form?.status === FormStatus.Public && (
-                <Text color="danger.500" role="alert">
-                  Close the form before changing authentication.
-                </Text>
-              )}
-              {incompatible.length > 0 && (
-                <Text color="danger.500" role="alert">
-                  Changing login would affect these fields:{' '}
-                  {incompatible.map((field) => field.title).join(', ')}.{' '}
+                  This field needs {label} authentication.
                   {hasWorkflow
-                    ? 'Unassign them in Workflow first.'
-                    : 'Remove them from the form first.'}
+                    ? ' Adding it leaves it unassigned to a workflow step.'
+                    : ''}
                 </Text>
-              )}
-              {error && (
-                <Text color="danger.500" role="alert">
-                  {error}
-                </Text>
-              )}
-            </Stack>
+                {hasWorkflow ? (
+                  <>
+                    <Text
+                      as="label"
+                      id="field-login-step-label"
+                      htmlFor="field-login-step"
+                    >
+                      Enable authentication on
+                    </Text>
+                    <SingleSelect
+                      name="field-login-step"
+                      value={stepIndex}
+                      onChange={setStepIndex}
+                      isDisabled={isSaving}
+                      isClearable={false}
+                      items={(isLaterStepLoginAvailable(form, enabled)
+                        ? workflow
+                        : workflow.slice(0, 1)
+                      ).map((item, index) => ({
+                        value: String(index),
+                        label: `Step ${index + 1}${item.step_name ? `: ${item.step_name}` : ''}`,
+                      }))}
+                    />
+                  </>
+                ) : (
+                  <Text>
+                    Your form will use {label} instead of its current login
+                    type.
+                  </Text>
+                )}
+                {provider === FormAuthType.CP && (
+                  <>
+                    <Text as="label" htmlFor="field-login-service">
+                      Corppass e-service ID
+                    </Text>
+                    <Input
+                      id="field-login-service"
+                      value={esrvcId}
+                      onChange={(event) => setEsrvcId(event.target.value)}
+                      isDisabled={isSaving}
+                    />
+                    {hasEsrvcIdWhitespace(esrvcId) && (
+                      <Text color="danger.500" role="alert">
+                        The e-service ID must not contain spaces.
+                      </Text>
+                    )}
+                  </>
+                )}
+                {form?.status === FormStatus.Public && (
+                  <Text color="danger.500" role="alert">
+                    Close the form before changing authentication.
+                  </Text>
+                )}
+                {incompatible.length > 0 && (
+                  <Text color="danger.500" role="alert">
+                    Changing login would affect these fields:{' '}
+                    {incompatible.map((field) => field.title).join(', ')}.{' '}
+                    {hasWorkflow
+                      ? 'Unassign them in Workflow first.'
+                      : 'Remove them from the form first.'}
+                  </Text>
+                )}
+                {error && (
+                  <Text color="danger.500" role="alert">
+                    {error}
+                  </Text>
+                )}
+              </Stack>
+            </DropdownMenuLayerProvider>
           </ModalBody>
           <ModalFooter gap="1rem">
             <Button variant="clear" onClick={close} isDisabled={isSaving}>

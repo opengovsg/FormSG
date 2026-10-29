@@ -24,6 +24,36 @@ const state = vi.hoisted(() => ({
 vi.mock('~features/admin-form/common/AdminViewFormService', () => ({
   getAdminFormView: () => state.fetch(),
 }))
+vi.mock('~components/Dropdown', () => ({
+  DropdownMenuLayerProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
+  SingleSelect: ({
+    name,
+    value,
+    onChange,
+    isDisabled,
+    items,
+  }: {
+    name: string
+    value: string
+    onChange: (value: string) => void
+    isDisabled: boolean
+    items: { value: string; label: string }[]
+  }) => (
+    <select
+      id={name}
+      value={value}
+      disabled={isDisabled}
+      onChange={(event) => onChange(event.target.value)}
+    >
+      {items.map((item) => (
+        <option key={item.value} value={item.value}>
+          {item.label}
+        </option>
+      ))}
+    </select>
+  ),
+}))
 vi.mock('../../useCreateTabForm', () => ({
   useCreateTabForm: () => ({ data: state.form }),
 }))
@@ -229,5 +259,21 @@ describe('field builder enable-login gate', () => {
       'service-123',
     )
     expect(state.updateStep).not.toHaveBeenCalled()
+  })
+  it('reports a saved workflow login if opening the field draft fails', async () => {
+    state.add.mockImplementationOnce(() => {
+      throw new Error('Draft failed')
+    })
+    setup()
+    fireEvent.click(screen.getByText('Add Name'))
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Enable Singpass and add field' }),
+    )
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Authentication was enabled',
+    )
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(state.updateStep).toHaveBeenCalledTimes(1)
+    expect(state.invalidate).toHaveBeenCalled()
   })
 })

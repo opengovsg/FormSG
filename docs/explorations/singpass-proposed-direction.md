@@ -1,6 +1,6 @@
 # Singpass across workflow steps: implementation decisions
 
-Status: implemented for discussion, independent review pending, 29 October 2026.
+Status: implemented for discussion, reviewed for discussion, 29 October 2026.
 Branch: codex/mrf-step-login-followups. This is a discussion implementation, not a claim of production readiness.
 
 Sources: second-brain/projects/formsg/singpass-all-steps-proposed-changes.md and https://formsg-workflow-explorations.open-2538.chatgpt.site/proposed-direction.html.
@@ -32,11 +32,11 @@ Implemented on the current exploration branch. New surfaces follow the existing 
 | Saved cards omit unconfigured features | InactiveStepBlock | Full-page saved-card browser review |
 | Focused Settings cards | StepLoginAccordion, StepAuthSettingsEditor | Collapsed/one-open/dirty guard/save/failure tests; private/public browser checks |
 | Step 1 restrictions in both places | StepOneLoginRestrictions, LoginBlock | Shared draft integration; Settings restriction browser checks; partial-failure tests |
-| Field builder direct-enable and unassigned addition | FieldLoginGate, FieldListOption, MyInfoPanel | 9 tests including any-step availability, cancellation, failure, conflicts, stale form, CP service ID; real palette browser checks |
+| Field builder direct-enable and unassigned addition | FieldLoginGate, FieldListOption, MyInfoPanel | 10 tests including any-step availability, cancellation, failure, conflicts, stale form, CP service ID and post-save draft failure; real palette browser checks |
 | Singpass palette and NRIC/FIN icon | FieldListDrawer, LoginIdentityFieldOption | Actual palette browser review |
 | Historical submitted event tags | SubmittedStep authType, submission schema/service/controller, WorkflowActivityLog | 155 backend tests, activity rendering tests and three browser story scenarios |
 
-Verification: frontend typecheck passed; 66 focused frontend tests passed across 10 files; 155 backend tests passed across 3 suites. Changed-file frontend lint has no errors (Fast Refresh helper-export warnings remain). Shared build and backend typecheck passed during activity implementation. git diff --check passed.
+Verification: frontend typecheck passed; 68 focused frontend tests passed across 11 files; 155 backend tests passed across 3 suites. Changed-file frontend lint has no errors (Fast Refresh helper-export warnings remain). Shared build and backend build-config typecheck passed. A separate broad backend typecheck (including test files) reports 134 test-file errors; it is not clean and is not represented as a passing check. git diff --check passed.
 
 Discussion entry points on the running local Storybook (port 6006):
 - Workflow: pages-adminformpage-create-workflowtab--proposed-direction
@@ -47,3 +47,14 @@ Discussion entry points on the running local Storybook (port 6006):
 Browser evidence is in /private/tmp/formsg-proposed-full-workflow.png, /private/tmp/formsg-proposed-full-editor.png, /private/tmp/formsg-field-enable-modal.png, /private/tmp/formsg-settings-cards-collapsed.png and /private/tmp/activity-mixed-providers.png. These are local review captures, not production screenshots.
 
 Limits: real Singpass/Corppass login was not exercised. Step 1 restrictions use separate existing endpoints after the step save; partial failures stay open with an explicit message and refresh saved data. Pre-save freshness checks do not replace server-side version checks, so cross-request concurrency remains a production follow-up. Existing records have no historical provider tag. Storybook AI commands were unavailable because addon-mcp is absent; existing stories and direct browser checks were used without adding tooling dependencies. Send-back and alternative exploration layouts are not part of the proposed direction.
+
+
+## Independent review disposition
+
+Review fixed point: c09fd82d8, feature branch head at implementation start. Four axes reviewed commit 17fde3a25.
+- Standards: one component-consistency suggestion scored below the actionable threshold by an independent verifier (undocumented preference). The modal nevertheless now uses the existing FormSG SingleSelect and modal menu layer to keep the design-system treatment consistent.
+- Spec: no findings.
+- Architecture: fixed login-save outcome tracking in the field gate for workflow forms. The error stays visible if starting the field draft fails after authentication was saved; added a focused failure test.
+- Divergent: no findings. Independent historical-provider review confirmed server provenance and admin-only visibility.
+
+No review comments were posted externally. No real authentication or production deployment was performed.
