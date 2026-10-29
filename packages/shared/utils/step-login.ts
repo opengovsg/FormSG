@@ -72,6 +72,16 @@ export const getStepAuthType = (
     ? form.authType
     : ((workflow ?? [])[stepIndex]?.auth?.auth_type ?? FormAuthType.NIL)
 
+/** The Corppass e-service ID a step logs in with. */
+export const getStepEsrvcId = (
+  form: Pick<StepLoginForm, 'authType'> & { esrvcId?: string },
+  workflow: readonly StepLoginStep[] | null | undefined,
+  stepIndex: number,
+): string | undefined =>
+  stepIndex === 0
+    ? form.esrvcId
+    : ((workflow ?? [])[stepIndex]?.auth?.esrvc_id ?? undefined)
+
 export const hasLaterStepLogin = (
   workflow: readonly StepLoginStep[] | null | undefined,
 ): boolean => (workflow ?? []).slice(1).some((step) => !!step.auth)
@@ -245,6 +255,7 @@ export const getResultingLoginErrors = ({
   isSubmitterIdCollectionEnabled?: boolean
   form_fields?: readonly SourceField[]
   workflow?: readonly StepLoginStep[] | null
+  allowIncompleteDraft?: boolean
 }): string[] => {
   const steps = workflow ?? []
   // Any step's Singpass login may fill Myinfo fields.
@@ -257,7 +268,17 @@ export const getResultingLoginErrors = ({
             : MYINFO_FIELDS_NEED_FORM_SINGPASS,
         ]
       : []
+  const providerErrors = form_fields.flatMap((field) => {
+    const provider = getFieldSourceProvider(field)
+    return provider &&
+      !formUsesAuthType({ authType, workflow: steps }, provider)
+      ? [
+          `${fieldLabel(field)} needs a step with ${STEP_LOGIN_PROVIDER_LABELS[provider]} authentication.`,
+        ]
+      : []
+  })
   return [
+    ...providerErrors,
     ...getLoginIdentityConfigErrors({
       authType,
       responseMode,
@@ -273,5 +294,42 @@ export const getResultingLoginErrors = ({
     ...myInfoErrors,
   ]
 }
+
+export const CORPPASS_STEPS_NEED_ESRVC_ID =
+  'Add an e-service ID to every Corppass step before opening your form.'
+
+/**
+ * Whether a step after Step 1 logs in with Corppass but has no e-service ID
+ * yet. Corppass checks its authorisation list against that ID, so the form
+ * cannot open until every Corppass step has one. Step 1 uses the form's own
+ * `esrvcId`, which the form's `status` setter checks.
+ */
+export const hasLaterCorppassStepWithoutEsrvcId = (
+  workflow: readonly StepLoginStep[] | null | undefined,
+): boolean =>
+  (workflow ?? [])
+    .slice(1)
+    .some(
+      (step) =>
+        step.auth?.auth_type === FormAuthType.CP && !step.auth.esrvc_id?.trim(),
+    )
+
+/**
+ * Publication uses the same availability and optional single-owner rules as
+ * editing, and also needs every later Corppass step's e-service ID. Drafts may
+ * leave that ID blank.
+ */
+export const getLoginFieldPublishErrors = (
+  config: Parameters<typeof getResultingLoginErrors>[0],
+): string[] =>
+  Array.from(
+    new Set([
+      ...getResultingLoginErrors(config),
+      ...(config.responseMode === FormResponseMode.Multirespondent &&
+      hasLaterCorppassStepWithoutEsrvcId(config.workflow)
+        ? [CORPPASS_STEPS_NEED_ESRVC_ID]
+        : []),
+    ]),
+  )
 
 export { isLoginIdentityField }

@@ -1,29 +1,36 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Link as ReactLink, useParams } from 'react-router-dom'
 import { Text } from '@chakra-ui/react'
 
 import {
+  AdminMultirespondentFormDto,
   FirstStepLoginInput,
   FormAuthType,
+  FormResponseMode,
   FormStatus,
+  MultirespondentFormSettings,
   StepLoginAuthType,
 } from 'formsg-shared/types'
-import { getStepFieldsNeedingLogin } from 'formsg-shared/utils/step-login'
 
 import { textStyles } from '~theme/textStyles'
-import {
-  ADMINFORM_ROUTE,
-  ADMINFORM_SETTINGS_SINGPASS_SUBROUTE,
-} from '~constants/routes'
-import Link from '~components/Link'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { AuthSwitchConfirmation } from '~features/admin-form/settings/components/AuthSettingsSection/AuthSwitchConfirmation'
 import { StepLoginControls } from '~features/admin-form/settings/components/AuthSettingsSection/StepLoginControls'
+import {
+  createStepOneLoginRestrictionsDraft,
+  StepOneLoginRestrictions,
+} from '~features/admin-form/settings/components/AuthSettingsSection/StepOneLoginRestrictions'
+import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 
-import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
+import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { EditStepInputs } from '../../../types'
+import {
+  getAffectedAuthFieldRules,
+  getAuthSwitchConsequences,
+} from '../../../utils/authFieldRemoval'
+import { useIsSpotlightActiveSection } from '../../Spotlight'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { FIELDS_TO_EDIT_NAME } from './EditStepBlock'
@@ -42,9 +49,8 @@ type ShownLogin = { auth_type: FormAuthType; esrvc_id?: string }
 
 /**
  * A step's login, saved with the step. Step 1 edits the form-level login
- * through `first_step_login`; later steps stage their own `auth`. A change
- * the step's picked Myinfo fields would break is refused rather than
- * dropping the fields.
+ * through `first_step_login`; later steps stage their own `auth`. A provider
+ * change asks to unassign incompatible fields in the same draft.
  */
 export const LoginBlock = ({
   formMethods,
@@ -52,11 +58,13 @@ export const LoginBlock = ({
   isLoading,
 }: LoginBlockProps): JSX.Element | null => {
   const { t } = useTranslation()
-  const { formId } = useParams()
+  const isRedesign = useIsWorkflowBuilderRedesign()
+  const isGuidedSection = useIsSpotlightActiveSection()
   const { data: form } = useAdminForm()
-  const { formFields = [] } = useAdminFormWorkflow()
+  const confirmationBaseline = useRef(form?.lastModified)
   const { watch, setValue } = formMethods
-  const [blockedMessage, setBlockedMessage] = useState<string>()
+  const [pendingAuthType, setPendingAuthType] = useState<StepLoginAuthType>()
+  const [hasUnassignedFields, setHasUnassignedFields] = useState(false)
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
   const editedFirstStepLogin = watch('first_step_login')
@@ -94,24 +102,78 @@ export const LoginBlock = ({
     }
   }
 
+  const consequences =
+    pendingAuthType === undefined
+      ? { deletedFields: [], unassignedFields: [] }
+      : getAuthSwitchConsequences(
+          form as AdminMultirespondentFormDto,
+          stepNumber,
+          pendingAuthType,
+          pickedFieldIds,
+        )
+  const isDeletingFields = consequences.deletedFields.length > 0
+  const confirmationFields = isDeletingFields
+    ? consequences.deletedFields
+    : consequences.unassignedFields
   const handleAuthTypeChange = (next: StepLoginAuthType) => {
-    if (next === login.auth_type) return
-    const stepFields = formFields.filter((field) =>
-      pickedFieldIds.includes(field._id),
+    if (isFormPublic || isLoading || next === login.auth_type) return
+    const proposed = getAuthSwitchConsequences(
+      form as AdminMultirespondentFormDto,
+      stepNumber,
+      next,
+      pickedFieldIds,
     )
-    // The step's login-filled fields only work with a login that fills them.
-    if (getStepFieldsNeedingLogin(stepFields, next).length > 0) {
-      setBlockedMessage(t(`${COPY_KEY}.removeFieldsFirst`))
+    if (proposed.deletedFields.length || proposed.unassignedFields.length) {
+      setPendingAuthType(next)
       return
     }
-    setBlockedMessage(undefined)
+    setValue('delete_auth_field_ids', [], { shouldDirty: true })
+    setValue('expected_last_modified', undefined, { shouldDirty: true })
     write({ auth_type: next, esrvc_id: login.esrvc_id })
+  }
+  const confirmSwitch = () => {
+    if (pendingAuthType === undefined || isFormPublic || isLoading) return
+    const incompatibleIds = new Set(
+      consequences.unassignedFields.map((field) => field._id),
+    )
+    setValue(
+      FIELDS_TO_EDIT_NAME,
+      pickedFieldIds.filter((id) => !incompatibleIds.has(id)),
+      { shouldDirty: true, shouldValidate: true },
+    )
+    setValue(
+      'delete_auth_field_ids',
+      consequences.deletedFields.map((field) => field._id),
+      { shouldDirty: true },
+    )
+    setValue('expected_last_modified', confirmationBaseline.current, {
+      shouldDirty: true,
+    })
+    write({ auth_type: pendingAuthType, esrvc_id: login.esrvc_id })
+    setHasUnassignedFields(consequences.unassignedFields.length > 0)
+    setPendingAuthType(undefined)
   }
 
   return (
     <EditStepBlockContainer>
-      <Text style={textStyles.h4}>{t(`${COPY_KEY}.title`)}</Text>
+      <AuthSwitchConfirmation
+        currentAuthType={login.auth_type}
+        nextAuthType={pendingAuthType}
+        fields={confirmationFields}
+        formFields={form?.form_fields ?? []}
+        deleteFields={isDeletingFields}
+        affectedRules={getAffectedAuthFieldRules(
+          form as AdminMultirespondentFormDto,
+          consequences.deletedFields.map((field) => field._id),
+        )}
+        onClose={() => setPendingAuthType(undefined)}
+        onConfirm={confirmSwitch}
+      />
+      {!isRedesign || isGuidedSection ? (
+        <Text style={textStyles.h4}>{t(`${COPY_KEY}.title`)}</Text>
+      ) : null}
       <StepLoginControls
+        isTitleToggle={isRedesign && !isGuidedSection}
         idPrefix={`step-${stepNumber}-login`}
         authType={login.auth_type}
         esrvcId={login.esrvc_id ?? ''}
@@ -123,18 +185,58 @@ export const LoginBlock = ({
         isDisabled={isFormPublic}
         isLoading={isLoading}
         notice={isFormPublic ? t(`${COPY_KEY}.closeFormToEdit`) : undefined}
-        errorMessage={blockedMessage}
       />
-      {isFirstStep ? (
-        <Link
-          as={ReactLink}
-          to={`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_SETTINGS_SINGPASS_SUBROUTE}`}
-          textStyle="body-2"
-          alignSelf="flex-start"
-        >
-          {t(`${COPY_KEY}.manageRestrictions`)}
-        </Link>
+      {hasUnassignedFields ? (
+        <Text textStyle="body-2" color="secondary.400">
+          Incompatible fields are unassigned in this draft. Confirmed field
+          deletions apply only when you save or navigate away.
+        </Text>
+      ) : null}
+      {isFirstStep && login.auth_type !== FormAuthType.NIL ? (
+        <WorkflowStepOneRestrictions
+          formMethods={formMethods}
+          isDisabled={isFormPublic || isLoading}
+        />
       ) : null}
     </EditStepBlockContainer>
+  )
+}
+
+const WorkflowStepOneRestrictions = ({
+  formMethods,
+  isDisabled,
+}: {
+  formMethods: UseFormReturn<EditStepInputs>
+  isDisabled: boolean
+}) => {
+  const { data: settings } = useAdminFormSettings<MultirespondentFormSettings>()
+  const draft = formMethods.watch('first_step_restrictions')
+  if (!settings || settings.responseMode !== FormResponseMode.Multirespondent)
+    return null
+  return (
+    <StepOneLoginRestrictions
+      settings={settings}
+      value={draft?.value ?? createStepOneLoginRestrictionsDraft(settings)}
+      isDisabled={isDisabled}
+      onParsingChange={(parsing) =>
+        formMethods.setValue('first_step_restrictions_parsing', parsing)
+      }
+      onChange={(patch) =>
+        formMethods.setValue(
+          'first_step_restrictions',
+          {
+            baselineIsSingleSubmission:
+              draft?.baselineIsSingleSubmission ??
+              !!settings.isSingleSubmission,
+            value: {
+              ...(draft?.value ??
+                createStepOneLoginRestrictionsDraft(settings)),
+              ...patch,
+            },
+          },
+          { shouldDirty: true },
+        )
+      }
+    />
   )
 }

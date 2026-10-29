@@ -14,6 +14,7 @@ import {
   SubmittedStep,
   WorkflowEventType,
   WorkflowStatus,
+  WorkflowStepAuthType,
 } from 'formsg-shared/types'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
 import moment from 'moment'
@@ -955,6 +956,12 @@ export const createMultiRespondentFormSubmission = ({
         submittedAt: new Date().toISOString(),
         nextStepRecipientEmails,
         submitterId: hashedSubmitterId,
+        // Step 1's provider is verified by handleNdiResponses before creation.
+        authType:
+          form.authType === FormAuthType.MyInfo ||
+          form.authType === FormAuthType.CP
+            ? form.authType
+            : undefined,
       }
 
       // RATIONALE: Generate the submissionId up front so the S3 snapshot key can be built
@@ -1201,6 +1208,11 @@ export const createMultiRespondentFormPendingSubmission = ({
       isApproval: false, // first step cannot be approval step
       submittedAt: new Date().toISOString(),
       submitterId: hashedSubmitterId,
+      authType:
+        form.authType === FormAuthType.MyInfo ||
+        form.authType === FormAuthType.CP
+          ? form.authType
+          : undefined,
     }
 
     const submissionContent: MultirespondentSubmissionContent = {
@@ -1834,6 +1846,7 @@ export const updateMultiRespondentFormSubmission = ({
   snapshottedFormDef,
   encryptedPayload,
   expectedPrevious,
+  authenticatedAuthType,
   logMeta,
   growthbook,
 }: {
@@ -1843,6 +1856,8 @@ export const updateMultiRespondentFormSubmission = ({
   // Stored step state the request was checked against. The update only
   // applies while the submission is still at that step.
   expectedPrevious?: { workflowStep: number; stepTokenHash?: string }
+  // Taken from the verified step session, never from the client request body.
+  authenticatedAuthType?: WorkflowStepAuthType
   logMeta: CustomLoggerParams['meta']
   growthbook?: GrowthBook
 }): ResultAsync<
@@ -1949,6 +1964,7 @@ export const updateMultiRespondentFormSubmission = ({
       const isStepRejected = isStepRejectedResult.value
 
       const submittedStepMetaCommons = {
+        authType: authenticatedAuthType,
         stepNumber: workflowStep,
         submittedAt: new Date().toISOString(),
         nextStepRecipientEmails,

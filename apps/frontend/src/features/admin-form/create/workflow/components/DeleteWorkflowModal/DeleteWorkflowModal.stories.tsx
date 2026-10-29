@@ -1,9 +1,13 @@
 import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
+  BasicField,
+  CorppassAttribute,
+  FormAuthType,
   FormResponseMode,
   FormStatus,
   FormWorkflowStepDto,
+  MyInfoAttribute,
   WorkflowType,
 } from 'formsg-shared/types'
 
@@ -100,4 +104,63 @@ export const FirstStepFormClosed = FirstStepTemplate.bind({})
 FirstStepFormClosed.parameters = {
   argos: { modes: viewportModes('mobile') },
   msw: { handlers: { default: buildMocks(FormStatus.Private) } },
+}
+
+/** Choose the retained provider, then review field deletion before committing. */
+export const MixedAuthentication = Template.bind({})
+MixedAuthentication.parameters = {
+  msw: {
+    handlers: {
+      default: createFormBuilderMocks({
+        responseMode: FormResponseMode.Multirespondent,
+        status: FormStatus.Private,
+        authType: FormAuthType.MyInfo,
+        form_fields: [
+          {
+            _id: '6200e1534ad4f00012848d91',
+            title: 'Verified name',
+            fieldType: BasicField.ShortText,
+            myInfo: { attr: MyInfoAttribute.Name },
+            required: true,
+            disabled: false,
+            description: '',
+            allowPrefill: false,
+            ValidationOptions: { selectedValidation: null, customVal: null },
+          },
+          {
+            _id: '6200e1534ad4f00012848d92',
+            title: 'Organisation UEN',
+            fieldType: BasicField.Uen,
+            corppass: { attr: CorppassAttribute.Uen },
+            required: true,
+            disabled: false,
+            description: '',
+          },
+        ],
+        workflow: [
+          {
+            ...workflow_step_1,
+            edit: ['6200e1534ad4f00012848d91'],
+            step_name: 'Requester',
+          },
+          {
+            _id: '61e6857c9c794b0012f1c6f9',
+            workflow_type: WorkflowType.Static,
+            emails: ['approver@example.gov.sg'],
+            edit: ['6200e1534ad4f00012848d92'],
+            step_name: 'Approver',
+            auth: { auth_type: FormAuthType.CP, esrvc_id: 'AGENCY-SERVICE-A' },
+          },
+          {
+            _id: '61e6857c9c794b0012f1c6fa',
+            workflow_type: WorkflowType.Static,
+            emails: ['processor@example.gov.sg'],
+            edit: [],
+            step_name: 'Processor',
+            auth: { auth_type: FormAuthType.CP, esrvc_id: 'AGENCY-SERVICE-B' },
+          },
+        ],
+      }),
+    },
+  },
 }

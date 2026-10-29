@@ -5,10 +5,13 @@ import { featureFlags } from 'formsg-shared/constants'
 import {
   AttachmentSize,
   BasicField,
+  CorppassAttribute,
   FormFieldDto,
+  MyInfoAttribute,
 } from 'formsg-shared/types/field'
 import {
   AdminFormDto,
+  FormAuthType,
   FormResponseMode,
   FormStatus,
   FormWorkflowStepDto,
@@ -625,3 +628,112 @@ SingleStepV4Webhook.parameters = webhookWorkflowParameters(
   [workflow_step_1],
   'v4',
 )
+
+const proposedDirectionFlags = new GrowthBook({
+  features: {
+    [featureFlags.workflowBuilderRedesign]: { defaultValue: true },
+    [featureFlags.mrfStepLogin]: { defaultValue: true },
+    [featureFlags.isNricFieldEnabled]: { defaultValue: true },
+  },
+})
+
+const proposalFields: FormFieldDto[] = [
+  { ...form_field_5, title: 'Requester email' },
+  { ...form_field_6, title: 'Approver email' },
+  { ...form_field_1, title: 'Approve this request?' },
+  {
+    _id: '620115cf3bc125001349f901',
+    title: 'Requester NRIC/FIN',
+    description: '',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.Nric,
+    myInfo: { attr: MyInfoAttribute.UinFin },
+  },
+  {
+    _id: '620115cf3bc125001349f902',
+    title: 'Verified name',
+    description: '',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.ShortText,
+    ValidationOptions: {
+      customVal: null,
+      selectedValidation: null,
+    },
+    myInfo: { attr: MyInfoAttribute.Name },
+  },
+  {
+    _id: '620115cf3bc125001349f903',
+    title: 'Organisation UEN',
+    description: '',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.Uen,
+    corppass: { attr: CorppassAttribute.Uen },
+  },
+]
+
+/** Team discussion entry point. Saved cards open into the proposed three-tab editor. */
+export const ProposedDirection = Template.bind({})
+ProposedDirection.decorators = [
+  (Story: StoryFn) => (
+    <GrowthBookProvider growthbook={proposedDirectionFlags}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+ProposedDirection.parameters = {
+  msw: {
+    handlers: [
+      ...buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        status: FormStatus.Private,
+        authType: FormAuthType.MyInfo,
+        form_fields: proposalFields,
+        workflow: [
+          {
+            _id: '61e6857c9c794b0012f1c6f8',
+            workflow_type: WorkflowType.Static,
+            emails: [],
+            step_name: 'Requester',
+            edit: [form_field_5._id, '620115cf3bc125001349f901'],
+          },
+          {
+            _id: '61e6857c9c794b0012f1c6f9',
+            workflow_type: WorkflowType.Static,
+            emails: ['approver@agency.gov.sg'],
+            step_name: 'Approving officer',
+            edit: [form_field_1._id, '620115cf3bc125001349f903'],
+            approval_field: form_field_1._id,
+            is_approval_enabled: true,
+            auth: { auth_type: FormAuthType.CP },
+          },
+          {
+            _id: '61e6857c9c794b0012f1c6fa',
+            workflow_type: WorkflowType.Dynamic,
+            field: form_field_6._id,
+            step_name: 'Processing officer',
+            edit: [form_field_6._id],
+          },
+        ],
+      }),
+      getAdminFormSettings({
+        mode: FormResponseMode.Multirespondent,
+        overrides: {
+          status: FormStatus.Private,
+          authType: FormAuthType.MyInfo,
+          isSingleSubmission: false,
+          emails: ['admin@agency.gov.sg'],
+          stepsToNotify: [],
+          stepOneEmailNotificationFieldId: form_field_5._id,
+        } satisfies Partial<MultirespondentFormSettings>,
+      }),
+      patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+    ],
+  },
+  documentation: {
+    storyDescription:
+      'Proposed direction for team discussion: single person input, three workflow tabs, Singpass and Corppass on different steps. Open Step 2 and select Verified name to explore switch-and-unassign. Requester NRIC/FIN stays visible as Assigned to Step 1. Step 3 demonstrates enable-and-assign. Step 1 contains form restrictions.',
+  },
+}

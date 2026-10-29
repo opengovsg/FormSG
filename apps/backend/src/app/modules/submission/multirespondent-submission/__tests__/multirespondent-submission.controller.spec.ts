@@ -864,6 +864,35 @@ describe('multirespondent-submision.controller', () => {
       expect(mockRes.status).not.toHaveBeenCalled() // default is 200 ok
     })
 
+    it.each([undefined, FormAuthType.MyInfo, FormAuthType.CP])(
+      'uses verified provider %s rather than a client-supplied provider',
+      async (authenticatedAuthType) => {
+        const req = expressHandler.mockRequest({
+          params: { formId: mockFormId, submissionId: mockSubmissionId },
+          body: { authType: FormAuthType.CP } as any,
+        })
+        const submitReq = merge(req, {
+          formsg: {
+            formDef: { _id: mockFormId, authType: FormAuthType.NIL },
+            snapshottedFormDef: { _id: mockFormId },
+            encryptedPayload: { responses: {} },
+            stepAuth: authenticatedAuthType
+              ? { session: { authType: authenticatedAuthType } }
+              : undefined,
+          } as any,
+        })
+        await updateMultirespondentSubmissionForTest(
+          submitReq,
+          expressHandler.mockResponse(),
+        )
+        expect(
+          MockMultiRespondentSubmissionService.updateMultiRespondentFormSubmission,
+        ).toHaveBeenCalledWith(
+          expect.objectContaining({ authenticatedAuthType }),
+        )
+      },
+    )
+
     it('returns 400 bad request when attachment upload fails when updateMultiRespondentFormSubmission', async () => {
       // Arrange
       const attachmentUploadError = new AttachmentUploadError()

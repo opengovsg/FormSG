@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { Box, Container } from '@chakra-ui/react'
 
+import { AuthenticationDraftNotice } from '../common/AuthenticationDraftNotice'
 import { useSidebarWidth } from '../common/CreatePageSidebarContext'
 
 import { EmptyWorkflow } from './components/EmptyWorkflow'
@@ -53,6 +54,7 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
       pr={{ base: '1.5rem', md: `calc(3.75rem + ${sidebarWidth}px)` }}
     >
       <Container p={0} maxW="42.5rem">
+        <AuthenticationDraftNotice />
         {isOnWelcomeCard ? (
           <WelcomeCard />
         ) : isEmptyWorkflow ? (

@@ -1,5 +1,6 @@
 import { CSSProperties, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { BiIdCard } from 'react-icons/bi'
 import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 import {
   Draggable,
@@ -7,8 +8,12 @@ import {
   DraggableStateSnapshot,
 } from '@hello-pangea/dnd'
 
-import { FormResponseMode } from 'formsg-shared/types'
-import { AllowedMyInfoFieldOption, BasicField } from 'formsg-shared/types/field'
+import { FormAuthType, FormResponseMode } from 'formsg-shared/types'
+import {
+  AllowedMyInfoFieldOption,
+  BasicField,
+  MyInfoAttribute,
+} from 'formsg-shared/types/field'
 import {
   createLoginIdentityField,
   LOGIN_IDENTITY_LABELS,
@@ -32,6 +37,8 @@ import {
   getFieldCreationMeta,
   getMyInfoFieldCreationMeta,
 } from '../../utils/fieldCreation'
+
+import { useFieldLoginGate } from './FieldLoginContext'
 
 const getDraggableAnimationProps = (
   provided: DraggableProvided,
@@ -73,6 +80,7 @@ interface DraggableMyInfoFieldOptionProps extends Omit<
   FieldOptionProps,
   'isActive'
 > {
+  isDragDisabled?: boolean
   index: number
   fieldType: AllowedMyInfoFieldOption
 }
@@ -175,11 +183,12 @@ export const DraggableMyInfoFieldListOption = ({
   fieldType,
   index,
   isDisabled,
+  isDragDisabled,
   ...props
 }: DraggableMyInfoFieldOptionProps): JSX.Element => (
   <Draggable
     index={index}
-    isDragDisabled={isDisabled}
+    isDragDisabled={isDisabled || isDragDisabled}
     disableInteractiveElementBlocking
     draggableId={fieldType}
   >
@@ -270,9 +279,13 @@ export const MyInfoFieldOption = forwardRef<MyInfoFieldOptionProps, 'button'>(
 
     const updateCreateState = useFieldBuilderStore(updateCreateStateSelector)
 
+    const requestLogin = useFieldLoginGate()
     const handleClick = useCallback(() => {
-      if (!isDisabled) updateCreateState(newFieldMeta, numFields)
-    }, [newFieldMeta, numFields, updateCreateState, isDisabled])
+      if (isDisabled) return
+      const add = () => updateCreateState(newFieldMeta, numFields)
+      if (requestLogin) requestLogin(FormAuthType.MyInfo, add)
+      else add()
+    }, [newFieldMeta, numFields, updateCreateState, isDisabled, requestLogin])
 
     return (
       <FieldListOption
@@ -306,11 +319,30 @@ export const LoginIdentityFieldOption = forwardRef<
 
   const updateCreateState = useFieldBuilderStore(updateCreateStateSelector)
 
+  const requestLogin = useFieldLoginGate()
   const handleClick = useCallback(() => {
     if (isDisabled) return
     if (onConvert) onConvert()
-    else updateCreateState(newFieldMeta, numFields)
-  }, [newFieldMeta, numFields, updateCreateState, isDisabled, onConvert])
+    else {
+      const add = () => updateCreateState(newFieldMeta, numFields)
+      if (requestLogin)
+        requestLogin(
+          attr === MyInfoAttribute.UinFin
+            ? FormAuthType.MyInfo
+            : FormAuthType.CP,
+          add,
+        )
+      else add()
+    }
+  }, [
+    newFieldMeta,
+    numFields,
+    updateCreateState,
+    isDisabled,
+    onConvert,
+    requestLogin,
+    attr,
+  ])
 
   return (
     <FieldListOption
@@ -319,7 +351,10 @@ export const LoginIdentityFieldOption = forwardRef<
       onClick={handleClick}
       ref={ref}
     >
-      <Icon fontSize="1.5rem" as={meta.icon} />
+      <Icon
+        fontSize="1.5rem"
+        as={newFieldMeta.fieldType === BasicField.Nric ? BiIdCard : meta.icon}
+      />
       <Stack direction="row" spacing="0.5rem" align="center">
         <Text textStyle="body-1">{LOGIN_IDENTITY_LABELS[attr]}</Text>
         {form?.isSubmitterIdCollectionEnabled && (

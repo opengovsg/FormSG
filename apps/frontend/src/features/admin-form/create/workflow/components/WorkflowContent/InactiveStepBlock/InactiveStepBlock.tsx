@@ -227,36 +227,42 @@ export const InactiveStepBlock = ({
     ))
   }, [idToFieldMap, step.edit])
 
-  const fieldsSection = (
-    <Stack>
-      <Text textStyle={sectionLabelTextStyle}>
-        {t('features.adminForm.sidebar.workflow.respondentBlock.fieldsToFill')}
-      </Text>
-      <Stack direction="column" spacing="0.25rem">
-        {questionBadges}
+  const fieldsSection =
+    step.edit.length === 0 && isLoginShown ? null : (
+      <Stack>
+        <Text textStyle={sectionLabelTextStyle}>
+          {t(
+            'features.adminForm.sidebar.workflow.respondentBlock.fieldsToFill',
+          )}
+        </Text>
+        <Stack direction="column" spacing="0.25rem">
+          {questionBadges}
+        </Stack>
       </Stack>
-    </Stack>
-  )
+    )
   const stepAuthType = form
     ? getStepAuthType(form, formWorkflow, stepNumber)
     : FormAuthType.NIL
-  const loginSection = isLoginShown ? (
-    <Stack>
-      <Text textStyle={sectionLabelTextStyle}>
-        {t(`${STEP_LOGIN_COPY_KEY}.inactiveLabel`)}
-      </Text>
-      <Flex>
-        <LogicBadge>
-          {t(
-            isWorkflowStepAuthType(stepAuthType)
-              ? STEP_LOGIN_LABEL_KEYS[stepAuthType]
-              : `${STEP_LOGIN_COPY_KEY}.none`,
-          )}
-        </LogicBadge>
-      </Flex>
-    </Stack>
-  ) : null
-  const hideEmptyApprovals = isRedesign && !step.approval_field
+  const loginSection =
+    isLoginShown && isWorkflowStepAuthType(stepAuthType) ? (
+      <Stack>
+        <Text textStyle={sectionLabelTextStyle}>
+          {t(`${STEP_LOGIN_COPY_KEY}.inactiveLabel`)}
+        </Text>
+        <Flex>
+          <LogicBadge>
+            {t(
+              isWorkflowStepAuthType(stepAuthType)
+                ? STEP_LOGIN_LABEL_KEYS[stepAuthType]
+                : `${STEP_LOGIN_COPY_KEY}.none`,
+            )}
+          </LogicBadge>
+        </Flex>
+      </Stack>
+    ) : null
+  const hideEmptyApprovals =
+    (isRedesign || isLoginShown) &&
+    (!step.approval_field || step.is_approval_enabled === false)
   const approvalsSection =
     isFirstStep || hideEmptyApprovals ? null : (
       <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />

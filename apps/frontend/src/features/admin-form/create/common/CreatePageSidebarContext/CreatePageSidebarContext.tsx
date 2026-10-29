@@ -11,6 +11,8 @@ import { FCC } from '~typings/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 
+import { saveBeforeNavigation } from '~features/admin-form/common/navigationSave'
+
 import { FieldListTabIndex } from '../../builder-and-design/constants'
 import {
   DesignState,
@@ -109,7 +111,7 @@ export const useCreatePageSidebarContext =
       if (activeTab !== DrawerTabs.Design) setDesignState(DesignState.Inactive)
     }, [activeTab, setDesignState])
 
-    const setActiveOrPendingTab = useCallback(
+    const applyTab = useCallback(
       (tab: DrawerTabs | null, shouldBePending?: boolean) => {
         if (shouldBePending) {
           setPendingTab(tab)
@@ -125,6 +127,19 @@ export const useCreatePageSidebarContext =
         }
       },
       [fieldBuilderState, isMobile, setFieldsToInactive],
+    )
+
+    const setActiveOrPendingTab = useCallback(
+      (tab: DrawerTabs | null, shouldBePending?: boolean) => {
+        if (activeTab === DrawerTabs.Workflow && tab !== DrawerTabs.Workflow) {
+          void saveBeforeNavigation().then((saved) => {
+            if (saved) applyTab(tab, shouldBePending)
+          })
+          return
+        }
+        applyTab(tab, shouldBePending)
+      },
+      [activeTab, applyTab],
     )
 
     const clearPendingTab = useCallback(() => {

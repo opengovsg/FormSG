@@ -3780,6 +3780,7 @@ describe('Form Model', () => {
         const fieldToDuplicate = generateDefaultField(BasicField.Checkbox)
 
         validForm.form_fields = [fieldToDuplicate]
+        await validForm.save()
         const fieldId = fieldToDuplicate._id
 
         // Act
@@ -3815,6 +3816,7 @@ describe('Form Model', () => {
         const dummyField = generateDefaultField(BasicField.Mobile)
 
         validForm.form_fields = [fieldToDuplicate, dummyField]
+        await validForm.save()
         const fieldId = fieldToDuplicate._id
 
         // Act

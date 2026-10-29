@@ -8,8 +8,8 @@ import { Language } from 'formsg-shared/types'
 import { FEATURE_TOUR_KEY_PREFIX } from '~constants/localStorage'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
-import { NavigationPrompt } from '~templates/NavigationPrompt'
 
+import { NavigationSaveGuard } from '~features/admin-form/common/NavigationSaveGuard'
 import { useUser } from '~features/user/queries'
 
 import { DirtyModal } from '../common/components/DirtyModal'
@@ -63,7 +63,7 @@ export const CreatePage = (): JSX.Element => {
 
   return (
     <>
-      <NavigationPrompt when={isDirty} />
+      <NavigationSaveGuard fallbackDirty={isDirty} />
       <CreatePageSidebarProvider>
         <OpenWorkflowTabOnArrival />
         <OpenFieldListTabOnArrival />

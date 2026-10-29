@@ -3,7 +3,10 @@ import {
   FormAuthType,
   FormResponseMode,
 } from 'formsg-shared/types'
-import { StepLoginForm } from 'formsg-shared/utils/step-login'
+import {
+  hasLaterCorppassStepWithoutEsrvcId,
+  StepLoginForm,
+} from 'formsg-shared/utils/step-login'
 
 /**
  * Only CorpPass requires esrvcid as other options will use FormSG's
@@ -21,18 +24,9 @@ export const isEsrvcidRequired = (authType: FormAuthType) => {
   }
 }
 
-/**
- * Whether a step after Step 1 logs in with Corppass but has no e-service ID
- * yet. Corppass checks its authorisation list against that ID, so the form
- * cannot open until every Corppass step has one.
- */
+/** Whether a later Corppass step still needs its e-service ID before opening. */
 export const hasCorppassStepWithoutEsrvcId = (
   form: Pick<AdminFormDto, 'responseMode'> & Pick<StepLoginForm, 'workflow'>,
 ): boolean =>
   form.responseMode === FormResponseMode.Multirespondent &&
-  (form.workflow ?? [])
-    .slice(1)
-    .some(
-      (step) =>
-        step.auth?.auth_type === FormAuthType.CP && !step.auth.esrvc_id?.trim(),
-    )
+  hasLaterCorppassStepWithoutEsrvcId(form.workflow)

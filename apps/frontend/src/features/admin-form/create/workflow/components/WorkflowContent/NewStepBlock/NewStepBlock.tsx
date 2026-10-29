@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 import { Link as RouterLink, useParams } from 'react-router-dom'
@@ -67,7 +67,9 @@ export const NewStepBlock = () => {
   const { t } = useTranslation()
   const { formWorkflow, isPaymentEnabled, isLegacyWebhookEnabled } =
     useAdminFormWorkflow()
-  const { createStepMutation } = useWorkflowMutations()
+  const { createStepMutation, updateStepMutation } = useWorkflowMutations()
+  const creationStepNumber = useRef<number>()
+  const createdStep = useRef<{ stepNumber: number; id: string }>()
   const {
     isCreatingState,
     stateData,
@@ -93,7 +95,15 @@ export const NewStepBlock = () => {
     onOpen: onBlockedModalOpen,
   } = useDisclosure()
 
-  const newStepNumber = formWorkflow?.length ?? 0
+  // A restriction request can fail after the step itself was created. Keep
+  // this editor on that step and update it on retry rather than adding another.
+  if (!isCreatingState) {
+    creationStepNumber.current = undefined
+    createdStep.current = undefined
+  } else if (creationStepNumber.current === undefined) {
+    creationStepNumber.current = formWorkflow?.length ?? 0
+  }
+  const newStepNumber = creationStepNumber.current ?? formWorkflow?.length ?? 0
 
   const isWebhookBlocked = isLegacyWebhookEnabled && newStepNumber >= 1
 
@@ -110,16 +120,29 @@ export const NewStepBlock = () => {
   }
 
   const handleSubmit = useCallback(
-    (step: FormWorkflowStepWriteDto) =>
-      createStepMutation.mutate(step, {
-        onSuccess: () => {
-          setCompletedStep(newStepNumber)
-          completeSave()
-        },
-        onError: cancelPendingSwitch,
-      }),
+    async (step: FormWorkflowStepWriteDto, afterSave?: () => Promise<void>) => {
+      try {
+        if (createdStep.current) {
+          await updateStepMutation.mutateAsync({
+            stepNumber: createdStep.current.stepNumber,
+            updateStepBody: { ...step, _id: createdStep.current.id },
+          })
+        } else {
+          const workflow = await createStepMutation.mutateAsync(step)
+          const savedStep = workflow[newStepNumber]
+          createdStep.current = { stepNumber: newStepNumber, id: savedStep._id }
+        }
+        await afterSave?.()
+        setCompletedStep(newStepNumber)
+        completeSave()
+      } catch (error) {
+        cancelPendingSwitch()
+        throw error
+      }
+    },
     [
       createStepMutation,
+      updateStepMutation,
       completeSave,
       cancelPendingSwitch,
       setCompletedStep,
@@ -133,8 +156,8 @@ export const NewStepBlock = () => {
 
   return isCreatingState ? (
     <EditStepBlock
-      stepNumber={formWorkflow.length}
-      isLoading={createStepMutation.isLoading}
+      stepNumber={newStepNumber}
+      isLoading={createStepMutation.isLoading || updateStepMutation.isLoading}
       onSubmit={handleSubmit}
       defaultValues={{ edit: [] }}
       submitButtonLabel={t(
