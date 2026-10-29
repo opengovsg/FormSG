@@ -15,7 +15,6 @@ import {
 } from 'formsg-shared/types'
 import {
   getStepAuthType,
-  getStepFields,
   getStepFieldsNeedingLogin,
 } from 'formsg-shared/utils/step-login'
 
@@ -28,6 +27,7 @@ import { updateWorkflowStep } from '~features/admin-form/create/workflow/FormWor
 
 import { adminFormSettingsKeys } from '../../queries'
 
+import { AuthSwitchConfirmation } from './AuthSwitchConfirmation'
 import { hasEsrvcIdWhitespace, StepLoginControls } from './StepLoginControls'
 import {
   createStepOneLoginRestrictionsDraft,
@@ -67,6 +67,8 @@ export const StepAuthSettingsEditor = ({
   )
   const [baseline] = useState(settings)
   const [baselineStep] = useState(step)
+  const [draftFieldIds, setDraftFieldIds] = useState(step.edit)
+  const [pendingAuthType, setPendingAuthType] = useState<StepLoginAuthType>()
   const [restrictions, setRestrictions] = useState(() =>
     createStepOneLoginRestrictionsDraft(settings),
   )
@@ -100,15 +102,13 @@ export const StepAuthSettingsEditor = ({
           'This step has changed since you opened it. Cancel and reopen the card to review the latest settings.',
         )
       }
-      const fields = getStepFields(
-        latest.form_fields,
-        latest.workflow,
-        stepIndex,
+      const fields = latest.form_fields.filter((field) =>
+        draftFieldIds.includes(field._id),
       )
       const incompatible = getStepFieldsNeedingLogin(fields, authType)
       if (incompatible.length > 0)
         throw new Error(
-          'Unassign the fields that require the current login in Create → Workflow before changing it.',
+          'These fields changed while you were editing. Cancel and reopen the card to review their authentication requirements.',
         )
       let loginSaved = false
       try {
@@ -120,7 +120,7 @@ export const StepAuthSettingsEditor = ({
                 _id: latestStep._id,
                 workflow_type: WorkflowType.Static,
                 emails: [],
-                edit: latestStep.edit,
+                edit: draftFieldIds,
                 step_name: latestStep.step_name,
                 approval_field: latestStep.approval_field,
                 is_approval_enabled: latestStep.is_approval_enabled,
@@ -136,6 +136,7 @@ export const StepAuthSettingsEditor = ({
               }
             : {
                 ...latestStep,
+                edit: draftFieldIds,
                 auth:
                   authType === FormAuthType.NIL
                     ? undefined
@@ -178,21 +179,37 @@ export const StepAuthSettingsEditor = ({
     },
   )
   const isLoading = saveMutation.isLoading
-  const changeAuth = (next: StepLoginAuthType) => {
-    const incompatible = getStepFieldsNeedingLogin(
-      getStepFields(form.form_fields, form.workflow, stepIndex),
-      next,
-    )
-    if (incompatible.length) {
-      setError(
-        `This login is required by: ${incompatible.map((field) => field.title).join(', ')}. Unassign these fields in Create → Workflow before changing the login.`,
-      )
-      return
-    }
+  const applyAuth = (next: StepLoginAuthType) => {
     setError('')
     setAuthType(next)
     setHasLoginChanges(true)
     onDirtyChange(true)
+  }
+  const pendingFields =
+    pendingAuthType === undefined
+      ? []
+      : getStepFieldsNeedingLogin(
+          form.form_fields.filter((field) => draftFieldIds.includes(field._id)),
+          pendingAuthType,
+        )
+  const changeAuth = (next: StepLoginAuthType) => {
+    if (isPublic || isLoading || next === authType) return
+    const incompatible = getStepFieldsNeedingLogin(
+      form.form_fields.filter((field) => draftFieldIds.includes(field._id)),
+      next,
+    )
+    if (incompatible.length) {
+      setPendingAuthType(next)
+      return
+    }
+    applyAuth(next)
+  }
+  const confirmSwitch = () => {
+    if (pendingAuthType === undefined || isPublic || isLoading) return
+    const incompatibleIds = new Set(pendingFields.map((field) => field._id))
+    setDraftFieldIds((ids) => ids.filter((id) => !incompatibleIds.has(id)))
+    applyAuth(pendingAuthType)
+    setPendingAuthType(undefined)
   }
   const changeRestrictions = (
     patch: Partial<StepOneLoginRestrictionsDraft>,
@@ -204,6 +221,13 @@ export const StepAuthSettingsEditor = ({
 
   return (
     <Stack spacing="0">
+      <AuthSwitchConfirmation
+        currentAuthType={authType}
+        nextAuthType={pendingAuthType}
+        fields={pendingFields}
+        onClose={() => setPendingAuthType(undefined)}
+        onConfirm={confirmSwitch}
+      />
       <Stack spacing="1.5rem" px="2rem">
         <StepLoginControls
           idPrefix={`settings-step-${stepIndex}-login`}
@@ -233,6 +257,12 @@ export const StepAuthSettingsEditor = ({
             onParsingChange={setIsParsing}
             dividerBleed="2rem"
           />
+        ) : null}
+        {draftFieldIds.length < baselineStep.edit.length ? (
+          <Text textStyle="body-2" color="secondary.400">
+            Incompatible fields will be unassigned when you save. Assign them to
+            a matching step or delete them before publishing.
+          </Text>
         ) : null}
         {error ? (
           <InlineMessage variant="error">

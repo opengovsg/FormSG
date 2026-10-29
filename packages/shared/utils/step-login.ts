@@ -239,16 +239,19 @@ export const getResultingLoginErrors = ({
   isSubmitterIdCollectionEnabled,
   form_fields = [],
   workflow,
+  allowIncompleteDraft = false,
 }: {
   authType: FormAuthType
   responseMode: FormResponseMode
   isSubmitterIdCollectionEnabled?: boolean
   form_fields?: readonly SourceField[]
   workflow?: readonly StepLoginStep[] | null
+  allowIncompleteDraft?: boolean
 }): string[] => {
   const steps = workflow ?? []
   // Any step's Singpass login may fill Myinfo fields.
   const myInfoErrors =
+    !allowIncompleteDraft &&
     form_fields.some(isMyInfoDataField) &&
     !formUsesAuthType({ authType, workflow: steps }, FormAuthType.MyInfo)
       ? [
@@ -264,6 +267,7 @@ export const getResultingLoginErrors = ({
       isSubmitterIdCollectionEnabled,
       form_fields,
       workflow: steps,
+      allowMissingLogin: allowIncompleteDraft,
     }),
     ...getStepLoginConfigErrors({
       form: { authType },
@@ -272,6 +276,36 @@ export const getResultingLoginErrors = ({
     }),
     ...myInfoErrors,
   ]
+}
+
+/** Incomplete authentication fields are allowed in drafts, never in a published form. */
+export const getLoginFieldPublishErrors = (
+  config: Parameters<typeof getResultingLoginErrors>[0],
+): string[] => {
+  const errors = getResultingLoginErrors({
+    ...config,
+    allowIncompleteDraft: false,
+  })
+  const workflow = config.workflow ?? []
+  const owners = getOwnerSteps(workflow)
+  for (const field of config.form_fields ?? []) {
+    const provider = getFieldSourceProvider(field)
+    if (!provider) continue
+    const providerLabel = STEP_LOGIN_PROVIDER_LABELS[provider]
+    if (config.responseMode === FormResponseMode.Multirespondent) {
+      const fieldOwners = owners.get(String(field._id)) ?? []
+      if (fieldOwners.length === 0) {
+        errors.push(
+          `${fieldLabel(field)} must be assigned to a step with ${providerLabel} authentication before publishing.`,
+        )
+      }
+    } else if (!canStepLoginFillField(field, config.authType)) {
+      errors.push(
+        `${fieldLabel(field)} needs ${providerLabel} authentication before publishing.`,
+      )
+    }
+  }
+  return Array.from(new Set(errors))
 }
 
 export { isLoginIdentityField }

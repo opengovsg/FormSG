@@ -59,6 +59,7 @@ import {
   isNricValid,
 } from 'formsg-shared/utils/nric-validation'
 import {
+  getLoginFieldPublishErrors,
   getResultingLoginErrors,
   hasLaterStepLogin,
 } from 'formsg-shared/utils/step-login'
@@ -94,6 +95,7 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import getAgencyModel from '../../../models/agency.server.model'
 import getFormModel from '../../../models/form.server.model'
 import getFormWhitelistSubmitterIdsModel from '../../../models/form_whitelist.server.model'
+import { getCheckedAuthenticationConfigFilter } from '../../../models/form-authentication-config'
 import { getWorkspaceModel } from '../../../models/workspace.server.model'
 import {
   createPresignedPostDataPromise,
@@ -1713,6 +1715,7 @@ const checkResultingWorkflowIsAllowed = (
     isSubmitterIdCollectionEnabled: form.isSubmitterIdCollectionEnabled,
     form_fields: form.form_fields,
     workflow,
+    allowIncompleteDraft: form.status !== FormStatus.Public,
   })
   if (loginErrors.length) {
     return err(new MalformedParametersError(loginErrors.join(' ')))
@@ -1732,6 +1735,15 @@ const checkResultingWorkflowIsAllowed = (
     return ok(true)
   }
 
+  const publishErrors = getLoginFieldPublishErrors({
+    authType,
+    responseMode: form.responseMode,
+    isSubmitterIdCollectionEnabled: form.isSubmitterIdCollectionEnabled,
+    form_fields: form.form_fields,
+    workflow,
+  })
+  if (publishErrors.length)
+    return err(new MalformedParametersError(publishErrors.join(' ')))
   const incompleteStepNumbers = findIncompleteSteps(form, workflow)
   return incompleteStepNumbers.length === 0
     ? ok(true)
@@ -1867,6 +1879,7 @@ export const createWorkflowStep = (
     MultirespondentFormModel.findOneAndUpdate(
       {
         _id: originalMrfForm._id,
+        ...getCheckedAuthenticationConfigFilter(originalForm),
         'payments_field.enabled': { $ne: true },
         ...getCheckedWebhookFilterIfMultistepWorkflow(
           originalForm,
@@ -2031,6 +2044,7 @@ export const updateFormWorkflowStep = (
     MultirespondentFormModel.findOneAndUpdate(
       {
         _id: originalMrfForm._id,
+        ...getCheckedAuthenticationConfigFilter(originalForm),
         ...getCheckedWebhookFilterIfMultistepWorkflow(
           originalForm,
           updatedWorkflow.length,
@@ -2091,6 +2105,7 @@ export const deleteFormWorkflow = (
   FormWorkflowDto,
   | DatabaseError
   | FormNotFoundError
+  | FormChangedWhileEditingError
   | FormInvalidResponseModeError
   | FormOpenToResponsesError
   | MalformedParametersError
@@ -2123,8 +2138,11 @@ export const deleteFormWorkflow = (
   ) as IMultirespondentFormModel
 
   return ResultAsync.fromPromise(
-    MultirespondentFormModel.findByIdAndUpdate(
-      originalMrfForm._id,
+    MultirespondentFormModel.findOneAndUpdate(
+      {
+        _id: originalMrfForm._id,
+        ...getCheckedAuthenticationConfigFilter(originalForm),
+      },
       { workflow: [] },
       { new: true, runValidators: true },
     ).exec(),
@@ -2141,7 +2159,7 @@ export const deleteFormWorkflow = (
     },
   ).andThen((updatedForm) => {
     if (!updatedForm) {
-      return errAsync(new FormNotFoundError())
+      return errAsync(new FormChangedWhileEditingError())
     }
     return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
   })
@@ -2191,6 +2209,7 @@ export const deleteFormWorkflowStep = (
     MultirespondentFormModel.findOneAndUpdate(
       {
         _id: originalMrfForm._id,
+        ...getCheckedAuthenticationConfigFilter(originalForm),
         ...getCheckedWebhookFilterIfMultistepWorkflow(
           originalForm,
           updatedWorkflow.length,
@@ -2311,6 +2330,7 @@ export const convertSubmitterIdCollection = (
     )
   }
 
+  const checkedConfig = getCheckedAuthenticationConfigFilter(form)
   form.isSubmitterIdCollectionEnabled = false
   // Save only if form is unchanged to prevent race condition
   form.increment()
@@ -2325,19 +2345,22 @@ export const convertSubmitterIdCollection = (
   if (stepOne) {
     stepOne.edit.push(...newFields.map(({ _id }) => String(_id)))
   }
-  return ResultAsync.fromPromise(form.insertFormFields(newFields), (error) => {
-    if (error instanceof mongoose.Error.VersionError) {
-      return new DatabaseConflictError(
-        'This form has just been changed. Refresh the page and try again.',
-      )
-    }
-    logger.error({
-      message: 'Error converting submitter ID collection into fields',
-      meta: { action: 'convertSubmitterIdCollection', formId: form._id },
-      error,
-    })
-    return transformMongoError(error)
-  }).andThen((updatedForm) =>
+  return ResultAsync.fromPromise(
+    form.insertFormFields(newFields, undefined, checkedConfig),
+    (error) => {
+      if (error instanceof mongoose.Error.VersionError) {
+        return new DatabaseConflictError(
+          'This form has just been changed. Refresh the page and try again.',
+        )
+      }
+      logger.error({
+        message: 'Error converting submitter ID collection into fields',
+        meta: { action: 'convertSubmitterIdCollection', formId: form._id },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) =>
     updatedForm
       ? okAsync(updatedForm.getSettings())
       : errAsync(new FormNotFoundError()),
@@ -2401,6 +2424,22 @@ export const updateFormSettings = (
         ),
       )
     }
+  }
+
+  if (body.status === FormStatus.Public) {
+    const loginErrors = getLoginFieldPublishErrors({
+      authType: body.authType ?? originalForm.authType,
+      responseMode: originalForm.responseMode,
+      isSubmitterIdCollectionEnabled:
+        body.isSubmitterIdCollectionEnabled ??
+        originalForm.isSubmitterIdCollectionEnabled,
+      form_fields: originalForm.form_fields,
+      workflow: isFormMultirespondent(originalForm)
+        ? originalForm.workflow
+        : [],
+    })
+    if (loginErrors.length)
+      return errAsync(new MalformedParametersError(loginErrors.join(' ')))
   }
 
   if (
@@ -2521,6 +2560,12 @@ export const updateFormSettings = (
     ModelToUse.findOneAndUpdate(
       {
         _id: originalForm._id,
+        ...(body.status === FormStatus.Public ||
+        body.authType !== undefined ||
+        body.esrvcId !== undefined ||
+        body.isSubmitterIdCollectionEnabled !== undefined
+          ? getCheckedAuthenticationConfigFilter(originalForm)
+          : {}),
         ...noSecondStepFilterIfRequiresSingleStep,
         ...(isFormMultirespondent(originalForm) && changesWebhookFormatOrUrl
           ? getCheckedWebhookFilter(originalForm)

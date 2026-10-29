@@ -1,13 +1,22 @@
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 
 import {
   AdminMultirespondentFormDto,
+  BasicField,
+  CorppassAttribute,
   FormAuthType,
   FormResponseMode,
   FormStatus,
   MultirespondentFormSettings,
+  MyInfoAttribute,
   WorkflowType,
 } from 'formsg-shared/types'
 
@@ -48,6 +57,12 @@ vi.mock('./StepLoginControls', () => ({
       <button onClick={() => onAuthTypeChange(FormAuthType.CP)}>
         Use Corppass
       </button>
+      <button onClick={() => onAuthTypeChange(FormAuthType.MyInfo)}>
+        Use Singpass
+      </button>
+      <button onClick={() => onAuthTypeChange(FormAuthType.NIL)}>
+        Turn off authentication
+      </button>
       <input
         aria-label="E-service ID"
         onChange={(e) => onEsrvcIdChange(e.target.value)}
@@ -84,7 +99,7 @@ const form = {
   workflow: steps,
   form_fields: [],
 } as unknown as AdminMultirespondentFormDto
-const setup = (stepIndex = 1) => {
+const setup = (stepIndex = 1, currentForm = form) => {
   const onClose = vi.fn()
   const onDirtyChange = vi.fn()
   const onSavingChange = vi.fn()
@@ -101,9 +116,9 @@ const setup = (stepIndex = 1) => {
             path="/:formId"
             element={
               <StepAuthSettingsEditor
-                form={form}
+                form={currentForm}
                 settings={settings}
-                step={form.workflow[stepIndex]}
+                step={currentForm.workflow[stepIndex]}
                 stepIndex={stepIndex}
                 onClose={onClose}
                 onDirtyChange={onDirtyChange}
@@ -189,5 +204,118 @@ describe('step authentication drafts', () => {
     )
     expect(requests.single).toHaveBeenCalledWith('form', true)
     expect(onClose).not.toHaveBeenCalled()
+  })
+
+  const formWithCorppassFields = () =>
+    ({
+      ...form,
+      form_fields: [
+        {
+          _id: 'uen',
+          title: 'Organisation UEN',
+          fieldType: BasicField.Uen,
+          corppass: { attr: CorppassAttribute.Uen },
+        },
+        { _id: 'plain', title: 'Comments', fieldType: BasicField.ShortText },
+      ],
+      workflow: [
+        steps[0],
+        {
+          ...steps[1],
+          edit: ['uen', 'plain'],
+          auth: { auth_type: FormAuthType.CP },
+          approval_field: 'approval',
+          is_approval_enabled: true,
+        },
+      ],
+    }) as unknown as AdminMultirespondentFormDto
+
+  it('confirms incompatible fields, preserves them on cancel, then stages unassignment with the new provider', async () => {
+    const current = formWithCorppassFields()
+    requests.form.mockResolvedValue(current)
+    const { onClose } = setup(1, current)
+    fireEvent.click(screen.getByRole('button', { name: 'Use Singpass' }))
+    let dialog = screen.getByRole('dialog')
+    expect(within(dialog).getByText('Organisation UEN')).toBeInTheDocument()
+    expect(within(dialog).getByText(/kept in your form/)).toBeInTheDocument()
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+    expect(screen.getByTestId('provider')).toHaveTextContent(FormAuthType.CP)
+    expect(requests.update).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'Use Singpass' }))
+    dialog = screen.getByRole('dialog')
+    fireEvent.click(
+      within(dialog).getByRole('button', {
+        name: 'Unassign fields and switch to Singpass',
+      }),
+    )
+    expect(requests.update).not.toHaveBeenCalled()
+    expect(screen.getByTestId('provider')).toHaveTextContent(
+      FormAuthType.MyInfo,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
+    expect(requests.update).toHaveBeenCalledWith('form', 1, {
+      ...current.workflow[1],
+      edit: ['plain'],
+      auth: { auth_type: FormAuthType.MyInfo },
+    })
+    expect(current.form_fields.map((field) => field._id)).toEqual([
+      'uen',
+      'plain',
+    ])
+  })
+
+  it('can turn off the last Corppass step and discard the unassignment with Cancel', async () => {
+    const current = formWithCorppassFields()
+    const { onClose } = setup(1, current)
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Turn off authentication' }),
+    )
+    fireEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', {
+        name: 'Unassign fields and turn off',
+      }),
+    )
+    expect(screen.getByTestId('provider')).toHaveTextContent(FormAuthType.NIL)
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(requests.update).not.toHaveBeenCalled()
+    expect(current.workflow[1].edit).toEqual(['uen', 'plain'])
+  })
+
+  it('saves Step 1 authentication and its confirmed field unassignment in one step request', async () => {
+    const current = {
+      ...form,
+      form_fields: [
+        {
+          _id: 'name',
+          title: 'Verified name',
+          fieldType: BasicField.ShortText,
+          myInfo: { attr: MyInfoAttribute.Name },
+        },
+      ],
+      workflow: [{ ...steps[0], edit: ['name'] }, steps[1]],
+    } as unknown as AdminMultirespondentFormDto
+    requests.form.mockResolvedValue(current)
+    const { onClose } = setup(0, current)
+    fireEvent.click(screen.getByRole('button', { name: 'Use Corppass' }))
+    fireEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', {
+        name: 'Unassign fields and switch to Corppass',
+      }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
+    expect(requests.update).toHaveBeenCalledWith(
+      'form',
+      0,
+      expect.objectContaining({
+        edit: [],
+        first_step_login: { auth_type: FormAuthType.CP, esrvc_id: '' },
+      }),
+    )
   })
 })

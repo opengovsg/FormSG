@@ -270,7 +270,13 @@ export const EditStepBlock = ({
       try {
         await onSubmit(step, async () => {
           didSaveStep = true
-          if (!isFirstStep || !inputs.first_step_restrictions || !formId) return
+          if (
+            !isFirstStep ||
+            !inputs.first_step_restrictions ||
+            !formId ||
+            inputs.first_step_login?.auth_type === FormAuthType.NIL
+          )
+            return
           setIsSavingRestrictions(true)
           await saveStepOneLoginRestrictions(
             formId,

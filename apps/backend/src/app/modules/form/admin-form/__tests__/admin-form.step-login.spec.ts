@@ -8,7 +8,6 @@ import {
   MyInfoAttribute,
   WorkflowType,
 } from 'formsg-shared/types'
-import { MYINFO_FIELDS_NEED_SINGPASS_STEP } from 'formsg-shared/utils/step-login'
 
 import { MalformedParametersError } from 'src/app/modules/core/core.errors'
 import {
@@ -462,7 +461,7 @@ describe('admin-form.step-login', () => {
         step([UEN_FIELD_ID]),
       ])
       expect(result._unsafeUnwrapErr().message).toContain(
-        'UEN fields need Corppass login.',
+        REMOVE_MYINFO_FIELDS_FIRST,
       )
     })
 
@@ -494,7 +493,7 @@ describe('admin-form.step-login', () => {
       expect(result.isOk()).toBe(true)
     })
 
-    it('blocks removing Step 1 login when no step fills an unassigned Myinfo field', () => {
+    it('allows removing Step 1 login while unassigned Myinfo fields remain in the draft', () => {
       const singpassForm = makeForm({
         authType: FormAuthType.MyInfo,
         form_fields: FORM_FIELDS.filter(({ _id }) => _id === MYINFO_FIELD_ID),
@@ -504,9 +503,7 @@ describe('admin-form.step-login', () => {
         { authType: FormAuthType.NIL },
         [step([]), step([])],
       )
-      expect(result._unsafeUnwrapErr()).toEqual(
-        new MalformedParametersError(MYINFO_FIELDS_NEED_SINGPASS_STEP),
-      )
+      expect(result.isOk()).toBe(true)
     })
   })
 })

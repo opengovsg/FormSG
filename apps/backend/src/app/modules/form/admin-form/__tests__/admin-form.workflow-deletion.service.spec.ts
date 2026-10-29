@@ -8,23 +8,19 @@ import {
   MyInfoAttribute,
   WorkflowType,
 } from 'formsg-shared/types'
-import {
-  MYINFO_FIELDS_NEED_FORM_SINGPASS,
-  MYINFO_FIELDS_NEED_SINGPASS_STEP,
-} from 'formsg-shared/utils/step-login'
 import { merge } from 'lodash'
 import mongoose from 'mongoose'
 
 import getFormModel, {
   getMultirespondentFormModel,
 } from 'src/app/models/form.server.model'
-import { MalformedParametersError } from 'src/app/modules/core/core.errors'
 import {
   FormInvalidResponseModeError,
   FormOpenToResponsesError,
 } from 'src/app/modules/form/form.errors'
 import { IPopulatedForm, IPopulatedUser } from 'src/types'
 
+import { FormChangedWhileEditingError } from '../admin-form.errors'
 import {
   deleteFormWorkflow,
   deleteFormWorkflowStep,
@@ -109,19 +105,39 @@ describe('workflow deletion', () => {
     return merge(form, { admin: populatedAdmin }) as unknown as IPopulatedForm
   }
 
+  it.each(['workflow', 'step'] as const)(
+    'refuses a stale private %s deletion after publication',
+    async (operation) => {
+      const form = await createMrfForm(FormStatus.Private, 2)
+      await FormModel.updateOne(
+        { _id: form._id },
+        { status: FormStatus.Public },
+      )
+      const result =
+        operation === 'workflow'
+          ? await deleteFormWorkflow(form)
+          : await deleteFormWorkflowStep(form, 1)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        FormChangedWhileEditingError,
+      )
+      expect(
+        (await MultirespondentFormModel.findById(form._id).orFail()).workflow,
+      ).toHaveLength(2)
+    },
+  )
+
   describe('deleteFormWorkflow', () => {
-    it('should refuse when no login would be left to fill Myinfo fields', async () => {
+    it('allows deleting a closed workflow while Myinfo fields stay in the draft', async () => {
       const form = await createMrfFormWithSingpassStepTwo(FormAuthType.NIL)
 
       const actual = await deleteFormWorkflow(form)
 
-      expect(actual._unsafeUnwrapErr()).toEqual(
-        new MalformedParametersError(MYINFO_FIELDS_NEED_FORM_SINGPASS),
-      )
+      expect(actual._unsafeUnwrap()).toEqual([])
       const stored = await FormModel.findById(form._id)
       expect(
         (stored as never as { workflow: unknown[] }).workflow,
-      ).toHaveLength(2)
+      ).toHaveLength(0)
+      expect(stored?.form_fields).toHaveLength(1)
     })
 
     it('should allow deletion when Step 1 can fill the Myinfo fields', async () => {
@@ -192,14 +208,12 @@ describe('workflow deletion', () => {
   // Refusing to delete step 1 is flagged behaviour and lives in the controller,
   // where the flag can be read; it is covered by the route spec.
   describe('deleteFormWorkflowStep', () => {
-    it('should refuse to delete the only step that fills Myinfo fields', async () => {
+    it('allows deleting the last Singpass step on a closed draft', async () => {
       const form = await createMrfFormWithSingpassStepTwo(FormAuthType.NIL)
 
       const actual = await deleteFormWorkflowStep(form, 1)
 
-      expect(actual._unsafeUnwrapErr()).toEqual(
-        new MalformedParametersError(MYINFO_FIELDS_NEED_SINGPASS_STEP),
-      )
+      expect(actual._unsafeUnwrap()).toHaveLength(1)
     })
 
     it('should still delete a later step', async () => {

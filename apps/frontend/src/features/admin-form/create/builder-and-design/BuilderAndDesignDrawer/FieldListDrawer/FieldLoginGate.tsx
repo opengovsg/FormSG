@@ -56,7 +56,7 @@ const fieldAdditionSnapshot = (value: AdminFormDto) =>
 
 type Provider = FormAuthType.MyInfo | FormAuthType.CP
 
-/** Enable a provider before opening a new field draft. Addition never assigns it. */
+/** Add a field draft now or enable its provider first. Addition never assigns it. */
 export const FieldLoginGate = ({ children }: { children: ReactNode }) => {
   const { data: form } = useCreateTabForm()
   const { formId } = useParams()
@@ -89,7 +89,13 @@ export const FieldLoginGate = ({ children }: { children: ReactNode }) => {
   }
   const request: RequestField = (required, add) => {
     if (!form) return
-    if (!enabled || formUsesLogin(form, required, enabled)) {
+    const needsClosedDraft =
+      form.status === FormStatus.Public &&
+      form.responseMode === FormResponseMode.Multirespondent
+    if (
+      !needsClosedDraft &&
+      (!enabled || formUsesLogin(form, required, enabled))
+    ) {
       add()
       return
     }
@@ -100,13 +106,49 @@ export const FieldLoginGate = ({ children }: { children: ReactNode }) => {
     setError('')
     setProvider(required)
   }
+  const ensureFreshDraft = async () => {
+    if (!formId || !form)
+      throw new Error('The form is not available. Try again.')
+    const latest = await getAdminFormView(formId)
+    if (latest.status === FormStatus.Public)
+      throw new Error(
+        'Close the form before adding an unconfigured authentication field.',
+      )
+    if (fieldAdditionSnapshot(latest) !== pendingSnapshot.current) {
+      queryClient.setQueryData(adminFormKeys.id(formId), latest)
+      throw new Error(
+        'The form changed while this dialog was open. Cancel and add the field again.',
+      )
+    }
+  }
+  const openFieldDraft = () => {
+    pending.current?.()
+    pending.current = undefined
+    setProvider(undefined)
+  }
+  const addWithoutEnabling = async () => {
+    if (isSaving || form?.status === FormStatus.Public) return
+    setIsSaving(true)
+    setError('')
+    try {
+      await ensureFreshDraft()
+      openFieldDraft()
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : 'Could not open the field draft.',
+      )
+    } finally {
+      setIsSaving(false)
+    }
+  }
   const enable = async () => {
     if (
       !form ||
       !formId ||
       !provider ||
       isSaving ||
-      incompatible.length ||
       (provider === FormAuthType.CP && hasEsrvcIdWhitespace(esrvcId)) ||
       form.status === FormStatus.Public
     )
@@ -117,24 +159,23 @@ export const FieldLoginGate = ({ children }: { children: ReactNode }) => {
     try {
       // Recheck the selected step before a whole-step update. Do not overwrite
       // a change made while this modal was open, or use an old insertion index.
-      const latest = await getAdminFormView(formId)
-      if (fieldAdditionSnapshot(latest) !== pendingSnapshot.current) {
-        queryClient.setQueryData(adminFormKeys.id(formId), latest)
-        throw new Error(
-          'The form changed while this dialog was open. Cancel and add the field again.',
-        )
-      }
+      await ensureFreshDraft()
       const auth = {
         auth_type: provider,
         ...(provider === FormAuthType.CP ? { esrvc_id: esrvcId.trim() } : {}),
       }
       if (hasWorkflow && step) {
+        const incompatibleIds = new Set(incompatible.map((field) => field._id))
+        const nextStep = {
+          ...step,
+          edit: step.edit.filter((id) => !incompatibleIds.has(id)),
+        }
         await updateWorkflowStep(
           formId,
           Number(stepIndex),
           Number(stepIndex) === 0
-            ? { ...step, first_step_login: auth }
-            : { ...step, auth },
+            ? { ...nextStep, first_step_login: auth }
+            : { ...nextStep, auth },
         )
       } else {
         await updateFormLogin(formId, provider, esrvcId)
@@ -144,10 +185,7 @@ export const FieldLoginGate = ({ children }: { children: ReactNode }) => {
         queryClient.invalidateQueries(adminFormKeys.id(formId)),
         queryClient.invalidateQueries(adminFormSettingsKeys.id(formId)),
       ])
-      const add = pending.current
-      add?.()
-      pending.current = undefined
-      setProvider(undefined)
+      openFieldDraft()
     } catch (cause) {
       if (loginSaved) {
         await queryClient.invalidateQueries(adminFormKeys.id(formId))
@@ -172,16 +210,22 @@ export const FieldLoginGate = ({ children }: { children: ReactNode }) => {
         closeOnOverlayClick={!isSaving}
       >
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent maxW="48rem">
           <ModalCloseButton isDisabled={isSaving} />
-          <ModalHeader>Enable {label} to use this field</ModalHeader>
+          <ModalHeader>
+            {form?.status === FormStatus.Public
+              ? 'Close your form before adding this field'
+              : `Add a ${label} field`}
+          </ModalHeader>
           <ModalBody>
             <DropdownMenuLayerProvider value="popover">
               <Stack spacing="1rem">
                 <Text>
-                  This field needs {label} authentication.
+                  This field needs {label} authentication before publishing. You
+                  can configure it now or add the field and set up
+                  authentication later.
                   {hasWorkflow
-                    ? ' Adding it leaves it unassigned to a workflow step.'
+                    ? ' The field will be added without a workflow assignment.'
                     : ''}
                 </Text>
                 {hasWorkflow ? (
@@ -215,6 +259,7 @@ export const FieldLoginGate = ({ children }: { children: ReactNode }) => {
                 {provider === FormAuthType.CP && (
                   <FormControl
                     id="field-login-service"
+                    isRequired
                     isDisabled={isSaving}
                     isInvalid={hasEsrvcIdWhitespace(esrvcId)}
                   >
@@ -234,16 +279,18 @@ export const FieldLoginGate = ({ children }: { children: ReactNode }) => {
                 )}
                 {form?.status === FormStatus.Public && (
                   <Text color="danger.500" role="alert">
-                    Close the form before changing authentication.
+                    Close the form before adding authentication fields.
                   </Text>
                 )}
                 {incompatible.length > 0 && (
-                  <Text color="danger.500" role="alert">
-                    Changing login would affect these fields:{' '}
-                    {incompatible.map((field) => field.title).join(', ')}.{' '}
+                  <Text color="secondary.500">
                     {hasWorkflow
-                      ? 'Unassign them in Workflow first.'
-                      : 'Remove them from the form first.'}
+                      ? `Enabling ${label} will unassign these fields from this step: `
+                      : `Switching to ${label} will leave these fields without matching authentication: `}
+                    {incompatible.map((field) => field.title).join(', ')}. The
+                    fields will stay in your form. Configure matching
+                    authentication before publishing, or delete the unused
+                    fields.
                   </Text>
                 )}
                 {error && (
@@ -254,21 +301,43 @@ export const FieldLoginGate = ({ children }: { children: ReactNode }) => {
               </Stack>
             </DropdownMenuLayerProvider>
           </ModalBody>
-          <ModalFooter gap="1rem">
+          <ModalFooter
+            gap="1rem"
+            flexDirection={{
+              base: 'column-reverse',
+              md: incompatible.length ? 'column-reverse' : 'row',
+            }}
+            alignItems={{
+              base: 'stretch',
+              md: incompatible.length ? 'stretch' : 'center',
+            }}
+          >
             <Button variant="clear" onClick={close} isDisabled={isSaving}>
               Cancel
             </Button>
             <Button
+              variant="outline"
+              onClick={addWithoutEnabling}
+              isDisabled={isSaving || form?.status === FormStatus.Public}
+            >
+              Add without enabling yet
+            </Button>
+            <Button
               onClick={enable}
+              whiteSpace="normal"
+              minH="2.75rem"
+              h="auto"
+              py="0.75rem"
               isLoading={isSaving}
               isDisabled={
-                incompatible.length > 0 ||
                 (provider === FormAuthType.CP &&
                   hasEsrvcIdWhitespace(esrvcId)) ||
                 form?.status === FormStatus.Public
               }
             >
-              Enable {label} and add field
+              {incompatible.length
+                ? `${hasWorkflow ? 'Unassign fields, enable' : 'Switch to'} ${label} and add field`
+                : `Enable ${label} and add field`}
             </Button>
           </ModalFooter>
         </ModalContent>

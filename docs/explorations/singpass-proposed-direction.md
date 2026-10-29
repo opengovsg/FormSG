@@ -13,9 +13,9 @@ The user requested self-grilling rather than another interview. These decisions 
 2. What is a person? A step respondent source is either static emails, an Email field, or a routing Dropdown field. One searchable input selects these existing representations; no new schema. Keep conditional mapping configuration available.
 3. What is a login-filled field? One field instance populated by Singpass/Corppass identity or Myinfo data. It has one owner. Ordinary field sharing remains unchanged. Separate instances of an attribute may have different owners.
 4. What saves a workflow edit? Existing Save step and save-and-switch commit one draft containing respondent, fields, approval and login. Cancel discards that draft. A modal only changes the draft. This resolves the handoff's open save question by preserving current FormSG behaviour.
-5. How is the card organised? Name and respondent input, then Fields to fill, Approvals, Singpass tabs. Fields is initially active. Approval remains unavailable on Step 1. Hide unconfigured sections in saved cards. Preserve existing feature-flag fallbacks and guided setup until enabled surfaces use the proposed direction.
+5. How is the card organised? Name and respondent input, then Fields to fill, Approvals, Singpass tabs. Fields is initially active. Step 1 has an enabled Approvals tab explaining that only Step 2 onwards can approve; it has no approval controls. Hide unconfigured sections in saved cards. Preserve existing feature-flag fallbacks and guided setup until enabled surfaces use the proposed direction.
 6. What happens to an owned field? Show it disabled with Assigned to Step X. Never silently transfer it. Selecting an available field requiring login opens Enable [provider] and assign field. A provider conflict lists fields to unassign, says they remain in the form, changes provider and selects the requested field in the same draft. Preserve ordinary fields and approval state. Cancel does nothing.
-7. What does field addition do? Any matching provider anywhere in a workflow permits addition without a modal. Otherwise the direct-enable modal chooses an existing step, enables login, then adds the field without assigning it. Cancel adds nothing. For flat forms ask to switch explicitly; block if dependent fields exist. Failed login save must not add the field. Failed field creation must not claim it succeeded; an already saved login remains visible. Do not roll back concurrent changes.
+7. What does field addition do? A matching provider anywhere permits ordinary addition. Otherwise offer direct enablement or Add without enabling yet. Closed drafts may keep providerless fields. Addition never assigns a field. A confirmed provider switch unassigns incompatible fields from the selected step and keeps their definitions; flat forms keep their fields for later setup. Failed authentication saves do not add a field. If login saves but field drafting fails, explain the partial outcome. Open MRF forms must be closed before adding an unassigned authentication field.
 8. How do Settings cards work? All steps, number/name and chip or Login not enabled. Initially collapsed; arrows between cards. One global link to Create Workflow. Per-card Save/Cancel. Readonly names; no respondent/field/approval controls. Existing flat settings for non-workflow forms. Step 1 restrictions use existing persisted settings and appear only on Step 1, in Create's Singpass tab too. Avoid a redundant Login heading.
 9. Which provider appears in activity? The provider actually used for that submitted step, from historical submission evidence. Never derive it from today's workflow settings. Tag submitted items Singpass or Corppass; omit unknown/unauthenticated history. Do not expose identity values in the tag. Keep old records compatible.
 10. What is the palette? Basic / Singpass / Corppass. Identity NRIC/FIN uses existing BiIdCard, Name retains person icon. Match existing FormSG controls and theme tokens.
@@ -58,3 +58,27 @@ Review fixed point: c09fd82d8, feature branch head at implementation start. Four
 - Divergent: no findings. Independent historical-provider review confirmed server provenance and admin-only visibility.
 
 No review comments were posted externally. No real authentication or production deployment was performed.
+
+## Superseding decision: incomplete drafts, validated publishing
+
+Confirmed by the user on 29 October 2026. This replaces the earlier mandatory-enable and remove-fields-first rules above.
+
+- Allow closed/private drafts to contain Singpass/Myinfo or Corppass fields before authentication is configured. Field addition offers Add without enabling yet alongside the direct-enable shortcut.
+- Changing a step's provider or switching authentication off asks for confirmation when assigned fields become incompatible. List those fields, unassign them and change authentication together in the draft. Keep the field definitions in the form. Cancel changes nothing.
+- Settings may update field assignments only for that explicitly confirmed unassignment. Save commits the resulting step; Cancel discards the draft.
+- Publishing requires each login-filled field in an MRF form to have exactly one owner with the matching provider. For a form without workflow, its form-level provider must match its login-filled fields. Ordinary field sharing and unassigned-field behaviour are unchanged.
+- Show actionable field-specific publication errors. Unconfigured draft fields remain discoverable and can use the enable-and-assign shortcut later.
+- Preserve public-form editing restrictions and all respondent authentication enforcement. These are authoring/draft changes, not bypasses for responding to published forms.
+
+Implemented for discussion. Existing published forms are not automatically closed or migrated. Reopening, or editing their workflow/field configuration, must satisfy the new authentication-field readiness rule.
+
+Verification for this addendum:
+- 52 focused frontend tests across 9 files, including draft-only addition, provider-switch confirmation/cancellation, field preservation, publish gating and stale-cache closing.
+- 389 distinct backend tests across model, workflow, publication and settings services; 172 existing form/settings route tests. Real Mongo tests verify valid mixed-provider publishing, stale draft saves after publication, same-status public field/workflow races, repeated saves and legacy conversion.
+- 41 shared validation tests; shared build; frontend and backend build-config typechecks; lint and whitespace checks.
+- Browser checks cover blocked versus ready publishing, Add without enabling with zero authentication writes, desktop/mobile switch confirmation and the workflow tab/description refinements.
+
+Independent safety review caught a same-status race between field-source changes and workflow reassignment. Field saves and query writes now compare the authentication configuration checked before mutation (provider, source attributes, ownership and status), and refuse stale writes. A real Mongo regression confirms the fix in both write orderings. The independent reviewer found no remaining security blocker. Runtime respondent authentication paths were not changed.
+
+
+Verification note: one broad route-test attempt hit an HTTP parser error in an unchanged unauthenticated DELETE test; the clean rerun passed all 172 route tests. The earlier millisecond timestamp assertion also passed on rerun. Neither unrelated test was modified. Browser smoke checks used simulated authentication; real Singpass/Corppass was not exercised.

@@ -173,7 +173,7 @@ describe('field builder enable-login gate', () => {
     expect(state.add).not.toHaveBeenCalled()
     expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
-  it('blocks a flat-form switch when fields need its existing provider', () => {
+  it('allows a confirmed flat-form switch while keeping fields for later setup', async () => {
     state.form.responseMode = FormResponseMode.Encrypt
     state.form.authType = FormAuthType.CP
     state.form.form_fields = [
@@ -186,11 +186,19 @@ describe('field builder enable-login gate', () => {
     ]
     setup()
     fireEvent.click(screen.getByText('Add Name'))
-    expect(
-      screen.getByRole('button', { name: 'Enable Singpass and add field' }),
-    ).toBeDisabled()
-    expect(screen.getByRole('alert')).toHaveTextContent('Company UEN')
-    expect(state.add).not.toHaveBeenCalled()
+    expect(screen.getByText(/Company UEN/)).toHaveTextContent(
+      'stay in your form',
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Switch to Singpass and add field' }),
+    )
+    await waitFor(() => expect(state.add).toHaveBeenCalledTimes(1))
+    expect(state.updateAuth).toHaveBeenCalledWith(
+      'form-id',
+      FormAuthType.MyInfo,
+      '',
+    )
+    expect(state.form.form_fields).toHaveLength(1)
   })
   it('allows separate unassigned Myinfo fields once Singpass is enabled', () => {
     state.form.authType = FormAuthType.MyInfo
@@ -275,5 +283,75 @@ describe('field builder enable-login gate', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(state.updateStep).toHaveBeenCalledTimes(1)
     expect(state.invalidate).toHaveBeenCalled()
+  })
+  it('adds an unconfigured draft without saving authentication', async () => {
+    setup()
+    fireEvent.click(screen.getByText('Add UEN'))
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Add without enabling yet' }),
+    )
+    await waitFor(() => expect(state.add).toHaveBeenCalledTimes(1))
+    expect(state.updateStep).not.toHaveBeenCalled()
+    expect(state.updateAuth).not.toHaveBeenCalled()
+  })
+  it('does not allow unconfigured addition after the form opens to responses', async () => {
+    setup()
+    fireEvent.click(screen.getByText('Add UEN'))
+    state.fetch.mockResolvedValue({ ...state.form, status: FormStatus.Public })
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Add without enabling yet' }),
+    )
+    expect(await screen.findByRole('alert')).toHaveTextContent('Close the form')
+    expect(state.add).not.toHaveBeenCalled()
+    expect(state.updateStep).not.toHaveBeenCalled()
+  })
+  it('asks to close an open workflow before adding an unassigned authentication field', () => {
+    state.form.status = FormStatus.Public
+    state.form.authType = FormAuthType.MyInfo
+    setup()
+    fireEvent.click(screen.getByText('Add Name'))
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Add without enabling yet' }),
+    ).toBeDisabled()
+    expect(state.add).not.toHaveBeenCalled()
+  })
+  it('explicitly unassigns incompatible fields when enabling another provider from the builder', async () => {
+    state.form.authType = FormAuthType.CP
+    state.form.form_fields = [
+      {
+        _id: 'uen',
+        fieldType: BasicField.Uen,
+        title: 'Company UEN',
+        corppass: { attr: 'uen' },
+      },
+      { _id: 'ordinary', fieldType: BasicField.ShortText, title: 'Comments' },
+    ]
+    state.form.workflow = [
+      {
+        _id: 'first',
+        workflow_type: 'static',
+        emails: [],
+        edit: ['uen', 'ordinary'],
+      },
+    ]
+    setup()
+    fireEvent.click(screen.getByText('Add Name'))
+    expect(screen.getByText(/Company UEN/)).toHaveTextContent('unassign')
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Unassign fields, enable Singpass and add field',
+      }),
+    )
+    await waitFor(() => expect(state.add).toHaveBeenCalledTimes(1))
+    expect(state.updateStep).toHaveBeenCalledWith(
+      'form-id',
+      0,
+      expect.objectContaining({
+        edit: ['ordinary'],
+        first_step_login: { auth_type: FormAuthType.MyInfo },
+      }),
+    )
+    expect(state.form.form_fields).toHaveLength(2)
   })
 })

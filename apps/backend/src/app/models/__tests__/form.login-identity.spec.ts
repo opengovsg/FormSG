@@ -4,9 +4,11 @@ import {
   CorppassAttribute,
   FormAuthType,
   FormField,
+  FormFieldDto,
   FormResponseMode,
   FormStatus,
   MyInfoAttribute,
+  WorkflowType,
 } from 'formsg-shared/types'
 import { createLoginIdentityField } from 'formsg-shared/utils/login-identity'
 import mongoose, { Types } from 'mongoose'
@@ -15,6 +17,12 @@ import {
   getEncryptedFormModel,
   getMultirespondentFormModel,
 } from 'src/app/models/form.server.model'
+import {
+  convertSubmitterIdCollection,
+  updateFormSettings,
+  updateFormWorkflowStep,
+} from 'src/app/modules/form/admin-form/admin-form.service'
+import { IPopulatedForm } from 'src/types'
 
 const EncryptedForm = getEncryptedFormModel(mongoose)
 const MultirespondentForm = getMultirespondentFormModel(mongoose)
@@ -72,11 +80,13 @@ describe('Form login identity fields', () => {
     ])
   })
 
-  it('rejects an NRIC identity field on a Corppass form', async () => {
+  it('rejects an NRIC identity field on a published Corppass form', async () => {
     await expect(
       EncryptedForm.create(
         storageForm({
           authType: FormAuthType.CP,
+          status: FormStatus.Public,
+          esrvcId: 'test-service',
           form_fields: [nricIdentityField],
         }),
       ),
@@ -137,7 +147,7 @@ describe('Form login identity fields', () => {
     ])
   })
 
-  it('opens an MRF form whose Step 1 does not own the identity field', async () => {
+  it('requires an MRF identity field to be assigned before publishing', async () => {
     const form = await MultirespondentForm.create({
       ...storageForm({
         authType: FormAuthType.MyInfo,
@@ -151,7 +161,196 @@ describe('Form login identity fields', () => {
     form.status = FormStatus.Public
     form.set('workflow', [{ workflow_type: 'static', emails: [], edit: [] }])
 
+    await expect(form.save()).rejects.toThrow(
+      'must be assigned to a step with Singpass',
+    )
+    form.set('workflow', [
+      { workflow_type: 'static', emails: [], edit: [nricIdentityField._id] },
+    ])
+    form.$markValid('form_fields')
     await expect(form.save()).resolves.toBeDefined()
+  })
+
+  it('accepts both provider field types in a closed providerless draft', async () => {
+    const form = await EncryptedForm.create(
+      storageForm({
+        authType: FormAuthType.NIL,
+        form_fields: [nricIdentityField, uenIdentityField],
+      }),
+    )
+    expect(form.status).toBe(FormStatus.Private)
+    form.status = FormStatus.Public
+    await expect(form.save()).rejects.toThrow(
+      'authentication before publishing',
+    )
+  })
+
+  it('publishes a valid mixed-provider workflow through the checked settings update', async () => {
+    const myInfoId = new Types.ObjectId()
+    const corppassId = new Types.ObjectId()
+    const form = await MultirespondentForm.create({
+      ...storageForm({
+        authType: FormAuthType.MyInfo,
+        esrvcId: 'test-service',
+      }),
+      responseMode: FormResponseMode.Multirespondent,
+      form_fields: [
+        { ...nricIdentityField, _id: myInfoId },
+        { ...uenIdentityField, _id: corppassId },
+      ],
+      workflow: [
+        { workflow_type: 'static', emails: [], edit: [myInfoId] },
+        {
+          workflow_type: 'static',
+          emails: ['approver@example.com'],
+          edit: [corppassId],
+          auth: { auth_type: FormAuthType.CP },
+        },
+      ],
+    })
+    const result = await updateFormSettings(form as unknown as IPopulatedForm, {
+      status: FormStatus.Public,
+    })
+    if (result.isErr()) throw result.error
+    expect(result._unsafeUnwrap().status).toBe(FormStatus.Public)
+    expect((await MultirespondentForm.findById(form._id).orFail()).status).toBe(
+      FormStatus.Public,
+    )
+  })
+
+  it('refuses a stale private field addition after publication', async () => {
+    const form = await EncryptedForm.create(
+      storageForm({ authType: FormAuthType.NIL, form_fields: [] }),
+    )
+    await EncryptedForm.updateOne(
+      { _id: form._id },
+      { status: FormStatus.Public },
+    )
+    await expect(
+      form.insertFormField(uenIdentityField as FormField),
+    ).rejects.toBeInstanceOf(mongoose.Error.VersionError)
+    expect(
+      (await EncryptedForm.findById(form._id).orFail()).form_fields,
+    ).toHaveLength(0)
+  })
+
+  it('refuses a stale public field conversion after a concurrent workflow unassignment', async () => {
+    const fieldId = new Types.ObjectId()
+    const retainedId = new Types.ObjectId()
+    const form = await MultirespondentForm.create({
+      ...storageForm({
+        authType: FormAuthType.MyInfo,
+        esrvcId: 'test-service',
+        status: FormStatus.Public,
+      }),
+      responseMode: FormResponseMode.Multirespondent,
+      form_fields: [
+        { _id: fieldId, fieldType: BasicField.ShortText, title: 'Name' },
+        { _id: retainedId, fieldType: BasicField.ShortText, title: 'Reason' },
+      ],
+      workflow: [
+        {
+          workflow_type: WorkflowType.Static,
+          emails: [],
+          edit: [fieldId, retainedId],
+        },
+      ],
+    })
+    const staleFieldEditor = await MultirespondentForm.findById(
+      form._id,
+    ).orFail()
+    const workflowResult = await updateFormWorkflowStep(
+      form as unknown as IPopulatedForm,
+      0,
+      {
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [String(retainedId)],
+      },
+      true,
+    )
+    if (workflowResult.isErr()) throw workflowResult.error
+
+    const staleField = staleFieldEditor.form_fields[0].toObject()
+    await expect(
+      staleFieldEditor.updateFormFieldById(String(fieldId), {
+        ...staleField,
+        myInfo: { attr: MyInfoAttribute.Name },
+      } as FormFieldDto),
+    ).rejects.toBeInstanceOf(mongoose.Error.VersionError)
+
+    const reloaded = await MultirespondentForm.findById(form._id).orFail()
+    expect(reloaded.status).toBe(FormStatus.Public)
+    expect(reloaded.form_fields[0].myInfo?.attr).toBeUndefined()
+    expect(reloaded.workflow[0].edit.map(String)).toEqual([String(retainedId)])
+  })
+
+  it('allows a public field conversion when its authentication configuration is unchanged', async () => {
+    const fieldId = new Types.ObjectId()
+    const form = await MultirespondentForm.create({
+      ...storageForm({
+        authType: FormAuthType.MyInfo,
+        esrvcId: 'test-service',
+        status: FormStatus.Public,
+      }),
+      responseMode: FormResponseMode.Multirespondent,
+      form_fields: [
+        { _id: fieldId, fieldType: BasicField.ShortText, title: 'Name' },
+      ],
+      workflow: [
+        { workflow_type: WorkflowType.Static, emails: [], edit: [fieldId] },
+      ],
+    })
+    await expect(
+      form.updateFormFieldById(String(fieldId), {
+        ...form.form_fields[0].toObject(),
+        myInfo: { attr: MyInfoAttribute.Name },
+      } as FormFieldDto),
+    ).resolves.toBeDefined()
+    expect(
+      (await MultirespondentForm.findById(form._id).orFail()).form_fields[0]
+        .myInfo?.attr,
+    ).toBe(MyInfoAttribute.Name)
+  })
+
+  it('saves a legacy conversion against its configuration before flag and workflow changes', async () => {
+    const form = await MultirespondentForm.create({
+      ...storageForm({
+        authType: FormAuthType.CP,
+        isSubmitterIdCollectionEnabled: true,
+      }),
+      responseMode: FormResponseMode.Multirespondent,
+      form_fields: [],
+      workflow: [{ workflow_type: WorkflowType.Static, emails: [], edit: [] }],
+    })
+    const result = await convertSubmitterIdCollection(
+      form as unknown as IPopulatedForm,
+    )
+    if (result.isErr()) throw result.error
+    const reloaded = await MultirespondentForm.findById(form._id).orFail()
+    expect(reloaded.isSubmitterIdCollectionEnabled).toBe(false)
+    expect(reloaded.form_fields).toHaveLength(2)
+    expect(reloaded.workflow[0].edit.map(String)).toEqual(
+      reloaded.form_fields.map(({ _id }) => String(_id)),
+    )
+  })
+
+  it('clears temporary guards between consecutive field additions on one document', async () => {
+    const form = await EncryptedForm.create(
+      storageForm({ authType: FormAuthType.NIL, form_fields: [] }),
+    )
+    await form.insertFormField({
+      fieldType: BasicField.ShortText,
+      title: 'First',
+    } as FormField)
+    await form.insertFormField({
+      fieldType: BasicField.ShortText,
+      title: 'Second',
+    } as FormField)
+    expect(
+      (await EncryptedForm.findById(form._id).orFail()).form_fields,
+    ).toHaveLength(2)
+    expect(form.$where).toBeUndefined()
   })
 
   describe('login field limit', () => {
@@ -215,15 +414,19 @@ describe('Form login identity fields', () => {
       ).resolves.toBeDefined()
     })
 
-    it('still requires Singpass login for MyInfo data fields', async () => {
+    it('requires Singpass login for published MyInfo data fields', async () => {
       await expect(
         EncryptedForm.create(
           storageForm({
             authType: FormAuthType.CP,
+            status: FormStatus.Public,
+            esrvcId: 'test-service',
             form_fields: myInfoDataFields(1),
           }),
         ),
-      ).rejects.toThrow('Myinfo fields need Singpass login.')
+      ).rejects.toThrow(
+        '"Name" needs Singpass authentication before publishing.',
+      )
     })
   })
 })

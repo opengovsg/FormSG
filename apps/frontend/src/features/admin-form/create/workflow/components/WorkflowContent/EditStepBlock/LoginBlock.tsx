@@ -16,6 +16,7 @@ import { getStepFieldsNeedingLogin } from 'formsg-shared/utils/step-login'
 import { textStyles } from '~theme/textStyles'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { AuthSwitchConfirmation } from '~features/admin-form/settings/components/AuthSettingsSection/AuthSwitchConfirmation'
 import { StepLoginControls } from '~features/admin-form/settings/components/AuthSettingsSection/StepLoginControls'
 import {
   createStepOneLoginRestrictionsDraft,
@@ -45,9 +46,8 @@ type ShownLogin = { auth_type: FormAuthType; esrvc_id?: string }
 
 /**
  * A step's login, saved with the step. Step 1 edits the form-level login
- * through `first_step_login`; later steps stage their own `auth`. A change
- * the step's picked Myinfo fields would break is refused rather than
- * dropping the fields.
+ * through `first_step_login`; later steps stage their own `auth`. A provider
+ * change asks to unassign incompatible fields in the same draft.
  */
 export const LoginBlock = ({
   formMethods,
@@ -60,7 +60,8 @@ export const LoginBlock = ({
   const { data: form } = useAdminForm()
   const { formFields = [] } = useAdminFormWorkflow()
   const { watch, setValue } = formMethods
-  const [blockedMessage, setBlockedMessage] = useState<string>()
+  const [pendingAuthType, setPendingAuthType] = useState<StepLoginAuthType>()
+  const [hasUnassignedFields, setHasUnassignedFields] = useState(false)
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
   const editedFirstStepLogin = watch('first_step_login')
@@ -98,22 +99,51 @@ export const LoginBlock = ({
     }
   }
 
+  const incompatibleFields =
+    pendingAuthType === undefined
+      ? []
+      : getStepFieldsNeedingLogin(
+          formFields.filter((field) => pickedFieldIds.includes(field._id)),
+          pendingAuthType,
+        )
   const handleAuthTypeChange = (next: StepLoginAuthType) => {
-    if (next === login.auth_type) return
+    if (isFormPublic || isLoading || next === login.auth_type) return
     const stepFields = formFields.filter((field) =>
       pickedFieldIds.includes(field._id),
     )
-    // The step's login-filled fields only work with a login that fills them.
     if (getStepFieldsNeedingLogin(stepFields, next).length > 0) {
-      setBlockedMessage(t(`${COPY_KEY}.removeFieldsFirst`))
+      setPendingAuthType(next)
       return
     }
-    setBlockedMessage(undefined)
     write({ auth_type: next, esrvc_id: login.esrvc_id })
+  }
+  const confirmSwitch = () => {
+    if (pendingAuthType === undefined || isFormPublic || isLoading) return
+    const incompatibleIds = new Set(
+      incompatibleFields.map((field) => field._id),
+    )
+    setValue(
+      FIELDS_TO_EDIT_NAME,
+      pickedFieldIds.filter((id) => !incompatibleIds.has(id)),
+      {
+        shouldDirty: true,
+        shouldValidate: true,
+      },
+    )
+    write({ auth_type: pendingAuthType, esrvc_id: login.esrvc_id })
+    setHasUnassignedFields(incompatibleFields.length > 0)
+    setPendingAuthType(undefined)
   }
 
   return (
     <EditStepBlockContainer>
+      <AuthSwitchConfirmation
+        currentAuthType={login.auth_type}
+        nextAuthType={pendingAuthType}
+        fields={incompatibleFields}
+        onClose={() => setPendingAuthType(undefined)}
+        onConfirm={confirmSwitch}
+      />
       {!isRedesign || isGuidedSection ? (
         <Text style={textStyles.h4}>{t(`${COPY_KEY}.title`)}</Text>
       ) : null}
@@ -129,8 +159,13 @@ export const LoginBlock = ({
         isDisabled={isFormPublic}
         isLoading={isLoading}
         notice={isFormPublic ? t(`${COPY_KEY}.closeFormToEdit`) : undefined}
-        errorMessage={blockedMessage}
       />
+      {hasUnassignedFields ? (
+        <Text textStyle="body-2" color="secondary.400">
+          Incompatible fields are now unassigned in this draft. Assign them to a
+          matching step or delete them before publishing.
+        </Text>
+      ) : null}
       {isFirstStep && login.auth_type !== FormAuthType.NIL ? (
         <WorkflowStepOneRestrictions
           formMethods={formMethods}

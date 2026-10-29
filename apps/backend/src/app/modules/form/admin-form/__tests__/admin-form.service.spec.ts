@@ -2273,7 +2273,10 @@ describe('admin-form.service', () => {
       expect(actualResult.isOk()).toBeTrue()
       expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_SETTINGS)
       expect(ENCRYPT_UPDATE_SPY).toHaveBeenCalledWith(
-        { _id: storageForm._id },
+        expect.objectContaining({
+          _id: storageForm._id,
+          status: storageForm.status,
+        }),
         settingsToUpdate,
         { new: true, runValidators: true },
       )
@@ -2430,7 +2433,7 @@ describe('admin-form.service', () => {
         })
 
         expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
-          { _id: form._id },
+          expect.objectContaining({ _id: form._id, status: form.status }),
           { status: FormStatus.Public, closeAt: null },
           expect.anything(),
         )
@@ -2444,7 +2447,7 @@ describe('admin-form.service', () => {
         })
 
         expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
-          { _id: form._id },
+          expect.objectContaining({ _id: form._id, status: form.status }),
           { status: FormStatus.Public },
           expect.anything(),
         )
@@ -2458,7 +2461,7 @@ describe('admin-form.service', () => {
         })
 
         expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
-          { _id: form._id },
+          expect.objectContaining({ _id: form._id, status: form.status }),
           { status: FormStatus.Public },
           expect.anything(),
         )
@@ -2474,7 +2477,7 @@ describe('admin-form.service', () => {
         })
 
         expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
-          { _id: form._id },
+          expect.objectContaining({ _id: form._id, status: form.status }),
           { status: FormStatus.Public, closeAt: rescheduled },
           expect.anything(),
         )
@@ -4665,7 +4668,10 @@ describe('admin-form.service', () => {
         // Assert
         expect(result.isOk()).toBe(true)
         expect(updateSpy).toHaveBeenCalledWith(
-          { _id: mockFormId, 'payments_field.enabled': { $ne: true } },
+          expect.objectContaining({
+            _id: mockFormId,
+            'payments_field.enabled': { $ne: true },
+          }),
           { workflow: [NEW_STEP] },
           { new: true, runValidators: true },
         )
@@ -4892,7 +4898,7 @@ describe('admin-form.service', () => {
       }) as unknown as IPopulatedForm
 
     it.each([FormStatus.Public, FormStatus.Private])(
-      'allows removing an identity from Step 1 on a %s form',
+      'only allows unassigning an identity on a closed %s form',
       async (status) => {
         const write = jest
           .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
@@ -4905,8 +4911,9 @@ describe('admin-form.service', () => {
           0,
           { ...firstStep, edit: [regularId] } as any,
         )
-        expect(result.isOk()).toBe(true)
-        expect(write).toHaveBeenCalled()
+        const shouldSucceed = status === FormStatus.Private
+        expect(result.isOk()).toBe(shouldSucceed)
+        expect(write.mock.calls.length).toBe(Number(shouldSucceed))
       },
     )
 
@@ -5206,15 +5213,19 @@ describe('convertSubmitterIdCollection', () => {
     expect(result._unsafeUnwrap()).toEqual(settings)
     expect(form.isSubmitterIdCollectionEnabled).toBe(false)
     // NRIC/FIN comes first, as in the builder's Corppass panel.
-    expect(insertFormFields).toHaveBeenCalledWith([
-      expect.objectContaining({
-        fieldType: BasicField.Nric,
-        corppass: { attr: CorppassAttribute.Uid },
-      }),
-      expect.objectContaining({
-        fieldType: BasicField.Uen,
-        corppass: { attr: CorppassAttribute.Uen },
-      }),
-    ])
+    expect(insertFormFields).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          fieldType: BasicField.Nric,
+          corppass: { attr: CorppassAttribute.Uid },
+        }),
+        expect.objectContaining({
+          fieldType: BasicField.Uen,
+          corppass: { attr: CorppassAttribute.Uen },
+        }),
+      ],
+      undefined,
+      expect.objectContaining({ isSubmitterIdCollectionEnabled: true }),
+    )
   })
 })

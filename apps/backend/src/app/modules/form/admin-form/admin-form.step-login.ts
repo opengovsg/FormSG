@@ -103,6 +103,7 @@ export const checkFormLoginWrite = (
     isSubmitterIdCollectionEnabled: form.isSubmitterIdCollectionEnabled,
     form_fields: form.form_fields,
     workflow,
+    allowMissingLogin: form.status !== FormStatus.Public,
   })
   if (identityErrors.length > 0) {
     return err(new MalformedParametersError(identityErrors.join(' ')))
@@ -126,6 +127,7 @@ export const checkFormLoginWrite = (
       isSubmitterIdCollectionEnabled: form.isSubmitterIdCollectionEnabled,
       form_fields: form.form_fields,
       workflow,
+      allowIncompleteDraft: form.status !== FormStatus.Public,
     })
     if (loginErrors.length > 0) {
       return err(new MalformedParametersError(loginErrors.join(' ')))

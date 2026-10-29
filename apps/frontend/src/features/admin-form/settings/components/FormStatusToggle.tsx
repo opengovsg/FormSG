@@ -12,6 +12,8 @@ import InlineMessage from '~components/InlineMessage'
 import { Switch } from '~components/Toggle/Switch'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { AuthenticationDraftNotice } from '~features/admin-form/create/common/AuthenticationDraftNotice'
+import { useAuthenticationPublishErrors } from '~features/admin-form/create/common/useAuthenticationPublishErrors'
 import { useIncompleteWorkflowStepLabels } from '~features/admin-form/create/workflow/hooks/useIncompleteWorkflowStepLabels'
 
 import { useMutateFormSettings } from '../mutations'
@@ -95,8 +97,10 @@ export const FormStatusToggle = (): JSX.Element => {
   const incompleteWorkflowModalProps = useDisclosure()
   const { onOpen: onOpenIncompleteWorkflowModal } = incompleteWorkflowModalProps
   const incompleteStepLabels = useIncompleteWorkflowStepLabels()
+  const authenticationPublishErrors = useAuthenticationPublishErrors()
 
   const onFormToggleStatusClick = useCallback(() => {
+    if (!isFormPublic && authenticationPublishErrors.length > 0) return
     if (!isFormPublic && incompleteStepLabels.length > 0) {
       return onOpenIncompleteWorkflowModal()
     }
@@ -107,6 +111,7 @@ export const FormStatusToggle = (): JSX.Element => {
   }, [
     handleToggleStatus,
     incompleteStepLabels.length,
+    authenticationPublishErrors.length,
     isForceConvertFromEmailToStorage,
     isFormPublic,
     onOpenEmailModeConvertModal,
@@ -149,16 +154,24 @@ export const FormStatusToggle = (): JSX.Element => {
             {t('features.adminForm.settings.general.status.description.suffix')}
           </Text>
           <Switch
-            isDisabled={!!preventActivationMessage}
+            isDisabled={
+              !!preventActivationMessage ||
+              (!isFormPublic && authenticationPublishErrors.length > 0)
+            }
             aria-label={t(
               'features.adminForm.settings.general.status.ariaLabel',
             )}
-            aria-describedby="form-status"
+            aria-describedby={
+              authenticationPublishErrors.length > 0
+                ? 'form-status authentication-publish-errors'
+                : 'form-status'
+            }
             isLoading={mutateFormStatus.isLoading}
             isChecked={isFormPublic}
             onChange={onFormToggleStatusClick}
           />
         </Flex>
+        <AuthenticationDraftNotice />
         {preventActivationMessage ? (
           <InlineMessage variant="warning">
             {preventActivationMessage}

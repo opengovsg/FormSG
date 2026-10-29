@@ -6,6 +6,7 @@ import {
   getStepFields,
   getStepFieldsNeedingLogin,
   getResultingLoginErrors,
+  getLoginFieldPublishErrors,
   getStepLoginConfigErrors,
   hasStepLoginConfig,
   MYINFO_FIELDS_NEED_FORM_SINGPASS,
@@ -264,5 +265,132 @@ describe('step-login', () => {
         'Step 1 needs Singpass login to fill in "Name".',
       ])
     })
+  })
+})
+
+describe('draft and publish authentication rules', () => {
+  const draft = {
+    authType: FormAuthType.NIL,
+    responseMode: FormResponseMode.Multirespondent,
+    form_fields: [name, uenIdentity, plain],
+    workflow: [{ edit: ['plain'] }],
+  }
+  it('allows missing providers for unassigned draft fields', () => {
+    expect(
+      getResultingLoginErrors({ ...draft, allowIncompleteDraft: true }),
+    ).toEqual([])
+  })
+  it('does not relax assigned-field compatibility in drafts', () => {
+    expect(
+      getResultingLoginErrors({
+        ...draft,
+        workflow: [{ edit: ['uen'] }],
+        allowIncompleteDraft: true,
+      }),
+    ).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('Step 1 needs Corppass'),
+      ]),
+    )
+  })
+  it('lists both unassigned provider fields at publication', () => {
+    const errors = getLoginFieldPublishErrors(draft)
+    expect(errors).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining(
+          '"Name" must be assigned to a step with Singpass',
+        ),
+        expect.stringContaining(
+          '"UEN" must be assigned to a step with Corppass',
+        ),
+      ]),
+    )
+    expect(errors.join(' ')).not.toContain('"Plain"')
+  })
+  it('rejects authentication fields on an empty MRF workflow even with form login', () => {
+    expect(
+      getLoginFieldPublishErrors({
+        ...draft,
+        authType: FormAuthType.MyInfo,
+        form_fields: [name],
+        workflow: [],
+      }),
+    ).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('"Name" must be assigned'),
+      ]),
+    )
+  })
+  it('accepts mixed-provider fields assigned to their matching steps', () => {
+    expect(
+      getLoginFieldPublishErrors({
+        ...draft,
+        authType: FormAuthType.MyInfo,
+        workflow: [{ edit: ['name'] }, corppassStep],
+      }),
+    ).toEqual([])
+  })
+  it('does not require ordinary fields to be assigned', () => {
+    expect(
+      getLoginFieldPublishErrors({
+        ...draft,
+        form_fields: [plain],
+        workflow: [],
+      }),
+    ).toEqual([])
+  })
+  it.each([FormResponseMode.Encrypt, FormResponseMode.Email])(
+    'allows providerless Myinfo fields in closed %s drafts',
+    (responseMode) => {
+      expect(
+        getResultingLoginErrors({
+          authType: FormAuthType.NIL,
+          responseMode,
+          form_fields: [name],
+          allowIncompleteDraft: true,
+        }),
+      ).toEqual([])
+      expect(
+        getLoginFieldPublishErrors({
+          authType: FormAuthType.NIL,
+          responseMode,
+          form_fields: [name],
+        }),
+      ).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('"Name" needs Singpass'),
+        ]),
+      )
+    },
+  )
+  it('allows flat Corppass fields in drafts but requires its provider at publication', () => {
+    const flat = {
+      authType: FormAuthType.NIL,
+      responseMode: FormResponseMode.Encrypt,
+      form_fields: [uenIdentity],
+    }
+    expect(
+      getResultingLoginErrors({ ...flat, allowIncompleteDraft: true }),
+    ).toEqual([])
+    expect(getLoginFieldPublishErrors(flat)).toEqual(
+      expect.arrayContaining([expect.stringContaining('"UEN" needs Corppass')]),
+    )
+    expect(
+      getLoginFieldPublishErrors({ ...flat, authType: FormAuthType.CP }),
+    ).toEqual([])
+  })
+  it('preserves storage/MRF-only identity restrictions in drafts', () => {
+    expect(
+      getResultingLoginErrors({
+        authType: FormAuthType.NIL,
+        responseMode: FormResponseMode.Email,
+        form_fields: [uenIdentity],
+        allowIncompleteDraft: true,
+      }),
+    ).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('only available in storage mode'),
+      ]),
+    )
   })
 })
