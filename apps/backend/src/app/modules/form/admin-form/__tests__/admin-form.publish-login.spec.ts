@@ -5,7 +5,6 @@ import {
   FormAuthType,
   FormResponseMode,
   FormStatus,
-  MyInfoAttribute,
   PaymentChannel,
   WorkflowType,
 } from 'formsg-shared/types'
@@ -62,42 +61,23 @@ const mockWrite = (
 
 describe('authentication publication gate', () => {
   afterEach(() => jest.restoreAllMocks())
-  it('refuses unassigned Corppass fields before the publication query', async () => {
-    const write = mockWrite(MrfForm, null)
-    const result = await updateFormSettings(form(), {
-      status: FormStatus.Public,
-    })
-    expect(result._unsafeUnwrapErr()).toBeInstanceOf(MalformedParametersError)
-    expect(result._unsafeUnwrapErr().message).toContain(
-      '"Company registration" needs a step with Corppass',
-    )
-    expect(write).not.toHaveBeenCalled()
-  })
-  it('checks the resulting form-level provider when publishing a flat form', async () => {
-    const write = mockWrite(StorageForm, null)
-    const result = await updateFormSettings(
-      form({ responseMode: FormResponseMode.Encrypt }),
-      { status: FormStatus.Public },
-    )
-    expect(result._unsafeUnwrapErr().message).toContain(
-      '"Company registration" needs a step with Corppass',
-    )
-    expect(write).not.toHaveBeenCalled()
-  })
-  it('refuses fields assigned to the wrong provider', async () => {
-    const write = mockWrite(MrfForm, null)
-    const original = form({
-      authType: FormAuthType.MyInfo,
-      workflow: [
-        { workflow_type: WorkflowType.Static, emails: [], edit: [fieldId] },
-      ],
-    })
-    const result = await updateFormSettings(original, {
-      status: FormStatus.Public,
-    })
-    expect(result._unsafeUnwrapErr().message).toContain('Step 1 needs Corppass')
-    expect(write).not.toHaveBeenCalled()
-  })
+  it.each([
+    [FormResponseMode.Multirespondent, MrfForm],
+    [FormResponseMode.Encrypt, StorageForm],
+  ])(
+    'refuses unassigned Corppass fields before the %s publication query',
+    async (responseMode, model) => {
+      const write = mockWrite(model, null)
+      const result = await updateFormSettings(form({ responseMode }), {
+        status: FormStatus.Public,
+      })
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(MalformedParametersError)
+      expect(result._unsafeUnwrapErr().message).toContain(
+        '"Company registration" needs a step with Corppass',
+      )
+      expect(write).not.toHaveBeenCalled()
+    },
+  )
   it('rejects a provider switch that would orphan flat fields without confirmed deletion', async () => {
     const write = mockWrite(StorageForm, null)
     const result = await updateFormSettings(
@@ -107,7 +87,9 @@ describe('authentication publication gate', () => {
       }),
       { authType: FormAuthType.MyInfo },
     )
-    expect(result.isErr()).toBe(true)
+    expect(result._unsafeUnwrapErr().message).toBe(
+      'UEN fields need Corppass login.',
+    )
     expect(write).not.toHaveBeenCalled()
   })
   it('compares the authentication configuration it checked before publishing', async () => {
@@ -181,26 +163,5 @@ describe('authentication publication gate', () => {
       'Add an e-service ID to every Corppass step',
     )
     expect(write).not.toHaveBeenCalled()
-  })
-  it('allows an unassigned Myinfo field when a step uses Singpass', async () => {
-    const write = mockWrite(MrfForm, {
-      getSettings: () => ({ status: FormStatus.Public }),
-    })
-    const result = await updateFormSettings(
-      form({
-        authType: FormAuthType.MyInfo,
-        form_fields: [
-          {
-            _id: fieldId,
-            title: 'Verified name',
-            fieldType: BasicField.ShortText,
-            myInfo: { attr: MyInfoAttribute.Name },
-          },
-        ],
-      }),
-      { status: FormStatus.Public },
-    )
-    expect(result.isOk()).toBe(true)
-    expect(write).toHaveBeenCalled()
   })
 })

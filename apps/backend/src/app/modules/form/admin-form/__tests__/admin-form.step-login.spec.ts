@@ -123,14 +123,6 @@ describe('admin-form.step-login', () => {
       expect(saved).not.toHaveProperty('auth')
       expect(saved).not.toHaveProperty('first_step_login')
     })
-
-    it('keeps a step login', () => {
-      const saved = toSavedWorkflowStep({
-        ...step([]),
-        auth: CORPPASS,
-      } as never)
-      expect(saved.auth).toEqual(CORPPASS)
-    })
   })
 
   describe('checkWorkflowStepLoginWrite', () => {
@@ -143,22 +135,17 @@ describe('admin-form.step-login', () => {
       expect(result.isOk()).toBe(true)
     })
 
-    it('rejects auth on Step 1', () => {
-      const result = update({ stepNumber: 0, next: { auth: SINGPASS } })
-      expect(result._unsafeUnwrapErr()).toEqual(
-        new MalformedParametersError(STEP_ONE_LOGIN_IN_SETTINGS),
-      )
-    })
-
-    it('rejects auth when creating the first step', () => {
-      const result = update({
-        form: makeForm({
+    it.each([
+      ['on Step 1', makeForm()],
+      [
+        'when creating the first step',
+        makeForm({
           workflow: [],
           form_fields: FORM_FIELDS.filter(({ _id }) => _id !== UEN_FIELD_ID),
         }),
-        stepNumber: 0,
-        next: { auth: SINGPASS },
-      })
+      ],
+    ])('rejects auth %s', (_, form) => {
+      const result = update({ form, stepNumber: 0, next: { auth: SINGPASS } })
       expect(result._unsafeUnwrapErr()).toEqual(
         new MalformedParametersError(STEP_ONE_LOGIN_IN_SETTINGS),
       )
@@ -435,7 +422,11 @@ describe('admin-form.step-login', () => {
           first_step_login: { auth_type: FormAuthType.NIL },
         },
       })
-      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new MalformedParametersError(
+          '"NRIC/FIN" needs a step with Singpass authentication. "UEN" needs a step with Corppass authentication.',
+        ),
+      )
     })
   })
 

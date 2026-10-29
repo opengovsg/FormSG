@@ -182,11 +182,6 @@ AuthenticationDraftNotReady.parameters = authenticationDraftParameters(
 export const AuthenticationReadyToPublish = Template.bind({})
 AuthenticationReadyToPublish.parameters = authenticationDraftParameters(true)
 
-/** Unassigned authentication fields are valid when any step supplies their provider. */
-export const UnassignedAuthenticationReadyToPublish = Template.bind({})
-UnassignedAuthenticationReadyToPublish.parameters =
-  authenticationDraftParameters(false)
-
 /** The Corppass requirement is a description inside the closed-form status box. */
 export const MissingCorppassServiceId = Template.bind({})
 MissingCorppassServiceId.parameters = authenticationDraftParameters(

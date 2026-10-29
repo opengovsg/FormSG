@@ -1743,9 +1743,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     const loginIdentityErrors =
       this.status === FormStatus.Public
         ? getLoginFieldPublishErrors(loginConfig)
-        : getResultingLoginErrors({
-            ...loginConfig,
-          })
+        : getResultingLoginErrors(loginConfig)
     if (loginIdentityErrors.length > 0) {
       const validationError = this.invalidate(
         'form_fields',

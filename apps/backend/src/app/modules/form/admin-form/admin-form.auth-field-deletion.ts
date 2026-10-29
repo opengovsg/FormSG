@@ -24,13 +24,19 @@ import { FormOpenToResponsesError } from '../form.errors'
 import { FormChangedWhileEditingError } from './admin-form.errors'
 
 /** The client confirms exact definitions, never supplies an arbitrary deletion command. */
-export const prepareAuthFieldDeletion = (
-  form: IPopulatedForm,
-  workflow: FormWorkflowDto,
-  authType: FormAuthType,
-  confirmedIds: unknown,
-  expectedLastModified?: unknown,
-) => {
+export const prepareAuthFieldDeletion = ({
+  form,
+  workflow,
+  authType,
+  confirmedIds,
+  expectedLastModified,
+}: {
+  form: IPopulatedForm
+  workflow: FormWorkflowDto
+  authType: FormAuthType
+  confirmedIds: unknown
+  expectedLastModified?: unknown
+}) => {
   const ids = form.form_fields
     .filter((field) => {
       const provider = getFieldSourceProvider(field)
@@ -125,15 +131,28 @@ export const prepareAuthFieldDeletion = (
     }
     return clean
   })
-  return ok({ ids, form_fields, form_logics, workflow: cleanedWorkflow })
+  return ok({
+    form_fields,
+    form_logics,
+    workflow: cleanedWorkflow,
+    // What the resulting-form checks should see.
+    checkedForm: {
+      ...(typeof form.toObject === 'function' ? form.toObject() : form),
+      form_fields,
+    } as IPopulatedForm,
+    // Only a write that deletes definitions guards and rewrites them.
+    deletionGuard: ids.length ? getDeletionReferenceGuard(form) : {},
+    deletionUpdate: ids.length ? { form_fields, form_logics } : {},
+  })
 }
+
+const toSingpassFamily = (type: FormAuthType): FormAuthType =>
+  type === FormAuthType.SP ? FormAuthType.MyInfo : type
 
 export const sameAuthenticationProvider = (
   a: FormAuthType,
   b: FormAuthType,
-): boolean =>
-  (a === FormAuthType.SP ? FormAuthType.MyInfo : a) ===
-  (b === FormAuthType.SP ? FormAuthType.MyInfo : b)
+): boolean => toSingpassFamily(a) === toSingpassFamily(b)
 
 /** Select only a provider and Corppass configuration that actually exist on this workflow. */
 export const getRetainedWorkflowAuth = (
@@ -154,13 +173,7 @@ export const getRetainedWorkflowAuth = (
         .filter((type) => type !== FormAuthType.NIL),
     ),
   ]
-  const families = [
-    ...new Set(
-      providers.map((type) =>
-        type === FormAuthType.SP ? FormAuthType.MyInfo : type,
-      ),
-    ),
-  ]
+  const families = [...new Set(providers.map(toSingpassFamily))]
   const requested =
     input.retained_auth_type ??
     (families.length === 1

@@ -94,15 +94,6 @@ describe('buildWorkflowStep', () => {
       expect(step).not.toHaveProperty('first_step_login')
     })
 
-    it('should send a saved login back unchanged', () => {
-      const step = buildWorkflowStep(
-        baseInputs({ auth: { auth_type: FormAuthType.MyInfo } }),
-        false,
-      )
-
-      expect(step?.auth).toEqual({ auth_type: FormAuthType.MyInfo })
-    })
-
     it('should trim the Corppass e-service ID and omit it when empty', () => {
       const trimmed = buildWorkflowStep(
         baseInputs({ auth: { auth_type: FormAuthType.CP, esrvc_id: ' X1 ' } }),

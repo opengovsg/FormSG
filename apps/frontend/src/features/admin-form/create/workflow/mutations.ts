@@ -82,12 +82,8 @@ export const useWorkflowMutations = () => {
   )
 
   const deleteStepMutation = useMutation(
-    (
-      input: number | ({ stepNumber: number } & AuthFieldDeletionConfirmation),
-    ) =>
-      typeof input === 'number'
-        ? deleteWorkflowStep(formId, input)
-        : deleteWorkflowStep(formId, input.stepNumber, input),
+    (input: { stepNumber: number } & AuthFieldDeletionConfirmation) =>
+      deleteWorkflowStep(formId, input.stepNumber, input),
     {
       onSuccess: (updatedWorkflow) => {
         toast.closeAll()

@@ -14,8 +14,16 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 
-import { FormAuthType, FormResponseMode, FormStatus } from 'formsg-shared/types'
-import { getFieldSourceProvider } from 'formsg-shared/utils/step-login'
+import {
+  FormAuthType,
+  FormResponseMode,
+  FormStatus,
+  WorkflowStepAuthType,
+} from 'formsg-shared/types'
+import {
+  getFieldSourceProvider,
+  STEP_LOGIN_PROVIDER_LABELS,
+} from 'formsg-shared/utils/step-login'
 
 import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
 import Button from '~components/Button'
@@ -34,7 +42,9 @@ import { useWorkflowMutations } from '../../mutations'
 import {
   getAffectedAuthFieldRules,
   getWorkflowAuthOptions,
+  toStepLoginAuthType,
 } from '../../utils/authFieldRemoval'
+import { AffectedAuthFieldRules } from '../AffectedAuthFieldRules'
 
 interface DeleteWorkflowModalProps {
   isOpen: boolean
@@ -74,9 +84,8 @@ export const DeleteWorkflowModal = ({
   const providers = [...new Set(options.map((option) => option.authType))]
   const needsPicker = providers.length > 1 || options.length > 1
   const [panel, setPanel] = useState(0)
-  const [selectedProvider, setSelectedProvider] = useState<
-    FormAuthType.MyInfo | FormAuthType.CP
-  >()
+  const [selectedProvider, setSelectedProvider] =
+    useState<WorkflowStepAuthType>()
   const [selectedEsrvcId, setSelectedEsrvcId] = useState<string>()
   useEffect(() => {
     if (!isOpen) return
@@ -109,7 +118,7 @@ export const DeleteWorkflowModal = ({
   const resetRestrictions =
     form &&
     (retainedProvider ?? FormAuthType.NIL) !==
-      (form.authType === FormAuthType.SP ? FormAuthType.MyInfo : form.authType)
+      toStepLoginAuthType(form.authType)
   const isFormOpen = form?.status === FormStatus.Public
   const isLoading = deleteWorkflowMutation.isLoading
   const showPicker = !isFormOpen && needsPicker && panel === 0
@@ -176,7 +185,7 @@ export const DeleteWorkflowModal = ({
                 {providers.length > 1 ? (
                   <Radio.RadioGroup
                     value={retainedProvider ?? ''}
-                    onChange={(value: FormAuthType.MyInfo | FormAuthType.CP) =>
+                    onChange={(value: WorkflowStepAuthType) =>
                       setSelectedProvider(value)
                     }
                   >
@@ -186,7 +195,7 @@ export const DeleteWorkflowModal = ({
                         value={provider}
                         allowDeselect={false}
                       >
-                        {provider === FormAuthType.CP ? 'Corppass' : 'Singpass'}
+                        {STEP_LOGIN_PROVIDER_LABELS[provider]}
                       </Radio>
                     ))}
                   </Radio.RadioGroup>
@@ -234,11 +243,9 @@ export const DeleteWorkflowModal = ({
                 <Text>
                   All workflow steps, approvals and workflow routing will be
                   removed. The form will keep{' '}
-                  {retainedProvider === FormAuthType.CP
-                    ? 'Corppass'
-                    : retainedProvider === FormAuthType.MyInfo
-                      ? 'Singpass'
-                      : 'no'}{' '}
+                  {retainedProvider
+                    ? STEP_LOGIN_PROVIDER_LABELS[retainedProvider]
+                    : 'no'}{' '}
                   authentication.
                 </Text>
                 {deletedFields.length ? (
@@ -253,16 +260,7 @@ export const DeleteWorkflowModal = ({
                 ) : (
                   <Text>All form fields will be kept.</Text>
                 )}
-                {rules.length ? (
-                  <>
-                    <Text>
-                      References to these fields will also be removed from:
-                    </Text>
-                    {rules.map((rule) => (
-                      <Text key={rule}>{rule}</Text>
-                    ))}
-                  </>
-                ) : null}
+                <AffectedAuthFieldRules rules={rules} />
                 {resetRestrictions ? (
                   <Text>
                     The original Step 1 eligibility list and one-response limit

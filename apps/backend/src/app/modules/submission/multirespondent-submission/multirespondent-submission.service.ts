@@ -16,6 +16,7 @@ import {
   WorkflowStatus,
   WorkflowStepAuthType,
 } from 'formsg-shared/types'
+import { isWorkflowStepAuthType } from 'formsg-shared/utils/step-login'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
 import moment from 'moment'
 import mongoose from 'mongoose'
@@ -957,11 +958,9 @@ export const createMultiRespondentFormSubmission = ({
         nextStepRecipientEmails,
         submitterId: hashedSubmitterId,
         // Step 1's provider is verified by handleNdiResponses before creation.
-        authType:
-          form.authType === FormAuthType.MyInfo ||
-          form.authType === FormAuthType.CP
-            ? form.authType
-            : undefined,
+        authType: isWorkflowStepAuthType(form.authType)
+          ? form.authType
+          : undefined,
       }
 
       // RATIONALE: Generate the submissionId up front so the S3 snapshot key can be built
@@ -1208,11 +1207,9 @@ export const createMultiRespondentFormPendingSubmission = ({
       isApproval: false, // first step cannot be approval step
       submittedAt: new Date().toISOString(),
       submitterId: hashedSubmitterId,
-      authType:
-        form.authType === FormAuthType.MyInfo ||
-        form.authType === FormAuthType.CP
-          ? form.authType
-          : undefined,
+      authType: isWorkflowStepAuthType(form.authType)
+        ? form.authType
+        : undefined,
     }
 
     const submissionContent: MultirespondentSubmissionContent = {

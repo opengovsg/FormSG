@@ -74,30 +74,3 @@ export const LegacyHistory: Story = {
     await expect(canvas.queryByText('Corppass')).not.toBeInTheDocument()
   },
 }
-
-/**
- * Changing configuration cannot rewrite the provider recorded at submission.
- * The log deliberately ignores authentication on the current workflow.
- */
-export const ChangedWorkflowSettings: Story = {
-  args: {
-    history: {
-      ...history,
-      workflow: history.workflow.map((step, index) => ({
-        ...step,
-        auth: {
-          auth_type: index === 0 ? FormAuthType.CP : FormAuthType.MyInfo,
-        },
-      })),
-    },
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'The current workflow providers have changed. Submitted items retain their historical Singpass and Corppass tags.',
-      },
-    },
-  },
-  play: MixedProviders.play,
-}

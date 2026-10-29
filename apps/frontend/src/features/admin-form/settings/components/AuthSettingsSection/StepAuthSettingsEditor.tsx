@@ -15,6 +15,7 @@ import {
 } from 'formsg-shared/types'
 import {
   getStepAuthType,
+  getStepEsrvcId,
   getStepFieldsNeedingLogin,
 } from 'formsg-shared/utils/step-login'
 
@@ -28,6 +29,8 @@ import { updateWorkflowStep } from '~features/admin-form/create/workflow/FormWor
 import {
   getAffectedAuthFieldRules,
   getAuthSwitchConsequences,
+  hasReviewedFormChanged,
+  toStepLoginAuthType,
 } from '~features/admin-form/create/workflow/utils/authFieldRemoval'
 
 import { adminFormSettingsKeys } from '../../queries'
@@ -68,10 +71,10 @@ export const StepAuthSettingsEditor = ({
   const toast = useToast({ status: 'success', isClosable: true })
   const originalAuth = getStepAuthType(settings, form.workflow, stepIndex)
   const [authType, setAuthType] = useState<StepLoginAuthType>(
-    originalAuth === FormAuthType.SP ? FormAuthType.MyInfo : originalAuth,
+    toStepLoginAuthType(originalAuth),
   )
   const [esrvcId, setEsrvcId] = useState(
-    stepIndex === 0 ? (settings.esrvcId ?? '') : (step.auth?.esrvc_id ?? ''),
+    getStepEsrvcId(settings, form.workflow, stepIndex) ?? '',
   )
   const [baseline] = useState(settings)
   const [baselineStep] = useState(step)
@@ -114,11 +117,7 @@ export const StepAuthSettingsEditor = ({
       }
       if (
         deletedFieldIds.length &&
-        (!isEqual(latest.form_fields, baselineForm.form_fields) ||
-          !isEqual(latest.form_logics, baselineForm.form_logics) ||
-          !isEqual(latest.workflow, baselineForm.workflow) ||
-          latest.authType !== baselineForm.authType ||
-          latest.esrvcId !== baselineForm.esrvcId)
+        hasReviewedFormChanged(latest, baselineForm)
       )
         throw new Error(
           'This form changed after you reviewed the fields to delete. Cancel and reopen the card to review the latest changes.',
@@ -257,6 +256,10 @@ export const StepAuthSettingsEditor = ({
     setError('')
   }
 
+  const isSaveBlocked =
+    isPublic ||
+    isParsing ||
+    (authType === FormAuthType.CP && hasEsrvcIdWhitespace(esrvcId))
   const inFlightSave = useRef<Promise<boolean> | null>(null)
   const save = async (): Promise<boolean> => {
     if (inFlightSave.current) return inFlightSave.current
@@ -266,11 +269,7 @@ export const StepAuthSettingsEditor = ({
       )
       return false
     }
-    if (
-      isPublic ||
-      isParsing ||
-      (authType === FormAuthType.CP && hasEsrvcIdWhitespace(esrvcId))
-    ) {
+    if (isSaveBlocked) {
       setError(
         isParsing
           ? 'Wait for the eligible respondent list to finish checking.'
@@ -362,11 +361,7 @@ export const StepAuthSettingsEditor = ({
           submitButtonLabel="Save"
           ariaLabelName="authentication settings"
           isLoading={isLoading}
-          isSubmitDisabled={
-            isPublic ||
-            isParsing ||
-            (authType === FormAuthType.CP && hasEsrvcIdWhitespace(esrvcId))
-          }
+          isSubmitDisabled={isSaveBlocked}
           handleSubmit={() => {
             void save()
           }}

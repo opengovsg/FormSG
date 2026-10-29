@@ -7,6 +7,7 @@ import {
   FormResponseMode,
   FormStatus,
 } from 'formsg-shared/types/form/form'
+import { hasLaterCorppassStepWithoutEsrvcId } from 'formsg-shared/utils/step-login'
 
 import { Switch } from '~components/Toggle/Switch'
 
@@ -21,7 +22,7 @@ import { useAdminFormSettings } from '../queries'
 import { EmailModeConvertModal } from './EmailModeConvertModal'
 import { IncompleteWorkflowModal } from './IncompleteWorkflowModal'
 import { SecretKeyActivationModal } from './SecretKeyActivationModal'
-import { hasCorppassStepWithoutEsrvcId, isEsrvcidRequired } from './utils'
+import { isEsrvcidRequired } from './utils'
 
 export const FormStatusToggle = (): JSX.Element => {
   const { t } = useTranslation()
@@ -51,7 +52,10 @@ export const FormStatusToggle = (): JSX.Element => {
     }
 
     // Later Corppass steps have their own e-service ID.
-    if (adminForm && hasCorppassStepWithoutEsrvcId(adminForm)) {
+    if (
+      adminForm?.responseMode === FormResponseMode.Multirespondent &&
+      hasLaterCorppassStepWithoutEsrvcId(adminForm.workflow)
+    ) {
       return t(
         'features.adminForm.settings.general.status.supplyStepEServiceIds',
       )

@@ -162,12 +162,9 @@ export interface Workflow {
     enableDescription: string
     singpass: string
     corppass: string
-    none: string
     esrvcIdLabel: string
     esrvcIdPlaceholder: string
     esrvcIdWhitespace: string
-    removeFieldsFirst: string
-    manageRestrictions: string
     closeFormToEdit: string
     inactiveLabel: string
   }

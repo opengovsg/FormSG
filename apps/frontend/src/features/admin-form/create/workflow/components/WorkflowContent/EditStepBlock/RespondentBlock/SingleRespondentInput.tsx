@@ -165,6 +165,11 @@ export const SingleRespondentInput = ({
       emailFields.some((f) => f.value === value) ||
       'Choose an Email field.',
   })
+  const errorMessage =
+    error ||
+    errors.workflow_type?.message ||
+    errors.field?.message ||
+    errors.emails?.message
   return (
     <Box position="relative">
       <Flex
@@ -314,15 +319,9 @@ export const SingleRespondentInput = ({
           )}
         </Box>
       )}
-      {error ||
-      errors.workflow_type?.message ||
-      errors.field?.message ||
-      errors.emails?.message ? (
+      {errorMessage ? (
         <Text mt="0.5rem" textStyle="body-2" color="danger.500" role="alert">
-          {error ||
-            errors.workflow_type?.message ||
-            errors.field?.message ||
-            errors.emails?.message}
+          {errorMessage}
         </Text>
       ) : null}
       {workflowType === WorkflowType.Conditional && (

@@ -109,7 +109,6 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
                   <DraggableMyInfoFieldListOption
                     index={originalIndex}
                     isDisabled={isDisabled}
-                    isDragDisabled={!usesLogin(FormAuthType.MyInfo)}
                     key={originalIndex}
                     fieldType={fieldType}
                   />
@@ -150,7 +149,6 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
                     <DraggableMyInfoFieldListOption
                       index={originalIndex}
                       isDisabled={isDisabled}
-                      isDragDisabled={!usesLogin(FormAuthType.MyInfo)}
                       key={originalIndex}
                       fieldType={fieldType}
                     />
@@ -172,7 +170,6 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
                     <DraggableMyInfoFieldListOption
                       index={originalIndex}
                       isDisabled={isDisabled}
-                      isDragDisabled={!usesLogin(FormAuthType.MyInfo)}
                       key={originalIndex}
                       fieldType={fieldType}
                     />
@@ -194,7 +191,6 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
                     <DraggableMyInfoFieldListOption
                       index={originalIndex}
                       isDisabled={isDisabled}
-                      isDragDisabled={!usesLogin(FormAuthType.MyInfo)}
                       key={originalIndex}
                       fieldType={fieldType}
                     />
@@ -217,7 +213,6 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
                       <DraggableMyInfoFieldListOption
                         index={originalIndex}
                         isDisabled={isDisabled}
-                        isDragDisabled={!usesLogin(FormAuthType.MyInfo)}
                         key={originalIndex}
                         fieldType={fieldType}
                       />

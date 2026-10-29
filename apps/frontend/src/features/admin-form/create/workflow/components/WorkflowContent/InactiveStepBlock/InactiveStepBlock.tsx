@@ -250,13 +250,7 @@ export const InactiveStepBlock = ({
           {t(`${STEP_LOGIN_COPY_KEY}.inactiveLabel`)}
         </Text>
         <Flex>
-          <LogicBadge>
-            {t(
-              isWorkflowStepAuthType(stepAuthType)
-                ? STEP_LOGIN_LABEL_KEYS[stepAuthType]
-                : `${STEP_LOGIN_COPY_KEY}.none`,
-            )}
-          </LogicBadge>
+          <LogicBadge>{t(STEP_LOGIN_LABEL_KEYS[stepAuthType])}</LogicBadge>
         </Flex>
       </Stack>
     ) : null

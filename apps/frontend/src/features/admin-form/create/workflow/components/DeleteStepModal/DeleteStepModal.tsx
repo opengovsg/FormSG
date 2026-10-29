@@ -29,6 +29,7 @@ import {
   getAffectedAuthFieldRules,
   getRemovedStepAuthFields,
 } from '../../utils/authFieldRemoval'
+import { AffectedAuthFieldRules } from '../AffectedAuthFieldRules'
 
 interface DeleteStepModalProps {
   onClose: () => void
@@ -134,16 +135,7 @@ export const DeleteStepModal = ({
                 {deletedFields.map((field) => (
                   <Text key={field._id}>{field.title}</Text>
                 ))}
-                {affectedRules.length ? (
-                  <>
-                    <Text>
-                      References to these fields will also be removed from:
-                    </Text>
-                    {affectedRules.map((rule) => (
-                      <Text key={rule}>{rule}</Text>
-                    ))}
-                  </>
-                ) : null}
+                <AffectedAuthFieldRules rules={affectedRules} />
                 <Text>Historical responses will not be deleted.</Text>
               </>
             ) : null}

@@ -1,21 +1,52 @@
+import isEqual from 'lodash/isEqual'
+
 import {
   AdminMultirespondentFormDto,
   FormAuthType,
   LogicType,
+  StepLoginAuthType,
+  WorkflowStepAuthType,
   WorkflowType,
 } from 'formsg-shared/types'
 import {
   formUsesAuthType,
   getFieldSourceProvider,
   getStepAuthType,
+  getStepEsrvcId,
   getStepFieldsNeedingLogin,
+  isWorkflowStepAuthType,
 } from 'formsg-shared/utils/step-login'
+
+/** Legacy Singpass-only login counts as Singpass. */
+export const toStepLoginAuthType = (
+  authType: FormAuthType,
+): StepLoginAuthType =>
+  authType === FormAuthType.SP ? FormAuthType.MyInfo : authType
+
+const REVIEWED_FORM_KEYS = [
+  'authType',
+  'esrvcId',
+  'workflow',
+  'form_fields',
+  'form_logics',
+] as const
+type ReviewedForm = Pick<
+  AdminMultirespondentFormDto,
+  (typeof REVIEWED_FORM_KEYS)[number]
+>
+
+/** Whether the form changed since the admin reviewed the fields to delete. */
+export const hasReviewedFormChanged = (
+  latest: ReviewedForm,
+  baseline: ReviewedForm,
+): boolean =>
+  REVIEWED_FORM_KEYS.some((key) => !isEqual(latest[key], baseline[key]))
 
 /** Compute the exact consequences before asking for destructive confirmation. */
 export const getAuthSwitchConsequences = (
   form: AdminMultirespondentFormDto,
   stepIndex: number,
-  nextAuthType: FormAuthType,
+  nextAuthType: StepLoginAuthType,
   assignedIds: readonly string[],
 ) => {
   const workflow = form.workflow.map((step, index) =>
@@ -25,17 +56,13 @@ export const getAuthSwitchConsequences = (
           auth:
             nextAuthType === FormAuthType.NIL
               ? undefined
-              : {
-                  auth_type: nextAuthType as
-                    | FormAuthType.MyInfo
-                    | FormAuthType.CP,
-                },
+              : { auth_type: nextAuthType },
         }
       : step,
   )
-  const nextFormAuth = stepIndex === 0 ? nextAuthType : form.authType
-  const authType =
-    nextFormAuth === FormAuthType.SP ? FormAuthType.MyInfo : nextFormAuth
+  const authType = toStepLoginAuthType(
+    stepIndex === 0 ? nextAuthType : form.authType,
+  )
   const deletedFields = form.form_fields.filter((field) => {
     const provider = getFieldSourceProvider(field)
     return provider && !formUsesAuthType({ authType, workflow }, provider)
@@ -57,13 +84,7 @@ export const getRemovedStepAuthFields = (
     return (
       provider &&
       !formUsesAuthType(
-        {
-          authType:
-            form.authType === FormAuthType.SP
-              ? FormAuthType.MyInfo
-              : form.authType,
-          workflow,
-        },
+        { authType: toStepLoginAuthType(form.authType), workflow },
         provider,
       )
     )
@@ -71,20 +92,15 @@ export const getRemovedStepAuthFields = (
 }
 
 export const getWorkflowAuthOptions = (form: AdminMultirespondentFormDto) => {
-  const options: {
-    authType: FormAuthType.MyInfo | FormAuthType.CP
-    esrvcId?: string
-  }[] = []
-  form.workflow.forEach((step, index) => {
-    const savedProvider = getStepAuthType(form, form.workflow, index)
-    const provider =
-      savedProvider === FormAuthType.SP ? FormAuthType.MyInfo : savedProvider
-    if (provider !== FormAuthType.MyInfo && provider !== FormAuthType.CP) return
+  const options: { authType: WorkflowStepAuthType; esrvcId?: string }[] = []
+  form.workflow.forEach((_step, index) => {
+    const provider = toStepLoginAuthType(
+      getStepAuthType(form, form.workflow, index),
+    )
+    if (!isWorkflowStepAuthType(provider)) return
     const esrvcId =
       provider === FormAuthType.CP
-        ? index === 0
-          ? (form.esrvcId ?? '')
-          : (step.auth?.esrvc_id ?? '')
+        ? (getStepEsrvcId(form, form.workflow, index) ?? '')
         : undefined
     if (
       !options.some(

@@ -1,17 +1,18 @@
 import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
-  BasicField,
-  CorppassAttribute,
   FormAuthType,
   FormResponseMode,
   FormStatus,
   FormWorkflowStepDto,
-  MyInfoAttribute,
   WorkflowType,
 } from 'formsg-shared/types'
 
-import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
+import {
+  createFormBuilderMocks,
+  MOCK_CORPPASS_UEN_FIELD,
+  MOCK_MYINFO_NAME_FIELD,
+} from '~/mocks/msw/handlers/admin-form'
 
 import { StoryRouter, viewportModes } from '~utils/storybook'
 
@@ -115,39 +116,18 @@ MixedAuthentication.parameters = {
         responseMode: FormResponseMode.Multirespondent,
         status: FormStatus.Private,
         authType: FormAuthType.MyInfo,
-        form_fields: [
-          {
-            _id: '6200e1534ad4f00012848d91',
-            title: 'Verified name',
-            fieldType: BasicField.ShortText,
-            myInfo: { attr: MyInfoAttribute.Name },
-            required: true,
-            disabled: false,
-            description: '',
-            allowPrefill: false,
-            ValidationOptions: { selectedValidation: null, customVal: null },
-          },
-          {
-            _id: '6200e1534ad4f00012848d92',
-            title: 'Organisation UEN',
-            fieldType: BasicField.Uen,
-            corppass: { attr: CorppassAttribute.Uen },
-            required: true,
-            disabled: false,
-            description: '',
-          },
-        ],
+        form_fields: [MOCK_MYINFO_NAME_FIELD, MOCK_CORPPASS_UEN_FIELD],
         workflow: [
           {
             ...workflow_step_1,
-            edit: ['6200e1534ad4f00012848d91'],
+            edit: [MOCK_MYINFO_NAME_FIELD._id],
             step_name: 'Requester',
           },
           {
             _id: '61e6857c9c794b0012f1c6f9',
             workflow_type: WorkflowType.Static,
             emails: ['approver@example.gov.sg'],
-            edit: ['6200e1534ad4f00012848d92'],
+            edit: [MOCK_CORPPASS_UEN_FIELD._id],
             step_name: 'Approver',
             auth: { auth_type: FormAuthType.CP, esrvc_id: 'AGENCY-SERVICE-A' },
           },

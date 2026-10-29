@@ -198,8 +198,8 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   /**
    * Inserts an array of form fields into the form
    * @param newFields new fields to insert
-   * @param checkedAuthenticationConfig Optional baseline captured before an atomic workflow or authentication conversion.
    * @param to Optional position to insert the field at. If not provided, field will be inserted at the end.
+   * @param checkedAuthenticationConfig Optional baseline captured before an atomic workflow or authentication conversion.
    * @returns updated form after the insertion if field insertion is successful
    * @throws validation error on invalid updates
    */

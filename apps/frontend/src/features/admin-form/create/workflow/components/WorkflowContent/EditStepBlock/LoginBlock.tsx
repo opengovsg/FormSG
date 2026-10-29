@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { Text } from '@chakra-ui/react'
 
 import {
-  AdminMultirespondentFormDto,
   FirstStepLoginInput,
   FormAuthType,
   FormResponseMode,
@@ -71,7 +70,8 @@ export const LoginBlock = ({
   const editedAuth = watch('auth')
   const pickedFieldIds: string[] = watch(FIELDS_TO_EDIT_NAME) ?? []
 
-  if (!form) return null
+  // The workflow tab is shown only on multi-respondent forms.
+  if (!form || !('workflow' in form)) return null
 
   const login: ShownLogin = isFirstStep
     ? (editedFirstStepLogin ?? {
@@ -106,7 +106,7 @@ export const LoginBlock = ({
     pendingAuthType === undefined
       ? { deletedFields: [], unassignedFields: [] }
       : getAuthSwitchConsequences(
-          form as AdminMultirespondentFormDto,
+          form,
           stepNumber,
           pendingAuthType,
           pickedFieldIds,
@@ -118,7 +118,7 @@ export const LoginBlock = ({
   const handleAuthTypeChange = (next: StepLoginAuthType) => {
     if (isFormPublic || isLoading || next === login.auth_type) return
     const proposed = getAuthSwitchConsequences(
-      form as AdminMultirespondentFormDto,
+      form,
       stepNumber,
       next,
       pickedFieldIds,
@@ -160,10 +160,10 @@ export const LoginBlock = ({
         currentAuthType={login.auth_type}
         nextAuthType={pendingAuthType}
         fields={confirmationFields}
-        formFields={form?.form_fields ?? []}
+        formFields={form.form_fields}
         deleteFields={isDeletingFields}
         affectedRules={getAffectedAuthFieldRules(
-          form as AdminMultirespondentFormDto,
+          form,
           consequences.deletedFields.map((field) => field._id),
         )}
         onClose={() => setPendingAuthType(undefined)}

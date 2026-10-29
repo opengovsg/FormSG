@@ -9,7 +9,6 @@ import {
   getLoginIdentityAttr,
   getLoginIdentityAttrsForAuthType,
   getLoginIdentityConfigErrors,
-  isLoginIdentityField,
   isMyInfoDataField,
   LOGIN_IDENTITY_LABELS,
   LoginIdentityCandidate,
@@ -96,16 +95,6 @@ export const formUsesAuthType = (
     .slice(1)
     .some((step) => step.auth?.auth_type === authType)
 
-/**
- * Whether a form or submission snapshot has saved Step 2+ login configuration.
- * The runtime keeps supporting it whatever the rollout flag says.
- */
-export const hasStepLoginConfig = ({
-  workflow = [],
-}: {
-  workflow?: readonly StepLoginStep[] | null
-}): boolean => hasLaterStepLogin(workflow)
-
 /** Fields a step may fill in. Without a workflow, Step 1 fills in all fields. */
 export const getStepFields = <F extends { _id?: unknown }>(
   formFields: readonly F[],
@@ -119,23 +108,6 @@ export const getStepFields = <F extends { _id?: unknown }>(
   }
   const editIds = new Set(step.edit.map(String))
   return formFields.filter((field) => editIds.has(String(field._id)))
-}
-
-/**
- * The step whose edit list holds the field, if any. A form without a
- * workflow treats its first respondent as the owner of every field.
- */
-export const getOwningStepIndex = (
-  field: { _id?: unknown },
-  workflow: readonly Pick<StepLoginStep, 'edit'>[] | null | undefined,
-): number | undefined => {
-  const steps = workflow ?? []
-  if (steps.length === 0) return 0
-  const fieldId = String(field._id)
-  const index = steps.findIndex((step) =>
-    step.edit.some((id) => String(id) === fieldId),
-  )
-  return index === -1 ? undefined : index
 }
 
 /** Whether a step's login can fill the field. Plain fields always pass. */
@@ -255,7 +227,6 @@ export const getResultingLoginErrors = ({
   isSubmitterIdCollectionEnabled?: boolean
   form_fields?: readonly SourceField[]
   workflow?: readonly StepLoginStep[] | null
-  allowIncompleteDraft?: boolean
 }): string[] => {
   const steps = workflow ?? []
   // Any step's Singpass login may fill Myinfo fields.
@@ -332,4 +303,4 @@ export const getLoginFieldPublishErrors = (
     ]),
   )
 
-export { isLoginIdentityField }
+export { getOwningStepIndex } from './login-identity'

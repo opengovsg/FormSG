@@ -8,12 +8,6 @@ export const enSG = {
   general,
   singpass: {
     title: 'Singpass',
-    // One collapsible section per workflow step on multi-respondent forms.
-    stepLogin: {
-      stepHeader: 'Step {stepNumber} · {login}',
-      removeFieldsFirst: 'Remove the Myinfo fields from this step first.',
-      editStep: 'Edit step',
-    },
     submitterIdCollection: {
       toggleLabel: 'Collect NRIC/FIN/UENs with form submissions',
       convert: 'Switch to using fields',

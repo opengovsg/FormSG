@@ -75,15 +75,19 @@ export type StrippedFormWorkflowStep =
 
 export type FormWorkflow = Array<FormWorkflowStep>
 
-type WithWriteAuth<T> = Omit<T, 'auth'> & {
-  // Absent or null means no login. The admin UI always sends the whole step.
-  auth?: FormWorkflowStepAuth | null
-  // Step 1 only. See FirstStepLoginInput.
-  first_step_login?: FirstStepLoginInput
+type AuthFieldDeletionInput = {
   /** Exact field definitions confirmed for deletion when their final provider is removed. */
   delete_auth_field_ids?: string[]
   expected_last_modified?: string
 }
+
+type WithWriteAuth<T> = Omit<T, 'auth'> &
+  AuthFieldDeletionInput & {
+    // Absent or null means no login. The admin UI always sends the whole step.
+    auth?: FormWorkflowStepAuth | null
+    // Step 1 only. See FirstStepLoginInput.
+    first_step_login?: FirstStepLoginInput
+  }
 
 /** A step as the admin UI creates or updates it. */
 export type FormWorkflowStepWriteDto = (
@@ -105,9 +109,7 @@ export type StrippedFormWorkflowStepDto = StrippedFormWorkflowStep & {
 export type StrippedFormWorkflowDto = Array<StrippedFormWorkflowStepDto>
 
 /** Request-only confirmation for destructive authentication changes. */
-export interface DeleteWorkflowAuthDto {
+export type DeleteWorkflowAuthDto = AuthFieldDeletionInput & {
   retained_auth_type?: WorkflowStepAuthType
   retained_esrvc_id?: string
-  delete_auth_field_ids?: string[]
-  expected_last_modified?: string
 }

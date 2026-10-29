@@ -10,8 +10,6 @@ import {
   FormResponseMode,
   FormSettings,
   FormStatus,
-  FormWorkflowStepDto,
-  FormWorkflowStepWriteDto,
   WorkflowType,
 } from 'formsg-shared/types/form'
 
@@ -410,24 +408,6 @@ const buildMrfStepLoginMswRoutes = (overrides: Partial<FormSettings>) => {
     ),
     http.get('/api/v3/admin/forms/:formId/settings', () =>
       HttpResponse.json(current),
-    ),
-    http.put(
-      '/api/v3/admin/forms/:formId/workflow/:stepNumber',
-      async ({ request, params }) => {
-        if (current.responseMode !== FormResponseMode.Multirespondent)
-          return new HttpResponse(null, { status: 400 })
-        const { first_step_login, ...step } =
-          (await request.json()) as FormWorkflowStepWriteDto
-        delete step.delete_auth_field_ids
-        delete step.expected_last_modified
-        if (first_step_login) {
-          current.authType = first_step_login.auth_type
-          current.esrvcId = first_step_login.esrvc_id ?? ''
-        }
-        current.workflow[Number(params.stepNumber)] =
-          step as FormWorkflowStepDto
-        return HttpResponse.json(current.workflow)
-      },
     ),
     ...createFormBuilderMocks({
       ...MRF_STEP_LOGIN_FORM,

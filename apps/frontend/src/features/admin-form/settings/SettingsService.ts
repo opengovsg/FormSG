@@ -2,7 +2,6 @@ import Stripe from 'stripe'
 
 import {
   EmailFormSettings,
-  FormAuthType,
   FormSettings,
   MultirespondentFormSettings,
   SettingsUpdateDto,
@@ -177,17 +176,6 @@ export const updateFormAuthType: UpdateFormFn<'authType'> = async (
 ) => {
   return updateFormSettings(formId, { authType: newAuthType })
 }
-
-/** Save a field-addition login choice and its Corppass configuration together. */
-export const updateFormLogin = (
-  formId: string,
-  authType: FormAuthType.MyInfo | FormAuthType.CP,
-  esrvcId: string,
-) =>
-  updateFormSettings(formId, {
-    authType,
-    ...(authType === FormAuthType.CP ? { esrvcId: esrvcId.trim() } : {}),
-  })
 
 export const updateIsSubmitterIdCollectionEnabled: UpdateFormFn<
   'isSubmitterIdCollectionEnabled'
