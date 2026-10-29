@@ -95,4 +95,16 @@ describe('UnlockedResponsesProvider', () => {
     expect(result.current.columnFilters).toEqual([])
     expect(mockSetDateRange).toHaveBeenLastCalledWith([])
   })
+
+  it('selects a view without changing the table', () => {
+    const result = setupProvider()
+    act(() => result.current.setColumnFilter('a', 'approved'))
+
+    act(() => result.current.selectView(VIEW._id))
+
+    expect(result.current.selectedViewId).toBe(VIEW._id)
+    expect(result.current.columnFilters).toEqual([
+      { columnId: 'a', text: 'approved' },
+    ])
+  })
 })

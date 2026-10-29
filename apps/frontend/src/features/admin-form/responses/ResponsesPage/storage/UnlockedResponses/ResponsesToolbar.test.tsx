@@ -19,6 +19,7 @@ import { ALL_RESPONSES_VIEW_ID } from './UnlockedResponsesProvider'
 
 const mockCreateView = vi.fn()
 const mockUpdateView = vi.fn()
+const mockSelectView = vi.fn()
 let mockContext: Record<string, unknown> = {}
 
 vi.mock('./UnlockedResponsesProvider', () => ({
@@ -73,6 +74,7 @@ const renderToolbar = ({
     hasActiveFilters: true,
     savedViews,
     selectedViewId,
+    selectView: mockSelectView,
   }
   render(
     <ChakraProvider theme={theme}>
@@ -143,11 +145,34 @@ describe('the save view button', () => {
     await user.type(await screen.findByRole('textbox'), 'Approved')
     await user.click(screen.getByRole('button', { name: /^save$/i }))
 
-    expect(mockCreateView).toHaveBeenCalledWith({
-      name: 'Approved',
-      filter: { columnFilters: [{ columnId: 'a', text: 'approved' }] },
-    })
+    expect(mockCreateView).toHaveBeenCalledWith(
+      {
+        name: 'Approved',
+        filter: { columnFilters: [{ columnId: 'a', text: 'approved' }] },
+      },
+      expect.anything(),
+    )
     expect(mockUpdateView).not.toHaveBeenCalled()
+  })
+
+  it('switches to the new view once it is saved', async () => {
+    mockCreateView.mockImplementationOnce((_, { onSuccess }) =>
+      onSuccess([VIEW, { ...VIEW, _id: 'view-2', name: 'Approved' }]),
+    )
+    renderToolbar({
+      selectedViewId: ALL_RESPONSES_VIEW_ID,
+      currentViewState: {
+        ...VIEW_STATE,
+        columnFilters: [{ columnId: 'a', text: 'approved' }],
+      },
+    })
+    const user = userEvent.setup()
+
+    await user.click(saveViewButton())
+    await user.type(await screen.findByRole('textbox'), 'Approved')
+    await user.click(screen.getByRole('button', { name: /^save$/i }))
+
+    expect(mockSelectView).toHaveBeenCalledWith('view-2')
   })
 
   it('cannot save a new view from All responses that matches a saved one', () => {
