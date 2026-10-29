@@ -199,7 +199,7 @@ describe('Form login identity fields', () => {
           workflow_type: 'static',
           emails: ['approver@example.com'],
           edit: [corppassId],
-          auth: { auth_type: FormAuthType.CP },
+          auth: { auth_type: FormAuthType.CP, esrvc_id: 'step-service' },
         },
       ],
     })

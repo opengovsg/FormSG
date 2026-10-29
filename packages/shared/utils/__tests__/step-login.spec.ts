@@ -1,5 +1,6 @@
 import {
   canStepLoginFillField,
+  CORPPASS_STEPS_NEED_ESRVC_ID,
   formUsesAuthType,
   getOwningStepIndex,
   getStepAuthType,
@@ -337,5 +338,41 @@ describe('authentication provider availability and optional ownership', () => {
         expect.stringContaining('"UEN" needs a step with Corppass'),
       ]),
     )
+  })
+})
+
+describe('Corppass step e-service IDs at publication', () => {
+  const form = {
+    authType: FormAuthType.NIL,
+    responseMode: FormResponseMode.Multirespondent,
+    form_fields: [],
+  }
+  const corppassWithoutId = {
+    edit: [],
+    auth: { auth_type: FormAuthType.CP as const },
+  }
+  it('rejects a later Corppass step without an e-service ID', () => {
+    expect(
+      getLoginFieldPublishErrors({
+        ...form,
+        workflow: [{ edit: [] }, corppassWithoutId],
+      }),
+    ).toContain(CORPPASS_STEPS_NEED_ESRVC_ID)
+  })
+  it('allows the same step while the form is a draft', () => {
+    expect(
+      getResultingLoginErrors({
+        ...form,
+        workflow: [{ edit: [] }, corppassWithoutId],
+      }),
+    ).toEqual([])
+  })
+  it('passes once every Corppass step has an e-service ID', () => {
+    expect(
+      getLoginFieldPublishErrors({
+        ...form,
+        workflow: [{ edit: [] }, { ...corppassStep, edit: [] }],
+      }),
+    ).toEqual([])
   })
 })

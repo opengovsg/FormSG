@@ -154,6 +154,34 @@ describe('authentication publication gate', () => {
       FormChangedWhileEditingError,
     )
   })
+  it('refuses a later Corppass step without an e-service ID', async () => {
+    const write = mockWrite(MrfForm, null)
+    const result = await updateFormSettings(
+      form({
+        form_fields: [],
+        workflow: [
+          {
+            _id: new ObjectId(),
+            workflow_type: WorkflowType.Static,
+            emails: [],
+            edit: [],
+          },
+          {
+            _id: new ObjectId(),
+            workflow_type: WorkflowType.Static,
+            emails: ['two@example.com'],
+            edit: [],
+            auth: { auth_type: FormAuthType.CP },
+          },
+        ],
+      }),
+      { status: FormStatus.Public },
+    )
+    expect(result._unsafeUnwrapErr().message).toContain(
+      'Add an e-service ID to every Corppass step',
+    )
+    expect(write).not.toHaveBeenCalled()
+  })
   it('allows an unassigned Myinfo field when a step uses Singpass', async () => {
     const write = mockWrite(MrfForm, {
       getSettings: () => ({ status: FormStatus.Public }),
