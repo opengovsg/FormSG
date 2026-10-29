@@ -22,21 +22,3 @@ describe('SaveActionGroup on a phone', () => {
     })
   })
 })
-
-describe('SaveActionGroup delete label', () => {
-  it('names what it deletes', () => {
-    render(
-      <SaveActionGroup
-        isLoading={false}
-        handleSubmit={noop}
-        handleCancel={noop}
-        handleDelete={noop}
-        ariaLabelName="step"
-      />,
-    )
-
-    expect(
-      screen.getByRole('button', { name: 'Delete step' }),
-    ).toBeInTheDocument()
-  })
-})

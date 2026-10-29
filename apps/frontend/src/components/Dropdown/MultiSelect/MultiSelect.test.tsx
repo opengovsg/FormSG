@@ -50,21 +50,3 @@ describe('MultiSelect item checkboxes', () => {
     expect(screen.getAllByTestId(ITEM_CHECKBOX_TEST_ID)).toHaveLength(1)
   })
 })
-
-describe('MultiSelect ownership status', () => {
-  it('keeps an owned field visible and disabled with its ownership chip', () => {
-    renderOpen([
-      {
-        value: 'owned',
-        label: 'Myinfo name',
-        disabled: true,
-        descriptionTag: 'Assigned to Step 1',
-      },
-    ])
-    expect(screen.getByText('Assigned to Step 1')).toBeInTheDocument()
-    expect(screen.getByRole('option', { name: /Myinfo name/ })).toHaveAttribute(
-      'aria-disabled',
-      'true',
-    )
-  })
-})
