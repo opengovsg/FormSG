@@ -80,12 +80,12 @@ export const StepLoginAccordion = ({
   return (
     <Stack spacing="2rem">
       <Box>
-        <Text textStyle="body-1" mb="1rem">
-          Manage authentication for each step in your workflow.
+        <Text textStyle="body-1">
+          Manage authentication for each step in your workflow.{' '}
+          <Link as="button" type="button" onClick={() => requestChange(-2)}>
+            Edit your full workflow ↗
+          </Link>
         </Text>
-        <Link as="button" type="button" onClick={() => requestChange(-2)}>
-          Edit workflow in Create ↗
-        </Link>
       </Box>
       <Accordion
         allowToggle
@@ -136,11 +136,12 @@ export const StepLoginAccordion = ({
                   <>
                     <AccordionButton
                       p="2rem"
+                      position="relative"
                       textAlign="left"
                       disabled={isSaving}
                       _hover={{ bg: 'primary.50' }}
                     >
-                      <Stack flex="1" spacing="0.5rem">
+                      <Stack flex="1" spacing="0.5rem" pr="2.5rem">
                         <StepLabel
                           stepNumber={stepIndex}
                           stepName={step.step_name}
@@ -151,7 +152,7 @@ export const StepLoginAccordion = ({
                               <Tag colorScheme="secondary">{label}</Tag>
                             ) : (
                               <Text textStyle="body-2" color="secondary.400">
-                                Login not enabled
+                                Singpass authentication not enabled
                               </Text>
                             )}
                           </Box>
@@ -159,11 +160,16 @@ export const StepLoginAccordion = ({
                       </Stack>
                       <Icon
                         as={BiPencil}
+                        aria-hidden
+                        pointerEvents="none"
+                        position="absolute"
+                        top="2rem"
+                        right="2rem"
                         color="secondary.300"
                         boxSize="1.5rem"
                       />
                     </AccordionButton>
-                    <AccordionPanel px="2rem" pt="0" pb="2rem">
+                    <AccordionPanel p="0">
                       {isExpanded ? (
                         <StepAuthSettingsEditor
                           form={form}

@@ -59,6 +59,7 @@ interface StepOneLoginRestrictionsProps {
   onChange: (patch: Partial<StepOneLoginRestrictionsDraft>) => void
   isDisabled: boolean
   onParsingChange?: (isParsing: boolean) => void
+  dividerBleed?: string
 }
 
 /** Shared controlled Step 1 restrictions for Create and Settings drafts. */
@@ -68,6 +69,7 @@ export const StepOneLoginRestrictions = ({
   onChange,
   isDisabled,
   onParsingChange,
+  dividerBleed,
 }: StepOneLoginRestrictionsProps): JSX.Element => {
   const { formId } = useParams()
   const [error, setError] = useState('')
@@ -137,7 +139,14 @@ export const StepOneLoginRestrictions = ({
 
   return (
     <Stack spacing="2rem" mt="2rem">
-      <Divider />
+      <Divider
+        alignSelf="center"
+        w={
+          dividerBleed
+            ? `calc(100% + ${dividerBleed} + ${dividerBleed})`
+            : undefined
+        }
+      />
       <Toggle
         isDisabled={isDisabled || isParsing}
         isChecked={value.isSingleSubmission}
@@ -146,7 +155,14 @@ export const StepOneLoginRestrictions = ({
           onChange({ isSingleSubmission: !value.isSingleSubmission })
         }
       />
-      <Divider />
+      <Divider
+        alignSelf="center"
+        w={
+          dividerBleed
+            ? `calc(100% + ${dividerBleed} + ${dividerBleed})`
+            : undefined
+        }
+      />
       <Box>
         <Text textStyle="subhead-1" mb="0.25rem">
           Restrict form to eligible NRIC/FIN/UENs only

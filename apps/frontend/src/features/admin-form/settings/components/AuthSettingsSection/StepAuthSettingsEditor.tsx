@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
-import { HStack, Stack, Text } from '@chakra-ui/react'
+import { Box, Stack, Text } from '@chakra-ui/react'
 import isEqual from 'lodash/isEqual'
 
 import {
@@ -19,11 +19,11 @@ import {
   getStepFieldsNeedingLogin,
 } from 'formsg-shared/utils/step-login'
 
-import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 
 import { getAdminFormView } from '~features/admin-form/common/AdminViewFormService'
 import { adminFormKeys } from '~features/admin-form/common/queries'
+import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
 import { updateWorkflowStep } from '~features/admin-form/create/workflow/FormWorkflowService'
 
 import { adminFormSettingsKeys } from '../../queries'
@@ -203,72 +203,64 @@ export const StepAuthSettingsEditor = ({
   }
 
   return (
-    <Stack spacing="1.5rem">
-      <StepLoginControls
-        idPrefix={`settings-step-${stepIndex}-login`}
-        authType={authType}
-        esrvcId={esrvcId}
-        onAuthTypeChange={changeAuth}
-        onEsrvcIdChange={(value) => {
-          setEsrvcId(value)
-          setHasLoginChanges(true)
-          onDirtyChange(true)
-          setError('')
-        }}
-        isDisabled={isPublic || isLoading}
-        isLoading={isLoading}
-        notice={
-          isPublic
-            ? 'Close your form to change authentication settings.'
-            : undefined
-        }
-      />
-      {stepIndex === 0 && authType !== FormAuthType.NIL ? (
-        <StepOneLoginRestrictions
-          settings={settings}
-          value={restrictions}
-          onChange={changeRestrictions}
+    <Stack spacing="0">
+      <Stack spacing="1.5rem" px="2rem">
+        <StepLoginControls
+          idPrefix={`settings-step-${stepIndex}-login`}
+          authType={authType}
+          esrvcId={esrvcId}
+          onAuthTypeChange={changeAuth}
+          onEsrvcIdChange={(value) => {
+            setEsrvcId(value)
+            setHasLoginChanges(true)
+            onDirtyChange(true)
+            setError('')
+          }}
           isDisabled={isPublic || isLoading}
-          onParsingChange={setIsParsing}
-        />
-      ) : null}
-      {error ? (
-        <InlineMessage variant="error">
-          <Text role="alert">{error}</Text>
-        </InlineMessage>
-      ) : null}
-      <HStack
-        spacing="1rem"
-        pt="1rem"
-        borderTopWidth="1px"
-        borderColor="neutral.300"
-      >
-        <Button
           isLoading={isLoading}
-          isDisabled={
+          notice={
+            isPublic
+              ? 'Close your form to change authentication settings.'
+              : undefined
+          }
+        />
+        {stepIndex === 0 && authType !== FormAuthType.NIL ? (
+          <StepOneLoginRestrictions
+            settings={settings}
+            value={restrictions}
+            onChange={changeRestrictions}
+            isDisabled={isPublic || isLoading}
+            onParsingChange={setIsParsing}
+            dividerBleed="2rem"
+          />
+        ) : null}
+        {error ? (
+          <InlineMessage variant="error">
+            <Text role="alert">{error}</Text>
+          </InlineMessage>
+        ) : null}
+      </Stack>
+      <Box mt="1.5rem" py="2rem" borderTopWidth="1px" borderColor="neutral.300">
+        <SaveActionGroup
+          submitButtonLabel="Save"
+          ariaLabelName="authentication settings"
+          isLoading={isLoading}
+          isSubmitDisabled={
             isPublic ||
             isParsing ||
             (authType === FormAuthType.CP && hasEsrvcIdWhitespace(esrvcId))
           }
-          onClick={() => {
+          handleSubmit={() => {
             setError('')
             onSavingChange(true)
             saveMutation.mutate()
           }}
-        >
-          Save
-        </Button>
-        <Button
-          variant="clear"
-          isDisabled={isLoading}
-          onClick={() => {
+          handleCancel={() => {
             onDirtyChange(false)
             onClose()
           }}
-        >
-          Cancel
-        </Button>
-      </HStack>
+        />
+      </Box>
     </Stack>
   )
 }

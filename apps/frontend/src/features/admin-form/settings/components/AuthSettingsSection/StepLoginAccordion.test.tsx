@@ -93,10 +93,12 @@ describe('workflow-shaped authentication settings', () => {
     expect(screen.queryByTestId('editor-0')).not.toBeInTheDocument()
     expect(screen.getByText('Singpass')).toBeInTheDocument()
     expect(screen.getByText('Corppass')).toBeInTheDocument()
-    expect(screen.getByText('Login not enabled')).toBeInTheDocument()
+    expect(
+      screen.getByText('Singpass authentication not enabled'),
+    ).toBeInTheDocument()
     expect(screen.getAllByTestId('settings-step-connector')).toHaveLength(2)
     expect(
-      screen.getByRole('button', { name: /Edit workflow in Create/ }),
+      screen.getByRole('button', { name: /Edit your full workflow/ }),
     ).toBeInTheDocument()
   })
 
