@@ -9,15 +9,23 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { FormAuthType, StepLoginAuthType } from 'formsg-shared/types'
+import {
+  FormAuthType,
+  FormFieldDto,
+  StepLoginAuthType,
+} from 'formsg-shared/types'
 
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
+
+import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
+import { augmentFieldWithQuestionNo } from '~features/form/utils'
 
 interface AuthSwitchConfirmationProps {
   currentAuthType: FormAuthType
   nextAuthType: StepLoginAuthType | undefined
   fields: readonly { _id: string; title: string }[]
+  formFields: readonly FormFieldDto[]
   deleteFields?: boolean
   affectedRules?: readonly string[]
   onClose: () => void
@@ -29,6 +37,7 @@ export const AuthSwitchConfirmation = ({
   currentAuthType,
   nextAuthType,
   fields,
+  formFields,
   onClose,
   onConfirm,
   deleteFields = false,
@@ -42,25 +51,35 @@ export const AuthSwitchConfirmation = ({
         ? 'no authentication'
         : 'Singpass'
   const provider = nextAuthType === FormAuthType.CP ? 'Corppass' : 'Singpass'
+  const numberedFields = new Map(
+    augmentFieldWithQuestionNo([...formFields]).map((field) => [
+      field._id,
+      field,
+    ]),
+  )
   return (
     <Modal isOpen={nextAuthType !== undefined} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
         <ModalHeader>
-          {isTurningOff ? 'Turn off authentication?' : `Switch to ${provider}?`}
+          {isTurningOff ? 'Turn off authentication' : `Switch to ${provider}`}
         </ModalHeader>
         <ModalBody>
           <Stack spacing="1rem">
             <Text>
-              This step uses {currentProvider}.{' '}
               {deleteFields
-                ? 'It is the last step using this provider. These fields will be deleted from your form.'
-                : 'These fields will be unassigned from this step and kept in your form.'}
+                ? `This is the only step using ${currentProvider}. ${isTurningOff ? 'Turning off authentication' : `Switching to ${provider}`} means these ${currentProvider} fields can no longer be used:`
+                : `These fields need ${currentProvider}, so they cannot be filled in on a step ${isTurningOff ? 'without authentication' : `using ${provider}`}:`}
             </Text>
-            {fields.map((field) => (
-              <Text key={field._id}>{field.title}</Text>
-            ))}
+            <Stack spacing="0.5rem" align="flex-start">
+              {fields.map((field) => (
+                <FieldLogicBadge
+                  key={field._id}
+                  field={numberedFields.get(field._id)}
+                />
+              ))}
+            </Stack>
             {affectedRules.length > 0 ? (
               <Stack spacing="0.5rem">
                 <Text>
@@ -72,9 +91,9 @@ export const AuthSwitchConfirmation = ({
               </Stack>
             ) : null}
             <Text>
-              {deleteFields ? 'Historical responses will not be deleted. ' : ''}
-              Save this card or navigate away to apply the change. Cancel the
-              card to discard it.
+              {deleteFields
+                ? 'These fields will be deleted from your form when you save this step or navigate away. Past responses will be kept.'
+                : 'These fields will be unassigned from this step when you save or navigate away. They will stay in your form.'}
             </Text>
           </Stack>
         </ModalBody>
@@ -85,12 +104,16 @@ export const AuthSwitchConfirmation = ({
             w="100%"
             justify="flex-end"
           >
-            <Button variant="clear" onClick={onClose}>
+            <Button variant="clear" colorScheme="secondary" onClick={onClose}>
               Cancel
             </Button>
             <Button
               onClick={onConfirm}
               colorScheme={deleteFields ? 'danger' : 'primary'}
+              whiteSpace="normal"
+              h="auto"
+              minH="2.75rem"
+              py="0.75rem"
             >
               {isTurningOff
                 ? `${deleteFields ? 'Delete' : 'Unassign'} fields and turn off`

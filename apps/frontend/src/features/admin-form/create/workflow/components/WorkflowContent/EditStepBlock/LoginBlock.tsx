@@ -160,6 +160,7 @@ export const LoginBlock = ({
         currentAuthType={login.auth_type}
         nextAuthType={pendingAuthType}
         fields={confirmationFields}
+        formFields={form?.form_fields ?? []}
         deleteFields={isDeletingFields}
         affectedRules={getAffectedAuthFieldRules(
           form as AdminMultirespondentFormDto,
@@ -172,6 +173,7 @@ export const LoginBlock = ({
         <Text style={textStyles.h4}>{t(`${COPY_KEY}.title`)}</Text>
       ) : null}
       <StepLoginControls
+        isTitleToggle={isRedesign && !isGuidedSection}
         idPrefix={`step-${stepNumber}-login`}
         authType={login.auth_type}
         esrvcId={login.esrvc_id ?? ''}

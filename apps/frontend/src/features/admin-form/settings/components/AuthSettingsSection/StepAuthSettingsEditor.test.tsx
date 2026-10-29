@@ -247,7 +247,7 @@ describe('step authentication drafts', () => {
     const { onClose } = setup(1, current)
     fireEvent.click(screen.getByRole('button', { name: 'Use Singpass' }))
     let dialog = screen.getByRole('dialog')
-    expect(within(dialog).getByText('Organisation UEN')).toBeInTheDocument()
+    expect(within(dialog).getByText(/1\. Organisation UEN/)).toBeInTheDocument()
     expect(
       within(dialog).getByText(/deleted from your form/),
     ).toBeInTheDocument()

@@ -121,7 +121,7 @@ describe('workflow authentication switch confirmation', () => {
     render(<Harness />)
     fireEvent.click(screen.getByRole('button', { name: 'Use Singpass' }))
     const modal = screen.getByRole('dialog')
-    expect(within(modal).getByText('Organisation UEN')).toBeInTheDocument()
+    expect(within(modal).getByText(/1\. Organisation UEN/)).toBeInTheDocument()
     fireEvent.click(within(modal).getByRole('button', { name: 'Cancel' }))
     expect(draft().auth).toEqual({ auth_type: FormAuthType.CP })
     expect(draft().edit).toEqual(['uen', 'plain'])

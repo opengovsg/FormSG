@@ -304,6 +304,7 @@ export const StepAuthSettingsEditor = ({
         currentAuthType={authType}
         nextAuthType={pendingAuthType}
         fields={pendingFields}
+        formFields={form.form_fields}
         deleteFields={isDeletingFields}
         affectedRules={getAffectedAuthFieldRules(
           form,
