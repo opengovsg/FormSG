@@ -156,3 +156,39 @@ it('allows unassigned fields supplied by a later step with a different provider 
     screen.queryByText('Finish authentication setup before publishing'),
   ).not.toBeInTheDocument()
 })
+
+it('describes the missing later-step Corppass ID inside the form status without a second infobox', () => {
+  state.form.authType = FormAuthType.MyInfo
+  state.form.workflow = [
+    { _id: 'first', workflow_type: WorkflowType.Static, edit: [], emails: [] },
+    {
+      _id: 'second',
+      workflow_type: WorkflowType.Static,
+      edit: [],
+      emails: ['officer@example.gov.sg'],
+      auth: { auth_type: FormAuthType.CP },
+    },
+  ]
+  setup()
+  const toggle = screen.getByRole('checkbox')
+  expect(toggle).toBeDisabled()
+  expect(toggle).toHaveAttribute(
+    'aria-describedby',
+    'form-status form-activation-requirement',
+  )
+  expect(
+    screen.getByText(/Add an e-service ID to every Corppass step/),
+  ).toHaveAttribute('id', 'form-activation-requirement')
+  expect(screen.queryByLabelText('Info message icon')).not.toBeInTheDocument()
+})
+it('keeps the form-level e-service requirement as an accessible status description', () => {
+  state.form.esrvcId = ''
+  setup()
+  const toggle = screen.getByRole('checkbox')
+  expect(toggle).toBeDisabled()
+  expect(toggle).toHaveAttribute(
+    'aria-describedby',
+    'form-status form-activation-requirement',
+  )
+  expect(screen.queryByLabelText('Info message icon')).not.toBeInTheDocument()
+})

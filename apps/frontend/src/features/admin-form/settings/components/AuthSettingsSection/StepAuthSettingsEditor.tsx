@@ -315,6 +315,7 @@ export const StepAuthSettingsEditor = ({
       />
       <Stack spacing="1.5rem" px="2rem">
         <StepLoginControls
+          isTitleToggle
           idPrefix={`settings-step-${stepIndex}-login`}
           authType={authType}
           esrvcId={esrvcId}

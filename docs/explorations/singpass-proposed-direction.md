@@ -148,3 +148,9 @@ Limits: Storybook authentication is simulated; real Singpass/Corppass was not ex
 Authentication-switch confirmation headers are statements. The body explains why fields cannot be retained and that deletion/unassignment is applied on Save or navigation. Affected fields use the existing FieldLogicBadge with question numbers from the complete form, excluding non-response blocks from numbering. Cancel uses the neutral secondary treatment; confirmed field deletion retains the danger action. The workflow authentication toggle uses the same heading style as the respondent label in the proposed layout.
 
 Verification: 14 focused modal/editor tests passed; frontend typecheck and lint passed. Desktop/mobile modal browser checks found no overflow or writes from opening the dialog. Computed workflow label size, weight, line height, letter spacing and colour matched exactly. Evidence: /private/tmp/auth-modal-refinement-tests2.log, auth-modal-refinement-types2.log, auth-modal-refinement-browser.log and workflow-label-style-browser.log.
+
+### Settings presentation refinements
+
+Missing e-service ID guidance is description text inside the closed-form status box, linked to the disabled switch through aria-describedby. It no longer appears as a separate warning infobox. The edit pencil is shown only on collapsed authentication cards. Authentication and Step 1 restriction labels share the existing h4 style; their computed typography and colour match.
+
+Verification: 19 focused Settings tests passed. Browser checks confirmed description placement, retained publication blocking, no duplicate info icon, pencil removal/restoration on expansion/collapse, and matching restriction-label styles. Evidence: /private/tmp/settings-polish-tests.log, settings-status-icon-browser.log and settings-restriction-labels-browser.log. Changed-file lint has no errors; existing Fast Refresh helper-export warnings remain.

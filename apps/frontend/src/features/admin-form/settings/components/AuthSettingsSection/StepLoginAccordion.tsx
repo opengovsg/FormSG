@@ -148,7 +148,11 @@ export const StepLoginAccordion = ({
                       disabled={isSaving}
                       _hover={{ bg: 'primary.50' }}
                     >
-                      <Stack flex="1" spacing="0.5rem" pr="2.5rem">
+                      <Stack
+                        flex="1"
+                        spacing="0.5rem"
+                        pr={isExpanded ? 0 : '2.5rem'}
+                      >
                         <StepLabel
                           stepNumber={stepIndex}
                           stepName={step.step_name}
@@ -165,16 +169,18 @@ export const StepLoginAccordion = ({
                           </Box>
                         ) : null}
                       </Stack>
-                      <Icon
-                        as={BiPencil}
-                        aria-hidden
-                        pointerEvents="none"
-                        position="absolute"
-                        top="2rem"
-                        right="2rem"
-                        color="secondary.300"
-                        boxSize="1.5rem"
-                      />
+                      {!isExpanded && (
+                        <Icon
+                          as={BiPencil}
+                          aria-hidden
+                          pointerEvents="none"
+                          position="absolute"
+                          top="2rem"
+                          right="2rem"
+                          color="secondary.300"
+                          boxSize="1.5rem"
+                        />
+                      )}
                     </AccordionButton>
                     <AccordionPanel p="0">
                       {isExpanded ? (

@@ -6,6 +6,7 @@ import { KB } from 'formsg-shared/constants'
 import { MultirespondentFormSettings } from 'formsg-shared/types'
 import { VALID_WHITELIST_FILE_EXTENSIONS } from 'formsg-shared/utils/file-validation'
 
+import { textStyles } from '~theme/textStyles'
 import { parseCsvFile } from '~utils/parseCsvFile'
 import Attachment from '~components/Field/Attachment'
 import InlineMessage from '~components/InlineMessage'
@@ -151,6 +152,7 @@ export const StepOneLoginRestrictions = ({
         isDisabled={isDisabled || isParsing}
         isChecked={value.isSingleSubmission}
         label="Limit each unique NRIC/FIN/UEN to one response"
+        labelStyles={{ ...textStyles.h4, color: 'inherit' }}
         onChange={() =>
           onChange({ isSingleSubmission: !value.isSingleSubmission })
         }
@@ -164,7 +166,7 @@ export const StepOneLoginRestrictions = ({
         }
       />
       <Box>
-        <Text textStyle="subhead-1" mb="0.25rem">
+        <Text textStyle="h4" mb="0.25rem">
           Restrict form to eligible NRIC/FIN/UENs only
         </Text>
         <Text textStyle="body-2" color="secondary.400" mb="1rem">

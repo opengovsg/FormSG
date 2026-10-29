@@ -8,7 +8,6 @@ import {
   FormStatus,
 } from 'formsg-shared/types/form/form'
 
-import InlineMessage from '~components/InlineMessage'
 import { Switch } from '~components/Toggle/Switch'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -147,12 +146,28 @@ export const FormStatusToggle = (): JSX.Element => {
           py="1rem"
           px="1.125rem"
           justify="space-between"
+          align="flex-start"
         >
-          <Text textStyle="subhead-1" id="form-status">
-            {t('features.adminForm.settings.general.status.description.prefix')}
-            <b>{statusText}</b>
-            {t('features.adminForm.settings.general.status.description.suffix')}
-          </Text>
+          <Stack spacing="0.25rem" flex="1" pr="1rem">
+            <Text textStyle="subhead-1" id="form-status">
+              {t(
+                'features.adminForm.settings.general.status.description.prefix',
+              )}
+              <b>{statusText}</b>
+              {t(
+                'features.adminForm.settings.general.status.description.suffix',
+              )}
+            </Text>
+            {preventActivationMessage ? (
+              <Text
+                textStyle="body-2"
+                color="secondary.500"
+                id="form-activation-requirement"
+              >
+                {preventActivationMessage}
+              </Text>
+            ) : null}
+          </Stack>
           <Switch
             isDisabled={
               !!preventActivationMessage ||
@@ -161,22 +176,21 @@ export const FormStatusToggle = (): JSX.Element => {
             aria-label={t(
               'features.adminForm.settings.general.status.ariaLabel',
             )}
-            aria-describedby={
+            aria-describedby={[
+              'form-status',
+              preventActivationMessage ? 'form-activation-requirement' : '',
               authenticationPublishErrors.length > 0
-                ? 'form-status authentication-publish-errors'
-                : 'form-status'
-            }
+                ? 'authentication-publish-errors'
+                : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
             isLoading={mutateFormStatus.isLoading}
             isChecked={isFormPublic}
             onChange={onFormToggleStatusClick}
           />
         </Flex>
         <AuthenticationDraftNotice />
-        {preventActivationMessage ? (
-          <InlineMessage variant="warning">
-            {preventActivationMessage}
-          </InlineMessage>
-        ) : null}
       </Stack>
     </Skeleton>
   )

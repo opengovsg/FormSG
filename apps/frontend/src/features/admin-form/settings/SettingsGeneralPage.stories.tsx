@@ -127,6 +127,7 @@ const draftLoginFields: FormFieldDto[] = [
 const authenticationDraftParameters = (
   isAssigned: boolean,
   hasProvider = true,
+  esrvcId = 'demo-service',
 ) => {
   const workflow: FormWorkflowStepDto[] = [
     {
@@ -143,7 +144,7 @@ const authenticationDraftParameters = (
       emails: ['representative@example.gov.sg'],
       edit: isAssigned ? [draftLoginFields[1]._id] : [],
       auth: hasProvider
-        ? { auth_type: FormAuthType.CP, esrvc_id: 'demo-service' }
+        ? { auth_type: FormAuthType.CP, esrvc_id: esrvcId }
         : undefined,
     },
   ]
@@ -185,3 +186,11 @@ AuthenticationReadyToPublish.parameters = authenticationDraftParameters(true)
 export const UnassignedAuthenticationReadyToPublish = Template.bind({})
 UnassignedAuthenticationReadyToPublish.parameters =
   authenticationDraftParameters(false)
+
+/** The Corppass requirement is a description inside the closed-form status box. */
+export const MissingCorppassServiceId = Template.bind({})
+MissingCorppassServiceId.parameters = authenticationDraftParameters(
+  false,
+  true,
+  '',
+)
