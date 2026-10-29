@@ -1,0 +1,41 @@
+{
+  "name": "[formsg-smoke] Homepage serves",
+  "type": "api",
+  "subtype": "http",
+  "status": "paused",
+  "message": "CI smoke test — runs only via CI triggers (release gate + PR previews), never on a Datadog schedule.",
+  "tags": ["team:formsg", "ci:formsg-smoke", "managed-by:formsg-repo"],
+  "locations": ["aws:ap-southeast-1"],
+  "config": {
+    "request": {
+      "method": "GET",
+      "url": "{{ START_URL }}/"
+    },
+    "assertions": [
+      { "type": "statusCode", "operator": "is", "target": 200 },
+      {
+        "type": "header",
+        "property": "content-type",
+        "operator": "contains",
+        "target": "text/html"
+      },
+      { "type": "body", "operator": "contains", "target": "<div id=\"root\">" },
+      { "type": "responseTime", "operator": "lessThan", "target": 5000 }
+    ],
+    "configVariables": [
+      {
+        "name": "START_URL",
+        "type": "text",
+        "pattern": "https://stg.form.gov.sg",
+        "example": "https://stg.form.gov.sg"
+      }
+    ]
+  },
+  "options": {
+    "tick_every": 604800,
+    "min_failure_duration": 0,
+    "min_location_failed": 1,
+    "follow_redirects": true,
+    "retry": { "count": 1, "interval": 1000 }
+  }
+}
