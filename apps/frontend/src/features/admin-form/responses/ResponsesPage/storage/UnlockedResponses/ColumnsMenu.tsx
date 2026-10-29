@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { BiColumns } from 'react-icons/bi'
-import { Divider, MenuButton, MenuList, Stack } from '@chakra-ui/react'
+import { Divider, MenuButton, MenuList, Stack, Text } from '@chakra-ui/react'
 
 import Checkbox from '~components/Checkbox'
 import Menu from '~components/Menu'
@@ -45,7 +45,13 @@ export const ColumnsMenu = ({
               isIconOnly,
             })}
           />
-          <MenuList display="flex" flexDirection="column" maxH="20rem" pb={0}>
+          <MenuList
+            display="flex"
+            flexDirection="column"
+            maxH="20rem"
+            maxW="20rem"
+            pb={0}
+          >
             <Stack spacing={0} flex={1} minH={0} overflowY="auto">
               <Checkbox
                 px="1rem"
@@ -67,8 +73,11 @@ export const ColumnsMenu = ({
                   py="0.75rem"
                   isChecked={!hiddenColumnIds.includes(id)}
                   onChange={() => toggleColumnVisibility(id)}
+                  sx={{ '.chakra-checkbox__label': { minW: 0 } }}
                 >
-                  {label}
+                  <Text as="span" noOfLines={1} title={label}>
+                    {label}
+                  </Text>
                 </Checkbox>
               ))}
             </Stack>

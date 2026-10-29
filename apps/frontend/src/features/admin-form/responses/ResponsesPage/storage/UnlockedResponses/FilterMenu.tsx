@@ -110,6 +110,7 @@ export const FilterMenu = ({
             flexDirection="column"
             maxH="28rem"
             minW="20rem"
+            maxW="20rem"
             pb={0}
           >
             <Box flex={1} minH={0} overflowY="auto">

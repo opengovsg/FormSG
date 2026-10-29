@@ -65,7 +65,7 @@ export const SortMenu = ({
           isIconOnly,
         })}
       />
-      <MenuList ref={listRef} minW="18rem">
+      <MenuList ref={listRef} minW="18rem" maxW="20rem">
         <SectionLabel>{column}</SectionLabel>
         <Box px="1rem" py="0.75rem">
           <SingleSelect
