@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.58.2](https://github.com/opengovsg/formsg/compare/v9.58.1...v9.58.2) (2026-10-29)
+
+
+### Bug Fixes
+
+* **workflow-actions:** notify stop recipients from one email field (#10411) ([#10411](https://github.com/opengovsg/formsg/commit/9ecfde74d5f22909d2a0177085e1759ab98265d6))
+
+
+### CI
+
+* **synthetics:** manage smoke tests as code and add CUJ/MRF journeys (#10367) ([#10367](https://github.com/opengovsg/formsg/commit/b54f7747929276d5ebdb1f2551b6a6f0c6ff1cf8))
+
 ## [9.58.1](https://github.com/opengovsg/formsg/compare/v9.58.0...v9.58.1) (2026-10-28)
 
 
