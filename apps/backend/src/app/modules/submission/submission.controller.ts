@@ -160,7 +160,7 @@ export const handleGetMetadata = [
         .max(MAX_SUBMISSION_METADATA_PAGE_SIZE)
         .optional(),
       startDate: Joi.date().raw().optional(),
-      endDate: Joi.date().raw().greater(Joi.ref('startDate')).optional(),
+      endDate: Joi.date().raw().min(Joi.ref('startDate')).optional(),
     },
   }),
   getMetadata,
