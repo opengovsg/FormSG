@@ -34,11 +34,7 @@ import {
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants'
-import {
-  FormResponseMode,
-  SavedViewColumnFilter,
-  SubmissionMetadata,
-} from 'formsg-shared/types'
+import { SavedViewColumnFilter, SubmissionMetadata } from 'formsg-shared/types'
 import { centsToDollars } from 'formsg-shared/utils/payments'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -290,7 +286,7 @@ const NO_WORKFLOW_PREFIX_COLUMNS: Column<ResponseColumnData>[] = [
     maxWidth: 400,
   },
   {
-    Header: MRF_RESPONSE_TIMESTAMP_LABEL,
+    Header: 'Timestamp',
     Cell: SingleLineCell,
     accessor: 'submissionTime',
     sortType: byServerOrder,
@@ -339,8 +335,6 @@ const getColumnId = (column: Column<ResponseColumnData>): string =>
 export const ResponsesTable = () => {
   const { data: form } = useAdminForm()
   const isPaymentsForm = getIsPaymentsForm(form)
-  const isMultiRespondentForm =
-    form?.responseMode === FormResponseMode.Multirespondent
 
   const {
     currentPage: currentPage1Indexed,
@@ -392,7 +386,7 @@ export const ResponsesTable = () => {
   }, [filteredMetadata, metadata, submissionId, isWorkflowActionsOn])
 
   const legacyColumns = useMemo(() => {
-    if (isMultiRespondentForm) {
+    if (hasWorkflow) {
       return isPaymentsForm
         ? MRF_RESPONSE_TABLE_COLUMNS.concat(PAYMENT_COLUMNS)
         : MRF_RESPONSE_TABLE_COLUMNS
@@ -401,7 +395,7 @@ export const ResponsesTable = () => {
       return PAYMENT_RESPONSE_TABLE_COLUMNS
     }
     return BASE_RESPONSE_TABLE_COLUMNS
-  }, [isMultiRespondentForm, isPaymentsForm])
+  }, [hasWorkflow, isPaymentsForm])
 
   const fieldColumnSources = useMemo(() => {
     if (!isDelightfulDashboard || !form) return []

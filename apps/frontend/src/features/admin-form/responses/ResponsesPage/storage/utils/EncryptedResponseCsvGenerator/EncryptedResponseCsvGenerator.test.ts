@@ -1474,6 +1474,15 @@ describe('the reserved columns carried over from the responses table', () => {
     ])
   })
 
+  it('labels the timestamp as a plain timestamp when the form has no workflow steps', () => {
+    // A mode-migrated storage form is multirespondent with no steps; its
+    // export must keep the header downstream imports were built against.
+    const header = headerOf({}, false)
+
+    expect(header).toContain('Timestamp')
+    expect(header).not.toContain(MRF_RESPONSE_TIMESTAMP_LABEL)
+  })
+
   it('keeps a form field the table does not have', () => {
     expect(
       headerOf({ tableColumnIds: [EXPORT_RESPONSE_ID_COLUMN_ID] }),

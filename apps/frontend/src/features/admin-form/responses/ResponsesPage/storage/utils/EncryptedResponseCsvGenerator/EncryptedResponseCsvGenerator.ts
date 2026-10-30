@@ -39,7 +39,7 @@ type UnprocessedRecord = Merge<
 >
 
 const RESPONSE_ID_CSV_HEADER = 'Response ID'
-const MRF_TIMESTAMP_CSV_HEADER = MRF_RESPONSE_TIMESTAMP_LABEL
+const WORKFLOW_TIMESTAMP_CSV_HEADER = MRF_RESPONSE_TIMESTAMP_LABEL
 const BASE_TIMESTAMP_CSV_HEADER = 'Timestamp'
 
 export class EncryptedResponseCsvGenerator extends CsvGenerator {
@@ -48,13 +48,13 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
   fieldIdToQuestion: Map<string, { created: string; question: string }>
   fieldIdToNumCols: Record<string, number>
   unprocessed: UnprocessedRecord[]
-  isMrf: boolean
+  hasWorkflow: boolean
   view: CsvExportView
 
   constructor(
     expectedNumberOfRecords: number,
     numOfMetaDataRows: number,
-    isMrf: boolean,
+    hasWorkflow: boolean,
     view: CsvExportView = {},
   ) {
     super(expectedNumberOfRecords, numOfMetaDataRows)
@@ -66,7 +66,7 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     this.fieldIdToQuestion = new Map()
     this.fieldIdToNumCols = {}
     this.unprocessed = []
-    this.isMrf = isMrf
+    this.hasWorkflow = hasWorkflow
   }
 
   /**
@@ -150,7 +150,9 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     if (isResponseIdShown) headers.push(RESPONSE_ID_CSV_HEADER)
     if (isTimestampShown) {
       headers.push(
-        this.isMrf ? MRF_TIMESTAMP_CSV_HEADER : BASE_TIMESTAMP_CSV_HEADER,
+        this.hasWorkflow
+          ? WORKFLOW_TIMESTAMP_CSV_HEADER
+          : BASE_TIMESTAMP_CSV_HEADER,
       )
     }
     visibleFieldIds.forEach((fieldId) => {
@@ -181,7 +183,7 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
       }
 
       // TODO(FRM-1933): disabled lastSubmittedAt as we are undecided on showing firstSubmission vs lastSubmittedAt
-      // if (this.isMrf) {
+      // if (this.hasWorkflow) {
       //   const lastSubmittedAt = up.mrfMeta?.lastSubmittedAt
       //   if (lastSubmittedAt) {
       //     formattedDate = isValid(parseISO(lastSubmittedAt))
