@@ -369,6 +369,13 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
    * Main method to call to retrieve a downloadable csv.
    * @param filename name of csv file
    */
+  /** PROTOTYPE (attachments-v2): the finished CSV as a Blob instead of a file save. */
+  getCsvBlob(): Blob {
+    this.sort()
+    this.process()
+    return this.toBlob()
+  }
+
   downloadCsv(filename: string): void {
     this.sort()
     this.process()

@@ -14,6 +14,17 @@ export enum AttachmentSize {
 export interface AttachmentFieldBase extends FieldBase {
   fieldType: BasicField.Attachment
   attachmentSize: AttachmentSize
+  /**
+   * PROTOTYPE (attachments-v2): extensions this field accepts, e.g. ['.pdf'].
+   * Absent means every type on VALID_EXTENSIONS. Stored, not yet enforced on submit.
+   */
+  allowedFileTypes?: string[]
+  /**
+   * PROTOTYPE (attachments-v2): respondents can attach any number of files,
+   * within the field's size limit. Absent means one file. Stored, not yet
+   * enforced on submit.
+   */
+  allowMultipleAttachments?: boolean
 }
 
 export type AttachmentSizeMapType = {
