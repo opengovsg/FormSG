@@ -64,6 +64,7 @@ import {
   buildStepSubmittedEvent,
   buildWorkflowEvent,
   getAddedAssignees,
+  getEventsSinceLastSendBack,
 } from '../../workflow-event/workflow-event.service'
 import {
   AttachmentUploadError,
@@ -75,6 +76,7 @@ import {
   MrfReminderInvalidWorkflowStepError,
   MrfReminderLimitReachedError,
   MrfReminderRecipientEmailsEmptyError,
+  MrfSendBackInvalidStepError,
   MrfWorkflowNotPendingError,
   MrfWorkflowStoppedError,
   ResponseModeError,
@@ -140,6 +142,7 @@ import {
   getResponsesDataFromMrfResponses,
   retrieveWorkflowStepEmailAddresses,
 } from './multirespondent-submission.utils'
+import * as stepToken from './step-token'
 
 const logger = createLoggerWithLabel(module)
 
@@ -418,7 +421,7 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
       }
 
       const reminderStepNumber = submittedSteps.length + 1
-      const remindersSent = (workflowEvents ?? []).filter(
+      const remindersSent = getEventsSinceLastSendBack(workflowEvents).filter(
         (event) =>
           event.type === WorkflowEventType.ReminderSent &&
           event.stepNumber === reminderStepNumber,
@@ -2424,6 +2427,119 @@ export const stopMultirespondentSubmission = ({
     .andThen((stopped) =>
       stopped ? okAsync(stopped) : errAsync(new MrfWorkflowNotPendingError()),
     )
+
+export const sendBackMultirespondentSubmission = ({
+  formId,
+  formPublicKey,
+  submissionId,
+  targetStepNumber,
+  expectedStepNumber,
+  remarks,
+  actor,
+}: {
+  formId: string
+  formPublicKey: string
+  submissionId: string
+  targetStepNumber: number
+  expectedStepNumber: number
+  remarks?: string
+  actor: { _id?: unknown; email: string }
+}): ResultAsync<
+  { stepNumber: number; emails: string[]; stepToken: string },
+  | DatabaseError
+  | SubmissionNotFoundError
+  | MrfWorkflowNotPendingError
+  | MrfSendBackInvalidStepError
+> =>
+  getMultirespondentSubmission(submissionId)
+    .andThen((submission) => {
+      if (String(submission.form) !== formId) {
+        return errAsync(new SubmissionNotFoundError())
+      }
+      const submittedSteps = (submission.submittedSteps ??
+        []) as SubmittedStep[]
+      const pendingStepNumber = submittedSteps.length + 1
+      const isPending =
+        !submission.stoppedAt &&
+        getMrfSubmissionWorkflowStatus(
+          submittedSteps,
+          submission.workflow.length,
+        ) === WorkflowStatus.PENDING
+      if (
+        !isPending ||
+        pendingStepNumber !== expectedStepNumber ||
+        submission.workflowStep !== submittedSteps.length - 1
+      ) {
+        return errAsync(new MrfWorkflowNotPendingError())
+      }
+      if (targetStepNumber < 2 || targetStepNumber >= pendingStepNumber) {
+        return errAsync(new MrfSendBackInvalidStepError())
+      }
+      const keptSteps = submittedSteps.slice(0, targetStepNumber - 1)
+      const emails = Array.from(
+        new Set(
+          [
+            ...(keptSteps[keptSteps.length - 1].nextStepRecipientEmails ?? []),
+            ...getAddedAssignees(submission.workflowEvents, targetStepNumber),
+          ].map((email) => email.toLowerCase()),
+        ),
+      )
+      return okAsync({ submission, keptSteps, pendingStepNumber, emails })
+    })
+    .andThen(({ submission, keptSteps, pendingStepNumber, emails }) => {
+      const newStepToken = stepToken.generate()
+      return ResultAsync.fromPromise(
+        MultirespondentSubmission.findOneAndUpdate(
+          {
+            _id: submission._id,
+            form: formId,
+            __v: submission.__v,
+            stoppedAt: { $exists: false },
+            submittedSteps: { $size: pendingStepNumber - 1 },
+          },
+          {
+            $set: {
+              submittedSteps: keptSteps,
+              workflowStep: targetStepNumber - 2,
+              stepTokenHash: stepToken.hash(newStepToken),
+              encryptedStepToken: stepToken.wrap(newStepToken, formPublicKey),
+            },
+            $push: {
+              workflowEvents: buildWorkflowEvent({
+                type: WorkflowEventType.SentBack,
+                actor,
+                stepNumber: targetStepNumber,
+                fromStepNumber: pendingStepNumber,
+                emails,
+                remarks,
+              }),
+            },
+            $inc: { __v: 1 },
+          },
+          { new: true },
+        ).exec(),
+        (error) => {
+          logger.error({
+            message: 'Error sending back multirespondent submission',
+            meta: {
+              action: 'sendBackMultirespondentSubmission',
+              formId,
+              submissionId,
+            },
+            error,
+          })
+          return transformMongoError(error)
+        },
+      ).andThen((updated) =>
+        updated
+          ? okAsync({
+              stepNumber: targetStepNumber,
+              emails,
+              stepToken: newStepToken,
+            })
+          : errAsync(new MrfWorkflowNotPendingError()),
+      )
+    })
 
 export const addAssigneesToPendingStep = ({
   formId,
