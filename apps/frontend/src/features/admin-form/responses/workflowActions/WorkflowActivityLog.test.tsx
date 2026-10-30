@@ -365,4 +365,61 @@ describe('WorkflowActivityLog', () => {
       'Step 2 · Team lead sent to lead@agency.gov.sg',
     ])
   })
+
+  it('lists a send back between the undone steps and their resubmission', () => {
+    const sentBack: AdminWorkflowEventDto = {
+      type: WorkflowEventType.SentBack,
+      actorEmail: 'admin@agency.gov.sg',
+      stepNumber: 2,
+      fromStepNumber: 4,
+      emails: ['lead@agency.gov.sg'],
+      remarks: 'Fix the <b>dates</b>',
+      created: '2026-10-08T04:00:00.000Z' as DateString,
+    }
+    render(
+      <WorkflowActivityLog
+        history={{
+          ...history,
+          submittedSteps: twoSubmittedSteps.map((step, index) =>
+            index === 1
+              ? { ...step, submittedAt: '2026-10-08T05:00:00.000Z' }
+              : step,
+          ),
+          workflowEvents: [
+            stepSubmitted(1, at, ['lead@agency.gov.sg']),
+            stepSubmitted(
+              2,
+              '2026-10-08T02:00:00.000Z',
+              ['hr@agency.gov.sg'],
+              WorkflowStatus.APPROVED,
+            ),
+            stepSubmitted(3, '2026-10-08T03:00:00.000Z', []),
+            sentBack,
+            stepSubmitted(
+              2,
+              '2026-10-08T05:00:00.000Z',
+              ['hr@agency.gov.sg'],
+              WorkflowStatus.APPROVED,
+            ),
+          ],
+        }}
+      />,
+    )
+    expect(titles()).toEqual([
+      'Step 1 submitted',
+      'Step 2 · Team lead sent to lead@agency.gov.sg',
+      'Step 2 · Team lead approved',
+      'Step 3 sent to hr@agency.gov.sg',
+      'Step 3 submitted',
+      'Sent back from Step 4 to Step 2 · Team lead by admin@agency.gov.sg',
+      'Step 2 · Team lead sent to lead@agency.gov.sg',
+      'Step 2 · Team lead approved',
+      'Step 3 sent to hr@agency.gov.sg',
+    ])
+    const sendBackItem = screen.getAllByRole('listitem')[5]
+    expect(within(sendBackItem).getByText('Remarks')).toBeInTheDocument()
+    expect(
+      within(sendBackItem).getByText('Fix the <b>dates</b>'),
+    ).toBeInTheDocument()
+  })
 })
