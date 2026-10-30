@@ -12,7 +12,13 @@ import {
 import { Box, Stack, Text } from '@chakra-ui/react'
 import { formatInTimeZone } from 'date-fns-tz'
 
-import { WorkflowEventType, WorkflowStatus } from 'formsg-shared/types'
+import {
+  AdminWorkflowEventDto,
+  StepSubmittedEventDto,
+  WorkflowEventDto,
+  WorkflowEventType,
+  WorkflowStatus,
+} from 'formsg-shared/types'
 
 import type { ResponsesIndividualResponse } from '~/i18n/locales/features/admin-form/responses/individual-response'
 
@@ -30,6 +36,29 @@ interface ActivityEntry {
   icon: IconType
   notificationRecipients?: string[]
 }
+
+interface StepRecord {
+  stepNumber: number
+  at: string
+  outcome?: WorkflowStatus
+  recipients: string[]
+}
+
+interface ActivityGroup {
+  at: string
+  isStep: boolean
+  stepNumber: number
+  entries: ActivityEntry[]
+}
+
+const isStepSubmittedEvent = (
+  event: WorkflowEventDto,
+): event is StepSubmittedEventDto =>
+  event.type === WorkflowEventType.StepSubmitted
+
+const isAdminWorkflowEvent = (
+  event: WorkflowEventDto,
+): event is AdminWorkflowEventDto => !isStepSubmittedEvent(event)
 
 export const WorkflowActivityLog = ({
   history = { submittedSteps: [], workflow: [] },
@@ -60,106 +89,151 @@ export const WorkflowActivityLog = ({
 
   // Sort source records before expanding them, so equal-time action/sending
   // pairs stay adjacent and preserve the existing submitted-steps-first order.
-  const stepGroups = submittedSteps.map((step, index) => {
-    const id = `step-${index}`
-    const recipients =
-      'nextStepRecipientEmails' in step
-        ? (step.nextStepRecipientEmails ?? [])
-        : []
-    const status = 'status' in step ? step.status : undefined
-    const rejected = status === WorkflowStatus.REJECTED
-    const approved = status === WorkflowStatus.APPROVED
+  const stepGroup = (
+    { stepNumber, at, outcome, recipients }: StepRecord,
+    id: string,
+  ): ActivityGroup => {
+    const rejected = outcome === WorkflowStatus.REJECTED
+    const approved = outcome === WorkflowStatus.APPROVED
     const entries = [
       entry(
         id,
-        step.submittedAt,
+        at,
         rejected
           ? 'stepRejected'
           : approved
             ? 'stepApproved'
-            : index === 0
+            : stepNumber === 1
               ? 'submitted'
               : 'stepSubmitted',
-        stepValues(index + 1),
+        stepValues(stepNumber),
         rejected ? BiX : approved ? BiCheck : BiFile,
       ),
     ]
-    if (!rejected && index < workflow.length - 1 && recipients.length) {
+    if (!rejected && stepNumber < workflow.length && recipients.length) {
       entries.push(
         entry(
           `${id}-sent`,
-          step.submittedAt,
+          at,
           'stepSent',
           {
-            ...stepValues(index + 2),
+            ...stepValues(stepNumber + 1),
             recipients: formatEmailList(recipients),
           },
           BiSend,
         ),
       )
     }
-    return { at: step.submittedAt, entries }
-  })
-  const eventGroups = events.map((event, index) => {
-    const id = `event-${index}`
-    const actor = event.actorEmail
-      ? t(`${I18N_PREFIX}.actorClause`, { actor: event.actorEmail })
-      : ''
-    let entries: ActivityEntry[]
-    switch (event.type) {
-      case WorkflowEventType.AssigneesAdded:
-        entries = [
-          entry(
-            id,
-            event.created,
-            'assigneeAdded',
-            {
-              ...stepValues(event.stepNumber),
-              emails: formatEmailList(event.emails),
-              actor,
-            },
-            BiUserPlus,
-          ),
-        ]
-        break
-      case WorkflowEventType.ReminderSent:
-        entries = [
-          entry(
-            id,
-            event.created,
-            'reminderTriggered',
-            { ...stepValues(event.stepNumber), actor },
-            BiBell,
-          ),
-        ]
-        if (event.emails.length) {
-          entries.push(
+    return { at, isStep: true, stepNumber, entries }
+  }
+
+  const stepSubmittedEvents = events.filter(isStepSubmittedEvent)
+  const recordedStepNumbers = new Set(
+    stepSubmittedEvents.map(({ stepNumber }) => stepNumber),
+  )
+  const stepGroups = [
+    ...stepSubmittedEvents.map((event, index) =>
+      stepGroup(
+        {
+          stepNumber: event.stepNumber,
+          at: event.created,
+          outcome: event.outcome,
+          recipients: event.emails,
+        },
+        `step-event-${index}`,
+      ),
+    ),
+    ...submittedSteps.flatMap((step, index) =>
+      recordedStepNumbers.has(index + 1)
+        ? []
+        : [
+            stepGroup(
+              {
+                stepNumber: index + 1,
+                at: step.submittedAt,
+                outcome: 'status' in step ? step.status : undefined,
+                recipients:
+                  'nextStepRecipientEmails' in step
+                    ? (step.nextStepRecipientEmails ?? [])
+                    : [],
+              },
+              `step-${index}`,
+            ),
+          ],
+    ),
+  ]
+  const eventGroups = events
+    .filter(isAdminWorkflowEvent)
+    .map((event, index): ActivityGroup => {
+      const id = `event-${index}`
+      const actor = event.actorEmail
+        ? t(`${I18N_PREFIX}.actorClause`, { actor: event.actorEmail })
+        : ''
+      let entries: ActivityEntry[] = []
+      switch (event.type) {
+        case WorkflowEventType.AssigneesAdded:
+          entries = [
             entry(
-              `${id}-sent`,
+              id,
               event.created,
-              'reminderSent',
+              'assigneeAdded',
               {
                 ...stepValues(event.stepNumber),
-                recipients: formatEmailList(event.emails),
+                emails: formatEmailList(event.emails),
+                actor,
               },
-              BiSend,
+              BiUserPlus,
             ),
-          )
-        }
-        break
-      case WorkflowEventType.Stopped:
-        entries = [
-          {
-            ...entry(id, event.created, 'stopped', { actor }, BiStopCircle),
-            notificationRecipients: event.emails,
-          },
-        ]
-        break
-    }
-    return { at: event.created, entries }
-  })
+          ]
+          break
+        case WorkflowEventType.ReminderSent:
+          entries = [
+            entry(
+              id,
+              event.created,
+              'reminderTriggered',
+              { ...stepValues(event.stepNumber), actor },
+              BiBell,
+            ),
+          ]
+          if (event.emails.length) {
+            entries.push(
+              entry(
+                `${id}-sent`,
+                event.created,
+                'reminderSent',
+                {
+                  ...stepValues(event.stepNumber),
+                  recipients: formatEmailList(event.emails),
+                },
+                BiSend,
+              ),
+            )
+          }
+          break
+        case WorkflowEventType.Stopped:
+          entries = [
+            {
+              ...entry(id, event.created, 'stopped', { actor }, BiStopCircle),
+              notificationRecipients: event.emails,
+            },
+          ]
+          break
+      }
+      return {
+        at: event.created,
+        isStep: false,
+        stepNumber: event.stepNumber,
+        entries,
+      }
+    })
   const entries = [...stepGroups, ...eventGroups]
-    .sort((a, b) => a.at.localeCompare(b.at))
+    .sort(
+      (a, b) =>
+        Date.parse(a.at) - Date.parse(b.at) ||
+        Number(b.isStep) - Number(a.isStep) ||
+        a.stepNumber - b.stepNumber,
+    )
     .flatMap((group) => group.entries)
 
   return (

@@ -107,21 +107,34 @@ export const isAdminWorkflowEvent = (
 ): event is IAdminWorkflowEvent =>
   event.type !== WorkflowEventType.StepSubmitted
 
+const toWorkflowEventDto = (event: IWorkflowEvent): WorkflowEventDto => {
+  const created = new Date(event.created).toISOString() as DateString
+  if (isAdminWorkflowEvent(event)) {
+    return {
+      type: event.type,
+      actorEmail: event.actorEmail,
+      stepNumber: event.stepNumber,
+      emails: event.emails,
+      created,
+    }
+  }
+  return {
+    type: event.type,
+    stepNumber: event.stepNumber,
+    outcome: event.outcome,
+    emails: event.emails,
+    created,
+  }
+}
+
 /**
- * @returns the admin events as sent to admins, oldest first
+ * @returns the events as sent to admins, oldest first, without snapshot keys
  */
 export const toWorkflowEventDtos = (
   events: IWorkflowEvent[] = [],
 ): WorkflowEventDto[] =>
   events
-    .filter(isAdminWorkflowEvent)
-    .map((event) => ({
-      type: event.type,
-      actorEmail: event.actorEmail,
-      stepNumber: event.stepNumber,
-      emails: event.emails,
-      created: new Date(event.created).toISOString() as DateString,
-    }))
+    .map(toWorkflowEventDto)
     .sort((a, b) => a.created.localeCompare(b.created))
 
 /**
