@@ -405,6 +405,14 @@ export class SubmissionEncryptionMismatchError extends ApplicationError {
  * token but the submitted step is missing this token or the provided token does not
  * match the pending step's stored hash.
  */
+export class MrfStepLinkSupersededError extends ApplicationError {
+  constructor(
+    message = 'This link has been replaced by a newer one. Use the link in the latest email you received for this form.',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_MRF_STEP_LINK_SUPERSEDED)
+  }
+}
+
 export class StepTokenVerificationError extends ApplicationError {
   constructor(
     message = 'You cannot submit this form because the link is invalid. Please check the link and try again.',

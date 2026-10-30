@@ -149,6 +149,7 @@ import {
   MrfReminderLimitReachedError,
   MrfReminderRecipientEmailsEmptyError,
   MrfSendBackInvalidStepError,
+  MrfStepLinkSupersededError,
   MrfWorkflowActionsUnavailableError,
   MrfWorkflowNotPendingError,
   MrfWorkflowOverflowError,
@@ -242,6 +243,7 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.FORBIDDEN,
         errorMessage: error.message,
       }
+    case MrfStepLinkSupersededError:
     case StepTokenVerificationError:
       return {
         statusCode: StatusCodes.FORBIDDEN,

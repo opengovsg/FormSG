@@ -55,6 +55,7 @@ import {
 } from '../multirespondent-submission.controller'
 import * as MultiRespondentSubmissionService from '../multirespondent-submission.service'
 import * as MultirespondentSubmissionUtils from '../multirespondent-submission.utils'
+import * as StepToken from '../step-token'
 import { SnapshotWriteError } from '../webhook/submission-snapshot.errors'
 
 jest.mock('src/app/modules/datadog/datadog.utils')
@@ -285,6 +286,77 @@ describe('multirespondent-submision.controller', () => {
         }),
       )
       expect(mockRes.cookie).not.toHaveBeenCalled()
+    })
+
+    describe('with a step link token', () => {
+      const loadWithStepToken = async (stepToken?: string) => {
+        const mockReq = expressHandler.mockRequest({
+          params: { formId: mockFormId, submissionId: mockSubmissionId },
+          query: stepToken === undefined ? {} : { stepToken },
+          session: { cookie: { maxAge: 1000 } },
+          body: {} as any,
+        })
+        const mockRes = expressHandler.mockResponse()
+        MockFormService.retrieveFullFormById = jest.fn().mockReturnValue(
+          okAsync({
+            _id: mockFormId,
+            responseMode: FormResponseMode.Multirespondent,
+            title: 'Mock Form',
+            status: FormStatus.Public,
+          }),
+        )
+        MockSubmissionService.getEncryptedSubmissionData.mockReturnValue(
+          okAsync({
+            _id: mockSubmissionId,
+            submissionType: SubmissionType.Multirespondent,
+            form_fields: [],
+            form_logics: [],
+            workflow: [],
+            submittedSteps: [],
+            workflowStep: 0,
+            version: 1,
+            mrfVersion: 1,
+            created: new Date('2026-10-07T08:00:00.000Z'),
+            stepTokenHash: StepToken.hash('current-token'),
+          } as unknown as MultirespondentSubmissionData),
+        )
+
+        await handleGetMultirespondentSubmissionForRespondent(
+          mockReq,
+          mockRes,
+          jest.fn(),
+        )
+        return mockRes
+      }
+
+      it('loads with the current link', async () => {
+        const mockRes = await loadWithStepToken('current-token')
+
+        expect(mockRes.status).not.toHaveBeenCalledWith(403)
+        expect(mockRes.json).toHaveBeenCalledWith(
+          expect.objectContaining({ refNo: mockSubmissionId }),
+        )
+      })
+
+      it('loads without a token, as before step links', async () => {
+        const mockRes = await loadWithStepToken()
+
+        expect(mockRes.json).toHaveBeenCalledWith(
+          expect.objectContaining({ refNo: mockSubmissionId }),
+        )
+      })
+
+      it('returns 403 for a link a send back replaced', async () => {
+        const mockRes = await loadWithStepToken('old-token')
+
+        expect(mockRes.status).toHaveBeenCalledWith(403)
+        expect(mockRes.json).toHaveBeenCalledWith(
+          expect.objectContaining({
+            message: expect.stringContaining('replaced by a newer one'),
+          }),
+        )
+        expect(mockRes.cookie).not.toHaveBeenCalled()
+      })
     })
   })
 
