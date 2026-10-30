@@ -80,6 +80,21 @@ describe('a column in the Filter menu', () => {
     expect(screen.getByText('Filter applied')).toBeInTheDocument()
   })
 
+  it('closes the field and applies its text when the column is clicked again', async () => {
+    const onFilter = vi.fn()
+    renderRow({ onFilter })
+    const user = userEvent.setup()
+    const column = screen.getByRole('button', { name: /name/i })
+
+    await user.click(column)
+    await user.type(await screen.findByRole('textbox'), 'tan')
+    await user.click(column)
+
+    expect(onFilter).toHaveBeenLastCalledWith('tan')
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+    expect(column).toHaveAttribute('aria-expanded', 'false')
+  })
+
   it('clears the filter when the text is emptied', async () => {
     const onFilter = vi.fn()
     renderRow({ initialText: 'tan', onFilter })

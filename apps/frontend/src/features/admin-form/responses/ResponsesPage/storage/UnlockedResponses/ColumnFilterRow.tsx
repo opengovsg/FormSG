@@ -31,8 +31,9 @@ interface ColumnFilterRowProps {
 }
 
 /**
- * A column in the Filter menu: clicking it opens a field beside it whose text
- * filters the table to rows whose value in that column contains it.
+ * A column in the Filter menu: clicking it opens a field beside it, or below it
+ * when the window is too narrow. The field's text filters the table to rows
+ * whose value in that column contains it.
  */
 export const ColumnFilterRow = ({
   label,
@@ -79,6 +80,9 @@ export const ColumnFilterRow = ({
       onOpen={onOpen}
       onClose={handleClose}
       placement="right-start"
+      modifiers={[
+        { name: 'flip', options: { fallbackPlacements: ['bottom-start'] } },
+      ]}
       isLazy
     >
       <PopoverTrigger>
