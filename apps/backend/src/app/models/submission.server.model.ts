@@ -890,6 +890,13 @@ const workflowEventSchema = new Schema(
       type: String,
       required: isStepSubmittedEvent,
     },
+    fromStepNumber: {
+      type: Number,
+      min: 1,
+    },
+    remarks: {
+      type: String,
+    },
     stepNumber: {
       type: Number,
       min: 1,

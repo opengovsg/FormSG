@@ -1774,6 +1774,50 @@ describe('mail.service', () => {
     })
   })
 
+  describe('sendMrfWorkflowSentBackEmail', () => {
+    const MOCK_RESPONSE_ID = '666872d118b702c4f517ef9a'
+    const send = (remarks?: string) =>
+      mailService.sendMrfWorkflowSentBackEmail({
+        emails: [MOCK_VALID_EMAIL],
+        formId: 'mockFormId',
+        formTitle: 'mockFormTitle',
+        responseId: MOCK_RESPONSE_ID,
+        responseUrl: 'https://form.gov.sg/mock-link',
+        remarks,
+      })
+
+    it('should send the amendment request with the new link and escaped remarks', async () => {
+      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+
+      const actualResult = await send('Fix the <b>dates</b>')
+
+      expect(actualResult).toEqual(ok(true))
+      expect(sendMailSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: [MOCK_VALID_EMAIL],
+          subject: `Amendments requested - mockFormTitle (${MOCK_RESPONSE_ID})`,
+          headers: expect.objectContaining({
+            'X-Formsg-Email-Type': 'Workflow sent back',
+          }),
+        }),
+      )
+      const { html } = sendMailSpy.mock.calls[0][0]
+      expect(html).toContain('https://form.gov.sg/mock-link')
+      expect(html).toContain('Remarks from the form admin:')
+      expect(html).toContain('Fix the &lt;b&gt;dates&lt;/b&gt;')
+    })
+
+    it('should leave the remarks section out when there are none', async () => {
+      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+
+      await send()
+
+      expect(sendMailSpy.mock.calls[0][0].html).not.toContain(
+        'Remarks from the form admin',
+      )
+    })
+  })
+
   describe('sendMRFWorkflowStepEmail', () => {
     const MOCK_RESPONSE_ID = '666872d118b702c4f517ef9a'
     it('should send notification email successfully', async () => {
