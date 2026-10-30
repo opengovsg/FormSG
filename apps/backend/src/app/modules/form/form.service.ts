@@ -583,12 +583,19 @@ export const checkHasSingleSubmissionValidationFailure = (
   const baseQuery = {
     form: form._id,
   }
+  // A mode-migrated form keeps its pre-migration storage responses, which
+  // carry the submitter id at the top level, so step one must count both.
   const query =
     form.responseMode === FormResponseMode.Multirespondent
       ? {
           ...baseQuery,
-          submissionType: SubmissionType.Multirespondent,
-          [submitterIdKey]: submitterId,
+          $or: [
+            {
+              submissionType: SubmissionType.Multirespondent,
+              [submitterIdKey]: submitterId,
+            },
+            { submissionType: SubmissionType.Encrypt, submitterId },
+          ],
         }
       : {
           ...baseQuery,
