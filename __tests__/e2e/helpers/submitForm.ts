@@ -100,9 +100,7 @@ const authForm = async (
 
   // Check that the submit button is not visible.
   await expect(
-    page.locator(
-      'button:text-matches("(submit now)|(submission disabled)", "gi")',
-    ),
+    page.getByRole('button', { name: /submit now|submission disabled/i }),
   ).toBeHidden()
 
   await page
@@ -156,9 +154,7 @@ const fillFields = async (
   // Check that the submit button is visible - this guarantees that we are on
   // the form fields page.
   await expect(
-    page.locator(
-      'button:text-matches("(submit now)|(submission disabled)", "gi")',
-    ),
+    page.getByRole('button', { name: /submit now|submission disabled/i }),
   ).toBeVisible()
 
   // Inject field ids into the metadata in order to ensure they are locatable.
