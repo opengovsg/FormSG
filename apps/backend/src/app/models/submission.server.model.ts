@@ -853,6 +853,14 @@ const submittedStepSchema = new Schema(
   { _id: false },
 )
 
+function isStepSubmittedEvent(this: { type: WorkflowEventType }) {
+  return this.type === WorkflowEventType.StepSubmitted
+}
+
+function isAdminWorkflowEvent(this: { type: WorkflowEventType }) {
+  return this.type !== WorkflowEventType.StepSubmitted
+}
+
 const workflowEventSchema = new Schema(
   {
     type: {
@@ -863,11 +871,24 @@ const workflowEventSchema = new Schema(
     actorId: {
       type: Schema.Types.ObjectId,
       ref: USER_SCHEMA_ID,
-      required: true,
+      required: isAdminWorkflowEvent,
     },
     actorEmail: {
       type: String,
-      required: true,
+      required: isAdminWorkflowEvent,
+    },
+    outcome: {
+      type: String,
+      enum: [
+        WorkflowStatus.COMPLETED,
+        WorkflowStatus.APPROVED,
+        WorkflowStatus.REJECTED,
+      ],
+      required: isStepSubmittedEvent,
+    },
+    snapshotKey: {
+      type: String,
+      required: isStepSubmittedEvent,
     },
     stepNumber: {
       type: Number,
@@ -946,12 +967,12 @@ export const MultirespondentSubmissionSchema = new Schema<
     // Defer loading of the ref due to circular dependency on schema IDs.
     ref: () => PAYMENT_SCHEMA_ID,
   },
-  // RATIONALE: admin actions live on the submission so that an action and its
-  // log entry are written in one conditional update. Only ever $push to this
+  // RATIONALE: workflow events live on the submission so that an action and
+  // its log entry are written in one conditional update. Only ever $push to this
   // array; assigning it from a loaded document and saving drops newer events.
   workflowEvents: {
     type: [workflowEventSchema],
-    default: undefined,
+    default: [],
   },
   stoppedAt: {
     type: Date,

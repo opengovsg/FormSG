@@ -115,6 +115,7 @@ describe('Submission Model', () => {
       encryptedContent: MOCK_ENCRYPTED_CONTENT,
       version: 3,
       workflowStep: 0,
+      workflowEvents: [],
       webhookResponses: [],
     },
     MOCK_SUBMISSION_PARAMS,

@@ -1,6 +1,10 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
-import { SubmissionType, WorkflowEventType } from 'formsg-shared/types'
+import {
+  SubmissionType,
+  WorkflowEventType,
+  WorkflowStatus,
+} from 'formsg-shared/types'
 import mongoose from 'mongoose'
 
 import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
@@ -103,6 +107,32 @@ describe('workflow-event.service', () => {
         WorkflowEventType.ReminderSent,
         WorkflowEventType.Stopped,
       ])
+    })
+
+    it('leaves out step submitted events and their snapshot links', () => {
+      const result = WorkflowEventService.toWorkflowEventDtos([
+        {
+          type: WorkflowEventType.StepSubmitted,
+          stepNumber: 1,
+          outcome: WorkflowStatus.COMPLETED,
+          emails: ['next@example.com'],
+          created: new Date('2026-10-08T00:00:00.000Z'),
+          snapshotKey: 'form/submission/0/token.json',
+        },
+        {
+          type: WorkflowEventType.Stopped,
+          actorId: actor._id,
+          actorEmail: actor.email,
+          stepNumber: 2,
+          emails: [],
+          created: new Date('2026-10-09T00:00:00.000Z'),
+        },
+      ])
+
+      expect(result).toEqual([
+        expect.objectContaining({ type: WorkflowEventType.Stopped }),
+      ])
+      expect(JSON.stringify(result)).not.toContain('snapshotKey')
     })
   })
 })
