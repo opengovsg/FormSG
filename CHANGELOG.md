@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.58.3](https://github.com/opengovsg/formsg/compare/v9.58.2...v9.58.3) (2026-10-30)
+
+
+### Bug Fixes
+
+* **date-range-picker:** show a value changed from outside the picker (#10421) ([#10421](https://github.com/opengovsg/formsg/commit/32680e50811d8f6f530d899e16baa745da645435))
+* **results:** fit the toolbar menus on narrow windows and long column names (#10423) ([#10423](https://github.com/opengovsg/formsg/commit/cc4607df172d867e0e1a79e06c0e7677407c2c6b))
+* **results:** switch to a saved view once it is created (#10420) ([#10420](https://github.com/opengovsg/formsg/commit/70bdbb9a6c4951ad640c5d27ad17e1df483bc4f2))
+
 ## [9.58.2](https://github.com/opengovsg/formsg/compare/v9.58.1...v9.58.2) (2026-10-29)
 
 
