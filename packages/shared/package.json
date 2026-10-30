@@ -258,7 +258,7 @@
     "@types/json-stringify-safe": "^5.0.3",
     "@types/lodash": "^4.17.25",
     "@types/validator": "^13.7.0",
-    "@typescript-eslint/eslint-plugin": "^8.19.1",
+    "@typescript-eslint/eslint-plugin": "^8.72.1",
     "@typescript-eslint/parser": "^8.19.1",
     "bson": "^5.5.0",
     "eslint": "^8.57.0",
