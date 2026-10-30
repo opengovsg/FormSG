@@ -7,10 +7,7 @@ import type { Merge } from 'type-fest'
 import { BasicField } from 'formsg-shared/types'
 import { SIGNATURE_CAPTURED_STRING } from 'formsg-shared/utils/signature'
 
-import {
-  CSV_FIXED_COLUMN_IDS,
-  MRF_RESPONSE_TIMESTAMP_LABEL,
-} from '~features/admin-form/responses/constants'
+import { CSV_FIXED_COLUMN_IDS } from '~features/admin-form/responses/constants'
 
 import { CsvGenerator } from '../../../../common/utils'
 import { matchesColumnFilters } from '../../../../common/utils/responseSearch'
@@ -39,8 +36,7 @@ type UnprocessedRecord = Merge<
 >
 
 const RESPONSE_ID_CSV_HEADER = 'Response ID'
-const MRF_TIMESTAMP_CSV_HEADER = MRF_RESPONSE_TIMESTAMP_LABEL
-const BASE_TIMESTAMP_CSV_HEADER = 'Timestamp'
+const TIMESTAMP_CSV_HEADER = 'Timestamp'
 
 export class EncryptedResponseCsvGenerator extends CsvGenerator {
   hasBeenProcessed: boolean
@@ -48,13 +44,11 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
   fieldIdToQuestion: Map<string, { created: string; question: string }>
   fieldIdToNumCols: Record<string, number>
   unprocessed: UnprocessedRecord[]
-  isMrf: boolean
   view: CsvExportView
 
   constructor(
     expectedNumberOfRecords: number,
     numOfMetaDataRows: number,
-    isMrf: boolean,
     view: CsvExportView = {},
   ) {
     super(expectedNumberOfRecords, numOfMetaDataRows)
@@ -66,7 +60,6 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     this.fieldIdToQuestion = new Map()
     this.fieldIdToNumCols = {}
     this.unprocessed = []
-    this.isMrf = isMrf
   }
 
   /**
@@ -148,11 +141,7 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     )
     const headers: string[] = []
     if (isResponseIdShown) headers.push(RESPONSE_ID_CSV_HEADER)
-    if (isTimestampShown) {
-      headers.push(
-        this.isMrf ? MRF_TIMESTAMP_CSV_HEADER : BASE_TIMESTAMP_CSV_HEADER,
-      )
-    }
+    if (isTimestampShown) headers.push(TIMESTAMP_CSV_HEADER)
     visibleFieldIds.forEach((fieldId) => {
       const question = this.fieldIdToQuestion.get(fieldId)?.question ?? ''
       for (let i = 0; i < this.fieldIdToNumCols[fieldId]; i++) {
