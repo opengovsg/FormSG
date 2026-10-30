@@ -86,7 +86,11 @@ import { PrefillMap } from './components/FormFields/FormFields'
 import { FormNotFound } from './components/FormNotFound'
 import { decryptAttachment, decryptSubmission } from './utils/decryptSubmission'
 import { postIFrameMessage } from './utils/iframeMessaging'
-import { getDraftToSave, getRestoreDraftFormValues } from './utils/saveDraft'
+import {
+  getDraftToSave,
+  getRestoreDraftFormValues,
+  getSaveDraftKey,
+} from './utils/saveDraft'
 import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
 import {
   DraftSubmission,
@@ -381,31 +385,6 @@ export const getInitialFormValues = ({
   return defaultFormValues
 }
 
-const getSaveDraftKey = ({
-  formId,
-  formSubmissionId,
-  isMrf,
-  currentMrfWorkflowStepNumber,
-}: {
-  formId: string
-  formSubmissionId?: string
-  isMrf: boolean
-  /**
-   * @note currentMrfWorkflowStepNumber is 0-indexed.
-   */
-  currentMrfWorkflowStepNumber: number
-}) => {
-  const FORMSG_SAVE_DRAFT_PREFIX = 'formsg-save-draft'
-  return [
-    FORMSG_SAVE_DRAFT_PREFIX,
-    formId,
-    formSubmissionId,
-    isMrf ? 'step' + currentMrfWorkflowStepNumber : undefined,
-  ]
-    .filter(Boolean)
-    .join('-')
-}
-
 export const PublicFormProvider = ({
   formId,
   submissionId: previousSubmissionId,
@@ -420,6 +399,23 @@ export const PublicFormProvider = ({
 
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
+
+  const [searchParams] = useSearchParams()
+
+  // MRF key
+  let submissionSecretKey = ''
+  try {
+    submissionSecretKey = decodeURIComponent(searchParams.get('key') ?? '')
+  } catch (e) {
+    console.log(e)
+  }
+
+  let stepToken = ''
+  try {
+    stepToken = decodeURIComponent(searchParams.get('token') ?? '')
+  } catch (e) {
+    console.log(e)
+  }
 
   const {
     /**
@@ -446,6 +442,7 @@ export const PublicFormProvider = ({
     previousSubmissionId,
     // Stop querying once submissionData is present.
     /* enabled= */ !submissionData,
+    stepToken || undefined,
   )
 
   /**
@@ -528,23 +525,6 @@ export const PublicFormProvider = ({
   const [previousAttachments, setPreviousAttachments] = useState<
     Record<string, Uint8Array<ArrayBuffer>>
   >({})
-
-  const [searchParams] = useSearchParams()
-
-  // MRF key
-  let submissionSecretKey = ''
-  try {
-    submissionSecretKey = decodeURIComponent(searchParams.get('key') ?? '')
-  } catch (e) {
-    console.log(e)
-  }
-
-  let stepToken = ''
-  try {
-    stepToken = decodeURIComponent(searchParams.get('token') ?? '')
-  } catch (e) {
-    console.log(e)
-  }
 
   useEffect(() => {
     // Function to decrypt attachments retrieved from S3 using the submission secret key
@@ -839,6 +819,7 @@ export const PublicFormProvider = ({
     formSubmissionId: previousSubmissionId,
     isMrf: form?.responseMode === FormResponseMode.Multirespondent,
     currentMrfWorkflowStepNumber: currentWorkflowStepNumber,
+    stepToken: stepToken || undefined,
   })
 
   const memoizedInitialValue = useMemo(
