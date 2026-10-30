@@ -1393,6 +1393,39 @@ export class MailService {
       actionName: 'sendMrfApprovalEmail',
     })
 
+  sendMrfWorkflowSentBackEmail = ({
+    emails,
+    formId,
+    formTitle,
+    responseId,
+    responseUrl,
+    remarks,
+  }: {
+    emails: string[]
+    formId: string
+    formTitle: string
+    responseId: string
+    responseUrl: string
+    remarks?: string
+  }): ResultAsync<true, MailGenerationError | MailSendError> =>
+    this.#sendEmailWithTemplate({
+      emails,
+      formId,
+      subject: `Amendments requested - ${formTitle} (${responseId})`,
+      htmlData: {
+        emailTitle: `Amend your part of ${formTitle}`,
+        emailBody: [
+          'The form admin has sent this response back to you for amendments. The answers given so far are filled in.',
+          ...(remarks ? ['', 'Remarks from the form admin:', remarks] : []),
+        ].join('\n'),
+        formTitle,
+        responseId,
+        reviewUrl: responseUrl,
+      },
+      emailType: EmailType.WorkflowSentBack,
+      actionName: 'sendMrfWorkflowSentBackEmail',
+    })
+
   sendMrfWorkflowStoppedEmail = (props: {
     emails: string[]
     formId: string
