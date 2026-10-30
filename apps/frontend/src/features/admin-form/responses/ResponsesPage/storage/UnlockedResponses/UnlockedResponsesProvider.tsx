@@ -94,6 +94,7 @@ interface UnlockedResponsesContextProps {
   savedViews: FormSavedView[]
   selectedViewId: string
   applyView: (viewId: string) => void
+  selectView: (viewId: string) => void
   hasActiveFilters: boolean
   currentViewState: ResponsesViewState
   isTableLoading: boolean
@@ -412,6 +413,7 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     savedViews,
     selectedViewId,
     applyView,
+    selectView: setSelectedViewId,
     hasActiveFilters,
     currentViewState,
     isTableLoading,

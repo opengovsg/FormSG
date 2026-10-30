@@ -37,6 +37,7 @@ export const ResponsesToolbar = (): JSX.Element => {
     hasActiveFilters,
     savedViews,
     selectedViewId,
+    selectView,
   } = useUnlockedResponses()
   // On a saved view, saving overwrites that view rather than adding one, so
   // only its own contents count as already saved and the limit does not apply.
@@ -126,7 +127,12 @@ export const ResponsesToolbar = (): JSX.Element => {
         isOpen={saveViewModal.isOpen}
         onClose={saveViewModal.onClose}
         onSave={(name) =>
-          createView(toSavedViewInput(name, currentViewState, columnOptions))
+          createView(toSavedViewInput(name, currentViewState, columnOptions), {
+            onSuccess: (views) => {
+              const created = views[views.length - 1]
+              if (created) selectView(created._id)
+            },
+          })
         }
       />
     </Flex>
