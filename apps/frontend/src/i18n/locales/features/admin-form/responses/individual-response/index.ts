@@ -37,8 +37,11 @@ export interface ResponsesIndividualResponse {
       reminderSent: string
       stopped: string
       notificationRecipients: string
+      sentBack: string
+      remarks: string
     }
     reassignButton: string
+    sendBackButton: string
     addAssigneeModal: {
       title: string
       description: string
@@ -53,6 +56,16 @@ export interface ResponsesIndividualResponse {
       title: string
       description: string
       label: string
+      confirm: string
+      toastSuccess: string
+    }
+    sendBackModal: {
+      title: string
+      description: string
+      stepLabel: string
+      remarksLabel: string
+      remarksDescription: string
+      remarksTooLong: string
       confirm: string
       toastSuccess: string
     }
