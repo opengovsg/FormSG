@@ -11,7 +11,8 @@ RUN apt-get update && \
   autoconf \
   libtool \
   automake \
-  python3
+  python3 \
+  xz-utils
 
 # Install pnpm
 RUN npm install -g pnpm@10.30.3
