@@ -1,6 +1,7 @@
 import { screen, within } from '@testing-library/react'
 
 import {
+  AdminWorkflowEventType,
   DateString,
   WorkflowEventDto,
   WorkflowEventType,
@@ -25,7 +26,7 @@ vi.mock('react-i18next', () => ({
   Trans: ({ i18nKey }: { i18nKey: string }) => <span>{i18nKey}</span>,
 }))
 const event = (
-  type: WorkflowEventType,
+  type: AdminWorkflowEventType,
   created: string,
   emails: string[],
 ): WorkflowEventDto => ({
