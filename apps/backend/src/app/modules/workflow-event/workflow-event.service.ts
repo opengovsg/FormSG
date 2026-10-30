@@ -1,12 +1,19 @@
 import {
+  AdminWorkflowEventType,
   DateString,
+  SubmittedStep,
   WorkflowEventDto,
   WorkflowEventType,
+  WorkflowStatus,
 } from 'formsg-shared/types'
 import mongoose from 'mongoose'
 import { ResultAsync } from 'neverthrow'
 
-import { IWorkflowEvent } from '../../../types'
+import {
+  IAdminWorkflowEvent,
+  IStepSubmittedEvent,
+  IWorkflowEvent,
+} from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { getMultirespondentSubmissionModel } from '../../models/submission.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
@@ -25,11 +32,11 @@ export const buildWorkflowEvent = ({
   stepNumber,
   emails,
 }: {
-  type: WorkflowEventType
+  type: AdminWorkflowEventType
   actor: { _id?: unknown; email: string }
   stepNumber: number
   emails: string[]
-}): IWorkflowEvent => ({
+}): IAdminWorkflowEvent => ({
   type,
   actorId: actor._id,
   actorEmail: actor.email,
@@ -48,11 +55,11 @@ export const recordWorkflowEvent = ({
   ...eventParams
 }: {
   submission: { _id?: unknown }
-  type: WorkflowEventType
+  type: AdminWorkflowEventType
   actor: { _id?: unknown; email: string }
   stepNumber: number
   emails: string[]
-}): ResultAsync<IWorkflowEvent, DatabaseError> => {
+}): ResultAsync<IAdminWorkflowEvent, DatabaseError> => {
   const event = buildWorkflowEvent(eventParams)
   return ResultAsync.fromPromise(
     MultirespondentSubmission.updateOne(
@@ -74,13 +81,40 @@ export const recordWorkflowEvent = ({
   ).map(() => event)
 }
 
+export const buildStepSubmittedEvent = ({
+  stepNumber,
+  step,
+  snapshotKey,
+}: {
+  stepNumber: number
+  step: SubmittedStep
+  snapshotKey: string
+}): IStepSubmittedEvent => ({
+  type: WorkflowEventType.StepSubmitted,
+  stepNumber,
+  outcome:
+    step.isApproval && step.status ? step.status : WorkflowStatus.COMPLETED,
+  emails:
+    step.isApproval && step.status === WorkflowStatus.REJECTED
+      ? []
+      : (step.nextStepRecipientEmails ?? []),
+  created: new Date(step.submittedAt),
+  snapshotKey,
+})
+
+export const isAdminWorkflowEvent = (
+  event: IWorkflowEvent,
+): event is IAdminWorkflowEvent =>
+  event.type !== WorkflowEventType.StepSubmitted
+
 /**
- * @returns the events as sent to admins, oldest first
+ * @returns the admin events as sent to admins, oldest first
  */
 export const toWorkflowEventDtos = (
   events: IWorkflowEvent[] = [],
 ): WorkflowEventDto[] =>
   events
+    .filter(isAdminWorkflowEvent)
     .map((event) => ({
       type: event.type,
       actorEmail: event.actorEmail,
