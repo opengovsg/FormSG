@@ -8,10 +8,12 @@ import { render } from '~/test-utils'
 import { WorkflowActionsSection } from './WorkflowActionsSection'
 
 let mockIsGateOn = true
+let mockIsSendBackOn = false
 let mockHasEditAccess = true
 let mockIsV2 = true
 const mockMutate = vi.fn()
 const mockAddAssignees = vi.fn()
+const mockSendBack = vi.fn()
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k: string) => k }),
@@ -23,6 +25,7 @@ vi.mock('react-router-dom', () => ({
 
 vi.mock('./useWorkflowActionsGate', () => ({
   useWorkflowActionsGate: () => mockIsGateOn,
+  useWorkflowActionsSendBackGate: () => mockIsSendBackOn,
 }))
 
 vi.mock('~features/admin-form/common/queries', () => ({
@@ -39,6 +42,26 @@ vi.mock('./mutations', () => ({
     mutate: mockAddAssignees,
     isLoading: false,
   }),
+  useSendBackWorkflowMutation: () => ({
+    mutate: mockSendBack,
+    isLoading: false,
+  }),
+}))
+vi.mock('./SendBackModal', () => ({
+  SendBackModal: ({
+    isOpen,
+    onConfirm,
+  }: {
+    isOpen: boolean
+    onConfirm: (params: { targetStepNumber: number; remarks?: string }) => void
+  }) =>
+    isOpen ? (
+      <button
+        onClick={() => onConfirm({ targetStepNumber: 2, remarks: 'Fix it' })}
+      >
+        confirm send back
+      </button>
+    ) : null,
 }))
 
 vi.mock('./RemindButton', () => ({
@@ -97,6 +120,7 @@ const renderSection = (
   mrf: SubmissionMrfMetadata = pendingMrf(),
   recipients: string[] = ['lead@agency.gov.sg'],
   withOverview = false,
+  submittedStepCount = 1,
 ) =>
   render(
     <WorkflowActionsSection
@@ -104,14 +128,17 @@ const renderSection = (
       submissionId="mock-submission-id"
       mrf={mrf}
       history={{
-        submittedSteps: [
-          {
-            isApproval: false,
-            submittedAt: '2026-10-08T01:00:00.000Z',
-            nextStepRecipientEmails: recipients,
-          },
+        submittedSteps: Array.from({ length: submittedStepCount }, () => ({
+          isApproval: false as const,
+          submittedAt: '2026-10-08T01:00:00.000Z',
+          nextStepRecipientEmails: recipients,
+        })),
+        workflow: [
+          { _id: 'step-1' },
+          { _id: 'step-2' },
+          { _id: 'step-3' },
+          { _id: 'step-4' },
         ],
-        workflow: [{ _id: 'step-1' }, { _id: 'step-2' }, { _id: 'step-3' }],
       }}
       submissionSecretKey="mock-secret-key"
       stepToken="mock-step-token"
@@ -122,6 +149,8 @@ const renderSection = (
 describe('WorkflowActionsSection', () => {
   afterEach(() => {
     mockIsGateOn = true
+    mockIsSendBackOn = false
+    mockSendBack.mockReset()
     mockHasEditAccess = true
     mockIsV2 = true
     mockMutate.mockReset()
@@ -257,5 +286,87 @@ describe('WorkflowActionsSection', () => {
     expect(
       screen.queryByRole('button', { name: /^remind/ }),
     ).not.toBeInTheDocument()
+  })
+
+  describe('Send back', () => {
+    const SEND_BACK =
+      'features.adminForm.responses.individualResponse.workflowActions.sendBackButton'
+    const atStepThree = (overrides = {}) =>
+      pendingMrf({ workflowCurrentStepNumber: 2, ...overrides })
+
+    beforeEach(() => {
+      mockIsSendBackOn = true
+    })
+
+    it('sends back with the pending step the page saw and the step link key', async () => {
+      renderSection(atStepThree(), undefined, false, 2)
+
+      await userEvent.click(screen.getByRole('button', { name: SEND_BACK }))
+      await userEvent.click(
+        screen.getByRole('button', { name: 'confirm send back' }),
+      )
+
+      expect(mockSendBack).toHaveBeenCalledWith(
+        {
+          submissionId: 'mock-submission-id',
+          targetStepNumber: 2,
+          expectedStepNumber: 3,
+          submissionSecretKey: 'mock-secret-key',
+          remarks: 'Fix it',
+        },
+        expect.anything(),
+      )
+    })
+
+    it('offers Send back with only the send back flag on', () => {
+      mockIsGateOn = false
+      renderSection(atStepThree(), undefined, false, 2)
+
+      expect(screen.getByRole('button', { name: SEND_BACK })).toBeVisible()
+      expect(
+        screen.queryByRole('button', { name: STOP }),
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: REASSIGN }),
+      ).not.toBeInTheDocument()
+    })
+
+    it.each([
+      ['the send back flag is off', () => (mockIsSendBackOn = false), 2, {}],
+      ['the admin cannot edit', () => (mockHasEditAccess = false), 2, {}],
+      [
+        'step 2 is pending',
+        () => undefined,
+        1,
+        { workflowCurrentStepNumber: 1 },
+      ],
+      [
+        'the recorded steps fall behind the step',
+        () => undefined,
+        2,
+        { workflowCurrentStepNumber: 3 },
+      ],
+      [
+        'the workflow is stopped',
+        () => undefined,
+        2,
+        { stoppedAt: '2026-10-07T08:00:00.000Z' },
+      ],
+    ])(
+      'hides Send back when %s',
+      (_label, arrange, submittedStepCount, overrides) => {
+        arrange()
+        renderSection(
+          atStepThree(overrides),
+          undefined,
+          false,
+          submittedStepCount as number,
+        )
+
+        expect(
+          screen.queryByRole('button', { name: SEND_BACK }),
+        ).not.toBeInTheDocument()
+      },
+    )
   })
 })
