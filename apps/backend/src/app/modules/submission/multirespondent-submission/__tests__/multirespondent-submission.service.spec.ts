@@ -29,6 +29,7 @@ import {
   IMultirespondentSubmissionSchema,
   IPopulatedForm,
   IPopulatedMultirespondentForm,
+  IWorkflowEvent,
   WebhookView,
 } from 'src/types'
 import { MultirespondentSubmissionDto, SnapshottedFormDef } from 'src/types/api'
@@ -99,6 +100,12 @@ describe('multirespondent-submission.service', () => {
   beforeEach(() => {
     MockMailUtils.generateAutoreplyPdf.mockReturnValue(
       okAsync(Buffer.from('mock pdf buffer')),
+    )
+    MockSnapshotStore.writeSnapshot.mockImplementation((snapshot) =>
+      okAsync({
+        token: 'audit-token',
+        key: `${snapshot.formId}/${snapshot.submissionId}/${snapshot.submissionIndex}/audit-token.json`,
+      }),
     )
   })
 
@@ -4085,6 +4092,300 @@ describe('multirespondent-submission.service', () => {
         .mockReturnValue(okAsync(true))
     })
 
+    const retryTokenOf = (step?: {
+      snapshotTokens?: { v1?: string; v4?: string }
+    }) => step?.snapshotTokens?.v1 ?? step?.snapshotTokens?.v4
+
+    const expectOnlyStepSubmittedSnapshot = () => {
+      expect(MockSnapshotStore.writeSnapshot).toHaveBeenCalledTimes(1)
+      expect(
+        MockSnapshotStore.writeSnapshot.mock.calls[0][0].contentFormat,
+      ).toBe('v4')
+    }
+
+    describe('step submitted events', () => {
+      const Model = getMultirespondentSubmissionModel(mongoose)
+      const fourStepWorkflow: FormWorkflowStepDto[] = [0, 1, 2, 3].map(
+        (index) => ({
+          _id: new ObjectId().toHexString(),
+          workflow_type: WorkflowType.Static,
+          emails: [`step${index + 1}@example.com`],
+          edit: [fieldId],
+        }),
+      )
+      const legacySteps = [
+        {
+          isApproval: false,
+          submittedAt: '2026-10-01T01:00:00.000Z',
+          nextStepRecipientEmails: ['step2@example.com'],
+        },
+        {
+          isApproval: true,
+          status: WorkflowStatus.APPROVED,
+          submittedAt: '2026-10-02T01:00:00.000Z',
+          nextStepRecipientEmails: ['step3@example.com'],
+        },
+        {
+          isApproval: false,
+          submittedAt: '2026-10-03T01:00:00.000Z',
+          nextStepRecipientEmails: ['step4@example.com'],
+        },
+      ]
+      const createLegacyRowAtStepFour = async (
+        workflowEvents?: Record<string, unknown>[],
+      ) => {
+        const row = await Model.create({
+          form: mockFormId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [],
+          form_logics: [],
+          workflow: fourStepWorkflow,
+          submissionPublicKey: 'pk',
+          encryptedSubmissionSecretKey: 'esk',
+          encryptedContent: 'ec',
+          version: 2,
+          workflowStep: 2,
+          submittedSteps: legacySteps,
+        })
+        await Model.updateOne(
+          { _id: row._id },
+          workflowEvents
+            ? { $set: { workflowEvents } }
+            : { $unset: { workflowEvents: 1 } },
+        )
+        return row
+      }
+      const submitStepFour = (submissionId: unknown) =>
+        updateMultiRespondentFormSubmission({
+          submissionId: String(submissionId),
+          snapshottedFormDef: buildSnapshottedFormDef({
+            workflow: fourStepWorkflow,
+            webhook: undefined,
+          }),
+          encryptedPayload: buildV4Payload({ workflowStep: 3 }),
+          logMeta: { action: 'test' },
+        })
+      const stepSubmittedEvents = (events: IWorkflowEvent[] = []) =>
+        events.filter(({ type }) => type === WorkflowEventType.StepSubmitted)
+
+      it('records the first step with a link to its snapshot', async () => {
+        MockSnapshotStore.writeSnapshot.mockReturnValue(
+          okAsync({ token: 'tok', key: 'key-step-1' }),
+        )
+
+        const result = await createMultiRespondentFormSubmission({
+          form: buildV4Form({ webhook: undefined }),
+          encryptedPayload: buildV4Payload(),
+          logMeta: { action: 'test' },
+        })
+
+        const saved = await Model.findById(
+          result._unsafeUnwrap().submission._id,
+        ).lean()
+        expectOnlyStepSubmittedSnapshot()
+        expect(saved?.workflowEvents).toEqual([
+          expect.objectContaining({
+            type: WorkflowEventType.StepSubmitted,
+            stepNumber: 1,
+            outcome: WorkflowStatus.COMPLETED,
+            snapshotKey: 'key-step-1',
+          }),
+        ])
+      })
+
+      it("links to the webhook's V4 snapshot instead of writing another", async () => {
+        MockSnapshotStore.writeSnapshot.mockReturnValue(
+          okAsync({ token: 'tok-plumber', key: 'key-plumber' }),
+        )
+
+        const result = await createMultiRespondentFormSubmission({
+          form: buildV4Form(),
+          encryptedPayload: buildV4Payload(),
+          logMeta: { action: 'test' },
+        })
+
+        expect(MockSnapshotStore.writeSnapshot).toHaveBeenCalledTimes(1)
+        expect(
+          result._unsafeUnwrap().submission.workflowEvents[0],
+        ).toMatchObject({ snapshotKey: 'key-plumber' })
+      })
+
+      it('backfills earlier steps with the same snapshot link', async () => {
+        MockSnapshotStore.writeSnapshot.mockReturnValue(
+          okAsync({ token: 'tok', key: 'key-step-4' }),
+        )
+        const row = await createLegacyRowAtStepFour()
+
+        expect((await submitStepFour(row._id)).isOk()).toBe(true)
+
+        const saved = await Model.findById(row._id).lean()
+        expect(saved?.submittedSteps).toHaveLength(4)
+        expect(stepSubmittedEvents(saved?.workflowEvents)).toEqual([
+          expect.objectContaining({
+            stepNumber: 1,
+            outcome: WorkflowStatus.COMPLETED,
+            emails: ['step2@example.com'],
+            created: new Date(legacySteps[0].submittedAt),
+            snapshotKey: 'key-step-4',
+          }),
+          expect.objectContaining({
+            stepNumber: 2,
+            outcome: WorkflowStatus.APPROVED,
+            emails: ['step3@example.com'],
+            created: new Date(legacySteps[1].submittedAt),
+            snapshotKey: 'key-step-4',
+          }),
+          expect.objectContaining({
+            stepNumber: 3,
+            outcome: WorkflowStatus.COMPLETED,
+            emails: ['step4@example.com'],
+            created: new Date(legacySteps[2].submittedAt),
+            snapshotKey: 'key-step-4',
+          }),
+          expect.objectContaining({
+            stepNumber: 4,
+            outcome: WorkflowStatus.COMPLETED,
+            snapshotKey: 'key-step-4',
+          }),
+        ])
+      })
+
+      it('only backfills steps that have no event yet', async () => {
+        MockSnapshotStore.writeSnapshot.mockReturnValue(
+          okAsync({ token: 'tok', key: 'key-step-4' }),
+        )
+        const row = await createLegacyRowAtStepFour([
+          {
+            type: WorkflowEventType.StepSubmitted,
+            stepNumber: 1,
+            outcome: WorkflowStatus.COMPLETED,
+            emails: ['step2@example.com'],
+            created: new Date(legacySteps[0].submittedAt),
+            snapshotKey: 'key-step-1',
+          },
+        ])
+
+        await submitStepFour(row._id)
+
+        const saved = await Model.findById(row._id).lean()
+        expect(
+          stepSubmittedEvents(saved?.workflowEvents).map((event) => [
+            event.stepNumber,
+            event.type === WorkflowEventType.StepSubmitted && event.snapshotKey,
+          ]),
+        ).toEqual([
+          [1, 'key-step-1'],
+          [2, 'key-step-4'],
+          [3, 'key-step-4'],
+          [4, 'key-step-4'],
+        ])
+      })
+
+      it('records a step submitted again, keeping its earlier event', async () => {
+        MockSnapshotStore.writeSnapshot.mockReturnValue(
+          okAsync({ token: 'tok', key: 'key-step-2-again' }),
+        )
+        const earlierEvents = [1, 2, 3].map((stepNumber) => ({
+          type: WorkflowEventType.StepSubmitted,
+          stepNumber,
+          outcome: WorkflowStatus.COMPLETED,
+          emails: [`step${stepNumber + 1}@example.com`],
+          created: new Date(legacySteps[stepNumber - 1].submittedAt),
+          snapshotKey: `key-step-${stepNumber}`,
+        }))
+        const row = await Model.create({
+          form: mockFormId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [],
+          form_logics: [],
+          workflow: fourStepWorkflow,
+          submissionPublicKey: 'pk',
+          encryptedSubmissionSecretKey: 'esk',
+          encryptedContent: 'ec',
+          version: 2,
+          workflowStep: 0,
+          submittedSteps: [legacySteps[0]],
+          workflowEvents: earlierEvents,
+        })
+
+        const result = await updateMultiRespondentFormSubmission({
+          submissionId: String(row._id),
+          snapshottedFormDef: buildSnapshottedFormDef({
+            workflow: fourStepWorkflow,
+            webhook: undefined,
+          }),
+          encryptedPayload: buildV4Payload({ workflowStep: 1 }),
+          logMeta: { action: 'test' },
+        })
+
+        expect(result.isOk()).toBe(true)
+        const saved = await Model.findById(row._id).lean()
+        expect(saved?.submittedSteps).toHaveLength(2)
+        expect(
+          stepSubmittedEvents(saved?.workflowEvents).map((event) => [
+            event.stepNumber,
+            event.type === WorkflowEventType.StepSubmitted && event.snapshotKey,
+          ]),
+        ).toEqual([
+          [1, 'key-step-1'],
+          [2, 'key-step-2'],
+          [3, 'key-step-3'],
+          [2, 'key-step-2-again'],
+        ])
+      })
+
+      it('keeps an admin event written after the respondent loaded the submission', async () => {
+        const row = await createLegacyRowAtStepFour()
+        const findById = Model.findById.bind(Model)
+        jest.spyOn(Model, 'findById').mockImplementationOnce(((id: unknown) =>
+          findById(id)
+            .exec()
+            .then(async (doc) => {
+              await Model.updateOne(
+                { _id: id },
+                {
+                  $push: {
+                    workflowEvents: {
+                      type: WorkflowEventType.ReminderSent,
+                      actorId: new ObjectId(),
+                      actorEmail: 'admin@example.com',
+                      stepNumber: 4,
+                      emails: ['step4@example.com'],
+                      created: new Date(),
+                    },
+                  },
+                },
+              )
+              return doc
+            })) as unknown as typeof Model.findById)
+
+        expect((await submitStepFour(row._id)).isOk()).toBe(true)
+
+        const saved = await Model.findById(row._id).lean()
+        expect(saved?.workflowEvents.map(({ type }) => type)).toEqual(
+          expect.arrayContaining([
+            WorkflowEventType.ReminderSent,
+            WorkflowEventType.StepSubmitted,
+          ]),
+        )
+        expect(stepSubmittedEvents(saved?.workflowEvents)).toHaveLength(4)
+      })
+
+      it('fails the submission and saves nothing when the snapshot cannot be written', async () => {
+        MockSnapshotStore.writeSnapshot.mockReturnValue(
+          errAsync(new SnapshotWriteError()),
+        )
+        const row = await createLegacyRowAtStepFour()
+
+        const result = await submitStepFour(row._id)
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(SnapshotWriteError)
+        const saved = await Model.findById(row._id).lean()
+        expect(saved?.submittedSteps).toHaveLength(3)
+        expect(saved?.workflowEvents ?? []).toHaveLength(0)
+      })
+    })
+
     // ---- Committed-step-has-a-readable-snapshot (write side) ----
 
     it.each([
@@ -4200,7 +4501,7 @@ describe('multirespondent-submission.service', () => {
       },
     )
 
-    it('does not write a snapshot when the write-condition is false (mrfVersion 1)', async () => {
+    it('writes only the step submitted snapshot when the write-condition is false (mrfVersion 1)', async () => {
       const result = await createMultiRespondentFormSubmission({
         form: buildV4Form(),
         encryptedPayload: buildV4Payload({ mrfVersion: 1 }),
@@ -4208,7 +4509,10 @@ describe('multirespondent-submission.service', () => {
       })
 
       expect(result.isOk()).toBe(true)
-      expect(MockSnapshotStore.writeSnapshot).not.toHaveBeenCalled()
+      expectOnlyStepSubmittedSnapshot()
+      expect(
+        retryTokenOf(result._unsafeUnwrap().submission.submittedSteps?.[0]),
+      ).toBeUndefined()
     })
 
     it.each`
@@ -4234,13 +4538,17 @@ describe('multirespondent-submission.service', () => {
         })
 
         expect(result.isOk()).toBe(true)
+        const isV1Delivery = webhookFormat !== 'v4'
         expect(MockSnapshotStore.writeSnapshot).toHaveBeenCalledTimes(
-          expectWritten ? 1 : 0,
+          expectWritten && isV1Delivery ? 2 : 1,
         )
+        expect(
+          !!retryTokenOf(result._unsafeUnwrap().submission.submittedSteps?.[0]),
+        ).toBe(expectWritten)
       },
     )
 
-    it('does not write a snapshot for a generic V4 row on update when the webhook would not be delivered', async () => {
+    it('writes only the step submitted snapshot for a generic V4 row on update when the webhook would not be delivered', async () => {
       const Model = getMultirespondentSubmissionModel(mongoose)
       const row = await Model.create({
         form: mockFormId,
@@ -4269,7 +4577,9 @@ describe('multirespondent-submission.service', () => {
       })
 
       expect(result.isOk()).toBe(true)
-      expect(MockSnapshotStore.writeSnapshot).not.toHaveBeenCalled()
+      expectOnlyStepSubmittedSnapshot()
+      const saved = await Model.findById(row._id)
+      expect(retryTokenOf(saved?.submittedSteps?.[1])).toBeUndefined()
     })
 
     it('still writes a snapshot for a plumber V4 row with no flags on', async () => {
@@ -4284,7 +4594,7 @@ describe('multirespondent-submission.service', () => {
       expect(MockSnapshotStore.writeSnapshot).toHaveBeenCalledTimes(1)
     })
 
-    it('does not write a snapshot when retries are disabled', async () => {
+    it('writes only the step submitted snapshot when retries are disabled', async () => {
       const result = await createMultiRespondentFormSubmission({
         form: buildV4Form({
           webhook: { url: PLUMBER_URL, isRetryEnabled: false } as any,
@@ -4294,7 +4604,10 @@ describe('multirespondent-submission.service', () => {
       })
 
       expect(result.isOk()).toBe(true)
-      expect(MockSnapshotStore.writeSnapshot).not.toHaveBeenCalled()
+      expectOnlyStepSubmittedSnapshot()
+      expect(
+        retryTokenOf(result._unsafeUnwrap().submission.submittedSteps?.[0]),
+      ).toBeUndefined()
     })
 
     it.each<[string, FormWebhook | undefined]>([
@@ -4309,7 +4622,7 @@ describe('multirespondent-submission.service', () => {
       })
 
       expect(result._unsafeUnwrap().snapshot).toBeUndefined()
-      expect(MockSnapshotStore.writeSnapshot).not.toHaveBeenCalled()
+      expectOnlyStepSubmittedSnapshot()
     })
 
     it('delivers V1 with an in-memory snapshot when retries are disabled', async () => {
@@ -4332,7 +4645,7 @@ describe('multirespondent-submission.service', () => {
       const { submission, snapshot } = created._unsafeUnwrap()
 
       expect(snapshot?.contentFormat).toBe('v1')
-      expect(MockSnapshotStore.writeSnapshot).not.toHaveBeenCalled()
+      expectOnlyStepSubmittedSnapshot()
 
       await performMultiRespondentPostSubmissionCreateActions({
         submission,
