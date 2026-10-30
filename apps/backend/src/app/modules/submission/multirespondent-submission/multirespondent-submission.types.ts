@@ -6,7 +6,7 @@ import {
   SubmittedStep,
 } from 'formsg-shared/types'
 
-import { IPopulatedMultirespondentForm } from 'src/types'
+import { IPopulatedMultirespondentForm, IWorkflowEvent } from 'src/types'
 
 import {
   MultirespondentFormCompleteDto,
@@ -95,6 +95,7 @@ export type MultirespondentSubmissionContent = {
   workflowStep: number
   mrfVersion: number
   submittedSteps: SubmittedStep[]
+  workflowEvents?: IWorkflowEvent[]
   // RATIONALE: optional for backwards compatibility on
   // in-flight mrf steps which do not have a step token at time of creation.
   stepTokenHash?: string

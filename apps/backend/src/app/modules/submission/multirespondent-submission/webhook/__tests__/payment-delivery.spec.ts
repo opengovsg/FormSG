@@ -649,10 +649,10 @@ describe('[GATE] payment webhook delivery', () => {
       )
       expect(snapshots).toHaveLength(expectedSnapshots)
       expect(
-        [...objects.keys()].some((key) =>
+        [...objects.keys()].filter((key) =>
           key.startsWith(`${aws.submissionHistoryV4S3Bucket}/`),
         ),
-      ).toBe(false)
+      ).toHaveLength(1)
       for (const [, body] of snapshots) {
         const snapshot = JSON.parse(body)
         expect(

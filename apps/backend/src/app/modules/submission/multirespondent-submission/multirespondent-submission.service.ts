@@ -61,6 +61,7 @@ import { WebhookFactory } from '../../webhook/webhook.factory'
 import { getWebhookType, toConsumerType } from '../../webhook/webhook.service'
 import { SnapshotRef } from '../../webhook/webhook.types'
 import {
+  buildStepSubmittedEvent,
   buildWorkflowEvent,
   getAddedAssignees,
 } from '../../workflow-event/workflow-event.service'
@@ -97,7 +98,10 @@ import {
   buildV1Snapshot,
   buildV4Snapshot,
 } from './webhook/submission-snapshot.producer'
-import { SubmissionSnapshot } from './webhook/submission-snapshot.schema'
+import {
+  SubmissionSnapshot,
+  SubmissionSnapshotV4,
+} from './webhook/submission-snapshot.schema'
 import { writeSnapshot } from './webhook/submission-snapshot.store'
 import { encryptAndUploadAttachmentInV1 } from './webhook/v1-attachment.producer'
 import {
@@ -138,6 +142,14 @@ import {
 } from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
+
+const writeStepSubmittedSnapshot = (
+  deliveryV4SnapshotKey: string | undefined,
+  buildSnapshot: () => SubmissionSnapshotV4,
+): ResultAsync<string, SnapshotWriteError> =>
+  deliveryV4SnapshotKey
+    ? okAsync(deliveryV4SnapshotKey)
+    : writeSnapshot(buildSnapshot()).map(({ key }) => key)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
 const MultirespondentPendingSubmission =
   getMultirespondentPendingSubmissionModel(mongoose)
@@ -1075,58 +1087,70 @@ export const createMultiRespondentFormSubmission = ({
           })
         }
         if (webhookContentFormat === 'v4' && shouldWriteSnapshot) {
-          return okAsync(
-            buildV4Snapshot({
-              ...snapshotBase,
-              ...v4OnlyContent,
-              formFields: buildWebhookFormFields(
-                form.form_fields,
-                encryptedPayload.myInfoReadOnlyFields ?? [],
-              ),
-              encryptedContent,
-              encryptedSubmissionSecretKey,
-            }),
-          )
+          return okAsync(buildFirstStepV4Snapshot())
         }
         return okAsync(undefined)
       }
 
+      const buildFirstStepV4Snapshot = () =>
+        buildV4Snapshot({
+          ...snapshotBase,
+          ...v4OnlyContent,
+          formFields: buildWebhookFormFields(
+            form.form_fields,
+            encryptedPayload.myInfoReadOnlyFields ?? [],
+          ),
+          encryptedContent,
+          encryptedSubmissionSecretKey,
+        })
+
       return buildSnapshotForDelivery().andThen((snapshot) => {
         const snapshotToWrite = shouldWriteSnapshot ? snapshot : undefined
         const writeSnapshotIfNeeded: ResultAsync<
-          undefined,
+          string | undefined,
           SnapshotWriteError
         > = snapshotToWrite
-          ? writeSnapshot(snapshotToWrite).map(({ token }) => {
+          ? writeSnapshot(snapshotToWrite).map(({ token, key }) => {
               submittedStepMeta.snapshotTokens = {
                 [snapshotToWrite.contentFormat]: token,
               }
-              return undefined
+              return snapshotToWrite.contentFormat === 'v4' ? key : undefined
             })
           : okAsync(undefined)
 
-        return writeSnapshotIfNeeded.andThen(() =>
-          ResultAsync.fromPromise(
-            saveSubmission().then((submission) => ({
-              submission,
-              responseMetadata,
-              snapshot,
-            })),
-            (error) => {
-              if (
-                error instanceof FormRespondentSingleSubmissionValidationError
-              ) {
-                return error
-              }
-              logger.error({
-                message: 'Multirespondent submission save error',
-                meta: logMeta,
-                error,
-              })
-              return new SubmissionSaveError()
-            },
-          ),
-        )
+        return writeSnapshotIfNeeded
+          .andThen((deliveryV4Key) =>
+            writeStepSubmittedSnapshot(deliveryV4Key, buildFirstStepV4Snapshot),
+          )
+          .andThen((snapshotKey) => {
+            submissionContent.workflowEvents = [
+              buildStepSubmittedEvent({
+                stepNumber: 1,
+                step: submittedStepMeta,
+                snapshotKey,
+              }),
+            ]
+            return ResultAsync.fromPromise(
+              saveSubmission().then((submission) => ({
+                submission,
+                responseMetadata,
+                snapshot,
+              })),
+              (error) => {
+                if (
+                  error instanceof FormRespondentSingleSubmissionValidationError
+                ) {
+                  return error
+                }
+                logger.error({
+                  message: 'Multirespondent submission save error',
+                  meta: logMeta,
+                  error,
+                })
+                return new SubmissionSaveError()
+              },
+            )
+          })
       })
     })
     .map(({ submission, responseMetadata, snapshot }) => {
@@ -1228,23 +1252,49 @@ export const createMultiRespondentFormPendingSubmission = ({
       submissionContent,
     )
 
+    const snapshotBase = {
+      formId: String(form._id),
+      submissionId: String(pendingSubmission._id),
+      submissionIndex: 0,
+      workflowStep: 0,
+      createdAt: submittedStepMeta.submittedAt,
+    }
+
     return buildFirstStepV1Snapshot({
       form,
       encryptedPayload,
       verifiedContentPlaintext,
       logMeta,
-      snapshotBase: {
-        formId: String(form._id),
-        submissionId: String(pendingSubmission._id),
-        submissionIndex: 0,
-        workflowStep: 0,
-        createdAt: submittedStepMeta.submittedAt,
-      },
+      snapshotBase,
     })
       .andThen(writeSnapshot)
-      .andThen(({ token }) => {
+      .andThen(({ token }) =>
+        writeStepSubmittedSnapshot(undefined, () =>
+          buildV4Snapshot({
+            ...snapshotBase,
+            formFields: buildWebhookFormFields(
+              form.form_fields,
+              encryptedPayload.myInfoReadOnlyFields ?? [],
+            ),
+            encryptedContent,
+            encryptedSubmissionSecretKey,
+            verifiedContent,
+            attachmentMetadata: Object.fromEntries(
+              attachmentMetadata ?? new Map(),
+            ),
+          }),
+        ).map((snapshotKey) => ({ token, snapshotKey })),
+      )
+      .andThen(({ token, snapshotKey }) => {
         pendingSubmission.submittedSteps = [
           { ...submittedStepMeta, snapshotTokens: { v1: token } },
+        ]
+        pendingSubmission.workflowEvents = [
+          buildStepSubmittedEvent({
+            stepNumber: 1,
+            step: submittedStepMeta,
+            snapshotKey,
+          }),
         ]
         return ResultAsync.fromPromise(pendingSubmission.save(), (error) => {
           logger.error({
@@ -1992,62 +2042,84 @@ export const updateMultiRespondentFormSubmission = ({
         logMeta: { ...logMeta, submissionId },
       })
 
+      const buildStepV4Snapshot = () =>
+        buildV4Snapshot({
+          formId: String(snapshottedFormDef._id),
+          submissionId: String(submission._id),
+          submissionIndex,
+          workflowStep,
+          encryptedContent,
+          encryptedSubmissionSecretKey,
+          formFields: buildWebhookFormFields(
+            snapshottedFormDef.form_fields,
+            submission.myInfoReadOnlyFields ?? [],
+          ),
+          verifiedContent,
+          attachmentMetadata: Object.fromEntries(
+            attachmentMetadata ?? new Map(),
+          ),
+          createdAt: submittedStepMeta.submittedAt,
+        })
+
       const snapshot =
         webhookContentFormat === 'v4' && shouldWriteSnapshot
-          ? buildV4Snapshot({
-              formId: String(snapshottedFormDef._id),
-              submissionId: String(submission._id),
-              submissionIndex,
-              workflowStep,
-              encryptedContent,
-              encryptedSubmissionSecretKey,
-              formFields: buildWebhookFormFields(
-                snapshottedFormDef.form_fields,
-                submission.myInfoReadOnlyFields ?? [],
-              ),
-              verifiedContent,
-              attachmentMetadata: Object.fromEntries(
-                attachmentMetadata ?? new Map(),
-              ),
-              createdAt: submittedStepMeta.submittedAt,
-            })
+          ? buildStepV4Snapshot()
           : undefined
 
-      const writeSnapshotIfNeeded: ResultAsync<undefined, SnapshotWriteError> =
-        snapshot
-          ? writeSnapshot(snapshot).map(({ token }) => {
-              submittedStepMeta.snapshotTokens = {
-                [snapshot.contentFormat]: token,
-              }
-              return undefined
-            })
-          : okAsync(undefined)
-
-      return writeSnapshotIfNeeded.andThen(() => {
-        // NOTE: Append AFTER the token is recorded so the value survives mongoose's
-        // subdocument cast (which copies the plain object into the array).
-        submission.submittedSteps = [
-          ...(submission.submittedSteps ?? []),
-          submittedStepMeta,
-        ]
-
-        return ResultAsync.fromPromise(
-          submission
-            .save()
-            .then(() => ({ submission, responseMetadata, snapshot })),
-          (error) => {
-            if (error instanceof mongoose.Error.VersionError) {
-              return transformMongoError(error)
+      const writeSnapshotIfNeeded: ResultAsync<
+        string | undefined,
+        SnapshotWriteError
+      > = snapshot
+        ? writeSnapshot(snapshot).map(({ token, key }) => {
+            submittedStepMeta.snapshotTokens = {
+              [snapshot.contentFormat]: token,
             }
-            logger.error({
-              message: 'Multirespondent submission save error',
-              meta: logMeta,
-              error,
-            })
-            return new SubmissionSaveError()
-          },
+            return key
+          })
+        : okAsync(undefined)
+
+      return writeSnapshotIfNeeded
+        .andThen((deliveryV4Key) =>
+          writeStepSubmittedSnapshot(deliveryV4Key, buildStepV4Snapshot),
         )
-      })
+        .andThen((snapshotKey) => {
+          const previousSteps = submission.submittedSteps ?? []
+          const recordedStepNumbers = new Set(
+            submission.workflowEvents
+              ?.filter(({ type }) => type === WorkflowEventType.StepSubmitted)
+              .map(({ stepNumber }) => stepNumber),
+          )
+          const stepSubmittedEvents = [
+            ...previousSteps
+              .map((step, index) => ({ step, stepNumber: index + 1 }))
+              .filter(({ stepNumber }) => !recordedStepNumbers.has(stepNumber)),
+            { step: submittedStepMeta, stepNumber: submissionIndex + 1 },
+          ].map(({ step, stepNumber }) =>
+            buildStepSubmittedEvent({ stepNumber, step, snapshotKey }),
+          )
+
+          // NOTE: Append AFTER the token is recorded so the value survives mongoose's
+          // subdocument cast (which copies the plain object into the array).
+          submission.submittedSteps = [...previousSteps, submittedStepMeta]
+          submission.workflowEvents.push(...stepSubmittedEvents)
+
+          return ResultAsync.fromPromise(
+            submission
+              .save()
+              .then(() => ({ submission, responseMetadata, snapshot })),
+            (error) => {
+              if (error instanceof mongoose.Error.VersionError) {
+                return transformMongoError(error)
+              }
+              logger.error({
+                message: 'Multirespondent submission save error',
+                meta: logMeta,
+                error,
+              })
+              return new SubmissionSaveError()
+            },
+          )
+        })
     })
     .map(({ submission, responseMetadata, snapshot }) => {
       logger.info({

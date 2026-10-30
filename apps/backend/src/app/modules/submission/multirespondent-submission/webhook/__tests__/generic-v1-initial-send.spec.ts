@@ -240,6 +240,7 @@ const submitAndCapturePostedBody = async ({
 }): Promise<{
   body?: WebhookData
   writtenSnapshots: SubmissionSnapshot[]
+  stepSubmittedSnapshots: SubmissionSnapshot[]
 }> => {
   const form = await buildForm({ workflow, webhook })
   const growthbook = growthbookWith(enableMrfWebhooks)
@@ -299,15 +300,21 @@ const submitAndCapturePostedBody = async ({
   })
   await flushPromises()
 
-  const writtenSnapshots = MockSnapshotStore.writeSnapshot.mock.calls.map(
+  const allSnapshots = MockSnapshotStore.writeSnapshot.mock.calls.map(
     (call) => call[0],
+  )
+  const writtenSnapshots = allSnapshots.filter(
+    ({ contentFormat }) => contentFormat === 'v1',
+  )
+  const stepSubmittedSnapshots = allSnapshots.filter(
+    ({ contentFormat }) => contentFormat === 'v4',
   )
   const body =
     MockAxios.post.mock.calls.length > 0
       ? (MockAxios.post.mock.calls[0][1] as WebhookView).data
       : undefined
 
-  return { body, writtenSnapshots }
+  return { body, writtenSnapshots, stepSubmittedSnapshots }
 }
 
 describe('[GATE] generic V1 initial send', () => {
@@ -708,20 +715,19 @@ describe('[GATE] generic V1 initial send', () => {
   })
 
   describe('the snapshot', () => {
-    it('should write exactly one object, in the V1 shape, and no V4 object', async () => {
-      const { writtenSnapshots } = await submitAndCapturePostedBody({
-        workflow: [step()],
-        webhook: { url: GENERIC_URL, isRetryEnabled: true },
-      })
+    it('should write exactly one V1 delivery object, plus the step submitted V4 snapshot', async () => {
+      const { writtenSnapshots, stepSubmittedSnapshots } =
+        await submitAndCapturePostedBody({
+          workflow: [step()],
+          webhook: { url: GENERIC_URL, isRetryEnabled: true },
+        })
 
       expect(writtenSnapshots).toHaveLength(1)
       expect(writtenSnapshots[0].contentFormat).toBe('v1')
       expect(writtenSnapshots[0]).not.toHaveProperty(
         'encryptedSubmissionSecretKey',
       )
-      expect(writtenSnapshots.some((snap) => snap.contentFormat === 'v4')).toBe(
-        false,
-      )
+      expect(stepSubmittedSnapshots).toHaveLength(1)
     })
 
     it('should record the token under the shape it was written in', async () => {
@@ -744,13 +750,15 @@ describe('[GATE] generic V1 initial send', () => {
       expect(tokens?.v4).toBeUndefined()
     })
 
-    it('should write no snapshot when retries are disabled, exactly as for V4', async () => {
-      const { writtenSnapshots, body } = await submitAndCapturePostedBody({
-        workflow: [step()],
-        webhook: { url: GENERIC_URL, isRetryEnabled: false },
-      })
+    it('should write no V1 snapshot when retries are disabled, exactly as for V4', async () => {
+      const { writtenSnapshots, stepSubmittedSnapshots, body } =
+        await submitAndCapturePostedBody({
+          workflow: [step()],
+          webhook: { url: GENERIC_URL, isRetryEnabled: false },
+        })
 
       expect(writtenSnapshots).toHaveLength(0)
+      expect(stepSubmittedSnapshots).toHaveLength(1)
       expect(body).toBeDefined()
       const recovered = formsgSdk.crypto.decrypt(formKeypair.secretKey, {
         encryptedContent: body!.encryptedContent,
@@ -759,14 +767,16 @@ describe('[GATE] generic V1 initial send', () => {
       expect(recovered?.responses).toEqual(EXPECTED_V1_ARRAY)
     })
 
-    it('should write no snapshot with the flag off', async () => {
-      const { writtenSnapshots } = await submitAndCapturePostedBody({
-        workflow: [step()],
-        webhook: { url: GENERIC_URL, isRetryEnabled: true },
-        enableMrfWebhooks: false,
-      })
+    it('should write no V1 snapshot with the flag off', async () => {
+      const { writtenSnapshots, stepSubmittedSnapshots } =
+        await submitAndCapturePostedBody({
+          workflow: [step()],
+          webhook: { url: GENERIC_URL, isRetryEnabled: true },
+          enableMrfWebhooks: false,
+        })
 
       expect(writtenSnapshots).toHaveLength(0)
+      expect(stepSubmittedSnapshots).toHaveLength(1)
     })
   })
 
@@ -799,12 +809,14 @@ describe('[GATE] generic V1 initial send', () => {
         okAsync({ token: 'tok-v4', key: 'key-v4' }),
       )
 
-      const { body, writtenSnapshots } = await submitAndCapturePostedBody({
-        workflow: [step()],
-        webhook: { url: PLUMBER_URL, isRetryEnabled: true },
-      })
+      const { body, writtenSnapshots, stepSubmittedSnapshots } =
+        await submitAndCapturePostedBody({
+          workflow: [step()],
+          webhook: { url: PLUMBER_URL, isRetryEnabled: true },
+        })
 
-      expect(writtenSnapshots[0].contentFormat).toBe('v4')
+      expect(writtenSnapshots).toHaveLength(0)
+      expect(stepSubmittedSnapshots).toHaveLength(1)
       expect(body!.version).toBe(4)
       expect(body).toHaveProperty('encryptedSubmissionSecretKey')
       expect(body).toHaveProperty('workflowContent')
