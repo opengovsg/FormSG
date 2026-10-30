@@ -58,7 +58,7 @@
     "formsg-shared": "workspace:*"
   },
   "devDependencies": {
-    "@playwright/test": "^1.64.1",
+    "@playwright/test": "^1.58.2",
     "auto-changelog": "^2.5.0",
     "commit-and-tag-version": "^12.6.1",
     "concurrently": "^7.6.0",
