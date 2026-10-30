@@ -13,9 +13,18 @@ import {
 import { Dictionary } from 'lodash'
 
 import { BasicField, FormField } from 'formsg-shared/types'
-import { FormWorkflowStepDto, WorkflowType } from 'formsg-shared/types/form'
+import {
+  FormAuthType,
+  FormWorkflowStepDto,
+  WorkflowType,
+} from 'formsg-shared/types/form'
 import { checkIsOptionsMismatched } from 'formsg-shared/utils/options-recipients-map-validation'
+import {
+  getStepAuthType,
+  isWorkflowStepAuthType,
+} from 'formsg-shared/utils/step-login'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 import { FormFieldWithQuestionNo } from '~features/form/types'
@@ -27,6 +36,7 @@ import {
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
+import { useIsStepLoginShown } from '../../../hooks/useIsStepLoginShown'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { useIsWorkflowEditBlocked } from '../../../hooks/useIsWorkflowEditBlocked'
 import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
@@ -38,6 +48,12 @@ import { InactiveApprovalsBlock } from './InactiveApprovalsBlock'
 
 const MISSING_FIELD_MESSAGE = 'This field is missing'
 const NO_EMAILS_MESSAGE = 'No emails added'
+
+const STEP_LOGIN_COPY_KEY = 'features.adminForm.sidebar.workflow.stepLogin'
+const STEP_LOGIN_LABEL_KEYS = {
+  [FormAuthType.MyInfo]: `${STEP_LOGIN_COPY_KEY}.singpass`,
+  [FormAuthType.CP]: `${STEP_LOGIN_COPY_KEY}.corppass`,
+} as const
 
 interface InactiveStepBlockProps {
   stepNumber: number
@@ -139,7 +155,9 @@ export const InactiveStepBlock = ({
     iconRestColor,
     iconTransitionDuration,
   } = useWorkflowSurfaces()
-  const { idToFieldMap } = useAdminFormWorkflow()
+  const { idToFieldMap, formWorkflow } = useAdminFormWorkflow()
+  const { data: form } = useAdminForm()
+  const isLoginShown = useIsStepLoginShown(stepNumber)
   const setToEditing = useAdminWorkflowStore(setToEditingSelector)
   const stateData = useAdminWorkflowStore(createOrEditDataSelector)
   const requestSwitchTo = useAdminWorkflowStore(requestSwitchToSelector)
@@ -209,17 +227,36 @@ export const InactiveStepBlock = ({
     ))
   }, [idToFieldMap, step.edit])
 
-  const fieldsSection = (
-    <Stack>
-      <Text textStyle={sectionLabelTextStyle}>
-        {t('features.adminForm.sidebar.workflow.respondentBlock.fieldsToFill')}
-      </Text>
-      <Stack direction="column" spacing="0.25rem">
-        {questionBadges}
+  const fieldsSection =
+    step.edit.length === 0 && isLoginShown ? null : (
+      <Stack>
+        <Text textStyle={sectionLabelTextStyle}>
+          {t(
+            'features.adminForm.sidebar.workflow.respondentBlock.fieldsToFill',
+          )}
+        </Text>
+        <Stack direction="column" spacing="0.25rem">
+          {questionBadges}
+        </Stack>
       </Stack>
-    </Stack>
-  )
-  const hideEmptyApprovals = isRedesign && !step.approval_field
+    )
+  const stepAuthType = form
+    ? getStepAuthType(form, formWorkflow, stepNumber)
+    : FormAuthType.NIL
+  const loginSection =
+    isLoginShown && isWorkflowStepAuthType(stepAuthType) ? (
+      <Stack>
+        <Text textStyle={sectionLabelTextStyle}>
+          {t(`${STEP_LOGIN_COPY_KEY}.inactiveLabel`)}
+        </Text>
+        <Flex>
+          <LogicBadge>{t(STEP_LOGIN_LABEL_KEYS[stepAuthType])}</LogicBadge>
+        </Flex>
+      </Stack>
+    ) : null
+  const hideEmptyApprovals =
+    (isRedesign || isLoginShown) &&
+    (!step.approval_field || step.is_approval_enabled === false)
   const approvalsSection =
     isFirstStep || hideEmptyApprovals ? null : (
       <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />
@@ -279,6 +316,7 @@ export const InactiveStepBlock = ({
             )}
           </Stack>
 
+          {loginSection}
           {isRedesign ? (
             <>
               {approvalsSection}

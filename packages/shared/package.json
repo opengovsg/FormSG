@@ -154,6 +154,10 @@
       "require": "./dist/utils/login-identity.js",
       "default": "./utils/login-identity.ts"
     },
+    "./utils/step-login": {
+      "require": "./dist/utils/step-login.js",
+      "default": "./utils/step-login.ts"
+    },
     "./utils/myinfo-prefix": {
       "require": "./dist/utils/myinfo-prefix.js",
       "default": "./utils/myinfo-prefix.ts"

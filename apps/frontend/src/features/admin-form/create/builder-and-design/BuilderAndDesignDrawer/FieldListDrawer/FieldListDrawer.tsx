@@ -87,7 +87,7 @@ export const FieldListDrawer = (): JSX.Element => {
       key: FieldListTabIndex.Basic,
     },
     {
-      header: t('builder.tabs.myInfo'),
+      header: 'Singpass',
       component: MyInfoFieldPanel,
       isHidden: false,
       isDisabled: isLoading,

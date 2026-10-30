@@ -15,7 +15,9 @@ import {
   FieldIdToQuarantineKeyType,
   getAttachmentPresignedPostData,
   getAttachmentSizes,
+  getMrfStepAuthRedirectUrl,
   getPublicFormAuthRedirectUrl,
+  logoutMrfStep,
   logoutPublicForm,
   SubmitEmailFormArgs,
   submitEmailModeForm,
@@ -30,18 +32,32 @@ import {
   uploadAttachmentToQuarantine,
 } from './PublicFormService'
 
-export const usePublicAuthMutations = (
-  formId: string,
-  authType?: Exclude<FormAuthType, FormAuthType.NIL>,
-) => {
+/** The pending step of an MRF submission, whose login replaces Step 1's. */
+export type MrfStepAuthTarget = {
+  submissionId: string
+  stepToken?: string
+}
+
+export const usePublicAuthMutations = ({
+  formId,
+  authType,
+  mrfStep,
+}: {
+  formId: string
+  authType?: Exclude<FormAuthType, FormAuthType.NIL>
+  mrfStep?: MrfStepAuthTarget
+}) => {
   const { storePrefillQuery } = useStorePrefillQuery()
 
   const toast = useToast({ status: 'success', isClosable: true })
 
   const handleLoginMutation = useMutation(
     () => {
+      // Also keeps the submission key and step token for the return trip.
       const encodedQuery = storePrefillQuery()
-      return getPublicFormAuthRedirectUrl(formId, false, encodedQuery)
+      return mrfStep
+        ? getMrfStepAuthRedirectUrl({ formId, ...mrfStep, encodedQuery })
+        : getPublicFormAuthRedirectUrl(formId, false, encodedQuery)
     },
     {
       onSuccess: (redirectUrl) => {
@@ -63,7 +79,9 @@ export const usePublicAuthMutations = (
 
   const handleLogoutMutation = useMutation(
     (authType: Exclude<FormAuthType, FormAuthType.NIL>) =>
-      logoutPublicForm(authType),
+      mrfStep
+        ? logoutMrfStep(formId, mrfStep.submissionId)
+        : logoutPublicForm(authType),
     {
       onSuccess: () => {
         // Refresh browser to reset form state.

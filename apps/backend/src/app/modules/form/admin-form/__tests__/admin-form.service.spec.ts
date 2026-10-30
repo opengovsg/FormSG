@@ -780,6 +780,72 @@ describe('admin-form.service', () => {
           DROPDOWN_FIELD_OPTIONS_TO_RECIPIENTS_MAP,
         )
       })
+
+      describe('with login on a later step', () => {
+        const MYINFO_FIELD = {
+          _id: 'myInfoNameFieldId',
+          fieldType: BasicField.ShortText,
+          title: 'Name',
+          myInfo: { attr: MyInfoAttribute.Name },
+        }
+        const MOCK_STEP_LOGIN_FORM = {
+          ...MOCK_MRF_FORM,
+          authType: FormAuthType.NIL,
+          form_fields: [...MOCK_MRF_FORM_FIELDS, MYINFO_FIELD],
+          workflow: [
+            MOCK_MRF_WORKFLOW[0],
+            {
+              ...MOCK_MRF_WORKFLOW[1],
+              edit: [MYINFO_FIELD._id],
+              auth: { auth_type: FormAuthType.MyInfo },
+            },
+          ],
+        }
+        const makeMockForm = (source: object) =>
+          ({
+            ...source,
+            getDuplicateParams: jest.fn().mockReturnValue({}),
+          }) as unknown as IFormDocument
+
+        it('should refuse to duplicate into storage mode', async () => {
+          const createSpy = jest.spyOn(FormModel, 'create')
+
+          const result = await AdminFormService.duplicateForm(
+            makeMockForm(MOCK_STEP_LOGIN_FORM),
+            new ObjectId().toHexString(),
+            MOCK_ENCRYPT_OVERRIDE_PARAMS,
+          )
+
+          expect(result._unsafeUnwrapErr()).toEqual(
+            new MalformedParametersError(
+              AdminFormService.LATER_STEP_LOGIN_DUPLICATE_MODE_ERROR,
+            ),
+          )
+          expect(createSpy).not.toHaveBeenCalled()
+        })
+
+        it.each([
+          ['as a multi-respondent form', MOCK_STEP_LOGIN_FORM, OVERRIDE_PARAMS],
+          [
+            'into storage mode when later steps have no login',
+            MOCK_MRF_FORM,
+            MOCK_ENCRYPT_OVERRIDE_PARAMS,
+          ],
+        ])('should duplicate %s', async (_, source, overrideParams) => {
+          const mockForm = makeMockForm(source)
+          jest
+            .spyOn(FormModel, 'create')
+            .mockResolvedValueOnce(mockForm as never)
+
+          const result = await AdminFormService.duplicateForm(
+            mockForm,
+            new ObjectId().toHexString(),
+            overrideParams,
+          )
+
+          expect(result.isOk()).toBe(true)
+        })
+      })
     })
 
     it('should successfully duplicate form', async () => {
@@ -2199,7 +2265,10 @@ describe('admin-form.service', () => {
       expect(actualResult.isOk()).toBeTrue()
       expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_SETTINGS)
       expect(ENCRYPT_UPDATE_SPY).toHaveBeenCalledWith(
-        { _id: storageForm._id },
+        expect.objectContaining({
+          _id: storageForm._id,
+          status: storageForm.status,
+        }),
         settingsToUpdate,
         { new: true, runValidators: true },
       )
@@ -2356,7 +2425,7 @@ describe('admin-form.service', () => {
         })
 
         expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
-          { _id: form._id },
+          expect.objectContaining({ _id: form._id, status: form.status }),
           { status: FormStatus.Public, closeAt: null },
           expect.anything(),
         )
@@ -2370,7 +2439,7 @@ describe('admin-form.service', () => {
         })
 
         expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
-          { _id: form._id },
+          expect.objectContaining({ _id: form._id, status: form.status }),
           { status: FormStatus.Public },
           expect.anything(),
         )
@@ -2384,7 +2453,7 @@ describe('admin-form.service', () => {
         })
 
         expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
-          { _id: form._id },
+          expect.objectContaining({ _id: form._id, status: form.status }),
           { status: FormStatus.Public },
           expect.anything(),
         )
@@ -2400,7 +2469,7 @@ describe('admin-form.service', () => {
         })
 
         expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
-          { _id: form._id },
+          expect.objectContaining({ _id: form._id, status: form.status }),
           { status: FormStatus.Public, closeAt: rescheduled },
           expect.anything(),
         )
@@ -4403,6 +4472,7 @@ describe('admin-form.service', () => {
         // Arrange
         const mockForm = {
           _id: new ObjectId().toHexString(),
+          authType: FormAuthType.MyInfo,
           responseMode: FormResponseMode.Multirespondent,
           form_fields: MOCK_FORM_FIELDS,
           workflow: [
@@ -4428,9 +4498,10 @@ describe('admin-form.service', () => {
         )
 
         // Assert
-        expect(result.isErr()).toBe(true)
-        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
-          MalformedParametersError,
+        expect(result._unsafeUnwrapErr()).toEqual(
+          new MalformedParametersError(
+            'Remove the Myinfo fields from this step first.',
+          ),
         )
       })
 
@@ -4452,6 +4523,7 @@ describe('admin-form.service', () => {
         ]
         const mockForm = {
           _id: mockFormId,
+          authType: FormAuthType.MyInfo,
           responseMode: FormResponseMode.Multirespondent,
           form_fields: MOCK_FORM_FIELDS,
           workflow: [mockUpdatedWorkflow[0]],
@@ -4495,6 +4567,7 @@ describe('admin-form.service', () => {
         ]
         const mockForm = {
           _id: mockFormId,
+          authType: FormAuthType.MyInfo,
           responseMode: FormResponseMode.Multirespondent,
           form_fields: MOCK_FORM_FIELDS,
           workflow: [],
@@ -4587,7 +4660,10 @@ describe('admin-form.service', () => {
         // Assert
         expect(result.isOk()).toBe(true)
         expect(updateSpy).toHaveBeenCalledWith(
-          { _id: mockFormId, 'payments_field.enabled': { $ne: true } },
+          expect.objectContaining({
+            _id: mockFormId,
+            'payments_field.enabled': { $ne: true },
+          }),
           { workflow: [NEW_STEP] },
           { new: true, runValidators: true },
         )
@@ -4654,6 +4730,7 @@ describe('admin-form.service', () => {
         // Arrange
         const mockForm = {
           _id: new ObjectId().toHexString(),
+          authType: FormAuthType.MyInfo,
           responseMode: FormResponseMode.Multirespondent,
           form_fields: MOCK_FORM_FIELDS,
           workflow: [
@@ -4687,9 +4764,10 @@ describe('admin-form.service', () => {
         )
 
         // Assert
-        expect(result.isErr()).toBe(true)
-        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
-          MalformedParametersError,
+        expect(result._unsafeUnwrapErr()).toEqual(
+          new MalformedParametersError(
+            'Remove the Myinfo fields from this step first.',
+          ),
         )
       })
 
@@ -4712,6 +4790,7 @@ describe('admin-form.service', () => {
         ]
         const mockForm = {
           _id: mockFormId,
+          authType: FormAuthType.MyInfo,
           responseMode: FormResponseMode.Multirespondent,
           form_fields: MOCK_FORM_FIELDS,
           workflow: mockWorkflow,
@@ -4811,7 +4890,7 @@ describe('admin-form.service', () => {
       }) as unknown as IPopulatedForm
 
     it.each([FormStatus.Public, FormStatus.Private])(
-      'allows removing an identity from Step 1 on a %s form',
+      'allows unassigning an identity on a %s form while its provider remains',
       async (status) => {
         const write = jest
           .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
@@ -4825,21 +4904,54 @@ describe('admin-form.service', () => {
           { ...firstStep, edit: [regularId] } as any,
         )
         expect(result.isOk()).toBe(true)
-        expect(write).toHaveBeenCalled()
+        expect(write).toHaveBeenCalledTimes(1)
       },
     )
 
-    it('rejects assigning an identity to a later step', async () => {
+    it('rejects assigning an identity to a later step without a login', async () => {
       const write = jest.spyOn(MultirespondentFormModel, 'findOneAndUpdate')
       const result = await AdminFormService.updateFormWorkflowStep(
         makeForm(FormStatus.Private),
         1,
         { ...nextStep, edit: [identityId, regularId] } as any,
       )
-      expect(result._unsafeUnwrapErr().message).toContain(
-        'UEN fields can only be filled in by Step 1.',
+      expect(result._unsafeUnwrapErr().message).toBe(
+        'Remove the Myinfo fields from this step first.',
       )
       expect(write).not.toHaveBeenCalled()
+    })
+
+    it('saves a later-step login with the step and drops the request-only keys', async () => {
+      const write = jest
+        .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
+        // @ts-ignore
+        .mockReturnValue({
+          exec: jest.fn().mockResolvedValue({ _id: 'form', workflow: [] }),
+        })
+      const auth = { auth_type: FormAuthType.CP, esrvc_id: 'ESRVC' }
+      const stepOne = { ...firstStep, edit: [regularId] }
+      const form = makeForm(FormStatus.Private)
+      ;(form as unknown as { workflow: unknown[] }).workflow = [
+        stepOne,
+        nextStep,
+      ]
+      const result = await AdminFormService.updateFormWorkflowStep(
+        form,
+        1,
+        {
+          ...nextStep,
+          edit: [identityId],
+          auth,
+          first_step_login: undefined,
+        } as any,
+        { isStepLoginEnabled: true },
+      )
+      expect(result.isOk()).toBe(true)
+      expect(write).toHaveBeenCalledWith(
+        expect.anything(),
+        { workflow: [stepOne, { ...nextStep, edit: [identityId], auth }] },
+        expect.anything(),
+      )
     })
   })
 
@@ -5064,15 +5176,19 @@ describe('convertSubmitterIdCollection', () => {
     expect(result._unsafeUnwrap()).toEqual(settings)
     expect(form.isSubmitterIdCollectionEnabled).toBe(false)
     // NRIC/FIN comes first, as in the builder's Corppass panel.
-    expect(insertFormFields).toHaveBeenCalledWith([
-      expect.objectContaining({
-        fieldType: BasicField.Nric,
-        corppass: { attr: CorppassAttribute.Uid },
-      }),
-      expect.objectContaining({
-        fieldType: BasicField.Uen,
-        corppass: { attr: CorppassAttribute.Uen },
-      }),
-    ])
+    expect(insertFormFields).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          fieldType: BasicField.Nric,
+          corppass: { attr: CorppassAttribute.Uid },
+        }),
+        expect.objectContaining({
+          fieldType: BasicField.Uen,
+          corppass: { attr: CorppassAttribute.Uen },
+        }),
+      ],
+      undefined,
+      expect.objectContaining({ isSubmitterIdCollectionEnabled: true }),
+    )
   })
 })

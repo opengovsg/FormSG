@@ -26,6 +26,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     previousSubmission,
     previousAttachments,
     currentWorkflowStep,
+    mrfStepAuthTarget,
   } = usePublicFormContext()
 
   const renderFields = useMemo(() => {
@@ -42,16 +43,21 @@ export const FormFieldsContainer = (): JSX.Element | null => {
       )
     }
 
+    // A later MRF step only asks for login when it has its own; form.authType
+    // is then that step's login, not Step 1's.
     if (
       isAuthRequired &&
       form.authType !== FormAuthType.NIL &&
       (form.responseMode !== FormResponseMode.Multirespondent ||
-        !previousSubmission)
+        !previousSubmission ||
+        !!mrfStepAuthTarget)
     ) {
       return (
         <FormAuth
           authType={form.authType}
-          isSubmitterIdCollectionEnabled={isSubmitterIdCollected(form)}
+          isSubmitterIdCollectionEnabled={
+            mrfStepAuthTarget ? undefined : isSubmitterIdCollected(form)
+          }
           hasSingleSubmissionValidationError={
             hasSingleSubmissionValidationError
           }
@@ -77,6 +83,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     previousSubmission,
     previousAttachments,
     currentWorkflowStep,
+    mrfStepAuthTarget,
     handleSubmitForm,
     hasSingleSubmissionValidationError,
     hasRespondentNotWhitelistedError,

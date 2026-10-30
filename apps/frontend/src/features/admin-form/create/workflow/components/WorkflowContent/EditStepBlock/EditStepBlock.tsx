@@ -1,14 +1,38 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Box, Stack } from '@chakra-ui/react'
+import { useQueryClient } from 'react-query'
+import { useParams } from 'react-router-dom'
+import {
+  Box,
+  Divider,
+  Stack,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+} from '@chakra-ui/react'
 
 import {
-  FormWorkflowStep,
+  FirstStepLoginInput,
+  FormAuthType,
+  FormWorkflowStepAuth,
   FormWorkflowStepBase,
+  FormWorkflowStepWriteDto,
   WorkflowType,
 } from 'formsg-shared/types'
 
+import InlineMessage from '~components/InlineMessage'
+import { Tab } from '~components/Tabs'
+
+import { getAdminFormView } from '~features/admin-form/common/AdminViewFormService'
+import { useRegisterNavigationSave } from '~features/admin-form/common/navigationSave'
+import {
+  adminFormKeys,
+  useAdminForm,
+} from '~features/admin-form/common/queries'
 import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
+import { saveStepOneLoginRestrictions } from '~features/admin-form/settings/components/AuthSettingsSection/StepOneLoginRestrictions'
+import { adminFormSettingsKeys } from '~features/admin-form/settings/queries'
 import { useUser } from '~features/user/queries'
 
 import {
@@ -21,22 +45,28 @@ import {
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
 import { useGuidedStepReveal } from '../../../hooks/useGuidedStepReveal'
+import { useIsStepLoginShown } from '../../../hooks/useIsStepLoginShown'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
 import { EditStepInputs } from '../../../types'
+import { hasReviewedFormChanged } from '../../../utils/authFieldRemoval'
 import { getGuidedSecondaryAction } from '../../../utils/guidedStepPolicy'
 import { SpotlightGroup } from '../../Spotlight'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { ApprovalsBlock } from './ApprovalsBlock'
 import { GuidedActionGroup } from './GuidedActionGroup'
+import { LoginBlock } from './LoginBlock'
 import { QuestionsBlock } from './QuestionsBlock'
 import { RespondentBlock } from './RespondentBlock'
 import { StepNameBlock } from './StepNameBlock'
 
 export interface EditLogicBlockProps {
   defaultValues?: Partial<EditStepInputs>
-  onSubmit: (inputs: FormWorkflowStep) => void
+  onSubmit: (
+    inputs: FormWorkflowStepWriteDto,
+    afterSave?: () => Promise<void>,
+  ) => void | Promise<void>
 
   stepNumber: number
   submitButtonLabel: string
@@ -50,16 +80,63 @@ export const APPROVAL_ENABLED_NAME = 'is_approval_enabled'
 
 const SECTION_REVEAL_SCROLL_DELAY_MS = 100
 
+type WriteStep = FormWorkflowStepWriteDto & { _id: string }
+
+// Corppass is the only login with an e-service ID; an empty one is omitted.
+const normaliseEsrvcId = (
+  authType: FormAuthType,
+  esrvcId: string | undefined,
+): { esrvc_id?: string } => {
+  const trimmed = esrvcId?.trim()
+  return authType === FormAuthType.CP && trimmed ? { esrvc_id: trimmed } : {}
+}
+
+/** A later step's login as sent: absent when the step has none. */
+const normaliseStepAuth = (
+  auth: FormWorkflowStepAuth | null | undefined,
+): FormWorkflowStepAuth | undefined =>
+  auth
+    ? {
+        auth_type: auth.auth_type,
+        ...normaliseEsrvcId(auth.auth_type, auth.esrvc_id),
+      }
+    : undefined
+
+// Step 1's login updates the form-level settings, where a missing e-service
+// ID means "unchanged". Send a cleared Corppass ID as '' so it is saved.
+const normaliseFirstStepLogin = (
+  login: FirstStepLoginInput | undefined,
+): { first_step_login?: FirstStepLoginInput } =>
+  login
+    ? {
+        first_step_login: {
+          auth_type: login.auth_type,
+          ...(login.auth_type === FormAuthType.CP
+            ? { esrvc_id: login.esrvc_id?.trim() ?? '' }
+            : {}),
+        },
+      }
+    : {}
+
 export const buildWorkflowStep = (
   rawInputs: EditStepInputs,
   isFirstStep: boolean,
-): (FormWorkflowStep & { _id: string }) | undefined => {
+): WriteStep | undefined => {
   const inputs = { ...rawInputs }
   if (inputs.approval_field === '') {
     inputs.approval_field = undefined
   }
   if (inputs.step_name === '') {
     inputs.step_name = undefined
+  }
+
+  const fieldDeletion = {
+    ...(inputs.expected_last_modified
+      ? { expected_last_modified: inputs.expected_last_modified }
+      : {}),
+    ...(inputs.delete_auth_field_ids?.length
+      ? { delete_auth_field_ids: inputs.delete_auth_field_ids }
+      : {}),
   }
 
   // Step 1 is always "anyone with the link", represented as a static step with
@@ -71,22 +148,32 @@ export const buildWorkflowStep = (
   if (isFirstStep) {
     return {
       _id: inputs._id,
+      ...fieldDeletion,
       workflow_type: WorkflowType.Static,
       edit: inputs.edit,
       approval_field: inputs.approval_field,
       is_approval_enabled: !!inputs.is_approval_enabled,
       step_name: inputs.step_name,
       emails: inputs.emails ?? [],
+      // Only sent once the admin changed Step 1's login in the editor.
+      ...normaliseFirstStepLogin(inputs.first_step_login),
     }
   }
 
-  const workflowStepBase: FormWorkflowStepBase & { _id: string } = {
+  // A saved login is always sent back, even while the login block is hidden,
+  // so a save never drops it.
+  const workflowStepBase: Omit<FormWorkflowStepBase, 'auth'> & {
+    _id: string
+    auth?: FormWorkflowStepAuth
+  } = {
     _id: inputs._id,
+    ...fieldDeletion,
     workflow_type: inputs.workflow_type,
     edit: inputs.edit,
     approval_field: inputs.approval_field,
     is_approval_enabled: !!inputs.is_approval_enabled,
     step_name: inputs.step_name,
+    auth: normaliseStepAuth(inputs.auth),
   }
 
   const workflowType: WorkflowType | undefined = inputs.workflow_type
@@ -111,7 +198,7 @@ export const buildWorkflowStep = (
         ...workflowStepBase,
         workflow_type: WorkflowType.Dynamic,
         ...(inputs.field ? { field: inputs.field } : {}),
-      } as FormWorkflowStep & { _id: string }
+      } as WriteStep
     }
     case WorkflowType.Conditional: {
       return {
@@ -120,7 +207,7 @@ export const buildWorkflowStep = (
         ...(inputs.conditional_field
           ? { conditional_field: inputs.conditional_field }
           : {}),
-      } as FormWorkflowStep & { _id: string }
+      } as WriteStep
     }
     default: {
       const exhaustiveCheck: never = workflowType
@@ -144,6 +231,7 @@ export const EditStepBlock = ({
   const isCreatingState = useAdminWorkflowStore(isCreatingStateSelector)
   const isGuidedSetup = useAdminWorkflowStore(isGuidedSetupSelector)
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const isLoginShown = useIsStepLoginShown(stepNumber)
   const { cardRadius, activeCardBg, activeCardBorderWidth, activeCardShadow } =
     useWorkflowSurfaces()
 
@@ -155,7 +243,13 @@ export const EditStepBlock = ({
     },
   })
   const { user, isLoading: isUserLoading } = useUser()
-  const _isLoading = isLoading || isUserLoading
+  const [isSavingRestrictions, setIsSavingRestrictions] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const { formId } = useParams()
+  const queryClient = useQueryClient()
+  const { data: originalForm } = useAdminForm()
+  const [destructiveSaveBaseline] = useState(originalForm)
+  const _isLoading = isLoading || isUserLoading || isSavingRestrictions
 
   const wrapperRef = useRef<HTMLDivElement | null>(null)
 
@@ -172,14 +266,110 @@ export const EditStepBlock = ({
 
   const { isDirty } = formMethods.formState
 
-  const handleSubmit = formMethods.handleSubmit((inputs: EditStepInputs) => {
-    const step = buildWorkflowStep(inputs, isFirstStep)
-    if (!step) {
+  const [activeTab, setActiveTab] = useState(0)
+  useEffect(() => setActiveTab(0), [stepNumber])
+
+  const saveSucceeded = useRef(false)
+  const pendingNavigationSave = useRef<Promise<boolean> | null>(null)
+
+  const handleSubmit = formMethods.handleSubmit(
+    async (inputs: EditStepInputs) => {
+      if (inputs.first_step_restrictions_parsing) {
+        setSaveError(
+          'Wait for the eligible respondent list to finish checking.',
+        )
+        cancelPendingSwitch()
+        return
+      }
+      const step = buildWorkflowStep(inputs, isFirstStep)
+      if (!step) {
+        cancelPendingSwitch()
+        return
+      }
+      setSaveError('')
+      let didSaveStep = false
+      try {
+        if (inputs.delete_auth_field_ids?.length) {
+          if (!formId || !destructiveSaveBaseline)
+            throw new Error(
+              'Reload the workflow before confirming field deletion.',
+            )
+          const latest = await getAdminFormView(formId)
+          if (
+            !('workflow' in latest) ||
+            !('workflow' in destructiveSaveBaseline)
+          )
+            throw new Error(
+              'This form changed. Reload the workflow before deleting fields.',
+            )
+          if (hasReviewedFormChanged(latest, destructiveSaveBaseline))
+            throw new Error(
+              'This form changed while you were editing. Cancel and reopen the step to review the fields and rules before deleting them.',
+            )
+        }
+        await onSubmit(step, async () => {
+          didSaveStep = true
+          if (
+            !isFirstStep ||
+            !inputs.first_step_restrictions ||
+            !formId ||
+            inputs.first_step_login?.auth_type === FormAuthType.NIL
+          )
+            return
+          setIsSavingRestrictions(true)
+          await saveStepOneLoginRestrictions(
+            formId,
+            {
+              isSingleSubmission:
+                inputs.first_step_restrictions.baselineIsSingleSubmission,
+            },
+            inputs.first_step_restrictions.value,
+          )
+        })
+        saveSucceeded.current = true
+      } catch (error) {
+        cancelPendingSwitch()
+        setSaveError(
+          didSaveStep
+            ? 'The step was saved, but some Step 1 restrictions could not be saved. Check the current settings and try again.'
+            : error instanceof Error
+              ? error.message
+              : 'The step could not be saved. Please try again.',
+        )
+      } finally {
+        setIsSavingRestrictions(false)
+        if (formId && inputs.first_step_restrictions) {
+          void queryClient.invalidateQueries(adminFormKeys.id(formId))
+          void queryClient.invalidateQueries(adminFormSettingsKeys.id(formId))
+        }
+      }
+    },
+    (errors) => {
+      if (errors.approval_field || errors.is_approval_enabled) setActiveTab(1)
+      else if (errors.auth || errors.first_step_login) setActiveTab(2)
+      else setActiveTab(0)
       cancelPendingSwitch()
-      return
-    }
-    onSubmit(step)
-  }, cancelPendingSwitch)
+    },
+  )
+
+  const saveForNavigation = (): Promise<boolean> => {
+    if (pendingNavigationSave.current) return pendingNavigationSave.current
+    if (_isLoading) return Promise.resolve(false)
+    saveSucceeded.current = false
+    pendingNavigationSave.current = handleSubmit()
+      .then(() => saveSucceeded.current)
+      .finally(() => {
+        pendingNavigationSave.current = null
+      })
+    return pendingNavigationSave.current
+  }
+
+  useRegisterNavigationSave({
+    enabled: isLoginShown,
+    isDirty,
+    isSaving: _isLoading,
+    save: saveForNavigation,
+  })
 
   const hasSubmittedForPendingSwitch = useRef(false)
 
@@ -190,15 +380,50 @@ export const EditStepBlock = ({
       key="fields"
       formMethods={formMethods}
       isLoading={_isLoading}
-      isFirstStep={isFirstStep}
+      stepNumber={stepNumber}
     />
   )
+  const loginSection = isLoginShown ? (
+    <LoginBlock
+      key="login"
+      formMethods={formMethods}
+      stepNumber={stepNumber}
+      isLoading={_isLoading}
+    />
+  ) : null
   const approvalsSection = isFirstStep ? null : (
     <ApprovalsBlock
       key="what-they-do"
       formMethods={formMethods}
       stepNumber={stepNumber}
     />
+  )
+
+  const useProposedTabs = isRedesign && isLoginShown && !isGuided
+  const tabbedSections = (
+    <Tabs key="step-settings" index={activeTab} onChange={setActiveTab}>
+      <Box px={{ base: '1.5rem', md: '2rem' }}>
+        <TabList mx="-0.25rem" w="100%">
+          <Tab>Fields to fill</Tab>
+          {!isFirstStep && <Tab>Approvals</Tab>}
+          <Tab>Singpass</Tab>
+        </TabList>
+        <Divider w="auto" mx={{ base: '-1.5rem', md: '-2rem' }} />
+      </Box>
+      <TabPanels>
+        <TabPanel px="0" pt="1.5rem">
+          {questionsSection}
+        </TabPanel>
+        {!isFirstStep && (
+          <TabPanel px="0" pt="1.5rem">
+            {approvalsSection}
+          </TabPanel>
+        )}
+        <TabPanel px="0" pt="1.5rem">
+          {loginSection}
+        </TabPanel>
+      </TabPanels>
+    </Tabs>
   )
 
   const sections: JSX.Element[] = [
@@ -214,9 +439,13 @@ export const EditStepBlock = ({
       formMethods={formMethods}
       isLoading={_isLoading}
     />,
-    ...(isRedesign
-      ? [approvalsSection, questionsSection]
-      : [questionsSection, approvalsSection]
+    // Login follows the respondent in both orders: who fills the step, then
+    // how they log in, then what they do.
+    ...(useProposedTabs
+      ? [tabbedSections]
+      : isRedesign
+        ? [loginSection, approvalsSection, questionsSection]
+        : [loginSection, questionsSection, approvalsSection]
     ).filter((section): section is JSX.Element => section !== null),
   ]
 
@@ -246,7 +475,7 @@ export const EditStepBlock = ({
     }
 
     hasSubmittedForPendingSwitch.current = true
-    handleSubmit()
+    void saveForNavigation()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingSwitchTo])
 
@@ -272,9 +501,28 @@ export const EditStepBlock = ({
       transitionProperty="common"
       transitionDuration="normal"
     >
-      <SpotlightGroup activeIndex={reveal.activeIndex} isEnabled={isGuided}>
-        {sections.slice(0, visibleCount)}
-      </SpotlightGroup>
+      {useProposedTabs ? (
+        <Stack spacing="1.5rem" pt="1.5rem">
+          {sections
+            .slice(0, -1)
+            .flatMap((section, index) =>
+              index === 0
+                ? [section]
+                : [<Divider key={`intro-divider-${index}`} />, section],
+            )}
+          {tabbedSections}
+          <Divider />
+        </Stack>
+      ) : (
+        <SpotlightGroup activeIndex={reveal.activeIndex} isEnabled={isGuided}>
+          {sections.slice(0, visibleCount)}
+        </SpotlightGroup>
+      )}
+      {saveError ? (
+        <Box px="2rem" pt="1rem">
+          <InlineMessage variant="error">{saveError}</InlineMessage>
+        </Box>
+      ) : null}
       <Box pt="1.5rem">
         {isGuided ? (
           <GuidedActionGroup
@@ -283,16 +531,16 @@ export const EditStepBlock = ({
               canCancel: !isFirstStep,
             })}
             isOnLastSection={reveal.isOnLastSection}
-            isLoading={isLoading}
+            isLoading={_isLoading}
             onBack={reveal.goBack}
             onCancel={setToInactive}
             onContinue={reveal.advance}
-            onDone={handleSubmit}
+            onDone={() => void saveForNavigation()}
           />
         ) : (
           <SaveActionGroup
             isLoading={_isLoading}
-            handleSubmit={handleSubmit}
+            handleSubmit={() => void saveForNavigation()}
             handleDelete={
               !isFirstStep || isRedesign ? handleOpenDeleteModal : undefined
             }

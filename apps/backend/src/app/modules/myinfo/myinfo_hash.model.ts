@@ -1,7 +1,12 @@
 import crypto from 'crypto'
 import { Mongoose, Schema } from 'mongoose'
 
-import { IHashes, IMyInfoHashModel, IMyInfoHashSchema } from '../../../types'
+import {
+  IHashes,
+  IMyInfoHashModel,
+  IMyInfoHashSchema,
+  MyInfoHashScope,
+} from '../../../types'
 import { sessionSecret } from '../../config/config'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
@@ -25,6 +30,14 @@ const MyInfoHashSchema = new Schema<IMyInfoHashSchema, IMyInfoHashModel>(
       type: Object,
       required: true,
     },
+    // Set only for a later MRF step's login; Step 1 hashes have neither.
+    authSessionId: {
+      type: String,
+    },
+    workflowStep: {
+      type: Number,
+      min: 0,
+    },
     expireAt: {
       type: Date,
       required: true,
@@ -44,20 +57,28 @@ MyInfoHashSchema.index({
 })
 MyInfoHashSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
 
+// Scoped hashes belong to one later-step login; Step 1 (and storage mode)
+// hashes have no scope, so neither can read or overwrite the other.
+const scopeFilter = (scope?: MyInfoHashScope) =>
+  scope
+    ? { authSessionId: scope.authSessionId, workflowStep: scope.workflowStep }
+    : { authSessionId: { $exists: false } }
+
+const hashUinFin = (uinFin: string): string =>
+  crypto.createHmac('sha256', sessionSecret).update(uinFin).digest('hex')
+
 MyInfoHashSchema.statics.updateHashes = async function (
   uinFin: string,
   formId: string,
   readOnlyHashes: IHashes,
   spCookieMaxAge: number,
+  scope?: MyInfoHashScope,
 ): Promise<IMyInfoHashSchema | null> {
-  const hashedUinFin = crypto
-    .createHmac('sha256', sessionSecret)
-    .update(uinFin)
-    .digest('hex')
   return this.findOneAndUpdate(
     {
-      uinFin: hashedUinFin,
+      uinFin: hashUinFin(uinFin),
       form: formId,
+      ...scopeFilter(scope),
     },
     {
       $set: {
@@ -72,14 +93,14 @@ MyInfoHashSchema.statics.updateHashes = async function (
 MyInfoHashSchema.statics.findHashes = async function (
   uinFin: string,
   formId: string,
+  scope?: MyInfoHashScope,
 ): Promise<IHashes | null> {
-  const hashedUinFin = crypto
-    .createHmac('sha256', sessionSecret)
-    .update(uinFin)
-    .digest('hex')
   const hashInfo = await this.findOne({
-    uinFin: hashedUinFin,
+    uinFin: hashUinFin(uinFin),
     form: formId,
+    ...scopeFilter(scope),
+    // TTL deletion lags, so a later-step login also checks expiry itself.
+    ...(scope ? { expireAt: { $gt: new Date() } } : {}),
   })
   return hashInfo ? hashInfo.fields : null
 }

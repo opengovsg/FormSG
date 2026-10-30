@@ -2,17 +2,18 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Flex, Skeleton, Stack, Text, useDisclosure } from '@chakra-ui/react'
 
-import { BasicField } from 'formsg-shared/types'
 import {
   EmailFormDto,
   FormResponseMode,
   FormStatus,
 } from 'formsg-shared/types/form/form'
+import { hasLaterCorppassStepWithoutEsrvcId } from 'formsg-shared/utils/step-login'
 
-import InlineMessage from '~components/InlineMessage'
 import { Switch } from '~components/Toggle/Switch'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { AuthenticationDraftNotice } from '~features/admin-form/create/common/AuthenticationDraftNotice'
+import { useAuthenticationPublishErrors } from '~features/admin-form/create/common/useAuthenticationPublishErrors'
 import { useIncompleteWorkflowStepLabels } from '~features/admin-form/create/workflow/hooks/useIncompleteWorkflowStepLabels'
 
 import { useMutateFormSettings } from '../mutations'
@@ -26,7 +27,8 @@ import { isEsrvcidRequired } from './utils'
 export const FormStatusToggle = (): JSX.Element => {
   const { t } = useTranslation()
   const {
-    data: { form_fields, _id: formId, ...adminFormData } = {},
+    data: adminForm,
+    data: { _id: formId, ...adminFormData } = {},
     isLoading: isLoadingForm,
   } = useAdminForm()
   const { data: formSettings, isLoading: isLoadingFormSettings } =
@@ -48,7 +50,17 @@ export const FormStatusToggle = (): JSX.Element => {
         'features.adminForm.settings.general.status.supplySingpassEServiceId',
       )
     }
-  }, [authType, esrvcId, formSettings?.responseMode, form_fields, status, t])
+
+    // Later Corppass steps have their own e-service ID.
+    if (
+      adminForm?.responseMode === FormResponseMode.Multirespondent &&
+      hasLaterCorppassStepWithoutEsrvcId(adminForm.workflow)
+    ) {
+      return t(
+        'features.adminForm.settings.general.status.supplyStepEServiceIds',
+      )
+    }
+  }, [adminForm, authType, esrvcId, status, t])
 
   const { mutateFormStatus } = useMutateFormSettings()
 
@@ -88,8 +100,10 @@ export const FormStatusToggle = (): JSX.Element => {
   const incompleteWorkflowModalProps = useDisclosure()
   const { onOpen: onOpenIncompleteWorkflowModal } = incompleteWorkflowModalProps
   const incompleteStepLabels = useIncompleteWorkflowStepLabels()
+  const authenticationPublishErrors = useAuthenticationPublishErrors()
 
   const onFormToggleStatusClick = useCallback(() => {
+    if (!isFormPublic && authenticationPublishErrors.length > 0) return
     if (!isFormPublic && incompleteStepLabels.length > 0) {
       return onOpenIncompleteWorkflowModal()
     }
@@ -100,6 +114,7 @@ export const FormStatusToggle = (): JSX.Element => {
   }, [
     handleToggleStatus,
     incompleteStepLabels.length,
+    authenticationPublishErrors.length,
     isForceConvertFromEmailToStorage,
     isFormPublic,
     onOpenEmailModeConvertModal,
@@ -135,28 +150,51 @@ export const FormStatusToggle = (): JSX.Element => {
           py="1rem"
           px="1.125rem"
           justify="space-between"
+          align="flex-start"
         >
-          <Text textStyle="subhead-1" id="form-status">
-            {t('features.adminForm.settings.general.status.description.prefix')}
-            <b>{statusText}</b>
-            {t('features.adminForm.settings.general.status.description.suffix')}
-          </Text>
+          <Stack spacing="0.25rem" flex="1" pr="1rem">
+            <Text textStyle="subhead-1" id="form-status">
+              {t(
+                'features.adminForm.settings.general.status.description.prefix',
+              )}
+              <b>{statusText}</b>
+              {t(
+                'features.adminForm.settings.general.status.description.suffix',
+              )}
+            </Text>
+            {preventActivationMessage ? (
+              <Text
+                textStyle="body-2"
+                color="secondary.500"
+                id="form-activation-requirement"
+              >
+                {preventActivationMessage}
+              </Text>
+            ) : null}
+          </Stack>
           <Switch
-            isDisabled={!!preventActivationMessage}
+            isDisabled={
+              !!preventActivationMessage ||
+              (!isFormPublic && authenticationPublishErrors.length > 0)
+            }
             aria-label={t(
               'features.adminForm.settings.general.status.ariaLabel',
             )}
-            aria-describedby="form-status"
+            aria-describedby={[
+              'form-status',
+              preventActivationMessage ? 'form-activation-requirement' : '',
+              authenticationPublishErrors.length > 0
+                ? 'authentication-publish-errors'
+                : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
             isLoading={mutateFormStatus.isLoading}
             isChecked={isFormPublic}
             onChange={onFormToggleStatusClick}
           />
         </Flex>
-        {preventActivationMessage ? (
-          <InlineMessage variant="warning">
-            {preventActivationMessage}
-          </InlineMessage>
-        ) : null}
+        <AuthenticationDraftNotice />
       </Stack>
     </Skeleton>
   )

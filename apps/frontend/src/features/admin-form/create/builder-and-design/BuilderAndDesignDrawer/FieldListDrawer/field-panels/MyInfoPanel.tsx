@@ -37,6 +37,7 @@ import {
   LoginFieldLimitText,
   LoginIdentityFieldSection,
 } from './LoginIdentityFieldSection'
+import { useFormUsesLogin } from './useFormUsesLogin'
 import { useLoginFieldLimit } from './useLoginFieldLimit'
 import { useOfferedLoginIdentityAttrs } from './useOfferedLoginIdentityAttrs'
 import { filterFieldsBySearchValue } from './utils'
@@ -63,8 +64,8 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
         isMrfChildrenEnabled))
 
   const { isAtLimit } = useLoginFieldLimit()
-  const isMyInfoDisabled =
-    !form || form.authType !== FormAuthType.MyInfo || isAtLimit
+  const { usesLogin } = useFormUsesLogin()
+  const isMyInfoDisabled = !form || !usesLogin(FormAuthType.MyInfo) || isAtLimit
   const isDisabled = isMyInfoDisabled || isLoading
 
   const filteredCreateMyInfoPersonalFields = filterFieldsBySearchValue(
@@ -228,12 +229,16 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
   )
 }
 
-const MyInfoText = ({ authType }: { authType: FormAuthType }): JSX.Element => {
+const MyInfoText = ({
+  isSingpassUsed,
+}: {
+  isSingpassUsed: boolean
+}): JSX.Element => {
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.sidebar.fields.myInfoPanel',
   })
 
-  if (authType !== FormAuthType.MyInfo) {
+  if (!isSingpassUsed) {
     return (
       <Text>
         {t('singpassDisabledBefore')}{' '}
@@ -258,15 +263,13 @@ const MyInfoText = ({ authType }: { authType: FormAuthType }): JSX.Element => {
 const MyInfoMessage = (): JSX.Element | null => {
   const { data: form } = useCreateTabForm()
   const { isAtLimit } = useLoginFieldLimit()
+  const { usesLogin } = useFormUsesLogin()
+  const isSingpassUsed = usesLogin(FormAuthType.MyInfo)
 
   return form ? (
     <Box px="1.5rem" pt="2rem" pb="1.5rem">
-      <InlineMessage
-        variant={
-          isAtLimit && form.authType === FormAuthType.MyInfo ? 'error' : 'info'
-        }
-      >
-        <MyInfoText authType={form.authType} />
+      <InlineMessage variant={isAtLimit && isSingpassUsed ? 'error' : 'info'}>
+        <MyInfoText isSingpassUsed={isSingpassUsed} />
       </InlineMessage>
     </Box>
   ) : null

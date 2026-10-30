@@ -5,18 +5,21 @@ import { useParams } from 'react-router-dom'
 import {
   AdminFormDto,
   FormResponseMode,
-  FormWorkflowStep,
+  FormWorkflowStepWriteDto,
 } from 'formsg-shared/types/form'
 
 import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
+import { adminFormSettingsKeys } from '~features/admin-form/settings/queries'
 import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedbackContainer/adminFeedbackStore'
 
 import { useAdminFormWorkflow } from './hooks/useAdminFormWorkflow'
 import {
+  AuthFieldDeletionConfirmation,
   createWorkflowStep,
   deleteWorkflow,
+  DeleteWorkflowOptions,
   deleteWorkflowStep,
   updateWorkflowStep,
 } from './FormWorkflowService'
@@ -33,6 +36,14 @@ export const useWorkflowMutations = () => {
   const adminFormKey = adminFormKeys.id(formId)
   const toast = useToast({ status: 'success', isClosable: true })
 
+  // A step save may also change Step 1's form-level login, which Settings
+  // reads from its own query, so both re-render from one source after a save.
+  const invalidateFormQueries = useCallback(() => {
+    void queryClient.invalidateQueries(adminFormKey)
+    void queryClient.invalidateQueries(adminFormSettingsKeys.id(formId))
+    void queryClient.invalidateQueries(adminFormSettingsKeys.whitelist(formId))
+  }, [adminFormKey, formId, queryClient])
+
   const handleError = useCallback(
     (error: Error) => {
       toast.closeAll()
@@ -45,7 +56,7 @@ export const useWorkflowMutations = () => {
   )
 
   const createStepMutation = useMutation(
-    (createStepBody: FormWorkflowStep) =>
+    (createStepBody: FormWorkflowStepWriteDto) =>
       createWorkflowStep(formId, createStepBody),
     {
       onSuccess: (updatedWorkflow) => {
@@ -57,6 +68,7 @@ export const useWorkflowMutations = () => {
           }
           return { ...prev, workflow: updatedWorkflow }
         })
+        invalidateFormQueries()
         toast({
           description: 'The step was successfully created.',
         })
@@ -70,7 +82,8 @@ export const useWorkflowMutations = () => {
   )
 
   const deleteStepMutation = useMutation(
-    (stepNumber: number) => deleteWorkflowStep(formId, stepNumber),
+    (input: { stepNumber: number } & AuthFieldDeletionConfirmation) =>
+      deleteWorkflowStep(formId, input.stepNumber, input),
     {
       onSuccess: (updatedWorkflow) => {
         toast.closeAll()
@@ -81,6 +94,7 @@ export const useWorkflowMutations = () => {
           }
           return { ...prev, workflow: updatedWorkflow }
         })
+        invalidateFormQueries()
         toast({
           description: 'The step was successfully deleted.',
         })
@@ -89,22 +103,26 @@ export const useWorkflowMutations = () => {
     },
   )
 
-  const deleteWorkflowMutation = useMutation(() => deleteWorkflow(formId), {
-    onSuccess: (updatedWorkflow) => {
-      toast.closeAll()
-      queryClient.setQueryData<AdminFormDto>(adminFormKey, (prev) => {
-        if (!prev) throw new Error('Query should have been set')
-        if (prev.responseMode !== FormResponseMode.Multirespondent) {
-          throw new Error('Invalid response mode')
-        }
-        return { ...prev, workflow: updatedWorkflow }
-      })
-      toast({
-        description: 'The workflow was successfully deleted.',
-      })
+  const deleteWorkflowMutation = useMutation(
+    (options?: DeleteWorkflowOptions) => deleteWorkflow(formId, options),
+    {
+      onSuccess: (updatedWorkflow) => {
+        toast.closeAll()
+        queryClient.setQueryData<AdminFormDto>(adminFormKey, (prev) => {
+          if (!prev) throw new Error('Query should have been set')
+          if (prev.responseMode !== FormResponseMode.Multirespondent) {
+            throw new Error('Invalid response mode')
+          }
+          return { ...prev, workflow: updatedWorkflow }
+        })
+        invalidateFormQueries()
+        toast({
+          description: 'The workflow was successfully deleted.',
+        })
+      },
+      onError: handleError,
     },
-    onError: handleError,
-  })
+  )
 
   const updateStepMutation = useMutation(
     ({
@@ -112,7 +130,7 @@ export const useWorkflowMutations = () => {
       updateStepBody,
     }: {
       stepNumber: number
-      updateStepBody: FormWorkflowStep
+      updateStepBody: FormWorkflowStepWriteDto
     }) => updateWorkflowStep(formId, stepNumber, updateStepBody),
     {
       onSuccess: (updatedWorkflow) => {
@@ -124,6 +142,7 @@ export const useWorkflowMutations = () => {
           }
           return { ...prev, workflow: updatedWorkflow }
         })
+        invalidateFormQueries()
         toast({
           description: 'The step was successfully updated.',
         })

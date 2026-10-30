@@ -37,7 +37,8 @@ const getDispayedAuthTypeText = (
 
 export interface FormAuthProps {
   authType: Exclude<FormAuthType, FormAuthType.NIL>
-  isSubmitterIdCollectionEnabled: boolean
+  // Step 1 only. Undefined on a later MRF step's login, which shows no notice.
+  isSubmitterIdCollectionEnabled?: boolean
   hasSingleSubmissionValidationError: boolean
   hasRespondentNotWhitelistedError: boolean
 }
@@ -49,7 +50,7 @@ export const FormAuth = ({
   hasRespondentNotWhitelistedError,
 }: FormAuthProps): JSX.Element => {
   const { t } = useTranslation()
-  const { formId, form } = usePublicFormContext()
+  const { formId, form, mrfStepAuthTarget } = usePublicFormContext()
 
   const buttonColorScheme = useMemo(() => {
     if (!form) return
@@ -57,7 +58,11 @@ export const FormAuth = ({
   }, [form])
 
   const isMobile = useIsMobile()
-  const { handleLoginMutation } = usePublicAuthMutations(formId, authType)
+  const { handleLoginMutation } = usePublicAuthMutations({
+    formId,
+    authType,
+    mrfStep: mrfStepAuthTarget,
+  })
   const displayedAuthTypeText = getDispayedAuthTypeText(authType, t)
 
   return (

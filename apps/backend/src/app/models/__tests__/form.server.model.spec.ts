@@ -3655,6 +3655,45 @@ describe('Form Model', () => {
             MOCK_ALL_FORM_PARAMS.inactiveMessage,
           )
         })
+
+        it('should keep later step logins but drop their e-service IDs', () => {
+          const workflowWithAuth = [
+            MOCK_WORKFLOW[0],
+            {
+              ...MOCK_WORKFLOW[1],
+              auth: { auth_type: FormAuthType.CP, esrvc_id: 'SOURCE-ESRVC' },
+            },
+            {
+              ...MOCK_WORKFLOW[2],
+              auth: { auth_type: FormAuthType.MyInfo },
+            },
+          ]
+          const sourceForm = new MultirespondentForm({
+            title: 'Test Form',
+            admin: MOCK_ADMIN_OBJ_ID,
+            responseMode: FormResponseMode.Multirespondent,
+            publicKey: 'initial public key',
+            workflow: workflowWithAuth,
+            form_fields: MOCK_FORM_FIELDS,
+          })
+
+          const duplicatedForm = sourceForm.getDuplicateParams({
+            admin: 'duplicated admin',
+            title: 'duplicated mrf form title',
+            responseMode: FormResponseMode.Multirespondent,
+          })
+
+          const duplicatedWorkflow = JSON.parse(
+            JSON.stringify(duplicatedForm.workflow),
+          )
+          expect(duplicatedWorkflow.map((step: any) => step.auth)).toEqual([
+            undefined,
+            { auth_type: FormAuthType.CP },
+            { auth_type: FormAuthType.MyInfo },
+          ])
+          // The source form keeps its own e-service ID
+          expect(sourceForm.workflow[1].auth?.esrvc_id).toBe('SOURCE-ESRVC')
+        })
       })
     })
 
@@ -3741,6 +3780,7 @@ describe('Form Model', () => {
         const fieldToDuplicate = generateDefaultField(BasicField.Checkbox)
 
         validForm.form_fields = [fieldToDuplicate]
+        await validForm.save()
         const fieldId = fieldToDuplicate._id
 
         // Act
@@ -3776,6 +3816,7 @@ describe('Form Model', () => {
         const dummyField = generateDefaultField(BasicField.Mobile)
 
         validForm.form_fields = [fieldToDuplicate, dummyField]
+        await validForm.save()
         const fieldId = fieldToDuplicate._id
 
         // Act

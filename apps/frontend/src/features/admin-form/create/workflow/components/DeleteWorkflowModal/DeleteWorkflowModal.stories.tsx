@@ -1,13 +1,18 @@
 import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
+  FormAuthType,
   FormResponseMode,
   FormStatus,
   FormWorkflowStepDto,
   WorkflowType,
 } from 'formsg-shared/types'
 
-import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
+import {
+  createFormBuilderMocks,
+  MOCK_CORPPASS_UEN_FIELD,
+  MOCK_MYINFO_NAME_FIELD,
+} from '~/mocks/msw/handlers/admin-form'
 
 import { StoryRouter, viewportModes } from '~utils/storybook'
 
@@ -100,4 +105,42 @@ export const FirstStepFormClosed = FirstStepTemplate.bind({})
 FirstStepFormClosed.parameters = {
   argos: { modes: viewportModes('mobile') },
   msw: { handlers: { default: buildMocks(FormStatus.Private) } },
+}
+
+/** Choose the retained provider, then review field deletion before committing. */
+export const MixedAuthentication = Template.bind({})
+MixedAuthentication.parameters = {
+  msw: {
+    handlers: {
+      default: createFormBuilderMocks({
+        responseMode: FormResponseMode.Multirespondent,
+        status: FormStatus.Private,
+        authType: FormAuthType.MyInfo,
+        form_fields: [MOCK_MYINFO_NAME_FIELD, MOCK_CORPPASS_UEN_FIELD],
+        workflow: [
+          {
+            ...workflow_step_1,
+            edit: [MOCK_MYINFO_NAME_FIELD._id],
+            step_name: 'Requester',
+          },
+          {
+            _id: '61e6857c9c794b0012f1c6f9',
+            workflow_type: WorkflowType.Static,
+            emails: ['approver@example.gov.sg'],
+            edit: [MOCK_CORPPASS_UEN_FIELD._id],
+            step_name: 'Approver',
+            auth: { auth_type: FormAuthType.CP, esrvc_id: 'AGENCY-SERVICE-A' },
+          },
+          {
+            _id: '61e6857c9c794b0012f1c6fa',
+            workflow_type: WorkflowType.Static,
+            emails: ['processor@example.gov.sg'],
+            edit: [],
+            step_name: 'Processor',
+            auth: { auth_type: FormAuthType.CP, esrvc_id: 'AGENCY-SERVICE-B' },
+          },
+        ],
+      }),
+    },
+  },
 }

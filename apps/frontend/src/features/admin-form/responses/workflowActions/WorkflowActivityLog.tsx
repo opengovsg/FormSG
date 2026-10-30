@@ -12,9 +12,16 @@ import {
 import { Box, Stack, Text } from '@chakra-ui/react'
 import { formatInTimeZone } from 'date-fns-tz'
 
-import { WorkflowEventType, WorkflowStatus } from 'formsg-shared/types'
+import {
+  WorkflowEventType,
+  WorkflowStatus,
+  WorkflowStepAuthType,
+} from 'formsg-shared/types'
+import { STEP_LOGIN_PROVIDER_LABELS } from 'formsg-shared/utils/step-login'
 
 import type { ResponsesIndividualResponse } from '~/i18n/locales/features/admin-form/responses/individual-response'
+
+import { Tag } from '~components/Tag'
 
 import { formatEmailList } from './formatEmailList'
 import { WorkflowHistory } from './getStopNotifiedEmails'
@@ -29,6 +36,8 @@ interface ActivityEntry {
   title: string
   icon: IconType
   notificationRecipients?: string[]
+  // The provider verified for a submitted step, never today's workflow setting
+  authType?: WorkflowStepAuthType
 }
 
 export const WorkflowActivityLog = ({
@@ -69,20 +78,23 @@ export const WorkflowActivityLog = ({
     const status = 'status' in step ? step.status : undefined
     const rejected = status === WorkflowStatus.REJECTED
     const approved = status === WorkflowStatus.APPROVED
-    const entries = [
-      entry(
-        id,
-        step.submittedAt,
-        rejected
-          ? 'stepRejected'
-          : approved
-            ? 'stepApproved'
-            : index === 0
-              ? 'submitted'
-              : 'stepSubmitted',
-        stepValues(index + 1),
-        rejected ? BiX : approved ? BiCheck : BiFile,
-      ),
+    const entries: ActivityEntry[] = [
+      {
+        ...entry(
+          id,
+          step.submittedAt,
+          rejected
+            ? 'stepRejected'
+            : approved
+              ? 'stepApproved'
+              : index === 0
+                ? 'submitted'
+                : 'stepSubmitted',
+          stepValues(index + 1),
+          rejected ? BiX : approved ? BiCheck : BiFile,
+        ),
+        authType: step.authType,
+      },
     ]
     if (!rejected && index < workflow.length - 1 && recipients.length) {
       entries.push(
@@ -173,7 +185,10 @@ export const WorkflowActivityLog = ({
       data-dd-privacy="mask"
     >
       {entries.map(
-        ({ id, at, title, icon: EventIcon, notificationRecipients }, index) => (
+        (
+          { id, at, title, icon: EventIcon, notificationRecipients, authType },
+          index,
+        ) => (
           <Box
             as="li"
             key={id}
@@ -218,6 +233,11 @@ export const WorkflowActivityLog = ({
                 >
                   {title}
                 </Text>
+                {authType && (
+                  <Tag mt="0.25rem" colorScheme="secondary">
+                    {STEP_LOGIN_PROVIDER_LABELS[authType]}
+                  </Tag>
+                )}
                 <Text
                   as="time"
                   dateTime={at}

@@ -12,10 +12,12 @@ import { useSelectContext } from '~components/Dropdown/SelectContext'
 import { ComboboxItem } from '~components/Dropdown/types'
 import {
   isItemAction,
+  isItemDisabled,
   itemToDescriptionString,
   itemToIcon,
   itemToLabelString,
 } from '~components/Dropdown/utils/itemUtils'
+import { Tag } from '~components/Tag'
 
 import { DropdownItemTextHighlighter } from '../DropdownItem/DropdownItemTextHighlighter'
 
@@ -58,8 +60,9 @@ export const MultiDropdownItem = ({
       {...getItemProps({
         item,
         index,
-        disabled: isDisabled,
+        disabled: isDisabled || isItemDisabled(item),
       })}
+      aria-disabled={isDisabled || isItemDisabled(item) || undefined}
       title={label}
     >
       <Stack direction="row" spacing="1rem" overflowX="auto">
@@ -81,6 +84,11 @@ export const MultiDropdownItem = ({
               />
             </Text>
           </Stack>
+          {typeof item === 'object' && item?.descriptionTag ? (
+            <Tag colorScheme="secondary" alignSelf="flex-start" mt="0.25rem">
+              {item.descriptionTag}
+            </Tag>
+          ) : null}
           {description && (
             <Text
               textStyle="body-2"

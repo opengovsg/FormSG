@@ -178,8 +178,21 @@ export const enSG: Workflow = {
     placeholderRedesign: 'Select fields from your form',
     autoAddHelperTextRedesign:
       'The approval field is added here automatically.',
-    stepOneOnlyHelperText:
-      'Your form only has MyInfo fields, which can only be used in the first step.',
+    loginFieldsHelperText:
+      'Your form only has Myinfo fields, which need a step whose login can fill them.',
+  },
+  stepLogin: {
+    title: 'Login',
+    enable: 'Enable Singpass authentication',
+    enableDescription:
+      'Respondents must log in with Singpass before filling in this step',
+    singpass: 'Singpass',
+    corppass: 'Corppass',
+    esrvcIdLabel: 'e-service ID',
+    esrvcIdPlaceholder: 'Enter Corppass e-service ID',
+    esrvcIdWhitespace: 'e-service ID must not contain whitespace',
+    closeFormToEdit: 'To change the login, close your form to new responses.',
+    inactiveLabel: 'Singpass authentication',
   },
   addField: {
     fields: 'Add fields',

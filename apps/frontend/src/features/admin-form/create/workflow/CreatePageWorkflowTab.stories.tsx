@@ -6,9 +6,11 @@ import {
   AttachmentSize,
   BasicField,
   FormFieldDto,
+  MyInfoAttribute,
 } from 'formsg-shared/types/field'
 import {
   AdminFormDto,
+  FormAuthType,
   FormResponseMode,
   FormStatus,
   FormWorkflowStepDto,
@@ -19,6 +21,8 @@ import {
 import {
   createFormBuilderMocks,
   getAdminFormSettings,
+  MOCK_CORPPASS_UEN_FIELD,
+  MOCK_MYINFO_NAME_FIELD,
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 import { getUser } from '~/mocks/msw/handlers/user'
@@ -625,3 +629,88 @@ SingleStepV4Webhook.parameters = webhookWorkflowParameters(
   [workflow_step_1],
   'v4',
 )
+
+const stepLoginFlags = new GrowthBook({
+  features: {
+    [featureFlags.workflowBuilderRedesign]: { defaultValue: true },
+    [featureFlags.mrfStepLogin]: { defaultValue: true },
+    [featureFlags.isNricFieldEnabled]: { defaultValue: true },
+  },
+})
+
+const stepLoginFields: FormFieldDto[] = [
+  { ...form_field_5, title: 'Requester email' },
+  { ...form_field_6, title: 'Approver email' },
+  { ...form_field_1, title: 'Approve this request?' },
+  {
+    _id: '620115cf3bc125001349f901',
+    title: 'Requester NRIC/FIN',
+    description: '',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.Nric,
+    myInfo: { attr: MyInfoAttribute.UinFin },
+  },
+  MOCK_MYINFO_NAME_FIELD,
+  MOCK_CORPPASS_UEN_FIELD,
+]
+
+/** Singpass and Corppass logins on different steps. */
+export const StepLoginMixedProviders = Template.bind({})
+StepLoginMixedProviders.decorators = [
+  (Story: StoryFn) => (
+    <GrowthBookProvider growthbook={stepLoginFlags}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+StepLoginMixedProviders.parameters = {
+  msw: {
+    handlers: [
+      ...buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        status: FormStatus.Private,
+        authType: FormAuthType.MyInfo,
+        form_fields: stepLoginFields,
+        workflow: [
+          {
+            _id: '61e6857c9c794b0012f1c6f8',
+            workflow_type: WorkflowType.Static,
+            emails: [],
+            step_name: 'Requester',
+            edit: [form_field_5._id, '620115cf3bc125001349f901'],
+          },
+          {
+            _id: '61e6857c9c794b0012f1c6f9',
+            workflow_type: WorkflowType.Static,
+            emails: ['approver@agency.gov.sg'],
+            step_name: 'Approving officer',
+            edit: [form_field_1._id, MOCK_CORPPASS_UEN_FIELD._id],
+            approval_field: form_field_1._id,
+            is_approval_enabled: true,
+            auth: { auth_type: FormAuthType.CP },
+          },
+          {
+            _id: '61e6857c9c794b0012f1c6fa',
+            workflow_type: WorkflowType.Dynamic,
+            field: form_field_6._id,
+            step_name: 'Processing officer',
+            edit: [form_field_6._id],
+          },
+        ],
+      }),
+      getAdminFormSettings({
+        mode: FormResponseMode.Multirespondent,
+        overrides: {
+          status: FormStatus.Private,
+          authType: FormAuthType.MyInfo,
+          isSingleSubmission: false,
+          emails: ['admin@agency.gov.sg'],
+          stepsToNotify: [],
+          stepOneEmailNotificationFieldId: form_field_5._id,
+        } satisfies Partial<MultirespondentFormSettings>,
+      }),
+      patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+    ],
+  },
+}

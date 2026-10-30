@@ -86,7 +86,9 @@ import {
 } from '../core/core.errors'
 import { ErrorResponseData } from '../core/core.types'
 import {
+  AuthTypeMismatchError,
   ForbiddenFormError,
+  FormAuthNoEsrvcIdError,
   FormDeletedError,
   FormNotFoundError,
   FormRespondentNotWhitelistedError,
@@ -148,6 +150,7 @@ import {
   MrfReminderInvalidWorkflowStepError,
   MrfReminderLimitReachedError,
   MrfReminderRecipientEmailsEmptyError,
+  MrfSubmissionStaleError,
   MrfWorkflowActionsUnavailableError,
   MrfWorkflowNotPendingError,
   MrfWorkflowOverflowError,
@@ -244,6 +247,17 @@ const errorMapper: MapRouteError = (
     case StepTokenVerificationError:
       return {
         statusCode: StatusCodes.FORBIDDEN,
+        errorMessage: error.message,
+      }
+    case MrfSubmissionStaleError:
+      return {
+        statusCode: StatusCodes.CONFLICT,
+        errorMessage: error.message,
+      }
+    case FormAuthNoEsrvcIdError:
+    case AuthTypeMismatchError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
       }
     case FormRespondentSingleSubmissionValidationError:
