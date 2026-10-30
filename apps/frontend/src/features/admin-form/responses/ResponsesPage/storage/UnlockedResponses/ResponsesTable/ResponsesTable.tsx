@@ -55,7 +55,6 @@ import { WorkflowStatusBadge } from '~features/admin-form/responses/components/W
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
   MRF_REMINDERS_LABEL,
-  MRF_RESPONSE_TIMESTAMP_LABEL,
   MRF_WORKFLOW_STATUS_LABEL,
 } from '~features/admin-form/responses/constants'
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
@@ -232,7 +231,7 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     maxWidth: 180,
   },
   {
-    Header: MRF_RESPONSE_TIMESTAMP_LABEL,
+    Header: 'Timestamp',
     accessor: 'submissionTime',
     sortType: byServerOrder,
     // TODO(FRM-1933): using submissionTime as we are undecided on showing first submission vs lastSubmittedAt

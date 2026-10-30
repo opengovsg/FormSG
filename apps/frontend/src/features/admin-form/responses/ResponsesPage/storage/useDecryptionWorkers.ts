@@ -56,7 +56,6 @@ export type DownloadEncryptedParams = EncryptedResponsesStreamParams & {
   // Number of responses to expect to download.
   responsesCount: number
   // Used to determine if we should add MRF related columns to the CSV.
-  hasWorkflow: boolean
   isDownloadCsv: boolean
   isDownloadPdf: boolean
   visibleSubmissionIds?: string[]
@@ -105,7 +104,6 @@ const useDecryptionWorkers = ({
       secretKey,
       endDate,
       startDate,
-      hasWorkflow,
       visibleSubmissionIds,
       csvView,
     }: DownloadEncryptedParams) => {
@@ -174,7 +172,6 @@ const useDecryptionWorkers = ({
         ? new EncryptedResponseCsvGenerator(
             expectedResponsesCount,
             NUM_OF_METADATA_ROWS,
-            hasWorkflow,
             csvView,
           )
         : undefined
