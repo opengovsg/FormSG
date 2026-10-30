@@ -451,7 +451,7 @@ describe('FormService', () => {
       existsSpy.mockRestore()
     })
 
-    it('should send the mrf query based if form is mrf and isSingleSubmission setting is enabled', async () => {
+    it('should count both step-one and pre-migration storage responses if form is mrf and isSingleSubmission setting is enabled', async () => {
       const existsSpy = jest.spyOn(Submission, 'exists').mockResolvedValue(null)
 
       const form = {
@@ -466,13 +466,19 @@ describe('FormService', () => {
           singleCheckSubmitterId,
         )
 
-      expect(existsSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          form: singleCheckFormId,
-          submissionType: SubmissionType.Multirespondent,
-          'submittedSteps.0.submitterId': singleCheckSubmitterId,
-        }),
-      )
+      expect(existsSpy).toHaveBeenCalledWith({
+        form: singleCheckFormId,
+        $or: [
+          {
+            submissionType: SubmissionType.Multirespondent,
+            'submittedSteps.0.submitterId': singleCheckSubmitterId,
+          },
+          {
+            submissionType: SubmissionType.Encrypt,
+            submitterId: singleCheckSubmitterId,
+          },
+        ],
+      })
       expect(result.isOk()).toBe(true)
       expect(result._unsafeUnwrap()).toBe(false)
 
