@@ -22,6 +22,7 @@ import formsgSdk from 'src/app/config/formsg-sdk'
 import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
 import { WebhookFactory } from 'src/app/modules/webhook/webhook.factory'
 import { webhookStatsdClient } from 'src/app/modules/webhook/webhook.statsd-client'
+import { EmailType } from 'src/app/services/mail/mail.constants'
 import { AutoreplyPdfGenerationError } from 'src/app/services/mail/mail.errors'
 import MailService from 'src/app/services/mail/mail.service'
 import * as MailUtils from 'src/app/services/mail/mail.utils'
@@ -1142,6 +1143,10 @@ describe('multirespondent-submission.service', () => {
         expect(
           sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails.length,
         ).toBe(2)
+        // and is typed as the admin notification so bounces are handled
+        expect(
+          sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emailType,
+        ).toBe(EmailType.AdminResponse)
       })
     })
 
@@ -2592,6 +2597,49 @@ describe('multirespondent-submission.service', () => {
       expect(
         sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails.length,
       ).toBe(1)
+    })
+
+    it('types the completion email as a workflow completion when the form has steps', async () => {
+      // Arrange
+      const sendMrfWorkflowCompletionEmailSpy = jest.spyOn(
+        MailService,
+        'sendMrfWorkflowCompletionEmail',
+      )
+      const singleStepWorkflow: FormWorkflowStepDto[] = [
+        {
+          _id: new ObjectId().toHexString(),
+          workflow_type: WorkflowType.Static,
+          emails: [],
+          edit: [],
+        },
+      ]
+
+      // Act
+      await performMultiRespondentPostSubmissionCreateActions({
+        submission: {
+          id: mockSubmissionId,
+        } as unknown as IMultirespondentSubmissionSchema,
+        submissionId: mockSubmissionId,
+        form: {
+          _id: mockFormId,
+          workflow: singleStepWorkflow,
+          emails: ['email1@example.com'],
+        } as IPopulatedMultirespondentForm,
+        encryptedPayload: {
+          encryptedContent: 'encryptedContent',
+          version: 1,
+          submissionPublicKey: 'submissionPublicKey',
+          encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+        } as MultirespondentSubmissionDto,
+        attachments: MOCK_SUBMISSION_ATTACHMENTS,
+        logMeta: {} as any,
+      })
+
+      // Assert
+      expect(sendMrfWorkflowCompletionEmailSpy).toHaveBeenCalledTimes(1)
+      expect(sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emailType).toBe(
+        EmailType.WorkflowCompletion,
+      )
     })
 
     it('sends completion email with pdf attachment when single step mrf is completed', async () => {

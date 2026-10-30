@@ -1284,6 +1284,7 @@ export class MailService {
     responseJson,
     attachments,
     replyTo,
+    emailType = EmailType.WorkflowCompletion,
   }: {
     emails: string[]
     formId: string
@@ -1295,6 +1296,7 @@ export class MailService {
     responseJson: string
     attachments?: Mail.Attachment[]
     replyTo?: string
+    emailType?: EmailType.WorkflowCompletion | EmailType.AdminResponse
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
     const emailTemplateData: EmailData = {
       formTitle,
@@ -1310,7 +1312,7 @@ export class MailService {
       subject: `Response received - ${formTitle} (${responseId})`,
       htmlData: emailTemplateData,
       attachments,
-      emailType: EmailType.WorkflowCompletion,
+      emailType,
       actionName: 'sendMrfWorkflowCompletionEmail',
       submissionId,
       replyTo,
