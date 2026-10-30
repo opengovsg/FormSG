@@ -86,6 +86,16 @@ export const RangeCalendar = forwardRef<RangeCalendarProps, 'input'>(
       [endDate, setInternalValue, startDate],
     )
 
+    const handleOnTodaySelected = useCallback(
+      (today: Date) => {
+        if (startDate !== null && endDate === null) {
+          return handleOnDateSelected(today)
+        }
+        return setInternalValue([today, today])
+      },
+      [endDate, handleOnDateSelected, setInternalValue, startDate],
+    )
+
     const isDateInRange = useCallback(
       (date: Date) => {
         // Both dates are null.
@@ -134,6 +144,7 @@ export const RangeCalendar = forwardRef<RangeCalendarProps, 'input'>(
         monthsToDisplay={monthsToDisplay}
         selectedDates={internalValue ?? undefined}
         onSelectDate={handleOnDateSelected}
+        onSelectToday={handleOnTodaySelected}
         hoveredDate={hoveredDate}
         onMouseEnterHighlight={onMouseEnterHighlight}
         onMouseLeaveCalendar={onMouseLeaveCalendar}
