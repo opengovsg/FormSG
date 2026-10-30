@@ -12,7 +12,6 @@ import {
   CSV_MRF_PENDING_RESPONSE_AT_COLUMN_ID,
   CSV_MRF_WORKFLOW_STATUS_COLUMN_ID,
   CSV_PAYMENT_COLUMN_IDS,
-  MRF_RESPONSE_TIMESTAMP_LABEL,
 } from '~features/admin-form/responses/constants'
 
 import { CsvRecordData, DecryptedSubmissionData } from '../../types'
@@ -122,7 +121,6 @@ describe('EncryptedResponseCsvGenerator', () => {
     generator = new EncryptedResponseCsvGenerator(
       mockExpectedNumberOfRecords,
       mockNumOfMetaDataRows,
-      false,
     )
   })
 
@@ -385,7 +383,7 @@ describe('EncryptedResponseCsvGenerator', () => {
     describe('mrf form submissions', () => {
       it('should include header and data columns for mrf metadata', () => {
         // Arrange
-        const mrfGenerator = new EncryptedResponseCsvGenerator(1, 0, true)
+        const mrfGenerator = new EncryptedResponseCsvGenerator(1, 0)
         const mockDecryptedRecord = [generateRecord(1)]
         const mockRecord = {
           record: mockDecryptedRecord,
@@ -409,7 +407,7 @@ describe('EncryptedResponseCsvGenerator', () => {
         expect(mrfGenerator.records.length).toEqual(2 + BOM_LENGTH)
         const expectedHeaderRow = stringify([
           'Response ID',
-          MRF_RESPONSE_TIMESTAMP_LABEL,
+          'Timestamp',
           mockDecryptedRecord[0].question,
         ])
         const expectedSubmissionRow = stringify([
@@ -432,7 +430,7 @@ describe('EncryptedResponseCsvGenerator', () => {
         // answer the same field (same field id). The MRF row additionally
         // carries the workflow-status/pending-at pseudo-fields that
         // CsvRecord.materializeSubmissionData injects (reserved ids).
-        const mrfGenerator = new EncryptedResponseCsvGenerator(2, 0, true)
+        const mrfGenerator = new EncryptedResponseCsvGenerator(2, 0)
         const sharedField = generateRecord(1)
         const workflowStatusColumn: CsvRecordData = {
           _id: '000000000000000000010001',
@@ -471,7 +469,7 @@ describe('EncryptedResponseCsvGenerator', () => {
         // (encrypt) record did not carry them.
         const expectedHeaderRow = stringify([
           'Response ID',
-          MRF_RESPONSE_TIMESTAMP_LABEL,
+          'Timestamp',
           workflowStatusColumn.question,
           pendingAtColumn.question,
           sharedField.question,
@@ -503,7 +501,7 @@ describe('EncryptedResponseCsvGenerator', () => {
         // The reported bug: an encrypt row decrypted first seeds the header
         // map with download status, response and payment columns only, so a
         // later mrf row's workflow columns landed at the very end.
-        const mrfGenerator = new EncryptedResponseCsvGenerator(2, 0, true)
+        const mrfGenerator = new EncryptedResponseCsvGenerator(2, 0)
         const downloadStatusColumn: CsvRecordData = {
           _id: '000000000000000000000000',
           fieldType: 'textfield',
@@ -553,7 +551,7 @@ describe('EncryptedResponseCsvGenerator', () => {
         // Assert
         const expectedHeaderRow = stringify([
           'Response ID',
-          MRF_RESPONSE_TIMESTAMP_LABEL,
+          'Timestamp',
           downloadStatusColumn.question,
           workflowStatusColumn.question,
           pendingAtColumn.question,
@@ -569,7 +567,7 @@ describe('EncryptedResponseCsvGenerator', () => {
         // pre-migration encrypt row can carry the payment pseudo-fields that
         // CsvRecord.materializeSubmissionData injects (reserved ids). An MRF
         // row without a payment must leave those cells empty.
-        const mrfGenerator = new EncryptedResponseCsvGenerator(2, 0, true)
+        const mrfGenerator = new EncryptedResponseCsvGenerator(2, 0)
         const sharedField = generateRecord(1)
         const paymentStatusColumn: CsvRecordData = {
           _id: '000000000000000000000004',
@@ -610,7 +608,7 @@ describe('EncryptedResponseCsvGenerator', () => {
         // the response and payment columns.
         const expectedHeaderRow = stringify([
           'Response ID',
-          MRF_RESPONSE_TIMESTAMP_LABEL,
+          'Timestamp',
           workflowStatusColumn.question,
           sharedField.question,
           paymentStatusColumn.question,
@@ -1190,9 +1188,9 @@ describe('the view carried over from the responses table', () => {
   ]
 
   const build = (
-    view?: ConstructorParameters<typeof EncryptedResponseCsvGenerator>[3],
+    view?: ConstructorParameters<typeof EncryptedResponseCsvGenerator>[2],
   ) => {
-    const generator = new EncryptedResponseCsvGenerator(3, 0, false, view)
+    const generator = new EncryptedResponseCsvGenerator(3, 0, view)
     ANSWERS.forEach((answer, index) => {
       generator.addRecord({
         record: [
@@ -1359,8 +1357,8 @@ describe('the reserved columns carried over from the responses table', () => {
   const reserved = (_id: string, question: string, answer: string) =>
     ({ _id, question, answer, fieldType: 'textfield' }) as CsvRecordData
 
-  const exportCsv = (view: CsvExportView, isMrf = true): string[][] => {
-    const generator = new EncryptedResponseCsvGenerator(1, 0, isMrf, view)
+  const exportCsv = (view: CsvExportView): string[][] => {
+    const generator = new EncryptedResponseCsvGenerator(1, 0, view)
     generator.addRecord({
       record: [
         reserved(CSV_DOWNLOAD_STATUS_COLUMN_ID, 'Download Status', 'Success'),
@@ -1380,8 +1378,7 @@ describe('the reserved columns carried over from the responses table', () => {
       .map((line) => line.trim().split(','))
   }
 
-  const headerOf = (view: CsvExportView, isMrf?: boolean) =>
-    exportCsv(view, isMrf)[0]
+  const headerOf = (view: CsvExportView) => exportCsv(view)[0]
 
   it('drops the response id when the table hides it', () => {
     const [header, row] = exportCsv({
@@ -1400,7 +1397,7 @@ describe('the reserved columns carried over from the responses table', () => {
       tableColumnIds: WORKFLOW_TABLE_COLUMN_IDS,
     })
 
-    expect(header).not.toContain(MRF_RESPONSE_TIMESTAMP_LABEL)
+    expect(header).not.toContain('Timestamp')
     expect(header).toHaveLength(row.length)
   })
 
@@ -1428,24 +1425,21 @@ describe('the reserved columns carried over from the responses table', () => {
     })
 
     expect(header).toContain('Response ID')
-    expect(header).toContain(MRF_RESPONSE_TIMESTAMP_LABEL)
+    expect(header).toContain('Timestamp')
     expect(header).not.toContain('Workflow status')
     expect(header).not.toContain('Pending at')
   })
 
   it('drops a payment column when the table hides its counterpart', () => {
-    const header = headerOf(
-      {
-        hiddenColumnIds: [EXPORT_PAYER_EMAIL_COLUMN_ID],
-        tableColumnIds: [
-          EXPORT_RESPONSE_ID_COLUMN_ID,
-          EXPORT_TIMESTAMP_COLUMN_ID,
-          EXPORT_PAYER_EMAIL_COLUMN_ID,
-          EXPORT_PAID_AMOUNT_COLUMN_ID,
-        ],
-      },
-      false,
-    )
+    const header = headerOf({
+      hiddenColumnIds: [EXPORT_PAYER_EMAIL_COLUMN_ID],
+      tableColumnIds: [
+        EXPORT_RESPONSE_ID_COLUMN_ID,
+        EXPORT_TIMESTAMP_COLUMN_ID,
+        EXPORT_PAYER_EMAIL_COLUMN_ID,
+        EXPORT_PAID_AMOUNT_COLUMN_ID,
+      ],
+    })
 
     expect(header).not.toContain('Payer')
     expect(header).toContain('Payment amount')
@@ -1463,7 +1457,7 @@ describe('the reserved columns carried over from the responses table', () => {
   it('keeps every reserved column when the table did not list its columns', () => {
     expect(headerOf({})).toEqual([
       'Response ID',
-      MRF_RESPONSE_TIMESTAMP_LABEL,
+      'Timestamp',
       'Download Status',
       'Workflow status',
       'Pending at',
@@ -1474,13 +1468,13 @@ describe('the reserved columns carried over from the responses table', () => {
     ])
   })
 
-  it('labels the timestamp as a plain timestamp when the form has no workflow steps', () => {
-    // A mode-migrated storage form is multirespondent with no steps; its
-    // export must keep the header downstream imports were built against.
-    const header = headerOf({}, false)
+  it('labels the timestamp column Timestamp on every form', () => {
+    // Admins' downstream imports were built against the storage-mode header,
+    // so a form with a workflow must not relabel it.
+    const header = headerOf({})
 
     expect(header).toContain('Timestamp')
-    expect(header).not.toContain(MRF_RESPONSE_TIMESTAMP_LABEL)
+    expect(header).not.toContain('Response timestamp')
   })
 
   it('keeps a form field the table does not have', () => {
