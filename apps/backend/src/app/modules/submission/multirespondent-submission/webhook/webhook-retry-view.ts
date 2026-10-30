@@ -9,6 +9,7 @@ import {
   SnapshotDataIntegrityError,
   SnapshotFormatNotRecordedError,
   SnapshotReadError,
+  SnapshotSupersededError,
 } from './submission-snapshot.errors'
 import { readSnapshot } from './submission-snapshot.store'
 import {
@@ -25,6 +26,7 @@ export type SnapshotViewError =
   | SnapshotReadError
   | SnapshotAccessDeniedError
   | SnapshotFormatNotRecordedError
+  | SnapshotSupersededError
 
 export const getRecordedPayloadPolicy = ({
   snapshotRef,
@@ -76,6 +78,9 @@ export const resolveSnapshotWebhookView = ({
   const recordedTokensForSubmissionIndex =
     submittedStepSnapshotTokens?.[submissionIndex]
   const token = recordedTokensForSubmissionIndex?.[contentFormat]
+  if (snapshotRef.token && token !== snapshotRef.token) {
+    return errAsync(new SnapshotSupersededError(undefined, meta))
+  }
   if (!token) {
     return errAsync(new SnapshotFormatNotRecordedError(undefined, meta))
   }

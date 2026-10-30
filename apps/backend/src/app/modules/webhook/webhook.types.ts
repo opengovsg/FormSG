@@ -37,6 +37,7 @@ const LiveRowQueueMessage = z.object({
 const SnapshotRef = z.object({
   submissionIndex: z.number().int(),
   contentFormat: z.enum(['v1', 'v4']),
+  token: z.string().optional(),
 })
 export type SnapshotRef = z.infer<typeof SnapshotRef>
 
