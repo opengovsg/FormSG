@@ -177,7 +177,7 @@ SingpassUnauthorized.parameters = {
       overrides: {
         form: {
           title: 'Singpass login form',
-          authType: FormAuthType.SP,
+          authType: FormAuthType.MyInfo,
           startPage: {
             colorTheme: FormColorTheme.Grey,
           },
@@ -197,7 +197,7 @@ SingpassAuthorized.parameters = {
       overrides: {
         form: {
           title: 'Singpass login form',
-          authType: FormAuthType.SP,
+          authType: FormAuthType.MyInfo,
         },
       },
     }),

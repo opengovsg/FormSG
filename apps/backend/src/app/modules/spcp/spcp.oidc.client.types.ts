@@ -71,10 +71,3 @@ export type CPJWTVerifyResult = JWTVerifyResult & {
     }
   }
 }
-
-/**
- * Singpass Oidc Client Id field to be injected into token exchange request
- */
-export type SpClientIdField = {
-  client_id: string
-}

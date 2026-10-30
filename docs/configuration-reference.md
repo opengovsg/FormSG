@@ -79,7 +79,7 @@ These are configured by creating groups of environment variables formatted like 
 | `NODE_ENV`           | [Express environment mode](https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production). Defaults to `'production'`. This should always be set to a production environment |
 | `SESSION_SECRET`     | Secret for `express-session` for session management. This should always be set to a secret and random value in a production environment.                                                                   |
 | `SUBMISSIONS_TOP_UP` | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`.                                                                                                              |
-| `FORMS_TOP_UP` | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`.                                                                                                              |
+| `FORMS_TOP_UP`       | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`.                                                                                                              |
 
 **Banners**
 
@@ -121,14 +121,13 @@ SITE_BANNER_CONTENT=hello:This is an invalid banner type, and the full text will
 | `SITE_BANNER_CONTENT`    | If set, displays a banner message on both private routes that `ADMIN_BANNER_CONTENT` covers **and** public form routes that `IS_GENERAL_MAINTENANCE` covers. Overrides all other banner environment variables |
 | `ADMIN_BANNER_CONTENT`   | If set, displays a banner message on private admin routes such as the form list page as well as form builder pages.                                                                                           |
 | `IS_LOGIN_BANNER`        | If set, displays a banner message on the login page.                                                                                                                                                          |
-| `IS_GENERAL_MAINTENANCE` | If set, displays a banner message on all forms. Overrides `IS_SP_MAINTENANCE` and `IS_CP_MAINTENANCE`.                                                                                                        |
+| `IS_GENERAL_MAINTENANCE` | If set, displays a banner message on all forms. Overrides `IS_CP_MAINTENANCE`.                                                                                                                                |
 | `MYINFO_BANNER_CONTENT`  | all public **MyInfo-enabled** forms                                                                                                                                                                           |
-| `IS_SP_MAINTENANCE`      | all public **Singpass-enabled** forms                                                                                                                                                                         |
 | `IS_CP_MAINTENANCE`      | all public **Corppass-enabled** forms                                                                                                                                                                         |
 
 > Note that if more than one of the above environment variables are defined, only one environment variable will be used to display the given values.
 >
-> For public form routes, only one environment variable will be read in the following precedence: `SITE_BANNER_CONTENT` > `IS_GENERAL_MAINTENANCE` > `IS_SP_MAINTENANCE` > `IS_CP_MAINTENANCE`
+> For public form routes, only one environment variable will be read in the following precedence: `SITE_BANNER_CONTENT` > `IS_GENERAL_MAINTENANCE` > `IS_CP_MAINTENANCE`
 >
 > For private form routes, only one environment variable will be read in the following precendence: `SITE_BANNER_CONTENT` > `ADMIN_BANNER_CONTENT`
 >
@@ -221,13 +220,6 @@ Note that MyInfo is currently not supported for storage mode forms and enabling 
 
 | Variable                         | Description                                                                                                                                                                  |
 | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SPCP_COOKIE_MAX_AGE_PRESERVED`  | Duration of Singpass JWT before expiry in milliseconds. Defaults to 30 days.                                                                                                 |
-| `SP_OIDC_NDI_DISCOVERY_ENDPOINT` | NDI's Singpass OIDC Discovery Endpoint                                                                                                                                       |
-| `SP_OIDC_NDI_JWKS_ENDPOINT`      | NDI's Singpass OIDC JWKS Endpoint                                                                                                                                            |
-| `SP_OIDC_RP_CLIENT_ID`           | The Relying Party's Singpass Client ID as registered with NDI                                                                                                                |
-| `SP_OIDC_RP_REDIRECT_URL`        | The Relying Party's Singpass Redirect URL                                                                                                                                    |
-| `SP_OIDC_RP_JWKS_PUBLIC_PATH`    | Path to the Relying Party's Public Json Web Key Set used for Singpass-related communication with NDI. This will be hosted at /sp/.well-known/jwks.json endpoint.             |
-| `SP_OIDC_RP_JWKS_SECRET_PATH`    | Path to the Relying Party's Secret Json Web Key Set used for Singpass-related communication with NDI                                                                         |
 | `CP_OIDC_NDI_DISCOVERY_ENDPOINT` | NDI's Corppass OIDC Discovery Endpoint                                                                                                                                       |
 | `CP_OIDC_NDI_JWKS_ENDPOINT`      | NDI's Corppass OIDC JWKS Endpoint                                                                                                                                            |
 | `CP_OIDC_RP_CLIENT_ID`           | The Relying Party's Corppass Client ID as registered with NDI                                                                                                                |
@@ -235,7 +227,6 @@ Note that MyInfo is currently not supported for storage mode forms and enabling 
 | `CP_OIDC_RP_JWKS_PUBLIC_PATH`    | Path to the Relying Party's Public Json Web Key Set used for Corppass-related communication with NDI. This will be hosted at api/v3/corppass/.well-known/jwks.json endpoint. |
 | `CP_OIDC_RP_JWKS_SECRET_PATH`    | Path to the Relying Party's Secret Json Web Key Set used for Corppass-related communication with NDI                                                                         |
 | `MYINFO_JWT_SECRET`              | Secret for signing MyInfo JWT.                                                                                                                                               |
-| `IS_SP_MAINTENANCE`              | If set, displays a banner message on Singpass forms. Overrides `IS_CP_MAINTENANCE`.                                                                                          |
 | `IS_CP_MAINTENANCE`              | If set, displays a banner message on Corppass forms.                                                                                                                         |
 
 **Verified Emails/SMSes**

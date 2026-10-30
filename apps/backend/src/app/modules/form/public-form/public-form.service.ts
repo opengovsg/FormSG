@@ -68,16 +68,16 @@ export const insertFormFeedback = ({
 
 /**
  * Returns the cookie name based on auth type
- * Valid AuthTypes are SP / CP / MyInfo
+ * Valid AuthTypes are CP / MyInfo
  */
 export const getCookieNameByAuthType = (
-  authType: FormAuthType.SP | FormAuthType.CP | FormAuthType.MyInfo,
+  authType: FormAuthType.CP | FormAuthType.MyInfo,
 ): string => {
   switch (authType) {
     case FormAuthType.MyInfo:
       return MYINFO_LOGIN_COOKIE_NAME
-    default:
-      return JwtName[authType]
+    case FormAuthType.CP:
+      return JwtName.CP
   }
 }
 
