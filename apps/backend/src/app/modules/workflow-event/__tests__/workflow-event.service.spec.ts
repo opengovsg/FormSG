@@ -109,16 +109,8 @@ describe('workflow-event.service', () => {
       ])
     })
 
-    it('leaves out step submitted events and their snapshot links', () => {
+    it('sends step submitted events oldest first, without their snapshot links', () => {
       const result = WorkflowEventService.toWorkflowEventDtos([
-        {
-          type: WorkflowEventType.StepSubmitted,
-          stepNumber: 1,
-          outcome: WorkflowStatus.COMPLETED,
-          emails: ['next@example.com'],
-          created: new Date('2026-10-08T00:00:00.000Z'),
-          snapshotKey: 'form/submission/0/token.json',
-        },
         {
           type: WorkflowEventType.Stopped,
           actorId: actor._id,
@@ -127,9 +119,24 @@ describe('workflow-event.service', () => {
           emails: [],
           created: new Date('2026-10-09T00:00:00.000Z'),
         },
+        {
+          type: WorkflowEventType.StepSubmitted,
+          stepNumber: 1,
+          outcome: WorkflowStatus.COMPLETED,
+          emails: ['next@example.com'],
+          created: new Date('2026-10-08T00:00:00.000Z'),
+          snapshotKey: 'form/submission/0/token.json',
+        },
       ])
 
       expect(result).toEqual([
+        {
+          type: WorkflowEventType.StepSubmitted,
+          stepNumber: 1,
+          outcome: WorkflowStatus.COMPLETED,
+          emails: ['next@example.com'],
+          created: '2026-10-08T00:00:00.000Z',
+        },
         expect.objectContaining({ type: WorkflowEventType.Stopped }),
       ])
       expect(JSON.stringify(result)).not.toContain('snapshotKey')
