@@ -1340,6 +1340,60 @@ describe('admin-form.submissions.routes', () => {
       })
     })
 
+    it('should return 200 with metadata within range when query.startDate and query.endDate are the same day', async () => {
+      // Arrange
+      await createEncryptSubmission({
+        form: defaultForm,
+        encryptedContent: 'any encrypted content outside range',
+        verifiedContent: 'any verified content outside range',
+      })
+      const expectedDate = '2021-04-04'
+      MockDate.set(expectedDate)
+      const submissionInRange = await createEncryptSubmission({
+        form: defaultForm,
+        encryptedContent: 'any encrypted content in range',
+        verifiedContent: 'any verified content in range',
+      })
+      MockDate.reset()
+
+      // Act
+      const response = await request
+        .get(`/admin/forms/${defaultForm._id}/submissions/metadata`)
+        .query({
+          page: 1,
+          startDate: expectedDate,
+          endDate: expectedDate,
+        })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({
+        count: 1,
+        metadata: [
+          {
+            number: 1,
+            payments: null,
+            refNo: String(submissionInRange._id),
+            submissionTime: expect.any(String),
+          },
+        ],
+      })
+    })
+
+    it('should return 400 when query.endDate is before query.startDate', async () => {
+      // Act
+      const response = await request
+        .get(`/admin/forms/${defaultForm._id}/submissions/metadata`)
+        .query({
+          page: 1,
+          startDate: '2021-04-05',
+          endDate: '2021-04-04',
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+    })
+
     it('should return 200 with metadata of single submissionId when query.submissionId is provided for submissions with payments', async () => {
       // Arrange
       const createdPayment = await Payment.create({
