@@ -1,12 +1,15 @@
 import { ApiService } from '~services/ApiService'
 
-import { updateMultirespondentSubmission } from './PublicFormService'
+import {
+  getMultirespondentSubmissionById,
+  updateMultirespondentSubmission,
+} from './PublicFormService'
 
 vi.mock('~services/ApiService', async (importOriginal) => {
   const actual = await importOriginal<typeof import('~services/ApiService')>()
   return {
     ...actual,
-    ApiService: { put: vi.fn(), post: vi.fn() },
+    ApiService: { put: vi.fn(), post: vi.fn(), get: vi.fn() },
   }
 })
 
@@ -63,5 +66,35 @@ describe('frontend step-token echoes to next-step PUT body', () => {
     })
 
     expect(putBodyFromLastCall()).not.toHaveProperty('stepToken')
+  })
+})
+
+describe('frontend step-token on loading a response', () => {
+  const mockGet = ApiService.get as unknown as ReturnType<typeof vi.fn>
+
+  beforeEach(() => {
+    mockGet.mockReset()
+    mockGet.mockResolvedValue({ data: { attachmentMetadata: {} } })
+  })
+
+  it('sends the link token so a replaced link is refused on load', async () => {
+    await getMultirespondentSubmissionById({
+      formId: MOCK_FORM_ID,
+      submissionId: MOCK_SUBMISSION_ID,
+      stepToken: 'raw-step-token-abc123',
+    })
+
+    expect(mockGet).toHaveBeenCalledWith(expect.any(String), {
+      params: { stepToken: 'raw-step-token-abc123' },
+    })
+  })
+
+  it('sends no token for a link without one', async () => {
+    await getMultirespondentSubmissionById({
+      formId: MOCK_FORM_ID,
+      submissionId: MOCK_SUBMISSION_ID,
+    })
+
+    expect(mockGet).toHaveBeenCalledWith(expect.any(String), undefined)
   })
 })

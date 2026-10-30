@@ -18,8 +18,8 @@ export const publicFormKeys = {
   // consistency
   base: ['publicForm'] as const,
   id: (formId: string) => [...publicFormKeys.base, formId] as const,
-  submission: (formId: string, submissionId?: string) =>
-    [...publicFormKeys.id(formId), submissionId] as const,
+  submission: (formId: string, submissionId?: string, stepToken?: string) =>
+    [...publicFormKeys.id(formId), submissionId, stepToken] as const,
 }
 
 export const usePublicFormView = (
@@ -46,15 +46,16 @@ export const useEncryptedSubmission = (
   submissionId?: string,
   /** Extra override to determine whether query is enabled */
   enabled = true,
+  stepToken?: string,
 ): UseQueryResult<
   PublicMultirespondentSubmissionDtoWithAttachments,
   ApiError
 > => {
   return useQuery(
-    publicFormKeys.submission(formId, submissionId),
+    publicFormKeys.submission(formId, submissionId, stepToken),
     () =>
       submissionId
-        ? getMultirespondentSubmissionById({ formId, submissionId })
+        ? getMultirespondentSubmissionById({ formId, submissionId, stepToken })
         : undefined,
     {
       // Treat submission as static on load.
