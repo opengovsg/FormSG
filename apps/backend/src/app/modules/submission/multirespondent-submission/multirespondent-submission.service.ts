@@ -1640,6 +1640,8 @@ const sendMrfInitialWebhookIfEligible = ({
         const snapshotRef: SnapshotRef = {
           submissionIndex,
           contentFormat: 'v1',
+          token:
+            submission.submittedSteps?.[submissionIndex]?.snapshotTokens?.v1,
         }
         return resolveInitialV1View({
           submission,
@@ -1671,7 +1673,13 @@ const sendMrfInitialWebhookIfEligible = ({
         send(
           data,
           snapshotDetails.snapshot
-            ? { submissionIndex, contentFormat: 'v4' }
+            ? {
+                submissionIndex,
+                contentFormat: 'v4',
+                token:
+                  submission.submittedSteps?.[submissionIndex]?.snapshotTokens
+                    ?.v4,
+              }
             : undefined,
         ),
       )

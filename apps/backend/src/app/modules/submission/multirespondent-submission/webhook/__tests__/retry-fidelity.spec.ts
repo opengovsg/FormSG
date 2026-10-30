@@ -30,6 +30,7 @@ import {
   SnapshotDataIntegrityError,
   SnapshotFormatNotRecordedError,
   SnapshotReadError,
+  SnapshotSupersededError,
 } from '../submission-snapshot.errors'
 import { buildV4Snapshot } from '../submission-snapshot.producer'
 import { SubmissionSnapshotV4 } from '../submission-snapshot.schema'
@@ -412,6 +413,37 @@ describe('[GATE] v4 per-step retry fidelity', () => {
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(
         SnapshotFormatNotRecordedError,
       )
+      expect(MockSnapshotStore.readSnapshot).not.toHaveBeenCalled()
+    },
+  )
+
+  it.each([
+    ['a send back replaced the step', { v4: 'token-after-send-back' }],
+    ['a send back removed the step', {}],
+  ])(
+    'drops a retry recorded against an earlier token when %s',
+    async (_case, recordedTokens) => {
+      const submission = await createRowAtStep({
+        latest: STEP_1,
+        workflowStep: 0,
+        tokens: [STEP_1.token],
+      })
+
+      const liveView = await submission.getWebhookView()
+      const result = await resolveSnapshotWebhookView({
+        liveView,
+        submissionId: String(submission._id),
+        snapshotRef: {
+          submissionIndex: 0,
+          contentFormat: 'v4',
+          token: 'token-before-send-back',
+        },
+        submittedStepSnapshotTokens: [
+          recordedTokens as SubmittedStepSnapshotTokens,
+        ],
+      })
+
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(SnapshotSupersededError)
       expect(MockSnapshotStore.readSnapshot).not.toHaveBeenCalled()
     },
   )

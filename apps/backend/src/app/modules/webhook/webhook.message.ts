@@ -108,6 +108,7 @@ export class WebhookQueueMessage {
                 snapshotRef: {
                   submissionIndex: snapshotRef.submissionIndex,
                   contentFormat: snapshotRef.contentFormat,
+                  ...(snapshotRef.token ? { token: snapshotRef.token } : {}),
                 },
               }
             : {
