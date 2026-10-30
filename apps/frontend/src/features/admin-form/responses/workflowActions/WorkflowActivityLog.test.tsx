@@ -345,4 +345,24 @@ describe('WorkflowActivityLog', () => {
       ])
     })
   })
+
+  it('skips events of a type it does not know', () => {
+    render(
+      <WorkflowActivityLog
+        history={{
+          ...history,
+          workflowEvents: [
+            {
+              ...event(WorkflowEventType.Stopped, at, []),
+              type: 'sent_back',
+            } as unknown as AdminWorkflowEventDto,
+          ],
+        }}
+      />,
+    )
+    expect(titles()).toEqual([
+      'Step 1 submitted',
+      'Step 2 · Team lead sent to lead@agency.gov.sg',
+    ])
+  })
 })

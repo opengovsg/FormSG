@@ -169,7 +169,7 @@ export const WorkflowActivityLog = ({
       const actor = event.actorEmail
         ? t(`${I18N_PREFIX}.actorClause`, { actor: event.actorEmail })
         : ''
-      let entries: ActivityEntry[]
+      let entries: ActivityEntry[] = []
       switch (event.type) {
         case WorkflowEventType.AssigneesAdded:
           entries = [
