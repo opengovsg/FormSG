@@ -38,6 +38,7 @@ const openFilterMenu = async () => {
     </ChakraProvider>,
   )
   await userEvent.click(screen.getByRole('button', { name: /filter/i }))
+  await screen.findByRole('menu')
   return screen.queryByRole('button', { name: 'Clear all filters' })
 }
 
