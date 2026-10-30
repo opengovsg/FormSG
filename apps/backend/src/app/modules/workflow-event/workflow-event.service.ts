@@ -31,17 +31,23 @@ export const buildWorkflowEvent = ({
   actor,
   stepNumber,
   emails,
+  fromStepNumber,
+  remarks,
 }: {
   type: AdminWorkflowEventType
   actor: { _id?: unknown; email: string }
   stepNumber: number
   emails: string[]
+  fromStepNumber?: number
+  remarks?: string
 }): IAdminWorkflowEvent => ({
   type,
   actorId: actor._id,
   actorEmail: actor.email,
   stepNumber,
   emails,
+  ...(fromStepNumber === undefined ? {} : { fromStepNumber }),
+  ...(remarks ? { remarks } : {}),
   created: new Date(),
 })
 
@@ -115,6 +121,9 @@ const toWorkflowEventDto = (event: IWorkflowEvent): WorkflowEventDto => {
       actorEmail: event.actorEmail,
       stepNumber: event.stepNumber,
       emails: event.emails,
+      ...(event.type === WorkflowEventType.SentBack
+        ? { fromStepNumber: event.fromStepNumber, remarks: event.remarks }
+        : {}),
       created,
     }
   }
@@ -155,3 +164,18 @@ export const getAddedAssignees = (
         .flatMap(({ emails }) => emails.map((email) => email.toLowerCase())),
     ),
   )
+
+/**
+ * @returns the events after the latest send back, so counts kept per step
+ * start afresh when a step is reached again
+ */
+export const getEventsSinceLastSendBack = (
+  events: IWorkflowEvent[] = [],
+): IWorkflowEvent[] => {
+  const lastSendBack = events.reduce(
+    (latest, event, index) =>
+      event.type === WorkflowEventType.SentBack ? index : latest,
+    -1,
+  )
+  return events.slice(lastSendBack + 1)
+}

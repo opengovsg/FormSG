@@ -142,4 +142,52 @@ describe('workflow-event.service', () => {
       expect(JSON.stringify(result)).not.toContain('snapshotKey')
     })
   })
+
+  describe('sent back events', () => {
+    const sentBack = {
+      type: WorkflowEventType.SentBack,
+      actorId: actor._id,
+      actorEmail: actor.email,
+      stepNumber: 2,
+      fromStepNumber: 4,
+      remarks: 'Please fix the dates',
+      emails: ['lead@example.com'],
+      created: new Date('2026-10-09T00:00:00.000Z'),
+    }
+    const reminder = (created: string) => ({
+      type: WorkflowEventType.ReminderSent,
+      actorId: actor._id,
+      actorEmail: actor.email,
+      stepNumber: 2,
+      emails: ['lead@example.com'],
+      created: new Date(created),
+    })
+
+    it('sends where the workflow came from and the remarks to admins', () => {
+      expect(WorkflowEventService.toWorkflowEventDtos([sentBack])).toEqual([
+        expect.objectContaining({
+          type: WorkflowEventType.SentBack,
+          stepNumber: 2,
+          fromStepNumber: 4,
+          remarks: 'Please fix the dates',
+        }),
+      ])
+    })
+
+    it('counts only events after the latest send back', () => {
+      const before = reminder('2026-10-08T00:00:00.000Z')
+      const after = reminder('2026-10-10T00:00:00.000Z')
+
+      expect(
+        WorkflowEventService.getEventsSinceLastSendBack([
+          before,
+          sentBack,
+          after,
+        ]),
+      ).toEqual([after])
+      expect(WorkflowEventService.getEventsSinceLastSendBack([before])).toEqual(
+        [before],
+      )
+    })
+  })
 })
