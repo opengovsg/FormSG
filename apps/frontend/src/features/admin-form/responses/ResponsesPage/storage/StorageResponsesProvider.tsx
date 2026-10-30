@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom'
 import { DateString, FormResponseMode } from 'formsg-shared/types'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { hasWorkflowSteps } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 
 import { useFormResponsesCount } from '../../queries'
 
@@ -45,9 +46,9 @@ export const StorageResponsesProvider = ({
       responsesCount: dateRangeResponsesCount,
       startDate: dateRange[0],
       endDate: dateRange[1],
-      isMrf: form?.responseMode === FormResponseMode.Multirespondent,
+      hasWorkflow: hasWorkflowSteps(form),
     }
-  }, [dateRange, dateRangeResponsesCount, secretKey, form?.responseMode])
+  }, [dateRange, dateRangeResponsesCount, secretKey, form])
 
   return (
     <StorageResponsesContext.Provider
