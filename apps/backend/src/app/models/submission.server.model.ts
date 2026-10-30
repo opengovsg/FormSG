@@ -889,6 +889,13 @@ const workflowEventSchema = new Schema(
     snapshotKey: {
       type: String,
     },
+    fromStepNumber: {
+      type: Number,
+      min: 1,
+    },
+    remarks: {
+      type: String,
+    },
     stepNumber: {
       type: Number,
       min: 1,

@@ -6,6 +6,7 @@ export enum WorkflowEventType {
   AssigneesAdded = 'assignees_added',
   ReminderSent = 'reminder_sent',
   StepSubmitted = 'step_submitted',
+  SentBack = 'sent_back',
 }
 
 export type AdminWorkflowEventType = Exclude<
@@ -18,6 +19,8 @@ export type WorkflowEventBase = {
   actorEmail: string
   stepNumber: number
   emails: string[]
+  fromStepNumber?: number
+  remarks?: string
 }
 
 export type AdminWorkflowEventDto = WorkflowEventBase & {
