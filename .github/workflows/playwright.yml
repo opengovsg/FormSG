@@ -24,7 +24,7 @@ on:
 jobs:
   setup:
     timeout-minutes: 10
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     env:
       AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
       DD_TAGS: layer:e2e
@@ -65,7 +65,7 @@ jobs:
   test:
     needs: setup
     timeout-minutes: 30
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         project:
