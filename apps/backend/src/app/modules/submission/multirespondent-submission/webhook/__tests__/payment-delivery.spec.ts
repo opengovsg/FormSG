@@ -19,6 +19,7 @@ import {
   PaymentStatus,
   PaymentType,
 } from 'formsg-shared/types'
+import { pick } from 'lodash'
 import mongoose from 'mongoose'
 import request from 'supertest'
 
@@ -824,7 +825,10 @@ describe('[GATE] payment webhook delivery', () => {
       await waitFor(() => queued.length > 0)
       expect(queued).toHaveLength(1)
       const message = JSON.parse(queued[0])
-      expect(message.snapshotRef).toEqual(
+      expect(
+        message.snapshotRef &&
+          pick(message.snapshotRef, ['submissionIndex', 'contentFormat']),
+      ).toEqual(
         format === 'V1'
           ? { submissionIndex: 0, contentFormat: 'v1' }
           : undefined,

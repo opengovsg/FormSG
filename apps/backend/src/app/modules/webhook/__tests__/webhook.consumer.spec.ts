@@ -12,6 +12,7 @@ import {
   SnapshotDataIntegrityError,
   SnapshotFormatNotRecordedError,
   SnapshotReadError,
+  SnapshotSupersededError,
 } from 'src/app/modules/submission/multirespondent-submission/webhook/submission-snapshot.errors'
 import { SubmissionSnapshotV4 } from 'src/app/modules/submission/multirespondent-submission/webhook/submission-snapshot.schema'
 import * as SnapshotStore from 'src/app/modules/submission/multirespondent-submission/webhook/submission-snapshot.store'
@@ -419,6 +420,7 @@ describe('webhook.consumer', () => {
           'a produce/deliver disagreement',
           new SnapshotFormatNotRecordedError(),
         ],
+        ['a step a send back replaced', new SnapshotSupersededError()],
       ])(
         'should delete the message without attempting the webhook on %s',
         async (_case, storeError) => {

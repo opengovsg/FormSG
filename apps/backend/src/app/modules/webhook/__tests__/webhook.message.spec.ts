@@ -88,6 +88,23 @@ describe('WebhookQueueMessage', () => {
       expect(message.snapshotRef).toBeUndefined()
     })
 
+    it('should keep the snapshot token a retry was recorded against', () => {
+      const created = WebhookQueueMessage.fromSubmissionId(
+        new ObjectId().toHexString(),
+        { submissionIndex: 1, contentFormat: 'v4', token: 'tok-step-2' },
+      )._unsafeUnwrap()
+
+      const parsed = WebhookQueueMessage.deserialise(
+        created.serialise(),
+      )._unsafeUnwrap()
+
+      expect(parsed.snapshotRef).toEqual({
+        submissionIndex: 1,
+        contentFormat: 'v4',
+        token: 'tok-step-2',
+      })
+    })
+
     it('should parse a snapshot message carrying its submission index and content format', () => {
       const result = WebhookQueueMessage.deserialise(
         JSON.stringify(VALID_SNAPSHOT_MESSAGE),

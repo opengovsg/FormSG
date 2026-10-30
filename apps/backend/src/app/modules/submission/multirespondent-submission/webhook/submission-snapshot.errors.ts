@@ -48,6 +48,15 @@ export class SnapshotFormatNotRecordedError extends ApplicationError {
   }
 }
 
+export class SnapshotSupersededError extends ApplicationError {
+  constructor(
+    message = 'The step submission this retry was for has been sent back and replaced',
+    meta?: unknown,
+  ) {
+    super(message, meta, ErrorCodes.SUBMISSION_MRF_SNAPSHOT_SUPERSEDED)
+  }
+}
+
 /**
  * Raised whenever a submission snapshot is missing, malformed, or otherwise
  * fails to parse.
