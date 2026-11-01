@@ -49,8 +49,11 @@ import {
 import { InvalidJwtError, MissingJwtError } from '../../spcp/spcp.errors'
 import { CpOidcServiceClass } from '../../spcp/spcp.oidc.service/spcp.oidc.service.cp'
 import { SpOidcServiceClass } from '../../spcp/spcp.oidc.service/spcp.oidc.service.sp'
+import * as MrfSubmissionService from '../../submission/multirespondent-submission/multirespondent-submission.service'
 import { MrfJwtPayload } from '../../submission/multirespondent-submission/multirespondent-submission.types'
 import { getMrfCookieName } from '../../submission/multirespondent-submission/multirespondent-submission.utils'
+import * as StepAuth from '../../submission/multirespondent-submission/step-auth'
+import { SubmissionNotFoundError } from '../../submission/submission.errors'
 import * as SubmissionService from '../../submission/submission.service'
 import * as VerificationController from '../verification.controller'
 import {
@@ -94,6 +97,12 @@ jest.mock('../../myinfo/myinfo.service')
 const MockMyInfoService = jest.mocked(MyInfoService)
 jest.mock('../../submission/submission.service')
 const MockSubmissionService = jest.mocked(SubmissionService)
+jest.mock(
+  '../../submission/multirespondent-submission/multirespondent-submission.service',
+)
+const MockMrfSubmissionService = jest.mocked(MrfSubmissionService)
+jest.mock('../../submission/multirespondent-submission/step-auth')
+const MockStepAuth = jest.mocked(StepAuth)
 
 const mockSpOidcServiceClass = jest.mocked(
   MockSpOidcServiceClass.mock.instances[0],
@@ -1838,6 +1847,94 @@ describe('Verification controller', () => {
         cookies: {
           [MOCK_COOKIE_NAME]: MOCK_MRF_JWT,
         },
+      })
+
+      beforeEach(() => {
+        MockMrfSubmissionService.getMultirespondentSubmission.mockReturnValue(
+          okAsync({} as any),
+        )
+        // The pending step has no login of its own
+        MockStepAuth.resolveMrfStepAuth.mockReturnValue(ok({} as any))
+      })
+
+      const mockValidMrfJwt = () =>
+        MockSubmissionService.getSubmissionMetadata.mockReturnValueOnce(
+          okAsync({
+            mrf: { workflowCurrentStepNumber: MOCK_WORKFLOW_STEP },
+          } as any),
+        )
+
+      // A saved workflow whose Step 2 has its own login
+      const MOCK_STEP_LOGIN_SUBMISSION = {
+        workflow: [{}, { auth: { auth_type: FormAuthType.MyInfo } }],
+      }
+
+      it('should not check a step login when the saved workflow has none', async () => {
+        mockValidMrfJwt()
+
+        await VerificationController._handleGenerateOtp(
+          MOCK_MRF_REQ,
+          mockRes,
+          jest.fn(),
+        )
+
+        expect(MockStepAuth.resolveMrfStepAuth).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
+      })
+
+      it('should send the OTP when the submission is not found, as before', async () => {
+        mockValidMrfJwt()
+        MockMrfSubmissionService.getMultirespondentSubmission.mockReturnValueOnce(
+          errAsync(new SubmissionNotFoundError()),
+        )
+
+        await VerificationController._handleGenerateOtp(
+          MOCK_MRF_REQ,
+          mockRes,
+          jest.fn(),
+        )
+
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
+      })
+
+      it('should check the pending step login with the request cookies', async () => {
+        mockValidMrfJwt()
+        MockMrfSubmissionService.getMultirespondentSubmission.mockReturnValueOnce(
+          okAsync(MOCK_STEP_LOGIN_SUBMISSION as any),
+        )
+
+        await VerificationController._handleGenerateOtp(
+          MOCK_MRF_REQ,
+          mockRes,
+          jest.fn(),
+        )
+
+        expect(MockStepAuth.resolveMrfStepAuth).toHaveBeenCalledWith(
+          MOCK_FORM_ID,
+          MOCK_STEP_LOGIN_SUBMISSION,
+          { stepAuthCookies: MOCK_MRF_REQ.cookies },
+        )
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
+      })
+
+      it('should return 400 without sending an OTP when the step login is missing', async () => {
+        mockValidMrfJwt()
+        MockMrfSubmissionService.getMultirespondentSubmission.mockReturnValueOnce(
+          okAsync(MOCK_STEP_LOGIN_SUBMISSION as any),
+        )
+        MockStepAuth.resolveMrfStepAuth.mockReturnValueOnce(
+          err(new MissingJwtError()),
+        )
+
+        await VerificationController._handleGenerateOtp(
+          MOCK_MRF_REQ,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Same response as a missing Step 1 login
+        expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       })
 
       it('should return 201 when MRF JWT is valid and all checks pass', async () => {
