@@ -1,15 +1,21 @@
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
+import { http, HttpResponse } from 'msw'
 
-import { PaymentChannel } from 'formsg-shared/types'
+import { featureFlags } from 'formsg-shared/constants'
+import { BasicField, PaymentChannel } from 'formsg-shared/types'
 import {
+  AdminFormDto,
   FormAuthType,
   FormResponseMode,
   FormSettings,
   FormStatus,
+  WorkflowType,
 } from 'formsg-shared/types/form'
 
 import {
   createFormBuilderMocks,
+  createMockForm,
   getAdminFormSettings,
   MOCK_FORM_FIELDS_WITH_MYINFO,
   patchAdminFormSettings,
@@ -330,6 +336,106 @@ PrivateStorageMyInfoUpdateWhitelistValidationErrorForm.parameters = {
             'Uploading a valid CSV file should display a mock validation error. This story is used to simulate validation errors are displayed correctly in the UI.',
         },
       },
+    },
+  },
+}
+
+// Multi-respondent forms get one collapsible section per workflow step once
+// later steps can log in.
+const stepLoginOn = new GrowthBook({
+  features: {
+    [featureFlags.mrfStepLogin]: { defaultValue: true },
+    [featureFlags.workflowBuilderRedesign]: { defaultValue: true },
+    [featureFlags.isNricFieldEnabled]: { defaultValue: true },
+  },
+})
+
+const withStepLoginOn = (Story: StoryFn) => (
+  <GrowthBookProvider growthbook={stepLoginOn}>
+    <Story />
+  </GrowthBookProvider>
+)
+
+const MRF_STEP_LOGIN_FORM: Partial<AdminFormDto> = {
+  responseMode: FormResponseMode.Multirespondent,
+  authType: FormAuthType.MyInfo,
+  form_fields: [
+    {
+      title: 'Short answer',
+      description: '',
+      required: true,
+      disabled: false,
+      fieldType: BasicField.ShortText,
+      _id: '6200e1534ad4f00012848d90',
+      ValidationOptions: { customVal: null, selectedValidation: null },
+      allowPrefill: false,
+    },
+  ],
+  workflow: [
+    {
+      _id: '61e6857c9c794b0012f1c6f8',
+      workflow_type: WorkflowType.Static,
+      emails: [],
+      edit: ['6200e1534ad4f00012848d90'],
+      step_name: 'Applicant',
+    },
+    {
+      _id: '61e6857c9c794b0012f1c6f9',
+      workflow_type: WorkflowType.Static,
+      emails: ['test_1@tech.gov.sg'],
+      step_name: 'Approving officer',
+      edit: [],
+      auth: { auth_type: FormAuthType.CP, esrvc_id: 'STORYBOOK-TEST' },
+    },
+    {
+      _id: '61e6857c9c794b0012f1c6fa',
+      workflow_type: WorkflowType.Static,
+      emails: ['test_2@tech.gov.sg'],
+      step_name: 'Processing officer',
+      edit: [],
+    },
+  ],
+}
+
+const buildMrfStepLoginMswRoutes = (overrides: Partial<FormSettings>) => {
+  const current = createMockForm({
+    ...MRF_STEP_LOGIN_FORM,
+    status: overrides.status ?? FormStatus.Private,
+  }).form
+  return [
+    http.get('/api/v3/admin/forms/:formId', () =>
+      HttpResponse.json({ form: current }),
+    ),
+    http.get('/api/v3/admin/forms/:formId/settings', () =>
+      HttpResponse.json(current),
+    ),
+    ...createFormBuilderMocks({
+      ...MRF_STEP_LOGIN_FORM,
+      status: overrides.status ?? FormStatus.Private,
+    }),
+    patchAdminFormSettings({
+      overrides: { authType: FormAuthType.MyInfo, ...overrides },
+      mode: FormResponseMode.Multirespondent,
+    }),
+  ]
+}
+
+export const PrivateMrfStepLoginAccordion = Template.bind({})
+PrivateMrfStepLoginAccordion.decorators = [withStepLoginOn]
+PrivateMrfStepLoginAccordion.parameters = {
+  msw: {
+    handlers: {
+      default: buildMrfStepLoginMswRoutes({ status: FormStatus.Private }),
+    },
+  },
+}
+
+export const PublicMrfStepLoginAccordion = Template.bind({})
+PublicMrfStepLoginAccordion.decorators = [withStepLoginOn]
+PublicMrfStepLoginAccordion.parameters = {
+  msw: {
+    handlers: {
+      default: buildMrfStepLoginMswRoutes({ status: FormStatus.Public }),
     },
   },
 }
