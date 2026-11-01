@@ -19,13 +19,19 @@ import {
 import { EditFormFieldParams } from 'src/types/api'
 
 import { ForbiddenFormError } from '../../form.errors'
-import { EditFieldError } from '../admin-form.errors'
+import {
+  EditFieldError,
+  FieldNotFoundError,
+  InvalidFileTypeError,
+  ModelResponseFailureError,
+} from '../admin-form.errors'
 import { OverrideProps } from '../admin-form.types'
 import {
   assertHasDeletePermissions,
   assertHasReadPermissions,
   assertHasWritePermissions,
   getUpdatedFormFields,
+  mapRouteError,
   processDuplicateOverrideProps,
 } from '../admin-form.utils'
 
@@ -601,6 +607,40 @@ describe('admin-form.utils', () => {
 
       // Assert
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(EditFieldError)
+    })
+  })
+
+  describe('mapRouteError', () => {
+    it('should forward the error own i18n key and params', () => {
+      const error = new InvalidFileTypeError()
+      error.messageParams = { fileType: 'exe' }
+
+      expect(mapRouteError(error)).toEqual({
+        statusCode: 400,
+        errorMessage: 'Unsupported file type',
+        errorMessageKey:
+          'features.adminForm.backendErrors.assets.unsupportedFileType',
+        errorMessageParams: { fileType: 'exe' },
+      })
+    })
+
+    it('should prefer the i18n key set by the matching case', () => {
+      const error = new ModelResponseFailureError()
+      error.messageKey = 'some.other.key'
+
+      expect(mapRouteError(error).errorMessageKey).toEqual(
+        'features.adminForm.backendErrors.fields.createFailed',
+      )
+    })
+
+    it('should drop the error own i18n when the case replaces its message', () => {
+      // Subclasses miss their parent's case and fall through to the default
+      class SubclassedFieldNotFoundError extends FieldNotFoundError {}
+
+      expect(mapRouteError(new SubclassedFieldNotFoundError())).toEqual({
+        statusCode: 500,
+        errorMessage: 'Something went wrong. Please try again.',
+      })
     })
   })
 })

@@ -10,8 +10,6 @@ import { InvalidPaymentAmountError } from '../../payments/payments.errors'
 import { adminFormErrorKey } from './admin-form.i18n'
 
 export class InvalidFileTypeError extends ApplicationError {
-  readonly messageKey?: string
-
   constructor(message?: string) {
     super(
       message ?? 'Unsupported file type',
@@ -31,8 +29,6 @@ export class EditFieldError extends ApplicationError {
 }
 
 export class FieldNotFoundError extends ApplicationError {
-  readonly messageKey?: string
-
   constructor(message?: string) {
     super(
       message ?? 'Field to modify not found',
