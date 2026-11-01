@@ -17,6 +17,7 @@ import { IEncryptedFormDocument, IPopulatedForm } from 'src/types'
 
 import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
+import { buildErrorDto } from '../../../utils/i18n-error'
 import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import * as AuthService from '../../auth/auth.service'
@@ -33,7 +34,6 @@ import * as UserService from '../../user/user.service'
 import { ForbiddenFormError } from '../form.errors'
 
 import { PaymentChannelNotFoundError } from './admin-form.errors'
-import { buildAdminFormErrorDto } from './admin-form.i18n'
 import { JoiPaymentProduct } from './admin-form.payments.constants'
 import * as AdminFormPaymentService from './admin-form.payments.service'
 import { PermissionLevel } from './admin-form.types'
@@ -317,7 +317,7 @@ const _handleUpdatePayments: ControllerHandler<
           mapRouteError(error)
         return res
           .status(statusCode)
-          .json(buildAdminFormErrorDto(errorMessage, errorMessageKey))
+          .json(buildErrorDto(errorMessage, errorMessageKey))
       })
   )
 }
@@ -372,7 +372,7 @@ export const _handleUpdatePaymentsProduct: ControllerHandler<
           mapRouteError(error)
         return res
           .status(statusCode)
-          .json(buildAdminFormErrorDto(errorMessage, errorMessageKey))
+          .json(buildErrorDto(errorMessage, errorMessageKey))
       })
   )
 }

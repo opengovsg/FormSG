@@ -9,10 +9,7 @@ import { types } from 'util'
 
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
-import {
-  buildAdminFormErrorDto,
-  getCelebrateErrorI18n,
-} from '../../modules/form/admin-form/admin-form.i18n'
+import { buildErrorDto, getCelebrateErrorI18n } from '../../utils/i18n-error'
 import { createReqMeta } from '../../utils/request'
 
 const logger = createLoggerWithLabel(module)
@@ -22,7 +19,7 @@ const buildCelebrateErrorResponse = (error: CelebrateError) => {
     .flatMap((validationError) => validationError.details)
     .map((detail) => {
       const { messageKey, messageParams } = getCelebrateErrorI18n(detail)
-      return buildAdminFormErrorDto(detail.message, messageKey, messageParams)
+      return buildErrorDto(detail.message, messageKey, messageParams)
     })
     .find((detail) => detail.messageKey)
 

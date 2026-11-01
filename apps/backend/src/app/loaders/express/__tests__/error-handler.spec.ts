@@ -2,10 +2,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import express from 'express'
 import supertest, { Session } from 'supertest-session'
 
-import {
-  adminFormErrorKey,
-  attachAdminFormErrorI18n,
-} from '../../../modules/form/admin-form/admin-form.i18n'
+import { attachErrorI18n } from '../../../utils/i18n-error'
 import { errorHandlerMiddlewares } from '../error-handler'
 import parserMiddlewares from '../parser'
 
@@ -47,11 +44,11 @@ describe('error-handler.loader', () => {
         celebrate({
           [Segments.BODY]: Joi.object({
             name: Joi.string().required(),
-            buttonLink: attachAdminFormErrorI18n(
+            buttonLink: attachErrorI18n(
               Joi.string()
                 .uri({ scheme: ['http', 'https'] })
                 .message('Please enter a valid HTTP or HTTPS URI'),
-              adminFormErrorKey('endPage.invalidUrl'),
+              'features.adminForm.backendErrors.endPage.invalidUrl',
             ),
           }),
         }),

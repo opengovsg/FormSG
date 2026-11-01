@@ -8,13 +8,14 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 
 import { createLoggerWithLabel } from '../../../config/logger'
+import { buildErrorDto } from '../../../utils/i18n-error'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
 import { ControllerHandler } from '../../core/core.types'
 import * as IssueService from '../../issue/issue.service'
 import * as UserService from '../../user/user.service'
 
-import { adminFormErrorKey, buildAdminFormErrorDto } from './admin-form.i18n'
+import { adminFormErrorKey } from './admin-form.i18n'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
 
@@ -64,7 +65,7 @@ export const handleGetFormIssues: ControllerHandler<
       const { errorMessage, statusCode, errorMessageKey } = mapRouteError(error)
       return res
         .status(statusCode)
-        .json(buildAdminFormErrorDto(errorMessage, errorMessageKey))
+        .json(buildErrorDto(errorMessage, errorMessageKey))
     })
 }
 
@@ -115,7 +116,7 @@ export const handleStreamFormIssues: ControllerHandler<
     )
     return res
       .status(statusCode)
-      .json(buildAdminFormErrorDto(errorMessage, errorMessageKey))
+      .json(buildErrorDto(errorMessage, errorMessageKey))
   }
 
   // No errors, start stream.
@@ -131,7 +132,7 @@ export const handleStreamFormIssues: ControllerHandler<
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .json(
-          buildAdminFormErrorDto(
+          buildErrorDto(
             'Error retrieving from database.',
             adminFormErrorKey('exports.databaseRetrieval'),
           ),
@@ -147,7 +148,7 @@ export const handleStreamFormIssues: ControllerHandler<
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .json(
-          buildAdminFormErrorDto(
+          buildErrorDto(
             'Error converting issue to JSON.',
             adminFormErrorKey('exports.issue.jsonConversion'),
           ),

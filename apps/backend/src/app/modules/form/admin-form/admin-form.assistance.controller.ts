@@ -7,6 +7,7 @@ import {
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
+import { attachErrorI18n, buildErrorDto } from '../../../utils/i18n-error'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
 import { ControllerHandler } from '../../core/core.types'
@@ -16,11 +17,7 @@ import {
   createFormFieldsUsingTextPrompt,
   createFormFieldsUsingVisionPrompt,
 } from './admin-form.assistance.service'
-import {
-  adminFormErrorKey,
-  attachAdminFormErrorI18n,
-  buildAdminFormErrorDto,
-} from './admin-form.i18n'
+import { adminFormErrorKey } from './admin-form.i18n'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
 
@@ -28,7 +25,7 @@ const logger = createLoggerWithLabel(module)
 
 const handleTextPromptValidator = celebrate({
   [Segments.PARAMS]: {
-    formId: attachAdminFormErrorI18n(
+    formId: attachErrorI18n(
       Joi.string()
         .required()
         .pattern(/^[a-fA-F0-9]{24}$/)
@@ -104,7 +101,7 @@ const _handleTextPrompt: ControllerHandler<
       const { errorMessage, statusCode, errorMessageKey } = mapRouteError(error)
       return res
         .status(statusCode)
-        .json(buildAdminFormErrorDto(errorMessage, errorMessageKey))
+        .json(buildErrorDto(errorMessage, errorMessageKey))
     })
 }
 
@@ -115,7 +112,7 @@ export const handleTextPrompt = [
 
 const handleVisionPromptValidator = celebrate({
   [Segments.PARAMS]: {
-    formId: attachAdminFormErrorI18n(
+    formId: attachErrorI18n(
       Joi.string()
         .required()
         .pattern(/^[a-fA-F0-9]{24}$/)
@@ -199,7 +196,7 @@ const _handleVisionPrompt: ControllerHandler<
           mapRouteError(error)
         return res
           .status(statusCode)
-          .json(buildAdminFormErrorDto(errorMessage, errorMessageKey))
+          .json(buildErrorDto(errorMessage, errorMessageKey))
       })
   )
 }

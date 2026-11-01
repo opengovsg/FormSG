@@ -1,18 +1,20 @@
 import { Joi } from 'celebrate'
 
 import {
-  adminFormErrorKey,
-  attachAdminFormErrorI18n,
-  buildAdminFormErrorDto,
+  attachErrorI18n,
+  buildErrorDto,
   getCelebrateErrorI18n,
-} from '../admin-form.i18n'
+} from '../i18n-error'
 
-describe('admin-form.i18n', () => {
+describe('i18n-error', () => {
   it('retains an explicitly supplied i18n key and fallback text', () => {
     const message = 'Field to modify not found'
 
     expect(
-      buildAdminFormErrorDto(message, adminFormErrorKey('fields.notFound')),
+      buildErrorDto(
+        message,
+        'features.adminForm.backendErrors.fields.notFound',
+      ),
     ).toEqual({
       message,
       messageKey: 'features.adminForm.backendErrors.fields.notFound',
@@ -21,9 +23,9 @@ describe('admin-form.i18n', () => {
 
   it('retains explicitly supplied interpolation parameters', () => {
     expect(
-      buildAdminFormErrorDto(
+      buildErrorDto(
         'You have exceeded the file size limit, please upload a file below 250 kB.',
-        adminFormErrorKey('whitelist.fileTooLarge'),
+        'features.adminForm.backendErrors.whitelist.fileTooLarge',
         { limitKb: 250 },
       ),
     ).toEqual({
@@ -35,9 +37,9 @@ describe('admin-form.i18n', () => {
   })
 
   it('reads i18n metadata attached directly to a Joi validation error', () => {
-    const schema = attachAdminFormErrorI18n(
+    const schema = attachErrorI18n(
       Joi.string().uri().message('Please enter a valid URI'),
-      adminFormErrorKey('endPage.invalidUrl'),
+      'features.adminForm.backendErrors.endPage.invalidUrl',
     )
     const detail = schema.validate('not-a-url').error?.details[0]
 
