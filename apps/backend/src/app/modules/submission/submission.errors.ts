@@ -393,6 +393,18 @@ export class SubmissionEncryptionMismatchError extends ApplicationError {
 }
 
 /**
+ * Thrown when the step the request was checked against is no longer the
+ * pending step: the submission advanced, completed or was rejected meanwhile.
+ */
+export class MrfSubmissionStaleError extends ApplicationError {
+  constructor(
+    message = 'This response has already been updated. Reload to continue.',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_MRF_STALE)
+  }
+}
+
+/**
  * Thrown when an MRF submission currently has a step token to gate write permissions.
  * token but the submitted step is missing this token or the provided token does not
  * match the pending step's stored hash.
