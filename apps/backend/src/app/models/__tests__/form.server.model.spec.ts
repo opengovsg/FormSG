@@ -30,6 +30,7 @@ import {
   WhitelistedSubmitterIdsWithReferenceOid,
   WorkflowType,
 } from 'formsg-shared/types'
+import { getAuthEsrvcId } from 'formsg-shared/utils/step-login'
 import { cloneDeep, map, merge, omit, orderBy, pick } from 'lodash'
 import mongoose, { Types } from 'mongoose'
 
@@ -1052,61 +1053,6 @@ describe('Form Model', () => {
           expect(persistedStep).not.toHaveProperty(omittedKey)
         },
       )
-
-      describe('step login', () => {
-        const buildForm = (auth: unknown) =>
-          new MultirespondentForm({
-            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
-            workflow: [
-              {
-                _id: new ObjectId(),
-                workflow_type: WorkflowType.Static,
-                emails: ['test@open.gov.sg'],
-                edit: [],
-              },
-              {
-                _id: new ObjectId(),
-                workflow_type: WorkflowType.Static,
-                emails: ['test@open.gov.sg'],
-                edit: [],
-                auth,
-              },
-            ],
-          })
-
-        it('should save a later step login with an e-service ID', async () => {
-          const saved = await buildForm({
-            auth_type: FormAuthType.CP,
-            esrvc_id: 'MOCK-ESRVC',
-          }).save()
-
-          const workflow =
-            (saved.toObject() as { workflow?: Record<string, unknown>[] })
-              .workflow ?? []
-          expect(workflow[0]).not.toHaveProperty('auth')
-          expect(workflow[1].auth).toEqual({
-            auth_type: FormAuthType.CP,
-            esrvc_id: 'MOCK-ESRVC',
-          })
-        })
-
-        it.each([
-          ['an unsupported login', { auth_type: FormAuthType.SP }],
-          ['a missing login', { esrvc_id: 'MOCK-ESRVC' }],
-          [
-            'an e-service ID with whitespace',
-            { auth_type: FormAuthType.CP, esrvc_id: 'MOCK ESRVC' },
-          ],
-          [
-            'an untrimmed e-service ID, like the form-level one',
-            { auth_type: FormAuthType.CP, esrvc_id: ' MOCK-ESRVC ' },
-          ],
-        ])('should reject %s', async (_, auth) => {
-          await expect(buildForm(auth).save()).rejects.toThrow(
-            mongoose.Error.ValidationError,
-          )
-        })
-      })
 
       describe('payment invariants', () => {
         const ENABLED_PAYMENTS_FIELD = {
@@ -3739,6 +3685,47 @@ describe('Form Model', () => {
             MOCK_ALL_FORM_PARAMS.inactiveMessage,
           )
         })
+
+        it('should keep later step logins but drop their e-service IDs', () => {
+          const workflowWithAuth = [
+            MOCK_WORKFLOW[0],
+            {
+              ...MOCK_WORKFLOW[1],
+              auth: { auth_type: FormAuthType.CP, esrvc_id: 'SOURCE-ESRVC' },
+            },
+            {
+              ...MOCK_WORKFLOW[2],
+              auth: { auth_type: FormAuthType.MyInfo },
+            },
+          ]
+          const sourceForm = new MultirespondentForm({
+            title: 'Test Form',
+            admin: MOCK_ADMIN_OBJ_ID,
+            responseMode: FormResponseMode.Multirespondent,
+            publicKey: 'initial public key',
+            workflow: workflowWithAuth,
+            form_fields: MOCK_FORM_FIELDS,
+          })
+
+          const duplicatedForm = sourceForm.getDuplicateParams({
+            admin: 'duplicated admin',
+            title: 'duplicated mrf form title',
+            responseMode: FormResponseMode.Multirespondent,
+          })
+
+          const duplicatedWorkflow = JSON.parse(
+            JSON.stringify(duplicatedForm.workflow),
+          )
+          expect(duplicatedWorkflow.map((step: any) => step.auth)).toEqual([
+            undefined,
+            { auth_type: FormAuthType.CP },
+            { auth_type: FormAuthType.MyInfo },
+          ])
+          // The source form keeps its own e-service ID
+          expect(getAuthEsrvcId(sourceForm.workflow[1].auth)).toBe(
+            'SOURCE-ESRVC',
+          )
+        })
       })
     })
 
@@ -3825,6 +3812,7 @@ describe('Form Model', () => {
         const fieldToDuplicate = generateDefaultField(BasicField.Checkbox)
 
         validForm.form_fields = [fieldToDuplicate]
+        await validForm.save()
         const fieldId = fieldToDuplicate._id
 
         // Act
@@ -3860,6 +3848,7 @@ describe('Form Model', () => {
         const dummyField = generateDefaultField(BasicField.Mobile)
 
         validForm.form_fields = [fieldToDuplicate, dummyField]
+        await validForm.save()
         const fieldId = fieldToDuplicate._id
 
         // Act

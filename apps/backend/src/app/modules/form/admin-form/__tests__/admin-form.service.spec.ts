@@ -781,6 +781,72 @@ describe('admin-form.service', () => {
           DROPDOWN_FIELD_OPTIONS_TO_RECIPIENTS_MAP,
         )
       })
+
+      describe('with login on a later step', () => {
+        const MYINFO_FIELD = {
+          _id: 'myInfoNameFieldId',
+          fieldType: BasicField.ShortText,
+          title: 'Name',
+          myInfo: { attr: MyInfoAttribute.Name },
+        }
+        const MOCK_STEP_LOGIN_FORM = {
+          ...MOCK_MRF_FORM,
+          authType: FormAuthType.NIL,
+          form_fields: [...MOCK_MRF_FORM_FIELDS, MYINFO_FIELD],
+          workflow: [
+            MOCK_MRF_WORKFLOW[0],
+            {
+              ...MOCK_MRF_WORKFLOW[1],
+              edit: [MYINFO_FIELD._id],
+              auth: { auth_type: FormAuthType.MyInfo },
+            },
+          ],
+        }
+        const makeMockForm = (source: object) =>
+          ({
+            ...source,
+            getDuplicateParams: jest.fn().mockReturnValue({}),
+          }) as unknown as IFormDocument
+
+        it('should refuse to duplicate into storage mode', async () => {
+          const createSpy = jest.spyOn(FormModel, 'create')
+
+          const result = await AdminFormService.duplicateForm(
+            makeMockForm(MOCK_STEP_LOGIN_FORM),
+            new ObjectId().toHexString(),
+            MOCK_ENCRYPT_OVERRIDE_PARAMS,
+          )
+
+          expect(result._unsafeUnwrapErr()).toEqual(
+            new MalformedParametersError(
+              AdminFormService.LATER_STEP_LOGIN_DUPLICATE_MODE_ERROR,
+            ),
+          )
+          expect(createSpy).not.toHaveBeenCalled()
+        })
+
+        it.each([
+          ['as a multi-respondent form', MOCK_STEP_LOGIN_FORM, OVERRIDE_PARAMS],
+          [
+            'into storage mode when later steps have no login',
+            MOCK_MRF_FORM,
+            MOCK_ENCRYPT_OVERRIDE_PARAMS,
+          ],
+        ])('should duplicate %s', async (_, source, overrideParams) => {
+          const mockForm = makeMockForm(source)
+          jest
+            .spyOn(FormModel, 'create')
+            .mockResolvedValueOnce(mockForm as never)
+
+          const result = await AdminFormService.duplicateForm(
+            mockForm,
+            new ObjectId().toHexString(),
+            overrideParams,
+          )
+
+          expect(result.isOk()).toBe(true)
+        })
+      })
     })
 
     it('should successfully duplicate form', async () => {
@@ -4922,6 +4988,72 @@ describe('admin-form.service', () => {
         'UEN fields can only be filled in by Step 1.',
       )
       expect(write).not.toHaveBeenCalled()
+    })
+
+    it('rejects an identity on a later step without a login when the flag is on', async () => {
+      const write = jest.spyOn(MultirespondentFormModel, 'findOneAndUpdate')
+      const result = await AdminFormService.updateFormWorkflowStep(
+        makeForm(FormStatus.Private),
+        1,
+        { ...nextStep, edit: [identityId, regularId] } as any,
+        { isStepLoginEnabled: true },
+      )
+      expect(result._unsafeUnwrapErr().message).toBe(
+        '"UEN" can only be filled in by one step. Step 2 needs Corppass login to fill in "UEN".',
+      )
+      expect(write).not.toHaveBeenCalled()
+    })
+
+    it('rejects step login keys when the flag is off', async () => {
+      const write = jest.spyOn(MultirespondentFormModel, 'findOneAndUpdate')
+      const result = await AdminFormService.updateFormWorkflowStep(
+        makeForm(FormStatus.Private),
+        1,
+        {
+          ...nextStep,
+          edit: [regularId],
+          auth: { auth_type: FormAuthType.MyInfo },
+        } as any,
+      )
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new MalformedParametersError(
+          'Login on later steps is not available for this form',
+        ),
+      )
+      expect(write).not.toHaveBeenCalled()
+    })
+
+    it('saves a later-step login with the step and drops the request-only keys', async () => {
+      const write = jest
+        .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
+        // @ts-ignore
+        .mockReturnValue({
+          exec: jest.fn().mockResolvedValue({ _id: 'form', workflow: [] }),
+        })
+      const auth = { auth_type: FormAuthType.CP, esrvc_id: 'ESRVC' }
+      const stepOne = { ...firstStep, edit: [regularId] }
+      const form = makeForm(FormStatus.Private)
+      ;(form as unknown as { workflow: unknown[] }).workflow = [
+        stepOne,
+        nextStep,
+      ]
+      const result = await AdminFormService.updateFormWorkflowStep(
+        form,
+        1,
+        {
+          ...nextStep,
+          edit: [identityId],
+          auth,
+          first_step_login: undefined,
+        } as any,
+        { isStepLoginEnabled: true },
+      )
+      expect(result.isOk()).toBe(true)
+      expect(write).toHaveBeenCalledWith(
+        expect.anything(),
+        { workflow: [stepOne, { ...nextStep, edit: [identityId], auth }] },
+        expect.anything(),
+      )
     })
   })
 

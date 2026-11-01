@@ -76,6 +76,39 @@ export const getWebhookSettingsValidator = celebrate({
   }),
 })
 
+// Login on steps after Step 1. Null means no login, like absent.
+const workflowStepAuthValidator = Joi.object({
+  auth_type: Joi.string()
+    .valid(FormAuthType.MyInfo, FormAuthType.CP)
+    .required(),
+  // Only Corppass has an e-service ID.
+  esrvc_id: Joi.when('auth_type', {
+    is: FormAuthType.CP,
+    then: Joi.string().allow('').optional(),
+    otherwise: Joi.forbidden(),
+  }),
+})
+  .allow(null)
+  .optional()
+
+// Step 1's login, written to the form-level settings with the step.
+const firstStepLoginValidator = Joi.object({
+  auth_type: Joi.string()
+    .valid(FormAuthType.NIL, FormAuthType.MyInfo, FormAuthType.CP)
+    .required(),
+  esrvc_id: Joi.string().allow('').optional(),
+}).optional()
+
+const workflowStepLoginKeys = {
+  auth: workflowStepAuthValidator,
+  first_step_login: firstStepLoginValidator,
+  expected_last_modified: Joi.string().isoDate().optional(),
+  delete_auth_field_ids: Joi.array()
+    .items(Joi.string().hex().length(24))
+    .unique()
+    .optional(),
+}
+
 /**
  * Joi validator for POST /forms/:formId/workflow/ route.
  */
@@ -99,6 +132,7 @@ export const createWorkflowStepValidator = celebrate({
       otherwise: Joi.forbidden(),
     }),
     step_name: Joi.string().optional(),
+    ...workflowStepLoginKeys,
   }),
   [Segments.PARAMS]: Joi.object({
     formId: Joi.string().required(),
@@ -129,6 +163,7 @@ export const updateWorkflowStepValidator = celebrate({
       otherwise: Joi.forbidden(),
     }),
     step_name: Joi.string().optional(),
+    ...workflowStepLoginKeys,
   }),
   [Segments.PARAMS]: Joi.object({
     formId: Joi.string().required(),
