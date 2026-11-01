@@ -130,6 +130,9 @@ const SubmittedNonApprovalStep = z.object({
   submittedAt: z.string().datetime({ precision: 3 }),
   nextStepRecipientEmails: z.array(z.string()).optional(),
   submitterId: z.string().optional(),
+  // Provider verified for this submission, never inferred from later form edits.
+  // Optional so existing submission history remains readable.
+  authType: z.enum([FormAuthType.MyInfo, FormAuthType.CP]).optional(),
   snapshotTokens: SubmittedStepSnapshotTokens.optional(),
 })
 
@@ -171,6 +174,7 @@ export const SUBMITTED_STEP_VISIBILITY = {
     admin: true,
   },
   submitterId: { webhook: true, public: true, admin: false },
+  authType: { webhook: false, public: false, admin: true },
   snapshotTokens: { webhook: false, public: false, admin: false },
 } as const satisfies Record<
   SubmittedStepField,

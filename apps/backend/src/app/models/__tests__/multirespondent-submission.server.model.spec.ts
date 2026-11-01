@@ -2,6 +2,7 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import {
   BasicField,
+  FormAuthType,
   MyInfoAttribute,
   SubmissionMetadata,
   SubmissionType,
@@ -1119,6 +1120,56 @@ describe('Multirespondent Submission Model', () => {
 
       const serialised = JSON.stringify(webhookView)
       expect(serialised).not.toContain('myInfoReadOnlyFields')
+    })
+  })
+
+  describe('submittedSteps authType', () => {
+    const createRow = (authType?: string) =>
+      MultirespondentSubmission.create({
+        form: new ObjectId().toHexString(),
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: [],
+        submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
+        encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
+        encryptedContent: MOCK_ENCRYPTED_CONTENT,
+        version: 3,
+        workflowStep: 0,
+        submittedSteps: [
+          {
+            isApproval: false,
+            submittedAt: new Date().toISOString(),
+            ...(authType === undefined ? {} : { authType }),
+          },
+        ],
+      })
+
+    it('should persist the login verified for a step', async () => {
+      const submission = await createRow(FormAuthType.CP)
+      const found = await MultirespondentSubmission.findById(
+        submission._id,
+      ).lean()
+
+      expect(found?.submittedSteps?.[0]).toHaveProperty(
+        'authType',
+        FormAuthType.CP,
+      )
+    })
+
+    it('should leave authType absent when it was never written', async () => {
+      const submission = await createRow()
+      const found = await MultirespondentSubmission.findById(
+        submission._id,
+      ).lean()
+
+      expect(found?.submittedSteps?.[0]).not.toHaveProperty('authType')
+    })
+
+    it('should reject a login a step cannot use', async () => {
+      await expect(createRow(FormAuthType.SP)).rejects.toThrow(
+        mongoose.Error.ValidationError,
+      )
     })
   })
 })
