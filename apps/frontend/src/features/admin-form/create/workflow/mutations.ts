@@ -15,10 +15,12 @@ import { adminFormSettingsKeys } from '~features/admin-form/settings/queries'
 import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedbackContainer/adminFeedbackStore'
 
 import { useAdminFormWorkflow } from './hooks/useAdminFormWorkflow'
-import { useIsMrfStepLoginEnabled } from './hooks/useIsMrfStepLoginEnabled'
+import { useUsesStepLoginRules } from './hooks/useUsesStepLoginRules'
 import {
+  AuthFieldDeletionConfirmation,
   createWorkflowStep,
   deleteWorkflow,
+  DeleteWorkflowOptions,
   deleteWorkflowStep,
   updateWorkflowStep,
 } from './FormWorkflowService'
@@ -34,16 +36,17 @@ export const useWorkflowMutations = () => {
   const queryClient = useQueryClient()
   const adminFormKey = adminFormKeys.id(formId)
   const toast = useToast({ status: 'success', isClosable: true })
-  const isStepLoginEnabled = useIsMrfStepLoginEnabled()
+  // Same gate as the delete modals and the API's step login rules.
+  const usesStepLoginRules = useUsesStepLoginRules()
 
-  // A step save may also change Step 1's form-level login, which Settings
-  // reads from its own query, so both re-render from one source after a save.
+  // Under step login rules a workflow write may also change Step 1's login
+  // and delete login fields, so refetch the form and its settings.
   const invalidateFormQueries = useCallback(() => {
-    if (!isStepLoginEnabled) return
+    if (!usesStepLoginRules) return
     void queryClient.invalidateQueries(adminFormKey)
     void queryClient.invalidateQueries(adminFormSettingsKeys.id(formId))
     void queryClient.invalidateQueries(adminFormSettingsKeys.whitelist(formId))
-  }, [adminFormKey, formId, isStepLoginEnabled, queryClient])
+  }, [adminFormKey, formId, usesStepLoginRules, queryClient])
 
   const handleError = useCallback(
     (error: Error) => {
@@ -83,7 +86,13 @@ export const useWorkflowMutations = () => {
   )
 
   const deleteStepMutation = useMutation(
-    (stepNumber: number) => deleteWorkflowStep(formId, stepNumber),
+    ({
+      stepNumber,
+      confirmation,
+    }: {
+      stepNumber: number
+      confirmation?: AuthFieldDeletionConfirmation
+    }) => deleteWorkflowStep(formId, stepNumber, confirmation),
     {
       onSuccess: (updatedWorkflow) => {
         toast.closeAll()
@@ -103,23 +112,26 @@ export const useWorkflowMutations = () => {
     },
   )
 
-  const deleteWorkflowMutation = useMutation(() => deleteWorkflow(formId), {
-    onSuccess: (updatedWorkflow) => {
-      toast.closeAll()
-      queryClient.setQueryData<AdminFormDto>(adminFormKey, (prev) => {
-        if (!prev) throw new Error('Query should have been set')
-        if (prev.responseMode !== FormResponseMode.Multirespondent) {
-          throw new Error('Invalid response mode')
-        }
-        return { ...prev, workflow: updatedWorkflow }
-      })
-      invalidateFormQueries()
-      toast({
-        description: 'The workflow was successfully deleted.',
-      })
+  const deleteWorkflowMutation = useMutation(
+    (options?: DeleteWorkflowOptions) => deleteWorkflow(formId, options),
+    {
+      onSuccess: (updatedWorkflow) => {
+        toast.closeAll()
+        queryClient.setQueryData<AdminFormDto>(adminFormKey, (prev) => {
+          if (!prev) throw new Error('Query should have been set')
+          if (prev.responseMode !== FormResponseMode.Multirespondent) {
+            throw new Error('Invalid response mode')
+          }
+          return { ...prev, workflow: updatedWorkflow }
+        })
+        invalidateFormQueries()
+        toast({
+          description: 'The workflow was successfully deleted.',
+        })
+      },
+      onError: handleError,
     },
-    onError: handleError,
-  })
+  )
 
   const updateStepMutation = useMutation(
     ({
