@@ -42,6 +42,10 @@ import {
   MissingJwtError,
   VerifyJwtError,
 } from '../spcp/spcp.errors'
+import {
+  MrfSubmissionStaleError,
+  SubmissionNotFoundError,
+} from '../submission/submission.errors'
 
 import {
   FieldNotFoundInTransactionError,
@@ -244,9 +248,15 @@ export const mapRouteError: MapRouteError = (
         // Message is injected internally
         errorMessage: error.message,
       }
+    case MrfSubmissionStaleError:
+      return {
+        errorMessage: error.message,
+        statusCode: StatusCodes.BAD_REQUEST,
+      }
     case FieldNotFoundInTransactionError:
     case TransactionNotFoundError:
     case FormNotFoundError:
+    case SubmissionNotFoundError:
       return {
         errorMessage: coreErrorMsg,
         statusCode: StatusCodes.NOT_FOUND,
