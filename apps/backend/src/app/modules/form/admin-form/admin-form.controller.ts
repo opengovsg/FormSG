@@ -37,7 +37,7 @@ import {
   FormWebhookResponseModeSettings,
   FormWebhookSettings,
   FormWorkflowDto,
-  FormWorkflowStepDto,
+  FormWorkflowStepWriteDto,
   Language,
   LogicConditionState,
   LogicDto,
@@ -1487,22 +1487,29 @@ export const _handleUpdateSettings: ControllerHandler<
   const { formId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const settingsToPatch = req.body
+  let isStepLoginEnabled = false
 
   // Step 1: Retrieve currently logged in user.
   return UserService.getPopulatedUserById(sessionUserId)
-    .andThen((user) =>
+    .andThen((user) => {
+      isStepLoginEnabled = isMrfStepLoginEnabledFor(
+        req.growthbook,
+        user,
+        formId,
+      )
       // Step 2: Retrieve form with write permission check.
-      AuthService.getFormAfterPermissionChecks({
+      return AuthService.getFormAfterPermissionChecks({
         user,
         formId,
         level: PermissionLevel.Write,
-      }),
-    )
+      })
+    })
     .andThen((retrievedForm) =>
       AdminFormService.updateFormSettings(
         retrievedForm,
         settingsToPatch,
         checkIsMrfWebhooksV4Enabled(retrievedForm, req.growthbook),
+        isStepLoginEnabled,
       ),
     )
     .map((updatedSettings) => res.status(StatusCodes.OK).json(updatedSettings))
@@ -1560,6 +1567,16 @@ const isNricFieldEnabledFor = (
   })
   return growthbook?.isOn(featureFlags.isNricFieldEnabled) ?? false
 }
+
+// Admin gate only: respondent paths honour a saved step login regardless.
+// Later-step login fills NRIC/FIN/UEN fields, so it also needs that flag.
+const isMrfStepLoginEnabledFor = (
+  growthbook: GrowthBook | undefined,
+  user: IPopulatedUser,
+  formId: string,
+): boolean =>
+  isNricFieldEnabledFor(growthbook, user, formId) &&
+  (growthbook?.isOn(featureFlags.mrfStepLogin) ?? false)
 
 /**
  * Handler for POST /forms/:formId/settings/submitter-id-collection/convert.
@@ -1702,28 +1719,36 @@ const guidedModeOf = (form: IPopulatedForm): boolean | undefined =>
 export const _handleCreateWorkflowStep: ControllerHandler<
   { formId: string },
   FormWorkflowDto | ErrorDto,
-  FormWorkflowStepDto
+  FormWorkflowStepWriteDto
 > = (req, res) => {
   const { formId } = req.params
   const workflowStepToCreate = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
   let hasUsedGuidedMode: boolean | undefined
+  let isStepLoginEnabled = false
 
   // Step 1: Retrieve currently logged in user.
   return (
     UserService.getPopulatedUserById(sessionUserId)
-      .andThen((user) =>
+      .andThen((user) => {
+        isStepLoginEnabled = isMrfStepLoginEnabledFor(
+          req.growthbook,
+          user,
+          formId,
+        )
         // Step 2: Retrieve form with write permission check.
-        AuthService.getFormAfterPermissionChecks({
+        return AuthService.getFormAfterPermissionChecks({
           user,
           formId,
           level: PermissionLevel.Write,
-        }),
-      )
+        })
+      })
       // Step 3: User has permissions, proceed to create form field with provided body.
       .andThen((form) => {
         hasUsedGuidedMode = guidedModeOf(form)
-        return AdminFormService.createWorkflowStep(form, workflowStepToCreate)
+        return AdminFormService.createWorkflowStep(form, workflowStepToCreate, {
+          isStepLoginEnabled,
+        })
       })
       .map((updatedWorkflow) => {
         if (hasUsedGuidedMode) {
@@ -1770,29 +1795,36 @@ const _handleUpdateWorkflowStep: ControllerHandler<
     stepNumber: number
   },
   FormWorkflowDto | ErrorDto,
-  FormWorkflowStepDto
+  FormWorkflowStepWriteDto
 > = (req, res) => {
   const { formId, stepNumber } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const updatedWorkflowStep = req.body
   let hasUsedGuidedMode: boolean | undefined
+  let isStepLoginEnabled = false
 
   // Step 1: Retrieve currently logged in user.
   return UserService.getPopulatedUserById(sessionUserId)
-    .andThen((user) =>
+    .andThen((user) => {
+      isStepLoginEnabled = isMrfStepLoginEnabledFor(
+        req.growthbook,
+        user,
+        formId,
+      )
       // Step 2: Retrieve form with write permission check.
-      AuthService.getFormAfterPermissionChecks({
+      return AuthService.getFormAfterPermissionChecks({
         user,
         formId,
         level: PermissionLevel.Write,
-      }),
-    )
+      })
+    })
     .andThen((retrievedForm) => {
       hasUsedGuidedMode = guidedModeOf(retrievedForm)
       return AdminFormService.updateFormWorkflowStep(
         retrievedForm,
         stepNumber,
         updatedWorkflowStep,
+        { isStepLoginEnabled },
       )
     })
     .map((updatedWorkflow) => {

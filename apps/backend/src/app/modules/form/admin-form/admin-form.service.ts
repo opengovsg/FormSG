@@ -20,6 +20,7 @@ import {
   EndPageUpdateDto,
   FieldCreateDto,
   FieldUpdateDto,
+  FormAuthType,
   FormFieldDto,
   FormLogoState,
   FormMetadata,
@@ -31,7 +32,7 @@ import {
   FormStatus,
   FormWebhook,
   FormWorkflowDto,
-  FormWorkflowStepDto,
+  FormWorkflowStepWriteDto,
   LogicDto,
   MultirespondentFormSettings,
   PaymentChannel,
@@ -59,6 +60,13 @@ import {
   isMFinSeriesValid,
   isNricValid,
 } from 'formsg-shared/utils/nric-validation'
+import {
+  CORPPASS_STEPS_NEED_ESRVC_ID,
+  getLoginFieldPublishErrors,
+  getResultingLoginErrors,
+  hasLaterCorppassStepWithoutEsrvcId,
+  hasLaterStepLogin,
+} from 'formsg-shared/utils/step-login'
 import { isUenValid } from 'formsg-shared/utils/uen-validation'
 import {
   getIncompleteStepNumbers,
@@ -91,6 +99,7 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import getAgencyModel from '../../../models/agency.server.model'
 import getFormModel from '../../../models/form.server.model'
 import getFormWhitelistSubmitterIdsModel from '../../../models/form_whitelist.server.model'
+import { getCheckedAuthenticationConfigFilter } from '../../../models/form-authentication-config'
 import { getWorkspaceModel } from '../../../models/workspace.server.model'
 import {
   createPresignedPostDataPromise,
@@ -114,6 +123,7 @@ import * as UserService from '../../user/user.service'
 import { getWebhookType, toConsumerType } from '../../webhook/webhook.service'
 import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
 import {
+  ForbiddenFormError,
   FormInvalidResponseModeError,
   FormNotFoundError,
   FormOpenToResponsesError,
@@ -131,6 +141,7 @@ import {
   isFormMultirespondent,
 } from '../form.utils'
 
+import { prepareAuthFieldDeletion } from './admin-form.auth-field-deletion'
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
   EditFieldError,
@@ -141,6 +152,12 @@ import {
   SavedViewLimitError,
   SavedViewNotFoundError,
 } from './admin-form.errors'
+import {
+  checkFormLoginWrite,
+  checkWorkflowStepLoginWrite,
+  STEP_LOGIN_NOT_AVAILABLE,
+  toSavedWorkflowStep,
+} from './admin-form.step-login'
 import {
   getUpdatedFormFields,
   insertTableShortTextColumnDefaultValidationOptions,
@@ -522,8 +539,8 @@ type MultirespondentFormToCreate = Merge<
 /**
  * Drops any login a request put on workflow steps. The create-form body
  * accepts unknown keys, so without this a raw request could save a later-step
- * login that no flag allowed.
- * TODO(mrf-step-login PR 6): keep `auth` when `mrf-singpass-all-steps` is on.
+ * login without the checks the workflow step routes run. Step logins are
+ * only added through those routes.
  */
 const omitWorkflowStepAuth = <T extends object>(params: T): T => {
   const { workflow } = params as { workflow?: unknown }
@@ -717,6 +734,9 @@ type DuplicateFormOpts = {
   formOrigins?: FormMetadata['formOrigins']
 }
 
+export const LATER_STEP_LOGIN_DUPLICATE_MODE_ERROR =
+  'This form uses login on later workflow steps, so it can only be duplicated as a multi-respondent form.'
+
 /**
  * Duplicates given formId and replace owner with newAdminId.
  * @param originalForm the form to be duplicated
@@ -730,11 +750,32 @@ export const duplicateForm = (
   newAdminId: string,
   overrideParams: DuplicateFormOverwriteDto,
   opts?: DuplicateFormOpts,
-): ResultAsync<IFormDocument, FormNotFoundError | DatabaseError> => {
+): ResultAsync<
+  IFormDocument,
+  FormNotFoundError | DatabaseError | MalformedParametersError
+> => {
   const overrideProps = processDuplicateOverrideProps(
     overrideParams,
     newAdminId,
   )
+  // Without a workflow, Step 1's login would have to fill the fields later steps fill in.
+  if (
+    isFormMultirespondent(originalForm) &&
+    overrideProps.responseMode !== FormResponseMode.Multirespondent &&
+    hasLaterStepLogin(originalForm.workflow) &&
+    getResultingLoginErrors({
+      authType: originalForm.authType,
+      responseMode: overrideProps.responseMode,
+      isSubmitterIdCollectionEnabled:
+        originalForm.isSubmitterIdCollectionEnabled,
+      form_fields: originalForm.form_fields,
+      workflow: [],
+    }).length > 0
+  ) {
+    return errAsync(
+      new MalformedParametersError(LATER_STEP_LOGIN_DUPLICATE_MODE_ERROR),
+    )
+  }
   const { workspaceId, overrideEmails, isFromTemplate, formOrigins } =
     opts ?? {}
 
@@ -1688,20 +1729,46 @@ const getCheckedWebhookFilterIfMultistepWorkflow = (
   stepCount: number,
 ) => (stepCount >= 2 ? getCheckedWebhookFilter(form) : {})
 
+/**
+ * Step login rules apply once the rollout flag is on, or to a form that
+ * already has a later-step login so it can be maintained or removed. Other
+ * forms keep the rules from before step logins existed.
+ */
+const usesStepLoginRules = (
+  form: IPopulatedForm,
+  isStepLoginEnabled: boolean,
+): boolean =>
+  isStepLoginEnabled ||
+  (isFormMultirespondent(form) && hasLaterStepLogin(form.workflow))
+
+/** Request-only step keys that only step login rules accept. */
+const hasStepLoginRequestKeys = (step: FormWorkflowStepWriteDto): boolean =>
+  !!step.auth ||
+  !!step.first_step_login ||
+  step.expected_last_modified !== undefined ||
+  step.delete_auth_field_ids !== undefined
+
 const checkResultingWorkflowIsAllowed = (
   form: IPopulatedForm,
   workflow: FormWorkflowDto,
+  {
+    authType = form.authType,
+    useStepLoginRules,
+  }: { authType?: FormAuthType; useStepLoginRules: boolean },
 ): Result<true, MalformedParametersError> => {
-  // Workflow query updates bypass the form's document validation hook.
-  const identityErrors = getLoginIdentityConfigErrors({
-    authType: form.authType,
+  const loginConfig = {
+    authType,
     responseMode: form.responseMode,
     isSubmitterIdCollectionEnabled: form.isSubmitterIdCollectionEnabled,
     form_fields: form.form_fields,
     workflow,
-  })
-  if (identityErrors.length) {
-    return err(new MalformedParametersError(identityErrors.join(' ')))
+  }
+  // Workflow query updates bypass the form's document validation hooks.
+  const loginErrors = useStepLoginRules
+    ? getResultingLoginErrors(loginConfig)
+    : getLoginIdentityConfigErrors(loginConfig)
+  if (loginErrors.length) {
+    return err(new MalformedParametersError(loginErrors.join(' ')))
   }
 
   if (
@@ -1718,6 +1785,9 @@ const checkResultingWorkflowIsAllowed = (
     return ok(true)
   }
 
+  // Every caller is MRF-only and the resulting login errors are already empty.
+  if (useStepLoginRules && hasLaterCorppassStepWithoutEsrvcId(workflow))
+    return err(new MalformedParametersError(CORPPASS_STEPS_NEED_ESRVC_ID))
   const incompleteStepNumbers = findIncompleteSteps(form, workflow)
   return incompleteStepNumbers.length === 0
     ? ok(true)
@@ -1726,10 +1796,15 @@ const checkResultingWorkflowIsAllowed = (
 
 export const createWorkflowStep = (
   originalForm: IPopulatedForm,
-  newWorkflowStep: FormWorkflowStepDto,
+  newWorkflowStep: FormWorkflowStepWriteDto,
+  { isStepLoginEnabled = false }: { isStepLoginEnabled?: boolean } = {},
 ): ResultAsync<
   FormWorkflowDto,
-  DatabaseError | MalformedParametersError | FormChangedWhileEditingError
+  | DatabaseError
+  | MalformedParametersError
+  | ForbiddenFormError
+  | FormOpenToResponsesError
+  | FormChangedWhileEditingError
 > => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
@@ -1774,11 +1849,14 @@ export const createWorkflowStep = (
     )
   }
 
-  // TODO(MRF-MYINFO): Remove this restriction once Myinfo fields are
-  // supported in workflow steps >= 2. Currently, only step 1 (the first
-  // respondent) can include Myinfo fields to prevent approvers from
-  // overriding verified data.
-  if (!isFirstStep) {
+  const useStepLoginRules = usesStepLoginRules(originalForm, isStepLoginEnabled)
+  if (!useStepLoginRules && hasStepLoginRequestKeys(newWorkflowStep)) {
+    return errAsync(new MalformedParametersError(STEP_LOGIN_NOT_AVAILABLE))
+  }
+
+  // Without step login rules, only step 1 (the first respondent) can include
+  // Myinfo fields, to prevent approvers from overriding verified data.
+  if (!useStepLoginRules && !isFirstStep) {
     const editFieldIds = new Set((newWorkflowStep.edit ?? []).map(String))
     const myInfoFieldInEdit = originalForm.form_fields.find(
       (field) =>
@@ -1839,9 +1917,25 @@ export const createWorkflowStep = (
   const originalWorkflow = originalMrfForm.workflow ?? []
 
   // Create new workflow step
-  const updatedWorkflow = originalWorkflow.concat(newWorkflowStep)
+  const stepToSave = toSavedWorkflowStep(newWorkflowStep) as FormWorkflowDto[0]
+  const updatedWorkflow = originalWorkflow.concat(stepToSave)
 
-  const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow)
+  const loginCheck = useStepLoginRules
+    ? checkWorkflowStepLoginWrite({
+        form: originalForm,
+        stepNumber: originalWorkflow.length,
+        step: newWorkflowStep,
+        resultingWorkflow: updatedWorkflow,
+        isStepLoginEnabled,
+      })
+    : undefined
+  if (loginCheck?.isErr()) return errAsync(loginCheck.error)
+  const formLogin = loginCheck?.isOk() ? loginCheck.value.formLogin : undefined
+
+  const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow, {
+    authType: formLogin?.authType,
+    useStepLoginRules,
+  })
   if (check.isErr()) return errAsync(check.error)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
@@ -1852,13 +1946,17 @@ export const createWorkflowStep = (
     MultirespondentFormModel.findOneAndUpdate(
       {
         _id: originalMrfForm._id,
+        ...(useStepLoginRules
+          ? getCheckedAuthenticationConfigFilter(originalForm)
+          : {}),
         'payments_field.enabled': { $ne: true },
         ...getCheckedWebhookFilterIfMultistepWorkflow(
           originalForm,
           updatedWorkflow.length,
         ),
       },
-      { workflow: updatedWorkflow },
+      // Step 1's login is saved with the step so neither lands without the other.
+      { workflow: updatedWorkflow, ...formLogin },
       {
         new: true,
         runValidators: true,
@@ -1888,10 +1986,15 @@ export const createWorkflowStep = (
 export const updateFormWorkflowStep = (
   originalForm: IPopulatedForm,
   stepNumber: number,
-  updatedWorkflowStep: FormWorkflowStepDto,
+  updatedWorkflowStep: FormWorkflowStepWriteDto,
+  { isStepLoginEnabled = false }: { isStepLoginEnabled?: boolean } = {},
 ): ResultAsync<
   FormWorkflowDto,
-  DatabaseError | FormChangedWhileEditingError
+  | DatabaseError
+  | MalformedParametersError
+  | ForbiddenFormError
+  | FormOpenToResponsesError
+  | FormChangedWhileEditingError
 > => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
@@ -1927,11 +2030,14 @@ export const updateFormWorkflowStep = (
     )
   }
 
-  // TODO(MRF-MYINFO): Remove this restriction once MyInfo fields are
-  // supported in workflow steps >= 2. Currently, only step 1 (the first
-  // respondent) can include MyInfo fields to prevent approvers from
-  // overriding verified data.
-  if (!isFirstStep) {
+  const useStepLoginRules = usesStepLoginRules(originalForm, isStepLoginEnabled)
+  if (!useStepLoginRules && hasStepLoginRequestKeys(updatedWorkflowStep)) {
+    return errAsync(new MalformedParametersError(STEP_LOGIN_NOT_AVAILABLE))
+  }
+
+  // Without step login rules, only step 1 (the first respondent) can include
+  // Myinfo fields, to prevent approvers from overriding verified data.
+  if (!useStepLoginRules && !isFirstStep) {
     const editFieldIds = new Set((updatedWorkflowStep.edit ?? []).map(String))
     const myInfoFieldInEdit = originalForm.form_fields.find(
       (field) =>
@@ -1997,11 +2103,51 @@ export const updateFormWorkflowStep = (
     return errAsync(new MalformedParametersError('Invalid step number'))
   }
 
-  const updatedWorkflow = originalMrfForm.workflow.map((step, index) =>
-    index === stepNumber ? updatedWorkflowStep : step,
+  const stepToSave = toSavedWorkflowStep(
+    updatedWorkflowStep,
+  ) as FormWorkflowDto[0]
+  const savedAuth = originalMrfForm.workflow[stepNumber]?.auth
+  // With the flag off, the editor sends no login; a saved one is kept.
+  if (!isStepLoginEnabled && !('auth' in updatedWorkflowStep) && savedAuth) {
+    stepToSave.auth = savedAuth
+  }
+  let updatedWorkflow = originalMrfForm.workflow.map((step, index) =>
+    index === stepNumber ? stepToSave : step,
   )
 
-  const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow)
+  let checkedForm = originalForm
+  let deletionGuard = {}
+  let deletionUpdate = {}
+  let formLogin: { authType: FormAuthType; esrvcId?: string } | undefined
+  if (useStepLoginRules) {
+    const deletion = prepareAuthFieldDeletion({
+      form: originalForm,
+      workflow: updatedWorkflow,
+      authType:
+        updatedWorkflowStep.first_step_login?.auth_type ??
+        originalForm.authType,
+      confirmedIds: updatedWorkflowStep.delete_auth_field_ids,
+      expectedLastModified: updatedWorkflowStep.expected_last_modified,
+    })
+    if (deletion.isErr()) return errAsync(deletion.error)
+    updatedWorkflow = deletion.value.workflow
+    ;({ checkedForm, deletionGuard, deletionUpdate } = deletion.value)
+
+    const loginCheck = checkWorkflowStepLoginWrite({
+      form: checkedForm,
+      stepNumber,
+      step: updatedWorkflowStep,
+      resultingWorkflow: updatedWorkflow,
+      isStepLoginEnabled,
+    })
+    if (loginCheck.isErr()) return errAsync(loginCheck.error)
+    formLogin = loginCheck.value.formLogin
+  }
+
+  const check = checkResultingWorkflowIsAllowed(checkedForm, updatedWorkflow, {
+    authType: formLogin?.authType,
+    useStepLoginRules,
+  })
   if (check.isErr()) return errAsync(check.error)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
@@ -2012,12 +2158,21 @@ export const updateFormWorkflowStep = (
     MultirespondentFormModel.findOneAndUpdate(
       {
         _id: originalMrfForm._id,
+        ...(useStepLoginRules
+          ? getCheckedAuthenticationConfigFilter(originalForm)
+          : {}),
+        ...deletionGuard,
         ...getCheckedWebhookFilterIfMultistepWorkflow(
           originalForm,
           updatedWorkflow.length,
         ),
       },
-      { workflow: updatedWorkflow },
+      // Step 1's login is saved with the step so neither lands without the other.
+      {
+        workflow: updatedWorkflow,
+        ...formLogin,
+        ...deletionUpdate,
+      },
       {
         new: true,
         runValidators: true,
@@ -2154,7 +2309,9 @@ export const deleteFormWorkflowStep = (
     (_step, index) => index !== targetStepNumber,
   )
 
-  const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow)
+  const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow, {
+    useStepLoginRules: usesStepLoginRules(originalForm, false),
+  })
   if (check.isErr()) return errAsync(check.error)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
@@ -2330,9 +2487,11 @@ export const updateFormSettings = (
   originalForm: IPopulatedForm,
   body: SettingsUpdateDto,
   isV4Enabled = false,
+  isStepLoginEnabled = false,
 ): ResultAsync<
   FormSettings,
   | MalformedParametersError
+  | FormOpenToResponsesError
   | FormChangedWhileEditingError
   | DatabaseError
   | DatabaseValidationError
@@ -2376,6 +2535,24 @@ export const updateFormSettings = (
     }
   }
 
+  const useStepLoginRules = usesStepLoginRules(originalForm, isStepLoginEnabled)
+
+  if (useStepLoginRules && body.status === FormStatus.Public) {
+    const loginErrors = getLoginFieldPublishErrors({
+      authType: body.authType ?? originalForm.authType,
+      responseMode: originalForm.responseMode,
+      isSubmitterIdCollectionEnabled:
+        body.isSubmitterIdCollectionEnabled ??
+        originalForm.isSubmitterIdCollectionEnabled,
+      form_fields: originalForm.form_fields,
+      workflow: isFormMultirespondent(originalForm)
+        ? originalForm.workflow
+        : [],
+    })
+    if (loginErrors.length)
+      return errAsync(new MalformedParametersError(loginErrors.join(' ')))
+  }
+
   if (
     body.status === FormStatus.Public &&
     originalForm.responseMode === FormResponseMode.Multirespondent
@@ -2394,11 +2571,16 @@ export const updateFormSettings = (
     }
   }
 
+  const changesLogin =
+    body.authType !== undefined ||
+    body.esrvcId !== undefined ||
+    body.isSubmitterIdCollectionEnabled !== undefined
   // Settings updates skip the form's save hooks, so check the login identity
   // fields against the login and toggle they would end up with.
   if (
-    body.authType !== undefined ||
-    body.isSubmitterIdCollectionEnabled !== undefined
+    !useStepLoginRules &&
+    (body.authType !== undefined ||
+      body.isSubmitterIdCollectionEnabled !== undefined)
   ) {
     const loginIdentityErrors = getLoginIdentityConfigErrors({
       authType: body.authType ?? originalForm.authType,
@@ -2416,6 +2598,28 @@ export const updateFormSettings = (
         new MalformedParametersError(loginIdentityErrors.join(' ')),
       )
     }
+  }
+  if (useStepLoginRules && changesLogin) {
+    const loginCheck = checkFormLoginWrite(
+      {
+        ...pick(originalForm, [
+          'authType',
+          'esrvcId',
+          'status',
+          'responseMode',
+          'form_fields',
+        ]),
+        isSubmitterIdCollectionEnabled:
+          body.isSubmitterIdCollectionEnabled ??
+          originalForm.isSubmitterIdCollectionEnabled,
+      },
+      {
+        authType: body.authType ?? originalForm.authType,
+        ...(body.esrvcId !== undefined ? { esrvcId: body.esrvcId } : {}),
+      },
+      isFormMultirespondent(originalForm) ? originalForm.workflow : [],
+    )
+    if (loginCheck.isErr()) return errAsync(loginCheck.error)
   }
 
   // Don't allow emails updates or single response per submitterId
@@ -2489,6 +2693,10 @@ export const updateFormSettings = (
     ModelToUse.findOneAndUpdate(
       {
         _id: originalForm._id,
+        ...(useStepLoginRules &&
+        (body.status === FormStatus.Public || changesLogin)
+          ? getCheckedAuthenticationConfigFilter(originalForm)
+          : {}),
         ...noSecondStepFilterIfRequiresSingleStep,
         ...(isFormMultirespondent(originalForm) && changesWebhookFormatOrUrl
           ? getCheckedWebhookFilter(originalForm)
