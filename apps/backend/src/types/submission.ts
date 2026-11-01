@@ -308,6 +308,7 @@ export type MultirespondentSubmissionData = {
   | 'form_fields'
   | 'form_logics'
   | 'myInfoReadOnlyFields'
+  | 'authType'
   | 'workflow'
   | 'submissionPublicKey'
   | 'encryptedSubmissionSecretKey'
