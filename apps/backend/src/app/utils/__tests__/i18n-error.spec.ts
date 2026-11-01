@@ -49,4 +49,13 @@ describe('i18n-error', () => {
       messageKey: 'features.adminForm.backendErrors.endPage.invalidUrl',
     })
   })
+
+  it('passes through plain Errors from child schemas without throwing', () => {
+    const schema = attachErrorI18n(
+      Joi.object({ child: Joi.string().error(new Error('static error')) }),
+      'features.adminForm.backendErrors.endPage.invalidUrl',
+    )
+
+    expect(schema.validate({ child: 1 }).error?.message).toBe('static error')
+  })
 })

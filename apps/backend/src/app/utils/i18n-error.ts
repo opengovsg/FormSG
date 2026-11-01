@@ -15,7 +15,7 @@ export const buildErrorDto = ({
 
 type JoiErrorReportWithI18n = Joi.ErrorReport & {
   code: string
-  local: Record<string, unknown>
+  local?: Record<string, unknown>
 }
 
 type ErrorI18n = Pick<ErrorDto, 'messageKey' | 'messageParams'>
@@ -27,6 +27,9 @@ export const attachErrorI18nByCode = <T extends Joi.Schema>(
   const attachI18n = ((errors: Joi.ErrorReport[]) => {
     errors.forEach((error) => {
       const report = error as JoiErrorReportWithI18n
+      // Plain Errors (e.g. from a child schema's static .error()) have no
+      // `local`, and Joi never reads it from them, so there is nothing to attach
+      if (!report.local) return
       const i18n = getI18n(report.code)
       if (i18n?.messageKey) report.local.messageKey = i18n.messageKey
       if (i18n?.messageParams) {
