@@ -93,6 +93,12 @@ describe('isSubmitterIdCollected', () => {
     expect(
       isSubmitterIdCollected({ ...mrfForm, workflow: [{ edit: [] }] }),
     ).toBe(false)
+    expect(
+      isSubmitterIdCollected({
+        ...mrfForm,
+        workflow: [{ edit: [] }, { edit: ['uen'] }],
+      }),
+    ).toBe(false)
   })
 })
 
@@ -212,6 +218,16 @@ describe('getLoginIdentityConfigErrors', () => {
       expect(
         getLoginIdentityConfigErrors({ ...mrfForm, workflow: [{ edit: [] }] }),
       ).toEqual([])
+    })
+
+    it('checks an unassigned field against the form-level login', () => {
+      expect(
+        getLoginIdentityConfigErrors({
+          ...mrfForm,
+          authType: FormAuthType.NIL,
+          workflow: [{ edit: [] }],
+        }),
+      ).toEqual(['NRIC/FIN fields need Singpass login.'])
     })
   })
 })
