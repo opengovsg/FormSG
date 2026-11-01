@@ -17,8 +17,10 @@ import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedb
 import { useAdminFormWorkflow } from './hooks/useAdminFormWorkflow'
 import { useIsMrfStepLoginEnabled } from './hooks/useIsMrfStepLoginEnabled'
 import {
+  AuthFieldDeletionConfirmation,
   createWorkflowStep,
   deleteWorkflow,
+  DeleteWorkflowOptions,
   deleteWorkflowStep,
   updateWorkflowStep,
 } from './FormWorkflowService'
@@ -83,7 +85,13 @@ export const useWorkflowMutations = () => {
   )
 
   const deleteStepMutation = useMutation(
-    (stepNumber: number) => deleteWorkflowStep(formId, stepNumber),
+    ({
+      stepNumber,
+      confirmation,
+    }: {
+      stepNumber: number
+      confirmation?: AuthFieldDeletionConfirmation
+    }) => deleteWorkflowStep(formId, stepNumber, confirmation),
     {
       onSuccess: (updatedWorkflow) => {
         toast.closeAll()
@@ -103,23 +111,26 @@ export const useWorkflowMutations = () => {
     },
   )
 
-  const deleteWorkflowMutation = useMutation(() => deleteWorkflow(formId), {
-    onSuccess: (updatedWorkflow) => {
-      toast.closeAll()
-      queryClient.setQueryData<AdminFormDto>(adminFormKey, (prev) => {
-        if (!prev) throw new Error('Query should have been set')
-        if (prev.responseMode !== FormResponseMode.Multirespondent) {
-          throw new Error('Invalid response mode')
-        }
-        return { ...prev, workflow: updatedWorkflow }
-      })
-      invalidateFormQueries()
-      toast({
-        description: 'The workflow was successfully deleted.',
-      })
+  const deleteWorkflowMutation = useMutation(
+    (options?: DeleteWorkflowOptions) => deleteWorkflow(formId, options),
+    {
+      onSuccess: (updatedWorkflow) => {
+        toast.closeAll()
+        queryClient.setQueryData<AdminFormDto>(adminFormKey, (prev) => {
+          if (!prev) throw new Error('Query should have been set')
+          if (prev.responseMode !== FormResponseMode.Multirespondent) {
+            throw new Error('Invalid response mode')
+          }
+          return { ...prev, workflow: updatedWorkflow }
+        })
+        invalidateFormQueries()
+        toast({
+          description: 'The workflow was successfully deleted.',
+        })
+      },
+      onError: handleError,
     },
-    onError: handleError,
-  })
+  )
 
   const updateStepMutation = useMutation(
     ({

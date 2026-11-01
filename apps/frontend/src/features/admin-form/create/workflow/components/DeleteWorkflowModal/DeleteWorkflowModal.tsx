@@ -27,7 +27,10 @@ import {
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../adminWorkflowStore'
+import { useUsesStepLoginRules } from '../../hooks/useUsesStepLoginRules'
 import { useWorkflowMutations } from '../../mutations'
+
+import { GuidedDeleteWorkflowModal } from './GuidedDeleteWorkflowModal'
 
 interface DeleteWorkflowModalProps {
   isOpen: boolean
@@ -58,7 +61,7 @@ interface DeleteWorkflowModalProps {
  * place they can do something about it. That state reads the same from either
  * entry point: it is about the form's status, not about what was clicked.
  */
-export const DeleteWorkflowModal = ({
+const UnguidedDeleteWorkflowModal = ({
   isOpen,
   onClose,
   entryPoint,
@@ -177,5 +180,20 @@ export const DeleteWorkflowModal = ({
         </ModalFooter>
       </ModalContent>
     </Modal>
+  )
+}
+
+/**
+ * With step logins, deleting the workflow also decides which login the form
+ * keeps and which login fields go, so that path guides the admin through it.
+ */
+export const DeleteWorkflowModal = (
+  props: DeleteWorkflowModalProps,
+): JSX.Element => {
+  const usesStepLoginRules = useUsesStepLoginRules()
+  return usesStepLoginRules ? (
+    <GuidedDeleteWorkflowModal {...props} />
+  ) : (
+    <UnguidedDeleteWorkflowModal {...props} />
   )
 }
