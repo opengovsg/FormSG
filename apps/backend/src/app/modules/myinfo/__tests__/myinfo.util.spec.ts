@@ -18,6 +18,38 @@ import {
 } from '../myinfo.util'
 
 describe('myinfo.util', () => {
+  describe('hashFieldValues (NRIC/FIN)', () => {
+    const fields = [
+      {
+        _id: new ObjectId().toHexString(),
+        fieldType: BasicField.Nric,
+        myInfo: { attr: MyInfoAttribute.UinFin },
+        fieldValue: 'S1234567A',
+        disabled: true,
+      },
+      {
+        _id: new ObjectId().toHexString(),
+        fieldType: BasicField.ShortText,
+        myInfo: { attr: MyInfoAttribute.Name },
+        fieldValue: 'Tan',
+        disabled: true,
+      },
+    ] as unknown as PossiblyPrefilledField[]
+
+    it('should hash a prefilled NRIC/FIN by default', () => {
+      expect(Object.keys(hashFieldValues(fields))).toEqual([
+        MyInfoAttribute.UinFin,
+        MyInfoAttribute.Name,
+      ])
+    })
+
+    it('should skip NRIC/FIN for a later step login', () => {
+      expect(
+        Object.keys(hashFieldValues(fields, undefined, { skipUinFin: true })),
+      ).toEqual([MyInfoAttribute.Name])
+    })
+  })
+
   describe('compareHashedValues (children)', () => {
     const FIELD_ID = new ObjectId().toHexString()
     const SUBFIELDS = [

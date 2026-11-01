@@ -111,11 +111,14 @@ function hashChildrenFieldValues(
  * Hashes field values which are prefilled and MyInfo-verified.
  * @param prefilledFormFields Fields with fieldValue prefilled using MyInfo and disabled
  * set to true if the prefilled value is MyInfo-verified
+ * @param skipUinFin true for a later MRF step's login, whose NRIC/FIN answer is
+ * filled from the login session rather than checked against a hash
  * @returns object mapping MyInfo attributes to Promises of their hashes
  */
 export const hashFieldValues = (
   prefilledFormFields: PossiblyPrefilledField[],
   childrenBirthRecords?: MyInfoChildData,
+  { skipUinFin = false }: { skipUinFin?: boolean } = {},
 ): MyInfoHashPromises => {
   const readOnlyHashPromises: MyInfoHashPromises = {}
 
@@ -129,6 +132,7 @@ export const hashFieldValues = (
       return
     }
     if (!field.myInfo?.attr || !field.fieldValue || !field.disabled) return
+    if (skipUinFin && field.myInfo.attr === MyInfoAttribute.UinFin) return
     readOnlyHashPromises[field.myInfo.attr] = bcrypt.hash(
       field.fieldValue.toString(),
       HASH_SALT_ROUNDS,
