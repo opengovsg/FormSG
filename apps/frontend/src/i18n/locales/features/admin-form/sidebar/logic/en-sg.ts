@@ -94,7 +94,7 @@ export const enSG: Logic = {
     removeBlock: 'Remove logic condition block',
     criteria: 'Logic criteria',
     condition: 'Logic condition',
-    delete: 'Delete {{name}}',
+    delete: 'Delete {name}',
     logicName: 'logic',
   },
   errors: {
