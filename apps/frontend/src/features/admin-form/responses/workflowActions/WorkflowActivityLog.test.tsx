@@ -4,6 +4,7 @@ import {
   AdminWorkflowEventDto,
   AdminWorkflowEventType,
   DateString,
+  FormAuthType,
   StepSubmittedEventDto,
   WorkflowEventType,
   WorkflowStatus,
@@ -77,6 +78,17 @@ const titles = () =>
   screen.getAllByRole('heading', { level: 3 }).map((el) => el.textContent)
 
 describe('WorkflowActivityLog', () => {
+  // The render helper has no GrowthBook provider, so the rollout flag is off.
+  it('shows no login provider tag while step logins are off', () => {
+    render(
+      <WorkflowActivityLog
+        history={{ ...history, authType: FormAuthType.MyInfo }}
+      />,
+    )
+
+    expect(screen.queryByText('Singpass')).not.toBeInTheDocument()
+  })
+
   it('keeps action and sending entries adjacent, oldest first, including timestamp ties', () => {
     render(
       <WorkflowActivityLog
