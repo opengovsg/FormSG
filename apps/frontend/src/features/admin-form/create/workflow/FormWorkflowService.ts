@@ -1,4 +1,7 @@
-import { FormWorkflowDto, FormWorkflowStep } from 'formsg-shared/types/form'
+import {
+  FormWorkflowDto,
+  FormWorkflowStepWriteDto,
+} from 'formsg-shared/types/form'
 
 import { ApiService } from '~services/ApiService'
 
@@ -6,7 +9,7 @@ import { ADMIN_FORM_ENDPOINT } from '~features/admin-form/common/AdminViewFormSe
 
 export const createWorkflowStep = (
   formId: string,
-  createStepBody: FormWorkflowStep,
+  createStepBody: FormWorkflowStepWriteDto,
 ) => {
   return ApiService.post<FormWorkflowDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/workflow`,
@@ -35,7 +38,7 @@ export const deleteWorkflow = (formId: string) => {
 export const updateWorkflowStep = (
   formId: string,
   stepNumber: number,
-  updateStepBody: FormWorkflowStep,
+  updateStepBody: FormWorkflowStepWriteDto,
 ) => {
   return ApiService.put<FormWorkflowDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/workflow/${stepNumber}`,
