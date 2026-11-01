@@ -1,4 +1,4 @@
-import { WorkflowType } from 'formsg-shared/types'
+import { FormAuthType, WorkflowType } from 'formsg-shared/types'
 
 import { EditStepInputs } from '../../../types'
 
@@ -84,5 +84,71 @@ describe('buildWorkflowStep', () => {
 
     expect(step?.workflow_type).toEqual(WorkflowType.Static)
     expect(step).toHaveProperty('emails', [])
+  })
+
+  describe('step login', () => {
+    it('should omit auth from a later step with no login', () => {
+      const step = buildWorkflowStep(baseInputs({ auth: null }), false)
+
+      expect(step).toHaveProperty('auth', undefined)
+      expect(step).not.toHaveProperty('first_step_login')
+    })
+
+    it('should trim the Corppass e-service ID and omit it when empty', () => {
+      const trimmed = buildWorkflowStep(
+        baseInputs({ auth: { auth_type: FormAuthType.CP, esrvc_id: ' X1 ' } }),
+        false,
+      )
+      const empty = buildWorkflowStep(
+        baseInputs({ auth: { auth_type: FormAuthType.CP, esrvc_id: '  ' } }),
+        false,
+      )
+
+      expect(trimmed?.auth).toEqual({
+        auth_type: FormAuthType.CP,
+        esrvc_id: 'X1',
+      })
+      expect(empty?.auth).toEqual({ auth_type: FormAuthType.CP })
+    })
+
+    it('should only send first_step_login for Step 1 once it was changed', () => {
+      const untouched = buildWorkflowStep(baseInputs(), true)
+      const changed = buildWorkflowStep(
+        baseInputs({
+          first_step_login: { auth_type: FormAuthType.CP, esrvc_id: ' X1 ' },
+        }),
+        true,
+      )
+
+      expect(untouched).not.toHaveProperty('first_step_login')
+      expect(untouched).not.toHaveProperty('auth')
+      expect(changed?.first_step_login).toEqual({
+        auth_type: FormAuthType.CP,
+        esrvc_id: 'X1',
+      })
+    })
+
+    it('should send a cleared Step 1 Corppass e-service ID as empty', () => {
+      const cleared = buildWorkflowStep(
+        baseInputs({
+          first_step_login: { auth_type: FormAuthType.CP, esrvc_id: '  ' },
+        }),
+        true,
+      )
+      const singpass = buildWorkflowStep(
+        baseInputs({
+          first_step_login: { auth_type: FormAuthType.MyInfo, esrvc_id: 'X' },
+        }),
+        true,
+      )
+
+      expect(cleared?.first_step_login).toEqual({
+        auth_type: FormAuthType.CP,
+        esrvc_id: '',
+      })
+      expect(singpass?.first_step_login).toEqual({
+        auth_type: FormAuthType.MyInfo,
+      })
+    })
   })
 })
