@@ -93,6 +93,12 @@ describe('isSubmitterIdCollected', () => {
     expect(
       isSubmitterIdCollected({ ...mrfForm, workflow: [{ edit: [] }] }),
     ).toBe(false)
+    expect(
+      isSubmitterIdCollected({
+        ...mrfForm,
+        workflow: [{ edit: [] }, { edit: ['uen'] }],
+      }),
+    ).toBe(false)
   })
 })
 
@@ -212,6 +218,59 @@ describe('getLoginIdentityConfigErrors', () => {
       expect(
         getLoginIdentityConfigErrors({ ...mrfForm, workflow: [{ edit: [] }] }),
       ).toEqual([])
+    })
+
+    it('checks an unassigned field against the form-level login', () => {
+      expect(
+        getLoginIdentityConfigErrors({
+          ...mrfForm,
+          authType: FormAuthType.NIL,
+          workflow: [{ edit: [] }],
+        }),
+      ).toEqual(['NRIC/FIN fields need Singpass login.'])
+    })
+
+    describe('when step login aware', () => {
+      const stepLoginForm = { ...mrfForm, isStepLoginAware: true }
+
+      it('checks a later step identity field against that step login', () => {
+        expect(
+          getLoginIdentityConfigErrors({
+            ...stepLoginForm,
+            workflow: [{ edit: [] }, { edit: ['nric'] }],
+          }),
+        ).toEqual(['NRIC/FIN fields need Singpass login.'])
+        expect(
+          getLoginIdentityConfigErrors({
+            ...stepLoginForm,
+            authType: FormAuthType.NIL,
+            workflow: [
+              { edit: [] },
+              { edit: ['nric'], auth: { auth_type: FormAuthType.MyInfo } },
+            ],
+          }),
+        ).toEqual([])
+        expect(
+          getLoginIdentityConfigErrors({
+            ...stepLoginForm,
+            form_fields: [uenIdentity],
+            workflow: [
+              { edit: [] },
+              { edit: ['uen'], auth: { auth_type: FormAuthType.MyInfo } },
+            ],
+          }),
+        ).toEqual(['UEN fields need Corppass login.'])
+      })
+
+      it('accepts an unassigned field whatever the form-level login', () => {
+        expect(
+          getLoginIdentityConfigErrors({
+            ...stepLoginForm,
+            authType: FormAuthType.NIL,
+            workflow: [{ edit: [] }],
+          }),
+        ).toEqual([])
+      })
     })
   })
 })

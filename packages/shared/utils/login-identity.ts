@@ -5,7 +5,11 @@ import {
   NricFieldBase,
   UenFieldBase,
 } from '../types/field'
-import { FormAuthType, FormResponseMode } from '../types/form'
+import {
+  FormAuthType,
+  FormResponseMode,
+  FormWorkflowStepAuth,
+} from '../types/form'
 
 /**
  * Identities a Step 1 login fills into a field: MyInfo NRIC/FIN on an NRIC
@@ -21,7 +25,11 @@ export type LoginIdentityCandidate = {
   corppass?: { attr?: string } | null
 }
 
-type LoginIdentityStep = { edit: readonly unknown[] }
+type LoginIdentityStep = {
+  edit: readonly unknown[]
+  // Steps after Step 1 may carry their own login; Step 1 never does.
+  auth?: FormWorkflowStepAuth | null
+}
 
 /** Names admins see in the builder and errors, and new fields' questions. */
 export const LOGIN_IDENTITY_LABELS: Record<LoginIdentityAttribute, string> = {
@@ -135,15 +143,40 @@ type LoginIdentityCollectionForm = {
 }
 
 /**
- * Whether the field's owning step fills it. A form without a workflow treats
- * its first respondent as the owner of every field.
+ * The step whose edit list holds the field, if any. A form without a
+ * workflow treats its first respondent as the owner of every field.
  */
+export const getOwningStepIndex = (
+  field: { _id?: unknown },
+  workflow: readonly Pick<LoginIdentityStep, 'edit'>[] | null | undefined,
+): number | undefined => {
+  const steps = workflow ?? []
+  if (steps.length === 0) return 0
+  const fieldId = String(field._id)
+  const index = steps.findIndex((step) =>
+    step.edit.some((id) => String(id) === fieldId),
+  )
+  return index === -1 ? undefined : index
+}
+
+/** The login of the step that owns the field, if any step does. */
+export const getLoginIdentityFieldOwnerAuthType = (
+  field: LoginIdentityCandidate,
+  form: { authType: FormAuthType },
+  workflow: readonly LoginIdentityStep[] | null | undefined,
+): FormAuthType | undefined => {
+  const index = getOwningStepIndex(field, workflow)
+  if (index === undefined) return undefined
+  return index === 0
+    ? form.authType
+    : (workflow?.[index]?.auth?.auth_type ?? FormAuthType.NIL)
+}
+
+/** Whether Step 1 fills the field. Step 1's login is the form-level login. */
 export const isLoginIdentityFieldOwned = (
   field: LoginIdentityCandidate,
-  workflow: readonly LoginIdentityStep[] = [],
-): boolean =>
-  workflow.length === 0 ||
-  workflow[0].edit.some((id) => String(id) === String(field._id))
+  workflow?: readonly LoginIdentityStep[],
+): boolean => getOwningStepIndex(field, workflow) === 0
 
 /**
  * Whether submissions record the respondent's login identity: through the
@@ -201,15 +234,25 @@ export const createLoginIdentityField = (
   }
 }
 
-/** Problems with the form's login identity fields, if any. */
+/**
+ * Problems with the form's login identity fields, if any.
+ *
+ * By default every identity field must match the form-level login, and only
+ * Step 1 may fill one. With `isStepLoginAware`, each field is checked against
+ * its owning step's login instead (Step 1's form-level login, or a later
+ * step's own `auth`), and a field no step owns needs no login. Only callers
+ * that allow later-step logins pass it.
+ */
 export const getLoginIdentityConfigErrors = ({
   authType,
   responseMode,
   isSubmitterIdCollectionEnabled,
   form_fields = [],
   workflow = [],
+  isStepLoginAware = false,
 }: LoginIdentityCollectionForm & {
   responseMode: FormResponseMode
+  isStepLoginAware?: boolean
 }): string[] => {
   const identityFields = form_fields.flatMap((field) => {
     const attr = getLoginIdentityAttr(field)
@@ -230,7 +273,6 @@ export const getLoginIdentityConfigErrors = ({
     )
   }
 
-  const allowedAttrs = getLoginIdentityAttrsForAuthType(authType)
   const laterStepFieldIds = new Set(
     workflow.slice(1).flatMap((step) => step.edit.map(String)),
   )
@@ -238,7 +280,16 @@ export const getLoginIdentityConfigErrors = ({
   for (const { field, attr } of identityFields) {
     const label = LOGIN_IDENTITY_LABELS[attr]
 
-    if (!allowedAttrs.includes(attr)) {
+    // The login that must be able to fill the field. Step-login aware: the
+    // owning step's login, where an unassigned field collects nothing and
+    // needs no login. Otherwise: the form-level login.
+    const fillingAuthType = isStepLoginAware
+      ? getLoginIdentityFieldOwnerAuthType(field, { authType }, workflow)
+      : authType
+    if (
+      fillingAuthType !== undefined &&
+      !getLoginIdentityAttrsForAuthType(fillingAuthType).includes(attr)
+    ) {
       errors.push(
         attr === MyInfoAttribute.UinFin
           ? `${label} fields need Singpass login.`
@@ -249,7 +300,7 @@ export const getLoginIdentityConfigErrors = ({
       errors.push(`${label} fields can't also be MyInfo fields.`)
     }
 
-    if (laterStepFieldIds.has(String(field._id))) {
+    if (!isStepLoginAware && laterStepFieldIds.has(String(field._id))) {
       errors.push(`${label} fields can only be filled in by Step 1.`)
     }
   }
