@@ -2081,8 +2081,9 @@ export const handleDeleteWorkflowStep = [
   _handleDeleteWorkflowStep,
 ] as ControllerHandler[]
 
-const LIMIT_IN_KB = 250
-const STRING_MAX_LENGTH = LIMIT_IN_KB * KB
+// NOTE: Both exported for testing.
+export const WHITELIST_CSV_LIMIT_IN_KB = 250
+export const WHITELIST_CSV_MAX_LENGTH = WHITELIST_CSV_LIMIT_IN_KB * KB
 const _handleUpdateWhitelistSettingValidator = celebrate({
   [Segments.PARAMS]: Joi.object({
     formId: Joi.string()
@@ -2094,12 +2095,12 @@ const _handleUpdateWhitelistSettingValidator = celebrate({
     whitelistCsvString: attachErrorI18nByCode(
       Joi.string()
         .allow(null) // for removal of whitelist
-        .max(STRING_MAX_LENGTH)
+        .max(WHITELIST_CSV_MAX_LENGTH)
         .pattern(/^[a-zA-Z0-9,\r\n]+$/)
         .messages({
           'string.empty': 'Your csv is empty.',
           'string.pattern.base': 'Your csv has one or more invalid characters.',
-          'string.max': `You have exceeded the file size limit, please upload a file below ${LIMIT_IN_KB} kB.`,
+          'string.max': `You have exceeded the file size limit, please upload a file below ${WHITELIST_CSV_LIMIT_IN_KB} kB.`,
         }),
       (code) => {
         switch (code) {
@@ -2112,7 +2113,7 @@ const _handleUpdateWhitelistSettingValidator = celebrate({
           case 'string.max':
             return {
               messageKey: adminFormErrorKey('whitelist.fileTooLarge'),
-              messageParams: { limitKb: LIMIT_IN_KB },
+              messageParams: { limitKb: WHITELIST_CSV_LIMIT_IN_KB },
             }
         }
       },

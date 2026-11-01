@@ -7,6 +7,7 @@ import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { PresignedPost } from '@aws-sdk/s3-presigned-post'
 import { GrowthBook } from '@growthbook/growthbook'
 import { ObjectId } from 'bson'
+import express from 'express'
 import { featureFlags } from 'formsg-shared/constants'
 import {
   AdminDashboardFormMetaDto,
@@ -33,7 +34,9 @@ import { StatusCodes } from 'http-status-codes'
 import { assignIn, cloneDeep, merge, pick } from 'lodash'
 import { err, errAsync, ok, okAsync, Result } from 'neverthrow'
 import { PassThrough } from 'stream'
+import supertest from 'supertest'
 
+import { errorHandlerMiddlewares } from 'src/app/loaders/express/error-handler'
 import * as AuthService from 'src/app/modules/auth/auth.service'
 import {
   DatabaseConflictError,
@@ -5227,6 +5230,43 @@ describe('admin-form.controller', () => {
       MockAdminFormService.checkIsWhitelistSettingValid.mockReturnValue({
         isValid: true,
       })
+    })
+
+    describe('validator i18n', () => {
+      const [validator] = AdminFormController.handleUpdateWhitelistSetting
+      const app = express()
+        .use(express.json({ limit: '1mb' }))
+        .put('/:formId', validator, (_req, res) => res.sendStatus(200))
+        .use(errorHandlerMiddlewares())
+
+      it.each([
+        ['an empty csv', '', 'whitelist.emptyCsv', undefined],
+        [
+          'invalid characters',
+          'S7101844Z;',
+          'whitelist.invalidCharacters',
+          undefined,
+        ],
+        [
+          'a csv over the size limit',
+          'a'.repeat(AdminFormController.WHITELIST_CSV_MAX_LENGTH + 1),
+          'whitelist.fileTooLarge',
+          { limitKb: AdminFormController.WHITELIST_CSV_LIMIT_IN_KB },
+        ],
+      ])(
+        'should return the i18n key for %s',
+        async (_, whitelistCsvString, keySuffix, messageParams) => {
+          const response = await supertest(app)
+            .put(`/${MOCK_FORM_ID}`)
+            .send({ whitelistCsvString })
+
+          expect(response.status).toEqual(StatusCodes.BAD_REQUEST)
+          expect(response.body.messageKey).toEqual(
+            `features.adminForm.backendErrors.${keySuffix}`,
+          )
+          expect(response.body.messageParams).toEqual(messageParams)
+        },
+      )
     })
 
     it('should return 403 if user does not have write permissions for the form', async () => {
