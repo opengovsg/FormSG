@@ -99,15 +99,41 @@ const firstStepLoginValidator = Joi.object({
   esrvc_id: Joi.string().allow('').optional(),
 }).optional()
 
-const workflowStepLoginKeys = {
-  auth: workflowStepAuthValidator,
-  first_step_login: firstStepLoginValidator,
+// Login fields the admin confirmed for deletion, and the form version they saw.
+const authFieldDeletionKeys = {
   expected_last_modified: Joi.string().isoDate().optional(),
   delete_auth_field_ids: Joi.array()
     .items(Joi.string().hex().length(24))
     .unique()
     .optional(),
 }
+
+const workflowStepLoginKeys = {
+  auth: workflowStepAuthValidator,
+  first_step_login: firstStepLoginValidator,
+  ...authFieldDeletionKeys,
+}
+
+/**
+ * Joi validator for DELETE /forms/:formId/workflow route.
+ */
+export const deleteWorkflowValidator = celebrate({
+  [Segments.BODY]: Joi.object({
+    ...authFieldDeletionKeys,
+    // The later step whose login the form keeps as its own.
+    retained_auth_type: Joi.string()
+      .valid(FormAuthType.MyInfo, FormAuthType.CP)
+      .optional(),
+    retained_esrvc_id: Joi.string().allow('').optional(),
+  }),
+})
+
+/**
+ * Joi validator for DELETE /forms/:formId/workflow/:stepNumber route.
+ */
+export const deleteWorkflowStepValidator = celebrate({
+  [Segments.BODY]: Joi.object(authFieldDeletionKeys),
+})
 
 /**
  * Joi validator for POST /forms/:formId/workflow/ route.
