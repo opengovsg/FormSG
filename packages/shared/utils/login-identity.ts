@@ -93,10 +93,6 @@ export const isMyInfoDataField = (field: LoginIdentityCandidate): boolean =>
 export const isLoginField = (field: LoginIdentityCandidate): boolean =>
   isMyInfoDataField(field) || isLoginIdentityField(field)
 
-/** Fields filled only by the first respondent. */
-export const isStepOneOnlyField = (field: LoginIdentityCandidate): boolean =>
-  !!field.myInfo?.attr || isLoginIdentityField(field)
-
 /**
  * Identities each Step 1 login can fill, in the order the builder lists them
  * and Convert adds them. These match what the "Collect NRIC/FIN/UENs" toggle

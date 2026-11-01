@@ -2,7 +2,7 @@ import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { FormControl, FormHelperText } from '@chakra-ui/react'
 
-import { isStepOneOnlyField } from 'formsg-shared/utils/login-identity'
+import { isLoginField } from 'formsg-shared/utils/login-identity'
 
 import { textStyles } from '~theme/textStyles'
 import { MultiSelect } from '~components/Dropdown'
@@ -53,7 +53,7 @@ export const QuestionsBlock = ({
 
   const fieldItems = fillableFields
     // TODO(MRF-MYINFO): Remove this restriction once MyInfo fields are
-    .filter((f) => isFirstStep || !isStepOneOnlyField(f))
+    .filter((f) => isFirstStep || !isLoginField(f))
     .map((f) => ({
       value: f._id,
       label: getLogicFieldLabel(idToFieldMap[f._id]),
