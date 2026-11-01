@@ -1,4 +1,4 @@
-import { WorkflowType } from 'formsg-shared/types'
+import { FormAuthType, WorkflowType } from 'formsg-shared/types'
 import { Schema } from 'mongoose'
 import validator from 'validator'
 
@@ -32,6 +32,30 @@ const WorkflowStepSchema = new Schema<IWorkflowStepSchema>(
     step_name: {
       type: String,
       required: false,
+    },
+    // Login for steps after Step 1. Step 1 keeps the form-level authType and
+    // esrvcId, so workflow[0] never carries auth. Absent means no login.
+    auth: {
+      type: new Schema(
+        {
+          auth_type: {
+            type: String,
+            enum: [FormAuthType.MyInfo, FormAuthType.CP],
+            required: true,
+          },
+          esrvc_id: {
+            type: String,
+            trim: true,
+            validate: {
+              validator: (v: string) => !/\s/.test(v),
+              message: 'e-service ID must not contain whitespace',
+            },
+          },
+        },
+        { _id: false },
+      ),
+      required: false,
+      default: undefined,
     },
   },
   {

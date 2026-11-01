@@ -1024,6 +1024,57 @@ describe('Form Model', () => {
         },
       )
 
+      describe('step login', () => {
+        const buildForm = (auth: unknown) =>
+          new MultirespondentForm({
+            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+            workflow: [
+              {
+                _id: new ObjectId(),
+                workflow_type: WorkflowType.Static,
+                emails: ['test@open.gov.sg'],
+                edit: [],
+              },
+              {
+                _id: new ObjectId(),
+                workflow_type: WorkflowType.Static,
+                emails: ['test@open.gov.sg'],
+                edit: [],
+                auth,
+              },
+            ],
+          })
+
+        it('should save a later step login with a trimmed e-service ID', async () => {
+          const saved = await buildForm({
+            auth_type: FormAuthType.CP,
+            esrvc_id: ' MOCK-ESRVC ',
+          }).save()
+
+          const workflow =
+            (saved.toObject() as { workflow?: Record<string, unknown>[] })
+              .workflow ?? []
+          expect(workflow[0]).not.toHaveProperty('auth')
+          expect(workflow[1].auth).toEqual({
+            auth_type: FormAuthType.CP,
+            esrvc_id: 'MOCK-ESRVC',
+          })
+        })
+
+        it.each([
+          ['an unsupported login', { auth_type: FormAuthType.SP }],
+          ['a missing login', { esrvc_id: 'MOCK-ESRVC' }],
+          [
+            'an e-service ID with whitespace',
+            { auth_type: FormAuthType.CP, esrvc_id: 'MOCK ESRVC' },
+          ],
+        ])('should reject %s', async (_, auth) => {
+          await expect(buildForm(auth).save()).rejects.toThrow(
+            mongoose.Error.ValidationError,
+          )
+        })
+      })
+
       describe('payment invariants', () => {
         const ENABLED_PAYMENTS_FIELD = {
           enabled: true,
