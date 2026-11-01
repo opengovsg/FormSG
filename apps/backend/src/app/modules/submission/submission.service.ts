@@ -321,6 +321,26 @@ const s3BodyToBuffer = async (
 }
 
 /**
+ * Delay before the single retry of a failed clean-file download. Long enough
+ * for a transient DNS blip (e.g. `getaddrinfo EAI_AGAIN`) to clear, short
+ * enough not to noticeably extend an already-slow submission.
+ */
+export const CLEAN_FILE_DOWNLOAD_RETRY_DELAY_MS = 1000
+
+/**
+ * S3 4xx responses (NoSuchKey, AccessDenied, NoSuchVersion, ...) are
+ * deterministic, so retrying them only adds latency.
+ */
+const isNonRetryableS3Error = (error: unknown): boolean => {
+  const statusCode = (error as { $metadata?: { httpStatusCode?: number } })
+    ?.$metadata?.httpStatusCode
+  return statusCode !== undefined && statusCode >= 400 && statusCode < 500
+}
+
+const sleep = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms))
+
+/**
  * Downloads file from clean bucket
  * @param cleanFileKey object key of the file in the clean bucket
  * @param versionId id for versioning of the file in the clean bucket
@@ -353,14 +373,31 @@ export const downloadCleanFile = (
     meta: logMeta,
   })
 
-  return ResultAsync.fromPromise(
+  const fetchCleanFile = () =>
     getS3Object({
       Bucket: bucketName,
       Key: cleanFileKey,
       VersionId: versionId,
-    }).then(async ({ Body }) => {
-      const buffer = await s3BodyToBuffer(Body)
+    }).then(({ Body }) => s3BodyToBuffer(Body))
 
+  // Retry once after a short backoff to ride out transient network failures
+  // (e.g. DNS lookup timeouts against S3) instead of failing the submission.
+  const fetchCleanFileWithRetry = () =>
+    fetchCleanFile().catch(async (error) => {
+      if (isNonRetryableS3Error(error)) return Promise.reject(error)
+
+      logger.warn({
+        message:
+          'Error encountered when downloading file from clean bucket, retrying once',
+        meta: { ...logMeta, retryDelayMs: CLEAN_FILE_DOWNLOAD_RETRY_DELAY_MS },
+        error,
+      })
+      await sleep(CLEAN_FILE_DOWNLOAD_RETRY_DELAY_MS)
+      return fetchCleanFile()
+    })
+
+  return ResultAsync.fromPromise(
+    fetchCleanFileWithRetry().then((buffer) => {
       logger.info({
         message: 'Successfully downloaded file from S3',
         meta: logMeta,
