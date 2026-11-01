@@ -2,6 +2,7 @@ import {
   CorppassAttribute,
   FormAuthType,
   FormFieldDto,
+  MyInfoAttribute,
 } from 'formsg-shared/types'
 import {
   getLoginIdentityAttr,
@@ -9,9 +10,19 @@ import {
   isLoginIdentityFieldOwned,
   LoginIdentityAttribute,
 } from 'formsg-shared/utils/login-identity'
+import {
+  getStepFields,
+  hasLaterStepLogin,
+} from 'formsg-shared/utils/step-login'
 import { StatusCodes } from 'http-status-codes'
+import { FlattenMaps } from 'mongoose'
 
-import { MapRouteError } from 'src/types'
+import {
+  IFieldSchema,
+  IMultirespondentFormSchema,
+  IPopulatedForm,
+  MapRouteError,
+} from 'src/types'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
@@ -20,10 +31,58 @@ import {
   MyInfoFapiAuthRequestError,
   MyInfoFapiConfigError,
 } from '../../myinfo/fapi/myinfo.fapi.errors'
+import { getUniqueMyInfoAttrsForFields } from '../../myinfo/myinfo.util'
 import { CreateRedirectUrlError } from '../../spcp/spcp.errors'
 import * as FormErrors from '../form.errors'
+import { isFormMultirespondent } from '../form.utils'
 
 const logger = createLoggerWithLabel(module)
+
+/**
+ * Whether each workflow step's Myinfo fields belong to that step. Only forms
+ * with a later-step login split them; others let Step 1 fill everything.
+ */
+const hasStepScopedMyInfo = (
+  form: IPopulatedForm,
+): form is IPopulatedForm & IMultirespondentFormSchema =>
+  isFormMultirespondent(form) && hasLaterStepLogin(form.workflow)
+
+/**
+ * Fields Step 1's form-level login may prefill. When a later step has its own
+ * login, each step's MyInfo fields belong to that step; otherwise Step 1 fills
+ * everything.
+ */
+export const getStepOneMyInfoFields = (
+  form: IPopulatedForm,
+): FlattenMaps<IFieldSchema[]> => {
+  const formFields = form.toJSON().form_fields
+  return hasStepScopedMyInfo(form)
+    ? getStepFields(formFields, form.workflow, 0)
+    : formFields
+}
+
+/**
+ * Puts prefilled fields back into the complete field list. Step 1's login
+ * prefills only its own fields, but the respondent still sees every field,
+ * section and statement.
+ */
+export const mergePrefilledFields = <F extends { _id: unknown }>(
+  allFields: readonly F[],
+  prefilledFields: readonly F[],
+): F[] => {
+  const prefilledById = new Map(
+    prefilledFields.map((field) => [String(field._id), field]),
+  )
+  return allFields.map((field) => prefilledById.get(String(field._id)) ?? field)
+}
+
+/** MyInfo attributes Step 1's login requests: the fields it may prefill. */
+export const getStepOneMyInfoAttrs = (
+  form: IPopulatedForm,
+): MyInfoAttribute[] =>
+  hasStepScopedMyInfo(form)
+    ? getUniqueMyInfoAttrsForFields(getStepOneMyInfoFields(form))
+    : form.getUniqueMyInfoAttrs()
 
 /**
  * Handler to map ApplicationErrors to their correct status code and error
