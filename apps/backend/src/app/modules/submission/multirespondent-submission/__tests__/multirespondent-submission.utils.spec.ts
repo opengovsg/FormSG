@@ -501,6 +501,7 @@ describe('multirespondent-submission.utils', () => {
     // Defaults for tests that are not exercising the Children gate.
     const CHILDREN_GATE_CLOSED = {
       workflowStep: 0,
+      stepAuthType: FormAuthType.NIL,
       formAuthType: FormAuthType.NIL,
       isMrfChildrenEnabled: false,
     }
@@ -533,7 +534,8 @@ describe('multirespondent-submission.utils', () => {
 
       const actWithGate = (gate: {
         workflowStep: number
-        formAuthType: FormAuthType
+        stepAuthType: FormAuthType
+        formAuthType?: FormAuthType
         isMrfChildrenEnabled: boolean
       }) =>
         validateMrfFieldResponses({
@@ -541,13 +543,15 @@ describe('multirespondent-submission.utils', () => {
           visibleFieldIds: mockVisibleFieldIds,
           formFields: mockFormFields,
           responses: mockResponses,
+          // Step 1's login is the form's.
+          formAuthType: gate.stepAuthType,
           ...gate,
         })
 
       it('should return error when the mrf-children flag is off', () => {
         const result = actWithGate({
           workflowStep: 0,
-          formAuthType: FormAuthType.MyInfo,
+          stepAuthType: FormAuthType.MyInfo,
           isMrfChildrenEnabled: false,
         })
 
@@ -561,6 +565,7 @@ describe('multirespondent-submission.utils', () => {
       it('should return error when the submission is not the initial step and there is no previous response', () => {
         const result = actWithGate({
           workflowStep: 1,
+          stepAuthType: FormAuthType.NIL,
           formAuthType: FormAuthType.MyInfo,
           isMrfChildrenEnabled: true,
         })
@@ -583,6 +588,7 @@ describe('multirespondent-submission.utils', () => {
             JSON.stringify(mockResponses),
           ) as ParsedClearFormFieldResponsesV4,
           workflowStep: 1,
+          stepAuthType: FormAuthType.NIL,
           formAuthType: FormAuthType.MyInfo,
           isMrfChildrenEnabled: true,
         })
@@ -605,6 +611,7 @@ describe('multirespondent-submission.utils', () => {
           responses: tampered,
           previousResponses: mockResponses,
           workflowStep: 1,
+          stepAuthType: FormAuthType.NIL,
           formAuthType: FormAuthType.MyInfo,
           isMrfChildrenEnabled: true,
         })
@@ -616,10 +623,37 @@ describe('multirespondent-submission.utils', () => {
         )
       })
 
+      it.each([
+        { hasLaterStepLogin: false, isAllowed: false },
+        { hasLaterStepLogin: true, isAllowed: true },
+      ])(
+        'should only carry forward a children answer on a non-MyInfo form with later-step login ($hasLaterStepLogin)',
+        ({ hasLaterStepLogin, isAllowed }) => {
+          jest
+            .spyOn(fieldValidation, 'validateFieldV4')
+            .mockReturnValue(ok(true))
+
+          const result = validateMrfFieldResponses({
+            formId: mockFormId,
+            visibleFieldIds: mockVisibleFieldIds,
+            formFields: mockFormFields,
+            responses: mockResponses,
+            previousResponses: mockResponses,
+            workflowStep: 2,
+            stepAuthType: FormAuthType.NIL,
+            formAuthType: FormAuthType.NIL,
+            hasLaterStepLogin,
+            isMrfChildrenEnabled: true,
+          })
+
+          expect(result.isOk()).toBe(isAllowed)
+        },
+      )
+
       it('should return error when the form is not MyInfo-authed', () => {
         const result = actWithGate({
           workflowStep: 0,
-          formAuthType: FormAuthType.SP,
+          stepAuthType: FormAuthType.SP,
           isMrfChildrenEnabled: true,
         })
 
@@ -634,7 +668,7 @@ describe('multirespondent-submission.utils', () => {
 
         const result = actWithGate({
           workflowStep: 0,
-          formAuthType: FormAuthType.MyInfo,
+          stepAuthType: FormAuthType.MyInfo,
           isMrfChildrenEnabled: true,
         })
 
