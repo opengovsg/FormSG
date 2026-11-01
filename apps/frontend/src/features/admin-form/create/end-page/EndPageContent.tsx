@@ -12,7 +12,7 @@ import { PaymentsThankYouSvgr } from '~components/FormEndPage/PaymentsThankYouSv
 import { ThankYouSvgr } from '~components/FormEndPage/ThankYouSvgr'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { PREVIEW_MOCK_UINFIN } from '~features/admin-form/preview/constants'
+import { getPreviewMockLoginId } from '~features/admin-form/preview/constants'
 import { useEnv } from '~features/env/queries'
 import { isFormPaymentsEnabled } from '~features/form/utils/isFormPaymentsEnabled'
 import {
@@ -88,7 +88,7 @@ export const EndPageContent = (): JSX.Element => {
           onLogout={undefined}
           loggedInId={
             form && form.authType !== FormAuthType.NIL
-              ? PREVIEW_MOCK_UINFIN
+              ? getPreviewMockLoginId(form.authType)
               : undefined
           }
         />

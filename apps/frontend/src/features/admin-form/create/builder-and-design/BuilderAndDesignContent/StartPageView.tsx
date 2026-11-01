@@ -7,7 +7,7 @@ import { FormAuthType, FormLogoState, FormStartPage } from 'formsg-shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 
-import { PREVIEW_MOCK_UINFIN } from '~features/admin-form/preview/constants'
+import { getPreviewMockLoginId } from '~features/admin-form/preview/constants'
 import { useEnv } from '~features/env/queries'
 import { FormInstructions } from '~features/public-form/components/FormInstructions/FormInstructions'
 import {
@@ -205,7 +205,7 @@ export const StartPageView = () => {
           showHeader
           loggedInId={
             form && form.authType !== FormAuthType.NIL
-              ? PREVIEW_MOCK_UINFIN
+              ? getPreviewMockLoginId(form.authType)
               : undefined
           }
           {...formHeaderProps}
