@@ -5,13 +5,14 @@ import { FormAuthType } from 'formsg-shared/types/form'
 
 interface FormAuthMessageProps {
   authType: Exclude<FormAuthType, FormAuthType.NIL>
-  isSubmitterIdCollectionEnabled: boolean
+  // Undefined hides the notice (later MRF steps)
+  isSubmitterIdCollectionEnabled?: boolean
 }
 
 const SubmitterIdCollectionInfoText = ({
   authType,
   isSubmitterIdCollectionEnabled,
-}: FormAuthMessageProps): JSX.Element => {
+}: Required<FormAuthMessageProps>): JSX.Element => {
   const isCorporate = authType === FormAuthType.CP
 
   const keyBase = isSubmitterIdCollectionEnabled ? 'included' : 'notIncluded'
@@ -61,10 +62,12 @@ export const FormAuthMessage = ({
       whiteSpace="pre-wrap"
     >
       {signInText}
-      <SubmitterIdCollectionInfoText
-        authType={authType}
-        isSubmitterIdCollectionEnabled={isSubmitterIdCollectionEnabled}
-      />
+      {isSubmitterIdCollectionEnabled === undefined ? null : (
+        <SubmitterIdCollectionInfoText
+          authType={authType}
+          isSubmitterIdCollectionEnabled={isSubmitterIdCollectionEnabled}
+        />
+      )}
     </Text>
   )
 }
