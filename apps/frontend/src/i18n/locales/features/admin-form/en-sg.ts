@@ -38,7 +38,6 @@ export const enSG = {
         'You have exceeded the file size limit, please upload a file below {{limitKb}} kB.',
       invalidCharacters: 'Your csv has one or more invalid characters.',
       emptyCsv: 'Your csv is empty.',
-      invalidFormId: 'Your form ID is invalid.',
     },
     template: {
       mustBePublic: 'Form must be public to be copied',

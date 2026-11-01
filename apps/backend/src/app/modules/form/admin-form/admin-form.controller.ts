@@ -2085,13 +2085,10 @@ const LIMIT_IN_KB = 250
 const STRING_MAX_LENGTH = LIMIT_IN_KB * KB
 const _handleUpdateWhitelistSettingValidator = celebrate({
   [Segments.PARAMS]: Joi.object({
-    formId: attachErrorI18n(
-      Joi.string()
-        .required()
-        .pattern(/^[a-fA-F0-9]{24}$/)
-        .message('Your form ID is invalid.'),
-      adminFormErrorKey('whitelist.invalidFormId'),
-    ),
+    formId: Joi.string()
+      .required()
+      .pattern(/^[a-fA-F0-9]{24}$/)
+      .message('Your form ID is invalid.'),
   }),
   [Segments.BODY]: Joi.object({
     whitelistCsvString: attachErrorI18nByCode(

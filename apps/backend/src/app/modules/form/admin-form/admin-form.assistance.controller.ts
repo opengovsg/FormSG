@@ -7,7 +7,7 @@ import {
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { attachErrorI18n, buildErrorDto } from '../../../utils/i18n-error'
+import { buildErrorDto } from '../../../utils/i18n-error'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
 import { ControllerHandler } from '../../core/core.types'
@@ -17,7 +17,6 @@ import {
   createFormFieldsUsingTextPrompt,
   createFormFieldsUsingVisionPrompt,
 } from './admin-form.assistance.service'
-import { adminFormErrorKey } from './admin-form.i18n'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
 
@@ -25,13 +24,10 @@ const logger = createLoggerWithLabel(module)
 
 const handleTextPromptValidator = celebrate({
   [Segments.PARAMS]: {
-    formId: attachErrorI18n(
-      Joi.string()
-        .required()
-        .pattern(/^[a-fA-F0-9]{24}$/)
-        .message('Your form ID is invalid.'),
-      adminFormErrorKey('whitelist.invalidFormId'),
-    ),
+    formId: Joi.string()
+      .required()
+      .pattern(/^[a-fA-F0-9]{24}$/)
+      .message('Your form ID is invalid.'),
   },
   [Segments.BODY]: {
     prompt: Joi.string().required().max(MFB_TEXT_PROMPT_MAX_CHAR),
@@ -110,13 +106,10 @@ export const handleTextPrompt = [
 
 const handleVisionPromptValidator = celebrate({
   [Segments.PARAMS]: {
-    formId: attachErrorI18n(
-      Joi.string()
-        .required()
-        .pattern(/^[a-fA-F0-9]{24}$/)
-        .message('Your form ID is invalid.'),
-      adminFormErrorKey('whitelist.invalidFormId'),
-    ),
+    formId: Joi.string()
+      .required()
+      .pattern(/^[a-fA-F0-9]{24}$/)
+      .message('Your form ID is invalid.'),
   },
   [Segments.BODY]: {
     imageDataUrls: Joi.array()
