@@ -5,6 +5,7 @@ export * from './en-sg'
 export interface General extends HasTitle {
   status: {
     supplySingpassEServiceId: string
+    supplyStepEServiceIds: string
     noEmailsInMRF: string
     description: {
       prefix: string
