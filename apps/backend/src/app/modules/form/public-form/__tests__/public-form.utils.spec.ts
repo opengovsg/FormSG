@@ -3,11 +3,17 @@ import {
   CorppassAttribute,
   FormAuthType,
   FormFieldDto,
+  FormResponseMode,
   MyInfoAttribute,
 } from 'formsg-shared/types'
 
+import { IPopulatedForm } from 'src/types'
+
 import {
   getLoginIdentityValues,
+  getStepOneMyInfoAttrs,
+  getStepOneMyInfoFields,
+  mergePrefilledFields,
   prefillLoginIdentityFields,
 } from '../public-form.utils'
 
@@ -79,6 +85,62 @@ describe('public-form.utils', () => {
       )
 
       expect(unowned).toBe(identityField)
+    })
+  })
+
+  describe('mergePrefilledFields', () => {
+    it('keeps every field and swaps in the prefilled ones', () => {
+      const section = { _id: 'a', fieldType: 'section' }
+      const name = { _id: 'b', fieldType: 'textfield' }
+      const laterStep = { _id: 'c', fieldType: 'textfield' }
+      const prefilledName = { ...name, fieldValue: 'TAN AH KOW' }
+
+      const merged = mergePrefilledFields(
+        [section, name, laterStep],
+        [prefilledName],
+      )
+
+      expect(merged).toEqual([section, prefilledName, laterStep])
+    })
+  })
+
+  describe('Step 1 Myinfo scope', () => {
+    const stepOneField = {
+      _id: 'a',
+      fieldType: 'textfield',
+      myInfo: { attr: MyInfoAttribute.Name },
+    }
+    const laterField = {
+      _id: 'b',
+      fieldType: 'textfield',
+      myInfo: { attr: MyInfoAttribute.Sex },
+    }
+    const makeForm = (laterStepAuth?: { auth_type: FormAuthType }) =>
+      ({
+        responseMode: FormResponseMode.Multirespondent,
+        toJSON: () => ({ form_fields: [stepOneField, laterField] }),
+        getUniqueMyInfoAttrs: () => [MyInfoAttribute.Name, MyInfoAttribute.Sex],
+        workflow: [
+          { edit: ['a'] },
+          { edit: ['b'], ...(laterStepAuth ? { auth: laterStepAuth } : {}) },
+        ],
+      }) as unknown as IPopulatedForm
+
+    it('keeps every Myinfo field on Step 1 without a later-step login', () => {
+      const form = makeForm()
+
+      expect(getStepOneMyInfoFields(form)).toEqual([stepOneField, laterField])
+      expect(getStepOneMyInfoAttrs(form)).toEqual([
+        MyInfoAttribute.Name,
+        MyInfoAttribute.Sex,
+      ])
+    })
+
+    it('limits Step 1 to its own fields when a later step logs in', () => {
+      const form = makeForm({ auth_type: FormAuthType.MyInfo })
+
+      expect(getStepOneMyInfoFields(form)).toEqual([stepOneField])
+      expect(getStepOneMyInfoAttrs(form)).toEqual([MyInfoAttribute.Name])
     })
   })
 })
