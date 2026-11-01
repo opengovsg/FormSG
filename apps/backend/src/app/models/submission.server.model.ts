@@ -287,6 +287,7 @@ SubmissionSchema.statics.findEncryptedOrMultirespondentSubmissionById =
         form_fields: 1,
         form_logics: 1,
         myInfoReadOnlyFields: 1,
+        authType: 1,
         workflow: 1,
         submissionPublicKey: 1,
         encryptedSubmissionSecretKey: 1,

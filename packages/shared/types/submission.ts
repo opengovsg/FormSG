@@ -274,6 +274,8 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
   payment?: SubmissionPaymentDto
   form_fields: FormFieldDto[]
   form_logics: LogicDto[]
+  // Step 1's login, copied from the form with the workflow
+  authType: SubmissionAuthType
   workflow: FormWorkflowDto
   verifiedContent?: string
   submissionPublicKey: string
@@ -293,6 +295,7 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
 
 export type PublicMultirespondentSubmissionDto = Omit<
   MultirespondentSubmissionDto,
+  | 'authType'
   | 'workflow'
   | 'form_fields'
   | 'encryptedStepToken'
