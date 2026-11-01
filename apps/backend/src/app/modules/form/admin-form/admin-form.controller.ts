@@ -18,6 +18,7 @@ import {
   AdminDashboardFormMetaDto,
   BasicField,
   CreateFormBodyDto,
+  DeleteWorkflowAuthDto,
   DeserializeTransform,
   DuplicateFormBodyDto,
   EndPageUpdateDto,
@@ -101,6 +102,8 @@ import {
 } from './admin-form.errors'
 import {
   createWorkflowStepValidator,
+  deleteWorkflowStepValidator,
+  deleteWorkflowValidator,
   getWebhookSettingsValidator,
   updateSettingsValidator,
   updateWebhookSettingsValidator,
@@ -1893,27 +1896,36 @@ const isWorkflowDeletionEnabledFor = (
  * @returns 422 when the form is not a multi-respondent form
  * @returns 500 when a database error occurs
  */
-export const handleDeleteWorkflow: ControllerHandler<
+export const _handleDeleteWorkflow: ControllerHandler<
   { formId: string },
-  FormWorkflowDto | ErrorDto
+  FormWorkflowDto | ErrorDto,
+  DeleteWorkflowAuthDto
 > = (req, res) => {
   const { formId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
   let hasUsedGuidedMode: boolean | undefined
+  let isStepLoginEnabled = false
 
   return UserService.getPopulatedUserById(sessionUserId)
-    .andThen((user) =>
-      isWorkflowDeletionEnabledFor(req.growthbook, user.email)
+    .andThen((user) => {
+      isStepLoginEnabled = isMrfStepLoginEnabledFor(
+        req.growthbook,
+        user,
+        formId,
+      )
+      return isWorkflowDeletionEnabledFor(req.growthbook, user.email)
         ? AuthService.getFormAfterPermissionChecks({
             user,
             formId,
             level: PermissionLevel.Write,
           })
-        : errAsync(new WorkflowDeletionDisabledError()),
-    )
+        : errAsync(new WorkflowDeletionDisabledError())
+    })
     .andThen((retrievedForm) => {
       hasUsedGuidedMode = guidedModeOf(retrievedForm)
-      return AdminFormService.deleteFormWorkflow(retrievedForm)
+      return AdminFormService.deleteFormWorkflow(retrievedForm, req.body, {
+        isStepLoginEnabled,
+      })
     })
     .map((updatedWorkflow) => {
       if (hasUsedGuidedMode) {
@@ -1946,31 +1958,51 @@ export const handleDeleteWorkflow: ControllerHandler<
     })
 }
 
-export const handleDeleteWorkflowStep: ControllerHandler<
+export const handleDeleteWorkflow = [
+  deleteWorkflowValidator,
+  _handleDeleteWorkflow,
+] as ControllerHandler[]
+
+export const _handleDeleteWorkflowStep: ControllerHandler<
   {
     formId: string
     stepNumber: number
   },
-  FormWorkflowDto | ErrorDto
+  FormWorkflowDto | ErrorDto,
+  Pick<
+    DeleteWorkflowAuthDto,
+    'delete_auth_field_ids' | 'expected_last_modified'
+  >
 > = (req, res) => {
   const { formId, stepNumber } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
   let hasUsedGuidedMode: boolean | undefined
+  let isStepLoginEnabled = false
 
   return UserService.getPopulatedUserById(sessionUserId)
-    .andThen((user) =>
-      isWorkflowDeletionEnabledFor(req.growthbook, user.email) &&
-      Number(stepNumber) === 0
+    .andThen((user) => {
+      isStepLoginEnabled = isMrfStepLoginEnabledFor(
+        req.growthbook,
+        user,
+        formId,
+      )
+      return isWorkflowDeletionEnabledFor(req.growthbook, user.email) &&
+        Number(stepNumber) === 0
         ? errAsync(new DeleteFirstWorkflowStepError())
         : AuthService.getFormAfterPermissionChecks({
             user,
             formId,
             level: PermissionLevel.Write,
-          }),
-    )
+          })
+    })
     .andThen((retrievedForm) => {
       hasUsedGuidedMode = guidedModeOf(retrievedForm)
-      return AdminFormService.deleteFormWorkflowStep(retrievedForm, stepNumber)
+      return AdminFormService.deleteFormWorkflowStep(
+        retrievedForm,
+        stepNumber,
+        req.body,
+        { isStepLoginEnabled },
+      )
     })
     .map((updatedWorkflow) => {
       if (hasUsedGuidedMode) {
@@ -2004,6 +2036,11 @@ export const handleDeleteWorkflowStep: ControllerHandler<
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
+
+export const handleDeleteWorkflowStep = [
+  deleteWorkflowStepValidator,
+  _handleDeleteWorkflowStep,
+] as ControllerHandler[]
 
 const LIMIT_IN_KB = 250
 const STRING_MAX_LENGTH = LIMIT_IN_KB * KB
