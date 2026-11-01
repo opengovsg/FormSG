@@ -14,7 +14,12 @@ import {
   SubmittedStep,
   WorkflowEventType,
   WorkflowStatus,
+  WorkflowStepAuthType,
 } from 'formsg-shared/types'
+import {
+  hasLaterStepLogin,
+  isWorkflowStepAuthType,
+} from 'formsg-shared/utils/step-login'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
 import moment from 'moment'
 import mongoose from 'mongoose'
@@ -74,6 +79,7 @@ import {
   MrfReminderInvalidWorkflowStepError,
   MrfReminderLimitReachedError,
   MrfReminderRecipientEmailsEmptyError,
+  MrfSubmissionStaleError,
   MrfWorkflowNotPendingError,
   MrfWorkflowStoppedError,
   ResponseModeError,
@@ -878,6 +884,17 @@ const saveAttachmentsToDbIfExists = ({
     : okAsync(new Map<string, string>())
 }
 
+/**
+ * Step 1's login, recorded only when a later step also has a login, so
+ * submitted steps on other forms are stored as before.
+ */
+const getStepOneSubmittedAuthType = (
+  form: Pick<IPopulatedMultirespondentForm, 'authType' | 'workflow'>,
+) =>
+  hasLaterStepLogin(form.workflow) && isWorkflowStepAuthType(form.authType)
+    ? form.authType
+    : undefined
+
 export const createMultiRespondentFormSubmission = ({
   form,
   encryptedPayload,
@@ -954,6 +971,8 @@ export const createMultiRespondentFormSubmission = ({
         submittedAt: new Date().toISOString(),
         nextStepRecipientEmails,
         submitterId: hashedSubmitterId,
+        // Step 1's provider is verified by handleNdiResponses before creation.
+        authType: getStepOneSubmittedAuthType(form),
       }
 
       // RATIONALE: Generate the submissionId up front so the S3 snapshot key can be built
@@ -1200,6 +1219,7 @@ export const createMultiRespondentFormPendingSubmission = ({
       isApproval: false, // first step cannot be approval step
       submittedAt: new Date().toISOString(),
       submitterId: hashedSubmitterId,
+      authType: getStepOneSubmittedAuthType(form),
     }
 
     const submissionContent: MultirespondentSubmissionContent = {
@@ -1832,12 +1852,19 @@ export const updateMultiRespondentFormSubmission = ({
   submissionId,
   snapshottedFormDef,
   encryptedPayload,
+  expectedPrevious,
+  authenticatedAuthType,
   logMeta,
   growthbook,
 }: {
   submissionId: string
   snapshottedFormDef: SnapshottedFormDef
   encryptedPayload: MultirespondentSubmissionDto
+  // Stored step state the request was checked against. The update only
+  // applies while the submission is still at that step.
+  expectedPrevious?: { workflowStep: number; stepTokenHash?: string }
+  // Taken from the verified step session, never from the client request body.
+  authenticatedAuthType?: WorkflowStepAuthType
   logMeta: CustomLoggerParams['meta']
   growthbook?: GrowthBook
 }): ResultAsync<
@@ -1845,6 +1872,7 @@ export const updateMultiRespondentFormSubmission = ({
   | AttachmentUploadError
   | SubmissionSaveError
   | SubmissionNotFoundError
+  | MrfSubmissionStaleError
   | PossibleDatabaseError
   | SnapshotWriteError
 > => {
@@ -1871,6 +1899,17 @@ export const updateMultiRespondentFormSubmission = ({
       }
       if (submission.stoppedAt) {
         return errAsync(new MrfWorkflowStoppedError())
+      }
+      if (
+        expectedPrevious &&
+        (submission.workflowStep !== expectedPrevious.workflowStep ||
+          submission.stepTokenHash !== expectedPrevious.stepTokenHash)
+      ) {
+        logger.warn({
+          message: 'Submission advanced since the request was checked',
+          meta: { ...logMeta, submissionId },
+        })
+        return errAsync(new MrfSubmissionStaleError())
       }
       return okAsync({ submission, attachmentMetadata })
     })
@@ -1932,6 +1971,7 @@ export const updateMultiRespondentFormSubmission = ({
       const isStepRejected = isStepRejectedResult.value
 
       const submittedStepMetaCommons = {
+        authType: authenticatedAuthType,
         stepNumber: workflowStep,
         submittedAt: new Date().toISOString(),
         nextStepRecipientEmails,
@@ -1965,6 +2005,10 @@ export const updateMultiRespondentFormSubmission = ({
       submission.mrfVersion = mrfVersion
       submission.stepTokenHash = stepTokenHash
       submission.encryptedStepToken = encryptedStepToken
+      // Omitted when this step verified no login answers; keeps the stored list.
+      if (encryptedPayload.myInfoReadOnlyFields) {
+        submission.myInfoReadOnlyFields = encryptedPayload.myInfoReadOnlyFields
+      }
 
       const webhook = snapshottedFormDef.webhook
       const webhookConsumerType = webhook?.url
@@ -2031,11 +2075,30 @@ export const updateMultiRespondentFormSubmission = ({
           submittedStepMeta,
         ]
 
+        // Saves only if no concurrent request has advanced the submission.
+        if (expectedPrevious) {
+          submission.$where = {
+            workflowStep: expectedPrevious.workflowStep,
+            stepTokenHash: expectedPrevious.stepTokenHash ?? {
+              $exists: false,
+            },
+          }
+        }
         return ResultAsync.fromPromise(
           submission
             .save()
             .then(() => ({ submission, responseMetadata, snapshot })),
           (error) => {
+            if (
+              expectedPrevious &&
+              error instanceof mongoose.Error.DocumentNotFoundError
+            ) {
+              logger.warn({
+                message: 'Submission advanced by a concurrent request',
+                meta: { ...logMeta, submissionId },
+              })
+              return new MrfSubmissionStaleError()
+            }
             if (error instanceof mongoose.Error.VersionError) {
               return transformMongoError(error)
             }

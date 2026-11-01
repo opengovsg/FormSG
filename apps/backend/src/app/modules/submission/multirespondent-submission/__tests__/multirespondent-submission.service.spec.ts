@@ -3612,6 +3612,66 @@ describe('multirespondent-submission.service', () => {
       ...overrides,
     })
 
+    it.each([FormAuthType.MyInfo, FormAuthType.CP])(
+      'persists the submitted provider %s independently of subsequent login',
+      async (authType) => {
+        const Model = getMultirespondentSubmissionModel(mongoose)
+        const nextAuthType =
+          authType === FormAuthType.MyInfo
+            ? FormAuthType.CP
+            : FormAuthType.MyInfo
+        // Step 1's provider is only recorded when a later step has a login.
+        const workflow = twoStepWorkflow.map((step, index) =>
+          index === 1
+            ? { ...step, auth: { auth_type: nextAuthType, esrvc_id: 'esrvc' } }
+            : step,
+        )
+        const result = await createMultiRespondentFormSubmission({
+          form: {
+            ...buildForm(),
+            authType,
+            workflow,
+          } as IPopulatedMultirespondentForm,
+          encryptedPayload: buildPayload(),
+          logMeta: { action: 'test' },
+        })
+        expect(result.isOk()).toBe(true)
+        const submissionId = result._unsafeUnwrap().submission._id.toString()
+        const saved = await Model.findById(submissionId).lean()
+        expect(saved?.submittedSteps?.[0].authType).toBe(authType)
+        const updated = await updateMultiRespondentFormSubmission({
+          submissionId,
+          snapshottedFormDef: buildSnapshottedFormDef(),
+          encryptedPayload: buildPayload({ workflowStep: 1 }),
+          authenticatedAuthType: nextAuthType,
+          logMeta: { action: 'test' },
+        })
+        expect(updated.isOk()).toBe(true)
+        const advanced = await Model.findById(submissionId).lean()
+        expect(advanced?.submittedSteps?.map((step) => step.authType)).toEqual([
+          authType,
+          nextAuthType,
+        ])
+      },
+    )
+
+    it('does not record Step 1 provider when no later step has a login', async () => {
+      const Model = getMultirespondentSubmissionModel(mongoose)
+      const result = await createMultiRespondentFormSubmission({
+        form: {
+          ...buildForm(),
+          authType: FormAuthType.MyInfo,
+        } as IPopulatedMultirespondentForm,
+        encryptedPayload: buildPayload(),
+        logMeta: { action: 'test' },
+      })
+      expect(result.isOk()).toBe(true)
+      const saved = await Model.findById(
+        result._unsafeUnwrap().submission._id,
+      ).lean()
+      expect(saved?.submittedSteps?.[0]).not.toHaveProperty('authType')
+    })
+
     it('persists stepTokenHash and encryptedStepToken on create', async () => {
       const raw = stepToken.generate()
       const result = await createMultiRespondentFormSubmission({
@@ -3670,6 +3730,7 @@ describe('multirespondent-submission.service', () => {
       expect(saved?.encryptedStepToken).toBeUndefined()
       expect('stepTokenHash' in (saved as object)).toBe(false)
       expect('encryptedStepToken' in (saved as object)).toBe(false)
+      expect(saved?.submittedSteps?.[1]?.authType).toBeUndefined()
     })
 
     it('rejects a step on a stopped workflow without appending it', async () => {
