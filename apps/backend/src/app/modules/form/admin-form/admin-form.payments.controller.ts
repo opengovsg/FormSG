@@ -313,11 +313,8 @@ const _handleUpdatePayments: ControllerHandler<
           meta: logMeta,
           error,
         })
-        const { errorMessage, statusCode, errorMessageKey } =
-          mapRouteError(error)
-        return res
-          .status(statusCode)
-          .json(buildErrorDto(errorMessage, errorMessageKey))
+        const { statusCode, ...errorResponse } = mapRouteError(error)
+        return res.status(statusCode).json(buildErrorDto(errorResponse))
       })
   )
 }
@@ -368,11 +365,8 @@ export const _handleUpdatePaymentsProduct: ControllerHandler<
           },
           error,
         })
-        const { errorMessage, statusCode, errorMessageKey } =
-          mapRouteError(error)
-        return res
-          .status(statusCode)
-          .json(buildErrorDto(errorMessage, errorMessageKey))
+        const { statusCode, ...errorResponse } = mapRouteError(error)
+        return res.status(statusCode).json(buildErrorDto(errorResponse))
       })
   )
 }

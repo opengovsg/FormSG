@@ -11,10 +11,10 @@ describe('i18n-error', () => {
     const message = 'Field to modify not found'
 
     expect(
-      buildErrorDto(
-        message,
-        'features.adminForm.backendErrors.fields.notFound',
-      ),
+      buildErrorDto({
+        errorMessage: message,
+        errorMessageKey: 'features.adminForm.backendErrors.fields.notFound',
+      }),
     ).toEqual({
       message,
       messageKey: 'features.adminForm.backendErrors.fields.notFound',
@@ -23,11 +23,13 @@ describe('i18n-error', () => {
 
   it('retains explicitly supplied interpolation parameters', () => {
     expect(
-      buildErrorDto(
-        'You have exceeded the file size limit, please upload a file below 250 kB.',
-        'features.adminForm.backendErrors.whitelist.fileTooLarge',
-        { limitKb: 250 },
-      ),
+      buildErrorDto({
+        errorMessage:
+          'You have exceeded the file size limit, please upload a file below 250 kB.',
+        errorMessageKey:
+          'features.adminForm.backendErrors.whitelist.fileTooLarge',
+        errorMessageParams: { limitKb: 250 },
+      }),
     ).toEqual({
       message:
         'You have exceeded the file size limit, please upload a file below 250 kB.',

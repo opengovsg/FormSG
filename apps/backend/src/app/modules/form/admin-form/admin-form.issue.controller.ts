@@ -62,10 +62,8 @@ export const handleGetFormIssues: ControllerHandler<
         },
         error,
       })
-      const { errorMessage, statusCode, errorMessageKey } = mapRouteError(error)
-      return res
-        .status(statusCode)
-        .json(buildErrorDto(errorMessage, errorMessageKey))
+      const { statusCode, ...errorResponse } = mapRouteError(error)
+      return res.status(statusCode).json(buildErrorDto(errorResponse))
     })
 }
 
@@ -111,12 +109,10 @@ export const handleStreamFormIssues: ControllerHandler<
       meta: logMeta,
       error: hasReadPermissionResult.error,
     })
-    const { errorMessage, statusCode, errorMessageKey } = mapRouteError(
+    const { statusCode, ...errorResponse } = mapRouteError(
       hasReadPermissionResult.error,
     )
-    return res
-      .status(statusCode)
-      .json(buildErrorDto(errorMessage, errorMessageKey))
+    return res.status(statusCode).json(buildErrorDto(errorResponse))
   }
 
   // No errors, start stream.
@@ -129,14 +125,12 @@ export const handleStreamFormIssues: ControllerHandler<
         meta: logMeta,
         error,
       })
-      return res
-        .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json(
-          buildErrorDto(
-            'Error retrieving from database.',
-            adminFormErrorKey('exports.databaseRetrieval'),
-          ),
-        )
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(
+        buildErrorDto({
+          errorMessage: 'Error retrieving from database.',
+          errorMessageKey: adminFormErrorKey('exports.databaseRetrieval'),
+        }),
+      )
     })
     .pipe(JSONStream.stringify())
     .on('error', (error) => {
@@ -145,14 +139,12 @@ export const handleStreamFormIssues: ControllerHandler<
         meta: logMeta,
         error,
       })
-      return res
-        .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json(
-          buildErrorDto(
-            'Error converting issue to JSON.',
-            adminFormErrorKey('exports.issue.jsonConversion'),
-          ),
-        )
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(
+        buildErrorDto({
+          errorMessage: 'Error converting issue to JSON.',
+          errorMessageKey: adminFormErrorKey('exports.issue.jsonConversion'),
+        }),
+      )
     })
     .pipe(res.type('json'))
     .on('error', (error) => {

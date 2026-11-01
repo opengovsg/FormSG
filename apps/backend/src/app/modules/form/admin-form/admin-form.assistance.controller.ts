@@ -98,10 +98,8 @@ const _handleTextPrompt: ControllerHandler<
         },
         error,
       })
-      const { errorMessage, statusCode, errorMessageKey } = mapRouteError(error)
-      return res
-        .status(statusCode)
-        .json(buildErrorDto(errorMessage, errorMessageKey))
+      const { statusCode, ...errorResponse } = mapRouteError(error)
+      return res.status(statusCode).json(buildErrorDto(errorResponse))
     })
 }
 
@@ -192,11 +190,8 @@ const _handleVisionPrompt: ControllerHandler<
           },
           error,
         })
-        const { errorMessage, statusCode, errorMessageKey } =
-          mapRouteError(error)
-        return res
-          .status(statusCode)
-          .json(buildErrorDto(errorMessage, errorMessageKey))
+        const { statusCode, ...errorResponse } = mapRouteError(error)
+        return res.status(statusCode).json(buildErrorDto(errorResponse))
       })
   )
 }

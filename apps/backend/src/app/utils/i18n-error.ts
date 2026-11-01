@@ -1,14 +1,16 @@
 import { Joi } from 'celebrate'
 import { ErrorDto, I18nMessageParams } from 'formsg-shared/types'
 
-export const buildErrorDto = (
-  message: string,
-  messageKey?: string,
-  messageParams?: I18nMessageParams,
-): ErrorDto => ({
-  message,
-  ...(messageKey ? { messageKey } : {}),
-  ...(messageParams ? { messageParams } : {}),
+import { ErrorResponseData } from '../modules/core/core.types'
+
+export const buildErrorDto = ({
+  errorMessage,
+  errorMessageKey,
+  errorMessageParams,
+}: Omit<ErrorResponseData, 'statusCode'>): ErrorDto => ({
+  message: errorMessage,
+  ...(errorMessageKey ? { messageKey: errorMessageKey } : {}),
+  ...(errorMessageParams ? { messageParams: errorMessageParams } : {}),
 })
 
 type JoiErrorReportWithI18n = Joi.ErrorReport & {

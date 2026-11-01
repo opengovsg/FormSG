@@ -19,7 +19,11 @@ const buildCelebrateErrorResponse = (error: CelebrateError) => {
     .flatMap((validationError) => validationError.details)
     .map((detail) => {
       const { messageKey, messageParams } = getCelebrateErrorI18n(detail)
-      return buildErrorDto(detail.message, messageKey, messageParams)
+      return buildErrorDto({
+        errorMessage: detail.message,
+        errorMessageKey: messageKey,
+        errorMessageParams: messageParams,
+      })
     })
     .find((detail) => detail.messageKey)
 
