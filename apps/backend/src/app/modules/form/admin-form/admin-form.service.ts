@@ -519,6 +519,23 @@ type MultirespondentFormToCreate = Merge<
  * @returns ok(created form) on success
  * @returns err(Database*Error) on database errors
  */
+/**
+ * Drops any login a request put on workflow steps. The create-form body
+ * accepts unknown keys, so without this a raw request could save a later-step
+ * login that no flag allowed.
+ * TODO(mrf-step-login PR 6): keep `auth` when `mrf-singpass-all-steps` is on.
+ */
+const omitWorkflowStepAuth = <T extends object>(params: T): T => {
+  const { workflow } = params as { workflow?: unknown }
+  if (!Array.isArray(workflow)) return params
+  return {
+    ...params,
+    workflow: workflow.map((step: unknown) =>
+      step && typeof step === 'object' ? omit(step, 'auth') : step,
+    ),
+  }
+}
+
 export const createForm = (
   // isSaveDraftEnabled omitted: creation decides it, not the caller.
   formParams: Omit<Merge<IForm, { admin: string }>, 'isSaveDraftEnabled'>,
@@ -609,7 +626,10 @@ export const createForm = (
 
   // Copied forms bypass createForm, so they keep inheriting their source's
   // setting; the schema default stays false for forms predating the field.
-  const newFormParams = { ...formParams, isSaveDraftEnabled: true }
+  const newFormParams = {
+    ...omitWorkflowStepAuth(formParams),
+    isSaveDraftEnabled: true,
+  }
 
   if (workspaceId)
     return ResultAsync.fromPromise(

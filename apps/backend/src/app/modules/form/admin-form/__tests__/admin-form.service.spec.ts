@@ -1533,6 +1533,47 @@ describe('admin-form.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
       expect(createSpy).toHaveBeenCalledWith(withCreationDefaults(formParams))
     })
+
+    it('should drop logins a request puts on workflow steps', async () => {
+      // Arrange
+      const step = {
+        _id: new ObjectId().toHexString(),
+        workflow_type: WorkflowType.Static,
+        emails: ['example@example.com'],
+        edit: [],
+      }
+      const formParams = {
+        title: 'create form title',
+        admin: new ObjectId().toHexString(),
+        responseMode: FormResponseMode.Multirespondent,
+        publicKey: 'some key',
+        workflow: [
+          { ...step, auth: { auth_type: FormAuthType.MyInfo } },
+          {
+            ...step,
+            _id: new ObjectId().toHexString(),
+            auth: { auth_type: FormAuthType.CP, esrvc_id: 'MOCK-ESRVC' },
+          },
+        ],
+      } as Parameters<typeof AdminFormService.createForm>[0]
+      const createSpy = jest
+        .spyOn(FormModel, 'create')
+        .mockResolvedValueOnce({ _id: new ObjectId() } as never)
+
+      // Act
+      const actualResult = await AdminFormService.createForm(formParams)
+
+      // Assert
+      expect(actualResult.isOk()).toBe(true)
+      const created = createSpy.mock.calls[0][0] as {
+        workflow: Record<string, unknown>[]
+      }
+      expect(created.workflow).toHaveLength(2)
+      created.workflow.forEach((createdStep) =>
+        expect(createdStep).not.toHaveProperty('auth'),
+      )
+      expect(created.workflow[0]).toEqual(step)
+    })
   })
 
   describe('editFormFields', () => {
