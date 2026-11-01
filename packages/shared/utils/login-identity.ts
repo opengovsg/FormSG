@@ -93,8 +93,11 @@ export const isMyInfoDataField = (field: LoginIdentityCandidate): boolean =>
 export const isLoginField = (field: LoginIdentityCandidate): boolean =>
   isMyInfoDataField(field) || isLoginIdentityField(field)
 
-/** Fields filled only by the first respondent. */
-export const isStepOneOnlyField = (field: LoginIdentityCandidate): boolean =>
+/**
+ * Fields a login fills: MyInfo data fields and login identity fields.
+ * Respondents never type them. Today only Step 1's login fills them.
+ */
+export const isLoginFilledField = (field: LoginIdentityCandidate): boolean =>
   !!field.myInfo?.attr || isLoginIdentityField(field)
 
 /**
