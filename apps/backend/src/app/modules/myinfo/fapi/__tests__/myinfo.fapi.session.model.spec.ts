@@ -252,6 +252,107 @@ describe('myinfo.fapi.session.model', () => {
         MyInfoFapiSession.loadForCallback(sessionId),
       ).resolves.not.toBeNull()
     })
+
+    describe('with an MRF step context', () => {
+      const mrfContext = {
+        submissionId: 'mock-submission-id',
+        workflowStep: 1,
+        stepTokenHash: 'mock-step-token-hash',
+      }
+      const exchangeForStep = async () => {
+        const sessionId = await MyInfoFapiSession.createPending({
+          ...pendingSession,
+          mrfContext,
+        })
+        await MyInfoFapiSession.markExchanged(sessionId, {
+          accessToken: MOCK_ACCESS_TOKEN,
+          sub: MOCK_SUB,
+        })
+        return sessionId
+      }
+
+      it('should carry the context to the callback target', async () => {
+        const sessionId = await MyInfoFapiSession.createPending({
+          ...pendingSession,
+          mrfContext,
+        })
+
+        await expect(
+          MyInfoFapiSession.loadForCallback(sessionId),
+        ).resolves.toMatchObject({
+          target: { formId: MOCK_FORM_ID, mrfContext },
+        })
+      })
+
+      it('should only be consumed for its exact step', async () => {
+        const sessionId = await exchangeForStep()
+
+        // A form-level login never consumes a step's session.
+        await expect(consume(sessionId)).resolves.toEqual({
+          status: 'formMismatch',
+        })
+        await expect(
+          MyInfoFapiSession.consume({
+            sessionId,
+            formId: MOCK_FORM_ID,
+            mrfContext: { ...mrfContext, workflowStep: 2 },
+          }),
+        ).resolves.toEqual({ status: 'formMismatch' })
+        await expect(
+          MyInfoFapiSession.consume({
+            sessionId,
+            formId: MOCK_FORM_ID,
+            mrfContext: { ...mrfContext, stepTokenHash: undefined },
+          }),
+        ).resolves.toEqual({ status: 'formMismatch' })
+        await expect(
+          MyInfoFapiSession.consume({
+            sessionId,
+            formId: MOCK_FORM_ID,
+            mrfContext,
+          }),
+        ).resolves.toMatchObject({ status: 'exchanged' })
+      })
+
+      it('should not consume a form-level session for a step', async () => {
+        const sessionId = await exchange()
+
+        await expect(
+          MyInfoFapiSession.consume({
+            sessionId,
+            formId: MOCK_FORM_ID,
+            mrfContext,
+          }),
+        ).resolves.toEqual({ status: 'formMismatch' })
+      })
+
+      it('should report whether a session is bound to a submission', async () => {
+        const stepSessionId = await exchangeForStep()
+        const formSessionId = await exchange()
+
+        await expect(
+          MyInfoFapiSession.isBoundToSubmission({
+            sessionId: stepSessionId,
+            formId: MOCK_FORM_ID,
+            submissionId: mrfContext.submissionId,
+          }),
+        ).resolves.toBe(true)
+        await expect(
+          MyInfoFapiSession.isBoundToSubmission({
+            sessionId: stepSessionId,
+            formId: MOCK_FORM_ID,
+            submissionId: 'another-submission',
+          }),
+        ).resolves.toBe(false)
+        await expect(
+          MyInfoFapiSession.isBoundToSubmission({
+            sessionId: formSessionId,
+            formId: MOCK_FORM_ID,
+            submissionId: mrfContext.submissionId,
+          }),
+        ).resolves.toBe(false)
+      })
+    })
   })
 
   describe('indexes', () => {

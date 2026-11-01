@@ -18,10 +18,21 @@ export const MYINFO_FAPI_SESSION_SCHEMA_ID = 'MyInfoFapiSession'
  */
 export type MyInfoFapiSessionPhase = 'pending' | 'exchanged' | 'failed'
 
+/**
+ * Binds a login to a later MRF step. formId is already stored on the session;
+ * the step index refers to the submission's saved workflow.
+ */
+export interface MyInfoMrfSessionContext {
+  submissionId: string
+  workflowStep: number
+  stepTokenHash?: string
+}
+
 export interface IMyInfoFapiSessionSchema extends Document<string> {
   _id: string
   phase: MyInfoFapiSessionPhase
   formId: string
+  mrfContext?: MyInfoMrfSessionContext
   encodedQuery?: string
   state: string
   nonce: string
@@ -34,6 +45,7 @@ export interface IMyInfoFapiSessionSchema extends Document<string> {
 
 export type MyInfoFapiRedirectTarget = {
   formId: string
+  mrfContext?: MyInfoMrfSessionContext
   encodedQuery?: string
 }
 
@@ -81,6 +93,7 @@ export type MyInfoFapiConsumeOutcome =
   | { status: 'exchanged'; session: MyInfoFapiExchangedSession }
   | { status: 'failed' }
   | { status: 'incomplete' }
+  // The session exists but belongs to another form or MRF step
   | { status: 'formMismatch' }
 
 export interface IMyInfoFapiSessionModel extends Model<IMyInfoFapiSessionSchema> {
@@ -94,8 +107,29 @@ export interface IMyInfoFapiSessionModel extends Model<IMyInfoFapiSessionSchema>
   consume(args: {
     sessionId: string
     formId: string
+    mrfContext?: MyInfoMrfSessionContext
   }): Promise<MyInfoFapiConsumeOutcome>
+  isBoundToSubmission(args: {
+    sessionId: string
+    formId: string
+    submissionId: string
+  }): Promise<boolean>
 }
+
+/**
+ * A session started for a later MRF step only matches that exact step. A
+ * form-level consume only matches sessions started without a step.
+ */
+const contextFilter = (mrfContext?: MyInfoMrfSessionContext) =>
+  mrfContext
+    ? {
+        'mrfContext.submissionId': mrfContext.submissionId,
+        'mrfContext.workflowStep': mrfContext.workflowStep,
+        'mrfContext.stepTokenHash': mrfContext.stepTokenHash ?? {
+          $exists: false,
+        },
+      }
+    : { mrfContext: { $exists: false } }
 
 const requiredString = { type: String, required: true }
 const optionalString = { type: String }
@@ -109,6 +143,17 @@ const MyInfoFapiSessionSchema = new Schema<
     _id: { type: String, default: () => crypto.randomUUID() },
     phase: { ...requiredString, enum: ['pending', 'exchanged', 'failed'] },
     formId: requiredString,
+    mrfContext: {
+      type: new Schema<MyInfoMrfSessionContext>(
+        {
+          submissionId: requiredString,
+          workflowStep: { type: Number, required: true, min: 0 },
+          stepTokenHash: optionalString,
+        },
+        { _id: false },
+      ),
+      required: false,
+    },
     encodedQuery: optionalString,
     state: requiredString,
     nonce: requiredString,
@@ -129,6 +174,7 @@ MyInfoFapiSessionSchema.statics.createPending = async function (
   const created = await this.create({
     phase: 'pending',
     formId: session.formId,
+    ...(session.mrfContext ? { mrfContext: session.mrfContext } : {}),
     encodedQuery: session.encodedQuery,
     state: session.state,
     nonce: session.nonce,
@@ -152,8 +198,19 @@ MyInfoFapiSessionSchema.statics.loadForCallback = async function (
     return null
   }
 
-  const target = {
+  const target: MyInfoFapiRedirectTarget = {
     formId: session.formId,
+    ...(session.mrfContext
+      ? {
+          mrfContext: {
+            submissionId: session.mrfContext.submissionId,
+            workflowStep: session.mrfContext.workflowStep,
+            ...(session.mrfContext.stepTokenHash
+              ? { stepTokenHash: session.mrfContext.stepTokenHash }
+              : {}),
+          },
+        }
+      : {}),
     encodedQuery: session.encodedQuery,
   }
   if (session.phase === 'exchanged') {
@@ -221,24 +278,24 @@ MyInfoFapiSessionSchema.statics.markFailed = async function (
 }
 
 /**
- * Only for the form that started the session. Deletes on `exchanged`
- * (single-use tokens); leaves `failed` in place since the winner may still
- * claim it.
+ * Only for the form and login context that started the session. Deletes on
+ * `exchanged` (single-use tokens); leaves `failed` in place since the winner
+ * may still claim it. A mismatched session is left for its own tab.
  */
 MyInfoFapiSessionSchema.statics.consume = async function ({
   sessionId,
   formId,
+  mrfContext,
 }: {
   sessionId: string
   formId: string
+  mrfContext?: MyInfoMrfSessionContext
 }): Promise<MyInfoFapiConsumeOutcome> {
-  const session = await this.findOne({ _id: sessionId, formId })
+  const filter = { _id: sessionId, formId, ...contextFilter(mrfContext) }
+  const session = await this.findOne(filter)
   if (!session) {
-    const belongsToAnotherForm = await this.exists({
-      _id: sessionId,
-      formId: { $ne: formId },
-    })
-    if (belongsToAnotherForm) {
+    const belongsElsewhere = await this.exists({ _id: sessionId })
+    if (belongsElsewhere) {
       return { status: 'formMismatch' }
     }
     return { status: 'incomplete' }
@@ -251,7 +308,7 @@ MyInfoFapiSessionSchema.statics.consume = async function ({
   }
 
   const exchanged = await this.findOneAndDelete(
-    { _id: sessionId, formId, phase: 'exchanged' },
+    { ...filter, phase: 'exchanged' },
     { includeResultMetadata: false },
   )
   if (!exchanged || !exchanged.accessTokenEnc || !exchanged.sub) {
@@ -266,6 +323,24 @@ MyInfoFapiSessionSchema.statics.consume = async function ({
       dpopPrivateJwk: await decryptJwk(exchanged.dpopPrivateJwkEnc),
     },
   }
+}
+
+/** Whether logging out of one submission should discard this session. */
+MyInfoFapiSessionSchema.statics.isBoundToSubmission = async function ({
+  sessionId,
+  formId,
+  submissionId,
+}: {
+  sessionId: string
+  formId: string
+  submissionId: string
+}): Promise<boolean> {
+  const bound = await this.exists({
+    _id: sessionId,
+    formId,
+    'mrfContext.submissionId': submissionId,
+  })
+  return !!bound
 }
 
 const getMyInfoFapiSessionModel = (db: Mongoose): IMyInfoFapiSessionModel => {
