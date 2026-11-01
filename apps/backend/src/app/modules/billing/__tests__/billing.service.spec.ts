@@ -23,7 +23,21 @@ describe('billing.service', () => {
         .spyOn(LoginModel, 'addLoginFromForm')
         .mockResolvedValueOnce(mockLogin)
       const result = await BillingService.recordLoginByForm(mockForm)
-      expect(addLoginSpy).toHaveBeenCalledWith(mockForm)
+      expect(addLoginSpy).toHaveBeenCalledWith(mockForm, undefined)
+      expect(result._unsafeUnwrap()).toEqual(mockLogin)
+    })
+
+    it('should bill a later-step login to the given login instead of the form', async () => {
+      const mockForm = {
+        authType: FormAuthType.NIL,
+      } as unknown as IPopulatedForm
+      const mockLogin = { esrvcId: 'STEP-CP' } as unknown as ILoginSchema
+      const addLoginSpy = jest
+        .spyOn(LoginModel, 'addLoginFromForm')
+        .mockResolvedValueOnce(mockLogin)
+      const stepLogin = { authType: FormAuthType.CP, esrvcId: 'STEP-CP' }
+      const result = await BillingService.recordLoginByForm(mockForm, stepLogin)
+      expect(addLoginSpy).toHaveBeenCalledWith(mockForm, stepLogin)
       expect(result._unsafeUnwrap()).toEqual(mockLogin)
     })
 
@@ -48,7 +62,7 @@ describe('billing.service', () => {
         .spyOn(LoginModel, 'addLoginFromForm')
         .mockRejectedValueOnce('')
       const result = await BillingService.recordLoginByForm(mockForm)
-      expect(addLoginSpy).toHaveBeenCalledWith(mockForm)
+      expect(addLoginSpy).toHaveBeenCalledWith(mockForm, undefined)
       expect(result._unsafeUnwrapErr()).toEqual(
         new DatabaseError(getMongoErrorMessage('')),
       )
