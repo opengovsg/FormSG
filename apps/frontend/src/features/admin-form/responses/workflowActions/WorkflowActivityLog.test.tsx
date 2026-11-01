@@ -2,6 +2,7 @@ import { screen, within } from '@testing-library/react'
 
 import {
   DateString,
+  FormAuthType,
   WorkflowEventDto,
   WorkflowEventType,
   WorkflowStatus,
@@ -54,6 +55,22 @@ const titles = () =>
   screen.getAllByRole('heading', { level: 3 }).map((el) => el.textContent)
 
 describe('WorkflowActivityLog', () => {
+  // The render helper has no GrowthBook provider, so the rollout flag is off.
+  it('shows no login provider tag while step logins are off', () => {
+    render(
+      <WorkflowActivityLog
+        history={{
+          ...history,
+          submittedSteps: [
+            { ...history.submittedSteps[0], authType: FormAuthType.MyInfo },
+          ],
+        }}
+      />,
+    )
+
+    expect(screen.queryByText('Singpass')).not.toBeInTheDocument()
+  })
+
   it('keeps action and sending entries adjacent, oldest first, including timestamp ties', () => {
     render(
       <WorkflowActivityLog
