@@ -1946,6 +1946,75 @@ describe('Multirespondent Submission Middleware', () => {
       expect(mockRes.status).toHaveBeenCalledWith(400)
     })
 
+    describe('previous answers left out of the submission', () => {
+      const submitEditableFieldOnly = async (
+        mergedVisibleFieldIds: Set<string>,
+      ) => {
+        jest
+          .mocked(LogicAdaptor.getVisibleFieldIdsV3)
+          .mockReturnValueOnce(ok(new Set([EDITABLE_FIELD_ID])) as any)
+          .mockReturnValueOnce(ok(mergedVisibleFieldIds) as any)
+        const mockReq = createMockReq({
+          formId: MOCK_FORM_ID,
+          submissionId: MOCK_SUBMISSION_ID,
+        })
+        mockReq.body.responses = {
+          [EDITABLE_FIELD_ID]: {
+            fieldType: BasicField.ShortText,
+            answer: { value: 'updated' },
+            question: 'Editable Field',
+            provenance: {},
+          },
+        }
+        mockReq.body.submissionSecretKey = 'submission-secret-key'
+        mockReq.formsg = {
+          formDef: {
+            _id: MOCK_FORM_ID,
+            form_fields: SNAPSHOT_FORM_FIELDS,
+            form_logics: [],
+            workflow: SNAPSHOT_WORKFLOW,
+          },
+          mrfSubmission: MOCK_MRF_SUBMISSION_V1,
+        }
+        const mockNext = jest.fn()
+
+        await validateMultirespondentSubmission(
+          mockReq,
+          createMockRes() as any,
+          mockNext,
+        )
+
+        return { responses: mockReq.body.responses, mockNext }
+      }
+
+      it('puts back a non-editable answer that is still visible', async () => {
+        const { responses, mockNext } = await submitEditableFieldOnly(
+          ALL_VISIBLE_FIELD_IDS,
+        )
+
+        expect(responses[NON_EDITABLE_FIELD_ID]).toEqual(
+          MOCK_V4_ADAPTED_RESPONSES[NON_EDITABLE_FIELD_ID],
+        )
+        expect(mockNext).toHaveBeenCalled()
+      })
+
+      it('drops a non-editable answer whose field is now hidden', async () => {
+        const { responses, mockNext } = await submitEditableFieldOnly(
+          new Set([EDITABLE_FIELD_ID]),
+        )
+
+        expect(responses).not.toHaveProperty(NON_EDITABLE_FIELD_ID)
+        expect(
+          jest.mocked(MrfUtils.validateMrfFieldResponses),
+        ).toHaveBeenCalledWith(
+          expect.objectContaining({
+            responses: { [EDITABLE_FIELD_ID]: expect.anything() },
+          }),
+        )
+        expect(mockNext).toHaveBeenCalled()
+      })
+    })
+
     it('should carry forward server-owned provenance from the previous response on re-submitted non-editable fields', async () => {
       // Previous submission is V4-encrypted, with myinfoVerified stamped at
       // step 1 on the non-editable field.
