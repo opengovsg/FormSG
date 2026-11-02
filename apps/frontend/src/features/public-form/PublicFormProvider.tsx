@@ -814,11 +814,14 @@ export const PublicFormProvider = ({
     [formFields, currentStepNumberWorkflowStep],
   )
 
-  const formDraftSubmissionKey = getSaveDraftKey({
+  const saveDraftKeyParams = {
     formId,
     formSubmissionId: previousSubmissionId,
     isMrf: form?.responseMode === FormResponseMode.Multirespondent,
     currentMrfWorkflowStepNumber: currentWorkflowStepNumber,
+  }
+  const formDraftSubmissionKey = getSaveDraftKey({
+    ...saveDraftKeyParams,
     stepToken: stepToken || undefined,
   })
 
@@ -833,6 +836,7 @@ export const PublicFormProvider = ({
   const [draftSubmission, setDraftSubmission, clearDraftSubmission] =
     useIndexedDb<DraftSubmission>({
       key: formDraftSubmissionKey,
+      legacyKey: getSaveDraftKey(saveDraftKeyParams),
       initialValue: memoizedInitialValue,
       storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
     })

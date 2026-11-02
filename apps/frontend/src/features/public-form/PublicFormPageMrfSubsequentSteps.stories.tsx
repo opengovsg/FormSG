@@ -22,6 +22,7 @@ import { StoryRouter } from '~utils/storybook'
 
 import { SAVE_DRAFT_INDEXEDDB_STORE_NAME } from '~features/form/constants'
 
+import { getSaveDraftKey } from './utils/saveDraft'
 import { DraftSubmission } from './PublicFormContext'
 import PublicFormPage from './PublicFormPage'
 import SaveDraftSetupWrapper from './SaveDraftSetupWrapper'
@@ -254,6 +255,71 @@ WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRowsWithSaveDraft.pla
       })
     })
   }
+
+export const WithStepLinkRestoresDraftSavedBeforeStepLinks = Template.bind({})
+
+const STEP_LINK_TOKEN = 'step-link-token'
+
+WithStepLinkRestoresDraftSavedBeforeStepLinks.parameters = {
+  ...WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRowsWithSaveDraft.parameters,
+  docs: {
+    storyDescription:
+      'A draft saved under the key without a step link is restored on a link with a token, and moved to that link',
+  },
+  router: {
+    path: '/:formId/edit/:submissionId',
+    initialEntries: [
+      `/61540ece3d4a6e50ac0cc6ff/edit/68d4b9900415e65225fd3e4e?key=mock-key&token=${STEP_LINK_TOKEN}`,
+    ],
+  },
+}
+
+WithStepLinkRestoresDraftSavedBeforeStepLinks.decorators =
+  WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRowsWithSaveDraft.decorators
+
+WithStepLinkRestoresDraftSavedBeforeStepLinks.play = async ({ step }) => {
+  const stepLinkDraftKey = getSaveDraftKey({
+    formId: '61540ece3d4a6e50ac0cc6ff',
+    formSubmissionId: '68d4b9900415e65225fd3e4e',
+    isMrf: true,
+    currentMrfWorkflowStepNumber: 1,
+    stepToken: STEP_LINK_TOKEN,
+  })
+
+  await step('Assert that the draft is restored', async () => {
+    await waitFor(
+      () => {
+        expect(document.body).toHaveTextContent(
+          'Your draft has been successfully restored.',
+        )
+      },
+      { timeout: 3000 },
+    )
+  })
+
+  await step('Assert that the draft moved to the step link key', async () => {
+    await waitFor(async () => {
+      const movedDraft = (await _getFromIndexedDBForTest({
+        key: stepLinkDraftKey,
+        storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+      })) as DraftSubmission | undefined
+      expect(movedDraft?.draftResponses).toBeTruthy()
+      expect(
+        await _getFromIndexedDBForTest({
+          key: MULTIRESPONDENT_MODE_PUBLIC_FORM_STEP_1_SAVE_DRAFT_KEY,
+          storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+        }),
+      ).toBeUndefined()
+    })
+  })
+
+  await step('Cleanup saved draft', async () => {
+    await _removeFromIndexedDBForTest({
+      key: stepLinkDraftKey,
+      storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+    })
+  })
+}
 
 export const WithMultiRespondentFormStep2EditableTableFieldAdditionalRowsWithSaveDraft =
   Template.bind({})
