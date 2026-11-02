@@ -1,4 +1,5 @@
 import { DateString } from './generic'
+import type { WorkflowStatus } from './submission'
 
 export enum WorkflowEventType {
   Stopped = 'stopped',
@@ -19,6 +20,16 @@ export type WorkflowEventBase = {
   emails: string[]
 }
 
-export type WorkflowEventDto = WorkflowEventBase & {
+export type AdminWorkflowEventDto = WorkflowEventBase & {
   created: DateString
 }
+
+export type StepSubmittedEventDto = {
+  type: WorkflowEventType.StepSubmitted
+  stepNumber: number
+  outcome: Exclude<WorkflowStatus, WorkflowStatus.PENDING>
+  emails: string[]
+  created: DateString
+}
+
+export type WorkflowEventDto = AdminWorkflowEventDto | StepSubmittedEventDto

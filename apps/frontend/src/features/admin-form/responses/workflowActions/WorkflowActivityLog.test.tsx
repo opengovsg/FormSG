@@ -1,9 +1,10 @@
 import { screen, within } from '@testing-library/react'
 
 import {
+  AdminWorkflowEventDto,
   AdminWorkflowEventType,
   DateString,
-  WorkflowEventDto,
+  StepSubmittedEventDto,
   WorkflowEventType,
   WorkflowStatus,
 } from 'formsg-shared/types'
@@ -29,7 +30,7 @@ const event = (
   type: AdminWorkflowEventType,
   created: string,
   emails: string[],
-): WorkflowEventDto => ({
+): AdminWorkflowEventDto => ({
   type,
   actorEmail: 'admin@agency.gov.sg',
   stepNumber: 2,
@@ -51,6 +52,27 @@ const history = {
     { _id: 'step-3' },
   ],
 }
+const stepSubmitted = (
+  stepNumber: number,
+  created: string,
+  emails: string[],
+  outcome: StepSubmittedEventDto['outcome'] = WorkflowStatus.COMPLETED,
+): StepSubmittedEventDto => ({
+  type: WorkflowEventType.StepSubmitted,
+  stepNumber,
+  outcome,
+  emails,
+  created: created as DateString,
+})
+const twoSubmittedSteps = [
+  history.submittedSteps[0],
+  {
+    isApproval: true as const,
+    status: WorkflowStatus.APPROVED as const,
+    submittedAt: '2026-10-08T02:00:00.000Z',
+    nextStepRecipientEmails: ['changed@agency.gov.sg'],
+  },
+]
 const titles = () =>
   screen.getAllByRole('heading', { level: 3 }).map((el) => el.textContent)
 
@@ -190,5 +212,157 @@ describe('WorkflowActivityLog', () => {
   it('has no invented submission for empty history', () => {
     render(<WorkflowActivityLog />)
     expect(screen.queryAllByRole('listitem')).toHaveLength(0)
+  })
+
+  describe('with step submitted events', () => {
+    it('lists each step once, from its event, with the recipients it recorded', () => {
+      render(
+        <WorkflowActivityLog
+          history={{
+            ...history,
+            submittedSteps: twoSubmittedSteps,
+            workflowEvents: [
+              stepSubmitted(1, at, ['lead@agency.gov.sg']),
+              stepSubmitted(
+                2,
+                '2026-10-08T02:00:00.000Z',
+                ['hr@agency.gov.sg'],
+                WorkflowStatus.APPROVED,
+              ),
+            ],
+          }}
+        />,
+      )
+      expect(titles()).toEqual([
+        'Step 1 submitted',
+        'Step 2 · Team lead sent to lead@agency.gov.sg',
+        'Step 2 · Team lead approved',
+        'Step 3 sent to hr@agency.gov.sg',
+      ])
+    })
+
+    it('orders backfilled events by when the step was submitted, not when they were stored', () => {
+      render(
+        <WorkflowActivityLog
+          history={{
+            ...history,
+            submittedSteps: twoSubmittedSteps,
+            workflowEvents: [
+              event(
+                WorkflowEventType.ReminderSent,
+                '2026-10-08T01:30:00.000Z',
+                ['lead@agency.gov.sg'],
+              ),
+              stepSubmitted(1, at, ['lead@agency.gov.sg']),
+              stepSubmitted(
+                2,
+                '2026-10-08T02:00:00.000Z',
+                ['hr@agency.gov.sg'],
+                WorkflowStatus.APPROVED,
+              ),
+            ],
+          }}
+        />,
+      )
+      expect(titles()).toEqual([
+        'Step 1 submitted',
+        'Step 2 · Team lead sent to lead@agency.gov.sg',
+        'Reminder triggered for Step 2 · Team lead by admin@agency.gov.sg',
+        'Reminder for Step 2 · Team lead sent to lead@agency.gov.sg',
+        'Step 2 · Team lead approved',
+        'Step 3 sent to hr@agency.gov.sg',
+      ])
+    })
+
+    it('falls back to submittedSteps for steps without an event', () => {
+      render(
+        <WorkflowActivityLog
+          history={{
+            ...history,
+            submittedSteps: twoSubmittedSteps,
+            workflowEvents: [
+              stepSubmitted(
+                2,
+                '2026-10-08T02:00:00.000Z',
+                ['hr@agency.gov.sg'],
+                WorkflowStatus.APPROVED,
+              ),
+            ],
+          }}
+        />,
+      )
+      expect(titles()).toEqual([
+        'Step 1 submitted',
+        'Step 2 · Team lead sent to lead@agency.gov.sg',
+        'Step 2 · Team lead approved',
+        'Step 3 sent to hr@agency.gov.sg',
+      ])
+    })
+
+    it('lists a step before an admin action at the same moment', () => {
+      render(
+        <WorkflowActivityLog
+          history={{
+            ...history,
+            workflowEvents: [
+              event(WorkflowEventType.AssigneesAdded, at, [
+                'new@agency.gov.sg',
+              ]),
+              stepSubmitted(1, at, ['lead@agency.gov.sg']),
+            ],
+          }}
+        />,
+      )
+      expect(titles()).toEqual([
+        'Step 1 submitted',
+        'Step 2 · Team lead sent to lead@agency.gov.sg',
+        'new@agency.gov.sg added to Step 2 · Team lead by admin@agency.gov.sg',
+      ])
+    })
+
+    it('sends nothing on after a rejected step', () => {
+      render(
+        <WorkflowActivityLog
+          history={{
+            ...history,
+            submittedSteps: twoSubmittedSteps,
+            workflowEvents: [
+              stepSubmitted(1, at, ['lead@agency.gov.sg']),
+              stepSubmitted(
+                2,
+                '2026-10-08T02:00:00.000Z',
+                [],
+                WorkflowStatus.REJECTED,
+              ),
+            ],
+          }}
+        />,
+      )
+      expect(titles()).toEqual([
+        'Step 1 submitted',
+        'Step 2 · Team lead sent to lead@agency.gov.sg',
+        'Step 2 · Team lead rejected',
+      ])
+    })
+  })
+
+  it('skips events of a type it does not know', () => {
+    render(
+      <WorkflowActivityLog
+        history={{
+          ...history,
+          workflowEvents: [
+            {
+              ...event(WorkflowEventType.Stopped, at, []),
+              type: 'sent_back',
+            } as unknown as AdminWorkflowEventDto,
+          ],
+        }}
+      />,
+    )
+    expect(titles()).toEqual([
+      'Step 1 submitted',
+      'Step 2 · Team lead sent to lead@agency.gov.sg',
+    ])
   })
 })
