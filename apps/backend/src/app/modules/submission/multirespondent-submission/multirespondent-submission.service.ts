@@ -42,6 +42,7 @@ import {
 } from '../../../config/logger'
 import { getMultirespondentPendingSubmissionModel } from '../../../models/pending_submission.server.model'
 import { getMultirespondentSubmissionModel } from '../../../models/submission.server.model'
+import { EmailType } from '../../../services/mail/mail.constants'
 import {
   AutoreplyPdfGenerationError,
   MailSendError,
@@ -742,6 +743,12 @@ const sendMrfOutcomeEmails = ({
 
         return MailService.sendMrfWorkflowCompletionEmail({
           emails: destinationEmails,
+          // With no steps this is the form's admin notification, and the bounce
+          // handler only acts on that type, so the form still closes when every
+          // recipient bounces, as a storage form would.
+          emailType: form.workflow.length
+            ? EmailType.WorkflowCompletion
+            : EmailType.AdminResponse,
           formId: String(form._id),
           formTitle: form.title,
           responseId: submissionId,
