@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.60.0](https://github.com/opengovsg/formsg/compare/v9.59.0...v9.60.0) (2026-11-02)
+
+
+### Features
+
+* **workflow-actions:** refuse superseded step links and stale webhook retries (#10433) ([#10433](https://github.com/opengovsg/formsg/commit/963ac60d47c001b7cfab532ba94459d13bfe463b))
+* **workflow-actions:** send a pending workflow back to an earlier step (#10432) ([#10432](https://github.com/opengovsg/formsg/commit/e940d876d27ebc8ace17b43e4866a6460079d19b))
+* **workflow-actions:** send back from the response drawer (#10434) ([#10434](https://github.com/opengovsg/formsg/commit/76c32de11f15e955cf643a0e6d0efff34f505cc2))
+* **workflow-actions:** send back to step 1 on no-login forms (#10469) ([#10469](https://github.com/opengovsg/formsg/commit/f49f60abac5de5ed4c6013466f58e538aa5b3909))
+* **workflow-actions:** send link tokens on load and keep drafts per link (#10435) ([#10435](https://github.com/opengovsg/formsg/commit/09eb8fe844dde8dc7a3efcd300f8a51c63bc1129))
+* **workflow:** list steps from step submitted events in the activity log (#10430) ([#10430](https://github.com/opengovsg/formsg/commit/83711595bd23cb551cfc45c8c814b46a0ce1ded1))
+* **workflow:** record step submitted events with snapshot links (#10429) ([#10429](https://github.com/opengovsg/formsg/commit/300543d4e06f4a162ff4dd1e70802554d7b9b7d5))
+
+
+### Bug Fixes
+
+* **mrf:** count pre-migration storage responses for single submission (#10441) ([#10441](https://github.com/opengovsg/formsg/commit/5e55ffa55918a6d43ff95babefdc9a1839767605))
+* **mrf:** type a zero-step completion email as the admin notification (#10440) ([#10440](https://github.com/opengovsg/formsg/commit/b509b08566bc543c4df1351139a40fe8c8711a21))
+
 ## [9.59.0](https://github.com/opengovsg/formsg/compare/v9.58.5...v9.59.0) (2026-11-02)
 
 
