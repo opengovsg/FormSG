@@ -69,6 +69,7 @@ import {
   VirusScanFailedError,
 } from '../submission.errors'
 import {
+  CLEAN_FILE_DOWNLOAD_RETRY_DELAY_MS,
   downloadCleanFile,
   getQuarantinePresignedPostData,
   transformAttachmentMetasToSignedUrls,
@@ -3197,17 +3198,85 @@ describe('submission.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidFileKeyError())
     })
 
-    it('should return errAsync(DownloadCleanFileFailedError) if file download failed', async () => {
+    // Run the retry backoff instantly so tests don't wait on real timers.
+    const runDownloadCleanFile = async (
+      ...args: Parameters<typeof downloadCleanFile>
+    ) => {
+      jest.useFakeTimers()
+      try {
+        const resultPromise = downloadCleanFile(...args)
+        await jest.advanceTimersByTimeAsync(CLEAN_FILE_DOWNLOAD_RETRY_DELAY_MS)
+        return await resultPromise
+      } finally {
+        jest.useRealTimers()
+      }
+    }
+
+    it('should return errAsync(DownloadCleanFileFailedError) if file download failed after retrying once', async () => {
       // Arrange
       const awsSpy = jest
         .spyOn(s3Operations, 'getObject')
         .mockRejectedValueOnce(new Error('download failed'))
+        .mockRejectedValueOnce(new Error('download failed again'))
 
       // Act
       // empty string for version id to simulate failure
-      const actualResult = await downloadCleanFile(
+      const actualResult = await runDownloadCleanFile(
         MOCK_VALID_UUID,
         '',
+        'mock-bucket-name',
+      )
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledTimes(2)
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new DownloadCleanFileFailedError(),
+      )
+    })
+
+    it('should return okAsync(buffer) if the first download fails transiently and the retry succeeds', async () => {
+      // Arrange
+      const content = 'Mock file content after retry'
+      const dnsError = Object.assign(
+        new Error('getaddrinfo EAI_AGAIN s3.ap-southeast-1.amazonaws.com'),
+        { code: 'EAI_AGAIN' },
+      )
+      const awsSpy = jest
+        .spyOn(s3Operations, 'getObject')
+        .mockRejectedValueOnce(dnsError)
+        .mockResolvedValueOnce({
+          Body: {
+            transformToByteArray: () => Promise.resolve(Buffer.from(content)),
+          },
+        } as never)
+
+      // Act
+      const actualResult = await runDownloadCleanFile(
+        MOCK_VALID_UUID,
+        'your-version-id',
+        'mock-bucket-name',
+      )
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledTimes(2)
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap().toString()).toEqual(content)
+    })
+
+    it('should not retry and return errAsync(DownloadCleanFileFailedError) on an S3 4xx error', async () => {
+      // Arrange
+      const noSuchKeyError = Object.assign(new Error('NoSuchKey'), {
+        $metadata: { httpStatusCode: 404 },
+      })
+      const awsSpy = jest
+        .spyOn(s3Operations, 'getObject')
+        .mockRejectedValueOnce(noSuchKeyError)
+
+      // Act
+      const actualResult = await runDownloadCleanFile(
+        MOCK_VALID_UUID,
+        'your-version-id',
         'mock-bucket-name',
       )
 
@@ -3224,16 +3293,17 @@ describe('submission.service', () => {
       const awsSpy = jest
         .spyOn(s3Operations, 'getObject')
         .mockResolvedValueOnce({})
+        .mockResolvedValueOnce({})
 
       // Act
-      const actualResult = await downloadCleanFile(
+      const actualResult = await runDownloadCleanFile(
         MOCK_VALID_UUID,
         'your-version-id',
         'mock-bucket-name',
       )
 
       // Assert
-      expect(awsSpy).toHaveBeenCalledOnce()
+      expect(awsSpy).toHaveBeenCalledTimes(2)
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new DownloadCleanFileFailedError(),
