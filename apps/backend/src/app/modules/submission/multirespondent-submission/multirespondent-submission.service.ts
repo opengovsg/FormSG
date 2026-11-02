@@ -81,6 +81,7 @@ import {
   MrfWorkflowNotPendingError,
   MrfWorkflowStoppedError,
   ResponseModeError,
+  StepTokenVerificationError,
   SubmissionNotFoundError,
   SubmissionSaveError,
 } from '../submission.errors'
@@ -1888,12 +1889,14 @@ export const updateMultiRespondentFormSubmission = ({
   encryptedPayload,
   logMeta,
   growthbook,
+  validatedSubmission,
 }: {
   submissionId: string
   snapshottedFormDef: SnapshottedFormDef
   encryptedPayload: MultirespondentSubmissionDto
   logMeta: CustomLoggerParams['meta']
   growthbook?: GrowthBook
+  validatedSubmission?: Pick<IMultirespondentSubmissionSchema, 'stepTokenHash'>
 }): ResultAsync<
   SavedMultirespondentSubmission,
   | AttachmentUploadError
@@ -1901,6 +1904,7 @@ export const updateMultiRespondentFormSubmission = ({
   | SubmissionNotFoundError
   | PossibleDatabaseError
   | SnapshotWriteError
+  | StepTokenVerificationError
 > => {
   logMeta = {
     ...logMeta,
@@ -1925,6 +1929,12 @@ export const updateMultiRespondentFormSubmission = ({
       }
       if (submission.stoppedAt) {
         return errAsync(new MrfWorkflowStoppedError())
+      }
+      if (
+        validatedSubmission &&
+        submission.stepTokenHash !== validatedSubmission.stepTokenHash
+      ) {
+        return errAsync(new StepTokenVerificationError())
       }
       return okAsync({ submission, attachmentMetadata })
     })
