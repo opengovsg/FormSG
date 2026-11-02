@@ -1042,13 +1042,25 @@ MultirespondentSubmissionSchema.statics.saveIfSubmitterIdIsUnique =
     (IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId }) | null
   > {
     const submitterIdKey = `submittedSteps.${zeroIndexedStepNumber}.submitterId`
-    const session = await this.startSession()
-    session.startTransaction()
-    const beforeCreateRes = await this.exists({
-      form: formId,
+    const stepSubmitterQuery = {
       submissionType: SubmissionType.Multirespondent,
       [submitterIdKey]: submitterId,
-    })
+    }
+    // A mode-migrated form keeps its pre-migration storage responses, which
+    // carry the submitter id at the top level, so step one must count both.
+    const submitterQuery =
+      zeroIndexedStepNumber === 0
+        ? {
+            form: formId,
+            $or: [
+              stepSubmitterQuery,
+              { submissionType: SubmissionType.Encrypt, submitterId },
+            ],
+          }
+        : { form: formId, ...stepSubmitterQuery }
+    const session = await this.startSession()
+    session.startTransaction()
+    const beforeCreateRes = await this.exists(submitterQuery)
       .setOptions({ readPreference: 'primary' })
       .session(session)
       .exec()
@@ -1061,18 +1073,10 @@ MultirespondentSubmissionSchema.statics.saveIfSubmitterIdIsUnique =
 
     await this.create([submissionContent], { session })
 
-    const afterCreateRes = await this.find(
-      {
-        form: formId,
-        submissionType: SubmissionType.Multirespondent,
-        [submitterIdKey]: submitterId,
-      },
-      null,
-      {
-        limit: 2,
-        readPreference: 'primary',
-      },
-    )
+    const afterCreateRes = await this.find(submitterQuery, null, {
+      limit: 2,
+      readPreference: 'primary',
+    })
       .session(session)
       .exec()
     if (afterCreateRes.length != 1) {
