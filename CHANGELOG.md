@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.58.4](https://github.com/opengovsg/formsg/compare/v9.58.3...v9.58.4) (2026-11-02)
+
+
+### Bug Fixes
+
+* **synthetics:** step through form-origin screen before extracting secret key (#10418) ([#10418](https://github.com/opengovsg/formsg/commit/6b49cb4e3b99ca694fc68eafb0566d6e7dbfd2ce))
+
+
+### Chores
+
+* **guardduty:** bump aws-lambda-ric to 4.0.2 (#10442) ([#10442](https://github.com/opengovsg/formsg/commit/67e03f7feda44fd6388ab105c3ae20a117af8da9))
+
 ## [9.58.3](https://github.com/opengovsg/formsg/compare/v9.58.2...v9.58.3) (2026-10-30)
 
 
