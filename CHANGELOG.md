@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.59.0](https://github.com/opengovsg/formsg/compare/v9.58.5...v9.59.0) (2026-11-02)
+
+
+### Features
+
+* accept hidden UEN entity types from SSM (#10470) ([#10470](https://github.com/opengovsg/formsg/commit/c0d5ffb67f29235aebc5896298f1dc46c4041e1d))
+
+
+### Bug Fixes
+
+* **calendar:** select today when the Today button is clicked (#10437) ([#10437](https://github.com/opengovsg/formsg/commit/93cb5c37d263ff68a9104a5c3b9b5d685531fa62))
+* **results:** accept a same-day date range on the metadata endpoint (#10436) ([#10436](https://github.com/opengovsg/formsg/commit/63486e7569733233a018d9cfbcf303146353d88b))
+
+
+### Tests
+
+* **e2e:** make the dashboard modal handlers unable to hang (#10471) ([#10471](https://github.com/opengovsg/formsg/commit/66c6de3b5e3ce5ab9c5551fa7f5227d220fa1ad2))
+
 ## [9.58.5](https://github.com/opengovsg/formsg/compare/v9.58.4...v9.58.5) (2026-11-02)
 
 
