@@ -65,5 +65,17 @@ describe('request', () => {
       // Assert
       expect(reqMeta.clientVersion).toBe('9.35.0')
     })
+
+    it('should mask the step link token in the logged url', () => {
+      const req = createRequest({
+        url: '/api/v3/forms/f/submissions/s?stepToken=abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG&other=1',
+      })
+
+      const reqMeta = createReqMeta(req)
+
+      expect(reqMeta.urlWithQueryParams).toBe(
+        '/api/v3/forms/f/submissions/s?stepToken=abcdefghijklmnopqrs************************&other=1',
+      )
+    })
   })
 })
