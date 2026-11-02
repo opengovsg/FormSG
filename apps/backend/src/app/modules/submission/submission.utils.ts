@@ -995,7 +995,11 @@ export const getCookieNameByAuthType = (
 export const getMrfSubmissionWorkflowStatus = (
   submittedSteps: SubmittedStep[],
   numTotalSteps: number,
+  workflowStep?: number,
 ): WorkflowStatus | undefined => {
+  if (submittedSteps.length <= 0 && numTotalSteps > 0 && workflowStep === -1) {
+    return WorkflowStatus.PENDING
+  }
   if (submittedSteps.length <= 0 || numTotalSteps <= 0) {
     // NOTE: this occurs when no steps are recorded for submissions prior to this change or when no workflow is defined.
     return undefined
@@ -1040,6 +1044,7 @@ export const buildMrfMetadata = ({
   const workflowStatus = getMrfSubmissionWorkflowStatus(
     submittedSteps ?? [],
     workflow.length,
+    workflowStep,
   )
 
   const lastSubmittedAt =
