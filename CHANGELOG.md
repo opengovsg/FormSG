@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.60.1](https://github.com/opengovsg/formsg/compare/v9.60.0...v9.60.1) (2026-11-02)
+
+
+### Bug Fixes
+
+* **mrf:** query the base submission model in the single-submission check (#10488) ([#10488](https://github.com/opengovsg/formsg/commit/5cea998c725ca32d3e6566d5be46ca9043703dcf))
+* **submission:** retry clean-file S3 download once after backoff (#10443) ([#10443](https://github.com/opengovsg/formsg/commit/4cf9948e795487224ec13b44bd5feb8712f619af))
+
 ## [9.60.0](https://github.com/opengovsg/formsg/compare/v9.59.0...v9.60.0) (2026-11-02)
 
 
