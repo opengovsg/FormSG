@@ -11,9 +11,7 @@ dotenv.config({
  */
 export default defineConfig({
   testDir: './__tests__/e2e',
-  /* Maximum time one test can run for. Building a form through the UI takes
-   * 15-35s on CI runners, too close to the 30s default. */
-  timeout: 60 * 1000,
+  /* Maximum time one test can run for. */
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.
