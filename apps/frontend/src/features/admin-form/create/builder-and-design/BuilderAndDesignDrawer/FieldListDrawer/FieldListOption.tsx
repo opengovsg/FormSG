@@ -1,5 +1,6 @@
 import { CSSProperties, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { BiIdCard } from 'react-icons/bi'
 import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 import {
   Draggable,
@@ -22,6 +23,7 @@ import {
   BASICFIELD_TO_DRAWER_META,
   MYINFO_FIELD_TO_DRAWER_META,
 } from '~features/admin-form/create/constants'
+import { useIsMrfStepLoginEnabled } from '~features/admin-form/create/workflow/hooks/useIsMrfStepLoginEnabled'
 
 import { useCreateTabForm } from '../../useCreateTabForm'
 import {
@@ -303,6 +305,7 @@ export const LoginIdentityFieldOption = forwardRef<
 
   const newFieldMeta = useMemo(() => createLoginIdentityField(attr), [attr])
   const meta = BASICFIELD_TO_DRAWER_META[newFieldMeta.fieldType]
+  const isStepLoginEnabled = useIsMrfStepLoginEnabled()
 
   const updateCreateState = useFieldBuilderStore(updateCreateStateSelector)
 
@@ -319,7 +322,14 @@ export const LoginIdentityFieldOption = forwardRef<
       onClick={handleClick}
       ref={ref}
     >
-      <Icon fontSize="1.5rem" as={meta.icon} />
+      <Icon
+        fontSize="1.5rem"
+        as={
+          isStepLoginEnabled && newFieldMeta.fieldType === BasicField.Nric
+            ? BiIdCard
+            : meta.icon
+        }
+      />
       <Stack direction="row" spacing="0.5rem" align="center">
         <Text textStyle="body-1">{LOGIN_IDENTITY_LABELS[attr]}</Text>
         {form?.isSubmitterIdCollectionEnabled && (
