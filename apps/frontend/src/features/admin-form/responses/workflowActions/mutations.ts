@@ -84,6 +84,7 @@ export const useSendBackWorkflowMutation = (formId: string) => {
       expectedStepNumber: number
       submissionSecretKey: string
       remarks?: string
+      stepOneRecipientEmail?: string
     }) => sendBackWorkflow({ formId, ...params }),
     {
       onSuccess: ({ stepNumber }) => {

@@ -154,4 +154,65 @@ describe('SendBackModal', () => {
     expect(screen.getByText('Too long, max 1000')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'confirm' })).toBeDisabled()
   })
+
+  describe('to step 1', () => {
+    const showStepOneModal = (onConfirm = vi.fn()) => {
+      render(
+        <SendBackModal
+          isOpen
+          onClose={vi.fn()}
+          onConfirm={onConfirm}
+          history={history}
+          canSendBackToStepOne
+        />,
+      )
+      return onConfirm
+    }
+
+    it('offers step 1 only on forms that allow it', () => {
+      showStepOneModal()
+
+      expect(
+        screen.getAllByRole('option').map((option) => option.textContent),
+      ).toEqual(['Step 1 · Applicant', 'Step 2 · Team lead', 'Step 3'])
+    })
+
+    it('asks for an email and sends step 1 to it', async () => {
+      const onConfirm = showStepOneModal()
+
+      await userEvent.selectOptions(
+        screen.getByRole('combobox', { name: 'step' }),
+        '1',
+      )
+      expect(screen.getByRole('button', { name: 'confirm' })).toBeDisabled()
+      await userEvent.type(
+        screen.getByPlaceholderText('me@example.com'),
+        'Applicant@Agency.gov.sg',
+      )
+
+      expect(screen.getByText('applicant@agency.gov.sg')).toBeInTheDocument()
+      await userEvent.click(screen.getByRole('button', { name: 'confirm' }))
+      expect(onConfirm).toHaveBeenCalledWith({
+        targetStepNumber: 1,
+        remarks: undefined,
+        stepOneRecipientEmail: 'applicant@agency.gov.sg',
+      })
+    })
+
+    it('blocks an invalid email', async () => {
+      showStepOneModal()
+
+      await userEvent.selectOptions(
+        screen.getByRole('combobox', { name: 'step' }),
+        '1',
+      )
+      await userEvent.type(
+        screen.getByPlaceholderText('me@example.com'),
+        'not-an-email',
+      )
+
+      expect(screen.getByText('invalidEmail')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'confirm' })).toBeDisabled()
+    })
+  })
 })

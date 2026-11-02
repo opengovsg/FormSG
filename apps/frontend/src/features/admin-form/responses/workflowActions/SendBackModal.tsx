@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FormControl, FormErrorMessage, Stack } from '@chakra-ui/react'
+import isEmail from 'validator/lib/isEmail'
 
 import { MAX_SEND_BACK_REMARKS_LENGTH } from 'formsg-shared/constants'
 
 import { SingleSelect } from '~components/Dropdown'
 import FormLabel from '~components/FormControl/FormLabel'
+import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 
 import { getStepRecipients, WorkflowHistory } from './getStopNotifiedEmails'
@@ -17,9 +19,14 @@ const I18N_PREFIX = `${WORKFLOW_ACTIONS_I18N}.sendBackModal` as const
 export interface SendBackModalProps {
   isOpen: boolean
   onClose: () => void
-  onConfirm: (params: { targetStepNumber: number; remarks?: string }) => void
+  onConfirm: (params: {
+    targetStepNumber: number
+    remarks?: string
+    stepOneRecipientEmail?: string
+  }) => void
   isLoading?: boolean
   history: WorkflowHistory
+  canSendBackToStepOne?: boolean
 }
 
 export const SendBackModal = ({
@@ -28,6 +35,7 @@ export const SendBackModal = ({
   onConfirm,
   isLoading,
   history,
+  canSendBackToStepOne = false,
 }: SendBackModalProps): JSX.Element => {
   const { t } = useTranslation()
   const { submittedSteps, workflow, workflowEvents } = history
@@ -35,17 +43,20 @@ export const SendBackModal = ({
   const defaultStep = String(pendingStepNumber - 1)
   const [step, setStep] = useState(defaultStep)
   const [remarks, setRemarks] = useState('')
+  const [stepOneEmail, setStepOneEmail] = useState('')
 
   useEffect(() => {
     if (!isOpen) return
     setStep(defaultStep)
     setRemarks('')
+    setStepOneEmail('')
   }, [isOpen, defaultStep])
 
+  const firstTargetStep = canSendBackToStepOne ? 1 : 2
   const stepItems = Array.from(
-    { length: Math.max(pendingStepNumber - 2, 0) },
+    { length: Math.max(pendingStepNumber - firstTargetStep, 0) },
     (_, index) => {
-      const stepNumber = index + 2
+      const stepNumber = index + firstTargetStep
       const name = workflow[stepNumber - 1]?.step_name?.trim()
       return {
         value: String(stepNumber),
@@ -67,13 +78,24 @@ export const SendBackModal = ({
           max: MAX_SEND_BACK_REMARKS_LENGTH,
         })
       : undefined
-  const notifiedEmails = isValidStep
-    ? getStepRecipients({
-        submittedSteps,
-        events: workflowEvents,
-        stepNumber: targetStepNumber,
-      })
-    : []
+  const isToStepOne = isValidStep && targetStepNumber === 1
+  const trimmedStepOneEmail = stepOneEmail.trim().toLowerCase()
+  const isStepOneEmailValid = isEmail(trimmedStepOneEmail)
+  const stepOneEmailError =
+    isToStepOne && stepOneEmail.trim() && !isStepOneEmailValid
+      ? t(`${WORKFLOW_ACTIONS_I18N}.addAssigneeModal.invalidEmail`)
+      : undefined
+  const notifiedEmails = !isValidStep
+    ? []
+    : isToStepOne
+      ? isStepOneEmailValid
+        ? [trimmedStepOneEmail]
+        : []
+      : getStepRecipients({
+          submittedSteps,
+          events: workflowEvents,
+          stepNumber: targetStepNumber,
+        })
 
   return (
     <WorkflowActionModal
@@ -84,12 +106,17 @@ export const SendBackModal = ({
       isBeta
       notifiedEmails={notifiedEmails}
       confirmLabel={t(`${I18N_PREFIX}.confirm`)}
-      isConfirmDisabled={!isValidStep || !!remarksError}
+      isConfirmDisabled={
+        !isValidStep || !!remarksError || (isToStepOne && !isStepOneEmailValid)
+      }
       isConfirmLoading={isLoading}
       onConfirm={() =>
         onConfirm({
           targetStepNumber,
           remarks: remarks.trim() || undefined,
+          ...(isToStepOne
+            ? { stepOneRecipientEmail: trimmedStepOneEmail }
+            : {}),
         })
       }
     >
@@ -104,6 +131,22 @@ export const SendBackModal = ({
             onChange={setStep}
           />
         </FormControl>
+        {isToStepOne ? (
+          <FormControl isRequired isInvalid={!!stepOneEmailError}>
+            <FormLabel
+              description={t(`${I18N_PREFIX}.stepOneEmailDescription`)}
+            >
+              {t(`${I18N_PREFIX}.stepOneEmailLabel`)}
+            </FormLabel>
+            <Input
+              type="email"
+              value={stepOneEmail}
+              placeholder="me@example.com"
+              onChange={(event) => setStepOneEmail(event.target.value)}
+            />
+            <FormErrorMessage>{stepOneEmailError}</FormErrorMessage>
+          </FormControl>
+        ) : null}
         <FormControl isInvalid={!!remarksError}>
           <FormLabel description={t(`${I18N_PREFIX}.remarksDescription`)}>
             {t(`${I18N_PREFIX}.remarksLabel`)}

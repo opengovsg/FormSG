@@ -23,10 +23,20 @@ export const getStepRecipients = ({
   stepNumber: number
 }): string[] => {
   const previousStep = submittedSteps[stepNumber - 2]
+  const stepOneSentBackTo =
+    stepNumber === 1
+      ? (events
+          .filter(
+            (event) =>
+              event.type === WorkflowEventType.SentBack &&
+              event.stepNumber === 1,
+          )
+          .slice(-1)[0]?.emails ?? [])
+      : []
   return unique([
     ...(previousStep && 'nextStepRecipientEmails' in previousStep
       ? (previousStep.nextStepRecipientEmails ?? [])
-      : []),
+      : stepOneSentBackTo),
     ...events
       .filter(
         (event) =>

@@ -63,4 +63,27 @@ describe('getStepRecipients', () => {
       }),
     ).toEqual([])
   })
+
+  it('reads step 1 recipients from the latest send back to step 1', () => {
+    const sentBackToStepOne = (emails: string[], created: string) =>
+      ({
+        type: WorkflowEventType.SentBack,
+        actorEmail: 'admin@agency.gov.sg',
+        stepNumber: 1,
+        fromStepNumber: 3,
+        emails,
+        created: created as DateString,
+      }) as WorkflowEventDto
+
+    expect(
+      getStepRecipients({
+        submittedSteps: [],
+        events: [
+          sentBackToStepOne(['first@agency.gov.sg'], '2026-10-08T00:00:00Z'),
+          sentBackToStepOne(['second@agency.gov.sg'], '2026-10-09T00:00:00Z'),
+        ],
+        stepNumber: 1,
+      }),
+    ).toEqual(['second@agency.gov.sg'])
+  })
 })
