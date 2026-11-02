@@ -91,7 +91,10 @@ describe('a column in the Filter menu', () => {
     await user.click(column)
 
     expect(onFilter).toHaveBeenLastCalledWith('tan')
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+    // The lazy popover unmounts its field only after the exit animation ends.
+    await waitFor(() =>
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument(),
+    )
     expect(column).toHaveAttribute('aria-expanded', 'false')
   })
 
