@@ -53,6 +53,7 @@ import {
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import {
   InvalidSubmissionTypeError,
+  MrfStepLinkSupersededError,
   MrfWorkflowStoppedError,
   SubmissionFailedError,
   SubmissionSaveError,
@@ -87,6 +88,7 @@ import {
   createPublicMultirespondentSubmissionDto,
   getMrfCookieName,
 } from './multirespondent-submission.utils'
+import * as stepToken from './step-token'
 
 const logger = createLoggerWithLabel(module)
 const Payment = getPaymentModel(mongoose)
@@ -595,7 +597,9 @@ export const handleUpdateMultirespondentSubmission = [
  */
 export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
   { formId: string; submissionId: string },
-  PublicMultirespondentSubmissionDto | ErrorDto
+  PublicMultirespondentSubmissionDto | ErrorDto,
+  unknown,
+  { stepToken?: unknown }
 > = async (req, res) => {
   const { formId, submissionId } = req.params
 
@@ -629,6 +633,18 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
         }
         if (submissionData.stoppedAt) {
           return errAsync(new MrfWorkflowStoppedError())
+        }
+        const presentedStepToken = req.query.stepToken
+        if (
+          typeof presentedStepToken === 'string' &&
+          presentedStepToken &&
+          submissionData.stepTokenHash &&
+          !stepToken.verify(presentedStepToken, submissionData.stepTokenHash) &&
+          submissionData.workflowEvents?.some(
+            ({ type }) => type === WorkflowEventType.SentBack,
+          )
+        ) {
+          return errAsync(new MrfStepLinkSupersededError())
         }
 
         // Remaining login duration in seconds.

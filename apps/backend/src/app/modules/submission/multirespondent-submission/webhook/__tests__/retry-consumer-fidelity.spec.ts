@@ -322,7 +322,11 @@ describe('[GATE] webhook retry consumer fidelity', () => {
           error: expect.any(SnapshotDataIntegrityError),
           meta: expect.objectContaining({
             webhookMessage: expect.objectContaining({
-              snapshotRef: { submissionIndex: 0, contentFormat: 'v1' },
+              snapshotRef: {
+                submissionIndex: 0,
+                contentFormat: 'v1',
+                token: expect.any(String),
+              },
             }),
           }),
         }),

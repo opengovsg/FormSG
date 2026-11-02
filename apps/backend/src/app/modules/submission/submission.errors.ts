@@ -400,6 +400,14 @@ export class SubmissionEncryptionMismatchError extends ApplicationError {
   }
 }
 
+export class MrfStepLinkSupersededError extends ApplicationError {
+  constructor(
+    message = 'This link is no longer in use. If you were asked to make changes, use the link in the latest email you received for this form.',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_MRF_STEP_LINK_SUPERSEDED)
+  }
+}
+
 /**
  * Thrown when an MRF submission currently has a step token to gate write permissions.
  * token but the submitted step is missing this token or the provided token does not
