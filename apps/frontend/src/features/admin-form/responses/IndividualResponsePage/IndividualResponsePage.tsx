@@ -49,7 +49,6 @@ import { SecretKeyVerification } from '../components/SecretKeyVerification'
 import { WorkflowStatusBadge } from '../components/WorkflowStatusBadge'
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
-  MRF_RESPONSE_TIMESTAMP_LABEL,
   MRF_STATUS_TRACKING_LABEL,
   MRF_WORKFLOW_STATUS_LABEL,
 } from '../constants'
@@ -272,7 +271,7 @@ const IndividualResponseContent = ({
           isError={isError}
         />
         <StackRow
-          label={hasWorkflow ? MRF_RESPONSE_TIMESTAMP_LABEL : 'Timestamp'}
+          label="Timestamp"
           value={
             data?.submissionTime ?? t('features.common.loadingWithEllipsis')
           }
