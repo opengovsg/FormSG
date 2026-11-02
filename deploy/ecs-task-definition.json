@@ -408,6 +408,10 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/RBI_IP_LIST"
         },
         {
+          "name": "UEN_HIDDEN_ENTITY_TYPES",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/UEN_HIDDEN_ENTITY_TYPES"
+        },
+        {
           "name": "SSO_CLIENT_ID",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SSO_CLIENT_ID"
         },
