@@ -10,17 +10,19 @@ import { Page } from '@playwright/test'
  * @param {Page} page Playwright page
  */
 export const closeModals = async (page: Page) => {
-  const announcementModal = page
-    .getByRole('dialog')
-    .filter({ hasText: 'New feature' })
-  await page.addLocatorHandler(announcementModal, async () => {
-    await announcementModal.getByRole('button', { name: 'Cancel' }).click()
-  })
+  const pressEscape = async () => {
+    await page.keyboard.press('Escape')
+  }
 
-  const emergencyContactModal = page
-    .getByRole('dialog')
-    .filter({ has: page.getByRole('heading', { name: 'Emergency Contact' }) })
-  await page.addLocatorHandler(emergencyContactModal, async () => {
-    await emergencyContactModal.locator('button[aria-label="Close"]').click()
-  })
+  await page.addLocatorHandler(
+    page.getByRole('dialog').filter({ hasText: 'New feature' }),
+    pressEscape,
+    { noWaitAfter: true },
+  )
+
+  await page.addLocatorHandler(
+    page.getByRole('dialog', { name: 'Emergency contact' }),
+    pressEscape,
+    { noWaitAfter: true },
+  )
 }
