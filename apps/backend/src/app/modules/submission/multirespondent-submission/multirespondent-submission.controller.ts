@@ -502,6 +502,7 @@ const updateMultirespondentSubmission = async (
       encryptedPayload,
       logMeta,
       growthbook: req.growthbook,
+      validatedSubmission: req.formsg.mrfSubmission,
     })
 
   if (updateMultiRespondentFormSubmissionResult.isErr()) {

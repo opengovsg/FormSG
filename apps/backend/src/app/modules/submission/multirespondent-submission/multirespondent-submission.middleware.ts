@@ -679,71 +679,91 @@ export const validateMultirespondentSubmission = async (
                   previousResponses,
                 ).filter((fieldId) => !editableFieldIds.includes(fieldId))
 
-                for (const fieldId of previousNonEditableFieldIdsWithResponses) {
+                const reinsertedFieldIds =
+                  previousNonEditableFieldIdsWithResponses.filter(
+                    (fieldId) => !req.body.responses[fieldId],
+                  )
+                for (const fieldId of reinsertedFieldIds) {
                   // ensure that respondents cannot alter a non-editable field by omitting the field in the submission by re-inserting the previous fields that are non-editable
-                  if (!req.body.responses[fieldId]) {
-                    req.body.responses[fieldId] = previousResponses[fieldId]
-                  }
+                  req.body.responses[fieldId] = previousResponses[fieldId]
                 }
 
-                return Result.combine(
-                  nonEditableFieldIdsWithResponses.map((fieldId) => {
-                    const incomingResField = req.body.responses[fieldId]
-                    const prevResField = previousResponses[fieldId]
-
-                    const resp = isFieldResponseV4Equal(
-                      incomingResField as FieldResponsesV4[string],
-                      prevResField as FieldResponsesV4[string],
-                    )
-
-                    if (!resp) {
-                      logger.info({
-                        message:
-                          'Submitted response on a non-editable field which did not match previous response',
-                        meta: {
-                          ...logMeta,
-                          incomingResFieldType: incomingResField.fieldType,
-                          prevResFieldType: prevResField.fieldType,
-                        },
-                      })
-
-                      return err(
-                        new ProcessingError(
-                          'Submitted response on a non-editable field which did not match previous response',
-                        ),
-                      )
+                return getVisibleFieldIdsV3(
+                  adaptV4ToV3(
+                    req.body.responses as FieldResponsesV4,
+                  ) as unknown as FieldResponsesV3,
+                  formPropertiesForLogicComputation,
+                )
+                  .map((mergedVisibleFieldIds) => {
+                    for (const fieldId of reinsertedFieldIds) {
+                      if (!mergedVisibleFieldIds.has(fieldId)) {
+                        delete req.body.responses[fieldId]
+                      }
                     }
+                  })
+                  .andThen(() =>
+                    Result.combine(
+                      nonEditableFieldIdsWithResponses.map((fieldId) => {
+                        const incomingResField = req.body.responses[fieldId]
+                        const prevResField = previousResponses[fieldId]
 
-                    /**
-                     * Provenance is server-owned and stripped from client
-                     * payloads, so a re-submitted non-editable field would
-                     * otherwise lose it on every workflow step after the one
-                     * that stamped it (e.g. myinfoVerified from the step-1
-                     * MyInfo hash check). Carry it forward from the stored
-                     * copy.
-                     */
-                    if (prevResField.provenance) {
-                      incomingResField.provenance = prevResField.provenance
-                    }
+                        const resp = isFieldResponseV4Equal(
+                          incomingResField as FieldResponsesV4[string],
+                          prevResField as FieldResponsesV4[string],
+                        )
 
-                    /**
-                     * Files are verified to have the same md5 hash, so we can safely assume that the files are the same.
-                     * We should also ignore attachment names from submissions as handleDuplicatesInAttachments may rename files
-                     */
-                    if (
-                      incomingResField.fieldType === BasicField.Attachment &&
-                      prevResField.fieldType === BasicField.Attachment
-                    ) {
-                      ;(incomingResField.answer as { value: string }).value = (
-                        prevResField.answer as { value: string }
-                      ).value
-                    }
+                        if (!resp) {
+                          logger.info({
+                            message:
+                              'Submitted response on a non-editable field which did not match previous response',
+                            meta: {
+                              ...logMeta,
+                              incomingResFieldType: incomingResField.fieldType,
+                              prevResFieldType: prevResField.fieldType,
+                            },
+                          })
 
-                    return ok(undefined)
-                  }),
-                ).map(() => {
-                  return previousResponses
-                })
+                          return err(
+                            new ProcessingError(
+                              'Submitted response on a non-editable field which did not match previous response',
+                            ),
+                          )
+                        }
+
+                        /**
+                         * Provenance is server-owned and stripped from client
+                         * payloads, so a re-submitted non-editable field would
+                         * otherwise lose it on every workflow step after the one
+                         * that stamped it (e.g. myinfoVerified from the step-1
+                         * MyInfo hash check). Carry it forward from the stored
+                         * copy.
+                         */
+                        if (prevResField.provenance) {
+                          incomingResField.provenance = prevResField.provenance
+                        }
+
+                        /**
+                         * Files are verified to have the same md5 hash, so we can safely assume that the files are the same.
+                         * We should also ignore attachment names from submissions as handleDuplicatesInAttachments may rename files
+                         */
+                        if (
+                          incomingResField.fieldType ===
+                            BasicField.Attachment &&
+                          prevResField.fieldType === BasicField.Attachment
+                        ) {
+                          ;(
+                            incomingResField.answer as { value: string }
+                          ).value = (
+                            prevResField.answer as { value: string }
+                          ).value
+                        }
+
+                        return ok(undefined)
+                      }),
+                    ).map(() => {
+                      return previousResponses
+                    }),
+                  )
               })
               .andThen((previousResponses) => {
                 return validateMrfFieldResponses({

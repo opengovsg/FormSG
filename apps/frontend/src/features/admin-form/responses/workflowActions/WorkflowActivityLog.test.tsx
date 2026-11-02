@@ -354,7 +354,7 @@ describe('WorkflowActivityLog', () => {
           workflowEvents: [
             {
               ...event(WorkflowEventType.Stopped, at, []),
-              type: 'sent_back',
+              type: 'not_a_known_event',
             } as unknown as AdminWorkflowEventDto,
           ],
         }}

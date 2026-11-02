@@ -148,6 +148,7 @@ import {
   MrfReminderInvalidWorkflowStepError,
   MrfReminderLimitReachedError,
   MrfReminderRecipientEmailsEmptyError,
+  MrfSendBackInvalidStepError,
   MrfWorkflowActionsUnavailableError,
   MrfWorkflowNotPendingError,
   MrfWorkflowOverflowError,
@@ -481,6 +482,7 @@ const errorMapper: MapRouteError = (
           'This workflow has been stopped. Please contact the form admin that gave you this link.',
         errorMessageKey: submissionErrorKey('mrf.workflowStopped'),
       }
+    case MrfSendBackInvalidStepError:
     case MrfAssigneeAlreadyAssignedError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,

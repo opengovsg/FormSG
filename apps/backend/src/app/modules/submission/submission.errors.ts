@@ -74,6 +74,14 @@ export class MrfAssigneeAlreadyAssignedError extends ApplicationError {
   }
 }
 
+export class MrfSendBackInvalidStepError extends ApplicationError {
+  constructor(
+    message = 'A workflow can only be sent back to a step after the first and before the pending step.',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_MRF_SEND_BACK_INVALID_STEP)
+  }
+}
+
 export class MrfWorkflowNotPendingError extends ApplicationError {
   constructor(message = 'This workflow is no longer pending.') {
     super(message, undefined, ErrorCodes.SUBMISSION_MRF_WORKFLOW_NOT_PENDING)

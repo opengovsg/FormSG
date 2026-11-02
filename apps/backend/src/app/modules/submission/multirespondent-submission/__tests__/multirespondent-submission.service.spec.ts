@@ -42,6 +42,7 @@ import {
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
   MrfWorkflowStoppedError,
+  StepTokenVerificationError,
   SubmissionSaveError,
 } from '../../submission.errors'
 import { mapRouteError } from '../../submission.utils'
@@ -4384,6 +4385,43 @@ describe('multirespondent-submission.service', () => {
           [3, 'key-step-3'],
           [2, 'key-step-2-again'],
         ])
+      })
+
+      it('rejects a submit whose step link was replaced after it was checked', async () => {
+        const row = await Model.create({
+          form: mockFormId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [],
+          form_logics: [],
+          workflow: fourStepWorkflow,
+          submissionPublicKey: 'pk',
+          encryptedSubmissionSecretKey: 'esk',
+          encryptedContent: 'ec',
+          version: 2,
+          workflowStep: 0,
+          submittedSteps: [legacySteps[0]],
+          stepTokenHash: 'hash-after-send-back',
+        })
+        MockSnapshotStore.writeSnapshot.mockClear()
+
+        const result = await updateMultiRespondentFormSubmission({
+          submissionId: String(row._id),
+          snapshottedFormDef: buildSnapshottedFormDef({
+            workflow: fourStepWorkflow,
+            webhook: undefined,
+          }),
+          encryptedPayload: buildV4Payload({ workflowStep: 1 }),
+          logMeta: { action: 'test' },
+          validatedSubmission: { stepTokenHash: 'hash-when-checked' },
+        })
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          StepTokenVerificationError,
+        )
+        expect(MockSnapshotStore.writeSnapshot).not.toHaveBeenCalled()
+        const saved = await Model.findById(row._id).lean()
+        expect(saved?.submittedSteps).toHaveLength(1)
+        expect(saved?.stepTokenHash).toBe('hash-after-send-back')
       })
 
       it('keeps an admin event written after the respondent loaded the submission', async () => {

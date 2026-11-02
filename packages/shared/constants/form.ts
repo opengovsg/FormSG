@@ -137,3 +137,5 @@ export const MAX_SAVED_VIEWS = 5
 
 // Shared by MyInfo data fields and login identity fields, across all logins.
 export const MAX_LOGIN_FIELDS = 50
+
+export const MAX_SEND_BACK_REMARKS_LENGTH = 1000
