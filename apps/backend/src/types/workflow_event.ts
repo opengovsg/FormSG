@@ -25,7 +25,7 @@ export type IStepSubmittedEvent = {
   outcome: Exclude<WorkflowStatus, WorkflowStatus.PENDING>
   emails: string[]
   created: Date
-  snapshotKey: string
+  snapshotKey?: string
 }
 
 export type IWorkflowEvent = IAdminWorkflowEvent | IStepSubmittedEvent

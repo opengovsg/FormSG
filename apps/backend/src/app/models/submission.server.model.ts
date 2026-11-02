@@ -888,7 +888,6 @@ const workflowEventSchema = new Schema(
     },
     snapshotKey: {
       type: String,
-      required: isStepSubmittedEvent,
     },
     stepNumber: {
       type: Number,

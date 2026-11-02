@@ -1,3 +1,8 @@
+/**
+ * Owns the S3 snapshots of multirespondent submissions. Webhook retries read
+ * them through `submittedSteps[].snapshotTokens`, and the workflow audit history
+ * through `step_submitted` events' `snapshotKey`.
+ */
 import {
   GetObjectCommand,
   NoSuchKey,

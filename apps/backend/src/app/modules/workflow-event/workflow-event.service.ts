@@ -88,7 +88,7 @@ export const buildStepSubmittedEvent = ({
 }: {
   stepNumber: number
   step: SubmittedStep
-  snapshotKey: string
+  snapshotKey?: string
 }): IStepSubmittedEvent => ({
   type: WorkflowEventType.StepSubmitted,
   stepNumber,
@@ -99,8 +99,26 @@ export const buildStepSubmittedEvent = ({
       ? []
       : (step.nextStepRecipientEmails ?? []),
   created: new Date(step.submittedAt),
-  snapshotKey,
+  ...(snapshotKey ? { snapshotKey } : {}),
 })
+
+/**
+ * @returns events for submitted steps that have none yet, without snapshot keys
+ */
+export const buildMissingStepSubmittedEvents = (
+  submittedSteps: SubmittedStep[] = [],
+  events: IWorkflowEvent[] = [],
+): IStepSubmittedEvent[] => {
+  const recordedStepNumbers = new Set(
+    events
+      .filter(({ type }) => type === WorkflowEventType.StepSubmitted)
+      .map(({ stepNumber }) => stepNumber),
+  )
+  return submittedSteps
+    .map((step, index) => ({ step, stepNumber: index + 1 }))
+    .filter(({ stepNumber }) => !recordedStepNumbers.has(stepNumber))
+    .map(buildStepSubmittedEvent)
+}
 
 export const isAdminWorkflowEvent = (
   event: IWorkflowEvent,

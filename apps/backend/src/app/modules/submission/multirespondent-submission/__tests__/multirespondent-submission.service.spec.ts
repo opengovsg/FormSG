@@ -4210,7 +4210,7 @@ describe('multirespondent-submission.service', () => {
         ).toMatchObject({ snapshotKey: 'key-plumber' })
       })
 
-      it('backfills earlier steps with the same snapshot link', async () => {
+      it('backfills earlier steps without a snapshot link', async () => {
         MockSnapshotStore.writeSnapshot.mockReturnValue(
           okAsync({ token: 'tok', key: 'key-step-4' }),
         )
@@ -4226,21 +4226,18 @@ describe('multirespondent-submission.service', () => {
             outcome: WorkflowStatus.COMPLETED,
             emails: ['step2@example.com'],
             created: new Date(legacySteps[0].submittedAt),
-            snapshotKey: 'key-step-4',
           }),
           expect.objectContaining({
             stepNumber: 2,
             outcome: WorkflowStatus.APPROVED,
             emails: ['step3@example.com'],
             created: new Date(legacySteps[1].submittedAt),
-            snapshotKey: 'key-step-4',
           }),
           expect.objectContaining({
             stepNumber: 3,
             outcome: WorkflowStatus.COMPLETED,
             emails: ['step4@example.com'],
             created: new Date(legacySteps[2].submittedAt),
-            snapshotKey: 'key-step-4',
           }),
           expect.objectContaining({
             stepNumber: 4,
@@ -4248,6 +4245,11 @@ describe('multirespondent-submission.service', () => {
             snapshotKey: 'key-step-4',
           }),
         ])
+        expect(
+          stepSubmittedEvents(saved?.workflowEvents)
+            .slice(0, 3)
+            .map((event) => 'snapshotKey' in event),
+        ).toEqual([false, false, false])
       })
 
       it('only backfills steps that have no event yet', async () => {
@@ -4271,12 +4273,14 @@ describe('multirespondent-submission.service', () => {
         expect(
           stepSubmittedEvents(saved?.workflowEvents).map((event) => [
             event.stepNumber,
-            event.type === WorkflowEventType.StepSubmitted && event.snapshotKey,
+            event.type === WorkflowEventType.StepSubmitted
+              ? event.snapshotKey
+              : null,
           ]),
         ).toEqual([
           [1, 'key-step-1'],
-          [2, 'key-step-4'],
-          [3, 'key-step-4'],
+          [2, undefined],
+          [3, undefined],
           [4, 'key-step-4'],
         ])
       })

@@ -61,6 +61,7 @@ import { WebhookFactory } from '../../webhook/webhook.factory'
 import { getWebhookType, toConsumerType } from '../../webhook/webhook.service'
 import { SnapshotRef } from '../../webhook/webhook.types'
 import {
+  buildMissingStepSubmittedEvents,
   buildStepSubmittedEvent,
   buildWorkflowEvent,
   getAddedAssignees,
@@ -2084,19 +2085,17 @@ export const updateMultiRespondentFormSubmission = ({
         )
         .andThen((snapshotKey) => {
           const previousSteps = submission.submittedSteps ?? []
-          const recordedStepNumbers = new Set(
-            submission.workflowEvents
-              ?.filter(({ type }) => type === WorkflowEventType.StepSubmitted)
-              .map(({ stepNumber }) => stepNumber),
-          )
           const stepSubmittedEvents = [
-            ...previousSteps
-              .map((step, index) => ({ step, stepNumber: index + 1 }))
-              .filter(({ stepNumber }) => !recordedStepNumbers.has(stepNumber)),
-            { step: submittedStepMeta, stepNumber: submissionIndex + 1 },
-          ].map(({ step, stepNumber }) =>
-            buildStepSubmittedEvent({ stepNumber, step, snapshotKey }),
-          )
+            ...buildMissingStepSubmittedEvents(
+              previousSteps,
+              submission.workflowEvents,
+            ),
+            buildStepSubmittedEvent({
+              stepNumber: submissionIndex + 1,
+              step: submittedStepMeta,
+              snapshotKey,
+            }),
+          ]
 
           // NOTE: Append AFTER the token is recorded so the value survives mongoose's
           // subdocument cast (which copies the plain object into the array).
