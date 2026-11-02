@@ -244,7 +244,7 @@ export interface IMultirespondentSubmissionSchema
   submissionType: SubmissionType.Multirespondent
   getWebhookView(): Promise<WebhookView>
   mrfVersion: number
-  workflowEvents?: IWorkflowEvent[]
+  workflowEvents: IWorkflowEvent[]
   stoppedAt?: Date
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   stoppedBy?: any

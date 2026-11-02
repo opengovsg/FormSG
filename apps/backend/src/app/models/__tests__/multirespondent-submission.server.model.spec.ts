@@ -954,6 +954,7 @@ describe('Multirespondent Submission Model', () => {
           'version',
           'workflowStep',
           'submittedSteps',
+          'workflowEvents',
           'encryptedStepToken',
           'mrfVersion',
         )

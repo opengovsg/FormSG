@@ -150,7 +150,7 @@ describe('addAssigneesToPendingStep', () => {
 
     expect(result._unsafeUnwrapErr()).toBeInstanceOf(MrfWorkflowNotPendingError)
     const stored = await MultirespondentSubmission.findById(submission._id)
-    expect(stored?.workflowEvents).toBeUndefined()
+    expect(stored?.workflowEvents).toEqual([])
   })
 
   it('adds the same person only once when two adds race', async () => {
