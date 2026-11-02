@@ -100,13 +100,21 @@ export const maskOAuthCode = (code: unknown): unknown => {
   )
 }
 
+const maskStepTokenQueryParam = (url: string): string =>
+  typeof url === 'string'
+    ? url.replace(
+        /([?&]stepToken=)([^&#]*)/g,
+        (_, param: string, token: string) => param + maskOAuthCode(token),
+      )
+    : url
+
 export const createReqMeta = <R extends LooseRequest>(req: R): ReqMeta => {
   return {
     ip: getRequestIp(req),
     trace: getTrace(req), // trace using cloudflare cf-ray header, with x-request-id header as backup
     clientVersion: getClientVersion(req),
     url: req.baseUrl + req.path,
-    urlWithQueryParams: req.originalUrl,
+    urlWithQueryParams: maskStepTokenQueryParam(req.originalUrl),
     headers: maskRefererHeaders(req.headers),
   }
 }

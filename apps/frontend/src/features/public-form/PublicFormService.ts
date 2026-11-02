@@ -121,12 +121,15 @@ export const logoutPublicForm = async (
 export const getMultirespondentSubmissionById = async ({
   formId,
   submissionId,
+  stepToken,
 }: {
   formId: string
   submissionId: string
+  stepToken?: string
 }): Promise<PublicMultirespondentSubmissionDtoWithAttachments> => {
   return ApiService.get<PublicMultirespondentSubmissionDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/${submissionId}`,
+    stepToken ? { params: { stepToken } } : undefined,
   ).then(async ({ data }) => {
     const encryptedAttachments: PublicMultirespondentSubmissionDtoWithAttachments['encryptedAttachments'] =
       {}

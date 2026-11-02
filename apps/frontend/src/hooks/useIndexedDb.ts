@@ -106,10 +106,12 @@ export const _removeFromIndexedDBForTest = removeFromIndexedDB
 
 export const useIndexedDb = <T>({
   key,
+  legacyKey,
   initialValue,
   storeName,
 }: {
   key: string | null
+  legacyKey?: string | null
   /**
    * @note Warning: If the initial value is a object reference, it will cause re-renders.
    */
@@ -129,12 +131,18 @@ export const useIndexedDb = <T>({
 
     try {
       const value = await getFromIndexedDB({ key, storeName })
-      return value !== undefined ? value : initialValue
+      if (value !== undefined) return value
+      if (!legacyKey || legacyKey === key) return initialValue
+      const legacyValue = await getFromIndexedDB({ key: legacyKey, storeName })
+      if (legacyValue === undefined) return initialValue
+      await setInIndexedDB({ key, value: legacyValue, storeName })
+      await removeFromIndexedDB({ key: legacyKey, storeName })
+      return legacyValue
     } catch (error) {
       console.error('Error reading from IndexedDB:', error)
       return initialValue
     }
-  }, [initialValue, key, storeName])
+  }, [initialValue, key, legacyKey, storeName])
 
   const setValue = useCallback(
     async (value?: T) => {

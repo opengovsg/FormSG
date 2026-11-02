@@ -7,7 +7,11 @@ import {
   WorkflowType,
 } from 'formsg-shared/types'
 
-import { getDraftToSave, getRestoreDraftFormValues } from './saveDraft'
+import {
+  getDraftToSave,
+  getRestoreDraftFormValues,
+  getSaveDraftKey,
+} from './saveDraft'
 
 describe('saveDraft', () => {
   beforeEach(() => {
@@ -616,5 +620,42 @@ describe('saveDraft', () => {
         unchangedFieldIds: ['field1'],
       })
     })
+  })
+})
+
+describe('getSaveDraftKey', () => {
+  const base = {
+    formId: 'form-id',
+    formSubmissionId: 'submission-id',
+    isMrf: true,
+    currentMrfWorkflowStepNumber: 1,
+  }
+
+  it('keeps a separate draft for each step link', () => {
+    const first = getSaveDraftKey({ ...base, stepToken: 'token-before' })
+    const second = getSaveDraftKey({ ...base, stepToken: 'token-after' })
+
+    expect(first).not.toEqual(second)
+    expect(first).toMatch(
+      /^formsg-save-draft-form-id-submission-id-step1-link[0-9a-f]{16}$/,
+    )
+    expect(first).not.toContain('token-before')
+  })
+
+  it('keeps the existing key without a link token', () => {
+    expect(getSaveDraftKey(base)).toBe(
+      'formsg-save-draft-form-id-submission-id-step1',
+    )
+  })
+
+  it('ignores the token outside multirespondent forms', () => {
+    expect(
+      getSaveDraftKey({
+        ...base,
+        formSubmissionId: undefined,
+        isMrf: false,
+        stepToken: 'token',
+      }),
+    ).toBe('formsg-save-draft-form-id')
   })
 })
