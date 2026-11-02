@@ -1,6 +1,7 @@
 import { generateDefaultFieldV4 } from '__tests__/unit/backend/helpers/generate-form-data'
 import { BasicField, CorppassAttribute } from 'formsg-shared/types'
 
+import { uenConfig } from 'src/app/config/features/uen.config'
 import { ValidateFieldErrorV4 } from 'src/app/modules/submission/submission.errors'
 import { validateFieldV4 } from 'src/app/utils/field-validation'
 import { ParsedClearFormFieldResponseV4 } from 'src/types/api'
@@ -122,5 +123,42 @@ describe('Uen field validation V4', () => {
         'Attempted to submit response on a hidden field',
       ),
     )
+  })
+
+  describe('with hidden UEN entity types', () => {
+    afterEach(() => {
+      jest.restoreAllMocks()
+    })
+
+    it('should disallow a UEN with an unconfigured entity type', () => {
+      jest.replaceProperty(uenConfig, 'hiddenEntityTypes', [])
+      const formField = generateDefaultFieldV4(BasicField.Uen)
+      const response = makeUenResponseV4({ value: 'T08QQ0001G' })
+
+      const validateResult = validateFieldV4({
+        formId: 'formId',
+        formField,
+        response,
+        isVisible: true,
+      })
+
+      expect(validateResult.isErr()).toBe(true)
+    })
+
+    it('should allow a UEN with a configured hidden entity type', () => {
+      jest.replaceProperty(uenConfig, 'hiddenEntityTypes', ['QQ'])
+      const formField = generateDefaultFieldV4(BasicField.Uen)
+      const response = makeUenResponseV4({ value: 'T08QQ0001G' })
+
+      const validateResult = validateFieldV4({
+        formId: 'formId',
+        formField,
+        response,
+        isVisible: true,
+      })
+
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
+    })
   })
 })

@@ -87,6 +87,7 @@ import {
 } from '../../../../types'
 import { EditFormFieldParams, FormUpdateParams } from '../../../../types/api'
 import { aws as AwsConfig } from '../../../config/config'
+import { uenConfig } from '../../../config/features/uen.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getAgencyModel from '../../../models/agency.server.model'
 import getFormModel from '../../../models/form.server.model'
@@ -1451,7 +1452,7 @@ export const checkIsWhitelistSettingValid = (
     return !(
       isNricValid(entry) ||
       isMFinSeriesValid(entry) ||
-      isUenValid(entry)
+      isUenValid(entry, uenConfig.hiddenEntityTypes)
     )
   })
   // check for invalid entries

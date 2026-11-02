@@ -52,6 +52,7 @@ import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 
 import { aws } from 'src/app/config/config'
+import { uenConfig } from 'src/app/config/features/uen.config'
 import getAgencyModel from 'src/app/models/agency.server.model'
 import getFormModel, {
   getEmailFormModel,
@@ -3988,6 +3989,46 @@ describe('admin-form.service', () => {
           FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE(
             invalidSubmitterId,
           ),
+      })
+    })
+
+    describe('with hidden UEN entity types', () => {
+      const MOCK_HIDDEN_ENTITY_TYPE_UEN = 'T08QQ0001G'
+
+      afterEach(() => {
+        jest.restoreAllMocks()
+      })
+
+      it('should return invalid submitter id error message for a UEN with an unconfigured entity type', () => {
+        // Arrange
+        jest.replaceProperty(uenConfig, 'hiddenEntityTypes', [])
+
+        // Act
+        const result = AdminFormService.checkIsWhitelistSettingValid([
+          MOCK_HIDDEN_ENTITY_TYPE_UEN,
+        ])
+
+        // Assert
+        expect(result).toEqual({
+          isValid: false,
+          invalidReason:
+            FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE(
+              MOCK_HIDDEN_ENTITY_TYPE_UEN,
+            ),
+        })
+      })
+
+      it('should return isValid as true for a UEN with a configured hidden entity type', () => {
+        // Arrange
+        jest.replaceProperty(uenConfig, 'hiddenEntityTypes', ['QQ'])
+
+        // Act
+        const result = AdminFormService.checkIsWhitelistSettingValid([
+          MOCK_HIDDEN_ENTITY_TYPE_UEN,
+        ])
+
+        // Assert
+        expect(result).toEqual({ isValid: true })
       })
     })
   })
