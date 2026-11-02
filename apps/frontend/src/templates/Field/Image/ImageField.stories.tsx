@@ -63,12 +63,16 @@ Loading.args = {
   schema: merge({}, baseSchema, { url: '/mock/api' }),
 }
 Loading.parameters = {
-  msw: [
-    http.get('/mock/api', async () => {
-      await MswDelay('infinite')
-      return new HttpResponse()
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        http.get('/mock/api', async () => {
+          await MswDelay('infinite')
+          return new HttpResponse()
+        }),
+      ],
+    },
+  },
 }
 
 export const EmptySrc = Template.bind({})

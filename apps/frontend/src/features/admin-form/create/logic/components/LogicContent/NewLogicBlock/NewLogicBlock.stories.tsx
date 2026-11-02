@@ -40,7 +40,11 @@ export default {
     }),
   ],
   parameters: {
-    msw: createFormBuilderMocks({ form_fields: MOCK_FORM_FIELDS }, 0),
+    msw: {
+      handlers: {
+        default: createFormBuilderMocks({ form_fields: MOCK_FORM_FIELDS }, 0),
+      },
+    },
   },
 } as Meta
 

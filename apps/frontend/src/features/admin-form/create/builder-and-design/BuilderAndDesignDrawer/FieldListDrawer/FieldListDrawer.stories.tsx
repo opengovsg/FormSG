@@ -16,7 +16,11 @@ export default {
   title:
     'Features/AdminForm/create/builder-and-design/BuilderAndDesignDrawer/FieldListDrawer',
   parameters: {
-    msw: [getAdminFormView({ mode: FormResponseMode.Encrypt })],
+    msw: {
+      handlers: {
+        default: [getAdminFormView({ mode: FormResponseMode.Encrypt })],
+      },
+    },
   },
   decorators: [
     StoryRouter({ initialEntries: ['/12345'], path: '/:formId' }),
@@ -43,18 +47,18 @@ const emailModeHandlers = [getAdminFormView({ mode: FormResponseMode.Email })]
 
 export const EncryptMode = {
   parameters: {
-    msw: encryptModeHandlers,
+    msw: { handlers: { default: encryptModeHandlers } },
   },
 }
 
 export const MrfMode = {
   parameters: {
-    msw: mrfModeHandlers,
+    msw: { handlers: { default: mrfModeHandlers } },
   },
 }
 
 export const EmailMode = {
   parameters: {
-    msw: emailModeHandlers,
+    msw: { handlers: { default: emailModeHandlers } },
   },
 }

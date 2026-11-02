@@ -20,7 +20,7 @@ export default {
     layout: 'fullscreen',
     // Pages fill the viewport; fit-to-content would crop them.
     argos: { fitToContent: false },
-    msw: [getLandingStats()],
+    msw: { handlers: { default: [getLandingStats()] } },
   },
 } as Meta
 
@@ -30,5 +30,5 @@ Default.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 
 export const Loading = Template.bind({})
 Loading.parameters = {
-  msw: [getLandingStats({ delay: 'infinite' })],
+  msw: { handlers: { default: [getLandingStats({ delay: 'infinite' })] } },
 }

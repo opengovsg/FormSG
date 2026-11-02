@@ -50,161 +50,197 @@ const Template: StoryFn = () => <FormStartPage />
 
 export const NoEstimatedTime = Template.bind({})
 NoEstimatedTime.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook no estimated time',
-          startPage: {
-            estTimeTaken: 0,
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title: 'storybook no estimated time',
+              startPage: {
+                estTimeTaken: 0,
+              },
+            },
           },
-        },
-      },
-      delay: 0,
-    }),
-  ],
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }
 
 /** 2359 SGT on 31 Dec 2026, stored as UTC. Should read as 11:59 PM (SGT). */
 export const WithDeadline = Template.bind({})
 WithDeadline.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook with deadline',
-          closeAt: '2026-12-31T15:59:00.000Z' as DateString,
-        },
-      },
-      delay: 0,
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title: 'storybook with deadline',
+              closeAt: '2026-12-31T15:59:00.000Z' as DateString,
+            },
+          },
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }
 
 export const WithDeadlineNoEstimatedTime = Template.bind({})
 WithDeadlineNoEstimatedTime.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook with deadline, no estimated time',
-          closeAt: '2026-12-31T15:59:00.000Z' as DateString,
-          startPage: {
-            estTimeTaken: 0,
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title: 'storybook with deadline, no estimated time',
+              closeAt: '2026-12-31T15:59:00.000Z' as DateString,
+              startPage: {
+                estTimeTaken: 0,
+              },
+            },
           },
-        },
-      },
-      delay: 0,
-    }),
-  ],
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }
 
 export const OverflowTitle = Template.bind({})
 OverflowTitle.parameters = {
   argos: { modes: viewportModes('mobile') },
-  msw: [
-    ...envHandlers,
-    getCustomLogoResponse(),
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title:
-            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-          startPage: {
-            logo: {
-              state: FormLogoState.Custom,
-              fileId: 'mockFormLogo',
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getCustomLogoResponse(),
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title:
+                'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+              startPage: {
+                logo: {
+                  state: FormLogoState.Custom,
+                  fileId: 'mockFormLogo',
+                },
+              },
             },
           },
-        },
-      },
-      delay: 0,
-    }),
-  ],
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }
 
 export const ColorThemeBrown = Template.bind({})
 ColorThemeBrown.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook test brown theme',
-          startPage: {
-            colorTheme: FormColorTheme.Brown,
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title: 'storybook test brown theme',
+              startPage: {
+                colorTheme: FormColorTheme.Brown,
+              },
+            },
           },
-        },
-      },
-      delay: 0,
-    }),
-  ],
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }
 export const ColorThemeGreen = Template.bind({})
 ColorThemeGreen.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook test green theme',
-          startPage: {
-            colorTheme: FormColorTheme.Green,
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title: 'storybook test green theme',
+              startPage: {
+                colorTheme: FormColorTheme.Green,
+              },
+            },
           },
-        },
-      },
-      delay: 0,
-    }),
-  ],
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }
 
 export const ColorThemeGrey = Template.bind({})
 ColorThemeGrey.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook test grey theme',
-          startPage: {
-            colorTheme: FormColorTheme.Grey,
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title: 'storybook test grey theme',
+              startPage: {
+                colorTheme: FormColorTheme.Grey,
+              },
+            },
           },
-        },
-      },
-      delay: 0,
-    }),
-  ],
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }
 
 export const ColorThemeOrange = Template.bind({})
 ColorThemeOrange.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook test orange theme',
-          startPage: {
-            colorTheme: FormColorTheme.Orange,
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title: 'storybook test orange theme',
+              startPage: {
+                colorTheme: FormColorTheme.Orange,
+              },
+            },
           },
-        },
-      },
-      delay: 0,
-    }),
-  ],
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }
 
 export const ColorThemeRed = Template.bind({})
 ColorThemeRed.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook test red theme',
-          startPage: {
-            colorTheme: FormColorTheme.Red,
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title: 'storybook test red theme',
+              startPage: {
+                colorTheme: FormColorTheme.Red,
+              },
+            },
           },
-        },
-      },
-      delay: 0,
-    }),
-  ],
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }
 
 const MiniHeaderTemplate: StoryFn<MiniHeaderProps> = (args) => (
@@ -220,7 +256,7 @@ MiniHeader.args = {
   isOpen: true,
 }
 MiniHeader.parameters = {
-  msw: [getPublicFormResponse()],
+  msw: { handlers: { default: [getPublicFormResponse()] } },
 }
 
 export const OverflowMiniHeader = MiniHeaderTemplate.bind({})
@@ -248,15 +284,19 @@ MiniHeaderMobileWithoutSections.args = {
   activeSectionId: undefined,
 }
 MiniHeaderMobileWithoutSections.parameters = {
-  msw: [
-    getPublicFormWithoutSectionsResponse({
-      overrides: {
-        form: {
-          title: 'storybook test title',
-        },
-      },
-      delay: 0,
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormWithoutSectionsResponse({
+          overrides: {
+            form: {
+              title: 'storybook test title',
+            },
+          },
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }
 MiniHeaderMobileWithoutSections.globals = getMobileViewGlobals()

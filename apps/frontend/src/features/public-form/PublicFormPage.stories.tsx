@@ -131,7 +131,7 @@ export default {
     layout: 'fullscreen',
     // Pages fill the viewport; fit-to-content would crop them.
     argos: { fitToContent: false },
-    msw: DEFAULT_MSW_HANDLERS,
+    msw: { handlers: { default: DEFAULT_MSW_HANDLERS } },
   },
 } as Meta
 
@@ -142,172 +142,226 @@ Default.parameters = { argos: { modes: viewportModes('mobile') } }
 /** 2359 SGT on 31 Dec 2026, stored as UTC. Header should read 11:59 PM (SGT). */
 export const WithScheduledClosure = Template.bind({})
 WithScheduledClosure.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          closeAt: '2026-12-31T15:59:00.000Z' as DateString,
-        },
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              closeAt: '2026-12-31T15:59:00.000Z' as DateString,
+            },
+          },
+        }),
+      ],
+    },
+  },
 }
 
 export const WithShortInstructions = Template.bind({})
 WithShortInstructions.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          startPage: { paragraph: 'Fill in this mock form in this story.' },
-        },
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              startPage: { paragraph: 'Fill in this mock form in this story.' },
+            },
+          },
+        }),
+      ],
+    },
+  },
 }
 
 export const WithLongInstructions = Template.bind({})
 WithLongInstructions.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          startPage: {
-            paragraph: dedent`
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              startPage: {
+                paragraph: dedent`
             Fill in this mock form in this story. 
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ac tincidunt orci. Go watch this funny video of a cat https://www.youtube.com/watch?v=dQw4w9WgXcQ. Vivamus id nisl tellus. Aliquam ullamcorper nec diam id ornare. Praesent mattis ligula egestas magna sagittis, non aliquet mauris sollicitudin. In maximus euismod nunc eget pellentesque. Maecenas sollicitudin lobortis consectetur. Suspendisse potenti. Nam a est risus.
 
             Aliquam egestas diam in velit pellentesque lacinia. Praesent nunc ex, fermentum sed nunc nec, laoreet dignissim nisi. Vivamus et lorem non velit facilisis luctus. Sed et luctus magna, sed tincidunt odio. Fusce quis pretium eros. Mauris in est ornare, aliquam odio quis, porttitor lacus. Aliquam dignissim laoreet libero, sed pharetra enim. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
           
             Donec scelerisque eros mattis tempor commodo. Vestibulum massa ante, fermentum nec sollicitudin eu, tincidunt sed lectus. Etiam maximus luctus dapibus. Morbi et mollis nibh. Praesent ante orci, pellentesque vel molestie ut, lobortis nec dui. Aliquam eleifend luctus pharetra. Nullam lacinia eget erat ac commodo. Curabitur suscipit felis a venenatis consectetur. Cras dictum, metus a egestas aliquam, ipsum neque fermentum orci, vitae fermentum neque mi non arcu.`,
+              },
+            },
           },
-        },
-      },
-    }),
-  ],
+        }),
+      ],
+    },
+  },
 }
 
 export const WithCaptcha = Template.bind({})
 WithCaptcha.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          hasCaptcha: true,
-        },
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              hasCaptcha: true,
+            },
+          },
+        }),
+      ],
+    },
+  },
 }
 
 export const WithPrefilledNormalFields = Template.bind({})
 WithPrefilledNormalFields.parameters = {
   argos: { modes: viewportModes('mobile') },
-  msw: [
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Encrypt,
-          form_fields: [PREFILLABLE_NORMAL_SHORTTEXT_FIELD],
-        },
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              responseMode: FormResponseMode.Encrypt,
+              form_fields: [PREFILLABLE_NORMAL_SHORTTEXT_FIELD],
+            },
+          },
+        }),
+      ],
+    },
+  },
 }
 
 export const WithPrefilledLockedFields = Template.bind({})
 WithPrefilledLockedFields.parameters = {
   argos: { modes: viewportModes('mobile') },
-  msw: [
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Encrypt,
-          form_fields: [PREFILLABLE_LOCKED_SHORTTEXT_FIELD],
-        },
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              responseMode: FormResponseMode.Encrypt,
+              form_fields: [PREFILLABLE_LOCKED_SHORTTEXT_FIELD],
+            },
+          },
+        }),
+      ],
+    },
+  },
 }
 
 export const WithPrefilledLockedAndNormalFields = Template.bind({})
 WithPrefilledLockedAndNormalFields.parameters = {
   argos: { modes: viewportModes('mobile') },
-  msw: [
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Encrypt,
-          form_fields: [
-            PREFILLABLE_LOCKED_SHORTTEXT_FIELD,
-            PREFILLABLE_NORMAL_SHORTTEXT_FIELD,
-          ],
-        },
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              responseMode: FormResponseMode.Encrypt,
+              form_fields: [
+                PREFILLABLE_LOCKED_SHORTTEXT_FIELD,
+                PREFILLABLE_NORMAL_SHORTTEXT_FIELD,
+              ],
+            },
+          },
+        }),
+      ],
+    },
+  },
 }
 
 export const ColorThemeGreen = Template.bind({})
 ColorThemeGreen.parameters = {
-  msw: generateMswHandlersForColorTheme(FormColorTheme.Green),
+  msw: {
+    handlers: {
+      default: generateMswHandlersForColorTheme(FormColorTheme.Green),
+    },
+  },
 }
 
 export const ColorThemeGrey = Template.bind({})
 ColorThemeGrey.parameters = {
-  msw: generateMswHandlersForColorTheme(FormColorTheme.Grey),
+  msw: {
+    handlers: {
+      default: generateMswHandlersForColorTheme(FormColorTheme.Grey),
+    },
+  },
 }
 
 export const ColorThemeBrown = Template.bind({})
 ColorThemeBrown.parameters = {
-  msw: generateMswHandlersForColorTheme(FormColorTheme.Brown),
+  msw: {
+    handlers: {
+      default: generateMswHandlersForColorTheme(FormColorTheme.Brown),
+    },
+  },
 }
 
 export const ColorThemeRed = Template.bind({})
 ColorThemeRed.parameters = {
-  msw: generateMswHandlersForColorTheme(FormColorTheme.Red),
+  msw: {
+    handlers: { default: generateMswHandlersForColorTheme(FormColorTheme.Red) },
+  },
 }
 
 export const ColorThemeOrange = Template.bind({})
 ColorThemeOrange.parameters = {
-  msw: generateMswHandlersForColorTheme(FormColorTheme.Orange),
+  msw: {
+    handlers: {
+      default: generateMswHandlersForColorTheme(FormColorTheme.Orange),
+    },
+  },
 }
 
 export const Loading = Template.bind({})
 Loading.parameters = {
-  msw: [...envHandlers, getPublicFormResponse({ delay: 'infinite' })],
+  msw: {
+    handlers: {
+      default: [...envHandlers, getPublicFormResponse({ delay: 'infinite' })],
+    },
+  },
 }
 
 export const SingpassUnauthorized = Template.bind({})
 SingpassUnauthorized.storyName = 'Singpass/Unauthorized'
 SingpassUnauthorized.parameters = {
   argos: { modes: viewportModes('mobile') },
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'Singpass login form',
-          authType: FormAuthType.SP,
-          startPage: {
-            colorTheme: FormColorTheme.Grey,
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              title: 'Singpass login form',
+              authType: FormAuthType.SP,
+              startPage: {
+                colorTheme: FormColorTheme.Grey,
+              },
+            },
           },
-        },
-      },
-    }),
-  ],
+        }),
+      ],
+    },
+  },
 }
 
 export const SingpassUnauthorizedSubmitterIdCollectionEnabled = Template.bind(
@@ -316,59 +370,71 @@ export const SingpassUnauthorizedSubmitterIdCollectionEnabled = Template.bind(
 SingpassUnauthorizedSubmitterIdCollectionEnabled.storyName =
   'Singpass/Unauthorized/Submitter ID Collection Enabled'
 SingpassUnauthorizedSubmitterIdCollectionEnabled.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'Singpass login form',
-          authType: FormAuthType.SP,
-          startPage: {
-            colorTheme: FormColorTheme.Grey,
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              title: 'Singpass login form',
+              authType: FormAuthType.SP,
+              startPage: {
+                colorTheme: FormColorTheme.Grey,
+              },
+              isSubmitterIdCollectionEnabled: true,
+            },
           },
-          isSubmitterIdCollectionEnabled: true,
-        },
-      },
-    }),
-  ],
+        }),
+      ],
+    },
+  },
 }
 
 export const SingpassAuthorized = Template.bind({})
 SingpassAuthorized.storyName = 'Singpass/Authorized'
 SingpassAuthorized.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'Singpass login form',
-          authType: FormAuthType.SP,
-        },
-        spcpSession: {
-          userName: 'S1234567A',
-        },
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              title: 'Singpass login form',
+              authType: FormAuthType.SP,
+            },
+            spcpSession: {
+              userName: 'S1234567A',
+            },
+          },
+        }),
+      ],
+    },
+  },
 }
 
 export const CorppassUnauthorized = Template.bind({})
 CorppassUnauthorized.storyName = 'Corppass/Unauthorized'
 CorppassUnauthorized.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'Corppass login form',
-          authType: FormAuthType.CP,
-        },
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              title: 'Corppass login form',
+              authType: FormAuthType.CP,
+            },
+          },
+        }),
+      ],
+    },
+  },
 }
 
 export const CorppassUnauthorizedSubmitterIdCollectionEnabled = Template.bind(
@@ -377,56 +443,68 @@ export const CorppassUnauthorizedSubmitterIdCollectionEnabled = Template.bind(
 CorppassUnauthorizedSubmitterIdCollectionEnabled.storyName =
   'Corppass/Unauthorized/Submitter ID Collection Enabled'
 CorppassUnauthorizedSubmitterIdCollectionEnabled.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'Corppass login form',
-          authType: FormAuthType.CP,
-          isSubmitterIdCollectionEnabled: true,
-        },
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              title: 'Corppass login form',
+              authType: FormAuthType.CP,
+              isSubmitterIdCollectionEnabled: true,
+            },
+          },
+        }),
+      ],
+    },
+  },
 }
 
 export const CorppassAuthorized = Template.bind({})
 CorppassAuthorized.storyName = 'Corppass/Authorized'
 CorppassAuthorized.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'Corppass login form',
-          authType: FormAuthType.CP,
-        },
-        spcpSession: {
-          userName: '200000000A',
-        },
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              title: 'Corppass login form',
+              authType: FormAuthType.CP,
+            },
+            spcpSession: {
+              userName: '200000000A',
+            },
+          },
+        }),
+      ],
+    },
+  },
 }
 
 export const SingpassMyInfoUnauthorized = Template.bind({})
 SingpassMyInfoUnauthorized.storyName = 'SP_MyInfo/Unauthorized'
 SingpassMyInfoUnauthorized.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'SP_MyInfo login form',
-          authType: FormAuthType.MyInfo,
-        },
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              title: 'SP_MyInfo login form',
+              authType: FormAuthType.MyInfo,
+            },
+          },
+        }),
+      ],
+    },
+  },
 }
 
 export const SingpassMyInfoUnauthorizedSubmitterIdCollectionEnabled =
@@ -434,186 +512,218 @@ export const SingpassMyInfoUnauthorizedSubmitterIdCollectionEnabled =
 SingpassMyInfoUnauthorizedSubmitterIdCollectionEnabled.storyName =
   'SP_MyInfo/Unauthorized/Submitter ID Collection Enabled'
 SingpassMyInfoUnauthorizedSubmitterIdCollectionEnabled.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'SP_MyInfo login form',
-          authType: FormAuthType.MyInfo,
-          isSubmitterIdCollectionEnabled: true,
-        },
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              title: 'SP_MyInfo login form',
+              authType: FormAuthType.MyInfo,
+              isSubmitterIdCollectionEnabled: true,
+            },
+          },
+        }),
+      ],
+    },
+  },
 }
 
 export const SingpassSingleSubmissionFailureMessage = Template.bind({})
 SingpassSingleSubmissionFailureMessage.storyName =
   'Singpass/Single Submission Per NRIC/FIN/UEN Failure Sign In Screen Message'
 SingpassSingleSubmissionFailureMessage.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'SP login form',
-          authType: FormAuthType.SP,
-          isSingleSubmission: true,
-        },
-        errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              title: 'SP login form',
+              authType: FormAuthType.SP,
+              isSingleSubmission: true,
+            },
+            errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
+          },
+        }),
+      ],
+    },
+  },
 }
 
 export const CorppassSingleSubmissionFailureMessage = Template.bind({})
 CorppassSingleSubmissionFailureMessage.storyName =
   'Corppass/Single Submission Per NRIC/FIN/UEN Failure Sign In Screen Message'
 CorppassSingleSubmissionFailureMessage.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'CP login form',
-          authType: FormAuthType.CP,
-          isSingleSubmission: true,
-        },
-        errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              title: 'CP login form',
+              authType: FormAuthType.CP,
+              isSingleSubmission: true,
+            },
+            errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
+          },
+        }),
+      ],
+    },
+  },
 }
 
 export const CpSingleSubmissionFailureModalAfterSubmit = Template.bind({})
 CpSingleSubmissionFailureModalAfterSubmit.storyName =
   'CP/Single Submission Per NRIC/FIN/UEN Failure Modal After Submit'
 CpSingleSubmissionFailureModalAfterSubmit.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'CP login form',
-          authType: FormAuthType.CP,
-          isSingleSubmission: true,
-        },
-        spcpSession: {
-          userName: 'uen-123456789A',
-        },
-        errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              title: 'CP login form',
+              authType: FormAuthType.CP,
+              isSingleSubmission: true,
+            },
+            spcpSession: {
+              userName: 'uen-123456789A',
+            },
+            errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
+          },
+        }),
+      ],
+    },
+  },
 }
 
 export const MyInfoRespondentNotWhitelistedFailureMessage = Template.bind({})
 MyInfoRespondentNotWhitelistedFailureMessage.storyName =
   'MyInfo/Respondent Not Whitelisted Failure Sign In Screen Message'
 MyInfoRespondentNotWhitelistedFailureMessage.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'MyInfo login form',
-          authType: FormAuthType.MyInfo,
-          whitelistedSubmitterIds: {
-            isWhitelistEnabled: true,
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              title: 'MyInfo login form',
+              authType: FormAuthType.MyInfo,
+              whitelistedSubmitterIds: {
+                isWhitelistEnabled: true,
+              },
+            },
+            errorCodes: [ErrorCode.respondentNotWhitelisted],
           },
-        },
-        errorCodes: [ErrorCode.respondentNotWhitelisted],
-      },
-    }),
-  ],
+        }),
+      ],
+    },
+  },
 }
 
 export const VerifiedFieldsExpiry = Template.bind({})
 VerifiedFieldsExpiry.parameters = {
-  msw: [
-    postVfnTransactionResponse({
-      expiryMsOverride: 3 * 1000,
-    }),
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          form_fields: [
-            {
-              allowIntlNumbers: true,
-              isVerifiable: true,
-              title: 'Verifiable Mobile Number',
-              description:
-                'Verify with random number and OTP. The field should reset after 3 seconds.',
-              required: true,
-              disabled: false,
-              fieldType: BasicField.Mobile,
-              _id: 'some-random-id',
-              globalId: 'not-used',
+  msw: {
+    handlers: {
+      default: [
+        postVfnTransactionResponse({
+          expiryMsOverride: 3 * 1000,
+        }),
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              form_fields: [
+                {
+                  allowIntlNumbers: true,
+                  isVerifiable: true,
+                  title: 'Verifiable Mobile Number',
+                  description:
+                    'Verify with random number and OTP. The field should reset after 3 seconds.',
+                  required: true,
+                  disabled: false,
+                  fieldType: BasicField.Mobile,
+                  _id: 'some-random-id',
+                  globalId: 'not-used',
+                },
+              ],
             },
-          ],
-        },
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+          },
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 
 export const WithShowFieldLogic = Template.bind({})
 WithShowFieldLogic.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          form_fields: [
-            {
-              title: '',
-              description:
-                'Select "Yes" on the field below to show more fields',
-              required: true,
-              disabled: false,
-              fieldType: BasicField.Statement,
-              _id: 'some-random-id',
-              globalId: 'not-used',
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              form_fields: [
+                {
+                  title: '',
+                  description:
+                    'Select "Yes" on the field below to show more fields',
+                  required: true,
+                  disabled: false,
+                  fieldType: BasicField.Statement,
+                  _id: 'some-random-id',
+                  globalId: 'not-used',
+                },
+              ],
+              form_logics: [SHOW_FIELDS_ON_YES_LOGIC],
             },
-          ],
-          form_logics: [SHOW_FIELDS_ON_YES_LOGIC],
-        },
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+          },
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 
 export const WithPreventSubmissionLogic = Template.bind({})
 WithPreventSubmissionLogic.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          form_fields: [
-            {
-              title: '',
-              description:
-                'Select "Yes" on the field below to prevent submission',
-              required: true,
-              disabled: false,
-              fieldType: BasicField.Statement,
-              _id: 'some-random-id',
-              globalId: 'not-used',
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              form_fields: [
+                {
+                  title: '',
+                  description:
+                    'Select "Yes" on the field below to prevent submission',
+                  required: true,
+                  disabled: false,
+                  fieldType: BasicField.Statement,
+                  _id: 'some-random-id',
+                  globalId: 'not-used',
+                },
+              ],
+              form_logics: [PREVENT_SUBMISSION_LOGIC],
             },
-          ],
-          form_logics: [PREVENT_SUBMISSION_LOGIC],
-        },
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+          },
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 WithPreventSubmissionLogic.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement)
@@ -637,51 +747,63 @@ WithPreventSubmissionLogic.play = async ({ canvasElement }) => {
 export const FormNotFound = Template.bind({})
 FormNotFound.parameters = {
   argos: { modes: viewportModes('tablet', 'mobile') },
-  msw: [getPublicFormErrorResponse()],
+  msw: { handlers: { default: [getPublicFormErrorResponse()] } },
 }
 
 export const WithMyInfo = Template.bind({})
 WithMyInfo.storyName = 'With MyInfo'
 WithMyInfo.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Encrypt,
-          form_fields: MOCK_PREFILLED_MYINFO_FIELDS,
-        },
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              responseMode: FormResponseMode.Encrypt,
+              form_fields: MOCK_PREFILLED_MYINFO_FIELDS,
+            },
+          },
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 
 export const WithPayment = Template.bind({})
 WithPayment.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Encrypt,
-          payments_field: {
-            enabled: true,
-            amount_cents: 5000,
-            description: 'Mock event registration',
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              responseMode: FormResponseMode.Encrypt,
+              payments_field: {
+                enabled: true,
+                amount_cents: 5000,
+                description: 'Mock event registration',
+              },
+            },
           },
-        },
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 
 export const ThankYouPage = Template.bind({})
 ThankYouPage.parameters = {
-  msw: [
-    getPublicFormWithoutSectionsResponse(),
-    getPublicFormSubmissionSuccessResponse(),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormWithoutSectionsResponse(),
+        getPublicFormSubmissionSuccessResponse(),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 ThankYouPage.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement)
@@ -716,33 +838,41 @@ ThankYouPage.play = async ({ canvasElement }) => {
 
 export const WithRespondentCopy = Template.bind({})
 WithRespondentCopy.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Encrypt,
-          hasRespondentCopy: true,
-        },
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              responseMode: FormResponseMode.Encrypt,
+              hasRespondentCopy: true,
+            },
+          },
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 
 export const WithSaveDraftEnabled = Template.bind({})
 WithSaveDraftEnabled.parameters = {
   argos: { modes: viewportModes('mobile') },
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Encrypt,
-          isSaveDraftEnabled: true,
-        },
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              responseMode: FormResponseMode.Encrypt,
+              isSaveDraftEnabled: true,
+            },
+          },
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 
 const STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY =
@@ -753,17 +883,21 @@ export const WithSaveDraftEnabledAndClickFormHeaderSaveDraftButton =
 WithSaveDraftEnabledAndClickFormHeaderSaveDraftButton.parameters = {
   argos: { modes: viewportModes('mobile') },
   ...WithSaveDraftEnabled.parameters,
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Encrypt,
-          isSaveDraftEnabled: true,
-        },
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              responseMode: FormResponseMode.Encrypt,
+              isSaveDraftEnabled: true,
+            },
+          },
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 WithSaveDraftEnabledAndClickFormHeaderSaveDraftButton.play = async ({
   step,
@@ -866,21 +1000,25 @@ WithSaveDraftEnabledPersistsPrefilledFields.parameters = {
       `/61540ece3d4a6e50ac0cc6ff?${PREFILLABLE_NORMAL_SHORTTEXT_FIELD._id}=PrefilledValue&${PREFILLABLE_EMPTY_SHORTTEXT_FIELD._id}=`,
     ],
   },
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Encrypt,
-          isSaveDraftEnabled: true,
-          form_fields: [
-            PREFILLABLE_NORMAL_SHORTTEXT_FIELD,
-            PREFILLABLE_EMPTY_SHORTTEXT_FIELD,
-          ],
-        },
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              responseMode: FormResponseMode.Encrypt,
+              isSaveDraftEnabled: true,
+              form_fields: [
+                PREFILLABLE_NORMAL_SHORTTEXT_FIELD,
+                PREFILLABLE_EMPTY_SHORTTEXT_FIELD,
+              ],
+            },
+          },
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 WithSaveDraftEnabledPersistsPrefilledFields.play = async ({ step }) => {
   const screen = within(document.body)
@@ -954,17 +1092,21 @@ WithSaveDraftEnabledPersistsPrefilledFields.play = async ({ step }) => {
 export const WithSaveDraftEnabledAndClickSaveDraftButton = Template.bind({})
 WithSaveDraftEnabledAndClickSaveDraftButton.parameters = {
   ...WithSaveDraftEnabled.parameters,
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Encrypt,
-          isSaveDraftEnabled: true,
-        },
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              responseMode: FormResponseMode.Encrypt,
+              isSaveDraftEnabled: true,
+            },
+          },
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
   canvasElement,
@@ -1071,18 +1213,22 @@ WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
 export const WithSaveDraftExcludingSavingMyInfoFields = Template.bind({})
 
 WithSaveDraftExcludingSavingMyInfoFields.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Encrypt,
-          form_fields: MOCK_PREFILLED_MYINFO_FIELDS,
-          isSaveDraftEnabled: true,
-        },
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              responseMode: FormResponseMode.Encrypt,
+              form_fields: MOCK_PREFILLED_MYINFO_FIELDS,
+              isSaveDraftEnabled: true,
+            },
+          },
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 
 WithSaveDraftExcludingSavingMyInfoFields.play = async ({
@@ -1245,17 +1391,21 @@ WithSaveDraftRestored.parameters = {
       'This story asserts that the saved draft is restored when the page is loaded.' +
       'Note that the attachment field is not stored and will not be restored.',
   },
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Encrypt,
-          isSaveDraftEnabled: true,
-        },
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              responseMode: FormResponseMode.Encrypt,
+              isSaveDraftEnabled: true,
+            },
+          },
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 WithSaveDraftRestored.decorators = [
   (Story) => {
@@ -1295,17 +1445,21 @@ WithSaveDraftRestoredYesNoFieldSchemaChanged.parameters = {
     storyDescription:
       'This story asserts that the saved draft does not restore fields where the schema has changed. In particular, the Yes no field definition has changed and hence is not restored.',
   },
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Encrypt,
-          isSaveDraftEnabled: true,
-        },
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              responseMode: FormResponseMode.Encrypt,
+              isSaveDraftEnabled: true,
+            },
+          },
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 WithSaveDraftRestoredYesNoFieldSchemaChanged.decorators = [
   (Story) => {
@@ -1355,18 +1509,22 @@ WithSaveDraftRestoredYesNoFieldSchemaChanged.play = async ({ step }) => {
 
 export const WithPrefilledNormalFieldsWithSaveDraftRestored = Template.bind({})
 WithPrefilledNormalFieldsWithSaveDraftRestored.parameters = {
-  msw: [
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          isSaveDraftEnabled: true,
-          responseMode: FormResponseMode.Encrypt,
-          form_fields: [PREFILLABLE_NORMAL_SHORTTEXT_FIELD],
-        },
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              isSaveDraftEnabled: true,
+              responseMode: FormResponseMode.Encrypt,
+              form_fields: [PREFILLABLE_NORMAL_SHORTTEXT_FIELD],
+            },
+          },
+        }),
+      ],
+    },
+  },
 }
 WithPrefilledNormalFieldsWithSaveDraftRestored.decorators = [
   (Story) => {
@@ -1427,17 +1585,21 @@ WithPrefilledNormalFieldsWithSaveDraftRestored.decorators = [
 
 export const WithStorageModeTableFieldAdditionalRows = Template.bind({})
 WithStorageModeTableFieldAdditionalRows.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Encrypt,
-          form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
-        },
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              responseMode: FormResponseMode.Encrypt,
+              form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
+            },
+          },
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 
 // Assert that the table field additional rows limits and add another row buttons are working as expected
@@ -1547,24 +1709,28 @@ WithStorageModeTableFieldAdditionalRows.play = async ({
 export const WithMultiRespondentFormStep1TableFieldAdditionalRows =
   Template.bind({})
 WithMultiRespondentFormStep1TableFieldAdditionalRows.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Multirespondent,
-          workflow: [
-            {
-              _id: 'step-0',
-              edit: ['table-field-for-test-id'],
-              workflow_type: WorkflowType.Static,
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              responseMode: FormResponseMode.Multirespondent,
+              workflow: [
+                {
+                  _id: 'step-0',
+                  edit: ['table-field-for-test-id'],
+                  workflow_type: WorkflowType.Static,
+                },
+              ],
+              form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
             },
-          ],
-          form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
-        },
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+          },
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 
 // Assert that the table field additional rows limits and add another row buttons are working as expected

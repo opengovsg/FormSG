@@ -94,7 +94,7 @@ export default {
     // Pages fill the viewport; fit-to-content would crop them.
     argos: { fitToContent: false },
     mockdate: new Date('2021-12-01T06:22:27.219Z'),
-    msw: BASE_MSW_HANDLERS,
+    msw: { handlers: { default: BASE_MSW_HANDLERS } },
     // ViewedRolloutDecorator marks the announcement as seen for this user, so
     // it only shows in the story about it.
     userId: MOCK_USER._id,
@@ -132,52 +132,64 @@ LoadingDesktop.parameters = {
     },
   },
   argos: { modes: viewportModes('mobile') },
-  msw: [
-    http.get<never, never, AdminDashboardFormMetaDto[]>(
-      '/api/v3/admin/forms',
-      async () => {
-        await MswDelay('infinite')
-        return HttpResponse.json([])
-      },
-    ),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        http.get<never, never, AdminDashboardFormMetaDto[]>(
+          '/api/v3/admin/forms',
+          async () => {
+            await MswDelay('infinite')
+            return HttpResponse.json([])
+          },
+        ),
+      ],
+    },
+  },
 }
 
 export const Empty = Template.bind({})
 Empty.parameters = {
   argos: { modes: viewportModes('mobile') },
-  msw: [
-    ...envHandlers,
-    http.get<never, never, AdminDashboardFormMetaDto[]>(
-      '/api/v3/admin/forms',
-      () => {
-        return HttpResponse.json([])
-      },
-    ),
-    getWorkspaces(),
-    getUser({
-      delay: 0,
-      mockUser: {
-        ...MOCK_USER,
-        email: 'meh@example.com',
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        http.get<never, never, AdminDashboardFormMetaDto[]>(
+          '/api/v3/admin/forms',
+          () => {
+            return HttpResponse.json([])
+          },
+        ),
+        getWorkspaces(),
+        getUser({
+          delay: 0,
+          mockUser: {
+            ...MOCK_USER,
+            email: 'meh@example.com',
+          },
+        }),
+      ],
+    },
+  },
 }
 Empty.play = playLoaded
 
 export const EmptyWithAnnouncementModal = Template.bind({})
 EmptyWithAnnouncementModal.parameters = {
   argos: { modes: viewportModes('mobile') },
-  msw: [
-    http.get<never, never, AdminDashboardFormMetaDto[]>(
-      '/api/v3/admin/forms',
-      () => {
-        return HttpResponse.json([])
-      },
-    ),
-    ...BASE_MSW_HANDLERS,
-  ],
+  msw: {
+    handlers: {
+      default: [
+        http.get<never, never, AdminDashboardFormMetaDto[]>(
+          '/api/v3/admin/forms',
+          () => {
+            return HttpResponse.json([])
+          },
+        ),
+        ...BASE_MSW_HANDLERS,
+      ],
+    },
+  },
   // Any other user: the mock user has not seen the announcement.
   userId: 'another_user',
 }
@@ -191,17 +203,21 @@ EmptyWithAnnouncementModal.play = async ({ canvasElement }) => {
 export const AllOpenDesktop = Template.bind({})
 AllOpenDesktop.parameters = {
   argos: { modes: viewportModes('mobile') },
-  msw: [
-    http.get<never, never, AdminDashboardFormMetaDto[]>(
-      '/api/v3/admin/forms',
-      () => {
-        return HttpResponse.json(
-          THIRTY_FORMS.filter((form) => form.status === FormStatus.Public),
-        )
-      },
-    ),
-    ...BASE_MSW_HANDLERS,
-  ],
+  msw: {
+    handlers: {
+      default: [
+        http.get<never, never, AdminDashboardFormMetaDto[]>(
+          '/api/v3/admin/forms',
+          () => {
+            return HttpResponse.json(
+              THIRTY_FORMS.filter((form) => form.status === FormStatus.Public),
+            )
+          },
+        ),
+        ...BASE_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 AllOpenDesktop.play = playLoaded
 
@@ -209,22 +225,26 @@ export const AllOpenDesktopNoAnnouncementModal = Template.bind({})
 AllOpenDesktopNoAnnouncementModal.parameters = {
   argos: { modes: viewportModes('mobile') },
   ...AllOpenDesktop.parameters,
-  msw: [
-    ...envHandlers,
-    http.get<never, never, AdminDashboardFormMetaDto[]>(
-      '/api/v3/admin/forms',
-      () => {
-        return HttpResponse.json(THIRTY_FORMS)
-      },
-    ),
-    getWorkspaces(),
-    getUser({
-      delay: 0,
-      mockUser: {
-        ...MOCK_USER,
-        email: 'meh@example.com',
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        http.get<never, never, AdminDashboardFormMetaDto[]>(
+          '/api/v3/admin/forms',
+          () => {
+            return HttpResponse.json(THIRTY_FORMS)
+          },
+        ),
+        getWorkspaces(),
+        getUser({
+          delay: 0,
+          mockUser: {
+            ...MOCK_USER,
+            email: 'meh@example.com',
+          },
+        }),
+      ],
+    },
+  },
 }
 AllOpenDesktopNoAnnouncementModal.play = playLoaded

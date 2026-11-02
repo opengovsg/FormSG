@@ -31,7 +31,7 @@ export default {
     layout: 'fullscreen',
     // Pages fill the viewport; fit-to-content would crop them.
     argos: { fitToContent: false },
-    msw: baseMsw,
+    msw: { handlers: { default: baseMsw } },
   },
 } as Meta
 
@@ -65,44 +65,56 @@ MrfCutoverOn.decorators = [withCutover]
 export const MrfCutoverOnChildrenBeta = Template.bind({})
 MrfCutoverOnChildrenBeta.decorators = [withCutover]
 MrfCutoverOnChildrenBeta.parameters = {
-  msw: [
-    getUser({
-      delay: 0,
-      mockUser: { ...MOCK_USER, betaFlags: { children: true } },
-    }),
-    getTemplateFormResponse({ delay: 0 }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getUser({
+          delay: 0,
+          mockUser: { ...MOCK_USER, betaFlags: { children: true } },
+        }),
+        getTemplateFormResponse({ delay: 0 }),
+      ],
+    },
+  },
 }
 
 export const MrfCutoverOnWebhookV1Beta = Template.bind({})
 MrfCutoverOnWebhookV1Beta.decorators = [withCutover]
 MrfCutoverOnWebhookV1Beta.parameters = {
-  msw: [
-    getUser({
-      delay: 0,
-      mockUser: {
-        ...MOCK_USER,
-        betaFlags: { createStorageModeForV1Webhook: true },
-      },
-    }),
-    getTemplateFormResponse({ delay: 0 }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getUser({
+          delay: 0,
+          mockUser: {
+            ...MOCK_USER,
+            betaFlags: { createStorageModeForV1Webhook: true },
+          },
+        }),
+        getTemplateFormResponse({ delay: 0 }),
+      ],
+    },
+  },
 }
 
 export const MrfCutoverOnAllExceptions = Template.bind({})
 MrfCutoverOnAllExceptions.decorators = [withCutover]
 MrfCutoverOnAllExceptions.parameters = {
-  msw: [
-    getUser({
-      delay: 0,
-      mockUser: {
-        ...MOCK_USER,
-        betaFlags: {
-          children: true,
-          createStorageModeForV1Webhook: true,
-        },
-      },
-    }),
-    getTemplateFormResponse({ delay: 0 }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getUser({
+          delay: 0,
+          mockUser: {
+            ...MOCK_USER,
+            betaFlags: {
+              children: true,
+              createStorageModeForV1Webhook: true,
+            },
+          },
+        }),
+        getTemplateFormResponse({ delay: 0 }),
+      ],
+    },
+  },
 }

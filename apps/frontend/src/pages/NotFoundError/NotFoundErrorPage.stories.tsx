@@ -32,7 +32,7 @@ const Template: StoryFn = () => <NotFoundErrorPage />
 export const NotLoggedIn = Template.bind({})
 NotLoggedIn.decorators = [LoggedOutDecorator]
 NotLoggedIn.parameters = {
-  msw: [getUnauthedUser()],
+  msw: { handlers: { default: [getUnauthedUser()] } },
 }
 
 export const MobileNotLoggedIn = Template.bind({})

@@ -33,7 +33,7 @@ export default {
     EditFieldDrawerDecorator,
   ],
   parameters: {
-    msw: [...createFormBuilderMocks({}, 0)],
+    msw: { handlers: { default: [...createFormBuilderMocks({}, 0)] } },
   },
   args: {
     field: DEFAULT_ATTACHMENT_FIELD,
@@ -52,49 +52,57 @@ export const Default = Template.bind({})
 
 export const Loading = Template.bind({})
 Loading.parameters = {
-  msw: [...createFormBuilderMocks({}, 'infinite')],
+  msw: { handlers: { default: [...createFormBuilderMocks({}, 'infinite')] } },
 }
 
 export const AttachmentExceedQuota = Template.bind({})
 AttachmentExceedQuota.parameters = {
-  msw: [
-    ...createFormBuilderMocks(
-      {
-        form_fields: [
+  msw: {
+    handlers: {
+      default: [
+        ...createFormBuilderMocks(
           {
-            title: 'Attach something',
-            description: 'Lorem ipsum what do you want to attach',
-            required: true,
-            disabled: false,
-            fieldType: BasicField.Attachment,
-            attachmentSize: AttachmentSize.FourMb,
-            _id: '611b94dfbb9e300012f702a7',
+            form_fields: [
+              {
+                title: 'Attach something',
+                description: 'Lorem ipsum what do you want to attach',
+                required: true,
+                disabled: false,
+                fieldType: BasicField.Attachment,
+                attachmentSize: AttachmentSize.FourMb,
+                _id: '611b94dfbb9e300012f702a7',
+              },
+            ],
           },
-        ],
-      },
-      0,
-    ),
-  ],
+          0,
+        ),
+      ],
+    },
+  },
 }
 
 export const AttachmentWithinQuota = Template.bind({})
 AttachmentWithinQuota.parameters = {
-  msw: [
-    ...createFormBuilderMocks(
-      {
-        form_fields: [
+  msw: {
+    handlers: {
+      default: [
+        ...createFormBuilderMocks(
           {
-            title: 'Attach something',
-            description: 'Lorem ipsum what do you want to attach',
-            required: true,
-            disabled: false,
-            fieldType: BasicField.Attachment,
-            attachmentSize: AttachmentSize.OneMb,
-            _id: '611b94dfbb9e300012f702a7',
+            form_fields: [
+              {
+                title: 'Attach something',
+                description: 'Lorem ipsum what do you want to attach',
+                required: true,
+                disabled: false,
+                fieldType: BasicField.Attachment,
+                attachmentSize: AttachmentSize.OneMb,
+                _id: '611b94dfbb9e300012f702a7',
+              },
+            ],
           },
-        ],
-      },
-      0,
-    ),
-  ],
+          0,
+        ),
+      ],
+    },
+  },
 }

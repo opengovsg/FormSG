@@ -51,7 +51,7 @@ export default {
     layout: 'fullscreen',
     // Pages fill the viewport; fit-to-content would crop them.
     argos: { fitToContent: false },
-    msw: DEFAULT_MSW_HANDLERS,
+    msw: { handlers: { default: DEFAULT_MSW_HANDLERS } },
   },
 } as Meta
 
@@ -67,71 +67,80 @@ const PREVIOUS_SUBMISSION_TABLE_FIELD_WITH_ONE_ROW =
 export const WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRows =
   Template.bind({})
 WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRows.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Multirespondent,
-          workflow: [],
-        },
-      },
-    }),
-    getEncryptedSubmissionResponse({
-      overrides: {
-        workflow: [
-          {
-            _id: 'step-0',
-            edit: ['table-field-for-test-id'],
-            workflow_type: WorkflowType.Static,
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              responseMode: FormResponseMode.Multirespondent,
+              workflow: [],
+            },
           },
-          {
-            _id: 'step-1',
-            edit: [],
-            workflow_type: WorkflowType.Static,
+        }),
+        getEncryptedSubmissionResponse({
+          overrides: {
+            workflow: [
+              {
+                _id: 'step-0',
+                edit: ['table-field-for-test-id'],
+                workflow_type: WorkflowType.Static,
+              },
+              {
+                _id: 'step-1',
+                edit: [],
+                workflow_type: WorkflowType.Static,
+              },
+            ],
+            form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
+            encryptedContent:
+              PREVIOUS_SUBMISSION_TABLE_FIELD_WITH_ADDITIONAL_ROWS,
           },
-        ],
-        form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
-        encryptedContent: PREVIOUS_SUBMISSION_TABLE_FIELD_WITH_ADDITIONAL_ROWS,
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 
 export const WithMultiRespondentFormStep2EditableTableFieldLessThanMinimumRows =
   Template.bind({})
 
 WithMultiRespondentFormStep2EditableTableFieldLessThanMinimumRows.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Multirespondent,
-          workflow: [],
-        },
-      },
-    }),
-    getEncryptedSubmissionResponse({
-      overrides: {
-        workflow: [
-          {
-            _id: 'step-0',
-            edit: ['table-field-for-test-id'],
-            workflow_type: WorkflowType.Static,
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              responseMode: FormResponseMode.Multirespondent,
+              workflow: [],
+            },
           },
-          {
-            _id: 'step-1',
-            edit: ['table-field-for-test-id'],
-            workflow_type: WorkflowType.Static,
+        }),
+        getEncryptedSubmissionResponse({
+          overrides: {
+            workflow: [
+              {
+                _id: 'step-0',
+                edit: ['table-field-for-test-id'],
+                workflow_type: WorkflowType.Static,
+              },
+              {
+                _id: 'step-1',
+                edit: ['table-field-for-test-id'],
+                workflow_type: WorkflowType.Static,
+              },
+            ],
+            form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
+            workflowStep: 0,
+            encryptedContent: PREVIOUS_SUBMISSION_TABLE_FIELD_WITH_ONE_ROW,
           },
-        ],
-        form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
-        workflowStep: 0,
-        encryptedContent: PREVIOUS_SUBMISSION_TABLE_FIELD_WITH_ONE_ROW,
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 
 const STEP_2_SAVED_DRAFT_RESPONSES = {
@@ -172,37 +181,41 @@ WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRowsWithSaveDraft.par
       storyDescription:
         'This story asserts that the saved draft does not override the previous submission when the table field is non-editabl in the current mrf workflow step',
     },
-    msw: [
-      getPublicFormResponse({
-        overrides: {
-          form: {
-            responseMode: FormResponseMode.Multirespondent,
-            workflow: [],
-            isSaveDraftEnabled: true,
-          },
-        },
-      }),
-      getEncryptedSubmissionResponse({
-        overrides: {
-          workflow: [
-            {
-              _id: 'step-0',
-              edit: ['table-field-for-test-id'],
-              workflow_type: WorkflowType.Static,
+    msw: {
+      handlers: {
+        default: [
+          getPublicFormResponse({
+            overrides: {
+              form: {
+                responseMode: FormResponseMode.Multirespondent,
+                workflow: [],
+                isSaveDraftEnabled: true,
+              },
             },
-            {
-              _id: 'step-1',
-              edit: [],
-              workflow_type: WorkflowType.Static,
+          }),
+          getEncryptedSubmissionResponse({
+            overrides: {
+              workflow: [
+                {
+                  _id: 'step-0',
+                  edit: ['table-field-for-test-id'],
+                  workflow_type: WorkflowType.Static,
+                },
+                {
+                  _id: 'step-1',
+                  edit: [],
+                  workflow_type: WorkflowType.Static,
+                },
+              ],
+              form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
+              encryptedContent:
+                PREVIOUS_SUBMISSION_TABLE_FIELD_WITH_ADDITIONAL_ROWS,
             },
-          ],
-          form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
-          encryptedContent:
-            PREVIOUS_SUBMISSION_TABLE_FIELD_WITH_ADDITIONAL_ROWS,
-        },
-      }),
-      ...DEFAULT_MSW_HANDLERS,
-    ],
+          }),
+          ...DEFAULT_MSW_HANDLERS,
+        ],
+      },
+    },
   }
 
 WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRowsWithSaveDraft.decorators =
@@ -330,37 +343,41 @@ WithMultiRespondentFormStep2EditableTableFieldAdditionalRowsWithSaveDraft.parame
       storyDescription:
         'This story asserts that the saved draft overrides the previous submission when the table field is editable in the current mrf workflow step',
     },
-    msw: [
-      getPublicFormResponse({
-        overrides: {
-          form: {
-            responseMode: FormResponseMode.Multirespondent,
-            workflow: [],
-            isSaveDraftEnabled: true,
-          },
-        },
-      }),
-      getEncryptedSubmissionResponse({
-        overrides: {
-          workflow: [
-            {
-              _id: 'step-0',
-              edit: ['table-field-for-test-id'],
-              workflow_type: WorkflowType.Static,
+    msw: {
+      handlers: {
+        default: [
+          getPublicFormResponse({
+            overrides: {
+              form: {
+                responseMode: FormResponseMode.Multirespondent,
+                workflow: [],
+                isSaveDraftEnabled: true,
+              },
             },
-            {
-              _id: 'step-1',
-              edit: ['table-field-for-test-id'],
-              workflow_type: WorkflowType.Static,
+          }),
+          getEncryptedSubmissionResponse({
+            overrides: {
+              workflow: [
+                {
+                  _id: 'step-0',
+                  edit: ['table-field-for-test-id'],
+                  workflow_type: WorkflowType.Static,
+                },
+                {
+                  _id: 'step-1',
+                  edit: ['table-field-for-test-id'],
+                  workflow_type: WorkflowType.Static,
+                },
+              ],
+              form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
+              encryptedContent:
+                PREVIOUS_SUBMISSION_TABLE_FIELD_WITH_ADDITIONAL_ROWS,
             },
-          ],
-          form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
-          encryptedContent:
-            PREVIOUS_SUBMISSION_TABLE_FIELD_WITH_ADDITIONAL_ROWS,
-        },
-      }),
-      ...DEFAULT_MSW_HANDLERS,
-    ],
+          }),
+          ...DEFAULT_MSW_HANDLERS,
+        ],
+      },
+    },
   }
 
 WithMultiRespondentFormStep2EditableTableFieldAdditionalRowsWithSaveDraft.decorators =
@@ -416,25 +433,29 @@ WithMultiRespondentFormStep2EditableTableFieldAdditionalRowsWithSaveDraft.play =
 
 export const WithStoppedWorkflow = Template.bind({})
 WithStoppedWorkflow.parameters = {
-  msw: [
-    http.get('/api/v3/forms/:formId/submissions/:submissionId', () =>
-      HttpResponse.json(
-        {
-          message:
-            'This workflow has been stopped. Please contact the form admin that gave you this link.',
-          messageKey:
-            'features.publicForm.backendErrors.submission.mrf.workflowStopped',
-        },
-        { status: 400 },
-      ),
-    ),
-    getPublicFormResponse({
-      overrides: {
-        form: { responseMode: FormResponseMode.Multirespondent },
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+  msw: {
+    handlers: {
+      default: [
+        http.get('/api/v3/forms/:formId/submissions/:submissionId', () =>
+          HttpResponse.json(
+            {
+              message:
+                'This workflow has been stopped. Please contact the form admin that gave you this link.',
+              messageKey:
+                'features.publicForm.backendErrors.submission.mrf.workflowStopped',
+            },
+            { status: 400 },
+          ),
+        ),
+        getPublicFormResponse({
+          overrides: {
+            form: { responseMode: FormResponseMode.Multirespondent },
+          },
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 WithStoppedWorkflow.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement)

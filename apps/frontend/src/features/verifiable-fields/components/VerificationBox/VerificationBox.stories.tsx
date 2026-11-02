@@ -36,7 +36,7 @@ export default {
   },
 
   parameters: {
-    msw: [getPublicFormResponse()],
+    msw: { handlers: { default: [getPublicFormResponse()] } },
   },
 
   globals: {
@@ -61,17 +61,21 @@ MobileVerificationBoxOrangeThemeMobile.args = {
   fieldType: BasicField.Mobile,
 }
 MobileVerificationBoxOrangeThemeMobile.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          startPage: {
-            colorTheme: FormColorTheme.Orange,
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              startPage: {
+                colorTheme: FormColorTheme.Orange,
+              },
+            },
           },
-        },
-      },
-    }),
-  ],
+        }),
+      ],
+    },
+  },
 }
 MobileVerificationBoxOrangeThemeMobile.globals = {
   viewport: { value: 'mobile1', isRotated: false },
@@ -88,15 +92,19 @@ EmailVerificationBoxGreenTheme.args = {
   fieldType: BasicField.Email,
 }
 EmailVerificationBoxGreenTheme.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          startPage: {
-            colorTheme: FormColorTheme.Green,
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              startPage: {
+                colorTheme: FormColorTheme.Green,
+              },
+            },
           },
-        },
-      },
-    }),
-  ],
+        }),
+      ],
+    },
+  },
 }

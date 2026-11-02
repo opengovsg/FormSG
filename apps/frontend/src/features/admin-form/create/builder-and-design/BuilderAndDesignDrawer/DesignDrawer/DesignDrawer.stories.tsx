@@ -33,7 +33,7 @@ export default {
     EditFieldDrawerDecorator,
   ],
   parameters: {
-    msw: [...createFormBuilderMocks({}, 0)],
+    msw: { handlers: { default: [...createFormBuilderMocks({}, 0)] } },
   },
   args: {
     startPage: DEFAULT_START_PAGE,

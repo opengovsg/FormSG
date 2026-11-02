@@ -133,20 +133,24 @@ StorageModeSettings.parameters = {
 
 export const SaveDraftEnabled = Template.bind({})
 SaveDraftEnabled.parameters = {
-  msw: [
-    ...createFormBuilderMocks({ responseMode: FormResponseMode.Encrypt }),
-    getAdminFormSettings({
-      mode: FormResponseMode.Encrypt,
-      overrides: { isSaveDraftEnabled: true },
-    }),
-    getAdminFormSubmissions(),
-    patchAdminFormSettings({
-      mode: FormResponseMode.Encrypt,
-      overrides: { isSaveDraftEnabled: true },
-    }),
-    getUser(),
-    getAdminFormCollaborators(),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...createFormBuilderMocks({ responseMode: FormResponseMode.Encrypt }),
+        getAdminFormSettings({
+          mode: FormResponseMode.Encrypt,
+          overrides: { isSaveDraftEnabled: true },
+        }),
+        getAdminFormSubmissions(),
+        patchAdminFormSettings({
+          mode: FormResponseMode.Encrypt,
+          overrides: { isSaveDraftEnabled: true },
+        }),
+        getUser(),
+        getAdminFormCollaborators(),
+      ],
+    },
+  },
 }
 
 const legacyNavGrowthbook = new GrowthBook({
