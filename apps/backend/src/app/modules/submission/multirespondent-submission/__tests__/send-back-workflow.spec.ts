@@ -294,6 +294,22 @@ describe('sendBackMultirespondentSubmission', () => {
       expect(stored?.submittedSteps).toHaveLength(3)
     })
 
+    it('refuses step 1 when it was submitted with a login', async () => {
+      const submission = await createSubmission({
+        verifiedContent: 'encrypted-singpass-identity',
+      })
+
+      const result = await sendBack(submission._id, 1, {
+        stepOneRecipientEmail: 'applicant@example.com',
+      })
+
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        MrfSendBackInvalidStepError,
+      )
+      const stored = await MultirespondentSubmission.findById(submission._id)
+      expect(stored?.submittedSteps).toHaveLength(3)
+    })
+
     it('can send back from step 2 pending', async () => {
       const submission = await createSubmission({
         submittedSteps: [SUBMITTED_STEPS[0]],

@@ -2499,7 +2499,10 @@ export const sendBackMultirespondentSubmission = ({
       if (
         targetStepNumber < 1 ||
         targetStepNumber >= pendingStepNumber ||
-        (isToStepOne && (!canSendBackToStepOne || !stepOneRecipientEmail))
+        (isToStepOne &&
+          (!canSendBackToStepOne ||
+            !stepOneRecipientEmail ||
+            !!submission.verifiedContent))
       ) {
         return errAsync(new MrfSendBackInvalidStepError())
       }
