@@ -167,4 +167,18 @@ describe('isUenValid', () => {
     // control: a valid historical T-series value still passes
     expect(isUenValid('T09SS0032E')).toBe(true)
   })
+
+  it('should reject an unlisted entity type with a valid checksum', () => {
+    expect(isUenValid('T08QQ0001G')).toBe(false)
+    expect(isUenValid('S99QQ1234L')).toBe(false)
+  })
+
+  it('should pass an additional entity type with a valid checksum', () => {
+    expect(isUenValid('T08QQ0001G', ['QQ'])).toBe(true)
+    expect(isUenValid('S99QQ1234L', ['QQ'])).toBe(true)
+  })
+
+  it('should still fail an additional entity type with a wrong checksum', () => {
+    expect(isUenValid('T08QQ0001A', ['QQ'])).toBe(false)
+  })
 })

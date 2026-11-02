@@ -231,7 +231,10 @@ const calcOtherCheckDigit = (number: string): string => {
  * @param number
  * @returns true if valid UEN
  */
-const validateOther = (number: string): boolean => {
+const validateOther = (
+  number: string,
+  additionalEntityTypes: readonly string[],
+): boolean => {
   const uenPrefix = ['R', 'S', 'T']
   const firstChar = number.slice(0, 1)
   if (!uenPrefix.includes(firstChar)) {
@@ -250,7 +253,10 @@ const validateOther = (number: string): boolean => {
   }
 
   const chars4And5 = number.slice(3, 5)
-  if (!VALID_ENTITY_TYPE_INDICATORS.has(chars4And5)) {
+  if (
+    !VALID_ENTITY_TYPE_INDICATORS.has(chars4And5) &&
+    !additionalEntityTypes.includes(chars4And5)
+  ) {
     return false
   }
 
@@ -275,9 +281,13 @@ const validateOther = (number: string): boolean => {
  * Other UEN.
  *
  * @param uen string that represents the UEN
+ * @param additionalEntityTypes entity-type indicators accepted on top of VALID_ENTITY_TYPE_INDICATORS
  * @returns true if UEN is valid
  */
-const isUenValid = (uen: string): boolean => {
+const isUenValid = (
+  uen: string,
+  additionalEntityTypes: readonly string[] = [],
+): boolean => {
   const number = upperCaseAndTrim(uen)
   if (number.length !== 9 && number.length !== 10) {
     return false
@@ -291,7 +301,7 @@ const isUenValid = (uen: string): boolean => {
     return validateLocalCompany(number)
   }
 
-  return validateOther(number)
+  return validateOther(number, additionalEntityTypes)
 }
 
 export { isUenValid }
