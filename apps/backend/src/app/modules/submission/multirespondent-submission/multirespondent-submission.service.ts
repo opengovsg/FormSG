@@ -2504,14 +2504,22 @@ export const sendBackMultirespondentSubmission = ({
               encryptedStepToken: stepToken.wrap(newStepToken, formPublicKey),
             },
             $push: {
-              workflowEvents: buildWorkflowEvent({
-                type: WorkflowEventType.SentBack,
-                actor,
-                stepNumber: targetStepNumber,
-                fromStepNumber: pendingStepNumber,
-                emails,
-                remarks,
-              }),
+              workflowEvents: {
+                $each: [
+                  ...buildMissingStepSubmittedEvents(
+                    (submission.submittedSteps ?? []) as SubmittedStep[],
+                    submission.workflowEvents,
+                  ),
+                  buildWorkflowEvent({
+                    type: WorkflowEventType.SentBack,
+                    actor,
+                    stepNumber: targetStepNumber,
+                    fromStepNumber: pendingStepNumber,
+                    emails,
+                    remarks,
+                  }),
+                ],
+              },
             },
             $inc: { __v: 1 },
           },

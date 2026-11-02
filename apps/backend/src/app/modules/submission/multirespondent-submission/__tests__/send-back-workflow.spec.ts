@@ -5,6 +5,7 @@ import {
   WorkflowEventType,
   WorkflowStatus,
 } from 'formsg-shared/types'
+import { omit } from 'lodash'
 import mongoose from 'mongoose'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
@@ -123,6 +124,54 @@ describe('sendBackMultirespondentSubmission', () => {
         emails: ['lead@example.com'],
         remarks: 'Please fix the dates',
       }),
+    ])
+  })
+
+  it('backfills step events without snapshot links before undoing steps', async () => {
+    const submission = await createSubmission({ workflowEvents: [] })
+
+    await sendBack(submission._id, 2)
+
+    const stored = await MultirespondentSubmission.findById(
+      submission._id,
+    ).lean()
+    expect(stored?.submittedSteps).toHaveLength(1)
+    expect(stored?.workflowEvents).toEqual([
+      ...STEP_SUBMITTED_EVENTS.map((event) =>
+        expect.objectContaining(omit(event, 'snapshotKey')),
+      ),
+      expect.objectContaining({
+        type: WorkflowEventType.SentBack,
+        stepNumber: 2,
+        fromStepNumber: 4,
+      }),
+    ])
+    expect(
+      stored?.workflowEvents?.some((event) => 'snapshotKey' in event),
+    ).toBe(false)
+  })
+
+  it('backfills only the steps that have no event yet', async () => {
+    const submission = await createSubmission({
+      workflowEvents: [STEP_SUBMITTED_EVENTS[0]],
+    })
+
+    await sendBack(submission._id, 2)
+
+    const stored = await MultirespondentSubmission.findById(
+      submission._id,
+    ).lean()
+    expect(
+      stored?.workflowEvents?.map((event) => [
+        event.type,
+        event.stepNumber,
+        'snapshotKey' in event ? event.snapshotKey : undefined,
+      ]),
+    ).toEqual([
+      [WorkflowEventType.StepSubmitted, 1, 'key-step-1'],
+      [WorkflowEventType.StepSubmitted, 2, undefined],
+      [WorkflowEventType.StepSubmitted, 3, undefined],
+      [WorkflowEventType.SentBack, 2, undefined],
     ])
   })
 
