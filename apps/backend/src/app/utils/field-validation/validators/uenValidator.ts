@@ -10,6 +10,7 @@ import { flow } from 'fp-ts/lib/function'
 
 import { ParsedClearFormFieldResponseV4 } from '../../../../types/api'
 import { ResponseValidator } from '../../../../types/field/utils/validation'
+import { uenConfig } from '../../../config/features/uen.config'
 import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
 import { notEmptySingleAnswerResponse } from './common'
@@ -31,7 +32,7 @@ const isCorppassUenField = (uenField: UenFieldSource): boolean =>
  * format is correct.
  */
 const uenValidator: UenValidator = (response) => {
-  return isUenValid(response.answer)
+  return isUenValid(response.answer, uenConfig.hiddenEntityTypes)
     ? right(response)
     : left(`UenValidator:\tanswer is not a valid UEN`)
 }
@@ -71,7 +72,7 @@ const notEmptyUenAnswerV4: ResponseValidator<UenResponseV4> = (response) => {
 }
 
 const uenValidatorV4: ResponseValidator<UenResponseV4> = (response) => {
-  return isUenValid(response.answer.value)
+  return isUenValid(response.answer.value, uenConfig.hiddenEntityTypes)
     ? right(response)
     : left(`UenValidatorV4:\tanswer is not a valid UEN`)
 }
