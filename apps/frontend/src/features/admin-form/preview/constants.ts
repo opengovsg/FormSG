@@ -4,7 +4,6 @@ import { LOGIN_IDENTITY_PREVIEW_VALUES } from '~features/myinfo/utils/augmentWit
 
 export const PREVIEW_MOCK_UINFIN = 'S1234567A'
 
-// Every login type is listed so a new one has to choose its sample ID.
 const PREVIEW_MOCK_LOGIN_IDS: Record<FormAuthType, string> = {
   [FormAuthType.NIL]: PREVIEW_MOCK_UINFIN,
   [FormAuthType.SP]: PREVIEW_MOCK_UINFIN,
