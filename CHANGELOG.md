@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.58.5](https://github.com/opengovsg/formsg/compare/v9.58.4...v9.58.5) (2026-11-02)
+
+
+### Bug Fixes
+
+* **guardduty:** export _HANDLER so aws-lambda-ric 4 starts on Lambda (#10466) ([#10466](https://github.com/opengovsg/formsg/commit/089adc3066f9f67252aff8f39cefe353024081ad))
+* **results:** label the timestamp column Timestamp on every form (#10439) ([#10439](https://github.com/opengovsg/formsg/commit/8cf4fd219572c3c0c648dfa10210dfda7c6b9271))
+* ICU delete label, Corppass preview UEN, NRIC row gap, session storage write-back (#10444) ([#10444](https://github.com/opengovsg/formsg/commit/789a716188becbe5cc52edcf6b47c7f9f1cbc2f8))
+
+
+### Tests
+
+* fix flaky frontend_test and storage-mode e2e (#10465) ([#10465](https://github.com/opengovsg/formsg/commit/9048243e0992d56ec1de3c9807baef286961653b))
+
 ## [9.58.4](https://github.com/opengovsg/formsg/compare/v9.58.3...v9.58.4) (2026-11-02)
 
 
