@@ -639,7 +639,10 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
           typeof presentedStepToken === 'string' &&
           presentedStepToken &&
           submissionData.stepTokenHash &&
-          !stepToken.verify(presentedStepToken, submissionData.stepTokenHash)
+          !stepToken.verify(presentedStepToken, submissionData.stepTokenHash) &&
+          submissionData.workflowEvents?.some(
+            ({ type }) => type === WorkflowEventType.SentBack,
+          )
         ) {
           return errAsync(new MrfStepLinkSupersededError())
         }

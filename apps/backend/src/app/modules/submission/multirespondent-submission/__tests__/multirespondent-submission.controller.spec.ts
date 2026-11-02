@@ -12,6 +12,7 @@ import {
   PaymentType,
   PublicMultirespondentSubmissionDto,
   SubmissionType,
+  WorkflowEventType,
   WorkflowType,
 } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
@@ -289,7 +290,18 @@ describe('multirespondent-submision.controller', () => {
     })
 
     describe('with a step link token', () => {
-      const loadWithStepToken = async (stepToken?: string) => {
+      const sentBack = {
+        type: WorkflowEventType.SentBack,
+        stepNumber: 2,
+        fromStepNumber: 3,
+        actorEmail: 'admin@example.com',
+        emails: [],
+        created: new Date('2026-10-07T09:00:00.000Z'),
+      }
+      const loadWithStepToken = async (
+        stepToken?: string,
+        workflowEvents: unknown[] = [sentBack],
+      ) => {
         const mockReq = expressHandler.mockRequest({
           params: { formId: mockFormId, submissionId: mockSubmissionId },
           query: stepToken === undefined ? {} : { stepToken },
@@ -318,6 +330,7 @@ describe('multirespondent-submision.controller', () => {
             mrfVersion: 1,
             created: new Date('2026-10-07T08:00:00.000Z'),
             stepTokenHash: StepToken.hash('current-token'),
+            workflowEvents,
           } as unknown as MultirespondentSubmissionData),
         )
 
@@ -352,10 +365,19 @@ describe('multirespondent-submision.controller', () => {
         expect(mockRes.status).toHaveBeenCalledWith(403)
         expect(mockRes.json).toHaveBeenCalledWith(
           expect.objectContaining({
-            message: expect.stringContaining('replaced by a newer one'),
+            message: expect.stringContaining('no longer in use'),
           }),
         )
         expect(mockRes.cookie).not.toHaveBeenCalled()
+      })
+
+      it('loads an old link when the response was never sent back', async () => {
+        const mockRes = await loadWithStepToken('old-token', [])
+
+        expect(mockRes.status).not.toHaveBeenCalledWith(403)
+        expect(mockRes.json).toHaveBeenCalledWith(
+          expect.objectContaining({ refNo: mockSubmissionId }),
+        )
       })
     })
   })
