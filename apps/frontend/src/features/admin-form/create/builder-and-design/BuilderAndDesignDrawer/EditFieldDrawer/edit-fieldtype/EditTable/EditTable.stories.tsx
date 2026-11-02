@@ -2,6 +2,8 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { BasicField, TableFieldBase } from 'formsg-shared/types'
 
+import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
+
 import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 
 import { EditTable, EditTableProps } from './EditTable'
@@ -55,7 +57,9 @@ export default {
     }),
     EditFieldDrawerDecorator,
   ],
-  parameters: {},
+  parameters: {
+    msw: { handlers: { default: createFormBuilderMocks({}, 0) } },
+  },
   args: {
     field: DEFAULT_TABLE_FIELD,
   },

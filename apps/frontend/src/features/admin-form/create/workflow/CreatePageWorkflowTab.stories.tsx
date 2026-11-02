@@ -57,6 +57,9 @@ export default {
           responseMode: FormResponseMode.Multirespondent,
           workflow: [],
         }),
+        settings: [
+          getAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+        ],
       },
     },
   },

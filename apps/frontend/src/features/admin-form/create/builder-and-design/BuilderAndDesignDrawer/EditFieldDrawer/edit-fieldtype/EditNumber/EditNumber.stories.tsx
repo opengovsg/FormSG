@@ -7,6 +7,8 @@ import {
   NumberSelectedValidation,
 } from 'formsg-shared/types'
 
+import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
+
 import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 
 import { EditNumber } from './EditNumber'
@@ -41,7 +43,9 @@ export default {
     }),
     EditFieldDrawerDecorator,
   ],
-  parameters: {},
+  parameters: {
+    msw: { handlers: { default: createFormBuilderMocks({}, 0) } },
+  },
   args: {
     field: DEFAULT_NUMBER_FIELD,
   },

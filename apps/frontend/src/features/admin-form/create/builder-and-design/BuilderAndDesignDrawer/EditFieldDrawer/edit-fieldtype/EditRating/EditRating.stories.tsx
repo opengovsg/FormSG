@@ -2,6 +2,8 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { BasicField, RatingFieldBase, RatingShape } from 'formsg-shared/types'
 
+import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
+
 import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 
 import { EditRating } from './EditRating'
@@ -29,7 +31,9 @@ export default {
     }),
     EditFieldDrawerDecorator,
   ],
-  parameters: {},
+  parameters: {
+    msw: { handlers: { default: createFormBuilderMocks({}, 0) } },
+  },
   args: {
     field: DEFAULT_RATING_FIELD,
   },

@@ -7,6 +7,8 @@ import { FormResponseMode, FormSettings } from 'formsg-shared/types/form'
 
 import {
   getAdminFormSettings,
+  getAdminFormSubmissions,
+  getAdminFormView,
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 
@@ -23,6 +25,8 @@ const buildMswRoutes = ({
 } = {}) => [
   getAdminFormSettings({ overrides, delay }),
   patchAdminFormSettings({ overrides }),
+  getAdminFormView(),
+  getAdminFormSubmissions(),
 ]
 
 const scheduledClosureOn = new GrowthBook({
