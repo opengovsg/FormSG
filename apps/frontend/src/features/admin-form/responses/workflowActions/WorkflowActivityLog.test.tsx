@@ -190,4 +190,23 @@ describe('WorkflowActivityLog', () => {
     render(<WorkflowActivityLog />)
     expect(screen.queryAllByRole('listitem')).toHaveLength(0)
   })
+  it('skips events of a type it does not know', () => {
+    render(
+      <WorkflowActivityLog
+        history={{
+          ...history,
+          workflowEvents: [
+            {
+              ...event(WorkflowEventType.Stopped, at, []),
+              type: 'step_submitted',
+            } as unknown as WorkflowEventDto,
+          ],
+        }}
+      />,
+    )
+    expect(titles()).toEqual([
+      'Step 1 submitted',
+      'Step 2 · Team lead sent to lead@agency.gov.sg',
+    ])
+  })
 })
