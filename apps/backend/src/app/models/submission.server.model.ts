@@ -1086,9 +1086,11 @@ MultirespondentSubmissionSchema.statics.saveIfSubmitterIdIsUnique =
             ],
           }
         : { form: formId, ...stepSubmitterQuery }
+    const SubmissionModel =
+      this.db.model<ISubmissionSchema>(SUBMISSION_SCHEMA_ID)
     const session = await this.startSession()
     session.startTransaction()
-    const beforeCreateRes = await this.exists(submitterQuery)
+    const beforeCreateRes = await SubmissionModel.exists(submitterQuery)
       .setOptions({ readPreference: 'primary' })
       .session(session)
       .exec()
@@ -1101,7 +1103,7 @@ MultirespondentSubmissionSchema.statics.saveIfSubmitterIdIsUnique =
 
     await this.create([submissionContent], { session })
 
-    const afterCreateRes = await this.find(submitterQuery, null, {
+    const afterCreateRes = await SubmissionModel.find(submitterQuery, null, {
       limit: 2,
       readPreference: 'primary',
     })
@@ -1115,7 +1117,9 @@ MultirespondentSubmissionSchema.statics.saveIfSubmitterIdIsUnique =
 
     await session.commitTransaction()
     await session.endSession()
-    return afterCreateRes[0]
+    return afterCreateRes[0] as unknown as IMultirespondentSubmissionSchema & {
+      _id: mongoose.Types.ObjectId
+    }
   }
 
 MultirespondentSubmissionSchema.statics.findSingleMetadata = function (
