@@ -63,6 +63,8 @@ export interface ResponsesIndividualResponse {
       title: string
       description: string
       stepLabel: string
+      stepOneEmailLabel: string
+      stepOneEmailDescription: string
       remarksLabel: string
       remarksDescription: string
       remarksTooLong: string

@@ -12,10 +12,17 @@ import formsgSdk from 'src/app/config/formsg-sdk'
 import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
 
 import {
+  MrfAssigneeAlreadyAssignedError,
   MrfSendBackInvalidStepError,
   MrfWorkflowNotPendingError,
 } from '../../submission.errors'
-import { sendBackMultirespondentSubmission } from '../multirespondent-submission.service'
+import { buildMrfMetadata } from '../../submission.utils'
+import {
+  addAssigneesToPendingStep,
+  getPendingStepRecipientEmailsFromSubmittedStepsMeta,
+  sendBackMultirespondentSubmission,
+  stopMultirespondentSubmission,
+} from '../multirespondent-submission.service'
 import * as StepToken from '../step-token'
 
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
@@ -76,7 +83,14 @@ const sendBack = (
   {
     expectedStepNumber = 4,
     remarks,
-  }: { expectedStepNumber?: number; remarks?: string } = {},
+    stepOneRecipientEmail,
+    canSendBackToStepOne = true,
+  }: {
+    expectedStepNumber?: number
+    remarks?: string
+    stepOneRecipientEmail?: string
+    canSendBackToStepOne?: boolean
+  } = {},
 ) =>
   sendBackMultirespondentSubmission({
     formId: String(formId),
@@ -85,6 +99,8 @@ const sendBack = (
     targetStepNumber,
     expectedStepNumber,
     remarks,
+    stepOneRecipientEmail,
+    canSendBackToStepOne,
     actor,
   })
 
@@ -221,7 +237,8 @@ describe('sendBackMultirespondentSubmission', () => {
   })
 
   it.each([
-    ['step 1', 1],
+    ['step 1 without an email', 1],
+    ['step 0', 0],
     ['the pending step', 4],
     ['a later step', 5],
   ])('rejects sending back to %s', async (_label, targetStepNumber) => {
@@ -234,6 +251,131 @@ describe('sendBackMultirespondentSubmission', () => {
     )
     const stored = await MultirespondentSubmission.findById(submission._id)
     expect(stored?.submittedSteps).toHaveLength(3)
+  })
+
+  describe('to step 1', () => {
+    it('rewinds every step and sends step 1 to the entered email', async () => {
+      const submission = await createSubmission()
+
+      const result = await sendBack(submission._id, 1, {
+        stepOneRecipientEmail: 'Applicant@example.com',
+      })
+
+      expect(result._unsafeUnwrap()).toMatchObject({
+        stepNumber: 1,
+        emails: ['applicant@example.com'],
+      })
+      const stored = await MultirespondentSubmission.findById(
+        submission._id,
+      ).lean()
+      expect(stored?.submittedSteps).toEqual([])
+      expect(stored?.workflowStep).toBe(-1)
+      expect(stored?.encryptedContent).toBe('content')
+      expect(stored?.workflowEvents?.at(-1)).toMatchObject({
+        type: WorkflowEventType.SentBack,
+        stepNumber: 1,
+        fromStepNumber: 4,
+        emails: ['applicant@example.com'],
+      })
+    })
+
+    it('refuses step 1 on a form with a login', async () => {
+      const submission = await createSubmission()
+
+      const result = await sendBack(submission._id, 1, {
+        stepOneRecipientEmail: 'applicant@example.com',
+        canSendBackToStepOne: false,
+      })
+
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        MrfSendBackInvalidStepError,
+      )
+      const stored = await MultirespondentSubmission.findById(submission._id)
+      expect(stored?.submittedSteps).toHaveLength(3)
+    })
+
+    it('refuses step 1 when it was submitted with a login', async () => {
+      const submission = await createSubmission({
+        verifiedContent: 'encrypted-singpass-identity',
+      })
+
+      const result = await sendBack(submission._id, 1, {
+        stepOneRecipientEmail: 'applicant@example.com',
+      })
+
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        MrfSendBackInvalidStepError,
+      )
+      const stored = await MultirespondentSubmission.findById(submission._id)
+      expect(stored?.submittedSteps).toHaveLength(3)
+    })
+
+    it('can send back from step 2 pending', async () => {
+      const submission = await createSubmission({
+        submittedSteps: [SUBMITTED_STEPS[0]],
+        workflowStep: 0,
+      })
+
+      const result = await sendBack(submission._id, 1, {
+        expectedStepNumber: 2,
+        stepOneRecipientEmail: 'applicant@example.com',
+      })
+
+      expect(result.isOk()).toBe(true)
+    })
+
+    it('stays pending at step 1, so it can be stopped', async () => {
+      const submission = await createSubmission()
+      await sendBack(submission._id, 1, {
+        stepOneRecipientEmail: 'applicant@example.com',
+      })
+
+      const stored = await MultirespondentSubmission.findById(submission._id)
+      expect(
+        buildMrfMetadata({
+          workflow: stored!.workflow,
+          workflowStep: stored!.workflowStep,
+          submittedSteps: stored!.submittedSteps,
+          stoppedAt: stored!.stoppedAt,
+        }),
+      ).toMatchObject({
+        workflowStatus: WorkflowStatus.PENDING,
+        workflowCurrentStepNumber: 0,
+      })
+      const stopped = await stopMultirespondentSubmission({
+        formId: String(formId),
+        submissionId: String(submission._id),
+        actor,
+        emails: [],
+      })
+      expect(stopped.isOk()).toBe(true)
+    })
+
+    it('reminds and reassigns step 1 using the entered email', async () => {
+      const submission = await createSubmission()
+      await sendBack(submission._id, 1, {
+        stepOneRecipientEmail: 'applicant@example.com',
+      })
+
+      const reminder =
+        await getPendingStepRecipientEmailsFromSubmittedStepsMeta({
+          submissionId: String(submission._id),
+        })
+      expect(reminder._unsafeUnwrap()).toEqual({
+        recipientEmails: ['applicant@example.com'],
+        reminderStepNumber: 1,
+      })
+      const duplicate = await addAssigneesToPendingStep({
+        formId: String(formId),
+        submissionId: String(submission._id),
+        emails: ['applicant@example.com'],
+        expectedStepNumber: 1,
+        actor,
+      })
+      expect(duplicate._unsafeUnwrapErr()).toBeInstanceOf(
+        MrfAssigneeAlreadyAssignedError,
+      )
+    })
   })
 
   it('rejects a page that saw an earlier pending step', async () => {

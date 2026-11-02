@@ -67,6 +67,7 @@ import {
   buildWorkflowEvent,
   getAddedAssignees,
   getEventsSinceLastSendBack,
+  getStepOneSendBackRecipients,
 } from '../../workflow-event/workflow-event.service'
 import {
   AttachmentUploadError,
@@ -393,7 +394,7 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
   | MrfReminderRecipientEmailsEmptyError
 > => {
   return getMultirespondentSubmission(submissionId).andThen(
-    ({ workflow, submittedSteps, stoppedAt, workflowEvents }) => {
+    ({ workflow, workflowStep, submittedSteps, stoppedAt, workflowEvents }) => {
       if (stoppedAt) return errAsync(new MrfWorkflowStoppedError())
 
       const logMeta = {
@@ -403,18 +404,14 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
       }
 
       const isPending =
-        submittedSteps &&
-        submittedSteps.length > 0 &&
+        !!submittedSteps &&
         getMrfSubmissionWorkflowStatus(
           submittedSteps as SubmittedStep[],
           workflow.length,
+          workflowStep,
         ) === WorkflowStatus.PENDING
 
-      const pendingStep = isPending
-        ? submittedSteps[submittedSteps.length - 1]
-        : null
-
-      if (!pendingStep || !submittedSteps) {
+      if (!isPending || !submittedSteps) {
         logger.error({
           message:
             'Failed to find details for pending step to send mrf next step submission reminder email',
@@ -437,7 +434,10 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
 
       const recipientEmails = Array.from(
         new Set([
-          ...(pendingStep.nextStepRecipientEmails ?? []),
+          ...(submittedSteps.length > 0
+            ? (submittedSteps[submittedSteps.length - 1]
+                .nextStepRecipientEmails ?? [])
+            : getStepOneSendBackRecipients(workflowEvents)),
           ...getAddedAssignees(workflowEvents, reminderStepNumber),
         ]),
       )
@@ -2408,6 +2408,7 @@ export const stopMultirespondentSubmission = ({
         getMrfSubmissionWorkflowStatus(
           (submission.submittedSteps ?? []) as SubmittedStep[],
           submission.workflow.length,
+          submission.workflowStep,
         ) === WorkflowStatus.PENDING
       if (!isPending) return errAsync(new MrfWorkflowNotPendingError())
       return okAsync(submission)
@@ -2459,6 +2460,8 @@ export const sendBackMultirespondentSubmission = ({
   targetStepNumber,
   expectedStepNumber,
   remarks,
+  stepOneRecipientEmail,
+  canSendBackToStepOne,
   actor,
 }: {
   formId: string
@@ -2467,6 +2470,8 @@ export const sendBackMultirespondentSubmission = ({
   targetStepNumber: number
   expectedStepNumber: number
   remarks?: string
+  stepOneRecipientEmail?: string
+  canSendBackToStepOne: boolean
   actor: { _id?: unknown; email: string }
 }): ResultAsync<
   { stepNumber: number; emails: string[]; stepToken: string },
@@ -2488,6 +2493,7 @@ export const sendBackMultirespondentSubmission = ({
         getMrfSubmissionWorkflowStatus(
           submittedSteps,
           submission.workflow.length,
+          submission.workflowStep,
         ) === WorkflowStatus.PENDING
       if (
         !isPending ||
@@ -2496,14 +2502,25 @@ export const sendBackMultirespondentSubmission = ({
       ) {
         return errAsync(new MrfWorkflowNotPendingError())
       }
-      if (targetStepNumber < 2 || targetStepNumber >= pendingStepNumber) {
+      const isToStepOne = targetStepNumber === 1
+      if (
+        targetStepNumber < 1 ||
+        targetStepNumber >= pendingStepNumber ||
+        (isToStepOne &&
+          (!canSendBackToStepOne ||
+            !stepOneRecipientEmail ||
+            !!submission.verifiedContent))
+      ) {
         return errAsync(new MrfSendBackInvalidStepError())
       }
       const keptSteps = submittedSteps.slice(0, targetStepNumber - 1)
       const emails = Array.from(
         new Set(
           [
-            ...(keptSteps[keptSteps.length - 1].nextStepRecipientEmails ?? []),
+            ...(isToStepOne
+              ? [stepOneRecipientEmail as string]
+              : (keptSteps[keptSteps.length - 1].nextStepRecipientEmails ??
+                [])),
             ...getAddedAssignees(submission.workflowEvents, targetStepNumber),
           ].map((email) => email.toLowerCase()),
         ),
@@ -2602,10 +2619,10 @@ export const addAssigneesToPendingStep = ({
         []) as SubmittedStep[]
       const isPending =
         !submission.stoppedAt &&
-        submittedSteps.length > 0 &&
         getMrfSubmissionWorkflowStatus(
           submittedSteps,
           submission.workflow.length,
+          submission.workflowStep,
         ) === WorkflowStatus.PENDING
       const stepNumber = submittedSteps.length + 1
       if (!isPending || stepNumber !== expectedStepNumber) {
@@ -2613,9 +2630,10 @@ export const addAssigneesToPendingStep = ({
       }
 
       const assigned = new Set([
-        ...(
-          submittedSteps[submittedSteps.length - 1].nextStepRecipientEmails ??
-          []
+        ...(submittedSteps.length > 0
+          ? (submittedSteps[submittedSteps.length - 1]
+              .nextStepRecipientEmails ?? [])
+          : getStepOneSendBackRecipients(submission.workflowEvents)
         ).map((email) => email.toLowerCase()),
         ...getAddedAssignees(submission.workflowEvents, stepNumber),
       ])

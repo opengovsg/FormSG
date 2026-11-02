@@ -9,6 +9,7 @@ import { WorkflowActionsSection } from './WorkflowActionsSection'
 
 let mockIsGateOn = true
 let mockIsSendBackOn = false
+let mockAuthType = 'SP'
 let mockHasEditAccess = true
 let mockIsV2 = true
 const mockMutate = vi.fn()
@@ -30,6 +31,7 @@ vi.mock('./useWorkflowActionsGate', () => ({
 
 vi.mock('~features/admin-form/common/queries', () => ({
   useAdminFormCollaborators: () => ({ hasEditAccess: mockHasEditAccess }),
+  useAdminForm: () => ({ data: { authType: mockAuthType } }),
 }))
 
 vi.mock('~features/admin-form/responses/hooks', () => ({
@@ -150,6 +152,7 @@ describe('WorkflowActionsSection', () => {
   afterEach(() => {
     mockIsGateOn = true
     mockIsSendBackOn = false
+    mockAuthType = 'SP'
     mockSendBack.mockReset()
     mockHasEditAccess = true
     mockIsV2 = true
@@ -368,5 +371,17 @@ describe('WorkflowActionsSection', () => {
         ).not.toBeInTheDocument()
       },
     )
+
+    it('offers Send back from step 2 on a form without a login', () => {
+      mockAuthType = 'NIL'
+      renderSection(
+        pendingMrf({ workflowCurrentStepNumber: 1 }),
+        undefined,
+        false,
+        1,
+      )
+
+      expect(screen.getByRole('button', { name: SEND_BACK })).toBeVisible()
+    })
   })
 })

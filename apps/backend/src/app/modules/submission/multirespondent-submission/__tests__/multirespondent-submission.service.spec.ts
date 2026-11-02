@@ -4424,6 +4424,68 @@ describe('multirespondent-submission.service', () => {
         expect(saved?.stepTokenHash).toBe('hash-after-send-back')
       })
 
+      it('records step 1 submitted again after a send back to step 1', async () => {
+        MockSnapshotStore.writeSnapshot.mockReturnValue(
+          okAsync({ token: 'tok', key: 'key-step-1-again' }),
+        )
+        const row = await Model.create({
+          form: mockFormId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [],
+          form_logics: [],
+          workflow: fourStepWorkflow,
+          submissionPublicKey: 'pk',
+          encryptedSubmissionSecretKey: 'esk',
+          encryptedContent: 'ec',
+          version: 2,
+          workflowStep: -1,
+          submittedSteps: [],
+          workflowEvents: [
+            {
+              type: WorkflowEventType.StepSubmitted,
+              stepNumber: 1,
+              outcome: WorkflowStatus.COMPLETED,
+              emails: ['step2@example.com'],
+              created: new Date(legacySteps[0].submittedAt),
+              snapshotKey: 'key-step-1',
+            },
+            {
+              type: WorkflowEventType.SentBack,
+              actorId: new ObjectId(),
+              actorEmail: 'admin@example.com',
+              stepNumber: 1,
+              fromStepNumber: 2,
+              emails: ['applicant@example.com'],
+              created: new Date(),
+            },
+          ],
+        })
+
+        const result = await updateMultiRespondentFormSubmission({
+          submissionId: String(row._id),
+          snapshottedFormDef: buildSnapshottedFormDef({
+            workflow: fourStepWorkflow,
+            webhook: undefined,
+          }),
+          encryptedPayload: buildV4Payload({ workflowStep: 0 }),
+          logMeta: { action: 'test' },
+        })
+
+        expect(result.isOk()).toBe(true)
+        const saved = await Model.findById(row._id).lean()
+        expect(saved?.submittedSteps).toHaveLength(1)
+        expect(saved?.workflowStep).toBe(0)
+        expect(
+          stepSubmittedEvents(saved?.workflowEvents).map((event) => [
+            event.stepNumber,
+            event.type === WorkflowEventType.StepSubmitted && event.snapshotKey,
+          ]),
+        ).toEqual([
+          [1, 'key-step-1'],
+          [1, 'key-step-1-again'],
+        ])
+      })
+
       it('keeps an admin event written after the respondent loaded the submission', async () => {
         const row = await createLegacyRowAtStepFour()
         const findById = Model.findById.bind(Model)

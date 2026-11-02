@@ -197,3 +197,17 @@ export const getEventsSinceLastSendBack = (
   )
   return events.slice(lastSendBack + 1)
 }
+
+/**
+ * @returns who the workflow was last sent back to at step 1, which has no
+ * earlier step to route it
+ */
+export const getStepOneSendBackRecipients = (
+  events: IWorkflowEvent[] = [],
+): string[] =>
+  events
+    .filter(
+      (event) =>
+        event.type === WorkflowEventType.SentBack && event.stepNumber === 1,
+    )
+    .slice(-1)[0]?.emails ?? []

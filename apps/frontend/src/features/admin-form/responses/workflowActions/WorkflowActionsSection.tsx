@@ -4,11 +4,18 @@ import { BiStopCircle, BiUndo, BiUser } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
 import { Flex, useDisclosure } from '@chakra-ui/react'
 
-import { SubmissionMrfMetadata, WorkflowStatus } from 'formsg-shared/types'
+import {
+  FormAuthType,
+  SubmissionMrfMetadata,
+  WorkflowStatus,
+} from 'formsg-shared/types'
 
 import Button from '~components/Button'
 
-import { useAdminFormCollaborators } from '~features/admin-form/common/queries'
+import {
+  useAdminForm,
+  useAdminFormCollaborators,
+} from '~features/admin-form/common/queries'
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 
 import { ResponseOverview } from '../IndividualResponsePage/ResponseOverview'
@@ -54,6 +61,7 @@ export const WorkflowActionsSection = ({
   const isSendBackOn = useWorkflowActionsSendBackGate()
   const isDelightfulDashboard = useIsDelightfulDashboard()
   const { hasEditAccess } = useAdminFormCollaborators(formId)
+  const { data: form } = useAdminForm()
   const stopModal = useDisclosure()
   const addAssigneeModal = useDisclosure()
   const sendBackModal = useDisclosure()
@@ -74,10 +82,11 @@ export const WorkflowActionsSection = ({
   })
   const canRemind = isDelightfulDashboard && pendingStepAssignees.length > 0
   const canActOnWorkflow = isWorkflowActionsOn && hasEditAccess
+  const canSendBackToStepOne = form?.authType === FormAuthType.NIL
   const canSendBack =
     isSendBackOn &&
     hasEditAccess &&
-    pendingStepNumber >= 3 &&
+    pendingStepNumber >= (canSendBackToStepOne ? 2 : 3) &&
     mrf.workflowCurrentStepNumber === history.submittedSteps.length
 
   if (!canRemind && !canActOnWorkflow && !canSendBack)
@@ -100,9 +109,11 @@ export const WorkflowActionsSection = ({
   const handleSendBack = ({
     targetStepNumber,
     remarks,
+    stepOneRecipientEmail,
   }: {
     targetStepNumber: number
     remarks?: string
+    stepOneRecipientEmail?: string
   }) => {
     if (!submissionSecretKey) return
     sendBackMutation.mutate(
@@ -112,6 +123,7 @@ export const WorkflowActionsSection = ({
         expectedStepNumber: pendingStepNumber,
         submissionSecretKey,
         remarks,
+        stepOneRecipientEmail,
       },
       { onSuccess: sendBackModal.onClose },
     )
@@ -193,6 +205,7 @@ export const WorkflowActionsSection = ({
         onConfirm={handleSendBack}
         isLoading={sendBackMutation.isLoading}
         history={history}
+        canSendBackToStepOne={canSendBackToStepOne}
       />
       <StopWorkflowModal
         isOpen={stopModal.isOpen}

@@ -70,6 +70,9 @@ export const enSG: ResponsesIndividualResponse = {
       description:
         'We’ll email the people on that step a new link to amend their answers. Answers given so far stay filled in. Every step after it will need to be completed again.',
       stepLabel: 'Send back to',
+      stepOneEmailLabel: 'Email address of who fills in Step 1',
+      stepOneEmailDescription:
+        'Step 1 has no set recipient, so we’ll email the new link to this address.',
       remarksLabel: 'Remarks',
       remarksDescription: 'Included in the email to the people on that step.',
       remarksTooLong: 'Remarks must be {max} characters or fewer',

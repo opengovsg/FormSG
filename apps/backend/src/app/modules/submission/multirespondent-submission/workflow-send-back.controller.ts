@@ -4,6 +4,7 @@ import {
   featureFlags,
   MAX_SEND_BACK_REMARKS_LENGTH,
 } from 'formsg-shared/constants'
+import { FormAuthType } from 'formsg-shared/types'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
 
 import { Environment } from '../../../../types'
@@ -26,8 +27,16 @@ const appUrl =
 
 const validateSendBackBody = celebrate({
   [Segments.BODY]: Joi.object({
-    targetStepNumber: Joi.number().integer().min(2).required(),
-    expectedStepNumber: Joi.number().integer().min(3).required(),
+    targetStepNumber: Joi.number().integer().min(1).required(),
+    expectedStepNumber: Joi.number().integer().min(2).required(),
+    stepOneRecipientEmail: Joi.string()
+      .email()
+      .lowercase()
+      .when('targetStepNumber', {
+        is: 1,
+        then: Joi.required(),
+        otherwise: Joi.forbidden(),
+      }),
     submissionSecretKey: Joi.string().required(),
     remarks: Joi.string()
       .trim()
@@ -45,11 +54,17 @@ const sendBackPendingMrfSubmission: ControllerHandler<
     expectedStepNumber: number
     submissionSecretKey: string
     remarks?: string
+    stepOneRecipientEmail?: string
   }
 > = async (req, res) => {
   const { formId, submissionId } = req.params
-  const { targetStepNumber, expectedStepNumber, submissionSecretKey, remarks } =
-    req.body
+  const {
+    targetStepNumber,
+    expectedStepNumber,
+    submissionSecretKey,
+    remarks,
+    stepOneRecipientEmail,
+  } = req.body
   const authedUserId = (req.session as AuthedSessionData).user._id
   const logMeta = {
     action: 'sendBackPendingMrfSubmission',
@@ -74,6 +89,8 @@ const sendBackPendingMrfSubmission: ControllerHandler<
         targetStepNumber,
         expectedStepNumber,
         remarks: remarks || undefined,
+        stepOneRecipientEmail,
+        canSendBackToStepOne: form.authType === FormAuthType.NIL,
         actor: user,
       }).map((sentBack) => ({ form, ...sentBack })),
     )

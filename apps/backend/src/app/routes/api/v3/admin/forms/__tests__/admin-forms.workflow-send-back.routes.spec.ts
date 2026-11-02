@@ -5,6 +5,7 @@ import { ObjectId } from 'bson'
 import { Router } from 'express'
 import { featureFlags } from 'formsg-shared/constants'
 import {
+  FormAuthType,
   FormResponseMode,
   SubmissionType,
   WorkflowEventType,
@@ -231,5 +232,66 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/send-back', () => 
     const response = await sendBack(form._id, submission._id)
 
     expect(response.status).toEqual(403)
+  })
+
+  describe('to step 1', () => {
+    it('emails the entered address a new link', async () => {
+      const sendSpy = jest.spyOn(MailService, 'sendMrfWorkflowSentBackEmail')
+      const form = await createForm()
+      const submission = await createSubmission(form._id)
+
+      const response = await sendBack(form._id, submission._id, {
+        targetStepNumber: 1,
+        stepOneRecipientEmail: 'Applicant@example.com',
+      })
+
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({
+        stepNumber: 1,
+        emails: ['applicant@example.com'],
+      })
+      expect(sendSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ emails: ['applicant@example.com'] }),
+      )
+      const stored = await MultirespondentSubmission.findById(submission._id)
+      expect(stored?.submittedSteps).toHaveLength(0)
+      expect(stored?.workflowStep).toBe(-1)
+    })
+
+    it.each([
+      ['step 1 without an email', { targetStepNumber: 1 }],
+      [
+        'an email for a later step',
+        { targetStepNumber: 2, stepOneRecipientEmail: 'a@example.com' },
+      ],
+      [
+        'an invalid email',
+        { targetStepNumber: 1, stepOneRecipientEmail: 'not-an-email' },
+      ],
+    ])('returns 400 for %s', async (_label, body) => {
+      const form = await createForm()
+      const submission = await createSubmission(form._id)
+
+      const response = await sendBack(form._id, submission._id, body)
+
+      expect(response.status).toEqual(400)
+    })
+
+    it('returns 400 on a form with a Singpass login', async () => {
+      const form = await createForm({
+        authType: FormAuthType.SP,
+        esrvcId: 'mock-esrvc-id',
+      })
+      const submission = await createSubmission(form._id)
+
+      const response = await sendBack(form._id, submission._id, {
+        targetStepNumber: 1,
+        stepOneRecipientEmail: 'applicant@example.com',
+      })
+
+      expect(response.status).toEqual(400)
+      const stored = await MultirespondentSubmission.findById(submission._id)
+      expect(stored?.submittedSteps).toHaveLength(3)
+    })
   })
 })
