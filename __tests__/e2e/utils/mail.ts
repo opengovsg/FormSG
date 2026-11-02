@@ -34,17 +34,19 @@ type EmailSubmission = {
   attachments?: Record<string, string>
 }
 
-// Sleep util, needed before getting mail to give mail server some time to receive email.
+// Storage mode sends its emails after responding to the submission, and may
+// first generate a PDF, so an email can land well after the page shows success.
+const MAIL_WAIT_TIMEOUT_MS = 10 * 1000
+const MAIL_POLL_INTERVAL_MS = 250
+
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /**
  * Utility to manage receiving of emails
  */
 const MAIL_CLIENT = {
-  getAll: async () => {
-    await sleep(100) // Wait 100ms before getting emails, to give maildev time to sync.
-    return axios.get<MailData[]>(`${MAIL_URL}/email`).then((res) => res.data)
-  },
+  getAll: () =>
+    axios.get<MailData[]>(`${MAIL_URL}/email`).then((res) => res.data),
 
   deleteAll: () => axios.delete(`${MAIL_URL}/email/all`),
 
@@ -54,11 +56,20 @@ const MAIL_CLIENT = {
     axios.get<string>(`${MAIL_URL}/email/${id}/attachment/${filename}`),
 }
 
+/**
+ * Polls the inbox until at least one email matches, or the wait times out.
+ * @returns matching emails, oldest first, or an empty array on timeout
+ */
 const getEmailsBy = async (
   filterFn: (email: MailData) => boolean,
 ): Promise<MailData[]> => {
-  const inbox = await MAIL_CLIENT.getAll()
-  return inbox.filter(filterFn).sort((a, b) => a.time - b.time)
+  const deadline = Date.now() + MAIL_WAIT_TIMEOUT_MS
+  for (;;) {
+    const inbox = await MAIL_CLIENT.getAll()
+    const emails = inbox.filter(filterFn).sort((a, b) => a.time - b.time)
+    if (emails.length > 0 || Date.now() >= deadline) return emails
+    await sleep(MAIL_POLL_INTERVAL_MS)
+  }
 }
 
 /**
