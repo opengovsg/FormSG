@@ -624,11 +624,11 @@ describe('multirespondent-submission.utils', () => {
       })
 
       it.each([
-        { hasLaterStepLogin: false, isAllowed: false },
-        { hasLaterStepLogin: true, isAllowed: true },
+        { hasMyInfoLogin: false, isAllowed: false },
+        { hasMyInfoLogin: true, isAllowed: true },
       ])(
-        'should only carry forward a children answer on a non-MyInfo form with later-step login ($hasLaterStepLogin)',
-        ({ hasLaterStepLogin, isAllowed }) => {
+        'should only carry forward a children answer on a non-MyInfo form with a later-step MyInfo login ($hasMyInfoLogin)',
+        ({ hasMyInfoLogin, isAllowed }) => {
           jest
             .spyOn(fieldValidation, 'validateFieldV4')
             .mockReturnValue(ok(true))
@@ -642,7 +642,7 @@ describe('multirespondent-submission.utils', () => {
             workflowStep: 2,
             stepAuthType: FormAuthType.NIL,
             formAuthType: FormAuthType.NIL,
-            hasLaterStepLogin,
+            hasMyInfoLogin,
             isMrfChildrenEnabled: true,
           })
 

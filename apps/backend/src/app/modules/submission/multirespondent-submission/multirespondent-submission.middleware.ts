@@ -20,6 +20,7 @@ import {
 } from 'formsg-shared/types'
 import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'
 import {
+  formUsesAuthType,
   getStepAuthType,
   hasLaterStepLogin,
 } from 'formsg-shared/utils/step-login'
@@ -912,7 +913,10 @@ export const validateMultirespondentSubmission = async (
                     workflowStep,
                   ),
                   formAuthType: req.formsg.formDef.authType,
-                  hasLaterStepLogin: hasLaterStepLogin(workflow),
+                  hasMyInfoLogin: formUsesAuthType(
+                    { authType: req.formsg.formDef.authType, workflow },
+                    FormAuthType.MyInfo,
+                  ),
                   stepFieldIds: new Set(editableFieldIds),
                   // Fail closed: without a growthbook instance, Children
                   // responses are rejected.

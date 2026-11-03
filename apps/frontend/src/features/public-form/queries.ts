@@ -22,8 +22,15 @@ export const publicFormKeys = {
   id: (formId: string) => [...publicFormKeys.base, formId] as const,
   submission: (formId: string, submissionId?: string, stepToken?: string) =>
     [...publicFormKeys.id(formId), submissionId, stepToken] as const,
-  mrfStepAuth: (formId: string, submissionId: string) =>
-    [...publicFormKeys.id(formId), submissionId, 'stepAuth'] as const,
+  // Keyed by step token too: the submission keeps its ID as it advances, but
+  // each step's link carries a new token.
+  mrfStepAuth: (formId: string, submissionId: string, stepToken?: string) =>
+    [
+      ...publicFormKeys.id(formId),
+      submissionId,
+      stepToken,
+      'stepAuth',
+    ] as const,
 }
 
 export const usePublicFormView = (
@@ -58,7 +65,7 @@ export const useMrfStepAuthSession = ({
   enabled: boolean
 }): UseQueryResult<MrfStepAuthSessionDto, ApiError> => {
   return useQuery<MrfStepAuthSessionDto, ApiError>(
-    publicFormKeys.mrfStepAuth(formId, submissionId ?? ''),
+    publicFormKeys.mrfStepAuth(formId, submissionId ?? '', stepToken),
     () =>
       getMrfStepAuthSession({
         formId,

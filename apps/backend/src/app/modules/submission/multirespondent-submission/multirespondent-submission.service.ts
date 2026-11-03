@@ -1951,12 +1951,8 @@ export const updateMultiRespondentFormSubmission = ({
       if (submission.stoppedAt) {
         return errAsync(new MrfWorkflowStoppedError())
       }
-      if (
-        validatedSubmission &&
-        submission.stepTokenHash !== validatedSubmission.stepTokenHash
-      ) {
-        return errAsync(new StepTokenVerificationError())
-      }
+      // Checked before the token: an advance during the request rotates the
+      // token, and must read as stale rather than as an invalid link.
       if (
         expectedPrevious &&
         (submission.workflowStep !== expectedPrevious.workflowStep ||
@@ -1967,6 +1963,12 @@ export const updateMultiRespondentFormSubmission = ({
           meta: { ...logMeta, submissionId },
         })
         return errAsync(new MrfSubmissionStaleError())
+      }
+      if (
+        validatedSubmission &&
+        submission.stepTokenHash !== validatedSubmission.stepTokenHash
+      ) {
+        return errAsync(new StepTokenVerificationError())
       }
       return okAsync({ submission, attachmentMetadata })
     })
@@ -2165,9 +2167,12 @@ export const updateMultiRespondentFormSubmission = ({
               .save()
               .then(() => ({ submission, responseMetadata, snapshot })),
             (error) => {
+              // The array edits version the save, so mongoose reports a
+              // $where miss as a VersionError rather than DocumentNotFound.
               if (
                 expectedPrevious &&
-                error instanceof mongoose.Error.DocumentNotFoundError
+                (error instanceof mongoose.Error.DocumentNotFoundError ||
+                  error instanceof mongoose.Error.VersionError)
               ) {
                 logger.warn({
                   message: 'Submission advanced by a concurrent request',

@@ -9,6 +9,9 @@ import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.co
 import * as BillingService from '../../billing/billing.service'
 import { DatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
+import * as MultirespondentSubmissionService from '../../submission/multirespondent-submission/multirespondent-submission.service'
+import * as StepAuth from '../../submission/multirespondent-submission/step-auth'
+import { MrfSubmissionStaleError } from '../../submission/submission.errors'
 import * as SpcpController from '../spcp.controller'
 import {
   CreateJwtError,
@@ -55,6 +58,21 @@ jest.mock('src/app/modules/form/form.service')
 const MockFormService = jest.mocked(FormService)
 jest.mock('src/app/config/config')
 const MockConfig = jest.mocked(config)
+jest.mock(
+  '../../submission/multirespondent-submission/multirespondent-submission.service',
+)
+const MockMultirespondentSubmissionService = jest.mocked(
+  MultirespondentSubmissionService,
+)
+jest.mock('../../submission/multirespondent-submission/step-auth', () => ({
+  ...jest.requireActual(
+    '../../submission/multirespondent-submission/step-auth',
+  ),
+  verifyCpStepBinding: jest.fn(),
+  resolveMrfStepAuth: jest.fn(),
+  setMrfStepAuthCookie: jest.fn(),
+}))
+const MockStepAuth = jest.mocked(StepAuth)
 MockConfig.isDevOrTest = false
 
 const MOCK_RESPONSE = expressHandler.mockResponse()
@@ -489,6 +507,166 @@ describe('spcp.controller', () => {
           mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
         ).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
+      })
+
+      describe('with a later-step binding', () => {
+        const submissionId = 'a'.repeat(24)
+        const nonce = 'b'.repeat(32)
+        const stepEsrvcId = 'STEP-2-ESRVC'
+        const context = {
+          formId: MOCK_TARGET,
+          submissionId,
+          workflowStep: 1,
+          authType: FormAuthType.CP as const,
+          stepTokenHash: 'hash-for-step-2',
+        }
+        const stepDestination = `/${MOCK_TARGET}/edit/${submissionId}?queryId=abc`
+        const bindingReq = expressHandler.mockRequest({
+          query: {
+            state: MOCK_OIDC_STATE,
+            code: MOCK_CP_OIDC_AUTHORISATION_CODE,
+          },
+          cookies: {
+            [CodeVerifierCookieName.CP]: MOCK_CP_CODE_VERIFIER,
+            [StepAuth.getCpStepBindingCookieName(nonce)]: 'binding-token',
+          },
+        })
+
+        beforeEach(() => {
+          mockCpOidcServiceClass.parseState.mockReturnValue(
+            ok({
+              formId: MOCK_TARGET,
+              destination: `/${MOCK_TARGET}?queryId=abc&mrfStepSubmissionId=${submissionId}`,
+              rememberMe: false,
+              cookieDuration: MOCK_COOKIE_AGE,
+              nonce,
+            }),
+          )
+          MockStepAuth.verifyCpStepBinding.mockReturnValue(
+            ok({ ...context, nonce }),
+          )
+          MockMultirespondentSubmissionService.getMultirespondentSubmission.mockReturnValue(
+            // resolveMrfStepAuth is mocked, so the submission is never read.
+            okAsync({} as never),
+          )
+          MockStepAuth.resolveMrfStepAuth.mockReturnValue(
+            ok({
+              kind: 'login',
+              workflowStep: 1,
+              workflowStepId: 'step-2-id',
+              stepFields: [],
+              context,
+              esrvcId: stepEsrvcId,
+            }),
+          )
+        })
+
+        it('sets only the step cookie and bills the step e-service ID', async () => {
+          const mockRes = expressHandler.mockResponse()
+
+          await loginHandler(bindingReq, mockRes, jest.fn())
+
+          expect(MockStepAuth.verifyCpStepBinding).toHaveBeenCalledWith(
+            'binding-token',
+            nonce,
+          )
+          expect(MockStepAuth.resolveMrfStepAuth).toHaveBeenCalledWith(
+            MOCK_TARGET,
+            expect.anything(),
+            { binding: { ...context, nonce } },
+          )
+          expect(MockBillingService.recordLoginByForm).toHaveBeenCalledWith(
+            MOCK_CP_FORM,
+            { authType: FormAuthType.CP, esrvcId: stepEsrvcId },
+          )
+          expect(MockStepAuth.setMrfStepAuthCookie).toHaveBeenCalledWith(
+            mockRes,
+            {
+              ...context,
+              userName: MOCK_CP_OIDC_JWT_PAYLOAD.userName,
+              userInfo: MOCK_CP_OIDC_JWT_PAYLOAD.userInfo,
+            },
+          )
+          expect(mockRes.cookie).not.toHaveBeenCalledWith(
+            JwtName.CP,
+            expect.anything(),
+            expect.anything(),
+          )
+          expect(mockRes.cookie).not.toHaveBeenCalledWith('isLoginError', true)
+          expect(mockRes.redirect).toHaveBeenCalledWith(stepDestination)
+        })
+
+        it('rejects a binding for another form without exchanging the code', async () => {
+          MockStepAuth.verifyCpStepBinding.mockReturnValueOnce(
+            ok({ ...context, formId: 'c'.repeat(24), nonce }),
+          )
+          const mockRes = expressHandler.mockResponse()
+
+          await loginHandler(bindingReq, mockRes, jest.fn())
+
+          expect(mockRes.sendStatus).toHaveBeenCalledWith(400)
+          expect(
+            mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+          ).not.toHaveBeenCalled()
+          expect(MockStepAuth.setMrfStepAuthCookie).not.toHaveBeenCalled()
+        })
+
+        it('sends an expired binding back to its step to log in again', async () => {
+          MockStepAuth.verifyCpStepBinding.mockReturnValueOnce(
+            err(new StepAuth.CpStepBindingExpiredError(context)),
+          )
+          const mockRes = expressHandler.mockResponse()
+
+          await loginHandler(bindingReq, mockRes, jest.fn())
+
+          expect(mockRes.cookie).toHaveBeenCalledWith('isLoginError', true)
+          expect(mockRes.redirect).toHaveBeenCalledWith(stepDestination)
+          expect(
+            mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+          ).not.toHaveBeenCalled()
+          expect(MockStepAuth.setMrfStepAuthCookie).not.toHaveBeenCalled()
+        })
+
+        it('issues no session when the submission advanced during login', async () => {
+          MockStepAuth.resolveMrfStepAuth.mockReturnValueOnce(
+            err(new MrfSubmissionStaleError()),
+          )
+          const mockRes = expressHandler.mockResponse()
+
+          await loginHandler(bindingReq, mockRes, jest.fn())
+
+          expect(mockRes.cookie).toHaveBeenCalledWith('isLoginError', true)
+          expect(mockRes.redirect).toHaveBeenCalledWith(stepDestination)
+          expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
+          expect(MockStepAuth.setMrfStepAuthCookie).not.toHaveBeenCalled()
+        })
+
+        it('issues no session when Corppass rejects the code', async () => {
+          mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData.mockReturnValueOnce(
+            errAsync(new InvalidIdTokenError()),
+          )
+          const mockRes = expressHandler.mockResponse()
+
+          await loginHandler(bindingReq, mockRes, jest.fn())
+
+          expect(mockRes.cookie).toHaveBeenCalledWith('isLoginError', true)
+          expect(mockRes.redirect).toHaveBeenCalledWith(stepDestination)
+          expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
+          expect(MockStepAuth.setMrfStepAuthCookie).not.toHaveBeenCalled()
+        })
+
+        it('issues no session when the login cannot be billed', async () => {
+          MockBillingService.recordLoginByForm.mockReturnValueOnce(
+            errAsync(new DatabaseError()),
+          )
+          const mockRes = expressHandler.mockResponse()
+
+          await loginHandler(bindingReq, mockRes, jest.fn())
+
+          expect(mockRes.cookie).toHaveBeenCalledWith('isLoginError', true)
+          expect(mockRes.redirect).toHaveBeenCalledWith(stepDestination)
+          expect(MockStepAuth.setMrfStepAuthCookie).not.toHaveBeenCalled()
+        })
       })
 
       it('should set the cookie with the correct params and redirect to the destination', async () => {

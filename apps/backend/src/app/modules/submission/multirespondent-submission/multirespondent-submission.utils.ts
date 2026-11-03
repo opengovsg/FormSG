@@ -237,7 +237,7 @@ export const retrieveWorkflowStepEmailAddresses = (
  * @param workflowStep the workflow step this submission targets (0 = initial submission)
  * @param stepAuthType login of the step being submitted (Step 1: the form's)
  * @param formAuthType the form's auth type, from the form definition
- * @param hasLaterStepLogin whether the submission's saved workflow has a login on a later step
+ * @param hasMyInfoLogin whether Step 1 or a later step of the submission's saved workflow logs in with MyInfo
  * @param stepFieldIds fields the step being submitted may fill in
  * @param isMrfChildrenEnabled whether the mrf-children feature flag is on; fail closed when unknown
  * @returns initial responses if all responses are valid, else an error.
@@ -251,7 +251,7 @@ export const validateMrfFieldResponses = ({
   workflowStep,
   stepAuthType,
   formAuthType,
-  hasLaterStepLogin = false,
+  hasMyInfoLogin = false,
   stepFieldIds = new Set(),
   isMrfChildrenEnabled,
 }: {
@@ -263,7 +263,7 @@ export const validateMrfFieldResponses = ({
   workflowStep: number
   stepAuthType: FormAuthType
   formAuthType: FormAuthType
-  hasLaterStepLogin?: boolean
+  hasMyInfoLogin?: boolean
   stepFieldIds?: ReadonlySet<string>
   isMrfChildrenEnabled: boolean
 }): Result<
@@ -294,10 +294,10 @@ export const validateMrfFieldResponses = ({
       const isFilledByThisStep =
         stepAuthType === FormAuthType.MyInfo &&
         (workflowStep === 0 || stepFieldIds.has(responseId))
-      // Without later-step logins, only Step 1's Myinfo login can have filled it.
+      // Only a Myinfo login, on Step 1 or a later step, can have filled it.
       const isCarriedForward =
         workflowStep > 0 &&
-        (hasLaterStepLogin || formAuthType === FormAuthType.MyInfo) &&
+        (hasMyInfoLogin || formAuthType === FormAuthType.MyInfo) &&
         !!prevResponse &&
         !checkIsResponseChangedV4({ response, prevResponse })
       const isChildrenResponseAllowed =
