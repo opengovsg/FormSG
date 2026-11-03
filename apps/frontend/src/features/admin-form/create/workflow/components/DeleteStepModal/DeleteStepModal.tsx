@@ -31,6 +31,7 @@ import {
   getRemovedStepAuthFields,
 } from '../../utils/authFieldRemoval'
 import { AffectedAuthFieldRules } from '../AffectedAuthFieldRules'
+import { DeletedAuthFields } from '../DeletedAuthFields'
 
 interface DeleteStepModalProps {
   onClose: () => void
@@ -145,9 +146,10 @@ export const DeleteStepModal = ({
                   This is the last step using its authentication provider. These
                   fields will be deleted from your form:
                 </Text>
-                {deletedFields.map((field) => (
-                  <Text key={field._id}>{field.title}</Text>
-                ))}
+                <DeletedAuthFields
+                  fields={deletedFields}
+                  formFields={form?.form_fields ?? []}
+                />
                 <AffectedAuthFieldRules rules={affectedRules} />
                 <Text>Historical responses will not be deleted.</Text>
               </>

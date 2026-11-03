@@ -44,6 +44,7 @@ import {
   getWorkflowAuthOptions,
 } from '../../utils/authFieldRemoval'
 import { AffectedAuthFieldRules } from '../AffectedAuthFieldRules'
+import { DeletedAuthFields } from '../DeletedAuthFields'
 
 interface GuidedDeleteWorkflowModalProps {
   isOpen: boolean
@@ -247,9 +248,10 @@ export const GuidedDeleteWorkflowModal = ({
                     <Text textStyle="subhead-1">
                       These fields will be deleted from your form:
                     </Text>
-                    {deletedFields.map((field) => (
-                      <Text key={field._id}>{field.title}</Text>
-                    ))}
+                    <DeletedAuthFields
+                      fields={deletedFields}
+                      formFields={form?.form_fields ?? []}
+                    />
                   </>
                 ) : (
                   <Text>All form fields will be kept.</Text>
