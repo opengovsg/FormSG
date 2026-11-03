@@ -224,6 +224,35 @@ describe('Form Model', () => {
         })
       })
 
+      it('should keep saved view column filters that list values', async () => {
+        // Arrange
+        const formParams = merge({}, MOCK_FORM_PARAMS, {
+          savedViews: [
+            {
+              name: 'Approved only',
+              filter: {
+                columnFilters: [
+                  { columnId: 'status', values: ['Approved'] },
+                  { columnId: 'stage', values: [] },
+                ],
+              },
+            },
+          ],
+        })
+
+        // Act
+        const saved = await new Form(formParams).save()
+        const found = await Form.findById(saved._id).lean()
+
+        // Assert
+        expect(found?.savedViews?.[0].filter).toEqual({
+          columnFilters: [
+            { columnId: 'status', values: ['Approved'] },
+            { columnId: 'stage', values: [] },
+          ],
+        })
+      })
+
       it('should create and save successfully with valid esrvcId', async () => {
         // Arrange
         const validEsrvcId = 'validEsrvcId'

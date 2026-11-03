@@ -182,3 +182,58 @@ describe('column filters in a saved view', () => {
     expect(fromSavedView(view, COLUMN_OPTIONS).columnFilters).toEqual([])
   })
 })
+
+describe('a column filtered by picking its values', () => {
+  const OPTIONS = [
+    ...COLUMN_OPTIONS,
+    {
+      id: 'status',
+      label: 'Status',
+      filterValues: ['Pending', 'Approved', 'Not approved'],
+    },
+  ]
+
+  it('keeps the picked values in the order the column lists them', () => {
+    expect(
+      withColumnFilter([], 'status', ['Not approved', 'Pending'], OPTIONS),
+    ).toEqual([{ columnId: 'status', values: ['Pending', 'Not approved'] }])
+  })
+
+  it('clears the filter when every value is picked', () => {
+    expect(
+      withColumnFilter(
+        [{ columnId: 'status', values: ['Approved'] }],
+        'status',
+        ['Pending', 'Approved', 'Not approved'],
+        OPTIONS,
+      ),
+    ).toEqual([])
+  })
+
+  it('keeps the filter when no value is picked', () => {
+    expect(withColumnFilter([], 'status', [], OPTIONS)).toEqual([
+      { columnId: 'status', values: [] },
+    ])
+  })
+
+  it('drops values the column no longer lists', () => {
+    expect(
+      withColumnFilter([], 'status', ['Approved', 'Archived'], OPTIONS),
+    ).toEqual([{ columnId: 'status', values: ['Approved'] }])
+  })
+
+  it('reads a text filter saved on it as the values the text matched', () => {
+    const view: FormSavedView = {
+      _id: 'view-legacy',
+      name: 'Approved',
+      filter: { columnFilters: [{ columnId: 'status', text: 'approved' }] },
+    }
+    expect(fromSavedView(view, OPTIONS).columnFilters).toEqual([
+      { columnId: 'status', values: ['Approved', 'Not approved'] },
+    ])
+  })
+
+  it('drops a values filter on a column filtered by text', () => {
+    expect(withColumnFilter([], 'a', ['Approved'], OPTIONS)).toEqual([])
+  })
+})

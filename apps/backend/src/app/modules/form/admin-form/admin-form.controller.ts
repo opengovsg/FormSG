@@ -2690,8 +2690,9 @@ const joiSavedViewBody = {
       .items(
         Joi.object({
           columnId: Joi.string().required(),
-          text: Joi.string().trim().min(1).required(),
-        }),
+          text: Joi.string().trim().min(1),
+          values: Joi.array().items(Joi.string()).unique(),
+        }).xor('text', 'values'),
       )
       .unique('columnId')
       .optional(),

@@ -22,14 +22,22 @@ export const matchesSearchQuery = (
   )
 }
 
+const matchesColumnFilter = (
+  value: string | undefined,
+  filter: SavedViewColumnFilter,
+): boolean =>
+  'values' in filter
+    ? value !== undefined && filter.values.includes(value)
+    : matchesSearchQuery([value], normaliseSearchQuery(filter.text))
+
 /**
  * A row matches when every filtered column's value contains its filter text,
- * so each filter narrows the rows.
+ * or is one of its listed values, so each filter narrows the rows.
  */
 export const matchesColumnFilters = (
   getColumnValue: (columnId: string) => string | undefined,
   columnFilters: SavedViewColumnFilter[],
 ): boolean =>
-  columnFilters.every(({ columnId, text }) =>
-    matchesSearchQuery([getColumnValue(columnId)], normaliseSearchQuery(text)),
+  columnFilters.every((filter) =>
+    matchesColumnFilter(getColumnValue(filter.columnId), filter),
   )

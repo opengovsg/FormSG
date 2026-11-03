@@ -137,8 +137,9 @@ export const FilterMenu = ({
                     key={id}
                     label={label}
                     text={
-                      columnFilters.find(({ columnId }) => columnId === id)
-                        ?.text ?? ''
+                      columnFilters
+                        .filter((filter) => 'text' in filter)
+                        .find(({ columnId }) => columnId === id)?.text ?? ''
                     }
                     isOpen={openColumnId === id}
                     onOpen={() => setOpenColumnId(id)}
