@@ -48,7 +48,6 @@ import {
 } from '../../spcp/__tests__/spcp.test.constants'
 import { InvalidJwtError, MissingJwtError } from '../../spcp/spcp.errors'
 import { CpOidcServiceClass } from '../../spcp/spcp.oidc.service/spcp.oidc.service.cp'
-import { SpOidcServiceClass } from '../../spcp/spcp.oidc.service/spcp.oidc.service.sp'
 import { MrfJwtPayload } from '../../submission/multirespondent-submission/multirespondent-submission.types'
 import { getMrfCookieName } from '../../submission/multirespondent-submission/multirespondent-submission.utils'
 import * as SubmissionService from '../../submission/submission.service'
@@ -84,8 +83,6 @@ jest.mock('src/app/utils/otp')
 const MockOtpUtils = jest.mocked(OtpUtils)
 jest.mock('../../form/form.service')
 const MockFormService = jest.mocked(FormService)
-jest.mock('../../spcp/spcp.oidc.service/spcp.oidc.service.sp')
-const MockSpOidcServiceClass = jest.mocked(SpOidcServiceClass)
 jest.mock('../../spcp/spcp.oidc.service/spcp.oidc.service.cp')
 const MockCpOidcServiceClass = jest.mocked(CpOidcServiceClass)
 jest.mock('../../myinfo/myinfo.util')
@@ -95,9 +92,6 @@ const MockMyInfoService = jest.mocked(MyInfoService)
 jest.mock('../../submission/submission.service')
 const MockSubmissionService = jest.mocked(SubmissionService)
 
-const mockSpOidcServiceClass = jest.mocked(
-  MockSpOidcServiceClass.mock.instances[0],
-)
 const mockCpOidcServiceClass = jest.mocked(
   MockCpOidcServiceClass.mock.instances[0],
 )
@@ -267,10 +261,6 @@ describe('Verification controller', () => {
       permissionList: [{ email: 'former@forms.sg' }],
     } as IPopulatedForm
 
-    const MOCK_SP_FORM = {
-      ...MOCK_FORM,
-      authType: FormAuthType.SP,
-    } as IPopulatedForm
     const MOCK_CP_FORM = {
       ...MOCK_FORM,
       authType: FormAuthType.CP,
@@ -327,54 +317,11 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(mockSpOidcServiceClass.extractJwt).not.toHaveBeenCalled()
       expect(mockCpOidcServiceClass.extractJwt).not.toHaveBeenCalled()
-      expect(mockSpOidcServiceClass.extractJwtPayload).not.toHaveBeenCalled()
       expect(mockCpOidcServiceClass.extractJwtPayload).not.toHaveBeenCalled()
+
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).not.toHaveBeenCalled()
       expect(MockMyInfoService.verifyLoginJwt).not.toHaveBeenCalled()
-      expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        EXPECTED_PARAMS_FOR_SENDING_FORM_OTP,
-      )
-      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
-    })
-
-    it('should return 201 when Singpass authentication is enabled and jwt token is valid', async () => {
-      // Arrange
-      const MOCK_SP_SESSION = {
-        userName: MOCK_JWT_PAYLOAD.userName,
-        exp: 1000000000,
-        iat: 100000000,
-        rememberMe: false,
-      }
-
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_SP_FORM),
-      )
-
-      mockSpOidcServiceClass.extractJwt.mockReturnValueOnce(ok(MOCK_JWT))
-      mockSpOidcServiceClass.extractJwtPayload.mockReturnValueOnce(
-        okAsync(MOCK_SP_SESSION),
-      )
-
-      // Act
-      await VerificationController._handleGenerateOtp(
-        MOCK_FORM_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(mockSpOidcServiceClass.extractJwt).toHaveBeenCalledWith(
-        MOCK_FORM_REQ.cookies,
-      )
-      expect(mockSpOidcServiceClass.extractJwtPayload).toHaveBeenCalledWith(
-        MOCK_JWT,
-      )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_FORM_OTP,
@@ -648,77 +595,6 @@ describe('Verification controller', () => {
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_FORM_OTP,
       )
-      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
-      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
-    })
-
-    it('should return 400 when Singpass authentication is enabled but jwt token is missing in session', async () => {
-      // Arrange
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_SP_FORM),
-      )
-
-      mockSpOidcServiceClass.extractJwt.mockReturnValueOnce(
-        err(new MissingJwtError()),
-      )
-      const expectedResponse = {
-        message: 'Sorry, something went wrong. Please refresh and try again.',
-      }
-
-      // Act
-      await VerificationController._handleGenerateOtp(
-        MOCK_FORM_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(mockSpOidcServiceClass.extractJwt).toHaveBeenCalledWith(
-        MOCK_FORM_REQ.cookies,
-      )
-      expect(mockSpOidcServiceClass.extractJwtPayload).not.toHaveBeenCalled()
-      expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
-      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
-    })
-
-    it('should return 400 when Singpass authentication is enabled but jwt token is invalid', async () => {
-      // Arrange
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_SP_FORM),
-      )
-
-      mockSpOidcServiceClass.extractJwt.mockReturnValueOnce(ok(MOCK_JWT))
-      mockSpOidcServiceClass.extractJwtPayload.mockReturnValueOnce(
-        errAsync(new InvalidJwtError()),
-      )
-      const expectedResponse = {
-        message: 'Sorry, something went wrong. Please refresh and try again.',
-      }
-
-      // Act
-      await VerificationController._handleGenerateOtp(
-        MOCK_FORM_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(mockSpOidcServiceClass.extractJwt).toHaveBeenCalledWith(
-        MOCK_FORM_REQ.cookies,
-      )
-      expect(mockSpOidcServiceClass.extractJwtPayload).toHaveBeenCalledWith(
-        MOCK_JWT,
-      )
-      expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
@@ -1099,55 +975,11 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(mockSpOidcServiceClass.extractJwt).not.toHaveBeenCalled()
       expect(mockCpOidcServiceClass.extractJwt).not.toHaveBeenCalled()
-      expect(mockSpOidcServiceClass.extractJwtPayload).not.toHaveBeenCalled()
       expect(mockCpOidcServiceClass.extractJwtPayload).not.toHaveBeenCalled()
+
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).not.toHaveBeenCalled()
       expect(MockMyInfoService.verifyLoginJwt).not.toHaveBeenCalled()
-      expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        EXPECTED_PARAMS_FOR_SENDING_PAYMENT_OTP,
-      )
-
-      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
-    })
-
-    it('should return 201 when Singpass authentication is enabled and jwt token is valid for payment otp', async () => {
-      // Arrange
-      const MOCK_SP_SESSION = {
-        userName: MOCK_JWT_PAYLOAD.userName,
-        exp: 1000000000,
-        iat: 100000000,
-        rememberMe: false,
-      }
-
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_SP_FORM),
-      )
-
-      mockSpOidcServiceClass.extractJwt.mockReturnValueOnce(ok(MOCK_JWT))
-      mockSpOidcServiceClass.extractJwtPayload.mockReturnValueOnce(
-        okAsync(MOCK_SP_SESSION),
-      )
-
-      // Act
-      await VerificationController._handleGenerateOtp(
-        MOCK_PAYMENT_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(mockSpOidcServiceClass.extractJwt).toHaveBeenCalledWith(
-        MOCK_PAYMENT_REQ.cookies,
-      )
-      expect(mockSpOidcServiceClass.extractJwtPayload).toHaveBeenCalledWith(
-        MOCK_JWT,
-      )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_PAYMENT_OTP,
@@ -1426,77 +1258,6 @@ describe('Verification controller', () => {
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_PAYMENT_OTP,
       )
-      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
-      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
-    })
-
-    it('should return 400 when Singpass authentication is enabled but jwt token is missing in session for payment otp', async () => {
-      // Arrange
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_SP_FORM),
-      )
-
-      mockSpOidcServiceClass.extractJwt.mockReturnValueOnce(
-        err(new MissingJwtError()),
-      )
-      const expectedResponse = {
-        message: 'Sorry, something went wrong. Please refresh and try again.',
-      }
-
-      // Act
-      await VerificationController._handleGenerateOtp(
-        MOCK_PAYMENT_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(mockSpOidcServiceClass.extractJwt).toHaveBeenCalledWith(
-        MOCK_PAYMENT_REQ.cookies,
-      )
-      expect(mockSpOidcServiceClass.extractJwtPayload).not.toHaveBeenCalled()
-      expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
-      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
-    })
-
-    it('should return 400 when Singpass authentication is enabled but jwt token is invalid for payment otp', async () => {
-      // Arrange
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_SP_FORM),
-      )
-
-      mockSpOidcServiceClass.extractJwt.mockReturnValueOnce(ok(MOCK_JWT))
-      mockSpOidcServiceClass.extractJwtPayload.mockReturnValueOnce(
-        errAsync(new InvalidJwtError()),
-      )
-      const expectedResponse = {
-        message: 'Sorry, something went wrong. Please refresh and try again.',
-      }
-
-      // Act
-      await VerificationController._handleGenerateOtp(
-        MOCK_PAYMENT_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(mockSpOidcServiceClass.extractJwt).toHaveBeenCalledWith(
-        MOCK_PAYMENT_REQ.cookies,
-      )
-      expect(mockSpOidcServiceClass.extractJwtPayload).toHaveBeenCalledWith(
-        MOCK_JWT,
-      )
-      expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })

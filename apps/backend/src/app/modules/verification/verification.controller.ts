@@ -210,7 +210,7 @@ export const _handleGenerateOtp: ControllerHandler<
         const { authType } = form
         switch (authType) {
           case FormAuthType.CP: {
-            const oidcService = getOidcService(FormAuthType.CP)
+            const oidcService = getOidcService()
             return oidcService
               .extractJwt(req.cookies)
               .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
@@ -218,21 +218,6 @@ export const _handleGenerateOtp: ControllerHandler<
               .mapErr((error) => {
                 logger.error({
                   message: 'Failed to verify Corppass JWT with cp oidc client',
-                  meta: logMeta,
-                  error,
-                })
-                return error
-              })
-          }
-          case FormAuthType.SP: {
-            const oidcService = getOidcService(FormAuthType.SP)
-            return oidcService
-              .extractJwt(req.cookies)
-              .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
-              .map(() => form)
-              .mapErr((error) => {
-                logger.error({
-                  message: 'Failed to verify Singpass JWT with sp oidc client',
                   meta: logMeta,
                   error,
                 })

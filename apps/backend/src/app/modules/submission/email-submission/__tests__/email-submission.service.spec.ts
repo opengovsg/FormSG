@@ -218,7 +218,7 @@ describe('email-submission.service', () => {
     const MOCK_EMAIL_FORM = {
       _id: new ObjectId(),
       title: 'title',
-      authType: FormAuthType.SP,
+      authType: FormAuthType.CP,
       getUniqueMyInfoAttrs: () => MYINFO_ATTRS,
       emails: ['a@abc.com', 'b@cde.com'],
     } as IEmailFormSchema
