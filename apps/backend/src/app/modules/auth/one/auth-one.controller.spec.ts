@@ -157,6 +157,7 @@ describe('AuthOneController', () => {
       const mockReq = expressHandler.mockRequest({
         query: callbackQuery,
         cookies: MOCK_CALLBACK_COOKIES,
+        session: { regenerate: (cb: (err?: unknown) => void) => cb() },
         others: { originalUrl: callbackUrl },
       })
       const mockRes = expressHandler.mockResponse()
