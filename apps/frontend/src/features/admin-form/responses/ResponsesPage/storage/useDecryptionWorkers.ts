@@ -83,6 +83,7 @@ const useDecryptionWorkers = ({
   const { data: adminForm } = useAdminForm()
   const { user } = useUser()
   const isWorkflowActionsOn = useFeatureIsOn(featureFlags.workflowActions)
+  const isAttachmentsV2Enabled = useFeatureIsOn(featureFlags.attachmentsV2)
 
   useEffect(() => {
     return () => killWorkers(workers)
@@ -173,6 +174,7 @@ const useDecryptionWorkers = ({
             expectedResponsesCount,
             NUM_OF_METADATA_ROWS,
             csvView,
+            { isAttachmentsV2Enabled },
           )
         : undefined
 
@@ -360,6 +362,7 @@ const useDecryptionWorkers = ({
                       submissionTime,
                       responses: decryptedResponses,
                     },
+                    isAttachmentsV2Enabled,
                   })
                   pdfZip.file(pdfTitle, pdfBlob)
                 }
@@ -530,6 +533,7 @@ const useDecryptionWorkers = ({
     },
     [
       adminForm,
+      isAttachmentsV2Enabled,
       isWorkflowActionsOn,
       onDecryptionProgress,
       onPdfGenerationProgress,

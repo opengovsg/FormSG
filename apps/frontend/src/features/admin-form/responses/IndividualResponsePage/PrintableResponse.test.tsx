@@ -29,6 +29,7 @@ describe('PrintableResponse', () => {
         decryptedResponses={MOCK_RESPONSES}
         responseId="mock-submission-id"
         submissionTime="Mon, 6 Jul 2026, 12:00:00 pm"
+        isAttachmentsV2Enabled={false}
       />,
     )
 
