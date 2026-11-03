@@ -2,12 +2,13 @@ import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { FormControl, FormHelperText } from '@chakra-ui/react'
 
-import { FormResponseMode } from 'formsg-shared/types'
+import { FormAuthType, FormResponseMode } from 'formsg-shared/types'
 import { isLoginField } from 'formsg-shared/utils/login-identity'
 import {
   canStepLoginFillField,
   getFieldSourceProvider,
   getOwningStepIndex,
+  STEP_LOGIN_PROVIDER_LABELS,
 } from 'formsg-shared/utils/step-login'
 
 import { textStyles } from '~theme/textStyles'
@@ -107,22 +108,28 @@ export const QuestionsBlock = ({
       return owner === undefined || owner === stepNumber
     })
     .map((f) => {
-      const owner = getFieldSourceProvider(f)
-        ? getOwningStepIndex(f, formWorkflow)
-        : undefined
+      const provider = getFieldSourceProvider(f)
+      const owner = provider ? getOwningStepIndex(f, formWorkflow) : undefined
+      const isUnavailable = isProposed && !pickedFieldIds.includes(f._id)
       const ownedElsewhere =
-        isProposed &&
-        owner !== undefined &&
-        owner !== stepNumber &&
-        !pickedFieldIds.includes(f._id)
+        isUnavailable && owner !== undefined && owner !== stepNumber
+      // A step with the other login cannot take this field.
+      // Picking it asks to convert to that login.
+      const needsOtherLogin =
+        isUnavailable &&
+        !!provider &&
+        editedAuthType !== FormAuthType.NIL &&
+        !canStepLoginFillField(f, editedAuthType)
       return {
         value: f._id,
         label: getLogicFieldLabel(idToFieldMap[f._id]),
         icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
-        disabled: ownedElsewhere,
+        disabled: ownedElsewhere || needsOtherLogin,
         descriptionTag: ownedElsewhere
           ? `Assigned to Step ${owner + 1}`
-          : undefined,
+          : needsOtherLogin
+            ? `${STEP_LOGIN_PROVIDER_LABELS[provider]} only`
+            : undefined,
       }
     })
 
