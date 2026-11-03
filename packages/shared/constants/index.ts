@@ -1,3 +1,4 @@
+export * from './attachment'
 export * from './file'
 export * from './form'
 export * from './form-origin'

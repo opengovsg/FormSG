@@ -45,6 +45,7 @@ export const featureFlags = {
   delightfulDashboard: 'delightful-dashboard' as const,
   suiteLauncher: 'suite-launcher' as const,
   escapeHatch: 'mrf-cutover-escape-hatch' as const,
+  attachmentsV2: 'attachments-v2' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {
