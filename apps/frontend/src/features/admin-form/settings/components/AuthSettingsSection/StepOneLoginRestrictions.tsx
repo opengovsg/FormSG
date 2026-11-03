@@ -3,8 +3,15 @@ import { useParams } from 'react-router-dom'
 import { Box, Divider, Stack, Text } from '@chakra-ui/react'
 
 import { KB } from 'formsg-shared/constants'
-import { MultirespondentFormSettings } from 'formsg-shared/types'
+import {
+  FormAuthType,
+  FormResponseMode,
+  FormStatus,
+  MultirespondentFormSettings,
+} from 'formsg-shared/types'
 import { VALID_WHITELIST_FILE_EXTENSIONS } from 'formsg-shared/utils/file-validation'
+import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'
+import { getStepFields } from 'formsg-shared/utils/step-login'
 
 import { textStyles } from '~theme/textStyles'
 import { parseCsvFile } from '~utils/parseCsvFile'
@@ -13,12 +20,17 @@ import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 import Toggle from '~components/Toggle'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
+import { FieldListTabIndex } from '~features/admin-form/create/builder-and-design/constants'
+import { getNextQuestionNumber } from '~features/form/utils'
+
 import {
   updateFormWhitelistSetting,
   updateIsSingleSubmission,
 } from '../../SettingsService'
 
 import { SecretKeyDownloadWhitelistFileModal } from './SecretKeyDownloadWhitelistFileModal'
+import { SubmitterIdCollectionSection } from './SubmitterIdCollectionSection'
 
 export interface StepOneLoginRestrictionsDraft {
   isSingleSubmission: boolean
@@ -61,6 +73,8 @@ interface StepOneLoginRestrictionsProps {
   isDisabled: boolean
   onParsingChange?: (isParsing: boolean) => void
   dividerBleed?: string
+  authType?: FormAuthType
+  onGoToFields?: (tab: FieldListTabIndex) => void
 }
 
 /** Shared controlled Step 1 restrictions for Create and Settings drafts. */
@@ -71,8 +85,11 @@ export const StepOneLoginRestrictions = ({
   isDisabled,
   onParsingChange,
   dividerBleed,
+  authType,
+  onGoToFields,
 }: StepOneLoginRestrictionsProps): JSX.Element => {
   const { formId } = useParams()
+  const { data: form } = useAdminForm()
   const [error, setError] = useState('')
   const [isParsing, setIsParsing] = useState(false)
   const [isDownloadOpen, setIsDownloadOpen] = useState(false)
@@ -138,16 +155,36 @@ export const StepOneLoginRestrictions = ({
     }
   }
 
+  const stepOneFields = !form
+    ? []
+    : form.responseMode === FormResponseMode.Multirespondent
+      ? getStepFields(form.form_fields, form.workflow, 0)
+      : form.form_fields
+  const divider = (
+    <Divider
+      alignSelf="center"
+      w={
+        dividerBleed
+          ? `calc(100% + ${dividerBleed} + ${dividerBleed})`
+          : undefined
+      }
+    />
+  )
+
   return (
     <Stack spacing="2rem" mt="2rem">
-      <Divider
-        alignSelf="center"
-        w={
-          dividerBleed
-            ? `calc(100% + ${dividerBleed} + ${dividerBleed})`
-            : undefined
-        }
-      />
+      {authType ? (
+        <SubmitterIdCollectionSection
+          settings={settings}
+          isFormPublic={settings.status === FormStatus.Public}
+          hasIdentityFields={stepOneFields.some(isLoginIdentityField)}
+          nextQuestionNumber={getNextQuestionNumber(form?.form_fields ?? [])}
+          authType={authType}
+          divider={divider}
+          onGoToFields={onGoToFields}
+        />
+      ) : null}
+      {divider}
       <Toggle
         isDisabled={isDisabled || isParsing}
         isChecked={value.isSingleSubmission}
@@ -157,14 +194,7 @@ export const StepOneLoginRestrictions = ({
           onChange({ isSingleSubmission: !value.isSingleSubmission })
         }
       />
-      <Divider
-        alignSelf="center"
-        w={
-          dividerBleed
-            ? `calc(100% + ${dividerBleed} + ${dividerBleed})`
-            : undefined
-        }
-      />
+      {divider}
       <Box>
         <Text textStyle="h4" mb="0.25rem">
           Restrict form to eligible NRIC/FIN/UENs only

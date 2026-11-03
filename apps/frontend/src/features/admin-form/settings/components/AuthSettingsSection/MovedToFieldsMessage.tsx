@@ -16,14 +16,17 @@ import {
 
 /**
  * Tells admins looking for the "Collect NRIC/FIN/UENs" toggle that it is now
- * a field, and links to the field tab that offers it.
+ * a field, and links to the field tab that offers it. Inside the form builder,
+ * `onGoToFields` switches tabs in place so open drafts save first.
  */
 export const MovedToFieldsMessage = ({
   authType,
   actionRef,
+  onGoToFields,
 }: {
   authType: FormAuthType
   actionRef?: RefObject<HTMLAnchorElement>
+  onGoToFields?: (tab: FieldListTabIndex) => void
 }): JSX.Element => {
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.settings.singpass.submitterIdCollection',
@@ -38,15 +41,21 @@ export const MovedToFieldsMessage = ({
       <Stack spacing="0.75rem" align="flex-start">
         <Text>{t(`${login}.movedToFields`)}</Text>
         <Text>{t('otherFormsAutoConvertNotice')}</Text>
-        <Button
-          as={ReactLink}
-          ref={actionRef}
-          variant="outline"
-          to={`${ADMINFORM_ROUTE}/${formId}`}
-          state={openFieldListTabState(tab)}
-        >
-          {t(`${login}.goToFields`)}
-        </Button>
+        {onGoToFields ? (
+          <Button variant="outline" onClick={() => onGoToFields(tab)}>
+            {t(`${login}.goToFields`)}
+          </Button>
+        ) : (
+          <Button
+            as={ReactLink}
+            ref={actionRef}
+            variant="outline"
+            to={`${ADMINFORM_ROUTE}/${formId}`}
+            state={openFieldListTabState(tab)}
+          >
+            {t(`${login}.goToFields`)}
+          </Button>
+        )}
       </Stack>
     </InlineMessage>
   )
