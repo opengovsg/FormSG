@@ -1045,10 +1045,10 @@ describe('Form Model', () => {
             ],
           })
 
-        it('should save a later step login with a trimmed e-service ID', async () => {
+        it('should save a later step login with an e-service ID', async () => {
           const saved = await buildForm({
             auth_type: FormAuthType.CP,
-            esrvc_id: ' MOCK-ESRVC ',
+            esrvc_id: 'MOCK-ESRVC',
           }).save()
 
           const workflow =
@@ -1067,6 +1067,10 @@ describe('Form Model', () => {
           [
             'an e-service ID with whitespace',
             { auth_type: FormAuthType.CP, esrvc_id: 'MOCK ESRVC' },
+          ],
+          [
+            'an untrimmed e-service ID, like the form-level one',
+            { auth_type: FormAuthType.CP, esrvc_id: ' MOCK-ESRVC ' },
           ],
         ])('should reject %s', async (_, auth) => {
           await expect(buildForm(auth).save()).rejects.toThrow(

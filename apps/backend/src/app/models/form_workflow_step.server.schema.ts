@@ -10,6 +10,15 @@ import {
 } from '../../types'
 import { transformEmails } from '../modules/form/form.utils'
 
+/** Shared by the form's `esrvcId` and a later step's `auth.esrvc_id`. */
+export const ESRVC_ID_SCHEMA = {
+  type: String,
+  validate: [/^\S*$/i, 'e-service ID must not contain whitespace'] as [
+    RegExp,
+    string,
+  ],
+}
+
 const WorkflowStepSchema = new Schema<IWorkflowStepSchema>(
   {
     workflow_type: {
@@ -43,14 +52,7 @@ const WorkflowStepSchema = new Schema<IWorkflowStepSchema>(
             enum: [FormAuthType.MyInfo, FormAuthType.CP],
             required: true,
           },
-          esrvc_id: {
-            type: String,
-            trim: true,
-            validate: {
-              validator: (v: string) => !/\s/.test(v),
-              message: 'e-service ID must not contain whitespace',
-            },
-          },
+          esrvc_id: ESRVC_ID_SCHEMA,
         },
         { _id: false },
       ),
