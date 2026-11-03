@@ -1175,6 +1175,36 @@ describe('EncryptedResponseCsvGenerator', () => {
           expectedSubmissionRow,
         ])
       })
+
+      it('should label attachment headers when Attachments v2 is on', () => {
+        // Arrange
+        generator = new EncryptedResponseCsvGenerator(
+          mockExpectedNumberOfRecords,
+          mockNumOfMetaDataRows,
+          {},
+          { isAttachmentsV2Enabled: true },
+        )
+        const mockRecord = {
+          record: [generateRecord(1, 'a.pdf', 'attachment')],
+          created: mockCreatedEarly,
+          submissionId: 'mockSubmissionId',
+        }
+        generator.addRecord(mockRecord)
+
+        // Act
+        generator.process()
+
+        // Assert
+        expect(generator.records).toEqual([
+          UTF8_BYTE_ORDER_MARK,
+          stringify(['Response ID', 'Timestamp', '[attachment] mockQuestion1']),
+          stringify([
+            mockRecord.submissionId,
+            getFormattedDate(mockRecord.created),
+            'a.pdf',
+          ]),
+        ])
+      })
     })
   })
 })

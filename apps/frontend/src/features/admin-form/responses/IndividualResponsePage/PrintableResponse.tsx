@@ -6,6 +6,7 @@ import { handleAddressResponseDisplay } from 'formsg-shared/utils/address'
 
 import { convertToSignatureSvgString } from '~utils/convertSignatureOutput'
 
+import { getAttachmentQuestionLabel } from '../ResponsesPage/storage/utils/attachmentQuestionLabel'
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 
 const SIGNATURE_PDF_FIXED_WIDTH = 300 // Same as the backend template's signature width
@@ -71,10 +72,23 @@ const StandardPrintableRow = ({
 
 const PrintableDecryptedRow = ({
   row,
+  isAttachmentsV2Enabled,
 }: {
   row: AugmentedDecryptedResponse
+  isAttachmentsV2Enabled: boolean
 }) => {
   switch (row.fieldType as FieldType) {
+    case BasicField.Attachment:
+      return (
+        <StandardPrintableRow
+          question={getAttachmentQuestionLabel({
+            question: row.question,
+            fieldType: row.fieldType,
+            isAttachmentsV2Enabled,
+          })}
+          answer={row.answer ?? ''}
+        />
+      )
     case BasicField.Section:
       return (
         <TableRow>
@@ -158,10 +172,12 @@ const PrintableResponseRows = ({
   decryptedResponses,
   responseId,
   submissionTime,
+  isAttachmentsV2Enabled,
 }: {
   decryptedResponses: AugmentedDecryptedResponse[]
   responseId: string
   submissionTime: string
+  isAttachmentsV2Enabled: boolean
 }) => {
   return (
     <table
@@ -178,7 +194,11 @@ const PrintableResponseRows = ({
           />
         ))}
         {decryptedResponses.map((r, idx) => (
-          <PrintableDecryptedRow row={r} key={idx} />
+          <PrintableDecryptedRow
+            row={r}
+            key={idx}
+            isAttachmentsV2Enabled={isAttachmentsV2Enabled}
+          />
         ))}
       </tbody>
     </table>
@@ -194,12 +214,14 @@ export const PrintableResponse = ({
   decryptedResponses,
   responseId,
   submissionTime,
+  isAttachmentsV2Enabled,
 }: {
   formTitle: string
   formId: string
   decryptedResponses: AugmentedDecryptedResponse[]
   responseId: string
   submissionTime: string
+  isAttachmentsV2Enabled: boolean
 }) => {
   return (
     <Box py="16px" fontFamily="sans-serif" data-dd-privacy="mask">
@@ -229,6 +251,7 @@ export const PrintableResponse = ({
           decryptedResponses={decryptedResponses}
           responseId={responseId}
           submissionTime={submissionTime}
+          isAttachmentsV2Enabled={isAttachmentsV2Enabled}
         />
       </Box>
     </Box>

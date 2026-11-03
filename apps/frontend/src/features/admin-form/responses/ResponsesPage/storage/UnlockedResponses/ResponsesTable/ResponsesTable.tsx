@@ -60,6 +60,7 @@ import {
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 import { useDecryptedResponsesBySubmissionId } from '~features/admin-form/responses/queries'
 
+import { getAttachmentQuestionLabel } from '../../utils/attachmentQuestionLabel'
 import {
   EXPORT_FEES_COLUMN_ID,
   EXPORT_PAID_AMOUNT_COLUMN_ID,
@@ -382,6 +383,7 @@ export const ResponsesTable = () => {
   )
 
   const isWorkflowActionsOn = useFeatureIsOn(featureFlags.workflowActions)
+  const isAttachmentsV2Enabled = useFeatureIsOn(featureFlags.attachmentsV2)
 
   const metadataToUse = useMemo(() => {
     const rows = submissionId ? filteredMetadata : metadata
@@ -419,11 +421,15 @@ export const ResponsesTable = () => {
   const getFieldColumnLabel = useCallback(
     (source: FieldColumnSource) => {
       const formField = form?.form_fields.find(({ _id }) => _id === source.id)
-      return formField
-        ? getFieldColumnHeader(formField, verifiedLabel)
-        : source.title
+      return getAttachmentQuestionLabel({
+        question: formField
+          ? getFieldColumnHeader(formField, verifiedLabel)
+          : source.title,
+        fieldType: source.fieldType,
+        isAttachmentsV2Enabled,
+      })
     },
-    [form, verifiedLabel],
+    [form, verifiedLabel, isAttachmentsV2Enabled],
   )
 
   const prefixColumns = useMemo(() => {
