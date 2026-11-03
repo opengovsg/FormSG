@@ -1232,6 +1232,38 @@ describe('multirespondent-submission.utils', () => {
       ])
     })
 
+    it('should label attachments [attachment] when Attachments v2 is on', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'File Upload',
+          fieldType: BasicField.Attachment,
+        } as IAttachmentFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.Attachment,
+          answer: { value: 'a.pdf', hasBeenScanned: true },
+          question: 'File Upload',
+          provenance: {},
+        },
+      } as any
+
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+        isAttachmentsV2Enabled: true,
+      })
+
+      expect(result).toEqual([
+        {
+          question: '[attachment] File Upload',
+          answer: 'a.pdf',
+          fieldType: BasicField.Attachment,
+        },
+      ])
+    })
+
     it('should prefix [Myinfo] when the response carries provenance.myinfoVerified', () => {
       const formFields: FormFieldSchema[] = [
         {
