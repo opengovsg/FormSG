@@ -19,7 +19,9 @@ export class MyInfoFapiIncompleteLoginError extends ApplicationError {
 }
 
 export class MyInfoFapiSessionFormMismatchError extends ApplicationError {
-  constructor(message = 'MyInfo FAPI login session belongs to another form') {
+  constructor(
+    message = 'MyInfo FAPI login session belongs to another form or step',
+  ) {
     super(message, undefined, ErrorCodes.MYINFO_FAPI_SESSION_FORM_MISMATCH)
   }
 }
