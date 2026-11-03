@@ -288,6 +288,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 86400000,
       env: 'BOUNCE_LIFE_SPAN',
     },
+    sesSnsTopicArns: {
+      doc: 'Comma-separated ARNs of SNS topics allowed to send SES notifications. Notifications from other topics are rejected.',
+      format: String,
+      default: '',
+      env: 'SES_SNS_TOPIC_ARNS',
+    },
     chromiumBin: {
       doc: 'Path to chromium executable for PDF generation',
       format: String,
