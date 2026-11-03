@@ -163,8 +163,8 @@ const getOwnerSteps = (
 ): Map<string, number[]> => {
   const owners = new Map<string, number[]>()
   workflow.forEach((step, stepIndex) =>
-    step.edit.forEach((fieldId) => {
-      const id = String(fieldId)
+    // A step may list a field twice. It still owns the field once.
+    new Set(step.edit.map(String)).forEach((id) => {
       owners.set(id, [...(owners.get(id) ?? []), stepIndex])
     }),
   )
