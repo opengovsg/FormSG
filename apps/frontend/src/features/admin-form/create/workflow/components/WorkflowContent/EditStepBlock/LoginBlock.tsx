@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Text } from '@chakra-ui/react'
@@ -14,6 +14,8 @@ import {
 import { textStyles } from '~theme/textStyles'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { FieldListTabIndex } from '~features/admin-form/create/builder-and-design/constants'
+import { useCreatePageSidebar } from '~features/admin-form/create/common'
 import { AuthSwitchConfirmation } from '~features/admin-form/settings/components/AuthSettingsSection/AuthSwitchConfirmation'
 import { StepLoginControls } from '~features/admin-form/settings/components/AuthSettingsSection/StepLoginControls'
 import {
@@ -27,6 +29,7 @@ import { EditStepInputs } from '../../../types'
 import { useIsSpotlightActiveSection } from '../../Spotlight'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
+import { FIELDS_TO_EDIT_NAME } from './EditStepBlock'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
 import { useStepEditorLogin } from './useStepEditorLogin'
 
@@ -110,7 +113,9 @@ const StepLogin = ({
       {isFirstStepByStepNumber(stepNumber) &&
       login.auth_type !== FormAuthType.NIL ? (
         <WorkflowStepOneRestrictions
+          form={form}
           formMethods={formMethods}
+          authType={login.auth_type}
           isDisabled={isFormPublic || isLoading}
         />
       ) : null}
@@ -119,14 +124,35 @@ const StepLogin = ({
 }
 
 const WorkflowStepOneRestrictions = ({
+  form,
   formMethods,
+  authType,
   isDisabled,
 }: {
+  form: AdminMultirespondentFormDto
   formMethods: UseFormReturn<EditStepInputs>
+  authType: FormAuthType
   isDisabled: boolean
 }) => {
   const { data: settings } = useAdminFormSettings<MultirespondentFormSettings>()
+  const { setFieldListTabIndex, handleBuilderClick } = useCreatePageSidebar()
   const draft = formMethods.watch('first_step_restrictions')
+
+  // Converting the NRIC/FIN/UEN setting adds identity fields to the saved
+  // Step 1. Keep them in this draft so saving it does not unassign them.
+  const savedFieldIds = form.workflow[0]?.edit
+  const prevSavedFieldIds = useRef(savedFieldIds)
+  useEffect(() => {
+    const prev = prevSavedFieldIds.current ?? []
+    prevSavedFieldIds.current = savedFieldIds
+    const added = (savedFieldIds ?? []).filter((id) => !prev.includes(id))
+    if (!added.length) return
+    const picked = formMethods.getValues(FIELDS_TO_EDIT_NAME) ?? []
+    const missing = added.filter((id) => !picked.includes(id))
+    if (missing.length)
+      formMethods.setValue(FIELDS_TO_EDIT_NAME, [...picked, ...missing])
+  }, [formMethods, savedFieldIds])
+
   if (!settings || settings.responseMode !== FormResponseMode.Multirespondent)
     return null
   return (
@@ -134,6 +160,11 @@ const WorkflowStepOneRestrictions = ({
       settings={settings}
       value={draft?.value ?? createStepOneLoginRestrictionsDraft(settings)}
       isDisabled={isDisabled}
+      authType={authType}
+      onGoToFields={(tab: FieldListTabIndex) => {
+        setFieldListTabIndex(tab)
+        handleBuilderClick(false)
+      }}
       onParsingChange={(parsing) =>
         formMethods.setValue('first_step_restrictions_parsing', parsing)
       }
