@@ -808,7 +808,7 @@ describe('BounceService', () => {
     })
 
     it('should reject a signed notification from a topic that is not allowed', async () => {
-      body.TopicArn = 'arn:aws:sns:ap-southeast-1:999999999999:attacker-topic'
+      body.TopicArn = 'arn:aws:sns:ap-southeast-1:999999999999:invalid-topic'
 
       const result = await BounceService.validateSnsRequest(body)
 
