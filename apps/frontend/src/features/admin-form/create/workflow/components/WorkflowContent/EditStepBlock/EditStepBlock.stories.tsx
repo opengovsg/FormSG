@@ -139,6 +139,7 @@ const mrfFormViewWithFields = [
   getAdminFormView({
     mode: FormResponseMode.Multirespondent,
     overrides: {
+      workflow: [],
       form_fields: [
         form_field_1,
         form_field_2,
@@ -171,7 +172,7 @@ const myinfo_field: FormFieldDto = {
 const mrfFormViewWith = (form_fields: FormFieldDto[]) => [
   getAdminFormView({
     mode: FormResponseMode.Multirespondent,
-    overrides: { form_fields },
+    overrides: { workflow: [], form_fields },
   }),
 ]
 
