@@ -22,7 +22,7 @@ import Menu from '~components/Menu'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 
 import { useToolbarMenuDisclosure } from './hooks/useToolbarMenuDisclosure'
-import { ColumnFilterRow } from './ColumnFilterRow'
+import { ColumnFilterRow, ColumnValuesFilterRow } from './ColumnFilterRow'
 import { toolbarMenuButtonProps } from './toolbarButtonProps'
 import { useUnlockedResponses } from './UnlockedResponsesProvider'
 
@@ -132,25 +132,38 @@ export const FilterMenu = ({
 
               <SectionLabel>{columnsLabel}</SectionLabel>
               <Stack spacing={0} pt="0.5rem" pb="0.5rem">
-                {columnOptions.map(({ id, label }) => (
-                  <ColumnFilterRow
-                    key={id}
-                    label={label}
-                    text={
-                      columnFilters
-                        .filter((filter) => 'text' in filter)
-                        .find(({ columnId }) => columnId === id)?.text ?? ''
-                    }
-                    isOpen={openColumnId === id}
-                    onOpen={() => setOpenColumnId(id)}
-                    onClose={() =>
+                {columnOptions.map(({ id, label, filterValues }) => {
+                  const filter = columnFilters.find(
+                    ({ columnId }) => columnId === id,
+                  )
+                  const rowProps = {
+                    label,
+                    isOpen: openColumnId === id,
+                    onOpen: () => setOpenColumnId(id),
+                    onClose: () =>
                       setOpenColumnId((current) =>
                         current === id ? undefined : current,
-                      )
-                    }
-                    onFilter={(text) => setColumnFilter(id, text)}
-                  />
-                ))}
+                      ),
+                  }
+                  return filterValues ? (
+                    <ColumnValuesFilterRow
+                      key={id}
+                      {...rowProps}
+                      filterValues={filterValues}
+                      values={
+                        filter && 'values' in filter ? filter.values : undefined
+                      }
+                      onFilter={(values) => setColumnFilter(id, values)}
+                    />
+                  ) : (
+                    <ColumnFilterRow
+                      key={id}
+                      {...rowProps}
+                      text={filter && 'text' in filter ? filter.text : ''}
+                      onFilter={(text) => setColumnFilter(id, text)}
+                    />
+                  )
+                })}
               </Stack>
             </Box>
             {hasFilters && (

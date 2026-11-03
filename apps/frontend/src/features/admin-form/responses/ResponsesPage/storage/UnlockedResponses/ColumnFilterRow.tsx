@@ -12,10 +12,12 @@ import {
   PopoverContent,
   PopoverTrigger,
   Portal,
+  Stack,
   Text,
 } from '@chakra-ui/react'
 
 import Badge from '~components/Badge'
+import Checkbox from '~components/Checkbox'
 import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 
@@ -192,6 +194,57 @@ export const ColumnFilterRow = ({
           </InputRightElement>
         ) : null}
       </InputGroup>
+    </ColumnFilterPopover>
+  )
+}
+
+interface ColumnValuesFilterRowProps {
+  label: string
+  filterValues: string[]
+  values?: string[]
+  isOpen: boolean
+  onOpen: () => void
+  onClose: () => void
+  onFilter: (values: string[]) => void
+}
+
+export const ColumnValuesFilterRow = ({
+  label,
+  filterValues,
+  values,
+  isOpen,
+  onOpen,
+  onClose,
+  onFilter,
+}: ColumnValuesFilterRowProps): JSX.Element => {
+  const selected = values ?? filterValues
+
+  const handleToggle = (value: string, isChecked: boolean) =>
+    onFilter(
+      filterValues.filter((option) =>
+        option === value ? isChecked : selected.includes(option),
+      ),
+    )
+
+  return (
+    <ColumnFilterPopover
+      label={label}
+      isApplied={!!values}
+      isOpen={isOpen}
+      onOpen={onOpen}
+      onClose={onClose}
+    >
+      <Stack role="group" aria-label={label} spacing="0.5rem">
+        {filterValues.map((value) => (
+          <Checkbox
+            key={value}
+            isChecked={selected.includes(value)}
+            onChange={(event) => handleToggle(value, event.target.checked)}
+          >
+            {value}
+          </Checkbox>
+        ))}
+      </Stack>
     </ColumnFilterPopover>
   )
 }

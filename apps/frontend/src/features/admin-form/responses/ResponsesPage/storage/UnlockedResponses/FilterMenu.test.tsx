@@ -2,7 +2,11 @@ import { ChakraProvider } from '@chakra-ui/react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { DateString, Language } from 'formsg-shared/types'
+import {
+  DateString,
+  Language,
+  SavedViewColumnFilter,
+} from 'formsg-shared/types'
 
 import i18n from '~/i18n/i18n'
 
@@ -11,15 +15,23 @@ import { theme } from '~theme/index'
 import { FilterMenu } from './FilterMenu'
 
 const mockClearColumnFilters = vi.fn()
+const mockSetColumnFilter = vi.fn()
 const mockSetDateRange = vi.fn()
-let mockColumnFilters: { columnId: string; text: string }[] = []
+let mockColumnFilters: SavedViewColumnFilter[] = []
 let mockDateRange: DateString[] = []
 
 vi.mock('./UnlockedResponsesProvider', () => ({
   useUnlockedResponses: () => ({
-    columnOptions: [{ id: 'name', label: 'Name' }],
+    columnOptions: [
+      { id: 'name', label: 'Name' },
+      {
+        id: 'status',
+        label: 'Status',
+        filterValues: ['Pending', 'Approved'],
+      },
+    ],
     columnFilters: mockColumnFilters,
-    setColumnFilter: vi.fn(),
+    setColumnFilter: mockSetColumnFilter,
     clearColumnFilters: mockClearColumnFilters,
   }),
 }))
@@ -66,6 +78,23 @@ describe('the Filter menu', () => {
 
   it('shows the action for a column filter on its own', async () => {
     mockColumnFilters = [{ columnId: 'name', text: 'tan' }]
+
+    expect(await openFilterMenu()).toBeEnabled()
+  })
+
+  it('filters a column with a fixed set of values by checking them', async () => {
+    await openFilterMenu()
+
+    await userEvent.click(screen.getByRole('button', { name: /status/i }))
+    await userEvent.click(
+      await screen.findByRole('checkbox', { name: 'Pending' }),
+    )
+
+    expect(mockSetColumnFilter).toHaveBeenLastCalledWith('status', ['Approved'])
+  })
+
+  it('shows the action for a values filter on its own', async () => {
+    mockColumnFilters = [{ columnId: 'status', values: ['Approved'] }]
 
     expect(await openFilterMenu()).toBeEnabled()
   })
