@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.60.2](https://github.com/opengovsg/formsg/compare/v9.60.1...v9.60.2) (2026-11-03)
+
+
+### Bug Fixes
+
+* **backend:** check SNS topic (#10494) ([#10494](https://github.com/opengovsg/formsg/commit/0628f5a563d2c1ed6eb9a49d46f6ab8bf2c933c2))
+
+
+### Tests
+
+* **storybook:** stop stories calling the real backend (#10487) ([#10487](https://github.com/opengovsg/formsg/commit/a7e7c3c087ecfe35e80164d8c13d52ee3c91d2e8))
+
 ## [9.60.1](https://github.com/opengovsg/formsg/compare/v9.60.0...v9.60.1) (2026-11-02)
 
 
