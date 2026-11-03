@@ -253,6 +253,7 @@ export const StepAuthSettingsEditor = ({
         {stepIndex === 0 && authType !== FormAuthType.NIL ? (
           <StepOneLoginRestrictions
             settings={settings}
+            authType={authType}
             value={restrictions}
             onChange={changeRestrictions}
             isDisabled={isPublic || isLoading}
