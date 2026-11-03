@@ -396,8 +396,9 @@ export const verifyMrfStepAuth = (
 /**
  * Fills this step's login identity answers from its verified login, before
  * logic and validation. Submitted, omitted, URL-prefilled and draft values
- * never replace them. They are ordinary answers: no verified content and no
- * provenance; the read-only list marks them `[Myinfo]`.
+ * never replace them. They are ordinary answers with no verified content;
+ * verifyStepMyInfoHashes adds them to the read-only list and stamps their
+ * provenance, so every output marks them `[Myinfo]`.
  */
 export const fillLoginIdentityResponses = (
   req: ProcessedMultirespondentSubmissionHandlerRequest,
@@ -1136,7 +1137,7 @@ export const verifyMyInfoHashes = async (
 /**
  * A later step checks only its own MyInfo answers, against the hashes saved
  * for its login session. Verified MyInfo answers and login-filled identities
- * join the stored read-only list, which only grows.
+ * join the stored read-only list, which only grows, and get provenance.myinfoVerified
  */
 const verifyStepMyInfoHashes = (
   req: ProcessedMultirespondentSubmissionHandlerRequest,
@@ -1156,6 +1157,11 @@ const verifyStepMyInfoHashes = (
       ...verifiedFieldIds,
       ...loginFilledFieldIds,
     ])
+    // Email outputs read provenance
+    stampMyInfoVerifiedOnResponses(
+      req.body.responses ?? {},
+      new Set(loginFilledFieldIds),
+    )
     return next()
   }
   if (session.authType !== FormAuthType.MyInfo) return withReadOnly([])

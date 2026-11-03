@@ -1132,6 +1132,49 @@ describe('Multirespondent Submission Middleware', () => {
       ])
     })
 
+    it('stamps provenance.myinfoVerified on a later step’s login-filled identities', async () => {
+      // Arrange: emails read provenance, not the read-only list, so later-step
+      // identities need the stamp to show '[Myinfo]' like Step 1's do.
+      const identityFieldId = new ObjectId().toHexString()
+      const mockReq = createMockReq({ formId: MOCK_FORM_ID })
+      mockReq.body.responses = {
+        [identityFieldId]: {
+          fieldType: BasicField.Nric,
+          answer: { value: 'S1234567D' },
+          question: 'NRIC/FIN',
+          provenance: {},
+        },
+      }
+      mockReq.formsg = {
+        formDef: MOCK_MYINFO_FORM_DEF,
+        mrfSubmission: { myInfoReadOnlyFields: [] },
+        loginFilledFieldIds: [identityFieldId],
+        stepAuth: {
+          kind: 'verified',
+          workflowStep: 1,
+          stepFields: [
+            {
+              _id: new ObjectId(identityFieldId),
+              fieldType: BasicField.Nric,
+              title: 'NRIC/FIN',
+            },
+          ],
+          session: { authType: FormAuthType.SP, uinFin: 'S1234567D' },
+        },
+      }
+      const mockNext = jest.fn()
+
+      // Act
+      await verifyMyInfoHashes(mockReq, createMockRes() as any, mockNext)
+
+      // Assert
+      expect(mockNext).toHaveBeenCalled()
+      expect(mockReq.formsg.myInfoReadOnlyFields).toEqual([identityFieldId])
+      expect(mockReq.body.responses[identityFieldId].provenance).toEqual({
+        myinfoVerified: true,
+      })
+    })
+
     it('should stamp provenance.myinfoVerified on responses whose child hash keys were verified', async () => {
       // Arrange
       setupMyInfoLoginMocks()
