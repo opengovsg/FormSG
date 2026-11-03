@@ -84,15 +84,22 @@ export const QuestionsBlock = ({
   const fillableFields = formFields.filter(
     (f) => !NON_RESPONSE_FIELD_SET.has(f.fieldType),
   )
+  const savedStepFieldIds: string[] = formWorkflow[stepNumber]?.edit ?? []
 
   const fieldItems = fillableFields
     // A login-filled field is offered only to a step whose login fills it,
     // and to one step at a time. Fields already on this step stay listed so
     // they can be removed.
     .filter((f) => {
-      // Without step logins, login-filled fields stay on Step 1 only.
+      // Without step logins, login-filled fields stay on Step 1 only. A later
+      // step saved with a login keeps its own: the picker only keeps values
+      // it lists, so hiding them would drop them on the next change.
       if (!isLoginShown)
-        return isFirstStepByStepNumber(stepNumber) || !isLoginField(f)
+        return (
+          isFirstStepByStepNumber(stepNumber) ||
+          !isLoginField(f) ||
+          savedStepFieldIds.includes(f._id)
+        )
       if (isProposed || pickedFieldIds.includes(f._id)) return true
       if (!canStepLoginFillField(f, editedAuthType)) return false
       if (!getFieldSourceProvider(f)) return true
