@@ -155,7 +155,7 @@ const GuidedTemplate: StoryFn = () => {
 export const InactiveEmpty = Template.bind({})
 InactiveEmpty.storyName = 'Inactive, nothing configured'
 InactiveEmpty.parameters = {
-  msw: { handlers: mocks(NOTHING_CONFIGURED) },
+  msw: { handlers: { default: mocks(NOTHING_CONFIGURED) } },
   docs: {
     description: {
       story:
@@ -167,7 +167,7 @@ InactiveEmpty.parameters = {
 export const InactiveConfigured = Template.bind({})
 InactiveConfigured.storyName = 'Inactive, recipients configured'
 InactiveConfigured.parameters = {
-  msw: { handlers: mocks(FULLY_CONFIGURED) },
+  msw: { handlers: { default: mocks(FULLY_CONFIGURED) } },
   docs: {
     description: {
       story:
@@ -179,7 +179,7 @@ InactiveConfigured.parameters = {
 export const Loading = Template.bind({})
 Loading.storyName = 'Loading, settings not yet arrived'
 Loading.parameters = {
-  msw: { handlers: mocks(FULLY_CONFIGURED, 'infinite') },
+  msw: { handlers: { default: mocks(FULLY_CONFIGURED, 'infinite') } },
   docs: {
     description: {
       story:
@@ -190,7 +190,7 @@ Loading.parameters = {
 
 export const Active = OpenedTemplate.bind({})
 Active.parameters = {
-  msw: { handlers: mocks(FULLY_CONFIGURED) },
+  msw: { handlers: { default: mocks(FULLY_CONFIGURED) } },
   docs: {
     description: {
       story:
@@ -203,7 +203,9 @@ export const ActiveOnPublicForm = OpenedTemplate.bind({})
 ActiveOnPublicForm.storyName = 'Active, form is public'
 ActiveOnPublicForm.parameters = {
   msw: {
-    handlers: mocks({ ...FULLY_CONFIGURED, status: FormStatus.Public }),
+    handlers: {
+      default: mocks({ ...FULLY_CONFIGURED, status: FormStatus.Public }),
+    },
   },
   docs: {
     description: {
@@ -217,12 +219,14 @@ export const SettingsError = Template.bind({})
 SettingsError.storyName = 'Settings request failed'
 SettingsError.parameters = {
   msw: {
-    handlers: [
-      mocks(NOTHING_CONFIGURED)[0],
-      http.get('/api/v3/admin/forms/:formId/settings', () =>
-        HttpResponse.json({ message: 'Forbidden' }, { status: 403 }),
-      ),
-    ],
+    handlers: {
+      default: [
+        mocks(NOTHING_CONFIGURED)[0],
+        http.get('/api/v3/admin/forms/:formId/settings', () =>
+          HttpResponse.json({ message: 'Forbidden' }, { status: 403 }),
+        ),
+      ],
+    },
   },
   docs: {
     description: {
@@ -235,7 +239,7 @@ SettingsError.parameters = {
 export const GuidedActive = GuidedTemplate.bind({})
 GuidedActive.storyName = 'Active, reached from guided setup'
 GuidedActive.parameters = {
-  msw: { handlers: mocks(FULLY_CONFIGURED) },
+  msw: { handlers: { default: mocks(FULLY_CONFIGURED) } },
   docs: {
     description: {
       story:

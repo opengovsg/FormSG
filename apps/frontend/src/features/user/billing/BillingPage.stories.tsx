@@ -38,7 +38,7 @@ const PageTemplate: StoryFn = () => <BillingPage />
 export const DesktopDefault = PageTemplate.bind({})
 DesktopDefault.parameters = {
   argos: { modes: viewportModes('tablet', 'mobile') },
-  msw: [getEmptyBillingInfo()],
+  msw: { handlers: { default: [getEmptyBillingInfo()] } },
 }
 
 // BillCharges
@@ -59,7 +59,7 @@ export const DesktopNoCharges: StoryFn<BillChargesProps> = (args) => (
 DesktopNoCharges.args = MOCK_BILLCHARGES_ARGS
 DesktopNoCharges.parameters = {
   argos: { modes: viewportModes('tablet', 'mobile') },
-  msw: [getEmptyBillingInfo()],
+  msw: { handlers: { default: [getEmptyBillingInfo()] } },
 }
 
 export const DesktopHasCharges: StoryFn<BillChargesProps> = (args) => (
@@ -68,7 +68,7 @@ export const DesktopHasCharges: StoryFn<BillChargesProps> = (args) => (
 DesktopHasCharges.args = MOCK_BILLCHARGES_ARGS
 DesktopHasCharges.parameters = {
   argos: { modes: viewportModes('tablet', 'mobile') },
-  msw: [getBillingInfo({ delay: 1000 })],
+  msw: { handlers: { default: [getBillingInfo({ delay: 1000 })] } },
 }
 
 export const DesktopLoading: StoryFn<BillChargesProps> = (args) => (
@@ -77,5 +77,5 @@ export const DesktopLoading: StoryFn<BillChargesProps> = (args) => (
 DesktopLoading.args = MOCK_BILLCHARGES_ARGS
 DesktopLoading.parameters = {
   argos: { modes: viewportModes('tablet', 'mobile') },
-  msw: [getBillingInfo({ delay: 'infinite' })],
+  msw: { handlers: { default: [getBillingInfo({ delay: 'infinite' })] } },
 }

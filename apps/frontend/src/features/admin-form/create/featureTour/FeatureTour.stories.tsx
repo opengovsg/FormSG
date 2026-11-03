@@ -6,6 +6,8 @@ import { AdminFormDto } from 'formsg-shared/types/form'
 import {
   createFormBuilderMocks,
   getAdminFormCollaborators,
+  getAdminFormSettings,
+  getAdminFormSubmissions,
 } from '~/mocks/msw/handlers/admin-form'
 import { getUser } from '~/mocks/msw/handlers/user'
 
@@ -21,6 +23,8 @@ const buildMswRoutes = (
     ...createFormBuilderMocks(overrides, delay),
     getUser(),
     getAdminFormCollaborators(),
+    getAdminFormSettings(),
+    getAdminFormSubmissions(),
   ]
 }
 
@@ -32,7 +36,7 @@ export default {
     layout: 'fullscreen',
     // Pages fill the viewport; fit-to-content would crop them.
     argos: { fitToContent: false },
-    msw: buildMswRoutes(),
+    msw: { handlers: { default: buildMswRoutes() } },
   },
 } as Meta
 

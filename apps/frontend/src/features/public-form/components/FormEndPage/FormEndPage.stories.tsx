@@ -33,7 +33,7 @@ export default {
     layout: 'fullscreen',
     // Pages fill the viewport; fit-to-content would crop them.
     argos: { fitToContent: false },
-    msw: [getPublicFormResponse()],
+    msw: { handlers: { default: [getPublicFormResponse()] } },
   },
 } as Meta<FormEndPageProps>
 

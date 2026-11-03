@@ -196,7 +196,7 @@ export default {
   ],
   parameters: {
     msw: {
-      handlers: mrfFormViewWithFields,
+      handlers: { default: mrfFormViewWithFields },
     },
   },
 }
@@ -690,13 +690,15 @@ const selectRespondentOption =
 export const EmptyStateFieldsPicker = {
   args: { stepNumber: 0 },
   decorators: [withRedesignOn],
-  parameters: { msw: { handlers: mrfFormViewWith([]) } },
+  parameters: { msw: { handlers: { default: mrfFormViewWith([]) } } },
 }
 
 export const EmptyStateFieldsPickerMyInfoOnly = {
   args: { stepNumber: 1 },
   decorators: [withRedesignOn],
-  parameters: { msw: { handlers: mrfFormViewWith([myinfo_field]) } },
+  parameters: {
+    msw: { handlers: { default: mrfFormViewWith([myinfo_field]) } },
+  },
 }
 
 export const EmptyStateEmailRouting = {
@@ -704,11 +706,13 @@ export const EmptyStateEmailRouting = {
   decorators: [withRedesignOn],
   parameters: {
     msw: {
-      handlers: mrfFormViewWith([
-        form_field_1,
-        form_field_5,
-        dropdown_field_valid_mapping,
-      ]),
+      handlers: {
+        default: mrfFormViewWith([
+          form_field_1,
+          form_field_5,
+          dropdown_field_valid_mapping,
+        ]),
+      },
     },
   },
   play: selectRespondentOption('An Email field from the form'),
@@ -719,7 +723,9 @@ export const EmptyStateConditionalRouting = {
   decorators: [withRedesignOn],
   parameters: {
     msw: {
-      handlers: mrfFormViewWith([form_field_1, form_field_3, form_field_5]),
+      handlers: {
+        default: mrfFormViewWith([form_field_1, form_field_3, form_field_5]),
+      },
     },
   },
   play: selectRespondentOption(
@@ -735,11 +741,13 @@ export const EmptyStateApprovalField = {
   decorators: [withRedesignOn],
   parameters: {
     msw: {
-      handlers: mrfFormViewWith([
-        form_field_3,
-        form_field_5,
-        dropdown_field_valid_mapping,
-      ]),
+      handlers: {
+        default: mrfFormViewWith([
+          form_field_3,
+          form_field_5,
+          dropdown_field_valid_mapping,
+        ]),
+      },
     },
   },
 }

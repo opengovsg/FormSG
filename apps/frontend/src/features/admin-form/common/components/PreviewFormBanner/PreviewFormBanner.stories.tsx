@@ -17,7 +17,7 @@ export default {
     layout: 'fullscreen',
     // Pages fill the viewport; fit-to-content would crop them.
     argos: { fitToContent: false },
-    msw: [getPreviewFormResponse()],
+    msw: { handlers: { default: [getPreviewFormResponse()] } },
   },
   component: PreviewFormBannerComponent,
   decorators: [
@@ -40,13 +40,17 @@ Desktop.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const WithAuthenticatedForm = Template.bind({})
 WithAuthenticatedForm.parameters = {
-  msw: [
-    getPreviewFormResponse({
-      overrides: {
-        form: {
-          authType: FormAuthType.SP,
-        },
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPreviewFormResponse({
+          overrides: {
+            form: {
+              authType: FormAuthType.SP,
+            },
+          },
+        }),
+      ],
+    },
+  },
 }

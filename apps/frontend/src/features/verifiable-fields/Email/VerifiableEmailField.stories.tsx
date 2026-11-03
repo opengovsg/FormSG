@@ -72,11 +72,15 @@ export default {
   component: VerifiableEmailFieldComponent,
   decorators: [MockProviders],
   parameters: {
-    msw: [
-      postVfnTransactionResponse({ delay: 0 }),
-      postGenerateVfnOtpResponse({ delay: 0 }),
-      postVerifyVfnOtpResponse({ delay: 0 }),
-    ],
+    msw: {
+      handlers: {
+        default: [
+          postVfnTransactionResponse({ delay: 0 }),
+          postGenerateVfnOtpResponse({ delay: 0 }),
+          postVerifyVfnOtpResponse({ delay: 0 }),
+        ],
+      },
+    },
     docs: {
       // Required in this story due to react-hook-form conflicting with
       // Storybook somehow.

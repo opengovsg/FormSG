@@ -23,11 +23,15 @@ export default {
     layout: 'fullscreen',
     // Pages fill the viewport; fit-to-content would crop them.
     argos: { fitToContent: false },
-    msw: [
-      getUser({ delay: 0, mockUser: MOCK_USER }),
-      getAdminForms.empty(),
-      transferAllFormsOwnership(),
-    ],
+    msw: {
+      handlers: {
+        default: [
+          getUser({ delay: 0, mockUser: MOCK_USER }),
+          getAdminForms.empty(),
+          transferAllFormsOwnership(),
+        ],
+      },
+    },
   },
 } as Meta
 
@@ -61,8 +65,12 @@ Default.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const FailureBecauseTransferEndpointFailed = Template.bind({})
 FailureBecauseTransferEndpointFailed.parameters = {
-  msw: [
-    getUser({ delay: 0, mockUser: MOCK_USER }),
-    transferAllFormsOwnership({ overrides: { status: 500 } }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getUser({ delay: 0, mockUser: MOCK_USER }),
+        transferAllFormsOwnership({ overrides: { status: 500 } }),
+      ],
+    },
+  },
 }

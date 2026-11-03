@@ -20,7 +20,7 @@ export default {
     layout: 'fullscreen',
     // Pages fill the viewport; fit-to-content would crop them.
     argos: { fitToContent: false },
-    msw: authHandlers,
+    msw: { handlers: { default: authHandlers } },
   },
 } as Meta
 
@@ -30,5 +30,12 @@ Desktop.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 
 export const InvalidAgencyResponse = Template.bind({})
 InvalidAgencyResponse.parameters = {
-  msw: [otpGenerationResponse({ isInvalid: true }), ...authHandlers.slice(1)],
+  msw: {
+    handlers: {
+      default: [
+        otpGenerationResponse({ isInvalid: true }),
+        ...authHandlers.slice(1),
+      ],
+    },
+  },
 }

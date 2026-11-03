@@ -6,6 +6,8 @@ import {
   TextSelectedValidation,
 } from 'formsg-shared/types'
 
+import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
+
 import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 
 import { EditLongText, EditLongTextProps } from './EditLongText'
@@ -33,7 +35,9 @@ export default {
     }),
     EditFieldDrawerDecorator,
   ],
-  parameters: {},
+  parameters: {
+    msw: { handlers: { default: createFormBuilderMocks({}, 0) } },
+  },
   args: {
     field: DEFAULT_LONGTEXT_FIELD,
   },

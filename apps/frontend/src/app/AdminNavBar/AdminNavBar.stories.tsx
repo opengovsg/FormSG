@@ -19,7 +19,7 @@ export default {
     layout: 'fullscreen',
     // Pages fill the viewport; fit-to-content would crop them.
     argos: { fitToContent: false },
-    msw: [getUser({ delay: 0 })],
+    msw: { handlers: { default: [getUser({ delay: 0 })] } },
   },
   decorators: [
     StoryRouter({ initialEntries: ['/12345'], path: '/:formId' }),
@@ -39,14 +39,18 @@ Expanded.args = { isMenuOpen: true }
 export const MobileExpanded = Template.bind({})
 MobileExpanded.globals = getMobileViewGlobals()
 MobileExpanded.parameters = {
-  msw: [
-    getUser({
-      delay: 0,
-      mockUser: {
-        ...MOCK_USER,
-        email: 'super_super_super_super_super_long_name@example.com',
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getUser({
+          delay: 0,
+          mockUser: {
+            ...MOCK_USER,
+            email: 'super_super_super_super_super_long_name@example.com',
+          },
+        }),
+      ],
+    },
+  },
 }
 MobileExpanded.args = Expanded.args

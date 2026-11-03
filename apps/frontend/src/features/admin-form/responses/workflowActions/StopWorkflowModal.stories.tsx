@@ -36,7 +36,9 @@ export default {
     layout: 'fullscreen',
     // Pages fill the viewport; fit-to-content would crop them.
     argos: { fitToContent: false },
-    msw: withSettingsEmails(['records@agency.gov.sg']),
+    msw: {
+      handlers: { default: withSettingsEmails(['records@agency.gov.sg']) },
+    },
   },
   args: {
     isOpen: true,
@@ -53,4 +55,6 @@ export const Default = Template.bind({})
 Default.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const NoSettingsEmails = Template.bind({})
-NoSettingsEmails.parameters = { msw: withSettingsEmails([]) }
+NoSettingsEmails.parameters = {
+  msw: { handlers: { default: withSettingsEmails([]) } },
+}

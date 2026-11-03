@@ -64,11 +64,15 @@ export default {
   component: VerifiableMobileFieldComponent,
   decorators: [MockProviders],
   parameters: {
-    msw: [
-      postVfnTransactionResponse(),
-      postGenerateVfnOtpResponse(),
-      postVerifyVfnOtpResponse(),
-    ],
+    msw: {
+      handlers: {
+        default: [
+          postVfnTransactionResponse(),
+          postGenerateVfnOtpResponse(),
+          postVerifyVfnOtpResponse(),
+        ],
+      },
+    },
     docs: {
       // Required in this story due to react-hook-form conflicting with
       // Storybook somehow.

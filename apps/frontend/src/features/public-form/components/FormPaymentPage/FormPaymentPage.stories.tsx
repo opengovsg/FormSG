@@ -44,7 +44,7 @@ export default {
     layout: 'fullscreen',
     // Pages fill the viewport; fit-to-content would crop them.
     argos: { fitToContent: false },
-    msw: DEFAULT_MSW_HANDLERS,
+    msw: { handlers: { default: DEFAULT_MSW_HANDLERS } },
   },
 } as Meta
 
@@ -97,10 +97,14 @@ export const CompleteWithoutReceipt = Template(
   />,
 ).bind({})
 CompleteWithoutReceipt.parameters = {
-  msw: [
-    ...DEFAULT_MSW_HANDLERS,
-    getPaymentReceiptStatusResponse({ delay: 'infinite' }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...DEFAULT_MSW_HANDLERS,
+        getPaymentReceiptStatusResponse({ delay: 'infinite' }),
+      ],
+    },
+  },
 }
 
 export const CompleteWithReceipt = Template(
@@ -121,5 +125,9 @@ export const CompleteWithReceipt = Template(
   />,
 ).bind({})
 CompleteWithReceipt.parameters = {
-  msw: [...DEFAULT_MSW_HANDLERS, getPaymentReceiptStatusResponse()],
+  msw: {
+    handlers: {
+      default: [...DEFAULT_MSW_HANDLERS, getPaymentReceiptStatusResponse()],
+    },
+  },
 }

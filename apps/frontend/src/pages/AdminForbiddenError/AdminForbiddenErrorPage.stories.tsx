@@ -37,7 +37,7 @@ const Template: StoryFn = (args: AdminForbiddenErrorPageProps) => (
 export const NotLoggedIn = Template.bind({})
 NotLoggedIn.decorators = [LoggedOutDecorator]
 NotLoggedIn.parameters = {
-  msw: [getUnauthedUser()],
+  msw: { handlers: { default: [getUnauthedUser()] } },
 }
 
 export const WithMessage = Template.bind({})

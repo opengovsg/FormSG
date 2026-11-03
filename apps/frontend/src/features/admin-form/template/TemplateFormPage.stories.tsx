@@ -40,7 +40,7 @@ export default {
     layout: 'fullscreen',
     // Pages fill the viewport; fit-to-content would crop them.
     argos: { fitToContent: false },
-    msw: DEFAULT_MSW_HANDLERS,
+    msw: { handlers: { default: DEFAULT_MSW_HANDLERS } },
   },
 } as Meta
 
@@ -51,7 +51,7 @@ Default.parameters = { argos: { modes: viewportModes('mobile') } }
 export const FormNotFound = Template.bind({})
 FormNotFound.parameters = {
   argos: { modes: viewportModes('mobile') },
-  msw: [getTemplateFormErrorResponse()],
+  msw: { handlers: { default: [getTemplateFormErrorResponse()] } },
 }
 
 export const MultirespondentFormWithAdditionalRowsTableField = Template.bind({})
@@ -59,15 +59,19 @@ MultirespondentFormWithAdditionalRowsTableField.parameters = {
   docs: {
     storyDescription: `There should be ${TABLE_FIELD_ADDITIONAL_ROWS_FIELD.minimumRows} rows since the minimum rows is ${TABLE_FIELD_ADDITIONAL_ROWS_FIELD.minimumRows}`,
   },
-  msw: [
-    getTemplateFormResponse({
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Multirespondent,
-          workflow: [],
-          form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
-        },
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getTemplateFormResponse({
+          overrides: {
+            form: {
+              responseMode: FormResponseMode.Multirespondent,
+              workflow: [],
+              form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
+            },
+          },
+        }),
+      ],
+    },
+  },
 }

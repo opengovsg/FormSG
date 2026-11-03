@@ -12,6 +12,7 @@ import { Decorator, ReactRenderer } from '@storybook/react-vite'
 import { initialize, mswDecorator, mswLoader } from 'msw-storybook-addon'
 
 import { envHandlers } from '~/mocks/msw/handlers/env'
+import { fallbackHandlers } from '~/mocks/msw/handlers/fallback'
 import { featureFlagHandlers } from '~/mocks/msw/handlers/feature-flag'
 
 import { AuthProvider } from '~contexts/AuthContext'
@@ -22,9 +23,14 @@ import { theme } from '../src/theme'
 
 import { StorybookTheme } from './themes'
 
-initialize({
-  onUnhandledRequest: 'bypass',
-})
+const isJsdom = navigator.userAgent.includes('jsdom')
+
+initialize(
+  {
+    onUnhandledRequest: 'bypass',
+  },
+  isJsdom ? [] : fallbackHandlers,
+)
 dayjsUtils.init()
 
 const withReactQuery: Decorator = (storyFn) => {

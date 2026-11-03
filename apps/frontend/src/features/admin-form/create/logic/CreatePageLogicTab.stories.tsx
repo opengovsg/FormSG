@@ -155,10 +155,14 @@ MobileWithLogic.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const ErrorIfDeleted = Template.bind({})
 ErrorIfDeleted.parameters = {
-  msw: buildMswRoutes({
-    form_fields: [form_field_2, form_field_3, form_field_4],
-    form_logics: [if_12_show_34, if_12_preventsubmit],
-  }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        form_fields: [form_field_2, form_field_3, form_field_4],
+        form_logics: [if_12_show_34, if_12_preventsubmit],
+      }),
+    },
+  },
 }
 
 export const ErrorShowSomeDeleted = Template.bind({})

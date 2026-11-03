@@ -41,45 +41,57 @@ const Template: StoryFn = () => <PublicFormLogo />
 
 export const Loading = Template.bind({})
 Loading.parameters = {
-  msw: [
-    getPublicFormResponse({
-      delay: 'infinite',
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          delay: 'infinite',
+        }),
+      ],
+    },
+  },
 }
 
 export const NoLogo = Template.bind({})
 NoLogo.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook test title',
-        },
-      },
-      delay: 0,
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title: 'storybook test title',
+            },
+          },
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }
 
 export const CustomLogo = Template.bind({})
 CustomLogo.parameters = {
-  msw: [
-    ...envHandlers,
-    getCustomLogoResponse(),
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook test title',
-          startPage: {
-            logo: {
-              state: FormLogoState.Custom,
-              fileId: 'mockFormLogo',
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getCustomLogoResponse(),
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title: 'storybook test title',
+              startPage: {
+                logo: {
+                  state: FormLogoState.Custom,
+                  fileId: 'mockFormLogo',
+                },
+              },
             },
           },
-        },
-      },
-      delay: 0,
-    }),
-  ],
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }

@@ -39,7 +39,7 @@ export default {
     EditFieldDrawerDecorator,
   ],
   parameters: {
-    msw: createFormBuilderMocks({}, 0),
+    msw: { handlers: { default: createFormBuilderMocks({}, 0) } },
   },
   args: {
     field: DEFAULT_DROPDOWN_FIELD,
@@ -75,11 +75,15 @@ const workflow_step_2: FormWorkflowStepDto = {
 
 export const FieldUsedForConditionalRouting = Template.bind({})
 FieldUsedForConditionalRouting.parameters = {
-  msw: createFormBuilderMocks(
-    {
-      responseMode: FormResponseMode.Multirespondent,
-      workflow: [workflow_step_1, workflow_step_2],
+  msw: {
+    handlers: {
+      default: createFormBuilderMocks(
+        {
+          responseMode: FormResponseMode.Multirespondent,
+          workflow: [workflow_step_1, workflow_step_2],
+        },
+        0,
+      ),
     },
-    0,
-  ),
+  },
 }

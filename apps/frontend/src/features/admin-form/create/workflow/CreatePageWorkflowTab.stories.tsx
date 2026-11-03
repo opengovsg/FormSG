@@ -57,6 +57,9 @@ export default {
           responseMode: FormResponseMode.Multirespondent,
           workflow: [],
         }),
+        settings: [
+          getAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+        ],
       },
     },
   },
@@ -460,19 +463,21 @@ export const WithWorkflowRedesignOn = Template.bind({})
 WithWorkflowRedesignOn.decorators = [withRedesignOn]
 WithWorkflowRedesignOn.parameters = {
   msw: {
-    handlers: [
-      ...buildMswRoutes(FORM_WITH_WORKFLOW),
-      getAdminFormSettings({
-        mode: FormResponseMode.Multirespondent,
-        overrides: {
-          status: FormStatus.Private,
-          emails: ['admin@example.gov.sg'],
-          stepsToNotify: [workflow_step_2._id],
-          stepOneEmailNotificationFieldId: form_field_5._id,
-        } satisfies Partial<MultirespondentFormSettings>,
-      }),
-      patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
-    ],
+    handlers: {
+      default: [
+        ...buildMswRoutes(FORM_WITH_WORKFLOW),
+        getAdminFormSettings({
+          mode: FormResponseMode.Multirespondent,
+          overrides: {
+            status: FormStatus.Private,
+            emails: ['admin@example.gov.sg'],
+            stepsToNotify: [workflow_step_2._id],
+            stepOneEmailNotificationFieldId: form_field_5._id,
+          } satisfies Partial<MultirespondentFormSettings>,
+        }),
+        patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+      ],
+    },
   },
 }
 
@@ -480,19 +485,24 @@ export const WithWorkflowRedesignOnClosedForm = Template.bind({})
 WithWorkflowRedesignOnClosedForm.decorators = [withRedesignOn]
 WithWorkflowRedesignOnClosedForm.parameters = {
   msw: {
-    handlers: [
-      ...buildMswRoutes({ ...FORM_WITH_WORKFLOW, status: FormStatus.Private }),
-      getAdminFormSettings({
-        mode: FormResponseMode.Multirespondent,
-        overrides: {
+    handlers: {
+      default: [
+        ...buildMswRoutes({
+          ...FORM_WITH_WORKFLOW,
           status: FormStatus.Private,
-          emails: ['admin@example.gov.sg'],
-          stepsToNotify: [workflow_step_2._id],
-          stepOneEmailNotificationFieldId: form_field_5._id,
-        } satisfies Partial<MultirespondentFormSettings>,
-      }),
-      patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
-    ],
+        }),
+        getAdminFormSettings({
+          mode: FormResponseMode.Multirespondent,
+          overrides: {
+            status: FormStatus.Private,
+            emails: ['admin@example.gov.sg'],
+            stepsToNotify: [workflow_step_2._id],
+            stepOneEmailNotificationFieldId: form_field_5._id,
+          } satisfies Partial<MultirespondentFormSettings>,
+        }),
+        patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+      ],
+    },
   },
 }
 
@@ -500,19 +510,21 @@ export const NoCompletionEmailRedesignOn = Template.bind({})
 NoCompletionEmailRedesignOn.decorators = [withRedesignOn]
 NoCompletionEmailRedesignOn.parameters = {
   msw: {
-    handlers: [
-      ...buildMswRoutes(FORM_WITH_WORKFLOW),
-      getAdminFormSettings({
-        mode: FormResponseMode.Multirespondent,
-        overrides: {
-          status: FormStatus.Private,
-          emails: [],
-          stepsToNotify: [],
-          stepOneEmailNotificationFieldId: '',
-        } satisfies Partial<MultirespondentFormSettings>,
-      }),
-      patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
-    ],
+    handlers: {
+      default: [
+        ...buildMswRoutes(FORM_WITH_WORKFLOW),
+        getAdminFormSettings({
+          mode: FormResponseMode.Multirespondent,
+          overrides: {
+            status: FormStatus.Private,
+            emails: [],
+            stepsToNotify: [],
+            stepOneEmailNotificationFieldId: '',
+          } satisfies Partial<MultirespondentFormSettings>,
+        }),
+        patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+      ],
+    },
   },
   documentation: {
     storyDescription:
@@ -524,19 +536,24 @@ export const Step1RedesignOn = Template.bind({})
 Step1RedesignOn.decorators = [withRedesignOn]
 Step1RedesignOn.parameters = {
   msw: {
-    handlers: [
-      ...buildMswRoutes({ ...FORM_WITH_WORKFLOW, workflow: [workflow_step_1] }),
-      getAdminFormSettings({
-        mode: FormResponseMode.Multirespondent,
-        overrides: {
-          status: FormStatus.Private,
-          emails: ['admin@example.gov.sg'],
-          stepsToNotify: [],
-          stepOneEmailNotificationFieldId: form_field_5._id,
-        } satisfies Partial<MultirespondentFormSettings>,
-      }),
-      patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
-    ],
+    handlers: {
+      default: [
+        ...buildMswRoutes({
+          ...FORM_WITH_WORKFLOW,
+          workflow: [workflow_step_1],
+        }),
+        getAdminFormSettings({
+          mode: FormResponseMode.Multirespondent,
+          overrides: {
+            status: FormStatus.Private,
+            emails: ['admin@example.gov.sg'],
+            stepsToNotify: [],
+            stepOneEmailNotificationFieldId: form_field_5._id,
+          } satisfies Partial<MultirespondentFormSettings>,
+        }),
+        patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+      ],
+    },
   },
   documentation: {
     storyDescription:

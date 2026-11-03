@@ -28,7 +28,7 @@ export default {
     layout: 'fullscreen',
     // Pages fill the viewport; fit-to-content would crop them.
     argos: { fitToContent: false },
-    msw: userHandlers({ delay: 0 }),
+    msw: { handlers: { default: userHandlers({ delay: 0 }) } },
   },
 } as Meta
 
@@ -61,14 +61,18 @@ WithContact.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const NoContact = Template.bind({})
 NoContact.parameters = {
-  msw: [
-    getUser({ delay: 0, mockUser: omit(MOCK_USER, 'contact') }),
-    postGenerateContactOtp({ delay: 0 }),
-    postVerifyContactOtp({ delay: 0 }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getUser({ delay: 0, mockUser: omit(MOCK_USER, 'contact') }),
+        postGenerateContactOtp({ delay: 0 }),
+        postVerifyContactOtp({ delay: 0 }),
+      ],
+    },
+  },
 }
 
 export const Loading = Template.bind({})
 Loading.parameters = {
-  msw: userHandlers({ delay: 'infinite' }),
+  msw: { handlers: { default: userHandlers({ delay: 'infinite' }) } },
 }

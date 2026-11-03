@@ -209,12 +209,16 @@ MobileAllFields.play = waitForImageFieldsToSettle
 
 export const AllFieldsFieldsHiddenByLogic = Template.bind({})
 AllFieldsFieldsHiddenByLogic.parameters = {
-  msw: buildMswRoutes({
-    form_fields: MOCK_FORM_FIELDS_WITH_MYINFO,
-    form_logics: MOCK_FORM_LOGICS,
-    authType: FormAuthType.MyInfo,
-    responseMode: FormResponseMode.Email,
-  }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        form_fields: MOCK_FORM_FIELDS_WITH_MYINFO,
+        form_logics: MOCK_FORM_LOGICS,
+        authType: FormAuthType.MyInfo,
+        responseMode: FormResponseMode.Email,
+      }),
+    },
+  },
 }
 AllFieldsFieldsHiddenByLogic.play = waitForImageFieldsToSettle
 
@@ -264,9 +268,13 @@ FormWithPayment.parameters = {
 
 export const AdminFormBuilderWithAdditionalRowsTableField = Template.bind({})
 AdminFormBuilderWithAdditionalRowsTableField.parameters = {
-  msw: buildMswRoutes({
-    form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
-  }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
+      }),
+    },
+  },
   viewport: {
     value: 'lg', // Forces to desktop view so that the edit drawer opens when the table field is clicked
   },

@@ -2,6 +2,8 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { BasicField, CheckboxFieldBase } from 'formsg-shared/types'
 
+import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
+
 import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 
 import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
@@ -22,7 +24,9 @@ export default {
     }),
     EditFieldDrawerDecorator,
   ],
-  parameters: {},
+  parameters: {
+    msw: { handlers: { default: createFormBuilderMocks({}, 0) } },
+  },
   args: {
     field: DEFAULT_CHECKBOX_FIELD,
   },

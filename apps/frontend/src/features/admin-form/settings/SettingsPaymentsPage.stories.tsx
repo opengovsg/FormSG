@@ -10,6 +10,7 @@ import {
 import {
   getAdminFormSettings,
   getAdminFormStripeValidate,
+  getAdminFormView,
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 
@@ -20,6 +21,8 @@ import { SettingsPaymentsPage } from './SettingsPaymentsPage'
 const buildEncryptModeMswRoutes = (overrides?: Partial<FormSettings>) => [
   getAdminFormSettings({ overrides, mode: FormResponseMode.Encrypt }),
   patchAdminFormSettings({ overrides, mode: FormResponseMode.Encrypt }),
+  getAdminFormView({ mode: FormResponseMode.Encrypt }),
+  getAdminFormStripeValidate(),
 ]
 
 const buildMrfModeMswRoutes = (overrides?: Partial<FormSettings>) => [
@@ -31,6 +34,7 @@ const buildMrfModeMswRoutes = (overrides?: Partial<FormSettings>) => [
     overrides,
     mode: FormResponseMode.Multirespondent,
   }),
+  getAdminFormView({ mode: FormResponseMode.Multirespondent }),
   getAdminFormStripeValidate(),
 ]
 

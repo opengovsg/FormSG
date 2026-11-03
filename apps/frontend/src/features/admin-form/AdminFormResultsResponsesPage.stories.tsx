@@ -19,6 +19,7 @@ import {
   getMultiRespondentSubmissionMetadataResponse,
   getStorageSubmission,
   getStorageSubmissionMetadataResponse,
+  getStorageSubmissionsStream,
 } from '~/mocks/msw/handlers/admin-form'
 import { getUser } from '~/mocks/msw/handlers/user'
 
@@ -124,26 +125,24 @@ EmptyEmailForm.parameters = {
   },
 }
 
+const storageFormHandlers = [
+  ...createFormBuilderMocks(
+    {
+      responseMode: FormResponseMode.Encrypt,
+      publicKey: MOCK_KEYPAIR.publicKey,
+    },
+    0,
+  ),
+  getAdminFormSubmissions(),
+  getStorageSubmissionMetadataResponse(),
+  getUser(),
+  getAdminFormCollaborators(),
+]
+
 export const StorageForm = Template.bind({})
 StorageForm.parameters = {
   argos: { modes: viewportModes('tablet', 'mobile') },
-  msw: {
-    handlers: {
-      default: [
-        ...createFormBuilderMocks(
-          {
-            responseMode: FormResponseMode.Encrypt,
-            publicKey: MOCK_KEYPAIR.publicKey,
-          },
-          0,
-        ),
-        getAdminFormSubmissions(),
-        getStorageSubmissionMetadataResponse(),
-        getUser(),
-        getAdminFormCollaborators(),
-      ],
-    },
-  },
+  msw: { handlers: { default: storageFormHandlers } },
 }
 
 export const StorageFormUnlocked = Template.bind({})
@@ -184,7 +183,18 @@ const delightfulDashboardGrowthBook = new GrowthBook({
 })
 
 export const StorageFormUnlockedV2 = Template.bind({})
-StorageFormUnlockedV2.parameters = StorageForm.parameters
+StorageFormUnlockedV2.parameters = {
+  ...StorageForm.parameters,
+  msw: {
+    handlers: {
+      default: [
+        ...storageFormHandlers,
+        getStorageSubmissionsStream({ publicKey: MOCK_KEYPAIR.publicKey }),
+        getStorageSubmission({ publicKey: MOCK_KEYPAIR.publicKey }),
+      ],
+    },
+  },
+}
 // Asserting the v2 toolbar guards against a local v1 toggle in localStorage
 // silently rendering v1 under this story's name.
 StorageFormUnlockedV2.play = async (context) => {

@@ -30,7 +30,7 @@ export default {
     EditFieldDrawerDecorator,
   ],
   parameters: {
-    msw: [...createFormBuilderMocks({}, 0)],
+    msw: { handlers: { default: [...createFormBuilderMocks({}, 0)] } },
   },
   args: {
     field: DEFAULT_MOBILE_FIELD,
@@ -55,5 +55,5 @@ Default.args = {
 
 export const Loading = Template.bind({})
 Loading.parameters = {
-  msw: [...createFormBuilderMocks({}, 0)],
+  msw: { handlers: { default: [...createFormBuilderMocks({}, 0)] } },
 }

@@ -29,7 +29,7 @@ export default {
     layout: 'fullscreen',
     // Pages fill the viewport; fit-to-content would crop them.
     argos: { fitToContent: false },
-    msw: DEFAULT_MSW_HANDLERS,
+    msw: { handlers: { default: DEFAULT_MSW_HANDLERS } },
   },
 } as Meta
 
