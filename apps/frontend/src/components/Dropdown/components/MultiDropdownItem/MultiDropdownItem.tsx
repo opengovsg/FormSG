@@ -67,11 +67,12 @@ export const MultiDropdownItem = ({
     >
       <Stack direction="row" spacing="1rem" overflowX="auto">
         {isAction ? null : <ItemCheckboxIcon isChecked={isSelected} />}
-        <Flex flexDir="column" minW={0}>
+        <Flex flexDir="column" flex={1} minW={0}>
           <Stack direction="row" spacing="0.5rem" align="center">
             {icon ? <Icon as={icon} sx={styles.icon} /> : null}
             <Text
               textStyle="body-1"
+              flex={1}
               minWidth={0}
               textOverflow="ellipsis"
               whiteSpace="nowrap"
@@ -83,12 +84,12 @@ export const MultiDropdownItem = ({
                 textToHighlight={label}
               />
             </Text>
+            {typeof item === 'object' && item?.descriptionTag ? (
+              <Tag colorScheme="secondary" flexShrink={0}>
+                {item.descriptionTag}
+              </Tag>
+            ) : null}
           </Stack>
-          {typeof item === 'object' && item?.descriptionTag ? (
-            <Tag colorScheme="secondary" alignSelf="flex-start" mt="0.25rem">
-              {item.descriptionTag}
-            </Tag>
-          ) : null}
           {description && (
             <Text
               textStyle="body-2"
