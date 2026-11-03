@@ -7,6 +7,7 @@ import {
 } from '@azure/msal-node'
 import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
+import { okAsync } from 'neverthrow'
 
 import config from '../../../config/config'
 import { wogad } from '../../../config/features/wogad.config'
@@ -16,6 +17,7 @@ import { resolveAppUrl } from '../../../utils/urls'
 import { ControllerHandler } from '../../core/core.types'
 import * as UserService from '../../user/user.service'
 import * as AuthService from '../auth.service'
+import { regenerateSession } from '../auth.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -244,27 +246,31 @@ const _handleVerifyWithCode: ControllerHandler<
     userEmail,
     validateEmailWhitelistedResult.value._id,
   )
-    .map((user) => {
+    .andThen((user) => {
       if (!req.session) {
         logger.error({
           message: 'Could not find valid session',
           meta: logMetaWithUserEmail,
         })
-        return res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .json('Could not find valid session')
+        return okAsync(
+          res
+            .status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .json('Could not find valid session'),
+        )
       }
 
-      // Add user info to session.
-      const { _id } = user
-      req.session.user = { _id, grantSource: 'wogad' }
+      return regenerateSession(req).map(() => {
+        // Add user info to session.
+        const { _id } = user
+        req.session.user = { _id, grantSource: 'wogad' }
 
-      logger.info({
-        message: 'User logged in via WOG AD',
-        meta: logMetaWithUserEmail,
+        logger.info({
+          message: 'User logged in via WOG AD',
+          meta: logMetaWithUserEmail,
+        })
+
+        return res.status(StatusCodes.OK).json(user)
       })
-
-      return res.status(StatusCodes.OK).json(user)
     })
     .mapErr(() => {
       logger.error({

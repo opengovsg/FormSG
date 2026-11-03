@@ -1,6 +1,8 @@
+import { Request } from 'express'
 import { AuthedSessionData, SessionData } from 'express-session'
 import { IncomingHttpHeaders } from 'http'
 import { StatusCodes } from 'http-status-codes'
+import { ResultAsync } from 'neverthrow'
 
 import { MapRouteError } from '../../../types/routing'
 import { cronPaymentConfig } from '../../config/features/payment-cron.config'
@@ -8,6 +10,7 @@ import { cronScheduledClosureConfig } from '../../config/features/scheduled-clos
 import { createLoggerWithLabel } from '../../config/logger'
 import * as MailErrors from '../../services/mail/mail.errors'
 import { HashingError } from '../../utils/hash'
+import { ApplicationError } from '../core/core.errors'
 import * as CoreErrors from '../core/core.errors'
 import * as UserErrors from '../user/user.errors'
 
@@ -130,3 +133,22 @@ export const isEmailInDomainWhitelist = (
   const emailDomain = email.split('@')[1]
   return domainWhitelist.includes(emailDomain)
 }
+
+export const regenerateSession = (
+  req: Pick<Request, 'session'>,
+): ResultAsync<void, ApplicationError> =>
+  ResultAsync.fromPromise(
+    new Promise<void>((resolve, reject) =>
+      req.session.regenerate((error) =>
+        error ? reject(error) : resolve(undefined),
+      ),
+    ),
+    (error) => {
+      logger.error({
+        message: 'Failed to regenerate session on login',
+        meta: { action: 'regenerateSession' },
+        error,
+      })
+      return new ApplicationError('Failed to regenerate session')
+    },
+  )

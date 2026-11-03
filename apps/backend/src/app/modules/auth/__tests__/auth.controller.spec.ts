@@ -172,6 +172,7 @@ describe('auth.controller', () => {
     const MOCK_OTP = 'A1B2C3D4'
     const MOCK_REQ = expressHandler.mockRequest({
       body: { email: VALID_EMAIL, otp: MOCK_OTP },
+      session: { regenerate: (cb: (err?: unknown) => void) => cb() },
     })
     const MOCK_AGENCY = { id: 'mock agency id' } as AgencyDocument
 
@@ -196,6 +197,72 @@ describe('auth.controller', () => {
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(mockRes.json).toHaveBeenCalledWith(mockUser)
+    })
+
+    it('should regenerate the session before setting the user on success', async () => {
+      // Arrange
+      const mockUser = {
+        toObject: () => ({ _id: 'mock-user-id' }),
+      } as unknown as IPopulatedUser
+      const mockRes = expressHandler.mockResponse()
+      const mockReq = expressHandler.mockRequest({
+        body: { email: VALID_EMAIL, otp: MOCK_OTP },
+        session: { regenerate: (cb: (err?: unknown) => void) => cb() },
+      })
+
+      // Capture whether the user was already set when regenerate ran.
+      let userWhenRegenerated: unknown = 'regenerate-not-called'
+      jest
+        .spyOn(mockReq.session, 'regenerate')
+        .mockImplementation((cb: (err?: unknown) => void) => {
+          userWhenRegenerated = mockReq.session.user
+          cb()
+          return mockReq.session
+        })
+
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        okAsync(MOCK_AGENCY),
+      )
+      MockAuthService.verifyLoginOtp.mockReturnValueOnce(okAsync(true))
+      MockUserService.retrieveUser.mockReturnValueOnce(okAsync(mockUser))
+
+      // Act
+      await AuthController._handleLoginVerifyOtp(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockReq.session.regenerate).toHaveBeenCalledTimes(1)
+      // User is unset at regenerate time, and set afterwards.
+      expect(userWhenRegenerated).toBeUndefined()
+      expect(mockReq.session.user).toEqual({ _id: 'mock-user-id' })
+    })
+
+    it('should return 500 when session regeneration fails', async () => {
+      // Arrange
+      const mockUser = {
+        toObject: () => ({ id: 'user document from the db' }),
+      } as IPopulatedUser
+      const mockRes = expressHandler.mockResponse()
+      const mockReq = expressHandler.mockRequest({
+        body: { email: VALID_EMAIL, otp: MOCK_OTP },
+        session: {
+          regenerate: (cb: (err?: unknown) => void) =>
+            cb(new Error('regenerate failed')),
+        },
+      })
+
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        okAsync(MOCK_AGENCY),
+      )
+      MockAuthService.verifyLoginOtp.mockReturnValueOnce(okAsync(true))
+      MockUserService.retrieveUser.mockReturnValueOnce(okAsync(mockUser))
+
+      // Act
+      await AuthController._handleLoginVerifyOtp(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).not.toHaveBeenCalledWith(mockUser)
     })
 
     it('should return 401 when retrieving agency returns InvalidDomainError', async () => {

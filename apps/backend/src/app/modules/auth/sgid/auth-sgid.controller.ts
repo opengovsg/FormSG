@@ -9,7 +9,7 @@ import { ControllerHandler } from '../../core/core.types'
 import * as UserService from '../../user/user.service'
 import * as AuthService from '../auth.service'
 import { SessionUser } from '../auth.types'
-import { mapRouteError } from '../auth.utils'
+import { mapRouteError, regenerateSession } from '../auth.utils'
 
 import { SGID_CODE_VERIFIER_COOKIE_NAME } from './auth-sgid.constants'
 import { AuthSgidService, SGID_LOGIN_OAUTH_STATE } from './auth-sgid.service'
@@ -234,16 +234,18 @@ export const setProfile: ControllerHandler<
     .andThen((agency) =>
       UserService.retrieveUser(selectedProfile.work_email, agency._id),
     )
-    .map((user) => {
-      // Add user info to session.
-      const { _id } = user.toObject() as SessionUser
-      req.session.user = { _id }
-      logger.info({
-        message: `Successfully logged in user ${user._id}`,
-        meta: logMeta,
-      })
-      return res.status(StatusCodes.OK).json({ message: 'Ok' })
-    })
+    .andThen((user) =>
+      regenerateSession(req).map(() => {
+        // Add user info to session.
+        const { _id } = user.toObject() as SessionUser
+        req.session.user = { _id }
+        logger.info({
+          message: `Successfully logged in user ${user._id}`,
+          meta: logMeta,
+        })
+        return res.status(StatusCodes.OK).json({ message: 'Ok' })
+      }),
+    )
     .mapErr((error) => {
       const message = 'Error occurred when trying to log in via SGID'
       logger.warn({

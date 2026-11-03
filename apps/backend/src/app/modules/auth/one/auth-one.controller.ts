@@ -10,7 +10,7 @@ import { resolveRedirectionUrl } from '../../../utils/urls'
 import { ControllerHandler } from '../../core/core.types'
 import * as UserService from '../../user/user.service'
 import * as AuthService from '../auth.service'
-import { mapRouteError } from '../auth.utils'
+import { mapRouteError, regenerateSession } from '../auth.utils'
 
 import {
   ONE_CODE_VERIFIER_COOKIE_NAME,
@@ -177,19 +177,21 @@ export const handleLoginCallback: ControllerHandler<
         .andThen((agency) => UserService.retrieveUser(userEmail, agency._id))
         .map((user) => ({ user, claims }))
     })
-    .map(({ user, claims }) => {
-      // Add user info to session.
-      const { _id } = user.toObject() as AuthedSessionData['user']
-      req.session.user = { _id, grantSource: 'one' }
-      req.session.oneIdpSid = claims.sid
-      logger.info({
-        message: `Successfully logged in user ${user._id} via one.gov.sg`,
-        meta: logMeta,
-      })
-      return res.redirect(
-        resolveRedirectionUrl(`/login/one?status=${StatusCodes.OK}`),
-      )
-    })
+    .andThen(({ user, claims }) =>
+      regenerateSession(req).map(() => {
+        // Add user info to session.
+        const { _id } = user.toObject() as AuthedSessionData['user']
+        req.session.user = { _id, grantSource: 'one' }
+        req.session.oneIdpSid = claims.sid
+        logger.info({
+          message: `Successfully logged in user ${user._id} via one.gov.sg`,
+          meta: logMeta,
+        })
+        return res.redirect(
+          resolveRedirectionUrl(`/login/one?status=${StatusCodes.OK}`),
+        )
+      }),
+    )
     .mapErr((error) => {
       const message = 'Error occurred when trying to log in via one.gov.sg'
       logger.warn({
