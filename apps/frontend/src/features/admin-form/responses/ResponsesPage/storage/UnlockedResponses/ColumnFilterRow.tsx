@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { ReactNode, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiChevronRight, BiX } from 'react-icons/bi'
 import { useDebounce } from 'react-use'
@@ -20,6 +20,93 @@ import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 
 const FILTER_DEBOUNCE_MS = 200
+
+interface ColumnFilterPopoverProps {
+  label: string
+  isApplied: boolean
+  isOpen: boolean
+  onOpen: () => void
+  onClose: () => void
+  children: ReactNode
+}
+
+const ColumnFilterPopover = ({
+  label,
+  isApplied,
+  isOpen,
+  onOpen,
+  onClose,
+  children,
+}: ColumnFilterPopoverProps): JSX.Element => {
+  const { t } = useTranslation()
+  const { filterApplied } = t(
+    'features.adminForm.responses.responsesPage.storage.unlockedResponses.filterMenu',
+    { returnObjects: true },
+  )
+
+  return (
+    <Popover
+      isOpen={isOpen}
+      onOpen={onOpen}
+      onClose={onClose}
+      placement="right-start"
+      modifiers={[
+        { name: 'flip', options: { fallbackPlacements: ['bottom-start'] } },
+      ]}
+      isLazy
+    >
+      <PopoverTrigger>
+        <Flex
+          as="button"
+          type="button"
+          align="center"
+          gap="0.5rem"
+          w="100%"
+          px="1rem"
+          py="0.625rem"
+          textAlign="left"
+          bg={isOpen ? 'primary.100' : undefined}
+          _hover={{ bg: 'primary.100' }}
+          aria-expanded={isOpen}
+        >
+          <Text
+            flex={1}
+            minW={0}
+            noOfLines={1}
+            textStyle="body-1"
+            title={label}
+          >
+            {label}
+          </Text>
+          {isApplied ? (
+            <Badge variant="subtle" colorScheme="primary" flexShrink={0}>
+              {filterApplied}
+            </Badge>
+          ) : null}
+          <Icon as={BiChevronRight} fontSize="1.25rem" flexShrink={0} />
+        </Flex>
+      </PopoverTrigger>
+      <Portal>
+        <PopoverContent w="16rem" bg="white">
+          <PopoverBody
+            p="0.75rem"
+            // RATIONALE: the popover is portalled but React still bubbles its
+            // key presses to the Filter menu, whose typeahead would take
+            // focus from the field, and whose Escape would close the menu.
+            onKeyDown={(event) => {
+              event.stopPropagation()
+              if (event.key === 'Enter' || event.key === 'Escape') {
+                onClose()
+              }
+            }}
+          >
+            {children}
+          </PopoverBody>
+        </PopoverContent>
+      </Portal>
+    </Popover>
+  )
+}
 
 interface ColumnFilterRowProps {
   label: string
@@ -44,7 +131,7 @@ export const ColumnFilterRow = ({
   onFilter,
 }: ColumnFilterRowProps): JSX.Element => {
   const { t } = useTranslation()
-  const { filterApplied, filterPlaceholder, clearFilter } = t(
+  const { filterPlaceholder, clearFilter } = t(
     'features.adminForm.responses.responsesPage.storage.unlockedResponses.filterMenu',
     { returnObjects: true },
   )
@@ -75,85 +162,36 @@ export const ColumnFilterRow = ({
   }
 
   return (
-    <Popover
+    <ColumnFilterPopover
+      label={label}
+      isApplied={!!text}
       isOpen={isOpen}
       onOpen={onOpen}
       onClose={handleClose}
-      placement="right-start"
-      modifiers={[
-        { name: 'flip', options: { fallbackPlacements: ['bottom-start'] } },
-      ]}
-      isLazy
     >
-      <PopoverTrigger>
-        <Flex
-          as="button"
-          type="button"
-          align="center"
-          gap="0.5rem"
-          w="100%"
-          px="1rem"
-          py="0.625rem"
-          textAlign="left"
-          bg={isOpen ? 'primary.100' : undefined}
-          _hover={{ bg: 'primary.100' }}
-          aria-expanded={isOpen}
-        >
-          <Text
-            flex={1}
-            minW={0}
-            noOfLines={1}
-            textStyle="body-1"
-            title={label}
-          >
-            {label}
-          </Text>
-          {text ? (
-            <Badge variant="subtle" colorScheme="primary" flexShrink={0}>
-              {filterApplied}
-            </Badge>
-          ) : null}
-          <Icon as={BiChevronRight} fontSize="1.25rem" flexShrink={0} />
-        </Flex>
-      </PopoverTrigger>
-      <Portal>
-        <PopoverContent w="16rem" bg="white">
-          <PopoverBody p="0.75rem">
-            <InputGroup>
-              <Input
-                ref={inputRef}
-                autoFocus
-                value={draft}
-                onChange={(event) => setDraft(event.target.value)}
-                // RATIONALE: the popover is portalled but React still bubbles its
-                // key presses to the Filter menu, whose typeahead would take
-                // focus from the field, and whose Escape would close the menu.
-                onKeyDown={(event) => {
-                  event.stopPropagation()
-                  if (event.key === 'Enter' || event.key === 'Escape') {
-                    handleClose()
-                  }
-                }}
-                placeholder={filterPlaceholder}
-                aria-label={label}
-              />
-              {draft ? (
-                <InputRightElement>
-                  <IconButton
-                    aria-label={clearFilter}
-                    size="sm"
-                    variant="clear"
-                    colorScheme="secondary"
-                    color="secondary.300"
-                    icon={<BiX fontSize="1.25rem" />}
-                    onClick={handleClear}
-                  />
-                </InputRightElement>
-              ) : null}
-            </InputGroup>
-          </PopoverBody>
-        </PopoverContent>
-      </Portal>
-    </Popover>
+      <InputGroup>
+        <Input
+          ref={inputRef}
+          autoFocus
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          placeholder={filterPlaceholder}
+          aria-label={label}
+        />
+        {draft ? (
+          <InputRightElement>
+            <IconButton
+              aria-label={clearFilter}
+              size="sm"
+              variant="clear"
+              colorScheme="secondary"
+              color="secondary.300"
+              icon={<BiX fontSize="1.25rem" />}
+              onClick={handleClear}
+            />
+          </InputRightElement>
+        ) : null}
+      </InputGroup>
+    </ColumnFilterPopover>
   )
 }
