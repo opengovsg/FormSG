@@ -30,6 +30,7 @@ import { generateResponsePdfBlob } from '../../IndividualResponsePage/utils/gene
 import { CsvExportView } from './utils/csvExportView'
 import { downloadResponseAttachment } from './utils/downloadCsv'
 import { EncryptedResponseCsvGenerator } from './utils/EncryptedResponseCsvGenerator'
+import { getResponseFolderName } from './utils/getResponseFolderName'
 import {
   EncryptedResponsesStreamParams,
   getEncryptedResponsesStream,
@@ -60,6 +61,8 @@ export type DownloadEncryptedParams = EncryptedResponsesStreamParams & {
   isDownloadPdf: boolean
   visibleSubmissionIds?: string[]
   csvView?: CsvExportView
+  /** PROTOTYPE (attachments-v2): field whose answer names each response's folder. */
+  folderNameFieldId?: string
 }
 interface UseDecryptionWorkersProps {
   onDecryptionProgress: React.Dispatch<React.SetStateAction<number>>
@@ -83,6 +86,7 @@ const useDecryptionWorkers = ({
   const { data: adminForm } = useAdminForm()
   const { user } = useUser()
   const isWorkflowActionsOn = useFeatureIsOn(featureFlags.workflowActions)
+  const isAttachmentsV2 = useFeatureIsOn(featureFlags.attachmentsV2)
 
   useEffect(() => {
     return () => killWorkers(workers)
@@ -106,6 +110,7 @@ const useDecryptionWorkers = ({
       startDate,
       visibleSubmissionIds,
       csvView,
+      folderNameFieldId,
     }: DownloadEncryptedParams) => {
       if (!adminForm || !responsesCount) {
         return Promise.resolve({
@@ -167,6 +172,20 @@ const useDecryptionWorkers = ({
       }
 
       setWorkers(workerPool)
+
+      // PROTOTYPE (attachments-v2): with attachments or PDFs ticked, everything
+      // goes into one zip held in memory and saved once at the end. Production
+      // needs to stream this to disk; large forms can exhaust the tab's memory.
+      const oneZip =
+        isAttachmentsV2 && (downloadAttachments || isDownloadPdf)
+          ? new JSZip()
+          : undefined
+      const folderNames = new Map<string, string>()
+      const saveOneZip = async () => {
+        if (!oneZip) return
+        const blob = await oneZip.generateAsync({ type: 'blob' })
+        saveAs(blob, `${adminForm.title}-${adminForm._id}.zip`)
+      }
 
       const csvGenerator = isDownloadCsv
         ? new EncryptedResponseCsvGenerator(
@@ -287,6 +306,31 @@ const useDecryptionWorkers = ({
                 if (!downloadAttachments) {
                   return decryptResult
                 }
+                if (oneZip) {
+                  const submissionId = decryptResult.parsedSubmission?._id
+                  if (!decryptResult.attachmentDownloadBlob || !submissionId) {
+                    return decryptResult
+                  }
+                  const folderName = getResponseFolderName({
+                    submissionId,
+                    responses: decryptResult.decryptedResponses,
+                    fieldId: folderNameFieldId,
+                  })
+                  folderNames.set(submissionId, folderName)
+                  // Unpack the worker's per-response zip into this response's folder.
+                  const folder = oneZip.folder(folderName)
+                  const responseZip = await JSZip.loadAsync(
+                    decryptResult.attachmentDownloadBlob,
+                  )
+                  await Promise.all(
+                    Object.values(responseZip.files)
+                      .filter((file) => !file.dir)
+                      .map(async (file) =>
+                        folder?.file(file.name, await file.async('blob')),
+                      ),
+                  )
+                  return decryptResult
+                }
                 // Chain onto the queue so saves run one at a time
                 saveQueue = saveQueue.then(async () => {
                   if (
@@ -361,12 +405,28 @@ const useDecryptionWorkers = ({
                       responses: decryptedResponses,
                     },
                   })
-                  pdfZip.file(pdfTitle, pdfBlob)
+                  if (oneZip) {
+                    const folderName = downloadAttachments
+                      ? (folderNames.get(refNo) ??
+                        getResponseFolderName({
+                          submissionId: refNo,
+                          responses: decryptedResponses,
+                          fieldId: folderNameFieldId,
+                        }))
+                      : undefined
+                    oneZip.file(
+                      folderName ? `${folderName}/${pdfTitle}` : pdfTitle,
+                      pdfBlob,
+                    )
+                  } else {
+                    pdfZip.file(pdfTitle, pdfBlob)
+                  }
                 }
                 onPdfGenerationProgress(
                   (prevPdfGenerationProgress) => prevPdfGenerationProgress + 1,
                 )
               }
+              if (oneZip) return
               await pdfZip
                 .generateAsync({ type: 'blob' })
                 .then(function (content) {
@@ -430,6 +490,7 @@ const useDecryptionWorkers = ({
             const checkComplete = () => {
               if (!isDownloadCsv || !csvGenerator) {
                 killWorkers(workerPool)
+                void saveOneZip()
                 resolve({
                   expectedCount: expectedResponsesCount,
                   successCount: decryptionOutcomeCounts.decryptionSuccessCount,
@@ -493,9 +554,17 @@ const useDecryptionWorkers = ({
                   csvOutcomeCounts.errorCount,
                   csvOutcomeCounts.unverifiedCount,
                 )
-                csvGenerator.downloadCsv(
-                  `${adminForm.title}-${adminForm._id}.csv`,
-                )
+                if (oneZip) {
+                  oneZip.file(
+                    `${adminForm.title}-${adminForm._id}.csv`,
+                    csvGenerator.getCsvBlob(),
+                  )
+                  void saveOneZip()
+                } else {
+                  csvGenerator.downloadCsv(
+                    `${adminForm.title}-${adminForm._id}.csv`,
+                  )
+                }
 
                 const downloadEndTime = performance.now()
                 const timeDifference = downloadEndTime - downloadStartTime
@@ -530,6 +599,7 @@ const useDecryptionWorkers = ({
     },
     [
       adminForm,
+      isAttachmentsV2,
       isWorkflowActionsOn,
       onDecryptionProgress,
       onPdfGenerationProgress,

@@ -58,6 +58,8 @@ export interface DownloadOptions {
   isDownloadAttachments: boolean
   isDownloadCsv: boolean
   isDownloadPdf: boolean
+  /** PROTOTYPE (attachments-v2): field whose answer names each response's folder. */
+  folderNameFieldId?: string
 }
 
 export const isCsvOnlyDownload = ({

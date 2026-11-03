@@ -58,6 +58,13 @@ export class CsvGenerator {
   }
 
   /**
+   * PROTOTYPE (attachments-v2): the CSV as a Blob, to add to the download zip.
+   */
+  toBlob(): Blob {
+    return new Blob(this.records, { type: 'text/csv;charset=utf-8' })
+  }
+
+  /**
    * Download CSV file to disk
    */
   triggerFileDownload(fileName: string): void {

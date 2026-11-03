@@ -58,6 +58,11 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
    */
   accept?: DropzoneProps['accept']
   /**
+   * PROTOTYPE (attachments-v2): appended to the error when a file's type is not
+   * accepted, e.g. "Accepted file types: .pdf".
+   */
+  invalidTypeHint?: string
+  /**
    * Text to state miscellaneous uploaded file constraints.
    */
   fileConstraintsText?: string
@@ -139,6 +144,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       handleDownloadFileOverride,
       handleRemoveFileOverride,
       handleReplaceFileOverride,
+      invalidTypeHint,
       ...props
     },
     ref,
@@ -172,6 +178,9 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
                 `features.publicForm.components.fields.attachment.error.fileInvalidType`,
                 { fileExt },
               )
+              if (invalidTypeHint) {
+                errorMessage = `${errorMessage}. ${invalidTypeHint}`
+              }
               break
             }
             case 'too-many-files': {
@@ -249,7 +258,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
         }
         onChange(acceptedFile)
       },
-      [accept, publicFormId, maxSize, onChange, onError, t],
+      [accept, invalidTypeHint, publicFormId, maxSize, onChange, onError, t],
     )
 
     const fileValidator = useCallback<NonNullable<DropzoneProps['validator']>>(

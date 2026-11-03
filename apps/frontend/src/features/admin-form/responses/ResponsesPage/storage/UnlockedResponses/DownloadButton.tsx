@@ -375,6 +375,7 @@ export const DownloadButton = ({
       downloadAttachments: downloadOptions.isDownloadAttachments,
       isDownloadCsv: downloadOptions.isDownloadCsv,
       isDownloadPdf: downloadOptions.isDownloadPdf,
+      folderNameFieldId: downloadOptions.folderNameFieldId,
     })
   }, [
     downloadParams,
@@ -450,6 +451,7 @@ export const DownloadButton = ({
           isDownloading={handleBulkDownloadMutation.isLoading}
           downloadMetadata={downloadMetadata}
           downloadOptions={downloadOptions}
+          onDownloadOptionsChange={setDownloadOptions}
           isCsvFollowingTable={isDelightfulDashboard}
           isResponsesCountHidden={isResponsesCountHidden}
         />

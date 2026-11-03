@@ -1,9 +1,21 @@
+import { useState } from 'react'
 import { useDisclosure } from '@chakra-ui/react'
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
+
+import { featureFlags } from 'formsg-shared/constants'
+import {
+  AttachmentSize,
+  BasicField,
+  FormFieldDto,
+} from 'formsg-shared/types/field'
+
+import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 
 import {
   fullScreenDecorator,
   getMobileViewGlobals,
+  StoryRouter,
   viewportModes,
 } from '~utils/storybook'
 
@@ -171,3 +183,70 @@ PartialSuccessStateMobile.args = {
 }
 
 PartialSuccessStateMobile.globals = getMobileViewGlobals()
+
+// PROTOTYPE (attachments-v2): one zip, with the "Name folders by" picker.
+const attachmentsV2On = new GrowthBook({
+  features: { [featureFlags.attachmentsV2]: { defaultValue: true } },
+})
+const V2Template: StoryFn<DownloadWithAttachmentModalProps> = (args) => {
+  const modalProps = useDisclosure({ defaultIsOpen: true })
+  const [downloadOptions, setDownloadOptions] = useState(args.downloadOptions)
+  return (
+    <GrowthBookProvider growthbook={attachmentsV2On}>
+      <DownloadWithAttachmentModal
+        {...modalProps}
+        {...args}
+        downloadOptions={downloadOptions}
+        onDownloadOptionsChange={setDownloadOptions}
+        onDownload={() => console.log('Downloading...', downloadOptions)}
+        onClose={() => console.log('close modal')}
+        onCancel={() => console.log('cancel download')}
+      />
+    </GrowthBookProvider>
+  )
+}
+
+export const V2OneZipWithFolderNames = V2Template.bind({})
+V2OneZipWithFolderNames.decorators = [
+  StoryRouter({
+    initialEntries: ['/61540ece3d4a6e50ac0cc6ff'],
+    path: '/:formId',
+  }),
+]
+V2OneZipWithFolderNames.parameters = {
+  msw: createFormBuilderMocks(
+    {
+      form_fields: [
+        {
+          _id: '611b94dfbb9e300012f702a1',
+          title: 'Full name',
+          description: '',
+          required: true,
+          disabled: false,
+          fieldType: BasicField.ShortText,
+          ValidationOptions: { customVal: null, selectedValidation: null },
+        },
+        {
+          _id: '611b94dfbb9e300012f702a2',
+          title: 'Supporting documents',
+          description: '',
+          required: true,
+          disabled: false,
+          fieldType: BasicField.Attachment,
+          attachmentSize: AttachmentSize.SevenMb,
+        },
+      ] as FormFieldDto[],
+    },
+    0,
+  ),
+}
+V2OneZipWithFolderNames.args = {
+  downloadPercentage: 0,
+  isDownloading: false,
+  responsesCount: 120,
+  downloadOptions: {
+    isDownloadAttachments: true,
+    isDownloadCsv: true,
+    isDownloadPdf: true,
+  },
+}
