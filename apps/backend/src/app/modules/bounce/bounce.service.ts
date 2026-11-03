@@ -10,6 +10,7 @@ import {
   IPopulatedForm,
   ISnsNotification,
 } from '../../../types'
+import config from '../../config/config'
 import {
   createCloudWatchLogger,
   createLoggerWithLabel,
@@ -44,18 +45,45 @@ const Bounce = getBounceModel(mongoose)
 // Hostname for AWS SNS URLs.
 // Using this over sns-validator's default hostname because the latter
 // does not adequately validate that requests only come from SNS.
-const AWS_SNS_HOSTNAME = /^sns\.[a-z]{2}-[a-z]+-\d+\.amazonaws.com$/
+const AWS_SNS_HOSTNAME = /^sns\.[a-z]{2}-[a-z]+-\d+\.amazonaws\.com$/
 
 /**
- * Verifies if a request object is correctly signed by Amazon SNS. More info:
+ * Verifies that a request object is a notification from one of FormSG's own
+ * SES notification topics, and is correctly signed by Amazon SNS. More info:
  * https://docs.aws.amazon.com/sns/latest/dg/sns-verify-signature-of-message.html
  * Uses AWS provided https://github.com/aws/aws-js-sns-message-validator
  * @param body Body of Express request object
- * @returns true if request shape and signature are valid
+ * @returns true if request type, topic and signature are valid
  */
 export const validateSnsRequest = (
   body: ISnsNotification,
 ): ResultAsync<true, InvalidNotificationError> => {
+  if (config.sesSnsTopicArns.length === 0) {
+    logger.error({
+      message: 'No SES SNS topic ARNs configured, rejecting notification',
+      meta: {
+        action: 'validateSnsRequest',
+        topicArn: body.TopicArn,
+      },
+    })
+    return errAsync(new InvalidNotificationError())
+  }
+
+  if (
+    body.Type !== 'Notification' ||
+    !config.sesSnsTopicArns.includes(body.TopicArn)
+  ) {
+    logger.warn({
+      message: 'SNS notification is not from an allowed SES topic',
+      meta: {
+        action: 'validateSnsRequest',
+        type: body.Type,
+        topicArn: body.TopicArn,
+      },
+    })
+    return errAsync(new InvalidNotificationError())
+  }
+
   return ResultAsync.fromPromise(
     new Promise((resolve, reject) => {
       const snsValidator = new SNSMessageValidator(AWS_SNS_HOSTNAME)
