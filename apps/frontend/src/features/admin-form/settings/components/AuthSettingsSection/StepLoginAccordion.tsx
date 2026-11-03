@@ -94,6 +94,7 @@ export const StepLoginAccordion = ({
       </Box>
       <Accordion
         allowToggle
+        reduceMotion
         index={openIndex}
         onChange={(index) => requestChange(index as number)}
       >
