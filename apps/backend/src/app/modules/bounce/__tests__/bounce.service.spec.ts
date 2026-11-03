@@ -51,6 +51,7 @@ MockLoggerModule.createCloudWatchLogger.mockReturnValue(mockShortTermLogger)
 MockLoggerModule.createLoggerWithLabel.mockReturnValue(mockLogger)
 
 // Import modules which depend on config last so that mocks get imported correctly
+import config from 'src/app/config/config'
 import getBounceModel from 'src/app/modules/bounce/bounce.model'
 import * as BounceService from 'src/app/modules/bounce/bounce.service'
 import {
@@ -778,9 +779,50 @@ describe('BounceService', () => {
     // The tests in this block only check the return values and error types of our thin wrapper
 
     let body: ISnsNotification
+    let replacedTopicArns: jest.ReplaceProperty<string[]>
 
     beforeEach(() => {
       body = cloneDeep(MOCK_SNS_BODY)
+      replacedTopicArns = jest.replaceProperty(config, 'sesSnsTopicArns', [
+        MOCK_SNS_BODY.TopicArn,
+      ])
+      MockedSNSMessageValidator.mockClear()
+      MockedSNSMessageValidator.mockImplementation(() => {
+        return {
+          validate: (message, callback) => callback(null),
+        }
+      })
+    })
+
+    afterEach(() => {
+      replacedTopicArns.restore()
+    })
+
+    it('should reject every notification when no topic ARNs are configured', async () => {
+      replacedTopicArns.replaceValue([])
+
+      const result = await BounceService.validateSnsRequest(body)
+
+      expect(result._unsafeUnwrapErr()).toEqual(new InvalidNotificationError())
+      expect(MockedSNSMessageValidator).not.toHaveBeenCalled()
+    })
+
+    it('should reject a signed notification from a topic that is not allowed', async () => {
+      body.TopicArn = 'arn:aws:sns:ap-southeast-1:999999999999:invalid-topic'
+
+      const result = await BounceService.validateSnsRequest(body)
+
+      expect(result._unsafeUnwrapErr()).toEqual(new InvalidNotificationError())
+      expect(MockedSNSMessageValidator).not.toHaveBeenCalled()
+    })
+
+    it('should reject messages that are not of type Notification', async () => {
+      body.Type = 'SubscriptionConfirmation'
+
+      const result = await BounceService.validateSnsRequest(body)
+
+      expect(result._unsafeUnwrapErr()).toEqual(new InvalidNotificationError())
+      expect(MockedSNSMessageValidator).not.toHaveBeenCalled()
     })
 
     it('should reject invalid notification with an InvalidNotificationError', async () => {

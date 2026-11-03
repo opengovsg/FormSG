@@ -84,6 +84,10 @@
           "name": "SES_CONFIG_SET",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SES_CONFIG_SET"
         },
+        {
+          "name": "SES_SNS_TOPIC_ARNS",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SES_SNS_TOPIC_ARNS"
+        },
         { "name": "DB_HOST", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/DB_HOST" },
         {
           "name": "CUSTOM_CLOUDWATCH_LOG_GROUP",

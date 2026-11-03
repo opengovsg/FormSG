@@ -79,7 +79,7 @@ These are configured by creating groups of environment variables formatted like 
 | `NODE_ENV`           | [Express environment mode](https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production). Defaults to `'production'`. This should always be set to a production environment |
 | `SESSION_SECRET`     | Secret for `express-session` for session management. This should always be set to a secret and random value in a production environment.                                                                   |
 | `SUBMISSIONS_TOP_UP` | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`.                                                                                                              |
-| `FORMS_TOP_UP` | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`.                                                                                                              |
+| `FORMS_TOP_UP`       | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`.                                                                                                              |
 
 **Banners**
 
@@ -173,6 +173,7 @@ SITE_BANNER_CONTENT=hello:This is an invalid banner type, and the full text will
 | `MAIL_DEBUG`          | If set to `true`, then logs SMTP traffic, otherwise logs only transaction events.                                                                                                                                    |
 | `CHROMIUM_BIN`        | Filepath to chromium binary. Required for email autoreply PDF generation with Puppeteer.                                                                                                                             |
 | `BOUNCE_LIFE_SPAN`    | Time in milliseconds that bounces are tracked for each form. Defaults to 86400000ms or 24 hours. Only relevant if you have set up AWS to send bounce and delivery notifications to the /emailnotifications endpoint. |
+| `SES_SNS_TOPIC_ARNS`  | Comma-separated ARNs of the SNS topics that deliver SES bounce and delivery notifications. Notifications from any other topic are rejected. If unset, all notifications are rejected.                                |
 
 **Rate limits at specific endpoints**
 
