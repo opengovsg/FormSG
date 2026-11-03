@@ -1,6 +1,6 @@
+import replSetDbHandler from '__tests__/unit/backend/helpers/jest-replset-db'
 import { ObjectId } from 'bson'
 import { SubmissionType } from 'formsg-shared/types'
-import { MongoMemoryReplSet } from 'mongodb-memory-server-core'
 import mongoose from 'mongoose'
 
 import {
@@ -37,24 +37,11 @@ const buildMrfContent = (formId: ObjectId) =>
   >[3]
 
 describe('MultirespondentSubmission.saveIfSubmitterIdIsUnique', () => {
-  let replSet: MongoMemoryReplSet
-
-  beforeAll(async () => {
-    replSet = await MongoMemoryReplSet.create({
-      binary: { version: process.env.MONGO_BINARY_VERSION || '6.0.19' },
-      replSet: { count: 1, storageEngine: 'wiredTiger' },
-    })
-    await mongoose.connect(replSet.getUri(), { directConnection: true })
-    await MultirespondentSubmission.createCollection()
-    await MultirespondentSubmission.init()
-  })
-  afterEach(async () => {
-    await MultirespondentSubmission.collection.deleteMany({})
-  })
-  afterAll(async () => {
-    await mongoose.disconnect()
-    await replSet.stop()
-  })
+  beforeAll(() =>
+    replSetDbHandler.connect([MultirespondentSubmission, EncryptSubmission]),
+  )
+  afterEach(() => replSetDbHandler.clearDatabase())
+  afterAll(() => replSetDbHandler.closeDatabase())
 
   it('saves the first step 1 submission for a submitter', async () => {
     const formId = new ObjectId()
