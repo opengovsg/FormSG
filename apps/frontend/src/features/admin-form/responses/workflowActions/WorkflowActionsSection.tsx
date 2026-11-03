@@ -207,12 +207,14 @@ export const WorkflowActionsSection = ({
         history={history}
         canSendBackToStepOne={canSendBackToStepOne}
       />
-      <StopWorkflowModal
-        isOpen={stopModal.isOpen}
-        onClose={stopModal.onClose}
-        onConfirm={handleStop}
-        isLoading={stopMutation.isLoading}
-      />
+      {canActOnWorkflow && (
+        <StopWorkflowModal
+          isOpen={stopModal.isOpen}
+          onClose={stopModal.onClose}
+          onConfirm={handleStop}
+          isLoading={stopMutation.isLoading}
+        />
+      )}
     </>
   )
 }

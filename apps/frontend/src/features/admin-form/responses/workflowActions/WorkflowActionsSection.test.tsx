@@ -94,12 +94,15 @@ vi.mock('./StopWorkflowModal', () => ({
   }: {
     isOpen: boolean
     onConfirm: (emails: string[]) => void
-  }) =>
-    isOpen ? (
-      <button onClick={() => onConfirm(['lead@agency.gov.sg'])}>
-        confirm stop
-      </button>
-    ) : null,
+  }) => (
+    <div data-testid="stop-modal">
+      {isOpen ? (
+        <button onClick={() => onConfirm(['lead@agency.gov.sg'])}>
+          confirm stop
+        </button>
+      ) : null}
+    </div>
+  ),
 }))
 
 const STOP =
@@ -273,6 +276,17 @@ describe('WorkflowActionsSection', () => {
     expect(
       screen.getByRole('button', { name: 'remind lead@agency.gov.sg' }),
     ).toBeInTheDocument()
+  })
+
+  it('does not mount the Stop modal for view-only collaborators', () => {
+    mockHasEditAccess = false
+    renderSection()
+    expect(screen.queryByTestId('stop-modal')).not.toBeInTheDocument()
+  })
+
+  it('mounts the Stop modal for collaborators with edit access', () => {
+    renderSection()
+    expect(screen.getByTestId('stop-modal')).toBeInTheDocument()
   })
 
   it('leaves Remind to the table on the V1 dashboard', () => {

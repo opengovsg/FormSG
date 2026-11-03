@@ -5433,7 +5433,7 @@ describe('admin-form.controller', () => {
       },
     })
 
-    it('should return 200 ok with encrypted whitelist settings if admin has read permissions for the form', async () => {
+    it('should return 200 ok with encrypted whitelist settings if admin has write permissions for the form', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       // Mock various services to return expected results.
@@ -5492,7 +5492,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockAuthService.checkFormForPermissions).toHaveBeenCalledWith(
-        PermissionLevel.Read,
+        PermissionLevel.Write,
       )
       expect(adminCheck).toHaveBeenCalledWith({
         user: MOCK_USER,
@@ -5542,7 +5542,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockAuthService.checkFormForPermissions).toHaveBeenCalledWith(
-        PermissionLevel.Read,
+        PermissionLevel.Write,
       )
       expect(adminCheck).toHaveBeenCalledWith({
         user: MOCK_USER,
@@ -6001,7 +6001,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockAuthService.checkFormForPermissions).toHaveBeenCalledWith(
-        PermissionLevel.Read,
+        PermissionLevel.Write,
       )
       expect(adminCheck).toHaveBeenCalledWith({
         user: MOCK_USER,
@@ -6041,7 +6041,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockAuthService.checkFormForPermissions).toHaveBeenCalledWith(
-        PermissionLevel.Read,
+        PermissionLevel.Write,
       )
       expect(adminCheck).toHaveBeenCalledWith({
         user: MOCK_USER,
@@ -6080,7 +6080,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockAuthService.checkFormForPermissions).toHaveBeenCalledWith(
-        PermissionLevel.Read,
+        PermissionLevel.Write,
       )
       expect(adminCheck).not.toHaveBeenCalled()
     })
@@ -6112,7 +6112,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockAuthService.checkFormForPermissions).toHaveBeenCalledWith(
-        PermissionLevel.Read,
+        PermissionLevel.Write,
       )
       expect(adminCheck).not.toHaveBeenCalled()
     })
@@ -6144,7 +6144,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockAuthService.checkFormForPermissions).toHaveBeenCalledWith(
-        PermissionLevel.Read,
+        PermissionLevel.Write,
       )
       expect(adminCheck).not.toHaveBeenCalled()
     })
@@ -6176,7 +6176,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockAuthService.checkFormForPermissions).toHaveBeenCalledWith(
-        PermissionLevel.Read,
+        PermissionLevel.Write,
       )
       expect(adminCheck).not.toHaveBeenCalled()
     })
