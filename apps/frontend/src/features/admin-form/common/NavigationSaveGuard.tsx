@@ -13,6 +13,8 @@ const RouterNavigationSaveGuard = ({
   const draft = useNavigationDraft((state) => state.draft)
   const blocker = useBlocker(!!draft?.dirty || !!draft?.saving || fallbackDirty)
   const handling = useRef(false)
+  const fallbackDirtyRef = useRef(fallbackDirty)
+  fallbackDirtyRef.current = fallbackDirty
   useEffect(() => {
     if (blocker.state !== 'blocked' || handling.current) return
     // Preserve the existing discard prompt for unrelated field-builder edits.
@@ -20,8 +22,10 @@ const RouterNavigationSaveGuard = ({
     handling.current = true
     void saveBeforeNavigation().then((saved) => {
       handling.current = false
-      if (saved) blocker.proceed()
-      else blocker.reset()
+      if (!saved) blocker.reset()
+      // Unsaved field-builder edits stay blocked, so the discard prompt below
+      // asks about them.
+      else if (!fallbackDirtyRef.current) blocker.proceed()
     })
   }, [blocker, draft])
 

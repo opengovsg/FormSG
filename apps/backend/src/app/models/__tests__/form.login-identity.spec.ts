@@ -300,6 +300,90 @@ describe('Form login identity fields', () => {
     expect(reloaded.workflow[0].edit.map(String)).toEqual([String(retainedId)])
   })
 
+  describe('an MRF form without a later-step login', () => {
+    const fieldId = new Types.ObjectId()
+    const createForm = () =>
+      MultirespondentForm.create({
+        ...storageForm({
+          authType: FormAuthType.MyInfo,
+          esrvcId: 'test-service',
+        }),
+        responseMode: FormResponseMode.Multirespondent,
+        form_fields: [
+          { _id: fieldId, fieldType: BasicField.ShortText, title: 'Name' },
+        ],
+        workflow: [
+          { workflow_type: WorkflowType.Static, emails: [], edit: [] },
+          {
+            workflow_type: WorkflowType.Static,
+            emails: ['approver@example.com'],
+            edit: [fieldId],
+          },
+        ],
+      })
+    const convertToMyInfo = (form: Awaited<ReturnType<typeof createForm>>) =>
+      form.updateFormFieldById(String(fieldId), {
+        ...form.form_fields[0].toObject(),
+        myInfo: { attr: MyInfoAttribute.Name },
+      } as FormFieldDto)
+
+    it('saves a field write as before', async () => {
+      const form = await createForm()
+
+      await convertToMyInfo(form)
+
+      const reloaded = await MultirespondentForm.findById(form._id).orFail()
+      expect(reloaded.form_fields[0].myInfo?.attr).toBe(MyInfoAttribute.Name)
+    })
+
+    it('refuses a stale field write after a step gains a login', async () => {
+      const staleFieldEditor = await createForm()
+      // A concurrent workflow write gives the field's step Corppass login.
+      await MultirespondentForm.updateOne(
+        { _id: staleFieldEditor._id },
+        {
+          'workflow.1.auth': {
+            auth_type: FormAuthType.CP,
+            esrvc_id: 'step-service',
+          },
+        },
+      )
+
+      await expect(convertToMyInfo(staleFieldEditor)).rejects.toBeInstanceOf(
+        mongoose.Error.VersionError,
+      )
+      const reloaded = await MultirespondentForm.findById(
+        staleFieldEditor._id,
+      ).orFail()
+      expect(reloaded.form_fields[0].myInfo?.attr).toBeUndefined()
+    })
+  })
+
+  it("refuses a stale field write after Step 1's e-service ID changes", async () => {
+    const form = await MultirespondentForm.create({
+      ...storageForm({ authType: FormAuthType.CP, esrvcId: 'test-service' }),
+      responseMode: FormResponseMode.Multirespondent,
+      form_fields: [],
+      workflow: [
+        { workflow_type: WorkflowType.Static, emails: [], edit: [] },
+        {
+          workflow_type: WorkflowType.Static,
+          emails: ['approver@example.com'],
+          edit: [],
+          auth: { auth_type: FormAuthType.MyInfo },
+        },
+      ],
+    })
+    await MultirespondentForm.updateOne({ _id: form._id }, { esrvcId: '' })
+
+    await expect(
+      form.insertFormField(uenIdentityField as FormField),
+    ).rejects.toBeInstanceOf(mongoose.Error.VersionError)
+    expect(
+      (await MultirespondentForm.findById(form._id).orFail()).form_fields,
+    ).toHaveLength(0)
+  })
+
   it('allows a public field conversion when its authentication configuration is unchanged', async () => {
     const fieldId = new Types.ObjectId()
     const form = await MultirespondentForm.create({

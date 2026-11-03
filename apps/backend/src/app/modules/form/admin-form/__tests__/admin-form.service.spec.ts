@@ -5055,6 +5055,37 @@ describe('admin-form.service', () => {
         expect.anything(),
       )
     })
+
+    it('keeps a saved later-step login on an open form when the flag is off', async () => {
+      const write = jest
+        .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
+        // @ts-ignore
+        .mockReturnValue({
+          exec: jest.fn().mockResolvedValue({ _id: 'form', workflow: [] }),
+        })
+      const auth = { auth_type: FormAuthType.CP, esrvc_id: 'ESRVC' }
+      const stepOne = { ...firstStep, edit: [regularId] }
+      const form = makeForm(FormStatus.Public)
+      ;(form as unknown as { workflow: unknown[] }).workflow = [
+        stepOne,
+        { ...nextStep, auth },
+      ]
+      const editedStep = { ...nextStep, emails: ['other@example.com'] }
+
+      // The flag-off editor sends no login for the step.
+      const result = await AdminFormService.updateFormWorkflowStep(
+        form,
+        1,
+        editedStep as any,
+      )
+
+      expect(result.isOk()).toBe(true)
+      expect(write).toHaveBeenCalledWith(
+        expect.anything(),
+        { workflow: [stepOne, { ...editedStep, auth }] },
+        expect.anything(),
+      )
+    })
   })
 
   describe('workflow completeness', () => {

@@ -2146,7 +2146,8 @@ export const updateFormWorkflowStep = (
     const loginCheck = checkWorkflowStepLoginWrite({
       form: originalForm,
       stepNumber,
-      step: updatedWorkflowStep,
+      // Checks the login being saved, so a kept one isn't read as removed.
+      step: { ...updatedWorkflowStep, auth: stepToSave.auth },
       isStepLoginEnabled,
     })
     if (loginCheck.isErr()) return errAsync(loginCheck.error)

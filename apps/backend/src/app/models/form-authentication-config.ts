@@ -13,6 +13,8 @@ export const getCheckedAuthenticationConfigFilter = (form: IFormDocument) => {
   const filter: Record<string, unknown> = {
     status: form.status,
     authType: form.authType,
+    // Step 1's e-service ID, normalised like a later step's below
+    esrvcId: form.esrvcId || { $in: ['', null] },
     isSubmitterIdCollectionEnabled: form.isSubmitterIdCollectionEnabled
       ? true
       : { $in: [false, null] },
@@ -50,18 +52,22 @@ export const getCheckedAuthenticationConfigFilter = (form: IFormDocument) => {
 }
 
 /**
- * The guard field writes use. Only forms with a later-step login guard their
- * authentication configuration; other forms save as before.
+ * The guard field writes use. Forms with a later-step login guard their whole
+ * authentication configuration. Other MRF forms only guard that no step has
+ * gained a login since the read, so a stale field write can't land on a
+ * workflow that now has one. Other forms save as before.
  */
 export const getStepLoginAuthenticationConfigGuard = (
   form: IFormDocument,
-): Record<string, unknown> | undefined =>
-  form.responseMode === FormResponseMode.Multirespondent &&
-  hasLaterStepLogin(
+): Record<string, unknown> | undefined => {
+  if (form.responseMode !== FormResponseMode.Multirespondent) return undefined
+  return hasLaterStepLogin(
     (form as IFormDocument & { workflow?: FormWorkflowDto }).workflow,
   )
     ? getCheckedAuthenticationConfigFilter(form)
-    : undefined
+    : // auth_type, not auth: `$exists` counts a stored null as present.
+      { 'workflow.auth.auth_type': { $exists: false } }
+}
 
 export const saveWithAuthenticationConfigGuard = (
   form: IFormDocument,
