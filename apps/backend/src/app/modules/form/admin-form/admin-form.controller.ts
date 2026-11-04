@@ -1487,24 +1487,9 @@ export const _handleUpdateSettings: ControllerHandler<
   const { formId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const settingsToPatch = req.body
-  let isStepLoginEnabled = false
 
-  // Step 1: Retrieve currently logged in user.
-  return UserService.getPopulatedUserById(sessionUserId)
-    .andThen((user) => {
-      isStepLoginEnabled = isMrfStepLoginEnabledFor(
-        req.growthbook,
-        user,
-        formId,
-      )
-      // Step 2: Retrieve form with write permission check.
-      return AuthService.getFormAfterPermissionChecks({
-        user,
-        formId,
-        level: PermissionLevel.Write,
-      })
-    })
-    .andThen((retrievedForm) =>
+  return getWritableFormWithStepLoginFlag(sessionUserId, formId, req.growthbook)
+    .andThen(({ form: retrievedForm, isStepLoginEnabled }) =>
       AdminFormService.updateFormSettings(
         retrievedForm,
         settingsToPatch,
@@ -1577,6 +1562,26 @@ const isMrfStepLoginEnabledFor = (
 ): boolean =>
   isNricFieldEnabledFor(growthbook, user, formId) &&
   (growthbook?.isOn(featureFlags.mrfStepLogin) ?? false)
+
+/**
+ * Retrieves the form with write permission, and whether step logins are on
+ * for this admin and form.
+ */
+const getWritableFormWithStepLoginFlag = (
+  sessionUserId: string,
+  formId: string,
+  growthbook: GrowthBook | undefined,
+) =>
+  UserService.getPopulatedUserById(sessionUserId).andThen((user) =>
+    AuthService.getFormAfterPermissionChecks({
+      user,
+      formId,
+      level: PermissionLevel.Write,
+    }).map((form) => ({
+      form,
+      isStepLoginEnabled: isMrfStepLoginEnabledFor(growthbook, user, formId),
+    })),
+  )
 
 /**
  * Handler for POST /forms/:formId/settings/submitter-id-collection/convert.
@@ -1725,26 +1730,11 @@ export const _handleCreateWorkflowStep: ControllerHandler<
   const workflowStepToCreate = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
   let hasUsedGuidedMode: boolean | undefined
-  let isStepLoginEnabled = false
 
-  // Step 1: Retrieve currently logged in user.
   return (
-    UserService.getPopulatedUserById(sessionUserId)
-      .andThen((user) => {
-        isStepLoginEnabled = isMrfStepLoginEnabledFor(
-          req.growthbook,
-          user,
-          formId,
-        )
-        // Step 2: Retrieve form with write permission check.
-        return AuthService.getFormAfterPermissionChecks({
-          user,
-          formId,
-          level: PermissionLevel.Write,
-        })
-      })
-      // Step 3: User has permissions, proceed to create form field with provided body.
-      .andThen((form) => {
+    getWritableFormWithStepLoginFlag(sessionUserId, formId, req.growthbook)
+      // User has permissions, proceed to create form field with provided body.
+      .andThen(({ form, isStepLoginEnabled }) => {
         hasUsedGuidedMode = guidedModeOf(form)
         return AdminFormService.createWorkflowStep(form, workflowStepToCreate, {
           isStepLoginEnabled,
@@ -1801,24 +1791,9 @@ const _handleUpdateWorkflowStep: ControllerHandler<
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const updatedWorkflowStep = req.body
   let hasUsedGuidedMode: boolean | undefined
-  let isStepLoginEnabled = false
 
-  // Step 1: Retrieve currently logged in user.
-  return UserService.getPopulatedUserById(sessionUserId)
-    .andThen((user) => {
-      isStepLoginEnabled = isMrfStepLoginEnabledFor(
-        req.growthbook,
-        user,
-        formId,
-      )
-      // Step 2: Retrieve form with write permission check.
-      return AuthService.getFormAfterPermissionChecks({
-        user,
-        formId,
-        level: PermissionLevel.Write,
-      })
-    })
-    .andThen((retrievedForm) => {
+  return getWritableFormWithStepLoginFlag(sessionUserId, formId, req.growthbook)
+    .andThen(({ form: retrievedForm, isStepLoginEnabled }) => {
       hasUsedGuidedMode = guidedModeOf(retrievedForm)
       return AdminFormService.updateFormWorkflowStep(
         retrievedForm,

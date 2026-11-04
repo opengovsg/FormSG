@@ -1,4 +1,4 @@
-import { FormResponseMode, FormWorkflowDto } from 'formsg-shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
 import { LoginIdentityCandidate } from 'formsg-shared/utils/login-identity'
 import {
   getAuthEsrvcId,
@@ -7,6 +7,8 @@ import {
 import mongoose from 'mongoose'
 
 import { IFormDocument } from 'src/types'
+
+import { getSavedWorkflow } from '../modules/form/form.utils'
 
 // Authentication validation and publication must apply to the same authentication configuration.
 export const getCheckedAuthenticationConfigFilter = (form: IFormDocument) => {
@@ -34,8 +36,7 @@ export const getCheckedAuthenticationConfigFilter = (form: IFormDocument) => {
     }
   })
   if (form.responseMode === FormResponseMode.Multirespondent) {
-    const workflow =
-      (form as IFormDocument & { workflow?: FormWorkflowDto }).workflow ?? []
+    const workflow = getSavedWorkflow(form)
     filter[`workflow.${workflow.length}`] = { $exists: false }
     workflow.forEach((step, index) => {
       const prefix = `workflow.${index}`
@@ -61,9 +62,7 @@ export const getStepLoginAuthenticationConfigGuard = (
   form: IFormDocument,
 ): Record<string, unknown> | undefined => {
   if (form.responseMode !== FormResponseMode.Multirespondent) return undefined
-  return hasLaterStepLogin(
-    (form as IFormDocument & { workflow?: FormWorkflowDto }).workflow,
-  )
+  return hasLaterStepLogin(getSavedWorkflow(form))
     ? getCheckedAuthenticationConfigFilter(form)
     : // auth_type, not auth: `$exists` counts a stored null as present.
       { 'workflow.auth.auth_type': { $exists: false } }

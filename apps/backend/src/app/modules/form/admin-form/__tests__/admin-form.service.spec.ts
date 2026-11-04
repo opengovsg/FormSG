@@ -5086,6 +5086,68 @@ describe('admin-form.service', () => {
         expect.anything(),
       )
     })
+
+    it('keeps a saved later-step login on an open form when the flag is on and the request has no login', async () => {
+      const write = jest
+        .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
+        // @ts-ignore
+        .mockReturnValue({
+          exec: jest.fn().mockResolvedValue({ _id: 'form', workflow: [] }),
+        })
+      const auth = { auth_type: FormAuthType.CP, esrvc_id: 'ESRVC' }
+      const stepOne = { ...firstStep, edit: [regularId] }
+      const form = makeForm(FormStatus.Public)
+      ;(form as unknown as { workflow: unknown[] }).workflow = [
+        stepOne,
+        { ...nextStep, auth },
+      ]
+      const editedStep = { ...nextStep, emails: ['other@example.com'] }
+
+      // An editor without login controls sends no auth key.
+      const result = await AdminFormService.updateFormWorkflowStep(
+        form,
+        1,
+        editedStep as any,
+        { isStepLoginEnabled: true },
+      )
+
+      expect(result.isOk()).toBe(true)
+      expect(write).toHaveBeenCalledWith(
+        expect.anything(),
+        { workflow: [stepOne, { ...editedStep, auth }] },
+        expect.anything(),
+      )
+    })
+
+    it('removes a saved later-step login when the request sends a null login', async () => {
+      const write = jest
+        .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
+        // @ts-ignore
+        .mockReturnValue({
+          exec: jest.fn().mockResolvedValue({ _id: 'form', workflow: [] }),
+        })
+      const auth = { auth_type: FormAuthType.CP, esrvc_id: 'ESRVC' }
+      const stepOne = { ...firstStep, edit: [regularId] }
+      const form = makeForm(FormStatus.Private)
+      ;(form as unknown as { workflow: unknown[] }).workflow = [
+        stepOne,
+        { ...nextStep, auth },
+      ]
+
+      const result = await AdminFormService.updateFormWorkflowStep(
+        form,
+        1,
+        { ...nextStep, auth: null } as any,
+        { isStepLoginEnabled: true },
+      )
+
+      expect(result.isOk()).toBe(true)
+      expect(write).toHaveBeenCalledWith(
+        expect.anything(),
+        { workflow: [stepOne, nextStep] },
+        expect.anything(),
+      )
+    })
   })
 
   describe('workflow completeness', () => {

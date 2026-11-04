@@ -15,6 +15,7 @@ import {
 import { err, ok } from 'neverthrow'
 
 import {
+  FormLogicSchema,
   IPopulatedForm,
   IPopulatedMultirespondentForm,
 } from '../../../../types'
@@ -87,16 +88,7 @@ export const prepareAuthFieldDeletion = ({
       return []
     if (logic.logicType !== LogicType.ShowFields) return [logic]
     const show = logic.show.filter((id) => !removed.has(String(id)))
-    return show.length
-      ? [
-          {
-            ...(typeof logic.toObject === 'function'
-              ? logic.toObject()
-              : logic),
-            show,
-          },
-        ]
-      : []
+    return show.length ? [{ ...toPlain(logic), show } as FormLogicSchema] : []
   })
   const cleanedWorkflow = workflow.map((step) => {
     const clean = {

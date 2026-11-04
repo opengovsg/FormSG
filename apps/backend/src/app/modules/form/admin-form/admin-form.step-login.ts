@@ -22,7 +22,7 @@ import { err, ok, Result } from 'neverthrow'
 import { IPopulatedForm } from '../../../../types'
 import { MalformedParametersError } from '../../core/core.errors'
 import { ForbiddenFormError, FormOpenToResponsesError } from '../form.errors'
-import { isFormMultirespondent } from '../form.utils'
+import { getSavedWorkflow } from '../form.utils'
 
 /**
  * Authoring rules for login on MRF workflow steps. Step 1 keeps the
@@ -42,13 +42,13 @@ export const CONVERT_BEFORE_LATER_STEP_LOGIN =
 export const CLOSE_FORM_BEFORE_LOGIN_CHANGE =
   'Close your form to new responses before changing its login settings'
 
-type StepLoginWriteError =
+export type StepLoginWriteError =
   | MalformedParametersError
   | ForbiddenFormError
   | FormOpenToResponsesError
 
 /** Form-level login as `first_step_login` writes it. */
-type FormLoginUpdate = {
+export type FormLoginUpdate = {
   authType: FormAuthType
   esrvcId?: string
 }
@@ -62,9 +62,6 @@ type LoginForm = Pick<
   | 'isSubmitterIdCollectionEnabled'
   | 'form_fields'
 >
-
-const getSavedWorkflow = (form: IPopulatedForm): readonly StepLoginStep[] =>
-  isFormMultirespondent(form) ? (form.workflow ?? []) : []
 
 const isSameAuth = (
   a: FormWorkflowStepAuth | null | undefined,
