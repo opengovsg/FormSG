@@ -273,7 +273,7 @@ export const assertHasReadPermissions: AssertFormFn = (user, form) => {
     ? ok(true)
     : err(
         new ForbiddenFormError(
-          `User ${user.email} not authorized to perform read operation on Form ${form._id} with title: ${form.title}.`,
+          `User ${user.email} not authorized to perform read operation on Form ${form._id}.`,
         ),
       )
 }
@@ -290,7 +290,7 @@ export const assertHasDeletePermissions: AssertFormFn = (user, form) => {
     ? ok(true)
     : err(
         new ForbiddenFormError(
-          `User ${user.email} not authorized to perform delete operation on Form ${form._id} with title: ${form.title}.`,
+          `User ${user.email} not authorized to perform delete operation on Form ${form._id}.`,
         ),
       )
 }
@@ -318,7 +318,7 @@ export const assertHasWritePermissions: AssertFormFn = (user, form) => {
     ? ok(true)
     : err(
         new ForbiddenFormError(
-          `User ${user.email} not authorized to perform write operation on Form ${form._id} with title: ${form.title}.`,
+          `User ${user.email} not authorized to perform write operation on Form ${form._id}.`,
         ),
       )
 }

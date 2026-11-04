@@ -101,7 +101,7 @@ describe('admin-form.utils', () => {
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new ForbiddenFormError(
-          `User ${MOCK_USER.email} not authorized to perform read operation on Form ${mockForm._id} with title: ${mockForm.title}.`,
+          `User ${MOCK_USER.email} not authorized to perform read operation on Form ${mockForm._id}.`,
         ),
       )
     })
@@ -172,7 +172,7 @@ describe('admin-form.utils', () => {
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new ForbiddenFormError(
-          `User ${MOCK_USER.email} not authorized to perform write operation on Form ${mockForm._id} with title: ${mockForm.title}.`,
+          `User ${MOCK_USER.email} not authorized to perform write operation on Form ${mockForm._id}.`,
         ),
       )
     })
@@ -199,7 +199,7 @@ describe('admin-form.utils', () => {
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new ForbiddenFormError(
-          `User ${MOCK_USER.email} not authorized to perform write operation on Form ${mockForm._id} with title: ${mockForm.title}.`,
+          `User ${MOCK_USER.email} not authorized to perform write operation on Form ${mockForm._id}.`,
         ),
       )
     })
@@ -246,7 +246,7 @@ describe('admin-form.utils', () => {
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new ForbiddenFormError(
-          `User ${MOCK_USER.email} not authorized to perform delete operation on Form ${mockForm._id} with title: ${mockForm.title}.`,
+          `User ${MOCK_USER.email} not authorized to perform delete operation on Form ${mockForm._id}.`,
         ),
       )
     })
@@ -273,7 +273,7 @@ describe('admin-form.utils', () => {
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new ForbiddenFormError(
-          `User ${MOCK_USER.email} not authorized to perform delete operation on Form ${mockForm._id} with title: ${mockForm.title}.`,
+          `User ${MOCK_USER.email} not authorized to perform delete operation on Form ${mockForm._id}.`,
         ),
       )
     })
