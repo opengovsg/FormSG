@@ -81,11 +81,14 @@ const STEP_TABS_KEY = 'features.adminForm.sidebar.workflow.stepLogin.tabs'
 
 type WriteStep = FormWorkflowStepWriteDto & { _id: string }
 
-/** A later step's login as sent: absent when the step has none. */
+/**
+ * A later step's login as sent: null when the step has none, since the
+ * backend keeps the saved login when auth is absent.
+ */
 const normaliseStepAuth = (
   auth: FormWorkflowStepAuth | null | undefined,
-): FormWorkflowStepAuth | undefined => {
-  if (!auth) return undefined
+): FormWorkflowStepAuth | null => {
+  if (!auth) return null
   if (auth.auth_type === FormAuthType.MyInfo)
     return { auth_type: auth.auth_type }
   // An empty e-service ID is omitted.
@@ -158,7 +161,7 @@ export const buildWorkflowStep = (
   // so a save never drops it.
   const workflowStepBase: Omit<FormWorkflowStepBase, 'auth'> & {
     _id: string
-    auth?: FormWorkflowStepAuth
+    auth: FormWorkflowStepAuth | null
   } = {
     _id: inputs._id,
     ...fieldDeletion,

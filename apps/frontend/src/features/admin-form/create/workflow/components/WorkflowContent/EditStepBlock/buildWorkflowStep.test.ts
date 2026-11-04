@@ -87,10 +87,10 @@ describe('buildWorkflowStep', () => {
   })
 
   describe('step login', () => {
-    it('should omit auth from a later step with no login', () => {
+    it('should send a null auth for a later step with no login', () => {
       const step = buildWorkflowStep(baseInputs({ auth: null }), false)
 
-      expect(step).toHaveProperty('auth', undefined)
+      expect(step).toHaveProperty('auth', null)
       expect(step).not.toHaveProperty('first_step_login')
     })
 
