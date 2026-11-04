@@ -21,6 +21,7 @@ import {
   FormWorkflowStepWriteDto,
   WorkflowType,
 } from 'formsg-shared/types'
+import { getAuthEsrvcId } from 'formsg-shared/utils/step-login'
 
 import InlineMessage from '~components/InlineMessage'
 import { Tab } from '~components/Tabs'
@@ -30,6 +31,7 @@ import { adminFormKeys } from '~features/admin-form/common/queries'
 import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
 import { saveStepOneLoginRestrictions } from '~features/admin-form/settings/components/AuthSettingsSection/StepOneLoginRestrictions'
 import { adminFormSettingsKeys } from '~features/admin-form/settings/queries'
+import { isValidEsrvcId } from '~features/admin-form/settings/utils'
 import { useUser } from '~features/user/queries'
 
 import {
@@ -242,6 +244,18 @@ export const EditStepBlock = ({
   const queryClient = useQueryClient()
   const _isLoading = isLoading || isUserLoading || isSavingRestrictions
 
+  // StepLoginControls shows the e-service ID error. These rules stop the save.
+  const { register } = formMethods
+  useEffect(() => {
+    if (!isLoginShown) return
+    register('auth', {
+      validate: (auth) => isValidEsrvcId(getAuthEsrvcId(auth) ?? ''),
+    })
+    register('first_step_login', {
+      validate: (login) => isValidEsrvcId(login?.esrvc_id ?? ''),
+    })
+  }, [register, isLoginShown])
+
   const wrapperRef = useRef<HTMLDivElement | null>(null)
 
   useLayoutEffect(() => {
@@ -319,7 +333,9 @@ export const EditStepBlock = ({
     },
     (errors) => {
       if (errors.approval_field || errors.is_approval_enabled) setActiveTab(1)
-      else if (errors.auth || errors.first_step_login) setActiveTab(2)
+      // Step 1 has no Approvals tab, so its Login tab comes second.
+      else if (errors.auth || errors.first_step_login)
+        setActiveTab(isFirstStep ? 1 : 2)
       else setActiveTab(0)
       cancelPendingSwitch()
     },
