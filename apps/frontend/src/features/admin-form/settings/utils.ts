@@ -14,3 +14,6 @@ export const isPaymentCapableFormSettings = (
 ): settings is StorageFormSettings | MultirespondentFormSettings =>
   settings.responseMode === FormResponseMode.Encrypt ||
   settings.responseMode === FormResponseMode.Multirespondent
+
+export const isValidEsrvcId = (esrvcId: string): boolean =>
+  !/\s/.test(esrvcId.trim())
