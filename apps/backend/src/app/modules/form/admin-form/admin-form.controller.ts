@@ -2188,7 +2188,7 @@ export const handleGetSettings: ControllerHandler<
         user,
       })),
     )
-    .andThen(AuthService.checkFormForPermissions(PermissionLevel.Read))
+    .andThen(AuthService.checkFormForPermissions(PermissionLevel.Write))
     .map((form) => res.status(StatusCodes.OK).json(form.getSettings()))
     .mapErr((error) => {
       logger.error({
@@ -2226,7 +2226,7 @@ export const handleGetWhitelistSetting: ControllerHandler<
         user,
       })),
     )
-    .andThen(AuthService.checkFormForPermissions(PermissionLevel.Read))
+    .andThen(AuthService.checkFormForPermissions(PermissionLevel.Write))
     .andThen((form) => EmailSubmissionService.checkFormIsNotEmailMode(form))
     .map(async (form) => AdminFormService.getFormWhitelistSetting(form))
     .andThen((formWhitelistedSubmitterIds) => formWhitelistedSubmitterIds)
