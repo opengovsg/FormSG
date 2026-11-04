@@ -1981,10 +1981,30 @@ export const createWorkflowStep = (
     loginCheck.value
 
   // Create new workflow step
-  const updatedWorkflow = originalWorkflow.concat(stepToSave)
+  let updatedWorkflow = originalWorkflow.concat(stepToSave)
+
+  // A new Step 1 can switch the form's login, as an update can. The admin
+  // confirms the fields no login can fill, and they go in the same write.
+  let formFields = originalForm.form_fields
+  let deletionGuard = {}
+  let deletionUpdate = {}
+  if (useStepLoginRules) {
+    const deletion = prepareAuthFieldDeletion({
+      form: originalForm,
+      workflow: updatedWorkflow,
+      authType: formLogin?.authType ?? originalForm.authType,
+      confirmedIds: newWorkflowStep.delete_auth_field_ids,
+      expectedLastModified: newWorkflowStep.expected_last_modified,
+    })
+    if (deletion.isErr()) return errAsync(deletion.error)
+    updatedWorkflow = deletion.value.workflow
+    formFields = deletion.value.form_fields
+    ;({ deletionGuard, deletionUpdate } = deletion.value)
+  }
 
   const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow, {
     authType: formLogin?.authType,
+    formFields,
     useStepLoginRules,
   })
   if (check.isErr()) return errAsync(check.error)
@@ -1998,6 +2018,7 @@ export const createWorkflowStep = (
       {
         _id: originalMrfForm._id,
         ...authConfigFilter,
+        ...deletionGuard,
         'payments_field.enabled': { $ne: true },
         ...getCheckedWebhookFilterIfMultistepWorkflow(
           originalForm,
@@ -2005,7 +2026,7 @@ export const createWorkflowStep = (
         ),
       },
       // Step 1's login is saved with the step so neither lands without the other.
-      { workflow: updatedWorkflow, ...formLogin },
+      { workflow: updatedWorkflow, ...formLogin, ...deletionUpdate },
       {
         new: true,
         runValidators: true,
