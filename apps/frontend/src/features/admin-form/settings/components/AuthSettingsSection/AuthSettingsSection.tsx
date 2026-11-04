@@ -88,7 +88,10 @@ export const AuthSettingsSection = ({
         }
         isSubmitterIdCollectionEnabled={settings.isSubmitterIdCollectionEnabled}
         // Once later steps can log in, the first-step-only notice is false.
-        isMrfFirstStepOnly={isMrf && !isStepLoginFlagOn}
+        // Until the legacy NRIC setting is converted, they still can't.
+        isMrfFirstStepOnly={
+          isMrf && !isLaterStepLoginAvailable(form, isStepLoginFlagOn)
+        }
       />
       {!showStepAccordion ? <AuthSettingsDescriptionText /> : null}
       {showStepAccordion && form ? (
