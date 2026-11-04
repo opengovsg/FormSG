@@ -99,7 +99,7 @@ export const StepLoginControls = ({
               {option === FormAuthType.CP && authType === FormAuthType.CP ? (
                 <FormControl
                   id={esrvcIdInputId}
-                  isDisabled={isDisabled}
+                  isDisabled={isDisabled || isLoading}
                   isInvalid={isEsrvcIdInvalid}
                 >
                   <Stack
