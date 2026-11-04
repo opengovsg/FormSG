@@ -84,7 +84,6 @@ import {
   MrfWorkflowNotPendingError,
   MrfWorkflowStoppedError,
   ResponseModeError,
-  StepTokenVerificationError,
   SubmissionNotFoundError,
   SubmissionSaveError,
 } from '../submission.errors'
@@ -1906,7 +1905,6 @@ export const updateMultiRespondentFormSubmission = ({
   expectedPrevious,
   logMeta,
   growthbook,
-  validatedSubmission,
 }: {
   submissionId: string
   snapshottedFormDef: SnapshottedFormDef
@@ -1916,7 +1914,6 @@ export const updateMultiRespondentFormSubmission = ({
   expectedPrevious?: { workflowStep: number; stepTokenHash?: string }
   logMeta: CustomLoggerParams['meta']
   growthbook?: GrowthBook
-  validatedSubmission?: Pick<IMultirespondentSubmissionSchema, 'stepTokenHash'>
 }): ResultAsync<
   SavedMultirespondentSubmission,
   | AttachmentUploadError
@@ -1925,7 +1922,6 @@ export const updateMultiRespondentFormSubmission = ({
   | MrfSubmissionStaleError
   | PossibleDatabaseError
   | SnapshotWriteError
-  | StepTokenVerificationError
 > => {
   logMeta = {
     ...logMeta,
@@ -1951,8 +1947,6 @@ export const updateMultiRespondentFormSubmission = ({
       if (submission.stoppedAt) {
         return errAsync(new MrfWorkflowStoppedError())
       }
-      // Checked before the token: an advance during the request rotates the
-      // token, and must read as stale rather than as an invalid link.
       if (
         expectedPrevious &&
         (submission.workflowStep !== expectedPrevious.workflowStep ||
@@ -1963,12 +1957,6 @@ export const updateMultiRespondentFormSubmission = ({
           meta: { ...logMeta, submissionId },
         })
         return errAsync(new MrfSubmissionStaleError())
-      }
-      if (
-        validatedSubmission &&
-        submission.stepTokenHash !== validatedSubmission.stepTokenHash
-      ) {
-        return errAsync(new StepTokenVerificationError())
       }
       return okAsync({ submission, attachmentMetadata })
     })

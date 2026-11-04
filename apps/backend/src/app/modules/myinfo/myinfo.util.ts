@@ -22,7 +22,10 @@ import {
 } from 'formsg-shared/types'
 import { formatMyinfoDate } from 'formsg-shared/utils/dates'
 import { hasProp } from 'formsg-shared/utils/has-prop'
-import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'
+import {
+  getLoginIdentityAttr,
+  isLoginIdentityField,
+} from 'formsg-shared/utils/login-identity'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import { compact, uniq } from 'lodash'
@@ -350,7 +353,11 @@ export const getUniqueMyInfoAttrsForFields = (
   compact(
     uniq(
       fields.flatMap((field) =>
-        getMyInfoAttr(field as FlattenMaps<IFieldSchema>),
+        // The NRIC/FIN field is filled from the login, not prefilled from
+        // MyInfo, but still records uinfin. MyInfo always grants uinfin.
+        getLoginIdentityAttr(field) === MyInfoAttribute.UinFin
+          ? MyInfoAttribute.UinFin
+          : getMyInfoAttr(field as FlattenMaps<IFieldSchema>),
       ),
     ),
   ) as InternalAttr[]

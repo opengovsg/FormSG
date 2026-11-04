@@ -4,15 +4,15 @@ import { OTP_REGEX } from 'formsg-shared/constants'
 import {
   ErrorDto,
   FormAuthType,
-  FormResponseMode,
   SendFormOtpResponseDto,
 } from 'formsg-shared/types'
 import { hasLaterStepLogin } from 'formsg-shared/utils/step-login'
 import { SALT_ROUNDS } from 'formsg-shared/utils/verification'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
-import { err, errAsync, ok, okAsync, Result } from 'neverthrow'
+import { errAsync, ok, okAsync, Result } from 'neverthrow'
 
+import { IMultirespondentSubmissionSchema } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
@@ -32,7 +32,6 @@ import {
   resolveMrfStepAuth,
 } from '../submission/multirespondent-submission/step-auth'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
-import * as SubmissionService from '../submission/submission.service'
 
 import { MrfJwtValidationError } from './verification.errors'
 import * as VerificationService from './verification.service'
@@ -54,44 +53,40 @@ const buildErrorDto = ({
 /**
  * Checks the login of the MRF step a continuing respondent fills in, read from
  * the submission's saved workflow. Submissions whose saved workflow has no
- * later-step login pass unchanged, as does a submission that cannot be found:
- * the MRF JWT has already been checked, and its submit fails on its own.
+ * later-step login pass unchanged.
  */
 const verifyMrfStepLoginForOtp = ({
   formId,
-  submissionId,
+  submission,
   cookies,
   res,
   logMeta,
 }: {
   formId: string
-  submissionId: string
+  submission: IMultirespondentSubmissionSchema
   cookies: Record<string, string | undefined>
   res: Response
   logMeta: { action: string; [other: string]: unknown }
 }) =>
-  getMultirespondentSubmission(submissionId)
-    .andThen((submission) =>
-      hasLaterStepLogin(submission.workflow)
-        ? resolveMrfStepAuth(formId, submission, {
-            stepAuthCookies: cookies,
-          }).map(() => undefined)
-        : ok(undefined),
-    )
-    .orElse((error) =>
-      error instanceof SubmissionNotFoundError ? ok(undefined) : err(error),
-    )
-    .mapErr((error) => {
-      logger.warn({
-        message: 'Failed to verify MRF step login for OTP',
-        meta: logMeta,
-        error,
-      })
-      if (error instanceof VerifyJwtError || error instanceof InvalidJwtError) {
-        clearMrfStepAuthCookie(res, { formId, submissionId })
-      }
-      return error
+  (hasLaterStepLogin(submission.workflow)
+    ? resolveMrfStepAuth(formId, submission, {
+        stepAuthCookies: cookies,
+      }).map(() => undefined)
+    : ok(undefined)
+  ).mapErr((error) => {
+    logger.warn({
+      message: 'Failed to verify MRF step login for OTP',
+      meta: logMeta,
+      error,
     })
+    if (error instanceof VerifyJwtError || error instanceof InvalidJwtError) {
+      clearMrfStepAuthCookie(res, {
+        formId,
+        submissionId: String(submission._id),
+      })
+    }
+    return error
+  })
 
 /**
  * Handler for POST /forms/:formId/fieldverifications
@@ -206,23 +201,26 @@ export const _handleGenerateOtp: ControllerHandler<
               return error
             })
             .asyncAndThen((decoded) => {
-              return SubmissionService.getSubmissionMetadata(
-                FormResponseMode.Multirespondent,
-                formId,
-                decoded.prevSubmissionId,
-              )
-                .andThen((foundMrfSubmissionMetadata) => {
+              return getMultirespondentSubmission(decoded.prevSubmissionId)
+                .orElse((error) =>
+                  error instanceof SubmissionNotFoundError
+                    ? okAsync(null)
+                    : errAsync(error),
+                )
+                .andThen((submission) => {
                   // Validate all MRF JWT conditions
                   // 1. submission is present, belongs to the same form
                   // 2. previousSubmissionId in JWT matches that in request body (from client FE context)
                   // 3. workflow step in JWT matches that of submission
+                  const submissionStepNumber = submission
+                    ? submission.workflowStep + 1
+                    : undefined
 
                   if (
-                    !foundMrfSubmissionMetadata ||
+                    !submission ||
+                    String(submission.form) !== formId ||
                     decoded.prevSubmissionId !== previousSubmissionId ||
-                    foundMrfSubmissionMetadata.mrf
-                      ?.workflowCurrentStepNumber !==
-                      decoded.currentWorkflowStep
+                    submissionStepNumber !== decoded.currentWorkflowStep
                   ) {
                     logger.error({
                       message: 'MRF JWT submission mismatch',
@@ -231,8 +229,7 @@ export const _handleGenerateOtp: ControllerHandler<
                         jwtSubmissionIdFromMetadata: decoded.prevSubmissionId,
                         previousSubmissionId: previousSubmissionId,
                         submissionWorkflowStepFromMetadata:
-                          foundMrfSubmissionMetadata?.mrf
-                            ?.workflowCurrentStepNumber,
+                          submissionStepNumber,
                         jwtWorkflowStep: decoded.currentWorkflowStep,
                       },
                     })
@@ -242,7 +239,7 @@ export const _handleGenerateOtp: ControllerHandler<
                   }
 
                   // MRF JWT is valid; the step's own login is checked next
-                  return okAsync(form)
+                  return okAsync(submission)
                 })
                 .mapErr((error) => {
                   logger.error({
@@ -253,10 +250,10 @@ export const _handleGenerateOtp: ControllerHandler<
                   return error
                 })
             })
-            .andThen(() =>
+            .andThen((submission) =>
               verifyMrfStepLoginForOtp({
                 formId,
-                submissionId: previousSubmissionId,
+                submission,
                 cookies: req.cookies ?? {},
                 res,
                 logMeta,

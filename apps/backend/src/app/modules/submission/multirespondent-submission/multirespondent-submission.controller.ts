@@ -508,17 +508,13 @@ const updateMultirespondentSubmission = async (
       submissionId,
       snapshottedFormDef,
       encryptedPayload,
-      // Steps with login only advance from the step this request was checked against.
-      expectedPrevious:
-        stepAuth && mrfSubmission
-          ? {
-              workflowStep: mrfSubmission.workflowStep,
-              stepTokenHash: mrfSubmission.stepTokenHash,
-            }
-          : undefined,
+      // Only advances from the step this request was checked against.
+      expectedPrevious: mrfSubmission && {
+        workflowStep: mrfSubmission.workflowStep,
+        stepTokenHash: mrfSubmission.stepTokenHash,
+      },
       logMeta,
       growthbook: req.growthbook,
-      validatedSubmission: req.formsg.mrfSubmission,
     })
 
   if (updateMultiRespondentFormSubmissionResult.isErr()) {

@@ -172,7 +172,6 @@ describe('step-auth.controller', () => {
       expect(res.status).toHaveBeenCalledWith(400)
     })
 
-    // The NRIC/FIN identity field is filled from the login, not requested.
     it("starts a MyInfo login bound to the step, for the step's fields only", async () => {
       mockStep(FormAuthType.MyInfo)
       MockFapiService.startLogin.mockReturnValue(
@@ -185,7 +184,7 @@ describe('step-auth.controller', () => {
       expect(MockFapiService.startLogin).toHaveBeenCalledWith(
         expect.objectContaining({
           formId: FORM_ID,
-          requestedAttributes: ['name'],
+          requestedAttributes: ['name', 'uinfin'],
           mrfContext: { submissionId: SUBMISSION_ID, workflowStep: 1 },
         }),
       )

@@ -346,7 +346,7 @@ export const _handleMrfStepAuthSession: ControllerHandler<
       clearMrfStepAuthCookie(res, context)
       return res.json({ ...policy, errorCodes: [ErrorCode.myInfo] })
     }
-  } else if (req.cookies?.[MYINFO_FAPI_SESSION_COOKIE_NAME]) {
+  } else if (req.cookies?.[MYINFO_FAPI_SESSION_COOKIE_NAME] && !fapiSessionId) {
     // Present but unreadable (e.g. rotated SESSION_SECRET).
     clearMyInfoFapiSessionCookie(res)
   }

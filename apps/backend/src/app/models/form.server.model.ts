@@ -36,7 +36,6 @@ import {
   LogicDto,
   LogicType,
   MultirespondentFormSettings,
-  MyInfoAttribute,
   PaymentChannel,
   PaymentType,
   PublicMultirespondentFormDto,
@@ -48,14 +47,13 @@ import {
 import { reorder } from 'formsg-shared/utils/immutable-array-fns'
 import { getApplicableIfStates } from 'formsg-shared/utils/logic'
 import {
-  getLoginIdentityAttr,
   getLoginIdentityConfigErrors,
   isLoginField,
   isMyInfoDataField,
 } from 'formsg-shared/utils/login-identity'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
-import { compact, omit, pick, uniq } from 'lodash'
+import { omit, pick } from 'lodash'
 import mongoose, {
   ClientSession,
   Mongoose,
@@ -91,7 +89,7 @@ import {
 import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
-import { getMyInfoAttr } from '../modules/myinfo/myinfo.util'
+import { getUniqueMyInfoAttrsForFields } from '../modules/myinfo/myinfo.util'
 import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
 
 import { ProductSchema } from './payments/productSchema'
@@ -1102,19 +1100,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       if (this.authType !== FormAuthType.MyInfo) {
         return []
       }
-
-      // Compact is used to remove undefined from array
-      return compact(
-        uniq(
-          this.form_fields?.flatMap((field) =>
-            // The NRIC/FIN field is filled from the login, not prefilled from
-            // MyInfo, but still records uinfin. MyInfo always grants uinfin.
-            getLoginIdentityAttr(field) === MyInfoAttribute.UinFin
-              ? MyInfoAttribute.UinFin
-              : getMyInfoAttr(field),
-          ),
-        ),
-      )
+      return getUniqueMyInfoAttrsForFields(this.form_fields ?? [])
     },
   )
 

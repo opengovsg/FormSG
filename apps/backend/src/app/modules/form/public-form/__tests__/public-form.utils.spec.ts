@@ -142,5 +142,27 @@ describe('public-form.utils', () => {
       expect(getStepOneMyInfoFields(form)).toEqual([stepOneField])
       expect(getStepOneMyInfoAttrs(form)).toEqual([MyInfoAttribute.Name])
     })
+
+    it('still requests uinfin for a Step 1 login NRIC/FIN field when a later step logs in', () => {
+      const nricField = {
+        _id: 'c',
+        fieldType: BasicField.Nric,
+        myInfo: { attr: MyInfoAttribute.UinFin },
+      }
+      const form = {
+        responseMode: FormResponseMode.Multirespondent,
+        toJSON: () => ({ form_fields: [nricField, stepOneField, laterField] }),
+        workflow: [
+          { edit: ['a', 'c'] },
+          { edit: ['b'], auth: { auth_type: FormAuthType.MyInfo } },
+        ],
+      } as unknown as IPopulatedForm
+
+      // Same list the form-level login requests for these fields
+      expect(getStepOneMyInfoAttrs(form)).toEqual([
+        MyInfoAttribute.UinFin,
+        MyInfoAttribute.Name,
+      ])
+    })
   })
 })

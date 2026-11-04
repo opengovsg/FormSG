@@ -43,7 +43,6 @@ import {
   MrfReminderRecipientEmailsEmptyError,
   MrfSubmissionStaleError,
   MrfWorkflowStoppedError,
-  StepTokenVerificationError,
   SubmissionSaveError,
 } from '../../submission.errors'
 import { mapRouteError } from '../../submission.utils'
@@ -4388,7 +4387,7 @@ describe('multirespondent-submission.service', () => {
         ])
       })
 
-      it('rejects a submit whose step link was replaced after it was checked', async () => {
+      it('reports a submit whose step link was replaced after it was checked as stale', async () => {
         const row = await Model.create({
           form: mockFormId,
           submissionType: SubmissionType.Multirespondent,
@@ -4412,12 +4411,15 @@ describe('multirespondent-submission.service', () => {
             webhook: undefined,
           }),
           encryptedPayload: buildV4Payload({ workflowStep: 1 }),
+          expectedPrevious: {
+            workflowStep: 0,
+            stepTokenHash: 'hash-when-checked',
+          },
           logMeta: { action: 'test' },
-          validatedSubmission: { stepTokenHash: 'hash-when-checked' },
         })
 
         expect(result._unsafeUnwrapErr()).toBeInstanceOf(
-          StepTokenVerificationError,
+          MrfSubmissionStaleError,
         )
         expect(MockSnapshotStore.writeSnapshot).not.toHaveBeenCalled()
         const saved = await Model.findById(row._id).lean()
@@ -4459,7 +4461,6 @@ describe('multirespondent-submission.service', () => {
             encryptedPayload: buildV4Payload({ workflowStep: 1 }),
             expectedPrevious,
             logMeta: { action: 'test' },
-            validatedSubmission: { stepTokenHash: 'hash-when-checked' },
           })
 
         it('saves the step while the submission is still at that state', async () => {
@@ -4472,7 +4473,7 @@ describe('multirespondent-submission.service', () => {
           expect(saved?.submittedSteps).toHaveLength(2)
         })
 
-        it('reports a submission that already advanced as stale, not as an invalid link', async () => {
+        it('reports a submission that already advanced as stale', async () => {
           const row = await createPendingStep2({
             workflowStep: 1,
             stepTokenHash: 'hash-for-step-3',
