@@ -11,6 +11,7 @@ import {
 import { paymentConfig } from '../../config/features/payment.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 import { turnstileConfig } from '../../config/features/turnstile.config'
+import { uenConfig } from '../../config/features/uen.config'
 
 export const getFrontendRuntimeEnv = (
   growthbook?: GrowthBook,
@@ -82,5 +83,7 @@ export const getClientEnvVars = (): ClientEnvVars => {
     adminFeedbackDisplayFrequency: config.adminFeedbackDisplayFrequency,
 
     growthbookClientKey: growthbookConfig.growthbookClientKey,
+
+    uenHiddenEntityTypes: uenConfig.hiddenEntityTypes,
   }
 }
