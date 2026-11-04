@@ -87,6 +87,43 @@ describe('AddAssigneeModal', () => {
     expect(onConfirm).not.toHaveBeenCalled()
   })
 
+  it('shows current assignees above the email input as read-only tags', () => {
+    render(
+      <AddAssigneeModal
+        isOpen
+        onClose={vi.fn()}
+        onConfirm={vi.fn()}
+        currentAssignees={['lead@agency.gov.sg', 'deputy@agency.gov.sg']}
+      />,
+    )
+
+    expect(screen.getByText(/currentlyAssignedLabel$/)).toBeInTheDocument()
+    const lead = screen.getByText('lead@agency.gov.sg')
+    const deputy = screen.getByText('deputy@agency.gov.sg')
+    expect(
+      lead.compareDocumentPosition(deputy) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(
+      deputy.compareDocumentPosition(screen.getByRole('textbox')) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(
+      screen.queryByRole('button', { name: 'Remove selected option' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('shows the empty current-assignee message', () => {
+    render(
+      <AddAssigneeModal
+        isOpen
+        onClose={vi.fn()}
+        onConfirm={vi.fn()}
+        currentAssignees={[]}
+      />,
+    )
+    expect(screen.getByText(/noCurrentAssignees$/)).toBeInTheDocument()
+  })
+
   it('does not show a notification summary', () => {
     showModal(vi.fn())
 
@@ -113,7 +150,7 @@ describe('AddAssigneeModal', () => {
 
     await typeEmails('Lead@agency.gov.sg,')
 
-    expect(screen.getByText(/lead@agency\.gov\.sg/)).toBeInTheDocument()
+    expect(screen.getByText(/alreadyAssigned:/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: CONFIRM })).toBeDisabled()
     expect(onConfirm).not.toHaveBeenCalled()
   })

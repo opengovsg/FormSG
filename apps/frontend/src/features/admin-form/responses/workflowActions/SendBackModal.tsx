@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FormControl, FormErrorMessage, Stack } from '@chakra-ui/react'
+import {
+  Box,
+  Flex,
+  FormControl,
+  FormErrorMessage,
+  Stack,
+} from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
 import { MAX_SEND_BACK_REMARKS_LENGTH } from 'formsg-shared/constants'
@@ -9,6 +15,8 @@ import { SingleSelect } from '~components/Dropdown'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 import Textarea from '~components/Textarea'
+
+import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 
 import { getStepRecipients, WorkflowHistory } from './getStopNotifiedEmails'
 import { WORKFLOW_ACTIONS_I18N } from './i18n'
@@ -44,12 +52,14 @@ export const SendBackModal = ({
   const [step, setStep] = useState(defaultStep)
   const [remarks, setRemarks] = useState('')
   const [stepOneEmail, setStepOneEmail] = useState('')
+  const [isStepOneEmailTouched, setIsStepOneEmailTouched] = useState(false)
 
   useEffect(() => {
     if (!isOpen) return
     setStep(defaultStep)
     setRemarks('')
     setStepOneEmail('')
+    setIsStepOneEmailTouched(false)
   }, [isOpen, defaultStep])
 
   const firstTargetStep = canSendBackToStepOne ? 1 : 2
@@ -71,7 +81,8 @@ export const SendBackModal = ({
     },
   )
   const targetStepNumber = Number(step)
-  const isValidStep = stepItems.some(({ value }) => value === step)
+  const targetStep = stepItems.find(({ value }) => value === step)
+  const isValidStep = !!targetStep
   const remarksError =
     remarks.length > MAX_SEND_BACK_REMARKS_LENGTH
       ? t(`${I18N_PREFIX}.remarksTooLong`, {
@@ -82,20 +93,20 @@ export const SendBackModal = ({
   const trimmedStepOneEmail = stepOneEmail.trim().toLowerCase()
   const isStepOneEmailValid = isEmail(trimmedStepOneEmail)
   const stepOneEmailError =
-    isToStepOne && stepOneEmail.trim() && !isStepOneEmailValid
+    isToStepOne &&
+    isStepOneEmailTouched &&
+    stepOneEmail.trim() &&
+    !isStepOneEmailValid
       ? t(`${WORKFLOW_ACTIONS_I18N}.addAssigneeModal.invalidEmail`)
       : undefined
-  const notifiedEmails = !isValidStep
-    ? []
-    : isToStepOne
-      ? isStepOneEmailValid
-        ? [trimmedStepOneEmail]
-        : []
-      : getStepRecipients({
+  const recipients =
+    isValidStep && !isToStepOne
+      ? getStepRecipients({
           submittedSteps,
           events: workflowEvents,
           stepNumber: targetStepNumber,
         })
+      : []
 
   return (
     <WorkflowActionModal
@@ -104,7 +115,6 @@ export const SendBackModal = ({
       title={t(`${I18N_PREFIX}.title`)}
       description={t(`${I18N_PREFIX}.description`)}
       isBeta
-      notifiedEmails={notifiedEmails}
       confirmLabel={t(`${I18N_PREFIX}.confirm`)}
       isConfirmDisabled={
         !isValidStep || !!remarksError || (isToStepOne && !isStepOneEmailValid)
@@ -131,6 +141,22 @@ export const SendBackModal = ({
             onChange={setStep}
           />
         </FormControl>
+        {isValidStep && !isToStepOne ? (
+          <Box>
+            <FormLabel.Label as="div">
+              {t(`${I18N_PREFIX}.recipientsLabel`, {
+                stepName: targetStep?.label,
+              })}
+            </FormLabel.Label>
+            <Flex flexWrap="wrap" gap="0.5rem">
+              {recipients.map((email) => (
+                <LogicBadge key={email} overflowWrap="anywhere">
+                  {email}
+                </LogicBadge>
+              ))}
+            </Flex>
+          </Box>
+        ) : null}
         {isToStepOne ? (
           <FormControl isRequired isInvalid={!!stepOneEmailError}>
             <FormLabel
@@ -143,6 +169,7 @@ export const SendBackModal = ({
               value={stepOneEmail}
               placeholder="me@example.com"
               onChange={(event) => setStepOneEmail(event.target.value)}
+              onBlur={() => setIsStepOneEmailTouched(true)}
             />
             <FormErrorMessage>{stepOneEmailError}</FormErrorMessage>
           </FormControl>

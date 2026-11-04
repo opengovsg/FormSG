@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import {
   Badge,
   Divider,
+  Flex,
   Modal,
   ModalBody,
   ModalContent,
@@ -20,7 +21,8 @@ import Button from '~components/Button'
 import { DropdownMenuLayerProvider } from '~components/Dropdown'
 import { ModalCloseButton } from '~components/Modal'
 
-import { formatEmailList } from './formatEmailList'
+import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
+
 import { WORKFLOW_ACTIONS_I18N } from './i18n'
 
 export interface WorkflowActionModalProps {
@@ -98,11 +100,19 @@ export const WorkflowActionModal = ({
                     <Text textStyle="subhead-2" color="secondary.700">
                       {t(`${WORKFLOW_ACTIONS_I18N}.whoIsNotifiedLabel`)}
                     </Text>
-                    <Text textStyle="body-2" color="secondary.500">
-                      {notifiedEmails.length > 0
-                        ? formatEmailList(notifiedEmails)
-                        : t(`${WORKFLOW_ACTIONS_I18N}.whoIsNotifiedNone`)}
-                    </Text>
+                    {notifiedEmails.length > 0 ? (
+                      <Flex flexWrap="wrap" gap="0.5rem">
+                        {notifiedEmails.map((email) => (
+                          <LogicBadge key={email} overflowWrap="anywhere">
+                            {email}
+                          </LogicBadge>
+                        ))}
+                      </Flex>
+                    ) : (
+                      <Text textStyle="body-2" color="secondary.500">
+                        {t(`${WORKFLOW_ACTIONS_I18N}.whoIsNotifiedNone`)}
+                      </Text>
+                    )}
                   </Stack>
                 </>
               ) : null}
