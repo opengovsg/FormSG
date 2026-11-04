@@ -93,10 +93,6 @@ export const isMyInfoDataField = (field: LoginIdentityCandidate): boolean =>
 export const isLoginField = (field: LoginIdentityCandidate): boolean =>
   isMyInfoDataField(field) || isLoginIdentityField(field)
 
-/** Fields filled only by the first respondent. */
-export const isStepOneOnlyField = (field: LoginIdentityCandidate): boolean =>
-  !!field.myInfo?.attr || isLoginIdentityField(field)
-
 /**
  * Identities each Step 1 login can fill, in the order the builder lists them
  * and Convert adds them. These match what the "Collect NRIC/FIN/UENs" toggle
@@ -198,6 +194,29 @@ export const createLoginIdentityField = (
   }
 }
 
+/**
+ * Problems a form with login identity fields has whatever its login: the
+ * response mode must support them, and the legacy toggle must be converted.
+ */
+export const getLoginIdentityFormErrors = ({
+  responseMode,
+  isSubmitterIdCollectionEnabled,
+}: {
+  responseMode: FormResponseMode
+  isSubmitterIdCollectionEnabled?: boolean
+}): string[] => {
+  if (!isLoginIdentityResponseMode(responseMode)) {
+    return [
+      'NRIC/FIN/UEN login fields are only available in storage mode and multi-respondent forms.',
+    ]
+  }
+  return isSubmitterIdCollectionEnabled
+    ? [
+        'NRIC/FIN/UEN login fields and the "Collect NRIC/FIN/UENs" setting cannot both be used. Convert the setting, or remove the fields.',
+      ]
+    : []
+}
+
 /** Problems with the form's login identity fields, if any. */
 export const getLoginIdentityConfigErrors = ({
   authType,
@@ -214,18 +233,11 @@ export const getLoginIdentityConfigErrors = ({
   })
   if (identityFields.length === 0) return []
 
-  if (!isLoginIdentityResponseMode(responseMode)) {
-    return [
-      'NRIC/FIN/UEN login fields are only available in storage mode and multi-respondent forms.',
-    ]
-  }
-
-  const errors: string[] = []
-  if (isSubmitterIdCollectionEnabled) {
-    errors.push(
-      'NRIC/FIN/UEN login fields and the "Collect NRIC/FIN/UENs" setting cannot both be used. Convert the setting, or remove the fields.',
-    )
-  }
+  const errors = getLoginIdentityFormErrors({
+    responseMode,
+    isSubmitterIdCollectionEnabled,
+  })
+  if (!isLoginIdentityResponseMode(responseMode)) return errors
 
   const allowedAttrs = getLoginIdentityAttrsForAuthType(authType)
   const laterStepFieldIds = new Set(

@@ -128,6 +128,7 @@ import LogicSchema, {
 import { CustomFormLogoSchema, FormLogoSchema } from './form_logo.server.schema'
 import { FORM_WHITELISTED_SUBMITTER_IDS_ID } from './form_whitelist.server.model'
 import WorkflowStepSchema, {
+  ESRVC_ID_SCHEMA,
   WorkflowStepConditionalSchema,
   WorkflowStepDynamicSchema,
   WorkflowStepStaticSchema,
@@ -909,11 +910,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       // whether esrvcId is available, and mongoose@v6 now saves objects with keys
       // in the order the keys are specifified in the schema instead of the object.
       // See https://mongoosejs.com/docs/migrating_to_6.html#schema-defined-document-key-order.
-      esrvcId: {
-        type: String,
-        required: false,
-        validate: [/^\S*$/i, 'e-service ID must not contain whitespace'],
-      },
+      esrvcId: { ...ESRVC_ID_SCHEMA, required: false },
 
       status: {
         type: String,

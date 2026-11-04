@@ -13,7 +13,7 @@ import {
   FormFieldDto,
   StrippedFormWorkflowStepDto,
 } from 'formsg-shared/types'
-import { isStepOneOnlyField } from 'formsg-shared/utils/login-identity'
+import { isLoginField } from 'formsg-shared/utils/login-identity'
 
 import { FormFieldValues, VerifiableFieldValues } from '~templates/Field'
 
@@ -59,7 +59,7 @@ export const getDraftToSave = ({
       .map((field) => field._id),
   ]
   const authenticatedFieldIds = formFields
-    .filter((field) => isStepOneOnlyField(field))
+    .filter((field) => isLoginField(field))
     .map((field) => field._id)
 
   const verifiableFieldIds = formFields

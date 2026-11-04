@@ -7,8 +7,8 @@ import {
   StrippedFormWorkflowStepDto,
 } from 'formsg-shared/types/form'
 import {
+  isLoginField,
   isLoginIdentityField,
-  isStepOneOnlyField,
 } from 'formsg-shared/utils/login-identity'
 
 import { FormFieldValues } from '~templates/Field'
@@ -86,7 +86,7 @@ export const VisibleFormFields = ({
           }
           isHighContrast={
             !isFieldEnabledByMrfWorkflow(workflowStep, field) ||
-            isStepOneOnlyField(field)
+            isLoginField(field)
           }
           key={field._id}
           prefill={fieldPrefillMap[field._id]}
