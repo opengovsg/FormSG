@@ -2,6 +2,7 @@ import { SUPPORT_FORM_LINK } from 'formsg-shared/constants/links'
 import { SendOtpResponseDto } from 'formsg-shared/types/user'
 import { StatusCodes } from 'http-status-codes'
 import { isEmpty } from 'lodash'
+import { okAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../config/logger'
 import { ADMIN_LOGIN_SESSION_COOKIE_NAME } from '../../loaders/express/session'
@@ -17,7 +18,7 @@ import {
 } from './auth.middlewares'
 import * as AuthService from './auth.service'
 import { SessionUser } from './auth.types'
-import { mapRouteError } from './auth.utils'
+import { mapRouteError, regenerateSession } from './auth.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -173,28 +174,32 @@ export const _handleLoginVerifyOtp: ControllerHandler<
     AuthService.verifyLoginOtp(otp, email)
       // Step 2: OTP is valid, retrieve associated user.
       .andThen(() => UserService.retrieveUser(email, agency._id))
-      // Step 3a: Set session and return user in response.
-      .map((user) => {
+      // Step 3a: Regenerate the session, set it and return user in response.
+      .andThen((user) => {
         if (!req.session) {
           logger.error({
             message: 'Error logging in user; req.session is undefined',
             meta: logMeta,
           })
 
-          return res
-            .status(StatusCodes.INTERNAL_SERVER_ERROR)
-            .json(coreErrorMessage)
+          return okAsync(
+            res
+              .status(StatusCodes.INTERNAL_SERVER_ERROR)
+              .json(coreErrorMessage),
+          )
         }
 
-        // Add user info to session.
-        const { _id } = user.toObject() as SessionUser
-        req.session.user = { _id }
-        logger.info({
-          message: `Successfully logged in user ${user._id}`,
-          meta: logMeta,
-        })
+        return regenerateSession(req).map(() => {
+          // Add user info to session.
+          const { _id } = user.toObject() as SessionUser
+          req.session.user = { _id }
+          logger.info({
+            message: `Successfully logged in user ${user._id}`,
+            meta: logMeta,
+          })
 
-        return res.status(StatusCodes.OK).json(user)
+          return res.status(StatusCodes.OK).json(user)
+        })
       })
       // Step 3b: Error occured in one of the steps.
       .mapErr((error) => {

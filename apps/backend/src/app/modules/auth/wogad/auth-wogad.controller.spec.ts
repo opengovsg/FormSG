@@ -184,6 +184,7 @@ describe('AuthWogadController', () => {
         cookies: {
           csrf_token: csrfTokenA,
         },
+        session: { regenerate: (cb: (err?: unknown) => void) => cb() },
       })
       const mockRes = expressHandler.mockResponse()
       MockAuthService.validateEmailDomain = jest
