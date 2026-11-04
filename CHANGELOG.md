@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.63.0](https://github.com/opengovsg/formsg/compare/v9.62.0...v9.63.0) (2026-11-04)
+
+
+### Features
+
+* **mrf:** step login types, schema and Myinfo scoping (#10445) ([#10445](https://github.com/opengovsg/formsg/commit/d76b5ac33c8bf72888625bff8d22047d9198fb6a))
+
 ## [9.62.0](https://github.com/opengovsg/formsg/compare/v9.61.0...v9.62.0) (2026-11-04)
 
 
