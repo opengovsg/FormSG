@@ -1152,7 +1152,7 @@ describe('admin-form.form.routes', () => {
       // Assert
       expect(response.status).toEqual(403)
       expect(response.body).toEqual({
-        message: `User ${defaultUser.email} not authorized to perform delete operation on Form ${randomForm._id} with title: ${randomForm.title}.`,
+        message: `User ${defaultUser.email} not authorized to perform delete operation on Form ${randomForm._id}.`,
       })
     })
 
@@ -1634,7 +1634,7 @@ describe('admin-form.form.routes', () => {
       // Assert
       expect(response.status).toEqual(403)
       expect(response.body).toEqual({
-        message: `User ${defaultUser.email} not authorized to perform read operation on Form ${randomForm._id} with title: ${randomForm.title}.`,
+        message: `User ${defaultUser.email} not authorized to perform read operation on Form ${randomForm._id}.`,
       })
     })
 
@@ -2295,7 +2295,7 @@ describe('admin-form.form.routes', () => {
       // Assert
       expect(response.status).toEqual(403)
       expect(response.body).toEqual({
-        message: `User ${defaultUser.email} not authorized to perform read operation on Form ${MOCK_FORM._id} with title: ${MOCK_FORM.title}.`,
+        message: `User ${defaultUser.email} not authorized to perform read operation on Form ${MOCK_FORM._id}.`,
       })
     })
 
@@ -2886,7 +2886,7 @@ describe('admin-form.form.routes', () => {
       // Assert
       expect(response.status).toEqual(403)
       expect(response.body).toEqual({
-        message: `User ${defaultUser.email} not authorized to perform write operation on Form ${randomForm._id} with title: ${randomForm.title}.`,
+        message: `User ${defaultUser.email} not authorized to perform write operation on Form ${randomForm._id}.`,
       })
     })
 
@@ -3057,7 +3057,7 @@ describe('admin-form.form.routes', () => {
         startPage: MOCK_START_PAGE,
       })
       const expectedResponse = {
-        message: `User ${defaultUser.email} not authorized to perform write operation on Form ${form._id} with title: ${form.title}.`,
+        message: `User ${defaultUser.email} not authorized to perform write operation on Form ${form._id}.`,
       }
       // Act
       const resp = await request

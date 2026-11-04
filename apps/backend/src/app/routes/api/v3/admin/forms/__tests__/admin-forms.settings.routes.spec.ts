@@ -365,7 +365,7 @@ describe('admin-form.settings.routes', () => {
       const expectedResponse = jsonParseStringify({
         message: `User ${fakeUser.email.toLowerCase()} not authorized to perform write operation on Form ${
           form._id
-        } with title: ${form.title}.`,
+        }.`,
       })
 
       // Act
@@ -502,7 +502,7 @@ describe('admin-form.settings.routes', () => {
       const expectedResponse = jsonParseStringify({
         message: `User ${fakeUser.email.toLowerCase()} not authorized to perform read operation on Form ${
           form._id
-        } with title: ${form.title}.`,
+        }.`,
       })
 
       // Act
