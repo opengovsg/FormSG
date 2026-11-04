@@ -124,8 +124,9 @@ export const StepAuthSettingsEditor = ({
                 ...step,
                 ...confirmation,
                 edit: draftFieldIds,
+                // null removes the login. Leaving auth out keeps it.
                 auth: !isWorkflowStepAuthType(authType)
-                  ? undefined
+                  ? null
                   : authType === FormAuthType.CP
                     ? { auth_type: authType, ...corppassId }
                     : { auth_type: authType },
