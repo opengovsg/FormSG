@@ -17,6 +17,7 @@ import Input from '~components/Input'
 import Spinner from '~components/Spinner'
 
 import { useMutateFormSettings } from '../../mutations'
+import { isValidEsrvcId } from '../../utils'
 
 import { EsrvcHelperText } from './EsrvcHelperText'
 
@@ -87,7 +88,7 @@ export const EsrvcIdBox = ({
                 {...register('esrvcId', {
                   validate: {
                     noWhitespace: (value) =>
-                      !value.trim().match(/\s/) ||
+                      isValidEsrvcId(value) ||
                       'e-service ID must not contain whitespace',
                   },
                 })}

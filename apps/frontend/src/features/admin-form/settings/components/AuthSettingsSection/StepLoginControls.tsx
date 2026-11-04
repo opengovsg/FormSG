@@ -10,6 +10,8 @@ import Input from '~components/Input'
 import Radio from '~components/Radio'
 import Toggle from '~components/Toggle'
 
+import { isValidEsrvcId } from '../../utils'
+
 import { EsrvcHelperText } from './EsrvcHelperText'
 
 const COPY_KEY = 'features.adminForm.sidebar.workflow.stepLogin'
@@ -21,9 +23,6 @@ const LOGIN_OPTIONS = [
   [FormAuthType.MyInfo, `${COPY_KEY}.singpass`],
   [FormAuthType.CP, `${COPY_KEY}.corppass`],
 ] as const
-
-export const hasEsrvcIdWhitespace = (esrvcId: string): boolean =>
-  /\s/.test(esrvcId)
 
 export interface StepLoginControlsProps {
   authType: FormAuthType
@@ -57,7 +56,7 @@ export const StepLoginControls = ({
 }: StepLoginControlsProps): JSX.Element => {
   const { t } = useTranslation()
   const hasLogin = authType !== FormAuthType.NIL
-  const isEsrvcIdInvalid = hasEsrvcIdWhitespace(esrvcId)
+  const isEsrvcIdInvalid = !isValidEsrvcId(esrvcId)
   const esrvcIdInputId = `${idPrefix}-esrvc-id`
 
   return (
@@ -93,7 +92,7 @@ export const StepLoginControls = ({
               <Radio
                 value={option}
                 allowDeselect={false}
-                isDisabled={isDisabled || isLoading}
+                isDisabled={isDisabled}
               >
                 {t(labelKey)}
               </Radio>
