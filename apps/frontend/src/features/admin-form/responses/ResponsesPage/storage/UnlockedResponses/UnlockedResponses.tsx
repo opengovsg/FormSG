@@ -10,7 +10,10 @@ import Pagination from '~components/Pagination'
 
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 
-import { useResultsNavLayout } from '../../../components/FormResultsNavbar'
+import {
+  DashboardVersionToggle,
+  useResultsNavLayout,
+} from '../../../components/FormResultsNavbar'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 
 import { DeleteViewModal } from './DeleteViewModal'
@@ -40,11 +43,8 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
   const { t } = useTranslation()
 
   const {
-    count,
-    filteredCount,
+    responseCountState,
     submissionId,
-    isAnyFetching,
-    filterResultCount,
     savedViews,
     selectedViewId,
     isShowingRecentOnly,
@@ -67,60 +67,31 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
     })
   }, [applyView, deleteSavedViewMutation, selectedViewId, viewPendingDelete])
 
-  const countToUse = useMemo(
-    () => (submissionId ? filteredCount : count),
-    [submissionId, filteredCount, count],
-  )
-
   return (
     <Flex flexDir="column" pr={contentPr} w="100%" maxW="100%" minW={0}>
-      <Flex
-        direction="column"
-        mb="1rem"
-        color="secondary.500"
-        w="100%"
-        maxW="100%"
-        flexShrink={0}
-      >
-        <Skeleton
-          isLoaded={!isAnyFetching}
-          w={isAnyFetching ? '15rem' : { base: '100%', md: 'auto' }}
-          maxW="100%"
-        >
-          <Text
-            textStyle="h4"
-            mb={{ base: '0.25rem', md: '0.5rem' }}
-            noOfLines={{ base: 2, md: 1 }}
-          >
-            <Text as="span" color="primary.500">
-              {(filterResultCount ?? countToUse)?.toLocaleString()}
-            </Text>{' '}
-            {t(
-              filterResultCount !== undefined
-                ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.resultsFound'
-                : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.responsesToDate',
-              { count: filterResultCount ?? countToUse ?? 0 },
-            )}
-          </Text>
-          {isShowingRecentOnly ? (
-            <Text textStyle="body-2" color="secondary.400">
-              {t(
-                hasActiveFilters
-                  ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.recentOnlyWithView'
-                  : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.recentOnly',
-                { limit: TABLE_RESPONSE_LIMIT.toLocaleString() },
-              )}
-            </Text>
-          ) : null}
-        </Skeleton>
+      <Flex align="center" gap="1rem" mb="1rem">
+        <Box flex={1} minW={0}>
+          <ResponseViewTabs
+            countState={responseCountState}
+            views={savedViews.map(({ _id, name }) => ({ id: _id, name }))}
+            selectedViewId={selectedViewId}
+            onSelectView={applyView}
+            onDeleteView={setViewPendingDelete}
+          />
+        </Box>
+        <DashboardVersionToggle />
       </Flex>
 
-      <ResponseViewTabs
-        views={savedViews.map(({ _id, name }) => ({ id: _id, name }))}
-        selectedViewId={selectedViewId}
-        onSelectView={applyView}
-        onDeleteView={setViewPendingDelete}
-      />
+      {isShowingRecentOnly ? (
+        <Text textStyle="body-2" color="secondary.400" mb="1rem">
+          {t(
+            hasActiveFilters
+              ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.recentOnlyWithView'
+              : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.recentOnly',
+            { limit: TABLE_RESPONSE_LIMIT.toLocaleString() },
+          )}
+        </Text>
+      ) : null}
 
       <DeleteViewModal
         isOpen={!!viewPendingDelete}
@@ -139,6 +110,21 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
             overflowing ancestor would capture its sticky header. */}
         <Box w="100%" minW={0} maxW="100%">
           <ResponsesTable />
+          {responseCountState.status === 'ready' &&
+          responseCountState.count === 0 &&
+          (submissionId || hasActiveFilters) ? (
+            <Text
+              textStyle="body-1"
+              color="secondary.500"
+              textAlign="center"
+              py="2rem"
+              role="status"
+            >
+              {t(
+                'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.noMatchingResponses',
+              )}
+            </Text>
+          ) : null}
         </Box>
         <ShowMoreRowsButton />
       </Flex>

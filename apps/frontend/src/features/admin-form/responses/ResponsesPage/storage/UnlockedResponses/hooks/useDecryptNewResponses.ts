@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 import type { FormField } from '@opengovsg/formsg-sdk/dist/types'
@@ -6,7 +6,10 @@ import type { FormField } from '@opengovsg/formsg-sdk/dist/types'
 import { SubmissionMetadata } from 'formsg-shared/types'
 
 import { getDecryptedSubmissionById } from '~features/admin-form/responses/AdminSubmissionsService'
-import { adminFormResponsesKeys } from '~features/admin-form/responses/queries'
+import {
+  adminFormResponsesKeys,
+  updateDecryptedResponsesCache,
+} from '~features/admin-form/responses/queries'
 
 import { useStorageResponsesContext } from '../../StorageResponsesContext'
 
@@ -42,12 +45,24 @@ export const useDecryptNewResponses = ({
   metadata: SubmissionMetadata[]
   isDecryptingAll: boolean
   enabled: boolean
-}): void => {
+}): { isError: boolean } => {
   const { formId } = useParams()
   const { secretKey, dateRange } = useStorageResponsesContext()
   const queryClient = useQueryClient()
   // A response that fails to decrypt is not retried on every refetch.
-  const alreadyTried = useRef(new Set<string>())
+  const dateScope = JSON.stringify(dateRange)
+  const scope = useMemo(
+    () => ({ tried: new Set<string>() }),
+    // Retry independently when the form, key, or date scope changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [formId, secretKey, dateScope],
+  )
+  const activeScope = useRef(scope)
+  activeScope.current = scope
+  const [failures, setFailures] = useState<{
+    scope: typeof scope
+    ids: Set<string>
+  }>()
 
   useEffect(() => {
     if (!enabled || !formId || !secretKey || isDecryptingAll) return
@@ -59,27 +74,40 @@ export const useDecryptNewResponses = ({
     const newIds = getUndecryptedSubmissionIds(
       metadata,
       queryClient.getQueryData<Map<string, FormField[]>>(queryKey),
-      alreadyTried.current,
+      scope.tried,
     )
     if (newIds.length === 0) return
 
     if (newIds.length > MAX_NEW_RESPONSES_TO_DECRYPT_ONE_BY_ONE) {
+      // Let configured bulk retries settle. A later explicit refetch can recover.
+      if (queryClient.getQueryState(queryKey)?.status === 'error') return
       void queryClient.invalidateQueries(queryKey)
       return
     }
 
     newIds.forEach((submissionId) => {
-      alreadyTried.current.add(submissionId)
+      scope.tried.add(submissionId)
       void getDecryptedSubmissionById({ formId, submissionId, secretKey })
         .then((submission) => {
-          if (!submission) return
-          queryClient.setQueryData<Map<string, FormField[]>>(
-            queryKey,
-            (current) =>
-              new Map(current).set(submissionId, submission.responses),
+          if (!submission) throw new Error('Response could not be decrypted')
+          // A later bulk refresh can replace the cache. Successful rows may
+          // need refilling; pending and failed requests remain suppressed.
+          scope.tried.delete(submissionId)
+          updateDecryptedResponsesCache(queryClient, queryKey, (current) =>
+            new Map(current).set(submissionId, submission.responses),
           )
         })
-        .catch(() => undefined)
+        .catch(() => {
+          setFailures((current) => {
+            if (activeScope.current !== scope) return current
+            return {
+              scope,
+              ids: new Set(current?.scope === scope ? current.ids : []).add(
+                submissionId,
+              ),
+            }
+          })
+        })
     })
   }, [
     dateRange,
@@ -89,5 +117,20 @@ export const useDecryptNewResponses = ({
     metadata,
     queryClient,
     secretKey,
+    scope,
   ])
+
+  const decrypted = formId
+    ? queryClient.getQueryData<Map<string, FormField[]>>(
+        adminFormResponsesKeys.decryptedResponses(formId, dateRange),
+      )
+    : undefined
+
+  return {
+    isError:
+      failures?.scope === scope &&
+      metadata.some(
+        ({ refNo }) => failures.ids.has(refNo) && !decrypted?.has(refNo),
+      ),
+  }
 }

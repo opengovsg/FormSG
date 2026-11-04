@@ -20,6 +20,7 @@ import {
   ResultsNavLayoutProvider,
   useResultsTabs,
 } from './components/FormResultsNavbar'
+import { useIsDelightfulDashboard } from './hooks/useIsDelightfulDashboard'
 
 export const FormResultsLayout = (): JSX.Element => {
   const { formId } = useParams()
@@ -27,6 +28,7 @@ export const FormResultsLayout = (): JSX.Element => {
   const { pathname } = useLocation()
   const tabs = useResultsTabs()
   const showNavLabels = useFeatureIsOn(featureFlags.sidebarNavLabels)
+  const isDelightfulDashboard = useIsDelightfulDashboard()
   const { isCollapsed, isMobile, toggle } = useSideNavCollapse()
 
   const checkTabActive = useCallback(
@@ -53,23 +55,25 @@ export const FormResultsLayout = (): JSX.Element => {
   // to switch on the Feedback and Charts tabs.
   const isResponsesTab = checkTabActive(RESULTS_RESPONSES_SUBROUTE)
 
-  const versionToggle = isResponsesTab ? (
-    <Box
-      position="absolute"
-      top={{ base: '2.5rem', lg: '3.125rem' }}
-      right={
-        showNavLabels
-          ? { base: '1.5rem', md: '1.75rem', lg: '2rem' }
-          : { base: '2.5rem', md: '3.5rem', lg: '4rem' }
-      }
-      h="1.5rem"
-      display="flex"
-      alignItems="center"
-      zIndex={1}
-    >
-      <DashboardVersionToggle />
-    </Box>
-  ) : null
+  // V2 keeps its toggle in the same flex row as the saved view tabs.
+  const versionToggle =
+    isResponsesTab && !isDelightfulDashboard ? (
+      <Box
+        position="absolute"
+        top={{ base: '2.5rem', lg: '3.125rem' }}
+        right={
+          showNavLabels
+            ? { base: '1.5rem', md: '1.75rem', lg: '2rem' }
+            : { base: '2.5rem', md: '3.5rem', lg: '4rem' }
+        }
+        h="1.5rem"
+        display="flex"
+        alignItems="center"
+        zIndex={1}
+      >
+        <DashboardVersionToggle />
+      </Box>
+    ) : null
 
   return (
     <ResultsNavLayoutProvider value={{ showNavLabels }}>

@@ -1,9 +1,11 @@
 import { useTranslation } from 'react-i18next'
 import { BiX } from 'react-icons/bi'
-import { Flex } from '@chakra-ui/react'
+import { Flex, Skeleton, Text, VisuallyHidden } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
+
+import type { ResponseCountState } from './UnlockedResponsesProvider'
 
 export interface SavedResponseView {
   id: string
@@ -17,14 +19,16 @@ export const ResponseViewTabs = ({
   selectedViewId = ALL_RESPONSES_TAB_ID,
   onSelectView,
   onDeleteView,
+  countState,
 }: {
+  countState?: ResponseCountState
   views?: SavedResponseView[]
   selectedViewId?: string
   onSelectView?: (viewId: string) => void
   onDeleteView?: (viewId: string) => void
 }): JSX.Element => {
   const { t } = useTranslation()
-  const { allResponses, deleteView } = t(
+  const { allResponses, deleteView, countUnavailable, loadingCount } = t(
     'features.adminForm.responses.responsesPage.storage.unlockedResponses.views',
     { returnObjects: true },
   )
@@ -41,7 +45,6 @@ export const ResponseViewTabs = ({
       overflowY="hidden"
       w="100%"
       maxW="100%"
-      mb="1rem"
       flexShrink={0}
       sx={{
         scrollbarWidth: 'none',
@@ -76,6 +79,31 @@ export const ResponseViewTabs = ({
               onClick={() => onSelectView?.(id)}
             >
               {name}
+              {isActive && countState ? (
+                countState.status === 'loading' ? (
+                  <Text as="span" role="status" ml="0.5rem">
+                    <VisuallyHidden>{loadingCount}</VisuallyHidden>
+                    <Skeleton
+                      as="span"
+                      display="inline-block"
+                      w="3rem"
+                      h="1rem"
+                    />
+                  </Text>
+                ) : (
+                  <Text
+                    as="span"
+                    ml="0.25rem"
+                    role={countState.status === 'error' ? 'status' : undefined}
+                  >
+                    (
+                    {countState.status === 'ready'
+                      ? countState.count.toLocaleString()
+                      : countUnavailable}
+                    )
+                  </Text>
+                )
+              ) : null}
             </Button>
             {isSavedView ? (
               <IconButton

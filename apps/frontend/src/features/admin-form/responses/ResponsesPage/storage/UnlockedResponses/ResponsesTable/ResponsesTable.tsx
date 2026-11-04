@@ -353,7 +353,8 @@ export const ResponsesTable = () => {
     setColumnOptions,
     hiddenColumnIds,
     columnFilters,
-    setFilterResultCount,
+    reportMatchingCount,
+    responseCountScope,
     renderLimit,
     setRenderedRowCount,
     isTableLoading,
@@ -532,7 +533,6 @@ export const ResponsesTable = () => {
     rows,
     gotoPage,
     setHiddenColumns,
-    setGlobalFilter,
     setSortBy,
     visibleColumns,
     state: { columnResizing },
@@ -546,6 +546,12 @@ export const ResponsesTable = () => {
       autoResetGlobalFilter: false,
       autoResetSortBy: false,
       globalFilter,
+      // Filtering must use the current inputs during render. Synchronizing it
+      // in an effect would briefly publish old rows for a new count scope.
+      useControlledState: (state) => ({
+        ...state,
+        ...(isDelightfulDashboard ? { globalFilter: columnFilters } : {}),
+      }),
       // Server side pagination.
       manualPagination: true,
       pageCount: currentPage,
@@ -570,11 +576,6 @@ export const ResponsesTable = () => {
     if (!isDelightfulDashboard) return
     setHiddenColumns(hiddenColumnIds)
   }, [hiddenColumnIds, isDelightfulDashboard, setHiddenColumns])
-
-  useEffect(() => {
-    if (!isDelightfulDashboard) return
-    setGlobalFilter(columnFilters)
-  }, [columnFilters, isDelightfulDashboard, setGlobalFilter])
 
   useEffect(() => {
     if (!isDelightfulDashboard) return
@@ -643,12 +644,13 @@ export const ResponsesTable = () => {
 
   useEffect(() => {
     if (!isDelightfulDashboard) return
-    setFilterResultCount(columnFilters.length ? rows.length : undefined)
+    reportMatchingCount({ scope: responseCountScope, count: rows.length })
   }, [
-    columnFilters.length,
+    columnFilters,
     isDelightfulDashboard,
     rows.length,
-    setFilterResultCount,
+    reportMatchingCount,
+    responseCountScope,
   ])
 
   useEffect(() => {
