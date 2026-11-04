@@ -54,6 +54,7 @@ export type ResponseSortDirection = SavedViewSortDirection
 export interface ResponseColumnOption {
   id: string
   label: string
+  filterValues?: string[]
 }
 
 interface UnlockedResponsesContextProps {
@@ -75,8 +76,8 @@ interface UnlockedResponsesContextProps {
   setAllColumnsVisible: (isVisible: boolean) => void
   /** Every filter must match, so each one narrows the rows. */
   columnFilters: SavedViewColumnFilter[]
-  /** Blank text clears the column's filter. */
-  setColumnFilter: (columnId: string, text: string) => void
+  /** Blank text, or every one of the column's values, clears its filter. */
+  setColumnFilter: (columnId: string, value: string | string[]) => void
   clearColumnFilters: () => void
   sortColumnId?: string
   sortDirection: ResponseSortDirection
@@ -172,9 +173,9 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
   )
 
   const setColumnFilter = useCallback(
-    (columnId: string, text: string) =>
+    (columnId: string, value: string | string[]) =>
       setColumnFilters((current) =>
-        withColumnFilter(current, columnId, text, columnOptions),
+        withColumnFilter(current, columnId, value, columnOptions),
       ),
     [columnOptions],
   )

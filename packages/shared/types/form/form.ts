@@ -204,10 +204,17 @@ export enum SavedViewSortDirection {
  * "no constraint", which keeps older views showing fields added since.
  */
 /** Rows whose value in the column contains `text`, ignoring case. */
-export interface SavedViewColumnFilter {
+export interface SavedViewTextFilter {
   columnId: string
   text: string
 }
+
+export interface SavedViewValuesFilter {
+  columnId: string
+  values: string[]
+}
+
+export type SavedViewColumnFilter = SavedViewTextFilter | SavedViewValuesFilter
 
 export interface FormSavedView {
   _id: string

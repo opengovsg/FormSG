@@ -178,6 +178,14 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
   },
 ]
 
+const WORKFLOW_STATUS_FILTER_VALUES = [
+  MRF_STATUS.PENDING,
+  MRF_STATUS.APPROVED,
+  MRF_STATUS.REJECTED,
+  MRF_STATUS.COMPLETED,
+  MRF_STATUS.STOPPED,
+]
+
 const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: '#',
@@ -487,10 +495,16 @@ export const ResponsesTable = () => {
   const columnOptions = useMemo(() => {
     if (!isDelightfulDashboard) return []
     return prefixColumns
-      .map((column) => ({
-        id: getColumnId(column),
-        label: String(column.Header),
-      }))
+      .map((column) => {
+        const id = getColumnId(column)
+        return {
+          id,
+          label: String(column.Header),
+          ...(id === EXPORT_WORKFLOW_STATUS_COLUMN_ID
+            ? { filterValues: WORKFLOW_STATUS_FILTER_VALUES }
+            : {}),
+        }
+      })
       .filter(({ id }) => id !== RESPONSE_NUMBER_COLUMN_ID)
       .concat(
         fieldColumnSources.map((source) => ({

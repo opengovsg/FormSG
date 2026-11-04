@@ -8,6 +8,11 @@ import {
   SavedViewSortDirection,
 } from 'formsg-shared/types'
 
+import {
+  matchesSearchQuery,
+  normaliseSearchQuery,
+} from '~features/admin-form/responses/common/utils/responseSearch'
+
 import { ResponseColumnOption } from './UnlockedResponsesProvider'
 
 export const RESPONSE_NUMBER_COLUMN_ID = 'number'
@@ -40,25 +45,46 @@ export const normaliseSort = (
 export const withColumnFilter = (
   columnFilters: SavedViewColumnFilter[],
   columnId: string,
-  text: string,
+  value: string | string[],
   columnOptions: ResponseColumnOption[],
 ): SavedViewColumnFilter[] =>
   normaliseColumnFilters(
     [
       ...columnFilters.filter((filter) => filter.columnId !== columnId),
-      { columnId, text },
+      Array.isArray(value)
+        ? { columnId, values: value }
+        : { columnId, text: value },
     ],
     columnOptions,
   )
+
+const normaliseColumnFilter = (
+  filter: SavedViewColumnFilter,
+  { filterValues }: ResponseColumnOption,
+): SavedViewColumnFilter | undefined => {
+  if (!filterValues) {
+    return 'text' in filter && filter.text.trim() ? filter : undefined
+  }
+  const values =
+    'values' in filter
+      ? filterValues.filter((value) => filter.values.includes(value))
+      : filterValues.filter((value) =>
+          matchesSearchQuery([value], normaliseSearchQuery(filter.text)),
+        )
+  return values.length < filterValues.length
+    ? { columnId: filter.columnId, values }
+    : undefined
+}
 
 /** Drops blank filters and ones on unknown columns, in column order. */
 export const normaliseColumnFilters = (
   columnFilters: SavedViewColumnFilter[],
   columnOptions: ResponseColumnOption[],
 ): SavedViewColumnFilter[] =>
-  columnOptions.flatMap(({ id }) => {
-    const filter = columnFilters.find(({ columnId }) => columnId === id)
-    return filter && filter.text.trim() ? [filter] : []
+  columnOptions.flatMap((option) => {
+    const filter = columnFilters.find(({ columnId }) => columnId === option.id)
+    const normalised = filter && normaliseColumnFilter(filter, option)
+    return normalised ? [normalised] : []
   })
 
 export const hasActiveViewState = ({

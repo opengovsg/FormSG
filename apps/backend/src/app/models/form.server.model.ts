@@ -285,7 +285,8 @@ const SavedViewSchema = new Schema<FormSavedView>({
         {
           _id: false,
           columnId: { type: String, required: true },
-          text: { type: String, required: true },
+          text: { type: String },
+          values: { type: [String], default: undefined },
         },
       ],
       default: undefined,

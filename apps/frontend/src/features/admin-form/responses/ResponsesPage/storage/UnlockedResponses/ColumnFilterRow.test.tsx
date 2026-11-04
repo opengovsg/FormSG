@@ -9,7 +9,7 @@ import i18n from '~/i18n/i18n'
 
 import { theme } from '~theme/index'
 
-import { ColumnFilterRow } from './ColumnFilterRow'
+import { ColumnFilterRow, ColumnValuesFilterRow } from './ColumnFilterRow'
 
 const Harness = ({
   initialText = '',
@@ -129,5 +129,107 @@ describe('a column in the Filter menu', () => {
     expect(field).toHaveValue('')
     expect(field).toHaveFocus()
     expect(onFilter).toHaveBeenLastCalledWith('')
+  })
+})
+
+const STATUSES = ['Pending', 'Approved', 'Not approved']
+
+const ValuesHarness = ({
+  initialValues,
+  onFilter,
+}: {
+  initialValues?: string[]
+  onFilter: (values: string[]) => void
+}) => {
+  const [isOpen, setIsOpen] = useState(false)
+  const [values, setValues] = useState(initialValues)
+  return (
+    <ColumnValuesFilterRow
+      label="Status"
+      filterValues={STATUSES}
+      values={values}
+      isOpen={isOpen}
+      onOpen={() => setIsOpen(true)}
+      onClose={() => setIsOpen(false)}
+      onFilter={(next) => {
+        const isEveryValue = next.length === STATUSES.length
+        setValues(isEveryValue ? undefined : next)
+        onFilter(next)
+      }}
+    />
+  )
+}
+
+const renderValuesRow = (props: Parameters<typeof ValuesHarness>[0]) =>
+  render(
+    <ChakraProvider theme={theme}>
+      <ValuesHarness {...props} />
+    </ChakraProvider>,
+  )
+
+describe('a column in the Filter menu with a fixed set of values', () => {
+  beforeAll(async () => {
+    await i18n.changeLanguage(Language.ENGLISH)
+  })
+
+  it('opens a checkbox per value, all checked, instead of a field', async () => {
+    renderValuesRow({ onFilter: vi.fn() })
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole('button', { name: /status/i }))
+
+    const checkboxes = await screen.findAllByRole('checkbox')
+    expect(checkboxes).toEqual(
+      STATUSES.map((name) => screen.getByRole('checkbox', { name })),
+    )
+    checkboxes.forEach((box) => expect(box).toBeChecked())
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+    expect(screen.queryByText('Filter applied')).not.toBeInTheDocument()
+  })
+
+  it('filters to the values left checked once one is unchecked', async () => {
+    const onFilter = vi.fn()
+    renderValuesRow({ onFilter })
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole('button', { name: /status/i }))
+    await user.click(
+      await screen.findByRole('checkbox', { name: 'Not approved' }),
+    )
+
+    expect(onFilter).toHaveBeenLastCalledWith(['Pending', 'Approved'])
+    expect(screen.getByText('Filter applied')).toBeInTheDocument()
+  })
+
+  it('shows only the filtered values as checked', async () => {
+    renderValuesRow({ initialValues: ['Approved'], onFilter: vi.fn() })
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole('button', { name: /status/i }))
+
+    expect(
+      await screen.findByRole('checkbox', { name: 'Approved' }),
+    ).toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Pending' })).not.toBeChecked()
+    expect(
+      screen.getByRole('checkbox', { name: 'Not approved' }),
+    ).not.toBeChecked()
+  })
+
+  it('clears the filter once every value is checked again', async () => {
+    const onFilter = vi.fn()
+    renderValuesRow({
+      initialValues: ['Pending', 'Approved'],
+      onFilter,
+    })
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole('button', { name: /status/i }))
+    await user.click(
+      await screen.findByRole('checkbox', { name: 'Not approved' }),
+    )
+
+    expect(onFilter).toHaveBeenLastCalledWith(STATUSES)
+    expect(screen.queryByText('Filter applied')).not.toBeInTheDocument()
   })
 })

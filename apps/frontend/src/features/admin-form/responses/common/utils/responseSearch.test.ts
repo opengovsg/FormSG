@@ -75,4 +75,24 @@ describe('matchesColumnFilters', () => {
   it('matches every row with no filters', () => {
     expect(matchesColumnFilters(getValue, [])).toBe(true)
   })
+
+  it('matches a listed value exactly, not as a substring', () => {
+    const getStatus = () => 'Not approved'
+    expect(
+      matchesColumnFilters(getStatus, [
+        { columnId: 'status', values: ['Approved'] },
+      ]),
+    ).toBe(false)
+    expect(
+      matchesColumnFilters(getStatus, [
+        { columnId: 'status', values: ['Approved', 'Not approved'] },
+      ]),
+    ).toBe(true)
+  })
+
+  it('matches nothing when no values are listed', () => {
+    expect(
+      matchesColumnFilters(getValue, [{ columnId: 'status', values: [] }]),
+    ).toBe(false)
+  })
 })
