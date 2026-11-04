@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.61.0](https://github.com/opengovsg/formsg/compare/v9.60.2...v9.61.0) (2026-11-04)
+
+
+### Features
+
+* **workspace:** gate create-form escape hatch behind escape-hatch flag (#10476) ([#10476](https://github.com/opengovsg/formsg/commit/48c445faf958e5f5ca59b06847bc90f1304dfaef))
+
+
+### Tests
+
+* **submission:** run transactional single-submission checks on a replica set (#10491) ([#10491](https://github.com/opengovsg/formsg/commit/ad67ece8b8943e952d53cb7931135d2c1ba3a1df))
+
 ## [9.60.2](https://github.com/opengovsg/formsg/compare/v9.60.1...v9.60.2) (2026-11-03)
 
 
