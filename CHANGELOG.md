@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.62.0](https://github.com/opengovsg/formsg/compare/v9.61.0...v9.62.0) (2026-11-04)
+
+
+### Features
+
+* **responses:** filter workflow status by checking statuses (#10497) ([#10497](https://github.com/opengovsg/formsg/commit/e4803234586ec546fd25af5ff80650cb1307e90a))
+
+
+### Bug Fixes
+
+* **uen:** accept hidden entity types in the browser (#10498) ([#10498](https://github.com/opengovsg/formsg/commit/5f2ec59c3505e96098cbad0fd84f87f8cd424600))
+
 ## [9.61.0](https://github.com/opengovsg/formsg/compare/v9.60.2...v9.61.0) (2026-11-04)
 
 
