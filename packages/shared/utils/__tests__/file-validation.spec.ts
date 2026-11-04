@@ -132,5 +132,24 @@ describe('File validation utils', () => {
         getInvalidFileExtensionsInZip('nodebuffer', file),
       ).rejects.toThrow()
     })
+
+    it('should not leave an unhandled rejection when a nested zip precedes the entry limit', async () => {
+      const unhandled = jest.fn()
+      process.on('unhandledRejection', unhandled)
+      const zip = new JSZip()
+      zip.file('nested.zip', await nestZip(MAX_ZIP_NESTING_DEPTH + 1))
+      for (let i = 0; i < MAX_ZIP_ENTRY_COUNT; i++) {
+        zip.file(`file-${i}.txt`, 'x')
+      }
+      const file = await zip.generateAsync({ type: 'nodebuffer' })
+
+      await expect(
+        getInvalidFileExtensionsInZip('nodebuffer', file),
+      ).rejects.toThrow()
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
+      process.off('unhandledRejection', unhandled)
+      expect(unhandled).not.toHaveBeenCalled()
+    })
   })
 })

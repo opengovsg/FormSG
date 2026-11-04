@@ -127,13 +127,13 @@ export const getInvalidFileExtensionsInZip = (
       throw new Error('Zip file nesting is too deep')
     }
     const zip = await JSZip.loadAsync(file)
+    const fileEntries = zip.filter((_relativePath, fileEntry) => !fileEntry.dir)
+    entryCount += fileEntries.length
+    if (entryCount > MAX_ZIP_ENTRY_COUNT) {
+      throw new Error('Zip file has too many entries')
+    }
     const invalidFileExtensions: (string | string[] | Promise<string[]>)[] = []
-    zip.forEach((_relativePath, fileEntry) => {
-      if (fileEntry.dir) return
-      entryCount++
-      if (entryCount > MAX_ZIP_ENTRY_COUNT) {
-        throw new Error('Zip file has too many entries')
-      }
+    fileEntries.forEach((fileEntry) => {
       const fileExt = getFileExtension(fileEntry.name)
       if (isInvalidFileExtension(fileExt)) {
         return invalidFileExtensions.push(fileExt)
