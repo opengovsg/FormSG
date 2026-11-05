@@ -21,6 +21,7 @@ const logger = createLoggerWithLabel(module)
 
 const dashboardVersion = Joi.string().valid('v1', 'v2')
 const objectId = Joi.string().hex().length(24)
+const columnId = Joi.string().max(100)
 
 const joiEvent = (types: AnalyticsEventType[], content: Joi.ObjectSchema) =>
   Joi.object({
@@ -59,6 +60,31 @@ const joiAnalyticsEventBody = Joi.alternatives().try(
     Joi.object({
       from: dashboardVersion.required(),
       to: dashboardVersion.required(),
+    }),
+  ),
+  joiEvent(
+    [AnalyticsEventType.ResultsFilterApplied],
+    Joi.object({
+      filter: Joi.string().valid('date_range', 'column').required(),
+      columnId: columnId.when('filter', {
+        is: 'column',
+        then: Joi.required(),
+        otherwise: Joi.forbidden(),
+      }),
+    }),
+  ),
+  joiEvent(
+    [AnalyticsEventType.ResultsSortApplied],
+    Joi.object({
+      direction: Joi.string().valid('asc', 'desc').required(),
+      columnId: columnId.required(),
+    }),
+  ),
+  joiEvent(
+    [AnalyticsEventType.ResultsColumnToggled],
+    Joi.object({
+      visible: Joi.boolean().required(),
+      columnId: columnId.required(),
     }),
   ),
 )
