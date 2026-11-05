@@ -15,6 +15,7 @@ import {
   getAuthEsrvcId,
   getResultingLoginErrors,
   StepLoginStep,
+  usesStepLoginRules,
 } from 'formsg-shared/utils/step-login'
 import { omit } from 'lodash'
 import { err, ok, Result } from 'neverthrow'
@@ -27,8 +28,8 @@ import { getSavedWorkflow } from '../form.utils'
 /**
  * Authoring rules for login on MRF workflow steps. Step 1 keeps the
  * form-level login; later steps carry their own `auth`. The rollout flag
- * gates adopting a later-step login only: a saved one stays editable enough
- * to maintain or remove.
+ * gates a form's first later-step login only: a form that already has one
+ * keeps every step login rule, including adding or switching logins.
  */
 
 export const STEP_LOGIN_NOT_AVAILABLE =
@@ -173,7 +174,10 @@ export const checkWorkflowStepLoginWrite = ({
   // or re-keying a saved one is maintenance.
   const isAuthAdopted =
     !!nextAuth && savedAuth?.auth_type !== nextAuth.auth_type
-  if (isAuthAdopted && !isStepLoginEnabled) {
+  if (
+    isAuthAdopted &&
+    !usesStepLoginRules(getSavedWorkflow(form), isStepLoginEnabled)
+  ) {
     return err(new ForbiddenFormError(STEP_LOGIN_NOT_AVAILABLE))
   }
 

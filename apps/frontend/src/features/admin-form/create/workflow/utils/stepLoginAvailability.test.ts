@@ -1,5 +1,6 @@
 import {
   AdminFormDto,
+  AdminMultirespondentFormDto,
   FormAuthType,
   FormResponseMode,
   WorkflowType,
@@ -27,9 +28,23 @@ const mrfForm = (overrides: Partial<AdminFormDto> = {}) =>
     ...overrides,
   }) as AdminFormDto
 
+const NO_LATER_LOGIN_WORKFLOW = [
+  { _id: 's1', workflow_type: WorkflowType.Static, emails: [], edit: [] },
+  { _id: 's2', workflow_type: WorkflowType.Static, emails: [], edit: [] },
+] as AdminMultirespondentFormDto['workflow']
+
 describe('isLaterStepLoginAvailable', () => {
-  it('is hidden while the flag is off', () => {
-    expect(isLaterStepLoginAvailable(mrfForm(), false)).toBe(false)
+  it('is hidden while the flag is off and no later step logs in', () => {
+    expect(
+      isLaterStepLoginAvailable(
+        mrfForm({ workflow: NO_LATER_LOGIN_WORKFLOW }),
+        false,
+      ),
+    ).toBe(false)
+  })
+
+  it('stays shown with the flag off once a later step has a login', () => {
+    expect(isLaterStepLoginAvailable(mrfForm(), false)).toBe(true)
   })
 
   it('is hidden on non-MRF forms', () => {
@@ -59,17 +74,30 @@ describe('isLaterStepLoginAvailable', () => {
 })
 
 describe('formUsesLogin', () => {
-  it('reads only the form-level login while the flag is off', () => {
+  it('reads only the form-level login while the flag is off and no later step logs in', () => {
     expect(
       formUsesLogin({
-        form: mrfForm(),
+        form: mrfForm({ workflow: NO_LATER_LOGIN_WORKFLOW }),
         authType: FormAuthType.CP,
         isFlagOn: false,
       }),
     ).toBe(false)
     expect(
       formUsesLogin({
-        form: mrfForm({ authType: FormAuthType.CP }),
+        form: mrfForm({
+          authType: FormAuthType.CP,
+          workflow: NO_LATER_LOGIN_WORKFLOW,
+        }),
+        authType: FormAuthType.CP,
+        isFlagOn: false,
+      }),
+    ).toBe(true)
+  })
+
+  it('counts a saved later-step login while the flag is off', () => {
+    expect(
+      formUsesLogin({
+        form: mrfForm(),
         authType: FormAuthType.CP,
         isFlagOn: false,
       }),
