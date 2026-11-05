@@ -52,6 +52,30 @@ export const enSG: Workflow = {
           'Are you sure you want to delete this step? This action cannot be undone.',
         confirm: 'Yes, delete step',
         cancel: "No, don't delete",
+        closeFormFirst:
+          'Close your form before deleting a step that removes authentication fields.',
+        deletedFieldsIntro:
+          'This is the last step using its authentication provider. These fields will be deleted from your form:',
+        failed: 'The step could not be deleted.',
+      },
+      guidedDeleteWorkflow: {
+        pickerTitle: 'Choose authentication to keep',
+        pickerDescription:
+          'Your form will have one respondent after deleting the workflow. Choose which authentication it should keep.',
+        keepCorppass: 'Keep Corppass authentication.',
+        chooseEsrvcId: 'Choose the Corppass e-service ID to keep.',
+        noEsrvcId: 'No e-service ID configured',
+        deletesWorkflow: 'Deleting Step 1 deletes the entire workflow.',
+        keepProvider:
+          'All workflow steps, approvals and workflow routing will be removed. The form will keep {{provider}} authentication.',
+        keepNone:
+          'All workflow steps, approvals and workflow routing will be removed. The form will keep no authentication.',
+        deletedFieldsIntro: 'These fields will be deleted from your form:',
+        keepAllFields: 'All form fields will be kept.',
+        resetRestrictions:
+          'The original Step 1 eligibility list and one-response limit will be reset because its authentication provider is changing.',
+        failed:
+          'The workflow could not be deleted. Your changes have not been applied.',
       },
       deleteWorkflow: {
         title: 'Delete entire workflow',
@@ -196,6 +220,30 @@ export const enSG: Workflow = {
     closeFormToEdit: 'To change the login, close your form to new responses.',
     inactiveLabel: 'Singpass authentication',
     tabs: { fields: 'Fields to fill', approvals: 'Approvals', login: 'Login' },
+    historicalResponsesKept: 'Historical responses will not be deleted.',
+    publishErrors: {
+      title: 'Finish authentication setup before publishing',
+      description:
+        'Configure matching authentication for these fields, or delete the unused fields.',
+    },
+    settings: {
+      description: 'Manage authentication for each step in your workflow.',
+      editWorkflow: 'Edit your full workflow ↗',
+      notEnabled: 'Singpass authentication not enabled',
+      closeFormToEdit: 'Close your form to change authentication settings.',
+      saved: 'Authentication settings saved.',
+      saveFailed: 'Unable to save settings.',
+      restrictionsFailed:
+        'The login was saved, but some Step 1 restrictions could not be saved. {{message}} Review the saved settings before trying again.',
+      confirmSwitchFirst:
+        'Confirm or cancel the authentication change before leaving this card.',
+      checkBeforeSaving: 'Check the authentication settings before saving.',
+      deleteNotice:
+        'Confirmed fields will be deleted from the form when you save or navigate away.',
+      unassignNotice:
+        'Incompatible fields will be unassigned when you save or navigate away. They remain in the form.',
+      ariaLabelName: 'authentication settings',
+    },
     unassignedNotice:
       'Incompatible fields are unassigned in this draft. Confirmed field deletions apply only when you save or navigate away.',
     fieldTags: {

@@ -22,13 +22,13 @@ import {
   WorkflowStatus,
   WorkflowStepAuthType,
 } from 'formsg-shared/types'
-import { STEP_LOGIN_PROVIDER_LABELS } from 'formsg-shared/utils/step-login'
 
 import type { ResponsesIndividualResponse } from '~/i18n/locales/features/admin-form/responses/individual-response'
 
 import { Tag } from '~components/Tag'
 
 import { useIsMrfStepLoginEnabled } from '~features/admin-form/create/workflow/hooks/useIsMrfStepLoginEnabled'
+import { STEP_LOGIN_LABEL_KEYS } from '~features/admin-form/create/workflow/utils/stepLoginAvailability'
 
 import { formatEmailList } from './formatEmailList'
 import { WorkflowHistory } from './getStopNotifiedEmails'
@@ -359,7 +359,7 @@ export const WorkflowActivityLog = ({
                 </Text>
                 {isStepLoginEnabled && authType && (
                   <Tag mt="0.25rem" colorScheme="secondary">
-                    {STEP_LOGIN_PROVIDER_LABELS[authType]}
+                    {t(STEP_LOGIN_LABEL_KEYS[authType])}
                   </Tag>
                 )}
                 <Text
