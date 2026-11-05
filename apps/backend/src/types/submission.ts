@@ -1,6 +1,5 @@
 import type { FormFieldMeta } from '@opengovsg/formsg-sdk'
 import {
-  EmailModeSubmissionBase,
   MultirespondentSubmissionBase,
   StorageModeSubmissionBase,
   SubmissionBase,
@@ -16,7 +15,6 @@ import mongoose, {
   QueryOptions,
 } from 'mongoose'
 
-import { EmailSubmissionContent } from 'src/app/modules/submission/email-submission/email-submission.types'
 import { EncryptSubmissionContent } from 'src/app/modules/submission/encrypt-submission/encrypt-submission.types'
 import { MultirespondentSubmissionContent } from 'src/app/modules/submission/multirespondent-submission/multirespondent-submission.types'
 import {
@@ -88,15 +86,9 @@ export interface ISubmissionSchema extends SubmissionBase, Document {
 
 export type IPendingSubmissionSchema = ISubmissionSchema
 
-export type SaveIfSubmitterIdIsUniqueType = EmailSaveIfSubmitterIdIsUniqueType &
+export type SaveIfSubmitterIdIsUniqueType =
   EncryptSaveIfSubmitterIdIsUniqueType &
-  MultirespondentSaveIfSubmitterIdIsUniqueType
-
-type EmailSaveIfSubmitterIdIsUniqueType = (
-  formId: string,
-  submitterId: string,
-  submissionContent: EmailSubmissionContent,
-) => Promise<IEmailSubmissionSchema | null>
+    MultirespondentSaveIfSubmitterIdIsUniqueType
 
 type EncryptSaveIfSubmitterIdIsUniqueType = (
   formId: string,
@@ -215,14 +207,6 @@ export interface ISubmissionModel extends Model<ISubmissionSchema> {
   }>
 }
 
-export interface IEmailSubmissionSchema
-  extends EmailModeSubmissionBase, ISubmissionSchema {
-  // Allows for population and correct typing
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  form: any
-  submissionType: SubmissionType.Email
-  getWebhookView(): Promise<null>
-}
 export interface IEncryptedSubmissionSchema
   extends StorageModeSubmissionBase, ISubmissionSchema {
   // Allows for population and correct typing
@@ -331,8 +315,6 @@ export type SubmissionData =
   | StorageModeSubmissionData
   | MultirespondentSubmissionData
 
-export type IEmailSubmissionModel = Model<IEmailSubmissionSchema> &
-  ISubmissionModel
 export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
   ISubmissionModel & {
     /**

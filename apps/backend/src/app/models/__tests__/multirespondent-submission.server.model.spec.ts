@@ -13,14 +13,13 @@ import moment from 'moment-timezone'
 import mongoose from 'mongoose'
 
 import getPaymentModel from 'src/app/models/payment.server.model'
-import getSubmissionModel, {
-  getEmailSubmissionModel,
+import {
+  getEncryptSubmissionModel,
   getMultirespondentSubmissionModel,
 } from 'src/app/models/submission.server.model'
 import { IMultirespondentSubmissionSchema } from 'src/types'
 
-const Submission = getSubmissionModel(mongoose)
-const EmailSubmission = getEmailSubmissionModel(mongoose)
+const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
 const PaymentSubmission = getPaymentModel(mongoose)
 
@@ -256,29 +255,6 @@ describe('Multirespondent Submission Model', () => {
           transactionFee: 10,
           email: 'MOCK_EMAIL',
         })
-      })
-
-      it('should return null when submission is of SubmissionType.Email', async () => {
-        // Arrange
-        const validFormId = new ObjectId().toHexString()
-        // Add email submission.
-        const validSubmission = await Submission.create({
-          form: validFormId,
-          myInfoFields: [],
-          // Email type.
-          submissionType: SubmissionType.Email,
-          responseHash: 'hash',
-          responseSalt: 'salt',
-        })
-
-        // Act
-        const result = await MultirespondentSubmission.findSingleMetadata(
-          validFormId,
-          validSubmission._id,
-        )
-
-        // Assert
-        expect(result).toBeNull()
       })
 
       it('should return null if no submission metadata is retrieved', async () => {
@@ -982,19 +958,18 @@ describe('Multirespondent Submission Model', () => {
       it('should return null when type of submission with given id is not SubmissionType.Multirespondent', async () => {
         // Arrange
         const validFormId = new ObjectId().toHexString()
-        const validEmailSubmission = await EmailSubmission.create({
-          submissionType: SubmissionType.Email,
+        const validEncryptSubmission = await EncryptSubmission.create({
+          submissionType: SubmissionType.Encrypt,
           form: validFormId,
-          recipientEmails: ['any@example.com'],
-          responseHash: 'any hash',
-          responseSalt: 'any salt',
+          encryptedContent: 'any content',
+          version: 1,
         })
 
         // Act
         const actual =
           await MultirespondentSubmission.findEncryptedSubmissionById(
             validFormId,
-            validEmailSubmission._id,
+            validEncryptSubmission._id,
           )
 
         // Assert

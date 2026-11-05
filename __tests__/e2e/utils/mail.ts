@@ -1,6 +1,5 @@
 import { Page } from '@playwright/test'
 import axios from 'axios'
-import { FormResponseMode } from 'formsg-shared/types'
 
 // Maildev default port is 1080.
 const MAIL_URL = 'http://0.0.0.0:1080'
@@ -103,7 +102,6 @@ export const getSubmission = async (
   page: Page,
   formName: string,
   responseId: string,
-  responseMode: FormResponseMode,
 ): Promise<EmailSubmission> => {
   const subject = `formsg-auto: ${formName} (#${responseId})`
 
@@ -127,31 +125,12 @@ export const getSubmission = async (
     from: lastEmail.from.map((p) => p.address),
     subject: lastEmail.subject,
     html: lastEmail.html,
-    attachments:
-      responseMode === FormResponseMode.Email
-        ? await getSubmissionAttachments(lastEmail)
-        : undefined,
+    attachments: undefined,
   }
 
   await MAIL_CLIENT.deleteById(lastEmail.id)
 
   return submission
-}
-
-// Fetches the file contents of each attachment and creates a record of filenames.
-const getSubmissionAttachments = async (
-  email: MailData,
-): Promise<EmailSubmission['attachments']> => {
-  if (!email.attachments) return {}
-  const atts: Record<string, string> = {}
-  for (const att of email.attachments) {
-    const response = await MAIL_CLIENT.getAttachment(
-      email.id,
-      att.generatedFileName,
-    )
-    atts[att.fileName] = response.data
-  }
-  return atts
 }
 
 /**

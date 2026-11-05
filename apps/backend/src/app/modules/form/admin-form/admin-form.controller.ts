@@ -83,7 +83,6 @@ import {
 } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import * as FeedbackService from '../../feedback/feedback.service'
-import * as EmailSubmissionService from '../../submission/email-submission/email-submission.service'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
 import * as SubmissionService from '../../submission/submission.service'
 import { mapRouteError as mapSubmissionError } from '../../submission/submission.utils'
@@ -1266,7 +1265,7 @@ export const createForm: ControllerHandler<
       .map((createdForm) => {
         return res
           .status(StatusCodes.OK)
-          .json(createdForm as DeserializeTransform<FormDto>)
+          .json(createdForm as unknown as DeserializeTransform<FormDto>)
       })
       .mapErr((error) => {
         logger.error({
@@ -2184,7 +2183,6 @@ export const handleGetWhitelistSetting: ControllerHandler<
       })),
     )
     .andThen(AuthService.checkFormForPermissions(PermissionLevel.Write))
-    .andThen((form) => EmailSubmissionService.checkFormIsNotEmailMode(form))
     .map(async (form) => AdminFormService.getFormWhitelistSetting(form))
     .andThen((formWhitelistedSubmitterIds) => formWhitelistedSubmitterIds)
     .map((formWhitelistedSubmitterIds) => {

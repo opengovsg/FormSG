@@ -21,7 +21,6 @@ import {
 } from 'formsg-shared/types'
 
 import {
-  getEmailFormModel,
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
 import { findUserByEmail } from 'src/app/modules/user/user.service'
@@ -95,35 +94,6 @@ const addForm = async (
   page: Page,
   responseMode: FormResponseMode,
 ): Promise<AddFormReturn> => {
-  if (responseMode === FormResponseMode.Email) {
-    const EmailFormModel = getEmailFormModel(mongoose)
-    const user = (await findUserByEmail(ADMIN_EMAIL))._unsafeUnwrap()
-
-    const formId = new ObjectId().toHexString()
-
-    await EmailFormModel.create({
-      _id: formId,
-      admin: user,
-      responseMode: FormResponseMode.Email,
-      title: `e2e-test-${cuid()}`,
-      emails: [user.email],
-      publicKey: '',
-      status: FormStatus.Private,
-    })
-
-    const formResponseMode: E2eFormResponseMode = {
-      responseMode: FormResponseMode.Email,
-    }
-
-    await page.goto(`${ADMIN_FORM_PAGE_PREFIX}/${formId}`)
-
-    // Close any modals that may obstruct test flow
-    await closeModals(page)
-
-    await page.getByRole('button', { name: 'Next' }).press('Escape')
-
-    return { formId, formResponseMode }
-  }
   await page.goto(DASHBOARD_PAGE)
 
   // Close any modals that may obstruct test flow

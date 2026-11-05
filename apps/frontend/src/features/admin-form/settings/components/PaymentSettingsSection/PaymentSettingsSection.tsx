@@ -157,8 +157,7 @@ const BeforeConnectionInstructions = ({
 
   const isAdminEmailsPresent = useMemo(() => {
     return (
-      (settings?.responseMode === FormResponseMode.Email ||
-        settings?.responseMode === FormResponseMode.Encrypt) &&
+      settings?.responseMode === FormResponseMode.Encrypt &&
       !isEmpty(get(settings, 'emails', []))
     )
   }, [settings])

@@ -64,7 +64,8 @@ describe('analytics.service', () => {
         FormModel.create({
           admin: testUser._id,
           title: 'Test form',
-          responseMode: FormResponseMode.Email,
+          responseMode: FormResponseMode.Encrypt,
+          publicKey: 'some public key',
           emails: ['a@abc.com'],
         }),
       )
@@ -180,9 +181,9 @@ describe('analytics.service', () => {
         SubmissionModel.create({
           form: new mongoose.Types.ObjectId(),
           myInfoFields: [],
-          submissionType: SubmissionType.Email,
-          responseHash: 'hash',
-          responseSalt: 'salt',
+          submissionType: SubmissionType.Encrypt,
+          encryptedContent: 'content',
+          version: 1,
         }),
       )
       await Promise.all(submissionPromises)

@@ -50,9 +50,6 @@ export const verifySubmission = async (
 
   // Verify the submission content
   switch (formResponseMode.responseMode) {
-    case FormResponseMode.Email:
-      await verifyEmailSubmission(page, data)
-      break
     case FormResponseMode.Encrypt:
       await verifyEncryptSubmission(page, {
         ...data,
@@ -76,74 +73,6 @@ export const verifySubmission = async (
       expect(email.subject === autoReplySubject).toBeTruthy()
       expect(email.from[0].name === autoReplySender).toBeTruthy()
       expect(email.html.includes(autoReplyMessage)).toBeTruthy()
-    }
-  }
-}
-
-/**
- * Get the submission email from maildev, and ensure that the contents and attachments
- * match what is submitted.
- * @param {IFormSchema} form the form from the database
- * @param {string} responseId the response id of the submission to be verified
- * @param {E2eFieldMetadata[]} formFields the field metadata used to create and fill the form
- * @param {E2eSettingsOptions} formSettings the form settings used to create the form
- */
-export const verifyEmailSubmission = async (
-  page: Page,
-  { form, responseId, formFields, formSettings }: VerifySubmissionBaseInputs,
-): Promise<void> => {
-  // Get the submission from the email, via the subject.
-  const submission = await getSubmission(
-    page,
-    form.title,
-    responseId,
-    FormResponseMode.Email,
-  )
-
-  // Verify email metadata
-  expect(submission.from).toContain(MAIL_FROM)
-
-  const emails = formSettings.emails ?? []
-  emails.unshift(ADMIN_EMAIL)
-
-  for (const email of emails) {
-    expect(submission.to).toContain(email)
-  }
-
-  // Subject need not be verified, since we got the email via the subject.
-
-  const expectSubmissionContains = expectContains(submission.html)
-
-  // Verify form responses in email
-  for (const field of formFields) {
-    const responseArray = getResponseArray(field, {
-      mode: FormResponseMode.Email,
-    })
-    if (!responseArray) continue
-    expectSubmissionContains([
-      getResponseTitle(field, { mode: FormResponseMode.Email }),
-      ...responseArray,
-    ])
-    if (!submission.attachments) continue
-    expectAttachment(field, submission.attachments)
-  }
-
-  if (
-    formSettings.isSubmitterIdCollectionEnabled &&
-    formSettings.authType !== FormAuthType.NIL
-  ) {
-    // Verify that form auth correctly returned NRIC (SP/MyInfo) and UEN (CP)
-    if (!formSettings.nric) throw new Error('No nric provided!')
-    switch (formSettings.authType) {
-      case FormAuthType.SP:
-      case FormAuthType.MyInfo:
-        expectSubmissionContains([SPCPFieldTitle.SpNric, formSettings.nric])
-        break
-      case FormAuthType.CP:
-        expectSubmissionContains([SPCPFieldTitle.CpUid, formSettings.nric])
-        if (!formSettings.uen) throw new Error('No uen provided!')
-        expectSubmissionContains([SPCPFieldTitle.CpUen, formSettings.uen])
-        break
     }
   }
 }
@@ -180,12 +109,7 @@ export const verifyEncryptSubmission = async (
       [responseId, form.title],
     )
 
-    const submission = await getSubmission(
-      page,
-      form.title,
-      responseId,
-      FormResponseMode.Encrypt,
-    )
+    const submission = await getSubmission(page, form.title, responseId)
 
     // Verify email metadata
     expect(submission.from).toContain(MAIL_FROM)

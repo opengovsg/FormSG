@@ -4,9 +4,7 @@ import { Box, Container, Divider, Flex, Stack } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants'
-import { FormResponseMode } from 'formsg-shared/types/form'
 
-import { ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX } from '~constants/routes'
 import { useToast } from '~hooks/useToast'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -41,25 +39,6 @@ export const ChartsPage = (): JSX.Element => {
       description: t('features.adminForm.toasts.form.retrieval.error'),
     })
     return <ResponsesPageSkeleton />
-  }
-
-  // Charts is not available for Email response
-  // Since there's no entry to the charts page for Email mode we should
-  // forcefully redirect the user to the responses page
-  // we need to redirect to one level up, i.e., '../'
-  if (form.responseMode === FormResponseMode.Email) {
-    /**
-     * 0: "/admin/form/<form_id>/results/charts"
-     * 1: "<form_id>"
-     * 2: "/charts"
-     */
-    const match = pathname.match(ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX)
-    const subroute = match?.[2]
-    if (subroute) {
-      const pathnameWithoutSubroute = pathname.replace(subroute, '')
-      window.location.replace(pathnameWithoutSubroute)
-    }
-    return <></>
   }
 
   const responseCount = totalResponsesCount || 0

@@ -191,8 +191,6 @@ export const useCreateFormWizardContext = (
           },
         )
       }
-      case FormResponseMode.Email:
-        return
       case FormResponseMode.Multirespondent:
         return createMultirespondentModeFormMutation.mutate(
           {

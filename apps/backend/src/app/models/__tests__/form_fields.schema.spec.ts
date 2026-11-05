@@ -24,11 +24,6 @@ const MOCK_ENCRYPTED_FORM_PARAMS = {
   publicKey: 'mockPublicKey',
   responseMode: 'encrypt',
 }
-const MOCK_EMAIL_FORM_PARAMS = {
-  ...MOCK_FORM_PARAMS,
-  emails: ['test@example.com'],
-  responseMode: 'email',
-}
 
 describe('Form Field Schema', () => {
   beforeAll(async () => await dbHandler.connect())
@@ -395,14 +390,11 @@ describe('Form Field Schema', () => {
 
 const createAndReturnFormField = async (
   formFieldParams: Record<string, any>,
-  formType: FormResponseMode = FormResponseMode.Email,
+  formType: FormResponseMode = FormResponseMode.Encrypt,
 ) => {
   let baseParams
 
   switch (formType) {
-    case FormResponseMode.Email:
-      baseParams = MOCK_EMAIL_FORM_PARAMS
-      break
     case FormResponseMode.Encrypt:
       baseParams = MOCK_ENCRYPTED_FORM_PARAMS
       break

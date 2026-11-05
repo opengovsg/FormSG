@@ -18,7 +18,7 @@ import nodemailer from 'nodemailer'
 import Mail from 'nodemailer/lib/mailer'
 import session, { Session } from 'supertest-session'
 
-import { getEmailFormModel } from 'src/app/models/form.server.model'
+import { getEncryptedFormModel } from 'src/app/models/form.server.model'
 import {
   generateFieldParams,
   MOCK_HASHED_OTP,
@@ -75,7 +75,7 @@ describe('public-forms.verification.routes', () => {
     await dbHandler.clearDatabase()
 
     // Form without verifiable fields
-    const { form: emptyForm } = await dbHandler.insertEmailForm()
+    const { form: emptyForm } = await dbHandler.insertEncryptForm()
     mockEmptyFormId = String(emptyForm._id)
 
     // Form with verifiable fields
@@ -87,7 +87,7 @@ describe('public-forms.verification.routes', () => {
     })
     mockEmailFieldId = String(emailField._id)
     mockMobileFieldId = String(mobileField._id)
-    const { form: verifiableForm } = await dbHandler.insertEmailForm({
+    const { form: verifiableForm } = await dbHandler.insertEncryptForm({
       // Alternative mail domain so as not to clash with emptyForm
       mailDomain: MOCK_VALID_EMAIL_DOMAIN,
       formOptions: {
@@ -296,7 +296,7 @@ describe('public-forms.verification.routes', () => {
 
     it('should return 404 when the form is not public', async () => {
       // Arrange
-      await getEmailFormModel(mongoose).findByIdAndUpdate(
+      await getEncryptedFormModel(mongoose).findByIdAndUpdate(
         mockVerifiableFormId,
         { status: FormStatus.Private },
       )

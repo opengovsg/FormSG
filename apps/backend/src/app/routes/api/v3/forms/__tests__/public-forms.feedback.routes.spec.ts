@@ -44,7 +44,7 @@ describe('public-form.feedback.routes', () => {
         comment: 'great mock',
       }
 
-      const { form } = await dbHandler.insertEmailForm({
+      const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
           status: FormStatus.Public,
         },
@@ -67,7 +67,7 @@ describe('public-form.feedback.routes', () => {
     it('should return 400 when form feedback submitted is malformed', async () => {
       const MOCK_FEEDBACK = { rating: 6 }
 
-      const { form } = await dbHandler.insertEmailForm()
+      const { form } = await dbHandler.insertEncryptForm()
       const { submission } = await dbHandler.insertFormSubmission({
         formId: form._id,
       })
@@ -93,7 +93,7 @@ describe('public-form.feedback.routes', () => {
         comment: 'great mock',
       }
 
-      const { form } = await dbHandler.insertEmailForm()
+      const { form } = await dbHandler.insertEncryptForm()
       const { submission } = await dbHandler.insertFormSubmission({
         formId: form._id,
       })
@@ -119,7 +119,7 @@ describe('public-form.feedback.routes', () => {
         comment: 'great mock',
       }
 
-      const { form } = await dbHandler.insertEmailForm()
+      const { form } = await dbHandler.insertEncryptForm()
       const expectedResp = JSON.parse(
         JSON.stringify({
           message: new InvalidSubmissionIdError().message,
@@ -143,7 +143,7 @@ describe('public-form.feedback.routes', () => {
         comment: 'great mock',
       }
 
-      const { form } = await dbHandler.insertEmailForm()
+      const { form } = await dbHandler.insertEncryptForm()
       const { submission } = await dbHandler.insertFormSubmission({
         formId: form._id,
       })
@@ -171,7 +171,7 @@ describe('public-form.feedback.routes', () => {
         comment: 'great mock',
       }
 
-      const { form } = await dbHandler.insertEmailForm({
+      const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
           status: FormStatus.Archived,
         },
@@ -203,7 +203,7 @@ describe('public-form.feedback.routes', () => {
         comment: 'great mock',
       }
 
-      const { form } = await dbHandler.insertEmailForm({
+      const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
           status: FormStatus.Public,
         },

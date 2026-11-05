@@ -6,7 +6,7 @@ import {
 } from './getCompletionEmailBlockView'
 
 const MRF = { responseMode: FormResponseMode.Multirespondent } as FormSettings
-const EMAIL_MODE = { responseMode: FormResponseMode.Email } as FormSettings
+const STORAGE_MODE = { responseMode: FormResponseMode.Encrypt } as FormSettings
 
 describe('getCompletionEmailBlockView', () => {
   it('shows the card on an MRF form with two steps', () => {
@@ -42,7 +42,7 @@ describe('getCompletionEmailBlockView', () => {
   it('shows nothing on a form that is not MRF', () => {
     expect(
       getCompletionEmailBlockView({
-        settings: EMAIL_MODE,
+        settings: STORAGE_MODE,
         isSettingsError: false,
         workflowStepCount: 2,
       }),

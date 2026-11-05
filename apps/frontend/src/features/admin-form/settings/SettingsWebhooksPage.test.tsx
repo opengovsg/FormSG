@@ -25,7 +25,6 @@ const {
   SingleStepGenericWebhook,
   Error: ErrorStory,
   StorageModePlumberConnected,
-  UnsupportedEmailMode,
 } = composeStories(stories)
 
 const UNSUPPORTED_MSG = /webhooks are only available in storage mode/i
@@ -47,29 +46,19 @@ describe('SettingsWebhooksPage', () => {
     expect(screen.queryByText(UNSUPPORTED_MSG)).not.toBeInTheDocument()
   })
 
-  it('still shows the unsupported-mode message for a form whose mode genuinely lacks webhook support', async () => {
-    await act(async () => {
-      render(<UnsupportedEmailMode />)
-    })
-
-    await screen.findByText(UNSUPPORTED_MSG)
-    expect(screen.queryByText(ERROR_MSG)).not.toBeInTheDocument()
-    expect(screen.queryByText(PLUMBER_CONNECTED_MSG)).not.toBeInTheDocument()
-  })
-
   it.each(['plumber.gov.sg', 'staging.plumber.gov.sg', 'uat.plumber.gov.sg'])(
     'shows the Plumber message for the %s webhook',
     async (hostname) => {
       const PlumberEnvironment = composeStory(
         {
-          ...stories.PlumberConnectedEmailMode,
+          ...stories.StorageModePlumberConnected,
           parameters: {
             msw: {
               handlers: {
                 default: [
                   getAdminFormSettings({
                     overrides: {
-                      responseMode: FormResponseMode.Email,
+                      responseMode: FormResponseMode.Multirespondent,
                       webhook: {
                         url: `https://${hostname}/webhooks/abc`,
                         isRetryEnabled: false,
@@ -557,7 +546,7 @@ it('hides format selection after switching V4 to legacy while rollout is off', a
   )
 })
 
-it.each([stories.StorageModeEmpty, stories.UnsupportedEmailMode])(
+it.each([stories.StorageModeEmpty])(
   'never offers legacy selection on non-MRF forms even with rollout enabled',
   async (story) => {
     const growthbook = new GrowthBook({

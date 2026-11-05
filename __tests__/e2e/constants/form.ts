@@ -14,15 +14,10 @@ interface E2eFormResponseModeBase {
   responseMode: FormResponseMode
 }
 
-interface E2eFormResponseModeEmail extends E2eFormResponseModeBase {
-  responseMode: FormResponseMode.Email
-}
-
 interface E2eFormResponseModeEncrypt extends E2eFormResponseModeBase {
   responseMode: FormResponseMode.Encrypt
   secretKey: string
 }
 
 export type E2eFormResponseMode =
-  | E2eFormResponseModeEmail
   | E2eFormResponseModeEncrypt

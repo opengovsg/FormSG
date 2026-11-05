@@ -20,8 +20,6 @@ import {
   logoutMrfStep,
   logoutPublicForm,
   SubmitEmailFormArgs,
-  submitEmailModeForm,
-  submitEmailModeFormWithFetch,
   submitFormFeedback,
   submitFormIssue,
   submitMultirespondentForm,
@@ -102,19 +100,6 @@ export const usePublicFormMutations = (
   submissionSecretKey?: string,
   stepToken?: string,
 ) => {
-  const submitEmailModeFormMutation = useMutation(
-    (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
-      return submitEmailModeForm({ ...args, formId })
-    },
-  )
-
-  // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
-  const submitEmailModeFormFetchMutation = useMutation(
-    (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
-      return submitEmailModeFormWithFetch({ ...args, formId })
-    },
-  )
-
   const useSubmitMutationWithAttachmentVirusScanning = (
     f: (
       args: SubmitStorageFormClearArgs & {
@@ -211,8 +196,6 @@ export const usePublicFormMutations = (
     )
 
   return {
-    submitEmailModeFormMutation,
-    submitEmailModeFormFetchMutation,
     submitStorageModeFormMutation,
     submitStorageModeFormFetchMutation,
     submitMultirespondentFormMutation,

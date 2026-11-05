@@ -236,7 +236,7 @@ describe('submission.controller', () => {
 
       const expectedError = new ResponseModeError(
         [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
-        FormResponseMode.Email,
+        FormResponseMode.Multirespondent,
       )
       jest
         .spyOn(SubmissionsUtils, 'checkFormIsEncryptModeOrMultirespondent')
@@ -830,7 +830,7 @@ describe('submission.controller', () => {
 
       const expectedError = new ResponseModeError(
         [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
-        FormResponseMode.Email,
+        FormResponseMode.Multirespondent,
       )
       jest
         .spyOn(SubmissionsUtils, 'checkFormIsEncryptModeOrMultirespondent')
@@ -1143,7 +1143,7 @@ describe('submission.controller', () => {
       )
       const expectedError = new ResponseModeError(
         FormResponseMode.Encrypt,
-        FormResponseMode.Email,
+        FormResponseMode.Multirespondent,
       )
       jest
         .spyOn(SubmissionsUtils, 'checkFormIsEncryptModeOrMultirespondent')

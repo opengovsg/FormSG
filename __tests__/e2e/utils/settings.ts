@@ -8,11 +8,6 @@ export const getEncryptSettings = (
   return _getSettings(FormResponseMode.Encrypt, custom)
 }
 
-export const getEmailSettings = (
-  custom?: Partial<E2eSettingsOptions>,
-): E2eSettingsOptions => {
-  return _getSettings(FormResponseMode.Email, custom)
-}
 const _getSettings = (
   responseMode: FormResponseMode,
   custom?: Partial<E2eSettingsOptions>,

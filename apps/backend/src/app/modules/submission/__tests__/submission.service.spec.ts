@@ -192,7 +192,6 @@ describe('submission.service', () => {
     it('should return correct all form counts when not providing submission type', async () => {
       // Arrange
       const encryptSubmissionCount = 4
-      const emailSubmissionCount = 2
       const multirespondentSubmissionCount = 3
 
       const subEncryptPromise = times(encryptSubmissionCount, () =>
@@ -201,16 +200,6 @@ describe('submission.service', () => {
           form: MOCK_FORM_ID,
           version: 1,
           encryptedContent: 'some random encrypted content',
-        }),
-      )
-      const subEmailPromise = times(emailSubmissionCount, () =>
-        Submission.create({
-          submissionType: SubmissionType.Email,
-          form: MOCK_FORM_ID,
-          responseHash: 'hash',
-          responseSalt: 'salt',
-          created: new Date('2019-01-01'),
-          recipientEmails: [],
         }),
       )
       const subMultirespondentPromise = times(
@@ -227,16 +216,10 @@ describe('submission.service', () => {
             submissionPublicKey: 'some random submission public key',
           }),
       )
-      await Promise.all([
-        ...subEncryptPromise,
-        ...subEmailPromise,
-        ...subMultirespondentPromise,
-      ])
+      await Promise.all([...subEncryptPromise, ...subMultirespondentPromise])
 
       const expectedSubmissionCount =
-        encryptSubmissionCount +
-        emailSubmissionCount +
-        multirespondentSubmissionCount
+        encryptSubmissionCount + multirespondentSubmissionCount
 
       const actualResult = await SubmissionService.getFormSubmissionsCount({
         formId: MOCK_FORM_ID.toHexString(),
@@ -257,14 +240,6 @@ describe('submission.service', () => {
           encryptedContent: 'some random encrypted content',
         }),
       )
-      const subEmailPromise = Submission.create({
-        submissionType: SubmissionType.Email,
-        form: MOCK_FORM_ID,
-        responseHash: 'hash',
-        responseSalt: 'salt',
-        created: new Date('2019-01-01'),
-        recipientEmails: [],
-      })
       const subMultirespondentPromise = Submission.create({
         submissionType: SubmissionType.Multirespondent,
         form: MOCK_FORM_ID,
@@ -275,11 +250,7 @@ describe('submission.service', () => {
           'some random encrypted submission secret key',
         submissionPublicKey: 'some random submission public key',
       })
-      await Promise.all([
-        ...subEncryptPromise,
-        subEmailPromise,
-        subMultirespondentPromise,
-      ])
+      await Promise.all([...subEncryptPromise, subMultirespondentPromise])
 
       const actualResult = await SubmissionService.getFormSubmissionsCount({
         formId: MOCK_FORM_ID.toHexString(),
@@ -293,8 +264,7 @@ describe('submission.service', () => {
     it('should count both encrypt and multirespondent submissions for multirespondent forms', async () => {
       // Arrange
       // A mode-migrated multirespondent form holds encrypt submissions
-      // alongside multirespondent ones; the count must span both while
-      // still excluding email submissions.
+      // alongside multirespondent ones; the count must span both.
       const encryptSubmissionCount = 4
       const multirespondentSubmissionCount = 3
       const subEncryptPromise = times(encryptSubmissionCount, () =>
@@ -305,13 +275,6 @@ describe('submission.service', () => {
           encryptedContent: 'some random encrypted content',
         }),
       )
-      const subEmailPromise = Submission.create({
-        submissionType: SubmissionType.Email,
-        form: MOCK_FORM_ID,
-        responseHash: 'hash',
-        responseSalt: 'salt',
-        recipientEmails: [],
-      })
       const subMultirespondentPromise = times(
         multirespondentSubmissionCount,
         () =>
@@ -326,11 +289,7 @@ describe('submission.service', () => {
             submissionPublicKey: 'some random submission public key',
           }),
       )
-      await Promise.all([
-        ...subEncryptPromise,
-        subEmailPromise,
-        ...subMultirespondentPromise,
-      ])
+      await Promise.all([...subEncryptPromise, ...subMultirespondentPromise])
 
       // Act
       const actualResult = await SubmissionService.getFormSubmissionsCount({
@@ -361,22 +320,20 @@ describe('submission.service', () => {
       const subPromises2019 = times(expectedSubmissionCount, () =>
         Submission.create({
           form: MOCK_FORM_ID,
-          submissionType: SubmissionType.Email,
-          responseHash: 'hash',
-          responseSalt: 'salt',
+          submissionType: SubmissionType.Encrypt,
+          version: 1,
+          encryptedContent: 'some random encrypted content',
           created: new Date('2019-01-01'),
-          recipientEmails: [],
         }),
       )
 
       // Insert one more submission for defaultEmailForm in 2 January 2019.
       const subPromiseDayAfter = Submission.create({
         form: MOCK_FORM_ID,
-        submissionType: SubmissionType.Email,
-        responseHash: 'hash',
-        responseSalt: 'salt',
+        submissionType: SubmissionType.Encrypt,
+        version: 1,
+        encryptedContent: 'some random encrypted content',
         created: new Date('2019-01-02'),
-        recipientEmails: [],
       })
 
       // Execute creation in DB.
@@ -2474,31 +2431,6 @@ describe('submission.service', () => {
   })
 
   describe('validateAttachments', () => {
-    it('should reject email mode submissions when attachments are more than 7MB', async () => {
-      const processedResponse1 = generateNewAttachmentResponse({
-        content: Buffer.alloc(3000001),
-      })
-      const processedResponse2 = generateNewAttachmentResponse({
-        content: Buffer.alloc(4000000),
-      })
-
-      // Omit attributes only present in processed fields
-      const response1 = omit(processedResponse1, [
-        'isVisible',
-        'isUserVerified',
-      ])
-      const response2 = omit(processedResponse2, [
-        'isVisible',
-        'isUserVerified',
-      ])
-
-      const result = await SubmissionService.validateAttachments(
-        [response1, response2],
-        FormResponseMode.Email,
-      )
-      expect(result._unsafeUnwrapErr()).toEqual(new AttachmentTooLargeError())
-    })
-
     it('should accept storage mode submissions when attachments are more than 7MB', async () => {
       const processedResponse1 = generateNewAttachmentResponse({
         content: Buffer.alloc(7000001),
@@ -2557,7 +2489,7 @@ describe('submission.service', () => {
 
       const result = await SubmissionService.validateAttachments(
         [response1],
-        FormResponseMode.Email,
+        FormResponseMode.Encrypt,
       )
       expect(result._unsafeUnwrapErr()).toEqual(new InvalidFileExtensionError())
     })
@@ -2581,7 +2513,7 @@ describe('submission.service', () => {
 
       const result = await SubmissionService.validateAttachments(
         [response1],
-        FormResponseMode.Email,
+        FormResponseMode.Encrypt,
       )
       expect(result._unsafeUnwrapErr()).toEqual(new InvalidFileExtensionError())
     })
@@ -2600,7 +2532,7 @@ describe('submission.service', () => {
 
       const result = await SubmissionService.validateAttachments(
         [response1],
-        FormResponseMode.Email,
+        FormResponseMode.Encrypt,
       )
       expect(result._unsafeUnwrapErr()).toEqual(new InvalidFileExtensionError())
     })
@@ -2619,7 +2551,7 @@ describe('submission.service', () => {
 
       const result = await SubmissionService.validateAttachments(
         [response1],
-        FormResponseMode.Email,
+        FormResponseMode.Encrypt,
       )
       expect(result._unsafeUnwrap()).toEqual(true)
     })
@@ -2638,7 +2570,7 @@ describe('submission.service', () => {
 
       const result = await SubmissionService.validateAttachments(
         [response1],
-        FormResponseMode.Email,
+        FormResponseMode.Encrypt,
       )
       expect(result._unsafeUnwrap()).toEqual(true)
     })

@@ -1,8 +1,6 @@
 import { calculateObjectSize, ObjectId } from 'bson'
 import {
   ADMIN_FORM_META_FIELDS,
-  EMAIL_FORM_SETTINGS_FIELDS,
-  EMAIL_PUBLIC_FORM_FIELDS,
   MAX_LOGIN_FIELDS,
   MB,
   MULTIRESPONDENT_FORM_SETTINGS_FIELDS,
@@ -14,7 +12,6 @@ import {
 import {
   AdminDashboardFormMetaDto,
   BasicField,
-  EmailFormSettings,
   FormAuthType,
   FormColorTheme,
   FormEndPage,
@@ -76,8 +73,6 @@ import {
   FormFieldSchema,
   FormLogicSchema,
   FormOtpData,
-  IEmailFormModel,
-  IEmailFormSchema,
   IEncryptedFormDocument,
   IEncryptedFormModel,
   IEncryptedFormSchema,
@@ -400,29 +395,6 @@ EncryptedFormDocumentSchema.methods.removePaymentAccount = async function () {
   }
   return this.save()
 }
-
-const EmailFormSchema = new Schema<IEmailFormSchema, IEmailFormModel>({
-  emails: {
-    type: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
-    set: transformEmails,
-    validate: [
-      (v: string[]) => {
-        if (!Array.isArray(v)) return false
-        if (v.length === 0) return false
-        return v.every((email) => validator.isEmail(email))
-      },
-      'Please provide valid email addresses',
-    ],
-    // Mongoose v5 only checks if the type is an array, not whether the array
-    // is non-empty.
-    required: [true, 'Emails field is required'],
-  },
-})
 
 const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
   webhook: {
@@ -1124,8 +1096,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     'getSettings',
     function (): FormSettings {
       switch (this.responseMode) {
-        case FormResponseMode.Email:
-          return pick(this, EMAIL_FORM_SETTINGS_FIELDS) as EmailFormSettings
         case FormResponseMode.Encrypt:
           return pick(this, STORAGE_FORM_SETTINGS_FIELDS) as StorageFormSettings
         case FormResponseMode.Multirespondent:
@@ -1145,34 +1115,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       ) as FormWebhookResponseModeSettings
       return formSettings
     }
-
-  EmailFormSchema.method<IFormDocument>(
-    'getPublicView',
-    function (): PublicForm {
-      const emailFormPublicViewFields = pick(
-        this.toObject(),
-        EMAIL_PUBLIC_FORM_FIELDS,
-      ) as PublicForm
-
-      // NOTE: While email mode forms do not allow adding optionsToRecipient mapping for dropdown fields,
-      // it is still possible for optionsToRecipientsMap to be defined if the form was duplicated from a multirespondent form.
-      const strippedFormFields = stripDropdownFieldOptionsToRecipientsMap(
-        emailFormPublicViewFields.form_fields,
-      )
-      const emailFormPublicView = {
-        ...emailFormPublicViewFields,
-        form_fields: strippedFormFields,
-      } as PublicForm
-
-      const isAdminPopulated = this.populated('admin')
-      if (isAdminPopulated) {
-        // Override admin id with public view of admin
-        emailFormPublicView.admin = this.admin.getPublicView()
-      }
-
-      return emailFormPublicView
-    },
-  )
 
   EncryptedFormSchema.method<IEncryptedFormDocument>(
     'getPublicView',
@@ -1756,7 +1698,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   )
 
   // Adding form discriminators
-  FormModel.discriminator(FormResponseMode.Email, EmailFormSchema)
   FormModel.discriminator(FormResponseMode.Encrypt, EncryptedFormSchema)
   FormModel.discriminator(
     FormResponseMode.Multirespondent,
@@ -1772,12 +1713,6 @@ const getFormModel = (db: Mongoose): IFormModel => {
   } catch {
     return compileFormModel(db)
   }
-}
-
-export const getEmailFormModel = (db: Mongoose): IEmailFormModel => {
-  // Load or build base model first
-  getFormModel(db)
-  return db.model(FormResponseMode.Email) as IEmailFormModel
 }
 
 export const getEncryptedFormModel = (db: Mongoose): IEncryptedFormModel => {

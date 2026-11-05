@@ -1,7 +1,6 @@
 import Stripe from 'stripe'
 
 import {
-  EmailFormSettings,
   FormSettings,
   MultirespondentFormSettings,
   SettingsUpdateDto,
@@ -12,11 +11,6 @@ import { EncryptedStringsMessageContent } from 'formsg-shared/utils/crypto'
 import { ApiService } from '~services/ApiService'
 
 import { ADMIN_FORM_ENDPOINT } from '../common/AdminViewFormService'
-
-type UpdateEmailFormFn<T extends keyof EmailFormSettings> = (
-  formId: string,
-  settingsToUpdate: EmailFormSettings[T],
-) => Promise<FormSettings>
 
 type UpdateStorageFormFn<T extends keyof StorageFormSettings> = (
   formId: string,
@@ -137,7 +131,7 @@ export const updateFormTitle: UpdateFormFn<'title'> = async (
   return updateFormSettings(formId, { title: newTitle })
 }
 
-export const updateFormEmails: UpdateEmailFormFn<'emails'> = async (
+export const updateFormEmails: UpdateStorageFormFn<'emails'> = async (
   formId,
   newEmails,
 ) => {

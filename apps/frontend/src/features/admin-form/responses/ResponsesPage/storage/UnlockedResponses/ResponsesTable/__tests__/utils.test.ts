@@ -25,17 +25,6 @@ describe('getIsPaymentsForm', () => {
     expect(result).toBe(false)
   })
 
-  it('should return false for a non-payments-capable form', () => {
-    // Arrange
-    const form = {
-      responseMode: FormResponseMode.Email,
-    } as AdminFormDto
-    // Act
-    const result = getIsPaymentsForm(form)
-    // Assert
-    expect(result).toBe(false)
-  })
-
   it('should return payments_field.enabled for an Encrypt form', () => {
     // Arrange
     const form = {

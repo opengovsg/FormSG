@@ -176,22 +176,6 @@ describe('FormService', () => {
       findEncryptionPropertiesByIdSpy.mockRestore()
       checkIfSubmitterIdIsWhitelistedSpy.mockRestore()
     })
-    it('should return false if form is not encrypt or multirespondent mode', async () => {
-      const form = {
-        _id: new ObjectId(),
-        responseMode: FormResponseMode.Email,
-        authType: FormAuthType.SP,
-      } as unknown as IPopulatedForm
-
-      const result = await FormService.checkHasRespondentNotWhitelistedFailure(
-        form,
-        'mockSubmitterId',
-      )
-
-      expect(result.isOk()).toBe(true)
-      expect(result._unsafeUnwrap()).toBe(false)
-    })
-
     it('should return false if form auth type is nil', async () => {
       const form = {
         _id: new ObjectId(),

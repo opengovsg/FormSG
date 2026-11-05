@@ -20,21 +20,15 @@ import MockDate from 'mockdate'
 import mongoose, { Types } from 'mongoose'
 import supertest, { Session } from 'supertest-session'
 
-import {
-  getEmailFormModel,
-  getEncryptedFormModel,
-} from 'src/app/models/form.server.model'
+import { getEncryptedFormModel } from 'src/app/models/form.server.model'
 import getPaymentModel from 'src/app/models/payment.server.model'
 import getSubmissionModel, {
   getEncryptSubmissionModel,
 } from 'src/app/models/submission.server.model'
 import getUserModel from 'src/app/models/user.server.model'
-import { saveSubmissionMetadata } from 'src/app/modules/submission/email-submission/email-submission.service'
-import { SubmissionHash } from 'src/app/modules/submission/email-submission/email-submission.types'
 import { s3Operations } from 'src/app/utils/aws-s3'
 import {
   IFormDocument,
-  IPopulatedEmailForm,
   IUserSchema,
   StorageModeSubmissionCursorData,
 } from 'src/types'
@@ -53,7 +47,6 @@ jest.mock('nodemailer', () => ({
 jest.mock('src/app/modules/spcp/spcp.oidc.client.ts')
 
 const UserModel = getUserModel(mongoose)
-const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
@@ -83,24 +76,13 @@ describe('admin-form.submissions.routes', () => {
   })
   afterAll(async () => await dbHandler.closeDatabase())
   describe('GET /:formId/submissions/count', () => {
-    it('should return 200 with 0 count when email mode form has no submissions', async () => {
-      // Arrange
-      const newForm = await EmailFormModel.create({
-        title: 'new form',
-        responseMode: FormResponseMode.Email,
-        emails: [defaultUser.email],
-        admin: defaultUser._id,
+    const insertEncryptSubmission = (form: IFormDocument['_id']) =>
+      SubmissionModel.create({
+        submissionType: SubmissionType.Encrypt,
+        form,
+        encryptedContent: 'any encrypted content',
+        version: 1,
       })
-
-      // Act
-      const response = await request.get(
-        `${ADMIN_FORMS_PREFIX}/${newForm._id}/submissions/count`,
-      )
-
-      // Assert
-      expect(response.status).toEqual(200)
-      expect(response.body).toEqual(0)
-    })
 
     it('should return 200 with 0 count when storage mode form has no submissions', async () => {
       // Arrange
@@ -119,36 +101,6 @@ describe('admin-form.submissions.routes', () => {
       // Assert
       expect(response.status).toEqual(200)
       expect(response.body).toEqual(0)
-    })
-
-    it('should return 200 with form submission counts for email mode forms', async () => {
-      // Arrange
-      const expectedSubmissionCount = 5
-      const newForm = (await EmailFormModel.create({
-        title: 'new form',
-        responseMode: FormResponseMode.Email,
-        emails: [defaultUser.email],
-        admin: defaultUser._id,
-      })) as IPopulatedEmailForm
-      // Insert submissions
-      const mockSubmissionHash: SubmissionHash = {
-        hash: 'some hash',
-        salt: 'some salt',
-      }
-      await Promise.all(
-        times(expectedSubmissionCount, () =>
-          saveSubmissionMetadata(newForm, mockSubmissionHash),
-        ),
-      )
-
-      // Act
-      const response = await request.get(
-        `${ADMIN_FORMS_PREFIX}/${newForm._id}/submissions/count`,
-      )
-
-      // Assert
-      expect(response.status).toEqual(200)
-      expect(response.body).toEqual(expectedSubmissionCount)
     })
 
     it('should return 200 with form submission counts for storage mode forms', async () => {
@@ -187,23 +139,17 @@ describe('admin-form.submissions.routes', () => {
 
     it('should return 200 with counts of submissions made between given start and end dates.', async () => {
       // Arrange
-      const newForm = (await EmailFormModel.create({
+      const newForm = await EncryptFormModel.create({
         title: 'new form',
-        responseMode: FormResponseMode.Email,
-        emails: [defaultUser.email],
+        responseMode: FormResponseMode.Encrypt,
+        publicKey: 'some public key',
         admin: defaultUser._id,
-      })) as IPopulatedEmailForm
+      })
       // Insert submissions
-      const mockSubmissionHash: SubmissionHash = {
-        hash: 'some hash',
-        salt: 'some salt',
-      }
-      await Promise.all(
-        times(3, () => saveSubmissionMetadata(newForm, mockSubmissionHash)),
-      )
+      await Promise.all(times(3, () => insertEncryptSubmission(newForm._id)))
       const now = new Date()
       MockDate.set(subDays(now, 5))
-      await saveSubmissionMetadata(newForm, mockSubmissionHash)
+      await insertEncryptSubmission(newForm._id)
 
       // Act
       const response = await request
@@ -222,25 +168,21 @@ describe('admin-form.submissions.routes', () => {
     it('should return 200 with counts of submissions made with same start and end dates', async () => {
       // Arrange
       const expectedSubmissionCount = 3
-      const newForm = (await EmailFormModel.create({
+      const newForm = await EncryptFormModel.create({
         title: 'new form',
-        responseMode: FormResponseMode.Email,
-        emails: [defaultUser.email],
+        responseMode: FormResponseMode.Encrypt,
+        publicKey: 'some public key',
         admin: defaultUser._id,
-      })) as IPopulatedEmailForm
+      })
       // Insert submissions
-      const mockSubmissionHash: SubmissionHash = {
-        hash: 'some hash',
-        salt: 'some salt',
-      }
       await Promise.all(
         times(expectedSubmissionCount, () =>
-          saveSubmissionMetadata(newForm, mockSubmissionHash),
+          insertEncryptSubmission(newForm._id),
         ),
       )
       const expectedDate = '2021-04-04'
       MockDate.set(expectedDate)
-      await saveSubmissionMetadata(newForm, mockSubmissionHash)
+      await insertEncryptSubmission(newForm._id)
 
       // Act
       const response = await request
@@ -499,11 +441,11 @@ describe('admin-form.submissions.routes', () => {
 
     it('should return 500 when database error occurs whilst counting submissions', async () => {
       // Arrange
-      const form = await EmailFormModel.create({
+      const form = await EncryptFormModel.create({
         title: 'normal form',
         status: FormStatus.Private,
-        responseMode: FormResponseMode.Email,
-        emails: [defaultUser.email],
+        responseMode: FormResponseMode.Encrypt,
+        publicKey: 'some public key',
         admin: defaultUser._id,
       })
       // @ts-ignore
@@ -796,28 +738,6 @@ describe('admin-form.submissions.routes', () => {
       MockDate.reset()
     })
 
-    it('should return 400 when form of given formId is not an encrypt mode form', async () => {
-      // Arrange
-      const emailForm = await EmailFormModel.create({
-        title: 'new form',
-        responseMode: FormResponseMode.Email,
-        emails: [defaultUser.email],
-        admin: defaultUser._id,
-      })
-
-      // Act
-      const response = await request.get(
-        `${ADMIN_FORMS_PREFIX}/${emailForm._id}/submissions/download`,
-      )
-
-      // Assert
-      expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message:
-          'Attempted to submit email form to encrypt,multirespondent endpoint',
-      })
-    })
-
     it('should return 401 when user is not logged in', async () => {
       // Arrange
       await logoutSession(request)
@@ -995,30 +915,6 @@ describe('admin-form.submissions.routes', () => {
         submissionType: SubmissionType.Encrypt,
         verified: expectedSubmissionParams.verifiedContent,
         version: submission.version,
-      })
-    })
-
-    it('should return 400 when form of given formId is not an encrypt mode form', async () => {
-      // Arrange
-      const emailForm = await EmailFormModel.create({
-        title: 'new form',
-        responseMode: FormResponseMode.Email,
-        emails: [defaultUser.email],
-        admin: defaultUser._id,
-      })
-
-      // Act
-      const response = await request.get(
-        `${ADMIN_FORMS_PREFIX}/${emailForm._id}/submissions/${String(
-          new Types.ObjectId(),
-        )}`,
-      )
-
-      // Assert
-      expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message:
-          'Attempted to submit email form to encrypt,multirespondent endpoint',
       })
     })
 

@@ -249,7 +249,7 @@ describe('webhook.webhookFormat', () => {
 
   it.each(
     ['settings', 'webhooksettings'].flatMap((endpoint) =>
-      ['storage', 'email', 'Plumber'].map((mode) => ({ endpoint, mode })),
+      ['storage', 'Plumber'].map((mode) => ({ endpoint, mode })),
     ),
   )(
     '$endpoint rejects format selection for $mode with rollout on',
@@ -258,9 +258,7 @@ describe('webhook.webhookFormat', () => {
       const { form, user } =
         mode === 'storage'
           ? await dbHandler.insertEncryptForm()
-          : mode === 'email'
-            ? await dbHandler.insertEmailForm()
-            : await dbHandler.insertMultirespondentForm()
+          : await dbHandler.insertMultirespondentForm()
       const session = await createAuthedSession(
         user.email,
         supertest(webhookSettingsApp),

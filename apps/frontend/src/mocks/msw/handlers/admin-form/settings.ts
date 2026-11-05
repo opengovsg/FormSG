@@ -2,7 +2,6 @@ import { pick } from 'lodash'
 import { delay as MswDelay, http, HttpResponse } from 'msw'
 
 import {
-  EMAIL_FORM_SETTINGS_FIELDS,
   MULTIRESPONDENT_FORM_SETTINGS_FIELDS,
   STORAGE_FORM_SETTINGS_FIELDS,
 } from 'formsg-shared/constants/form'
@@ -19,7 +18,7 @@ import { createMockForm } from './form'
 export const getAdminFormView = ({
   delay = 0,
   overrides,
-  mode = FormResponseMode.Email,
+  mode = FormResponseMode.Encrypt,
 }: {
   delay?: number | 'infinite'
   overrides?: Partial<AdminFormDto>
@@ -41,21 +40,20 @@ export const getAdminFormView = ({
   )
 }
 
+const MODE_TO_SETTINGS_FIELDS_MAP = {
+  [FormResponseMode.Encrypt]: STORAGE_FORM_SETTINGS_FIELDS,
+  [FormResponseMode.Multirespondent]: MULTIRESPONDENT_FORM_SETTINGS_FIELDS,
+}
+
 export const getAdminFormSettings = ({
   delay = 0,
   overrides,
-  mode = FormResponseMode.Email,
+  mode = FormResponseMode.Encrypt,
 }: {
   delay?: number | 'infinite'
   overrides?: Partial<FormSettings>
   mode?: FormResponseMode
 } = {}) => {
-  const MODE_TO_SETTINGS_FIELDS_MAP = {
-    [FormResponseMode.Email]: EMAIL_FORM_SETTINGS_FIELDS,
-    [FormResponseMode.Encrypt]: STORAGE_FORM_SETTINGS_FIELDS,
-    [FormResponseMode.Multirespondent]: MULTIRESPONDENT_FORM_SETTINGS_FIELDS,
-  }
-
   return http.get<{ formId: string }, never>(
     '/api/v3/admin/forms/:formId/settings',
     async ({ params }) => {
@@ -78,7 +76,7 @@ export const getAdminFormSettings = ({
 export const patchAdminFormSettings = ({
   delay = 0,
   overrides,
-  mode = FormResponseMode.Email,
+  mode = FormResponseMode.Encrypt,
 }: {
   delay?: number | 'infinite'
   overrides?: Partial<FormSettings>
@@ -97,9 +95,7 @@ export const patchAdminFormSettings = ({
             ...overrides,
             ...body,
           }).form,
-          mode === FormResponseMode.Email
-            ? EMAIL_FORM_SETTINGS_FIELDS
-            : STORAGE_FORM_SETTINGS_FIELDS,
+          MODE_TO_SETTINGS_FIELDS_MAP[mode],
         ),
         { status: 200 },
       )

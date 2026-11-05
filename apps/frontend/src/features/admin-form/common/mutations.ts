@@ -19,15 +19,10 @@ import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
 
 import { updateFormTitle } from '~features/admin-form/settings/SettingsService'
-import {
-  SubmitEmailFormArgs,
-  SubmitStorageFormArgs,
-} from '~features/public-form/PublicFormService'
+import { SubmitStorageFormArgs } from '~features/public-form/PublicFormService'
 import { workspaceKeys } from '~features/workspace/queries'
 
 import {
-  submitEmailModeFormPreview,
-  submitEmailModeFormPreviewWithFetch,
   submitStorageModeFormPreview,
   submitStorageModeFormPreviewWithFetch,
 } from '../common/AdminViewFormService'
@@ -478,23 +473,10 @@ export const useMutateFormPage = () => {
 }
 
 export const usePreviewFormMutations = (formId: string) => {
-  const submitEmailModeFormMutation = useMutation(
-    (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
-      return submitEmailModeFormPreview({ ...args, formId })
-    },
-  )
-
   const submitStorageModeFormMutation = useMutation(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
       return submitStorageModeFormPreview({ formId })
-    },
-  )
-
-  // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
-  const submitEmailModeFormFetchMutation = useMutation(
-    (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
-      return submitEmailModeFormPreviewWithFetch({ ...args, formId })
     },
   )
 
@@ -506,9 +488,7 @@ export const usePreviewFormMutations = (formId: string) => {
   )
 
   return {
-    submitEmailModeFormMutation,
     submitStorageModeFormMutation,
-    submitEmailModeFormFetchMutation,
     submitStorageModeFormFetchMutation,
   }
 }

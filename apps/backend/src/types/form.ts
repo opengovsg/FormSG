@@ -333,19 +333,6 @@ export type IEncryptedFormDocument = IFormBaseDocument<IEncryptedFormSchema> &
     publickey: NonNullable<IEncryptedFormSchema['publicKey']>
   }
 
-export interface IEmailForm extends IForm {
-  // string type is allowed due to a setter on the form schema that transforms
-  // strings to string array.
-  emails: string[] | string
-  publicKey?: never
-}
-
-export type IEmailFormSchema = IEmailForm & IFormSchema
-
-export type IFormHasEmailSchema = IEmailFormSchema | IEncryptedFormSchema
-
-export type IPopulatedEmailForm = IPopulatedForm & IEmailForm
-
 export interface IMultirespondentForm extends IForm {
   publicKey: string
   workflow: FormWorkflowDto
@@ -489,8 +476,6 @@ export interface IFormModel extends Model<IFormSchema> {
 }
 
 export type IEncryptedFormModel = Model<IEncryptedFormSchema> & IFormModel
-
-export type IEmailFormModel = IFormModel & Model<IEmailFormSchema>
 
 export type IMultirespondentFormModel = Model<IMultirespondentFormSchema> &
   IFormModel

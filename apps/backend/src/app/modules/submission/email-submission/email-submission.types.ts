@@ -1,10 +1,6 @@
-import { ResponseMetadata, SubmissionType } from 'formsg-shared/types'
-
-import { FieldResponse, IPopulatedEmailForm } from '../../../../types'
+import { FieldResponse } from '../../../../types'
 import { MyInfoKey } from '../../myinfo/myinfo.types'
-import ParsedResponsesObject, {
-  NdiUserInfo,
-} from '../ParsedResponsesObject.class'
+import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { ProcessedResponse } from '../submission.types'
 
 // When a response has been formatted for email, all answerArray
@@ -14,36 +10,7 @@ export type ResponseFormattedForEmail = Omit<FieldResponse, 'answerArray'> & {
   answerTemplate?: string[]
 } & ProcessedResponse
 
-export interface ParsedMultipartForm {
-  responses: FieldResponse[]
-  responseMetadata: ResponseMetadata
-}
-
-export interface SubmissionHash {
-  hash: string
-  salt: string
-}
-
-export interface IPopulatedEmailFormWithResponsesAndHash {
-  form: IPopulatedEmailForm
-  parsedResponses: ParsedResponsesObject
-  ndiUserInfo?: NdiUserInfo
-  hashedFields?: Set<MyInfoKey>
-}
-
 export interface IPopulatedStorageFormWithResponsesAndHash {
   parsedResponses: ParsedResponsesObject
   hashedFields?: Set<MyInfoKey>
-}
-
-export interface EmailSubmissionContent {
-  form: IPopulatedEmailForm['_id']
-  authType: IPopulatedEmailForm['authType']
-  submitterId?: string
-  myInfoFields: MyInfoKey[]
-  recipientEmails: string[]
-  responseHash: string
-  responseSalt: string
-  submissionType: SubmissionType.Email
-  responseMetadata?: ResponseMetadata
 }

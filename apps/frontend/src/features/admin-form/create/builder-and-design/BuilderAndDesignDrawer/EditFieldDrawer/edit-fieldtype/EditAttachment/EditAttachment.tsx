@@ -108,19 +108,7 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
 
   const attachmentSizeOptions: ComboboxItem[] = useMemo(() => {
     if (!form) return []
-    let sizes: AttachmentSize[] = []
-
-    if (form.responseMode === FormResponseMode.Email) {
-      sizes = [
-        AttachmentSize.OneMb,
-        AttachmentSize.TwoMb,
-        AttachmentSize.ThreeMb,
-        AttachmentSize.FourMb,
-        AttachmentSize.SevenMb,
-      ]
-    } else {
-      sizes = Object.values(AttachmentSize)
-    }
+    const sizes = Object.values(AttachmentSize)
 
     return sizes.map((size) => ({
       value: size,

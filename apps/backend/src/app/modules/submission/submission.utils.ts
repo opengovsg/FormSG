@@ -541,14 +541,10 @@ export const mapRouteError: MapRouteErrors =
   genericMapRouteErrorTransform(errorMapper)
 
 /**
- * Returns the file size limit in MB based on whether request is an email-mode submission
- * @param isEmailMode boolean flag of whether request is in email-mode
- * @returns 7 if email mode, 20 if not
+ * Returns the file size limit in MB for a submission
  */
 export const fileSizeLimit = (responseMode: FormResponseMode) => {
   switch (responseMode) {
-    case FormResponseMode.Email:
-      return 7
     case FormResponseMode.Encrypt:
     case FormResponseMode.Multirespondent:
       return 20

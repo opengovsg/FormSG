@@ -60,8 +60,6 @@ export const SettingsEmailsPage = (): JSX.Element => {
         settings.payments_field.enabled))
   )
 
-  const isEmailMode = settings?.responseMode === FormResponseMode.Email
-
   const isDisabled = isFormPublic || isPaymentsEnabled
 
   return (
@@ -74,7 +72,6 @@ export const SettingsEmailsPage = (): JSX.Element => {
           <EmailNotificationsHeader
             isFormPublic={isFormPublic}
             isPaymentsEnabled={isPaymentsEnabled}
-            isFormResponseModeEmail={isEmailMode}
           />
           <FormEmailSectionContainer
             isDisabled={isDisabled}

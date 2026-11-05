@@ -142,8 +142,6 @@ export const useDupeFormWizardContext = (
           },
         )
       }
-      case FormResponseMode.Email:
-        return
       case FormResponseMode.Multirespondent:
         return dupeMultirespondentModeFormMutation.mutate(
           {

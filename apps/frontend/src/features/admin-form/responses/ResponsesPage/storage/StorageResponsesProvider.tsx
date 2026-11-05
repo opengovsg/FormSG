@@ -33,7 +33,7 @@ export const StorageResponsesProvider = ({
   const [secretKey, setSecretKey] = useSecretKey(formId)
 
   const formPublicKey = useMemo(() => {
-    if (!form || form.responseMode === FormResponseMode.Email) return null
+    if (!form) return null
     return form.publicKey
   }, [form])
 

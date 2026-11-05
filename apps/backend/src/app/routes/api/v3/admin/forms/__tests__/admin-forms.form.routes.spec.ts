@@ -27,7 +27,6 @@ import supertest, { Session } from 'supertest-session'
 import { statsdClient } from 'src/app/config/datadog-statsd-client'
 import getAdminFeedbackModel from 'src/app/models/admin_feedback.server.model'
 import getFormModel, {
-  getEmailFormModel,
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
@@ -55,7 +54,6 @@ jest.mock('src/app/modules/spcp/spcp.oidc.client.ts')
 
 const UserModel = getUserModel(mongoose)
 const FormModel = getFormModel(mongoose)
-const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)
 const AdminFeedbackModel = getAdminFeedbackModel(mongoose)
 
@@ -102,8 +100,9 @@ describe('admin-form.form.routes', () => {
         })
       ).user
 
-      const ownForm = await EmailFormModel.create({
+      const ownForm = await EncryptFormModel.create({
         title: 'Own form',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
       })
@@ -116,8 +115,9 @@ describe('admin-form.form.routes', () => {
       })
       // Create already archived form, should not be fetched even though
       // owner is defaultUser
-      await EmailFormModel.create({
+      await EncryptFormModel.create({
         title: 'Archived form',
+        publicKey: 'some public key',
         emails: defaultUser.email,
         admin: defaultUser._id,
         status: FormStatus.Archived,
@@ -204,7 +204,7 @@ describe('admin-form.form.routes', () => {
       const response = await request.post('/admin/forms').send({
         form: {
           emails: defaultUser.email,
-          responseMode: FormResponseMode.Email,
+          responseMode: 'email',
           title: 'email mode form test',
         },
       })
@@ -758,8 +758,9 @@ describe('admin-form.form.routes', () => {
     it('should return 200 with true without transferring forms when the new owner is not in the database', async () => {
       // Arrange
       const emailNotInDb = 'notindb@example.com'
-      const ownForm = await EmailFormModel.create({
+      const ownForm = await EncryptFormModel.create({
         title: 'Own form',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
       })
@@ -864,8 +865,9 @@ describe('admin-form.form.routes', () => {
   describe('GET /admin/forms/:formId', () => {
     it('should return 200 with retrieved form when user is admin', async () => {
       // Arrange
-      const ownForm = await EmailFormModel.create({
+      const ownForm = await EncryptFormModel.create({
         title: 'Own form',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
       })
@@ -1031,8 +1033,9 @@ describe('admin-form.form.routes', () => {
   describe('DELETE /admin/forms/:formId', () => {
     it('should return 200 with success message when form is successfully archived', async () => {
       // Arrange
-      const formToArchive = await EmailFormModel.create({
+      const formToArchive = await EncryptFormModel.create({
         title: 'Form to archive',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
       })
@@ -1042,7 +1045,7 @@ describe('admin-form.form.routes', () => {
       const response = await request.delete(`/admin/forms/${formToArchive._id}`)
 
       // Assert
-      const form = await EmailFormModel.findById(formToArchive._id)
+      const form = await EncryptFormModel.findById(formToArchive._id)
       expect(response.status).toEqual(200)
       expect(response.body).toEqual({ message: 'Form has been archived' })
       expect(form?.status).toEqual(FormStatus.Archived)
@@ -1051,8 +1054,9 @@ describe('admin-form.form.routes', () => {
     it('should return 401 when user is not logged in', async () => {
       // Arrange
       await logoutSession(request)
-      const formToArchive = await EmailFormModel.create({
+      const formToArchive = await EncryptFormModel.create({
         title: 'Form to archive',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
       })
@@ -1108,8 +1112,9 @@ describe('admin-form.form.routes', () => {
     it('should return 410 when form is already archived', async () => {
       // Arrange
       // Create archived form.
-      const archivedForm = await EmailFormModel.create({
+      const archivedForm = await EncryptFormModel.create({
         title: 'Form already archived',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         status: FormStatus.Archived,
@@ -1125,8 +1130,9 @@ describe('admin-form.form.routes', () => {
 
     it('should return 422 when user in session cannot be found in the database', async () => {
       // Arrange
-      const formToArchive = await EmailFormModel.create({
+      const formToArchive = await EncryptFormModel.create({
         title: 'Form to archive',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
       })
@@ -1143,8 +1149,9 @@ describe('admin-form.form.routes', () => {
 
     it('should return 500 when database error occurs whilst archiving form', async () => {
       // Arrange
-      const formToArchive = await EmailFormModel.create({
+      const formToArchive = await EncryptFormModel.create({
         title: 'Form to archive',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
       })
@@ -1168,8 +1175,9 @@ describe('admin-form.form.routes', () => {
     it('should return 200 with the duplicated form dashboard view', async () => {
       // Arrange
       // Create form.
-      const formToDupe = await EmailFormModel.create({
+      const formToDupe = await EncryptFormModel.create({
         title: 'Original form title',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
       })
@@ -1245,7 +1253,7 @@ describe('admin-form.form.routes', () => {
         .post(`/admin/forms/${formToDupe._id}/duplicate`)
         .send({
           title: 'new email form',
-          responseMode: FormResponseMode.Email,
+          responseMode: 'email',
           emails: [defaultUser.email],
         })
 
@@ -1328,7 +1336,7 @@ describe('admin-form.form.routes', () => {
 
     it('should have empty body.emails when duplicating from non-empty emails form', async () => {
       // Arrange
-      const formToDupe = await EmailFormModel.create({
+      const formToDupe = await EncryptFormModel.create({
         title: 'some form',
         admin: defaultUser._id,
         publicKey: 'some random key',
@@ -1469,8 +1477,9 @@ describe('admin-form.form.routes', () => {
       // Arrange
       await logoutSession(request)
       // Create form.
-      const formToDupe = await EmailFormModel.create({
+      const formToDupe = await EncryptFormModel.create({
         title: 'Original form title',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
       })
@@ -1543,8 +1552,9 @@ describe('admin-form.form.routes', () => {
     it('should return 410 when form is already archived', async () => {
       // Arrange
       // Create archived form.
-      const archivedForm = await EmailFormModel.create({
+      const archivedForm = await EncryptFormModel.create({
         title: 'Form already archived',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         status: FormStatus.Archived,
@@ -1886,8 +1896,9 @@ describe('admin-form.form.routes', () => {
   describe('POST /admin/forms/:formId/collaborators/transfer-owner', () => {
     it('should return 200 with updated form and owner transferred', async () => {
       // Arrange
-      const formToTransfer = await EmailFormModel.create({
+      const formToTransfer = await EncryptFormModel.create({
         title: 'Original form title',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
       })
@@ -2037,8 +2048,9 @@ describe('admin-form.form.routes', () => {
           shortName: 'someOtherUser',
         })
       ).user
-      const notOwnerForm = await EmailFormModel.create({
+      const notOwnerForm = await EncryptFormModel.create({
         title: 'Original form title',
+        publicKey: 'some public key',
         emails: [anotherUser.email],
         admin: anotherUser._id,
       })
@@ -2139,8 +2151,9 @@ describe('admin-form.form.routes', () => {
     it('should return 200 with success message when form field is successfully retrieved', async () => {
       // Arrange
       const MOCK_FIELD = generateDefaultField(BasicField.Rating)
-      const MOCK_FORM = await EmailFormModel.create({
+      const MOCK_FORM = await EncryptFormModel.create({
         title: 'Form to retrieve',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         form_fields: [MOCK_FIELD],
@@ -2203,8 +2216,9 @@ describe('admin-form.form.routes', () => {
     it('should return 404 when form field to retrieve cannot be found', async () => {
       // Arrange
       const MOCK_FIELD = generateDefaultField(BasicField.Rating)
-      const MOCK_FORM = await EmailFormModel.create({
+      const MOCK_FORM = await EncryptFormModel.create({
         title: 'Form to retrieve',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         form_fields: [],
@@ -2225,8 +2239,9 @@ describe('admin-form.form.routes', () => {
     it('should return 410 when form is already archived', async () => {
       // Arrange
       const MOCK_FIELD = generateDefaultField(BasicField.Rating)
-      const archivedForm = await EmailFormModel.create({
+      const archivedForm = await EncryptFormModel.create({
         title: 'Form already archived',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         status: FormStatus.Archived,
@@ -2244,8 +2259,9 @@ describe('admin-form.form.routes', () => {
 
     it('should return 422 when user in session cannot be found in the database', async () => {
       // Arrange
-      const MOCK_FORM = await EmailFormModel.create({
+      const MOCK_FORM = await EncryptFormModel.create({
         title: 'Form to retrieve',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
       })
@@ -2265,8 +2281,9 @@ describe('admin-form.form.routes', () => {
 
     it('should return 500 when database error occurs whilst archiving form', async () => {
       // Arrange
-      const MOCK_FORM = await EmailFormModel.create({
+      const MOCK_FORM = await EncryptFormModel.create({
         title: 'Form to retrieve',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
       })
@@ -2299,8 +2316,9 @@ describe('admin-form.form.routes', () => {
         ['_id', 'globalId', 'getQuestion'],
       )
 
-      const formToUpdate = (await EmailFormModel.create({
+      const formToUpdate = (await EncryptFormModel.create({
         title: 'Form to update',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         form_fields: [generateDefaultField(BasicField.Rating)],
@@ -2312,7 +2330,9 @@ describe('admin-form.form.routes', () => {
         // No positional argument
         .send(fieldToInsert)
 
-      const formToCheck = await EmailFormModel.findById(formToUpdate._id).lean()
+      const formToCheck = await EncryptFormModel.findById(
+        formToUpdate._id,
+      ).lean()
 
       const insertedField = formToCheck!.form_fields![1]
       const insertedFieldId = insertedField._id
@@ -2324,7 +2344,7 @@ describe('admin-form.form.routes', () => {
         // No positional argument
         .send(updatedField)
 
-      const formToCheckUpdated = await EmailFormModel.findById(
+      const formToCheckUpdated = await EncryptFormModel.findById(
         formToUpdate._id,
       ).lean()
 
@@ -2343,8 +2363,9 @@ describe('admin-form.form.routes', () => {
         ['_id', 'globalId', 'getQuestion'],
       )
 
-      const formToUpdate = (await EmailFormModel.create({
+      const formToUpdate = (await EncryptFormModel.create({
         title: 'Form to update',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         form_fields: [generateDefaultField(BasicField.Rating)],
@@ -2356,7 +2377,9 @@ describe('admin-form.form.routes', () => {
         // No positional argument
         .send(fieldToInsert)
 
-      const formToCheck = await EmailFormModel.findById(formToUpdate._id).lean()
+      const formToCheck = await EncryptFormModel.findById(
+        formToUpdate._id,
+      ).lean()
 
       const insertedField = formToCheck!.form_fields![1]
       const insertedFieldId = insertedField._id
@@ -2371,7 +2394,7 @@ describe('admin-form.form.routes', () => {
         // No positional argument
         .send(updatedField)
 
-      const formToCheckUpdated = await EmailFormModel.findById(
+      const formToCheckUpdated = await EncryptFormModel.findById(
         formToUpdate._id,
       ).lean()
 
@@ -2390,8 +2413,9 @@ describe('admin-form.form.routes', () => {
         ['_id', 'globalId', 'getQuestion'],
       )
 
-      const formToUpdate = (await EmailFormModel.create({
+      const formToUpdate = (await EncryptFormModel.create({
         title: 'Form to update',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         form_fields: [generateDefaultField(BasicField.Rating)],
@@ -2403,7 +2427,9 @@ describe('admin-form.form.routes', () => {
         // No positional argument
         .send(fieldToInsert)
 
-      const formToCheck = await EmailFormModel.findById(formToUpdate._id).lean()
+      const formToCheck = await EncryptFormModel.findById(
+        formToUpdate._id,
+      ).lean()
 
       const insertedField = formToCheck!.form_fields![1]
       const insertedFieldId = insertedField._id
@@ -2431,8 +2457,9 @@ describe('admin-form.form.routes', () => {
         'globalId',
         'getQuestion',
       ])
-      const formToUpdate = (await EmailFormModel.create({
+      const formToUpdate = (await EncryptFormModel.create({
         title: 'Form to update',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         form_fields: [
@@ -2448,7 +2475,9 @@ describe('admin-form.form.routes', () => {
         .query({ to: 0 })
 
       // Assert
-      const formToCheck = await EmailFormModel.findById(formToUpdate._id).lean()
+      const formToCheck = await EncryptFormModel.findById(
+        formToUpdate._id,
+      ).lean()
       expect(formToCheck?.form_fields).toMatchObject([
         // Inserted field should be first in field array.
         fieldToInsert,
@@ -2465,8 +2494,9 @@ describe('admin-form.form.routes', () => {
         'globalId',
         'getQuestion',
       ])
-      const formToUpdate = (await EmailFormModel.create({
+      const formToUpdate = (await EncryptFormModel.create({
         title: 'Form to update',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         form_fields: [
@@ -2483,7 +2513,9 @@ describe('admin-form.form.routes', () => {
         .query({ to: 1000 })
 
       // Assert
-      const formToCheck = await EmailFormModel.findById(formToUpdate._id).lean()
+      const formToCheck = await EncryptFormModel.findById(
+        formToUpdate._id,
+      ).lean()
       expect(formToCheck?.form_fields).toMatchObject([
         ...formToUpdate.toObject().form_fields,
         // Inserted field should be last in field array due to out of bounds positional argument.
@@ -2500,8 +2532,9 @@ describe('admin-form.form.routes', () => {
         'globalId',
         'getQuestion',
       ])
-      const formToUpdate = (await EmailFormModel.create({
+      const formToUpdate = (await EncryptFormModel.create({
         title: 'Form to update',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         form_fields: [
@@ -2517,7 +2550,9 @@ describe('admin-form.form.routes', () => {
         .send(fieldToInsert)
 
       // Assert
-      const formToCheck = await EmailFormModel.findById(formToUpdate._id).lean()
+      const formToCheck = await EncryptFormModel.findById(
+        formToUpdate._id,
+      ).lean()
       expect(formToCheck?.form_fields).toMatchObject([
         ...formToUpdate.toObject().form_fields,
         // Inserted field should be last in field array.
@@ -2535,8 +2570,9 @@ describe('admin-form.form.routes', () => {
         }),
         ['_id', 'globalId', 'getQuestion'],
       )
-      const formToUpdate = (await EmailFormModel.create({
+      const formToUpdate = (await EncryptFormModel.create({
         title: 'Form to update',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         form_fields: [generateDefaultField(BasicField.Rating)],
@@ -2549,7 +2585,9 @@ describe('admin-form.form.routes', () => {
         .send(fieldToInsert)
 
       // Assert
-      const formToCheck = await EmailFormModel.findById(formToUpdate._id).lean()
+      const formToCheck = await EncryptFormModel.findById(
+        formToUpdate._id,
+      ).lean()
       expect(formToCheck?.form_fields).toMatchObject([
         ...formToUpdate.toObject().form_fields,
         // Inserted field should be last in field array.
@@ -2567,8 +2605,9 @@ describe('admin-form.form.routes', () => {
         }),
         ['_id', 'globalId', 'getQuestion'],
       )
-      const formToUpdate = (await EmailFormModel.create({
+      const formToUpdate = (await EncryptFormModel.create({
         title: 'Form to update',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         form_fields: [generateDefaultField(BasicField.Rating)],
@@ -2581,7 +2620,9 @@ describe('admin-form.form.routes', () => {
         .send(fieldToInsert)
 
       // Assert
-      const formToCheck = await EmailFormModel.findById(formToUpdate._id).lean()
+      const formToCheck = await EncryptFormModel.findById(
+        formToUpdate._id,
+      ).lean()
       expect(formToCheck?.form_fields).toMatchObject([
         ...formToUpdate.toObject().form_fields,
         // Inserted field should be last in field array.
@@ -2599,8 +2640,9 @@ describe('admin-form.form.routes', () => {
         }),
         ['_id', 'globalId', 'getQuestion'],
       )
-      const formToUpdate = (await EmailFormModel.create({
+      const formToUpdate = (await EncryptFormModel.create({
         title: 'Form to update',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         form_fields: [generateDefaultField(BasicField.Rating)],
@@ -2623,8 +2665,9 @@ describe('admin-form.form.routes', () => {
         'globalId',
         'getQuestion',
       ])
-      const formToUpdate = (await EmailFormModel.create({
+      const formToUpdate = (await EncryptFormModel.create({
         title: 'Form to update',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         form_fields: [
@@ -2649,8 +2692,9 @@ describe('admin-form.form.routes', () => {
       // Arrange
       await logoutSession(request)
 
-      const formToUpdate = (await EmailFormModel.create({
+      const formToUpdate = (await EncryptFormModel.create({
         title: 'Form to update',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         form_fields: [generateDefaultField(BasicField.Date)],
@@ -2677,8 +2721,9 @@ describe('admin-form.form.routes', () => {
     it('should return 200 with updated form with duplicated field', async () => {
       // Arrange
       const fieldToDuplicate = generateDefaultField(BasicField.Date)
-      const formToUpdate = (await EmailFormModel.create({
+      const formToUpdate = (await EncryptFormModel.create({
         title: 'Form to update',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         form_fields: [fieldToDuplicate],
@@ -2698,7 +2743,7 @@ describe('admin-form.form.routes', () => {
       )
 
       // Assert
-      const actual = await EmailFormModel.findById(formToUpdate._id).lean()
+      const actual = await EncryptFormModel.findById(formToUpdate._id).lean()
 
       const actualOriginalField = omit(actual?.form_fields![0], [
         'dateValidation',
@@ -2724,8 +2769,9 @@ describe('admin-form.form.routes', () => {
       // Arrange
       await logoutSession(request)
 
-      const formToUpdate = (await EmailFormModel.create({
+      const formToUpdate = (await EncryptFormModel.create({
         title: 'Form to update',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         form_fields: [generateDefaultField(BasicField.Date)],
@@ -2793,8 +2839,9 @@ describe('admin-form.form.routes', () => {
 
     it('should return 404 when field to duplicate cannot be found', async () => {
       // Arrange
-      const formToUpdate = (await EmailFormModel.create({
+      const formToUpdate = (await EncryptFormModel.create({
         title: 'Form to update',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         form_fields: [generateDefaultField(BasicField.Date)],
@@ -2817,8 +2864,9 @@ describe('admin-form.form.routes', () => {
     it('should return 410 when form is already archived', async () => {
       // Arrange
       // Create archived form.
-      const archivedForm = (await EmailFormModel.create({
+      const archivedForm = (await EncryptFormModel.create({
         title: 'Form already archived',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         form_fields: [generateDefaultField(BasicField.Date)],
@@ -2839,8 +2887,9 @@ describe('admin-form.form.routes', () => {
 
     it('should return 422 when user in session cannot be found in the database', async () => {
       // Arrange
-      const formToUpdate = (await EmailFormModel.create({
+      const formToUpdate = (await EncryptFormModel.create({
         title: 'Form to archive',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         form_fields: [generateDefaultField(BasicField.Date)],
@@ -2863,8 +2912,9 @@ describe('admin-form.form.routes', () => {
 
     it('should return 500 when database error occurs whilst updating form', async () => {
       // Arrange
-      const formToUpdate = (await EmailFormModel.create({
+      const formToUpdate = (await EncryptFormModel.create({
         title: 'Form to update',
+        publicKey: 'some public key',
         emails: [defaultUser.email],
         admin: defaultUser._id,
         form_fields: [generateDefaultField(BasicField.Date)],
@@ -2911,9 +2961,10 @@ describe('admin-form.form.routes', () => {
 
     it('should return 200 when the request is successful', async () => {
       // Arrange
-      const form = await EmailFormModel.create({
+      const form = await EncryptFormModel.create({
         emails: [defaultUser.email],
         title: 'email me',
+        publicKey: 'some public key',
         admin: defaultUser._id,
         startPage: MOCK_START_PAGE,
       })
@@ -2936,9 +2987,10 @@ describe('admin-form.form.routes', () => {
         mailName: 'collab-user',
         shortName: 'collabUser',
       })
-      const form = await EmailFormModel.create({
+      const form = await EncryptFormModel.create({
         emails: [formOwner.email],
         title: 'email me',
+        publicKey: 'some public key',
         admin: formOwner._id,
         startPage: MOCK_START_PAGE,
       })
@@ -2969,9 +3021,10 @@ describe('admin-form.form.routes', () => {
 
     it('should return 410 when updating the start page for a form that has been archived', async () => {
       // Arrange
-      const form = await EmailFormModel.create({
+      const form = await EncryptFormModel.create({
         emails: [defaultUser.email],
         title: 'email me',
+        publicKey: 'some public key',
         admin: defaultUser._id,
         startPage: MOCK_START_PAGE,
         status: FormStatus.Archived,
@@ -2990,9 +3043,10 @@ describe('admin-form.form.routes', () => {
 
     it('should return 422 when the user cannot be retrieved from the database', async () => {
       // Arrange
-      const form = await EmailFormModel.create({
+      const form = await EncryptFormModel.create({
         emails: [defaultUser.email],
         title: 'email me',
+        publicKey: 'some public key',
         admin: defaultUser._id,
         startPage: MOCK_START_PAGE,
       })
@@ -3012,9 +3066,10 @@ describe('admin-form.form.routes', () => {
 
     it('should return 500 when a database error occurs', async () => {
       // Arrange
-      const form = await EmailFormModel.create({
+      const form = await EncryptFormModel.create({
         emails: [defaultUser.email],
         title: 'email me',
+        publicKey: 'some public key',
         admin: defaultUser._id,
         startPage: MOCK_START_PAGE,
       })
@@ -3042,9 +3097,10 @@ describe('admin-form.form.routes', () => {
 
     it('should return 200 when button link is updated with a valid HTTPS URI scheme', async () => {
       //Arrange
-      const form = await EmailFormModel.create({
+      const form = await EncryptFormModel.create({
         emails: [defaultUser.email],
         title: 'email me',
+        publicKey: 'some public key',
         admin: defaultUser._id,
         endpage: MOCK_END_PAGE,
       })
@@ -3066,9 +3122,10 @@ describe('admin-form.form.routes', () => {
 
     it('should return 200 when button link is updated with a valid HTTP URI scheme', async () => {
       //Arrange
-      const form = await EmailFormModel.create({
+      const form = await EncryptFormModel.create({
         emails: [defaultUser.email],
         title: 'email me',
+        publicKey: 'some public key',
         admin: defaultUser._id,
         endpage: MOCK_END_PAGE,
       })
@@ -3090,9 +3147,10 @@ describe('admin-form.form.routes', () => {
 
     it('should return 400 when button link is updated with an invalid URI scheme', async () => {
       //Arrange
-      const form = await EmailFormModel.create({
+      const form = await EncryptFormModel.create({
         emails: [defaultUser.email],
         title: 'email me',
+        publicKey: 'some public key',
         admin: defaultUser._id,
         endpage: MOCK_END_PAGE,
       })

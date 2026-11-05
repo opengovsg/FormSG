@@ -14,7 +14,6 @@ import {
   EmailDataCollationToolField,
   EmailDataField,
   EmailDataFields,
-  IAttachmentInfo,
   MapRouteError,
 } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -89,7 +88,6 @@ import {
   TABLE_PREFIX,
   VERIFIED_PREFIX,
 } from './email-submission.constants'
-import { SubmissionHashError } from './email-submission.errors'
 import { ResponseFormattedForEmail } from './email-submission.types'
 
 const logger = createLoggerWithLabel(module)
@@ -283,7 +281,6 @@ export const mapRouteError: MapRouteError = (error) => {
           'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
       }
     case DatabaseError:
-    case SubmissionHashError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage:
@@ -397,26 +394,6 @@ export const mapRouteError: MapRouteError = (error) => {
         errorMessage: 'Something went wrong. Please refresh and try again.',
       }
   }
-}
-
-/**
- * Concatenate response into a string for hashing
- * @param formData Field-value tuples for admin email
- * @param attachments Array of attachments as buffers
- * @returns concatenated response to hash
- */
-export const concatAttachmentsAndResponses = (
-  formData: EmailDataField[],
-  attachments: IAttachmentInfo[],
-): string => {
-  let response = ''
-  response += formData.reduce((acc, fieldData) => {
-    const question = fieldData.question.toString().trim()
-    const answer = fieldData.answer.toString().trim()
-    return acc + `${question} ${answer}; `
-  }, '')
-  response += attachments.reduce((acc, { content }) => acc + content, '')
-  return response
 }
 
 /**

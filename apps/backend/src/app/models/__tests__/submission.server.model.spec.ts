@@ -17,7 +17,6 @@ import mongoose from 'mongoose'
 
 import { getMultirespondentFormModel } from 'src/app/models/form.server.model'
 import getSubmissionModel, {
-  getEmailSubmissionModel,
   getEncryptSubmissionModel,
   getMultirespondentSubmissionModel,
 } from 'src/app/models/submission.server.model'
@@ -43,7 +42,6 @@ const MockDns = jest.mocked(dns)
 const Submission = getSubmissionModel(mongoose)
 const EncryptedSubmission = getEncryptSubmissionModel(mongoose)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
-const EmailSubmission = getEmailSubmissionModel(mongoose)
 const PaymentSubmission = getPaymentModel(mongoose)
 const PendingSubmission = getPendingSubmissionModel(mongoose)
 
@@ -69,19 +67,6 @@ describe('Submission Model', () => {
     authType: FormAuthType.NIL,
     myInfoFields: [],
   }
-
-  const MOCK_EMAIL_SUBMISSION_PARAMS = merge(
-    // email schema params
-    {
-      submissionType: SubmissionType.Email,
-      recipientEmails: ['someone@something.gov.sg'],
-      responseHash: 'This is a hash',
-      responseSalt: 'This is a salt',
-      hasBounced: false,
-      webhookResponses: [],
-    },
-    MOCK_SUBMISSION_PARAMS,
-  )
 
   const MOCK_ENCRYPT_SUBMISSION_PARAMS = merge(
     // encrypt schema params
@@ -123,51 +108,6 @@ describe('Submission Model', () => {
 
   describe('Schema', () => {
     describe('SubmissionSchema', () => {
-      it('email schema should create and save successfully', async () => {
-        const validSubmission = new Submission(MOCK_EMAIL_SUBMISSION_PARAMS)
-        const saved = await validSubmission.save()
-
-        // Assert
-        expect(saved._id).toBeDefined()
-        expect(saved.created).toBeInstanceOf(Date)
-
-        const actualSavedObject = omit(saved.toObject(), [
-          '_id',
-          'created',
-          'lastModified',
-          '__v',
-        ])
-
-        const expectedObject = merge({}, MOCK_EMAIL_SUBMISSION_PARAMS)
-        expect(actualSavedObject).toEqual(expectedObject)
-      })
-
-      it('email schema should create and save successfully with responseMetadata', async () => {
-        const emailSubmissionWithResponseMetadata = merge(
-          { responseMetadata: { responseTimeMs: 1000, numVisibleFields: 10 } },
-          MOCK_EMAIL_SUBMISSION_PARAMS,
-        )
-        const validSubmission = new Submission(
-          emailSubmissionWithResponseMetadata,
-        )
-        const saved = await validSubmission.save()
-
-        // Assert
-        expect(saved._id).toBeDefined()
-        expect(saved.created).toBeInstanceOf(Date)
-        expect(saved.responseMetadata).toBeDefined()
-
-        const actualSavedObject = omit(saved.toObject(), [
-          '_id',
-          'created',
-          'lastModified',
-          '__v',
-        ])
-
-        const expectedObject = merge({}, emailSubmissionWithResponseMetadata)
-        expect(actualSavedObject).toEqual(expectedObject)
-      })
-
       it('encrypt schema should create and save successfully', async () => {
         const validSubmission = new Submission(MOCK_ENCRYPT_SUBMISSION_PARAMS)
         const saved = await validSubmission.save()
@@ -672,9 +612,9 @@ describe('Submission Model', () => {
               Submission.create({
                 form: formId,
                 myInfoFields: [],
-                submissionType: SubmissionType.Email,
-                responseHash: 'hash',
-                responseSalt: 'salt',
+                submissionType: SubmissionType.Encrypt,
+                encryptedContent: MOCK_ENCRYPTED_CONTENT,
+                version: 1,
               }),
             ),
           )
@@ -707,9 +647,9 @@ describe('Submission Model', () => {
               Submission.create({
                 form: formId,
                 myInfoFields: [],
-                submissionType: SubmissionType.Email,
-                responseHash: 'hash',
-                responseSalt: 'salt',
+                submissionType: SubmissionType.Encrypt,
+                encryptedContent: MOCK_ENCRYPTED_CONTENT,
+                version: 1,
               }),
             ),
           )
@@ -856,23 +796,6 @@ describe('Submission Model', () => {
         ).toEqual(2)
       })
 
-      it('should return null for an email submission on the same form', async () => {
-        // Arrange
-        const submission = await EmailSubmission.create(
-          MOCK_EMAIL_SUBMISSION_PARAMS,
-        )
-
-        // Act
-        const actualResult =
-          await Submission.findEncryptedOrMultirespondentSubmissionById(
-            MOCK_FORM_ID.toHexString(),
-            submission._id.toHexString(),
-          )
-
-        // Assert
-        expect(actualResult).toBeNull()
-      })
-
       it('should return null when the submission belongs to another form', async () => {
         // Arrange
         const submission = await EncryptedSubmission.create(
@@ -892,10 +815,10 @@ describe('Submission Model', () => {
     })
 
     describe('getEncryptedOrMultirespondentSubmissionCursorByFormId', () => {
-      it('should stream each encrypt and multirespondent submission exactly once, excluding email submissions', async () => {
+      it('should stream each encrypt and multirespondent submission exactly once', async () => {
         // Arrange
-        // A mode-migrated form: one encrypt, one MRF v3, one MRF v4 and one
-        // email submission all on the same form.
+        // A mode-migrated form: one encrypt, one MRF v3 and one MRF v4
+        // submission all on the same form.
         const encryptSubmission = await EncryptedSubmission.create(
           MOCK_ENCRYPT_SUBMISSION_PARAMS,
         )
@@ -907,7 +830,6 @@ describe('Submission Model', () => {
           version: 4,
           mrfVersion: 2,
         })
-        await EmailSubmission.create(MOCK_EMAIL_SUBMISSION_PARAMS)
 
         // Act
         const cursor =
@@ -1045,7 +967,7 @@ describe('Submission Model', () => {
     })
 
     describe('findAllEncryptedOrMultirespondentMetadataByFormId', () => {
-      it('should return agreeing rows and count across both submission types, excluding email submissions', async () => {
+      it('should return agreeing rows and count across both submission types', async () => {
         // Arrange
         const encryptSubmission = await EncryptedSubmission.create(
           MOCK_ENCRYPT_SUBMISSION_PARAMS,
@@ -1053,7 +975,6 @@ describe('Submission Model', () => {
         const mrfSubmission = await MultirespondentSubmission.create(
           MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS,
         )
-        await EmailSubmission.create(MOCK_EMAIL_SUBMISSION_PARAMS)
 
         // Act
         const actualResult =
@@ -1117,20 +1038,6 @@ describe('Submission Model', () => {
         expect(
           actualResult.metadata.map((entry) => String(entry.refNo)).sort(),
         ).toEqual([String(inRangeEncrypt._id), String(inRangeMrf._id)].sort())
-      })
-
-      it('should return empty page and zero count when the form only has email submissions', async () => {
-        // Arrange
-        await EmailSubmission.create(MOCK_EMAIL_SUBMISSION_PARAMS)
-
-        // Act
-        const actualResult =
-          await Submission.findAllEncryptedOrMultirespondentMetadataByFormId(
-            MOCK_FORM_ID.toHexString(),
-          )
-
-        // Assert
-        expect(actualResult).toEqual({ metadata: [], count: 0 })
       })
     })
 
@@ -1212,23 +1119,6 @@ describe('Submission Model', () => {
           transactionFee: 10,
           email: 'MOCK_EMAIL',
         })
-      })
-
-      it('should return null for an email submission', async () => {
-        // Arrange
-        const submission = await EmailSubmission.create(
-          MOCK_EMAIL_SUBMISSION_PARAMS,
-        )
-
-        // Act
-        const actualResult =
-          await Submission.findEncryptedOrMultirespondentSingleMetadata(
-            MOCK_FORM_ID.toHexString(),
-            submission._id.toHexString(),
-          )
-
-        // Assert
-        expect(actualResult).toBeNull()
       })
     })
 
@@ -1645,29 +1535,6 @@ describe('Submission Model', () => {
             paymentContent: {},
           },
         })
-      })
-
-      it('should return null view with non-encryptSubmission type', async () => {
-        // Arrange
-        const formId = new ObjectId()
-        const submission = await EmailSubmission.create({
-          submissionType: SubmissionType.Email,
-          form: formId,
-          encryptedContent: MOCK_ENCRYPTED_CONTENT,
-          version: 1,
-          authType: FormAuthType.NIL,
-          myInfoFields: [],
-          recipientEmails: [],
-          responseHash: 'hash',
-          responseSalt: 'salt',
-          hasBounced: false,
-        })
-
-        // Act
-        const actualWebhookView = await submission.getWebhookView()
-
-        // Assert
-        expect(actualWebhookView).toBeNull()
       })
     })
 

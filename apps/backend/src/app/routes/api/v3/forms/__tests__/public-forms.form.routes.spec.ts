@@ -65,7 +65,7 @@ describe('public-form.form.routes', () => {
 
     it('should return 200 with public form when form has FormAuthType.NIL and valid formId', async () => {
       // Arrange
-      const { form } = await dbHandler.insertEmailForm({
+      const { form } = await dbHandler.insertEncryptForm({
         formOptions: { status: FormStatus.Public },
       })
       // NOTE: This is needed to inject admin info into the form
@@ -93,7 +93,7 @@ describe('public-form.form.routes', () => {
         iat: 100000000,
         exp: 1000000000,
       })
-      const { form } = await dbHandler.insertEmailForm({
+      const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
           esrvcId: 'mockEsrvcId',
           authType: FormAuthType.SP,
@@ -133,7 +133,7 @@ describe('public-form.form.routes', () => {
         exp: 1000000000,
       })
 
-      const { form } = await dbHandler.insertEmailForm({
+      const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
           esrvcId: 'mockEsrvcId',
           authType: FormAuthType.CP,
@@ -180,7 +180,7 @@ describe('public-form.form.routes', () => {
       // @ts-ignore
       MockJwtLib.sign.mockReturnValue(MOCK_MYINFO_JWT)
 
-      const { form } = await dbHandler.insertEmailForm({
+      const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
           esrvcId: 'mockEsrvcId',
           authType: FormAuthType.MyInfo,
@@ -228,7 +228,7 @@ describe('public-form.form.routes', () => {
 
     it('should return 404 if the form is private', async () => {
       // Arrange
-      const { form } = await dbHandler.insertEmailForm({
+      const { form } = await dbHandler.insertEncryptForm({
         formOptions: { status: FormStatus.Private },
       })
       const expectedResponseBody = JSON.parse(
@@ -249,7 +249,7 @@ describe('public-form.form.routes', () => {
 
     it('should return 410 if the form has been archived', async () => {
       // Arrange
-      const { form } = await dbHandler.insertEmailForm({
+      const { form } = await dbHandler.insertEncryptForm({
         formOptions: { status: FormStatus.Archived },
       })
       const expectedResponseBody = JSON.parse(
@@ -268,7 +268,7 @@ describe('public-form.form.routes', () => {
 
     it('should return 500 if a database error occurs', async () => {
       // Arrange
-      const { form } = await dbHandler.insertEmailForm({
+      const { form } = await dbHandler.insertEncryptForm({
         formOptions: { status: FormStatus.Public },
       })
       const expectedError = new DatabaseError('all your base are belong to us')
@@ -291,7 +291,7 @@ describe('public-form.form.routes', () => {
   describe('GET /:formId/sample-submission', () => {
     it('should return 200 with public form when form has a valid formId', async () => {
       // Arrange
-      const { form } = await dbHandler.insertEmailForm({
+      const { form } = await dbHandler.insertEncryptForm({
         formOptions: { status: FormStatus.Public },
       })
       // NOTE: This is needed to inject admin info into the form
@@ -337,7 +337,7 @@ describe('public-form.form.routes', () => {
 
     it('should return 404 if the form is private', async () => {
       // Arrange
-      const { form } = await dbHandler.insertEmailForm({
+      const { form } = await dbHandler.insertEncryptForm({
         formOptions: { status: FormStatus.Private },
       })
       const expectedResponseBody = JSON.parse(
@@ -360,7 +360,7 @@ describe('public-form.form.routes', () => {
 
     it('should return 410 if the form has been archived', async () => {
       // Arrange
-      const { form } = await dbHandler.insertEmailForm({
+      const { form } = await dbHandler.insertEncryptForm({
         formOptions: { status: FormStatus.Archived },
       })
       const expectedResponseBody = JSON.parse(
@@ -381,7 +381,7 @@ describe('public-form.form.routes', () => {
 
     it('should return 500 if a database error occurs', async () => {
       // Arrange
-      const { form } = await dbHandler.insertEmailForm({
+      const { form } = await dbHandler.insertEncryptForm({
         formOptions: { status: FormStatus.Public },
       })
       const expectedError = new DatabaseError('all your base are belong to us')

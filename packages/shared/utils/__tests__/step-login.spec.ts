@@ -323,20 +323,6 @@ describe('step-login', () => {
         }),
       ).toContain("UEN fields can't also be MyInfo fields.")
     })
-
-    it('rejects identity fields on forms that do not support them', () => {
-      expect(
-        getResultingLoginErrors({
-          ...mrf,
-          authType: FormAuthType.MyInfo,
-          responseMode: FormResponseMode.Email,
-          form_fields: [nricIdentity],
-          workflow: [],
-        }),
-      ).toEqual([
-        'NRIC/FIN/UEN login fields are only available in storage mode and multi-respondent forms.',
-      ])
-    })
   })
 
   describe('Corppass step e-service IDs at publication', () => {

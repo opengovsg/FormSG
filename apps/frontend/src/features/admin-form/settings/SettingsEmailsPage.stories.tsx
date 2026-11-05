@@ -113,20 +113,6 @@ PrivateStorageForm.parameters = {
   },
 }
 
-export const PrivateEmailForm = Template.bind({})
-PrivateEmailForm.parameters = {
-  msw: {
-    handlers: {
-      default: buildMswRoutes({
-        mode: FormResponseMode.Email,
-        overrides: {
-          status: FormStatus.Private,
-        },
-      }),
-    },
-  },
-}
-
 export const PrivateMultiRespondentForm = Template.bind({})
 PrivateMultiRespondentForm.parameters = {
   msw: {

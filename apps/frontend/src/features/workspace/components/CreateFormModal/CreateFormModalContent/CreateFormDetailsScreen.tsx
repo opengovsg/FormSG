@@ -34,8 +34,6 @@ const getTrackingSubmissionActionName = (
   responseModeValue: FormResponseMode,
 ) => {
   switch (responseModeValue) {
-    case FormResponseMode.Email:
-      return 'dashboard.create.create_email'
     case FormResponseMode.Encrypt:
       return 'dashboard.create.create_encrypt'
     case FormResponseMode.Multirespondent:
@@ -129,15 +127,9 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             </FormControl>
           )}
           {!isMrfCutoverEnabled &&
-            (responseModeValue === FormResponseMode.Encrypt ||
-              responseModeValue === FormResponseMode.Email) && (
-              <FormControl
-                isRequired={responseModeValue === FormResponseMode.Email}
-                isInvalid={!!errors.emails}
-                mb="2.25rem"
-              >
+            responseModeValue === FormResponseMode.Encrypt && (
+              <FormControl isInvalid={!!errors.emails} mb="2.25rem">
                 <FormLabel
-                  isRequired={responseModeValue === FormResponseMode.Email}
                   useMarkdownForDescription
                   description={t(
                     'features.workspace.modals.forms.create.details.notifications.description',

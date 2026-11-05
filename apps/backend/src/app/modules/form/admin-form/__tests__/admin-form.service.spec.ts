@@ -55,7 +55,6 @@ import { aws } from 'src/app/config/config'
 import { uenConfig } from 'src/app/config/features/uen.config'
 import getAgencyModel from 'src/app/models/agency.server.model'
 import getFormModel, {
-  getEmailFormModel,
   getEncryptedFormModel,
   getMultirespondentFormModel,
 } from 'src/app/models/form.server.model'
@@ -77,7 +76,6 @@ import { EditFieldActions } from 'src/shared/constants'
 import {
   FormFieldSchema,
   FormLogicSchema,
-  IEmailFormSchema,
   IFormDocument,
   IFormSchema,
   IPopulatedEncryptedForm,
@@ -108,7 +106,6 @@ import { OverrideProps } from '../admin-form.types'
 import * as AdminFormUtils from '../admin-form.utils'
 
 const FormModel = getFormModel(mongoose)
-const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)
 const MultirespondentFormModel = getMultirespondentFormModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
@@ -137,7 +134,7 @@ describe('admin-form.service', () => {
           admin: {},
           title: 'test form 1',
           _id: 'any',
-          responseMode: FormResponseMode.Email,
+          responseMode: FormResponseMode.Multirespondent,
         },
         {
           admin: {},
@@ -371,7 +368,7 @@ describe('admin-form.service', () => {
         _id: new ObjectId(),
         admin: new ObjectId(),
         status: FormStatus.Archived,
-      } as IEmailFormSchema
+      } as IFormSchema
       const mockArchiveFn = jest.fn().mockResolvedValue(mockArchivedForm)
       const mockInitialForm = {
         archive: mockArchiveFn,
@@ -423,11 +420,6 @@ describe('admin-form.service', () => {
         } as CustomFormLogo,
       },
     } as unknown as IFormDocument
-    const MOCK_EMAIL_OVERRIDE_PARAMS: DuplicateFormBodyDto = {
-      responseMode: FormResponseMode.Email,
-      title: 'mock new title',
-      emails: ['mockExample@example.com'],
-    }
     const MOCK_ENCRYPT_OVERRIDE_PARAMS: DuplicateFormBodyDto = {
       responseMode: FormResponseMode.Encrypt,
       title: 'mock new title',
@@ -872,7 +864,7 @@ describe('admin-form.service', () => {
       const actualResult = await AdminFormService.duplicateForm(
         mockForm,
         mockNewAdminId,
-        MOCK_EMAIL_OVERRIDE_PARAMS,
+        MOCK_ENCRYPT_OVERRIDE_PARAMS,
       )
 
       // Assert
@@ -915,7 +907,7 @@ describe('admin-form.service', () => {
       const actualResult = await AdminFormService.duplicateForm(
         mockForm,
         mockNewAdminId,
-        MOCK_EMAIL_OVERRIDE_PARAMS,
+        MOCK_ENCRYPT_OVERRIDE_PARAMS,
         { workspaceId: mockWorkspaceId },
       )
 
@@ -968,7 +960,7 @@ describe('admin-form.service', () => {
       const actualResult = await AdminFormService.duplicateForm(
         mockForm,
         mockNewAdminId,
-        MOCK_EMAIL_OVERRIDE_PARAMS,
+        MOCK_ENCRYPT_OVERRIDE_PARAMS,
       )
 
       // Assert
@@ -1009,7 +1001,7 @@ describe('admin-form.service', () => {
       const actualResult = await AdminFormService.duplicateForm(
         mockForm,
         mockNewAdminId,
-        MOCK_EMAIL_OVERRIDE_PARAMS,
+        MOCK_ENCRYPT_OVERRIDE_PARAMS,
       )
 
       // Assert
@@ -1051,7 +1043,7 @@ describe('admin-form.service', () => {
         _id: new ObjectId(),
         admin: MOCK_CURRENT_OWNER,
         emails: [MOCK_NEW_OWNER_EMAIL],
-        responseMode: FormResponseMode.Email,
+        responseMode: FormResponseMode.Encrypt,
         title: 'some mock form',
         populate: jest.fn().mockResolvedValue(expectedPopulateResult),
       } as unknown as IFormSchema
@@ -1226,7 +1218,7 @@ describe('admin-form.service', () => {
         _id: new ObjectId(),
         admin: MOCK_CURRENT_OWNER,
         emails: [MOCK_NEW_OWNER_EMAIL],
-        responseMode: FormResponseMode.Email,
+        responseMode: FormResponseMode.Encrypt,
         title: 'some mock form',
         populate: jest.fn().mockRejectedValue(new Error(mockPopulateErrorStr)),
       } as unknown as IFormSchema
@@ -1274,7 +1266,8 @@ describe('admin-form.service', () => {
       const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
         admin: new ObjectId().toHexString(),
-        responseMode: FormResponseMode.Email,
+        responseMode: FormResponseMode.Encrypt,
+        publicKey: 'some public key',
         emails: 'example@example.com',
       }
       const expectedForm = {
@@ -1398,7 +1391,8 @@ describe('admin-form.service', () => {
       const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
         admin: new ObjectId().toHexString(),
-        responseMode: FormResponseMode.Email,
+        responseMode: FormResponseMode.Encrypt,
+        publicKey: 'some public key',
         emails: 'example@example.com',
       }
       const expectedForm = {
@@ -1454,7 +1448,8 @@ describe('admin-form.service', () => {
       const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
         admin: new ObjectId().toHexString(),
-        responseMode: FormResponseMode.Email,
+        responseMode: FormResponseMode.Encrypt,
+        publicKey: 'some public key',
         emails: 'example@example.com',
       }
       const createFormInWorkspaceTransactionSpy = jest
@@ -1497,7 +1492,8 @@ describe('admin-form.service', () => {
       const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
         admin: new ObjectId().toHexString(),
-        responseMode: FormResponseMode.Email,
+        responseMode: FormResponseMode.Encrypt,
+        publicKey: 'some public key',
         emails: 'example@example.com',
       }
       const expectedForm = {
@@ -1552,7 +1548,8 @@ describe('admin-form.service', () => {
       const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
         admin: new ObjectId().toHexString(),
-        responseMode: FormResponseMode.Email,
+        responseMode: FormResponseMode.Encrypt,
+        publicKey: 'some public key',
         emails: 'example@example.com',
         webhook: { url: 'https://example.com', isRetryEnabled: false },
       }
@@ -1577,7 +1574,8 @@ describe('admin-form.service', () => {
       const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
         admin: new ObjectId().toHexString(),
-        responseMode: FormResponseMode.Email,
+        responseMode: FormResponseMode.Encrypt,
+        publicKey: 'some public key',
         emails: 'example@example.com',
         webhook: {
           url: 'https://example.com',
@@ -1838,11 +1836,6 @@ describe('admin-form.service', () => {
       getSettings: jest.fn().mockReturnValue(MOCK_UPDATED_SETTINGS),
     } as unknown as IFormDocument
 
-    const MOCK_EMAIL_FORM = jest.mocked({
-      _id: new ObjectId(),
-      status: FormStatus.Public,
-      responseMode: FormResponseMode.Email,
-    } as unknown as IPopulatedForm)
     const MOCK_ENCRYPT_FORM = jest.mocked({
       _id: new ObjectId(),
       status: FormStatus.Public,
@@ -1877,13 +1870,6 @@ describe('admin-form.service', () => {
       responseMode: FormResponseMode.Multirespondent,
     } as unknown as IPopulatedMultirespondentForm)
 
-    const EMAIL_UPDATE_SPY = jest
-      .spyOn(EmailFormModel, 'findOneAndUpdate')
-
-      // @ts-ignore
-      .mockReturnValue({
-        exec: jest.fn().mockResolvedValue(MOCK_UPDATED_FORM),
-      })
     const ENCRYPT_UPDATE_SPY = jest
       .spyOn(EncryptFormModel, 'findOneAndUpdate')
 
@@ -1917,29 +1903,6 @@ describe('admin-form.service', () => {
       )
       expect(result.isOk()).toBe(true)
       expect(ENCRYPT_UPDATE_SPY).toHaveBeenCalled()
-    })
-
-    it('should return updated form settings when successfully updating email form settings', async () => {
-      // Arrange
-      const settingsToUpdate: SettingsUpdateDto = {
-        status: FormStatus.Private,
-        title: 'new title',
-      }
-
-      // Act
-      const actualResult = await AdminFormService.updateFormSettings(
-        MOCK_EMAIL_FORM,
-        settingsToUpdate,
-      )
-
-      // Assert
-      expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_SETTINGS)
-      expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
-        { _id: MOCK_EMAIL_FORM._id },
-        settingsToUpdate,
-        { new: true, runValidators: true },
-      )
-      expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
     })
 
     it('should return updated form settings when successfully updating multirespondent form settings', async () => {
@@ -2403,7 +2366,7 @@ describe('admin-form.service', () => {
         jest.mocked({
           _id: new ObjectId(),
           status: FormStatus.Private,
-          responseMode: FormResponseMode.Email,
+          responseMode: FormResponseMode.Multirespondent,
           closeAt,
         } as unknown as IPopulatedForm)
 
@@ -2414,7 +2377,7 @@ describe('admin-form.service', () => {
           status: FormStatus.Public,
         })
 
-        expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
+        expect(MULTIRESPONDENT_UPDATE_SPY).toHaveBeenCalledWith(
           { _id: form._id },
           { status: FormStatus.Public, closeAt: null },
           expect.anything(),
@@ -2428,7 +2391,7 @@ describe('admin-form.service', () => {
           status: FormStatus.Public,
         })
 
-        expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
+        expect(MULTIRESPONDENT_UPDATE_SPY).toHaveBeenCalledWith(
           { _id: form._id },
           { status: FormStatus.Public },
           expect.anything(),
@@ -2442,7 +2405,7 @@ describe('admin-form.service', () => {
           status: FormStatus.Public,
         })
 
-        expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
+        expect(MULTIRESPONDENT_UPDATE_SPY).toHaveBeenCalledWith(
           { _id: form._id },
           { status: FormStatus.Public },
           expect.anything(),
@@ -2458,7 +2421,7 @@ describe('admin-form.service', () => {
           closeAt: rescheduled,
         })
 
-        expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
+        expect(MULTIRESPONDENT_UPDATE_SPY).toHaveBeenCalledWith(
           { _id: form._id },
           { status: FormStatus.Public, closeAt: rescheduled },
           expect.anything(),
@@ -2472,7 +2435,7 @@ describe('admin-form.service', () => {
           status: FormStatus.Private,
         })
 
-        expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
+        expect(MULTIRESPONDENT_UPDATE_SPY).toHaveBeenCalledWith(
           { _id: form._id },
           { status: FormStatus.Private },
           expect.anything(),
@@ -2486,7 +2449,7 @@ describe('admin-form.service', () => {
           title: 'a new title',
         })
 
-        expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
+        expect(MULTIRESPONDENT_UPDATE_SPY).toHaveBeenCalledWith(
           { _id: form._id },
           { title: 'a new title' },
           expect.anything(),
@@ -2860,58 +2823,15 @@ describe('admin-form.service', () => {
 
     const DELETE_SPY = jest.spyOn(FormModel, 'deleteFormLogic')
 
-    let mockEmailForm: IPopulatedForm, mockEncryptForm: IPopulatedForm
+    let mockEncryptForm: IPopulatedForm
 
     beforeEach(() => {
-      mockEmailForm = {
-        _id: new ObjectId(),
-        status: FormStatus.Public,
-        responseMode: FormResponseMode.Email,
-        ...mockFormLogic,
-      } as unknown as IPopulatedForm
       mockEncryptForm = {
         _id: new ObjectId(),
         status: FormStatus.Public,
         responseMode: FormResponseMode.Encrypt,
         ...mockFormLogic,
       } as unknown as IPopulatedForm
-    })
-
-    it('should return ok(form) on successful form logic delete for email mode form', async () => {
-      // Arrange
-      const UPDATE_SPY = jest
-        .spyOn(FormModel, 'findByIdAndUpdate')
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        .mockReturnValue({
-          exec: jest.fn().mockResolvedValue(mockEmailForm),
-        })
-
-      // Act
-      const actualResult = await AdminFormService.deleteFormLogic(
-        mockEmailForm,
-        logicId,
-      )
-
-      // Assert
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(mockEmailForm)
-
-      expect(UPDATE_SPY).toHaveBeenCalledWith(
-        String(mockEmailForm._id),
-        {
-          $pull: { form_logics: { _id: logicId } },
-        },
-        {
-          new: true,
-          runValidators: true,
-        },
-      )
-
-      expect(DELETE_SPY).toHaveBeenCalledWith(
-        String(mockEmailForm._id),
-        logicId,
-      )
     })
 
     it('should return ok(form) on successful form logic delete for encrypt mode form', async () => {
@@ -2955,7 +2875,7 @@ describe('admin-form.service', () => {
       // Act
       const wrongLogicId = new ObjectId().toHexString()
       const actualResult = await AdminFormService.deleteFormLogic(
-        mockEmailForm,
+        mockEncryptForm,
         wrongLogicId,
       )
 
@@ -3239,7 +3159,6 @@ describe('admin-form.service', () => {
     const logicId1 = new ObjectId()
     const logicId2 = new ObjectId()
     const logicId3 = new ObjectId()
-    const mockEmailFormId = new ObjectId()
     const mockEncryptFormId = new ObjectId()
 
     const mockFormLogicOld = {
@@ -3278,54 +3197,19 @@ describe('admin-form.service', () => {
 
     const CREATE_SPY = jest.spyOn(FormModel, 'createFormLogic')
 
-    let mockEmailForm: IPopulatedForm,
-      mockEncryptForm: IPopulatedForm,
-      mockEmailFormUpdated: IPopulatedForm,
-      mockEncryptFormUpdated: IPopulatedForm
+    let mockEncryptForm: IPopulatedForm, mockEncryptFormUpdated: IPopulatedForm
 
     beforeEach(() => {
-      mockEmailForm = {
-        _id: mockEmailFormId,
-        status: FormStatus.Public,
-        responseMode: FormResponseMode.Email,
-        ...mockFormLogicOld,
-      } as unknown as IPopulatedForm
       mockEncryptForm = {
         _id: mockEncryptFormId,
         status: FormStatus.Public,
         responseMode: FormResponseMode.Encrypt,
         ...mockFormLogicOld,
       } as unknown as IPopulatedForm
-      mockEmailFormUpdated = {
-        ...mockEmailForm,
-        ...mockFormLogicUpdated,
-      } as unknown as IPopulatedForm
       mockEncryptFormUpdated = {
         ...mockEncryptForm,
         ...mockFormLogicUpdated,
       } as unknown as IPopulatedForm
-    })
-
-    it('should return ok(created logic) on successful form logic create for email mode form', async () => {
-      // Arrange
-      CREATE_SPY.mockResolvedValue(mockEmailFormUpdated as IFormDocument)
-
-      // Act
-      const actualResult = await AdminFormService.createFormLogic(
-        mockEmailForm,
-        createLogicBody,
-      )
-
-      // Assert
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(
-        expect.objectContaining(createLogicBody),
-      )
-
-      expect(CREATE_SPY).toHaveBeenCalledWith(
-        mockEmailForm._id,
-        createLogicBody,
-      )
     })
 
     it('should return ok(created logic) on successful form logic create for encrypt mode form', async () => {
@@ -3758,7 +3642,6 @@ describe('admin-form.service', () => {
   describe('updateFormLogic', () => {
     const logicId1 = new ObjectId()
     const logicId2 = new ObjectId()
-    const mockEmailFormId = new ObjectId()
     const mockEncryptFormId = new ObjectId()
 
     const mockFormLogicOld = {
@@ -3799,54 +3682,19 @@ describe('admin-form.service', () => {
 
     const UPDATE_SPY = jest.spyOn(FormModel, 'updateFormLogic')
 
-    let mockEmailForm: IPopulatedForm,
-      mockEncryptForm: IPopulatedForm,
-      mockEmailFormUpdated: IPopulatedForm,
-      mockEncryptFormUpdated: IPopulatedForm
+    let mockEncryptForm: IPopulatedForm, mockEncryptFormUpdated: IPopulatedForm
 
     beforeEach(() => {
-      mockEmailForm = {
-        _id: mockEmailFormId,
-        status: FormStatus.Public,
-        responseMode: FormResponseMode.Email,
-        ...mockFormLogicOld,
-      } as unknown as IPopulatedForm
       mockEncryptForm = {
         _id: mockEncryptFormId,
         status: FormStatus.Public,
         responseMode: FormResponseMode.Encrypt,
         ...mockFormLogicOld,
       } as unknown as IPopulatedForm
-      mockEmailFormUpdated = {
-        ...mockEmailForm,
-        ...mockFormLogicUpdated,
-      } as unknown as IPopulatedForm
       mockEncryptFormUpdated = {
         ...mockEncryptForm,
         ...mockFormLogicUpdated,
       } as unknown as IPopulatedForm
-    })
-
-    it('should return ok(updated logic) on successful form logic update for email mode form', async () => {
-      // Arrange
-      UPDATE_SPY.mockResolvedValue(mockEmailFormUpdated as IFormSchema)
-
-      // Act
-      const actualResult = await AdminFormService.updateFormLogic(
-        mockEmailForm,
-        logicId1.toHexString(),
-        updateLogicBody,
-      )
-
-      // Assert
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(updatedLogic)
-
-      expect(UPDATE_SPY).toHaveBeenCalledWith(
-        mockEmailForm._id.toHexString(),
-        logicId1.toHexString(),
-        updateLogicBody,
-      )
     })
 
     it('should return ok(updated logic) on successful form logic update for encrypt mode form', async () => {
@@ -3875,7 +3723,7 @@ describe('admin-form.service', () => {
       // Act
       const wrongLogicId = new ObjectId().toHexString()
       const actualResult = await AdminFormService.updateFormLogic(
-        mockEmailForm,
+        mockEncryptForm,
         wrongLogicId,
         updateLogicBody,
       )

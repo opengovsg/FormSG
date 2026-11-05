@@ -12,7 +12,6 @@ export const enSG = {
   },
   responseModeText: {
     [FormResponseMode.Multirespondent]: 'Multi-respondent form',
-    [FormResponseMode.Email]: 'Email mode',
     [FormResponseMode.Encrypt]: 'Storage mode',
   },
   // TODO [MRF-CUTOVER]: Remove after cutover.
