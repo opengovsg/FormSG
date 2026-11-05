@@ -1731,8 +1731,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       form_fields: this.form_fields,
       workflow: this.get('workflow'),
     }
-    // Step login rules apply only to forms with a later-step login, which
-    // only an admin with mrf-singpass-all-steps on can add.
+    // Step login rules apply only to forms with a later-step login. Only an
+    // admin with mrf-singpass-all-steps on can add a form's first one.
     const loginIdentityErrors = !hasLaterStepLogin(loginConfig.workflow)
       ? getLoginIdentityConfigErrors(loginConfig)
       : this.status === FormStatus.Public

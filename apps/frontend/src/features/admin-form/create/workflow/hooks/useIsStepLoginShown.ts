@@ -4,15 +4,17 @@ import { isFirstStepByStepNumber } from '../components/WorkflowContent/utils/isF
 import { isLaterStepLoginAvailable } from '../utils/stepLoginAvailability'
 
 import { useIsMrfStepLoginEnabled } from './useIsMrfStepLoginEnabled'
+import { useUsesStepLoginRules } from './useUsesStepLoginRules'
 
 /**
  * Whether a step's login block appears in the workflow editor. Step 1 shows
- * it once the flag is on (its login lives in Settings too); later steps only
- * once later-step logins are available for the form.
+ * it under step login rules (its login lives in Settings too); later steps
+ * only once later-step logins are available for the form.
  */
 export const useIsStepLoginShown = (stepNumber: number): boolean => {
   const { data: form } = useAdminForm()
   const isFlagOn = useIsMrfStepLoginEnabled()
-  if (isFirstStepByStepNumber(stepNumber)) return isFlagOn
+  const usesStepLoginRules = useUsesStepLoginRules()
+  if (isFirstStepByStepNumber(stepNumber)) return usesStepLoginRules
   return isLaterStepLoginAvailable(form, isFlagOn)
 }

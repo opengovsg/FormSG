@@ -16,7 +16,7 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 import { AuthenticationDraftNotice } from '~features/admin-form/create/common/AuthenticationDraftNotice'
 import { useAuthenticationPublishErrors } from '~features/admin-form/create/common/useAuthenticationPublishErrors'
 import { useIncompleteWorkflowStepLabels } from '~features/admin-form/create/workflow/hooks/useIncompleteWorkflowStepLabels'
-import { useIsMrfStepLoginEnabled } from '~features/admin-form/create/workflow/hooks/useIsMrfStepLoginEnabled'
+import { useUsesStepLoginRules } from '~features/admin-form/create/workflow/hooks/useUsesStepLoginRules'
 
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
@@ -105,7 +105,7 @@ export const FormStatusToggle = (): JSX.Element => {
   const authenticationPublishErrors = useAuthenticationPublishErrors()
   // With step logins, the activation requirement sits under the status line
   // so the field notice below can list what publishing still needs.
-  const isStepLoginEnabled = useIsMrfStepLoginEnabled()
+  const isStepLoginEnabled = useUsesStepLoginRules()
 
   const onFormToggleStatusClick = useCallback(() => {
     if (!isFormPublic && authenticationPublishErrors.length > 0) return
