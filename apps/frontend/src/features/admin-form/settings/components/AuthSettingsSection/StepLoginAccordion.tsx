@@ -7,8 +7,6 @@ import {
   AccordionItem,
   AccordionPanel,
   Box,
-  Divider,
-  Flex,
   Icon,
   Stack,
   Text,
@@ -25,7 +23,6 @@ import {
   STEP_LOGIN_PROVIDER_LABELS,
 } from 'formsg-shared/utils/step-login'
 
-import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { ADMINFORM_ROUTE } from '~constants/routes'
 import Link from '~components/Link'
 
@@ -37,6 +34,7 @@ import { NavigationSaveGuard } from '~features/admin-form/common/NavigationSaveG
 import { OPEN_WORKFLOW_TAB_STATE } from '~features/admin-form/create/common/OpenWorkflowTabOnArrival'
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 import { StepLabel } from '~features/admin-form/create/workflow/components/WorkflowContent/StepLabel'
+import { WorkflowStepBlockDivider } from '~features/admin-form/create/workflow/components/WorkflowContent/WorkflowStepBlockDivider'
 import { useWorkflowSurfaces } from '~features/admin-form/create/workflow/hooks/useWorkflowSurfaces'
 
 import { StepAuthSettingsEditor } from './StepAuthSettingsEditor'
@@ -106,26 +104,7 @@ export const StepLoginAccordion = ({
           return (
             <Fragment key={step._id}>
               {stepIndex > 0 ? (
-                <Flex
-                  direction="column"
-                  align="center"
-                  aria-hidden="true"
-                  data-testid="settings-step-connector"
-                >
-                  <Divider
-                    orientation="vertical"
-                    h="1rem"
-                    borderLeftWidth="2px"
-                    borderColor="secondary.200"
-                  />
-                  <BxsChevronDown />
-                  <Divider
-                    orientation="vertical"
-                    h="1rem"
-                    borderLeftWidth="2px"
-                    borderColor="secondary.200"
-                  />
-                </Flex>
+                <WorkflowStepBlockDivider testId="settings-step-connector" />
               ) : null}
               <AccordionItem
                 border="1px solid"

@@ -67,6 +67,7 @@ import {
   getResultingLoginErrors,
   hasLaterCorppassStepWithoutEsrvcId,
   hasLaterStepLogin,
+  usesStepLoginRules,
 } from 'formsg-shared/utils/step-login'
 import { isUenValid } from 'formsg-shared/utils/uen-validation'
 import {
@@ -1739,16 +1740,6 @@ const getCheckedWebhookFilterIfMultistepWorkflow = (
   stepCount: number,
 ) => (stepCount >= 2 ? getCheckedWebhookFilter(form) : {})
 
-/**
- * Step login rules apply once the rollout flag is on, or to a form that
- * already has a later-step login so it can be maintained or removed. Other
- * forms keep the rules from before step logins existed.
- */
-const usesStepLoginRules = (
-  form: IPopulatedForm,
-  isStepLoginEnabled: boolean,
-): boolean => isStepLoginEnabled || hasLaterStepLogin(getSavedWorkflow(form))
-
 /** Request-only step keys that only step login rules accept. */
 const hasStepLoginRequestKeys = (step: FormWorkflowStepWriteDto): boolean =>
   !!step.auth ||
@@ -1778,7 +1769,10 @@ const checkStepLoginRules = (
   },
   StepLoginWriteError
 > => {
-  const useStepLoginRules = usesStepLoginRules(form, isStepLoginEnabled)
+  const useStepLoginRules = usesStepLoginRules(
+    getSavedWorkflow(form),
+    isStepLoginEnabled,
+  )
   if (!useStepLoginRules) {
     if (hasStepLoginRequestKeys(step)) {
       return err(new MalformedParametersError(STEP_LOGIN_NOT_AVAILABLE))
@@ -2298,7 +2292,10 @@ export const deleteFormWorkflow = (
   }
 
   const originalMrfForm = originalForm as IPopulatedMultirespondentForm
-  const useStepLoginRules = usesStepLoginRules(originalForm, isStepLoginEnabled)
+  const useStepLoginRules = usesStepLoginRules(
+    getSavedWorkflow(originalForm),
+    isStepLoginEnabled,
+  )
   if (!useStepLoginRules && hasStepLoginDeleteKeys(input)) {
     return errAsync(new MalformedParametersError(STEP_LOGIN_NOT_AVAILABLE))
   }
@@ -2416,7 +2413,10 @@ export const deleteFormWorkflowStep = (
     (_step, index) => index !== targetStepNumber,
   )
 
-  const useStepLoginRules = usesStepLoginRules(originalForm, isStepLoginEnabled)
+  const useStepLoginRules = usesStepLoginRules(
+    getSavedWorkflow(originalForm),
+    isStepLoginEnabled,
+  )
   if (!useStepLoginRules && hasStepLoginDeleteKeys(input)) {
     return errAsync(new MalformedParametersError(STEP_LOGIN_NOT_AVAILABLE))
   }
@@ -2672,7 +2672,10 @@ export const updateFormSettings = (
     }
   }
 
-  const useStepLoginRules = usesStepLoginRules(originalForm, isStepLoginEnabled)
+  const useStepLoginRules = usesStepLoginRules(
+    getSavedWorkflow(originalForm),
+    isStepLoginEnabled,
+  )
 
   if (useStepLoginRules && body.status === FormStatus.Public) {
     const loginErrors = getLoginFieldPublishErrors({

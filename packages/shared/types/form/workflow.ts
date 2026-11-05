@@ -74,7 +74,7 @@ export type StrippedFormWorkflowStep =
 
 export type FormWorkflow = Array<FormWorkflowStep>
 
-type AuthFieldDeletionInput = {
+export type AuthFieldDeletionInput = {
   /** Exact field definitions confirmed for deletion when their final provider is removed. */
   delete_auth_field_ids?: string[]
   expected_last_modified?: string

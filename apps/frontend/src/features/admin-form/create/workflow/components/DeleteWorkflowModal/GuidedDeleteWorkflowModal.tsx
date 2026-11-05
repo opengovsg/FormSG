@@ -20,10 +20,7 @@ import {
   FormStatus,
   WorkflowStepAuthType,
 } from 'formsg-shared/types'
-import {
-  getFieldSourceProvider,
-  STEP_LOGIN_PROVIDER_LABELS,
-} from 'formsg-shared/utils/step-login'
+import { STEP_LOGIN_PROVIDER_LABELS } from 'formsg-shared/utils/step-login'
 
 import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
 import Button from '~components/Button'
@@ -32,15 +29,15 @@ import { ModalCloseButton } from '~components/Modal'
 import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
 import Radio from '~components/Radio'
 
-import { useAdminForm } from '~features/admin-form/common/queries'
-
 import {
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../adminWorkflowStore'
+import { useAdminFormOnOpen } from '../../hooks/useAdminFormOnOpen'
 import { useWorkflowMutations } from '../../mutations'
 import {
   getAffectedAuthFieldRules,
+  getRetainedAuthDeletedFields,
   getWorkflowAuthOptions,
 } from '../../utils/authFieldRemoval'
 import { AffectedAuthFieldRules } from '../AffectedAuthFieldRules'
@@ -61,13 +58,7 @@ export const GuidedDeleteWorkflowModal = ({
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { formId } = useParams()
-  const { data: loadedForm } = useAdminForm()
-  const [baselineForm, setBaselineForm] = useState(loadedForm)
-  const wasOpen = useRef(false)
-  useEffect(() => {
-    if (isOpen && !wasOpen.current) setBaselineForm(loadedForm)
-    wasOpen.current = isOpen
-  }, [isOpen, loadedForm])
+  const baselineForm = useAdminFormOnOpen(isOpen)
   const form =
     baselineForm?.responseMode === FormResponseMode.Multirespondent
       ? baselineForm
@@ -104,11 +95,9 @@ export const GuidedDeleteWorkflowModal = ({
   const selectionReady =
     (providers.length === 0 || retainedProvider !== undefined) &&
     (retainedProvider !== FormAuthType.CP || retainedEsrvcId !== undefined)
-  const deletedFields =
-    form?.form_fields.filter((field) => {
-      const provider = getFieldSourceProvider(field)
-      return provider && provider !== retainedProvider
-    }) ?? []
+  const deletedFields = form
+    ? getRetainedAuthDeletedFields(form, retainedProvider)
+    : []
   const rules = form
     ? getAffectedAuthFieldRules(
         form,

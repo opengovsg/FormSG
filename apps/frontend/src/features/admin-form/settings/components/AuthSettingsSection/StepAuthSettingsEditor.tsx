@@ -21,12 +21,11 @@ import {
 import { useToast } from '~hooks/useToast'
 import InlineMessage from '~components/InlineMessage'
 
-import { adminFormKeys } from '~features/admin-form/common/queries'
 import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
 import { updateWorkflowStep } from '~features/admin-form/create/workflow/FormWorkflowService'
 import { useStepLoginSwitch } from '~features/admin-form/create/workflow/hooks/useStepLoginSwitch'
+import { invalidateLoginQueries } from '~features/admin-form/create/workflow/mutations'
 
-import { adminFormSettingsKeys } from '../../queries'
 import { isValidEsrvcId } from '../../utils'
 
 import { AuthSwitchConfirmation } from './AuthSwitchConfirmation'
@@ -144,13 +143,7 @@ export const StepAuthSettingsEditor = ({
             : message,
         )
       } finally {
-        await Promise.all([
-          queryClient.invalidateQueries(adminFormKeys.id(formId)),
-          queryClient.invalidateQueries(adminFormSettingsKeys.id(formId)),
-          queryClient.invalidateQueries(
-            adminFormSettingsKeys.whitelist(formId),
-          ),
-        ])
+        await invalidateLoginQueries(queryClient, formId)
       }
     },
     {

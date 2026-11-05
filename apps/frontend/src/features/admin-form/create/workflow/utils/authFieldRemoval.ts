@@ -52,6 +52,16 @@ export const getRemovedStepAuthFields = (
     workflow: form.workflow.filter((_step, index) => index !== stepIndex),
   })
 
+/** Fields nothing can fill once the workflow goes and Step 1 keeps `retained`. */
+export const getRetainedAuthDeletedFields = (
+  form: AdminMultirespondentFormDto,
+  retained: WorkflowStepAuthType | undefined,
+) =>
+  getFieldsWithoutProvider(form.form_fields, {
+    authType: retained ?? FormAuthType.NIL,
+    workflow: [],
+  })
+
 export const getWorkflowAuthOptions = (form: AdminMultirespondentFormDto) => {
   const options: { authType: WorkflowStepAuthType; esrvcId?: string }[] = []
   form.workflow.forEach((_step, index) => {

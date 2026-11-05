@@ -1,8 +1,5 @@
 import { FormStatus } from 'formsg-shared/types'
-import {
-  CORPPASS_STEPS_NEED_ESRVC_ID,
-  getLoginFieldPublishErrors,
-} from 'formsg-shared/utils/step-login'
+import { getResultingLoginErrors } from 'formsg-shared/utils/step-login'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -18,8 +15,6 @@ export const useAuthenticationPublishErrors = (): string[] => {
   // The server only runs these checks under step login rules.
   const usesStepLoginRules = useUsesStepLoginRules()
   return usesStepLoginRules && form && form.status !== FormStatus.Public
-    ? getLoginFieldPublishErrors(form).filter(
-        (error) => error !== CORPPASS_STEPS_NEED_ESRVC_ID,
-      )
+    ? getResultingLoginErrors(form)
     : []
 }
