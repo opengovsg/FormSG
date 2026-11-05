@@ -40,6 +40,7 @@ import { useIsStepLoginShown } from '../../../hooks/useIsStepLoginShown'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { useIsWorkflowEditBlocked } from '../../../hooks/useIsWorkflowEditBlocked'
 import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
+import { STEP_LOGIN_LABEL_KEYS } from '../../../utils/stepLoginAvailability'
 import { CloseFormToEditModal } from '../../CloseFormToEditModal'
 import { StepLabel } from '../StepLabel'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
@@ -50,10 +51,6 @@ const MISSING_FIELD_MESSAGE = 'This field is missing'
 const NO_EMAILS_MESSAGE = 'No emails added'
 
 const STEP_LOGIN_COPY_KEY = 'features.adminForm.sidebar.workflow.stepLogin'
-const STEP_LOGIN_LABEL_KEYS = {
-  [FormAuthType.MyInfo]: `${STEP_LOGIN_COPY_KEY}.singpass`,
-  [FormAuthType.CP]: `${STEP_LOGIN_COPY_KEY}.corppass`,
-} as const
 
 interface InactiveStepBlockProps {
   stepNumber: number

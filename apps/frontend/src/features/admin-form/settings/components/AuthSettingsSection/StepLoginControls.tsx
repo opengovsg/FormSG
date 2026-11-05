@@ -10,6 +10,8 @@ import Input from '~components/Input'
 import Radio from '~components/Radio'
 import Toggle from '~components/Toggle'
 
+import { STEP_LOGIN_LABEL_KEYS } from '~features/admin-form/create/workflow/utils/stepLoginAvailability'
+
 import { isValidEsrvcId } from '../../utils'
 
 import { EsrvcHelperText } from './EsrvcHelperText'
@@ -19,10 +21,7 @@ const COPY_KEY = 'features.adminForm.sidebar.workflow.stepLogin'
 // Turning login on picks Singpass, as the form-level toggle does.
 const DEFAULT_STEP_LOGIN_AUTH_TYPE = FormAuthType.MyInfo
 
-const LOGIN_OPTIONS = [
-  [FormAuthType.MyInfo, `${COPY_KEY}.singpass`],
-  [FormAuthType.CP, `${COPY_KEY}.corppass`],
-] as const
+const LOGIN_OPTIONS = [FormAuthType.MyInfo, FormAuthType.CP] as const
 
 export interface StepLoginControlsProps {
   authType: FormAuthType
@@ -87,14 +86,14 @@ export const StepLoginControls = ({
           value={authType}
           onChange={(next: StepLoginAuthType) => onAuthTypeChange(next)}
         >
-          {LOGIN_OPTIONS.map(([option, labelKey]) => (
+          {LOGIN_OPTIONS.map((option) => (
             <Box key={option}>
               <Radio
                 value={option}
                 allowDeselect={false}
                 isDisabled={isDisabled}
               >
-                {t(labelKey)}
+                {t(STEP_LOGIN_LABEL_KEYS[option])}
               </Radio>
               {option === FormAuthType.CP && authType === FormAuthType.CP ? (
                 <FormControl
