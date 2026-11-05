@@ -4,7 +4,7 @@ import { ResultAsync } from 'neverthrow'
 
 import { hashData, HashingError } from './hash'
 
-const DEFAULT_SALT_ROUNDS = 1
+const DEFAULT_SALT_ROUNDS = 10
 
 // Uppercase-only so OTPs can be entered case-insensitively; submitted OTPs are
 // uppercased before hash comparison.
@@ -38,7 +38,7 @@ export const generateOtpPrefix = (): string => {
 /**
  * Generates an OTP together with its hash.
  * @param logMeta Metadata to be included in logs. Defaults to empty object.
- * @param saltRounds Number of salt rounds to use when hashing. Defaults to 1.
+ * @param saltRounds Number of salt rounds to use when hashing. Defaults to 10.
  * @returns ok({ otp, hashedOtp }) if OTP generation and hashing are successful
  * @returns err(HashingError) if error occurs while hashing
  */

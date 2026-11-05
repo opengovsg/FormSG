@@ -1,3 +1,5 @@
+import bcrypt from 'bcrypt'
+
 import { generateOtp, generateOtpWithHash } from '../otp'
 
 describe('otp', () => {
@@ -16,6 +18,13 @@ describe('otp', () => {
       expect(otp).toMatch(/^[A-Z0-9]{8}$/)
       expect(hashedOtp).toBeTruthy()
       expect(otpPrefix).toMatch(/^[A-Z]{3}$/)
+    })
+
+    it('should hash the OTP with a bcrypt cost of 10', async () => {
+      const result = await generateOtpWithHash()
+      const { otp, hashedOtp } = result._unsafeUnwrap()
+      expect(bcrypt.getRounds(hashedOtp)).toEqual(10)
+      await expect(bcrypt.compare(otp, hashedOtp)).resolves.toBe(true)
     })
   })
 })
