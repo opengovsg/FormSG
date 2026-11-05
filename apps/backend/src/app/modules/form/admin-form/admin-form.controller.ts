@@ -3643,45 +3643,6 @@ export const handleSetGoLinkSuffix: ControllerHandler<
   )
 }
 
-export const handleConvertEmailToStorageMode: ControllerHandler<
-  { formId: string },
-  unknown,
-  { publicKey: string }
-> = (req, res) => {
-  const { formId } = req.params
-  const { publicKey } = req.body
-  const sessionUserId = (req.session as AuthedSessionData).user._id
-
-  return UserService.getPopulatedUserById(sessionUserId)
-    .andThen((user) => {
-      return AuthService.getFormAfterPermissionChecks({
-        user,
-        formId,
-        level: PermissionLevel.Write,
-      })
-    })
-    .andThen((form) => EmailSubmissionService.checkFormIsEmailMode(form))
-    .map((form) => {
-      return AdminFormService.convertEmailToStorageMode({ form, publicKey })
-    })
-    .map(() => {
-      logger.info({
-        message: 'Form successfully converted to storage mode',
-        meta: {
-          action: 'handleConvertEmailToStorageMode',
-          ...createReqMeta(req),
-          userId: sessionUserId,
-          formId,
-        },
-      })
-      return res.sendStatus(StatusCodes.OK)
-    })
-    .mapErr((error) => {
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
-}
-
 /**
  * Handler to retrieve the sms counts used by a form's administrator and the sms verifications quota
  * This is the controller for GET /admin/forms/:formId/verified-sms/count
