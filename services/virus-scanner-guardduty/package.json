@@ -2,14 +2,15 @@
   "name": "formsg-virus-scanner-guardduty",
   "version": "9.64.0",
   "private": true,
-  "description": "",
+  "description": "Lambda that waits for the GuardDuty malware scan verdict on a quarantined form attachment and copies clean files to the clean bucket",
   "scripts": {
     "env": "ENV=${ENV:-'development'} node scripts/envLoader.mjs",
     "build": "tsc",
     "tsc": "tsc",
+    "bundle": "esbuild src/index.ts --bundle --minify --sourcemap --platform=node --target=node22 --outfile=dist/index.js",
     "dev": "pnpm run env && docker-compose -f docker-compose.dev.yml up --build",
-    "deploy": "pnpm run env && sls deploy --stage ${ENV:-'staging'} --param=\"provisionedConcurrency=${CONCURRENCY}\" --conceal",
-    "package": "pnpm run env && sls package --stage ${ENV:-'staging'} --param=\"provisionedConcurrency=${CONCURRENCY}\""
+    "deploy": "pnpm run env && pnpm run bundle && sls deploy --stage ${ENV:-'staging'} --param=\"provisionedConcurrency=${CONCURRENCY}\" --conceal",
+    "package": "pnpm run env && pnpm run bundle && sls package --stage ${ENV:-'staging'} --param=\"provisionedConcurrency=${CONCURRENCY}\""
   },
   "author": "",
   "license": "ISC",
@@ -33,6 +34,7 @@
     "@types/uuid": "^9.0.2",
     "@types/watch": "^1.0.3",
     "dotenv-cli": "^6.0.0",
+    "esbuild": "^0.28.1",
     "jest": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0",
     "jest-extended": "^3.2.4",
