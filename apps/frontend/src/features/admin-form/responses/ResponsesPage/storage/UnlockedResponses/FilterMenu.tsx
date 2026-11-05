@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiFilterAlt } from 'react-icons/bi'
+import { useParams } from 'react-router-dom'
 import {
   Box,
   Divider,
@@ -10,7 +11,7 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { DateString } from 'formsg-shared/types'
+import { AnalyticsEventType, DateString } from 'formsg-shared/types'
 
 import Button from '~components/Button'
 import {
@@ -18,6 +19,8 @@ import {
   dateRangePickerHelper,
 } from '~components/DateRangePicker'
 import Menu from '~components/Menu'
+
+import { logAnalyticsEvent } from '~features/analytics/AnalyticsEventService'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 
@@ -50,6 +53,7 @@ export const FilterMenu = ({
     useUnlockedResponses()
   const [openColumnId, setOpenColumnId] = useState<string>()
   const { dateRange, setDateRange } = useStorageResponsesContext()
+  const { formId } = useParams()
 
   const [draftDateRange, setDraftDateRange] = useState(dateRange)
 
@@ -76,6 +80,12 @@ export const FilterMenu = ({
     setDraftDateRange(nextDateRange)
     if (nextDateRange.length === 0 || nextDateRange.length === 2) {
       setDateRange(nextDateRange)
+    }
+    if (nextDateRange.length === 2) {
+      logAnalyticsEvent(formId, {
+        type: AnalyticsEventType.ResultsFilterApplied,
+        content: { filter: 'date_range' },
+      })
     }
   }
 
