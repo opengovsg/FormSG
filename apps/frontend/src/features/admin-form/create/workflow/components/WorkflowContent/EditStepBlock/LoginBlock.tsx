@@ -106,8 +106,7 @@ const StepLogin = ({
       />
       {hasUnassignedFields ? (
         <Text textStyle="body-2" color="secondary.400">
-          Incompatible fields are unassigned in this draft. Confirmed field
-          deletions apply only when you save or navigate away.
+          {t(`${COPY_KEY}.unassignedNotice`)}
         </Text>
       ) : null}
       {isFirstStepByStepNumber(stepNumber) &&

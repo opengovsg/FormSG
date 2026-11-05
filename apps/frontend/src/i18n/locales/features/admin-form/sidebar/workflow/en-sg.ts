@@ -196,6 +196,56 @@ export const enSG: Workflow = {
     closeFormToEdit: 'To change the login, close your form to new responses.',
     inactiveLabel: 'Singpass authentication',
     tabs: { fields: 'Fields to fill', approvals: 'Approvals', login: 'Login' },
+    unassignedNotice:
+      'Incompatible fields are unassigned in this draft. Confirmed field deletions apply only when you save or navigate away.',
+    fieldTags: {
+      assignedToStep: 'Assigned to Step {{stepNumber}}',
+      providerOnly: '{{provider}} only',
+    },
+    saveErrors: {
+      restrictionsParsing:
+        'Wait for the eligible respondent list to finish checking.',
+      restrictionsFailed:
+        'The step was saved, but some Step 1 restrictions could not be saved. Check the current settings and try again.',
+      stepFailed: 'The step could not be saved. Please try again.',
+    },
+    restrictions: {
+      singleSubmission: 'Limit each unique NRIC/FIN/UEN to one response',
+      whitelistTitle: 'Restrict form to eligible NRIC/FIN/UENs only',
+      whitelistDescription:
+        'Only NRIC/FIN/UENs in this list can submit a response. Upload a single-column CSV with the “Respondent” header.',
+      downloadSample: 'Download a sample .csv file',
+      invalidCsvHeader:
+        'Your CSV file should only contain a single column with the header "Respondent".',
+      unreadableCsv: 'Unable to read the CSV file.',
+      checkingCsv: 'Checking CSV…',
+    },
+    switchConfirmation: {
+      noAuthentication: 'no authentication',
+      titleTurnOff: 'Turn off authentication',
+      titleSwitch: 'Switch to {{provider}}',
+      assignedField:
+        '"{{field}}" needs {{provider}}. Switching this step to {{provider}} assigns it to this step.',
+      deleteBodyTurnOff:
+        'This is the only step using {{current}}. Turning off authentication means these {{current}} fields can no longer be used:',
+      deleteBodySwitch:
+        'This is the only step using {{current}}. Switching to {{provider}} means these {{current}} fields can no longer be used:',
+      unassignBodyTurnOff:
+        'These fields need {{current}}, so they cannot be filled in on a step without authentication:',
+      unassignBodySwitch:
+        'These fields need {{current}}, so they cannot be filled in on a step using {{provider}}:',
+      affectedRules: 'References to these fields will also be removed from:',
+      deleteNote:
+        'These fields will be deleted from your form when you save this step or navigate away. Past responses will be kept.',
+      unassignNote:
+        'These fields will be unassigned from this step when you save or navigate away. They will stay in your form.',
+      cancel: 'Cancel',
+      confirmAssign: 'Switch to {{provider}} and assign field',
+      confirmDeleteTurnOff: 'Delete fields and turn off',
+      confirmUnassignTurnOff: 'Unassign fields and turn off',
+      confirmDeleteSwitch: 'Delete fields and switch to {{provider}}',
+      confirmUnassignSwitch: 'Unassign fields and switch to {{provider}}',
+    },
   },
   addField: {
     fields: 'Add fields',

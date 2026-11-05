@@ -169,6 +169,41 @@ export interface Workflow {
     closeFormToEdit: string
     inactiveLabel: string
     tabs: { fields: string; approvals: string; login: string }
+    unassignedNotice: string
+    fieldTags: { assignedToStep: string; providerOnly: string }
+    saveErrors: {
+      restrictionsParsing: string
+      restrictionsFailed: string
+      stepFailed: string
+    }
+    restrictions: {
+      singleSubmission: string
+      whitelistTitle: string
+      whitelistDescription: string
+      downloadSample: string
+      invalidCsvHeader: string
+      unreadableCsv: string
+      checkingCsv: string
+    }
+    switchConfirmation: {
+      noAuthentication: string
+      titleTurnOff: string
+      titleSwitch: string
+      assignedField: string
+      deleteBodyTurnOff: string
+      deleteBodySwitch: string
+      unassignBodyTurnOff: string
+      unassignBodySwitch: string
+      affectedRules: string
+      deleteNote: string
+      unassignNote: string
+      cancel: string
+      confirmAssign: string
+      confirmDeleteTurnOff: string
+      confirmUnassignTurnOff: string
+      confirmDeleteSwitch: string
+      confirmUnassignSwitch: string
+    }
   }
   addField: {
     fields: string
