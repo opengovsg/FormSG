@@ -432,3 +432,15 @@ export class StepTokenVerificationError extends ApplicationError {
     super(message, undefined, ErrorCodes.SUBMISSION_MRF_STEP_TOKEN_INVALID)
   }
 }
+
+/**
+ * Returned while the mrf-step-login-kill-switch flag blocks forms and
+ * submissions that use a later-step login.
+ */
+export class MrfStepLoginSuspendedError extends ApplicationError {
+  constructor(
+    message = 'This form is temporarily unavailable. Please try again later, or contact the form admin.',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_MRF_STEP_LOGIN_SUSPENDED)
+  }
+}
