@@ -850,7 +850,13 @@ export const ResponsesTable = () => {
               flexShrink={0}
               overflow="hidden"
             >
-              <Flex align="center">{column.render('Header')}</Flex>
+              {isDelightfulDashboard ? (
+                <Text isTruncated title={String(column.Header)}>
+                  {column.render('Header')}
+                </Text>
+              ) : (
+                <Flex align="center">{column.render('Header')}</Flex>
+              )}
 
               {column.disableResizing ? null : (
                 <Flex
