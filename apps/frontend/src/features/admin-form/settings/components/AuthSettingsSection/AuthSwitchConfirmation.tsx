@@ -14,6 +14,7 @@ import {
   FormFieldDto,
   StepLoginAuthType,
 } from 'formsg-shared/types'
+import { STEP_LOGIN_PROVIDER_LABELS } from 'formsg-shared/utils/step-login'
 
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
@@ -34,6 +35,11 @@ export interface AuthSwitchConfirmationProps {
   onConfirm: () => void
 }
 
+const providerLabel = (authType: FormAuthType | undefined) =>
+  STEP_LOGIN_PROVIDER_LABELS[
+    authType === FormAuthType.CP ? FormAuthType.CP : FormAuthType.MyInfo
+  ]
+
 /** Confirmation distinguishes unassignment from deleting field definitions. */
 export const AuthSwitchConfirmation = ({
   currentAuthType,
@@ -48,12 +54,10 @@ export const AuthSwitchConfirmation = ({
 }: AuthSwitchConfirmationProps) => {
   const isTurningOff = nextAuthType === FormAuthType.NIL
   const currentProvider =
-    currentAuthType === FormAuthType.CP
-      ? 'Corppass'
-      : currentAuthType === FormAuthType.NIL
-        ? 'no authentication'
-        : 'Singpass'
-  const provider = nextAuthType === FormAuthType.CP ? 'Corppass' : 'Singpass'
+    currentAuthType === FormAuthType.NIL
+      ? 'no authentication'
+      : providerLabel(currentAuthType)
+  const provider = providerLabel(nextAuthType)
   const numberedFields = new Map(
     augmentFieldWithQuestionNo([...formFields]).map((field) => [
       field._id,
