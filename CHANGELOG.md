@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.64.0](https://github.com/opengovsg/formsg/compare/v9.63.0...v9.64.0) (2026-11-05)
+
+
+### Features
+
+* **mrf:** let admins save a login on later workflow steps (#10451) ([#10451](https://github.com/opengovsg/formsg/commit/380799c099b998ec56dd3f49f29025f6ffdb96f6))
+* **mrf:** let respondents log in on a later workflow step (#10447) ([#10447](https://github.com/opengovsg/formsg/commit/6897313f6e1697f5689678f98028a2273a5a0441))
+
+
+### Bug Fixes
+
+* **admin-form:** drop form title from authorization error messages (#10502) ([#10502](https://github.com/opengovsg/formsg/commit/8f415fb14c81678f7c851b6a80a4b7afea0f8961))
+* **attachments:** bound zip inspection depth and entry count (#10499) ([#10499](https://github.com/opengovsg/formsg/commit/73bf8517dcddc2c871fde67748e559b1abfbf9bb))
+* **auth:** regenerate the session identifier on login (#10493) ([#10493](https://github.com/opengovsg/formsg/commit/be6782e02e8630bf3eec04da7b38dcb336d29c71))
+* **settings:** require edit access to read form settings (#10500) ([#10500](https://github.com/opengovsg/formsg/commit/b3c5c0099e3bba162dce92c56bbb1f0466cdbed0))
+
 ## [9.63.0](https://github.com/opengovsg/formsg/compare/v9.62.0...v9.63.0) (2026-11-04)
 
 
