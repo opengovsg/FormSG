@@ -70,7 +70,7 @@ describe('User transfers ownership of all owned forms', () => {
     // Assert
     // Wait for toast. Toast should appear.
     expect(
-      screen.findAllByText(/ownership transferred\./i),
+      screen.findAllByText(/all your forms are now transferred to them\./i),
     ).resolves.not.toBeNull()
   })
 

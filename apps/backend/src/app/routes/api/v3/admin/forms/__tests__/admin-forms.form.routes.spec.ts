@@ -823,9 +823,14 @@ describe('admin-form.form.routes', () => {
       )
     })
 
-    it('should return 400 when the new owner is not in the database', async () => {
+    it('should return 200 with true without transferring forms when the new owner is not in the database', async () => {
       // Arrange
       const emailNotInDb = 'notindb@example.com'
+      const ownForm = await EmailFormModel.create({
+        title: 'Own form',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+      })
 
       // Act
       const response = await request
@@ -833,10 +838,10 @@ describe('admin-form.form.routes', () => {
         .send({ email: emailNotInDb })
 
       // Assert
-      expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: `${emailNotInDb} must have logged in once before being added as Owner`,
-      })
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(true)
+      const formAfter = await FormModel.findById(ownForm._id)
+      expect(String(formAfter?.admin)).toEqual(String(defaultUser._id))
     })
 
     it('should return 400 when the new owner is already the current owner', async () => {

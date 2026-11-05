@@ -1162,8 +1162,7 @@ export const handleCopyTemplateForm = [
  * Handler for POST /admin/forms/all-transfer-owner.
  * @security session
  *
- * @returns 200 with true if transfer was successful
- * @returns 400 when new owner is not in the database yet
+ * @returns 200 with true if transfer was successful, or if new owner is not in the database yet
  * @returns 400 when new owner is already current owner
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
