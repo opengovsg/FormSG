@@ -8,7 +8,6 @@ import {
   canStepLoginFillField,
   getFieldSourceProvider,
   getOwningStepIndex,
-  STEP_LOGIN_PROVIDER_LABELS,
 } from 'formsg-shared/utils/step-login'
 
 import { textStyles } from '~theme/textStyles'
@@ -27,11 +26,14 @@ import { NON_RESPONSE_FIELD_SET } from '~features/form/constants'
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { useIsStepLoginShown } from '../../../hooks/useIsStepLoginShown'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
+import { STEP_LOGIN_LABEL_KEYS } from '../../../utils/stepLoginAvailability'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { APPROVAL_FIELD_NAME, FIELDS_TO_EDIT_NAME } from './EditStepBlock'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
 import { useStepEditorLogin } from './useStepEditorLogin'
+
+const FIELD_TAGS_KEY = 'features.adminForm.sidebar.workflow.stepLogin.fieldTags'
 
 interface QuestionsBlockProps {
   isLoading: boolean
@@ -126,9 +128,11 @@ export const QuestionsBlock = ({
         icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
         disabled: ownedElsewhere || needsOtherLogin,
         descriptionTag: ownedElsewhere
-          ? `Assigned to Step ${owner + 1}`
+          ? t(`${FIELD_TAGS_KEY}.assignedToStep`, { stepNumber: owner + 1 })
           : needsOtherLogin
-            ? `${STEP_LOGIN_PROVIDER_LABELS[provider]} only`
+            ? t(`${FIELD_TAGS_KEY}.providerOnly`, {
+                provider: t(STEP_LOGIN_LABEL_KEYS[provider]),
+              })
             : undefined,
       }
     })

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   Modal,
   ModalBody,
@@ -14,12 +15,12 @@ import {
   FormFieldDto,
   StepLoginAuthType,
 } from 'formsg-shared/types'
-import { STEP_LOGIN_PROVIDER_LABELS } from 'formsg-shared/utils/step-login'
 
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
 
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
+import { STEP_LOGIN_LABEL_KEYS } from '~features/admin-form/create/workflow/utils/stepLoginAvailability'
 import { augmentFieldWithQuestionNo } from '~features/form/utils'
 
 export interface AuthSwitchConfirmationProps {
@@ -35,8 +36,11 @@ export interface AuthSwitchConfirmationProps {
   onConfirm: () => void
 }
 
-const providerLabel = (authType: FormAuthType | undefined) =>
-  STEP_LOGIN_PROVIDER_LABELS[
+const COPY_KEY =
+  'features.adminForm.sidebar.workflow.stepLogin.switchConfirmation'
+
+const providerLabelKey = (authType: FormAuthType | undefined) =>
+  STEP_LOGIN_LABEL_KEYS[
     authType === FormAuthType.CP ? FormAuthType.CP : FormAuthType.MyInfo
   ]
 
@@ -52,12 +56,13 @@ export const AuthSwitchConfirmation = ({
   deleteFields = false,
   affectedRules = [],
 }: AuthSwitchConfirmationProps) => {
+  const { t } = useTranslation()
   const isTurningOff = nextAuthType === FormAuthType.NIL
-  const currentProvider =
+  const current =
     currentAuthType === FormAuthType.NIL
-      ? 'no authentication'
-      : providerLabel(currentAuthType)
-  const provider = providerLabel(nextAuthType)
+      ? t(`${COPY_KEY}.noAuthentication`)
+      : t(providerLabelKey(currentAuthType))
+  const provider = t(providerLabelKey(nextAuthType))
   const numberedFields = new Map(
     augmentFieldWithQuestionNo([...formFields]).map((field) => [
       field._id,
@@ -70,21 +75,33 @@ export const AuthSwitchConfirmation = ({
       <ModalContent>
         <ModalCloseButton />
         <ModalHeader>
-          {isTurningOff ? 'Turn off authentication' : `Switch to ${provider}`}
+          {isTurningOff
+            ? t(`${COPY_KEY}.titleTurnOff`)
+            : t(`${COPY_KEY}.titleSwitch`, { provider })}
         </ModalHeader>
         <ModalBody>
           <Stack spacing="1rem">
             {assignedField ? (
               <Text>
-                {`"${assignedField.title}" needs ${provider}. Switching this step to ${provider} assigns it to this step.`}
+                {t(`${COPY_KEY}.assignedField`, {
+                  field: assignedField.title,
+                  provider,
+                })}
               </Text>
             ) : null}
             {fields.length > 0 ? (
               <>
                 <Text>
-                  {deleteFields
-                    ? `This is the only step using ${currentProvider}. ${isTurningOff ? 'Turning off authentication' : `Switching to ${provider}`} means these ${currentProvider} fields can no longer be used:`
-                    : `These fields need ${currentProvider}, so they cannot be filled in on a step ${isTurningOff ? 'without authentication' : `using ${provider}`}:`}
+                  {t(
+                    deleteFields
+                      ? isTurningOff
+                        ? `${COPY_KEY}.deleteBodyTurnOff`
+                        : `${COPY_KEY}.deleteBodySwitch`
+                      : isTurningOff
+                        ? `${COPY_KEY}.unassignBodyTurnOff`
+                        : `${COPY_KEY}.unassignBodySwitch`,
+                    { current, provider },
+                  )}
                 </Text>
                 <Stack spacing="0.5rem" align="flex-start">
                   {fields.map((field) => (
@@ -96,9 +113,7 @@ export const AuthSwitchConfirmation = ({
                 </Stack>
                 {affectedRules.length > 0 ? (
                   <Stack spacing="0.5rem">
-                    <Text>
-                      References to these fields will also be removed from:
-                    </Text>
+                    <Text>{t(`${COPY_KEY}.affectedRules`)}</Text>
                     {affectedRules.map((rule) => (
                       <Text key={rule}>{rule}</Text>
                     ))}
@@ -106,8 +121,8 @@ export const AuthSwitchConfirmation = ({
                 ) : null}
                 <Text>
                   {deleteFields
-                    ? 'These fields will be deleted from your form when you save this step or navigate away. Past responses will be kept.'
-                    : 'These fields will be unassigned from this step when you save or navigate away. They will stay in your form.'}
+                    ? t(`${COPY_KEY}.deleteNote`)
+                    : t(`${COPY_KEY}.unassignNote`)}
                 </Text>
               </>
             ) : null}
@@ -121,7 +136,7 @@ export const AuthSwitchConfirmation = ({
             justify="flex-end"
           >
             <Button variant="clear" colorScheme="secondary" onClick={onClose}>
-              Cancel
+              {t(`${COPY_KEY}.cancel`)}
             </Button>
             <Button
               onClick={onConfirm}
@@ -132,10 +147,17 @@ export const AuthSwitchConfirmation = ({
               py="0.75rem"
             >
               {fields.length === 0
-                ? `Switch to ${provider} and assign field`
-                : isTurningOff
-                  ? `${deleteFields ? 'Delete' : 'Unassign'} fields and turn off`
-                  : `${deleteFields ? 'Delete' : 'Unassign'} fields and switch to ${provider}`}
+                ? t(`${COPY_KEY}.confirmAssign`, { provider })
+                : t(
+                    isTurningOff
+                      ? deleteFields
+                        ? `${COPY_KEY}.confirmDeleteTurnOff`
+                        : `${COPY_KEY}.confirmUnassignTurnOff`
+                      : deleteFields
+                        ? `${COPY_KEY}.confirmDeleteSwitch`
+                        : `${COPY_KEY}.confirmUnassignSwitch`,
+                    { provider },
+                  )}
             </Button>
           </Stack>
         </ModalFooter>

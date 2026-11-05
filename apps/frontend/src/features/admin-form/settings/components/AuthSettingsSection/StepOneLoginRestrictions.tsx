@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { Box, Divider, Stack, Text } from '@chakra-ui/react'
 
@@ -77,6 +78,8 @@ interface StepOneLoginRestrictionsProps {
   onGoToFields?: (tab: FieldListTabIndex) => void
 }
 
+const COPY_KEY = 'features.adminForm.sidebar.workflow.stepLogin.restrictions'
+
 /** Shared controlled Step 1 restrictions for Create and Settings drafts. */
 export const StepOneLoginRestrictions = ({
   settings,
@@ -88,6 +91,7 @@ export const StepOneLoginRestrictions = ({
   authType,
   onGoToFields,
 }: StepOneLoginRestrictionsProps): JSX.Element => {
+  const { t } = useTranslation()
   const { formId } = useParams()
   const { data: form } = useAdminForm()
   const [error, setError] = useState('')
@@ -126,8 +130,7 @@ export const StepOneLoginRestrictions = ({
           header.length === 1 &&
           header[0].replace(/(\r\n|\n|\r)/gm, '').toLowerCase() ===
             'respondent',
-        invalidReason:
-          'Your CSV file should only contain a single column with the header "Respondent".',
+        invalidReason: t(`${COPY_KEY}.invalidCsvHeader`),
       }))
       if (request !== parseRequest.current) return
       onChange({
@@ -145,7 +148,7 @@ export const StepOneLoginRestrictions = ({
         setError(
           cause instanceof Error
             ? cause.message
-            : 'Unable to read the CSV file.',
+            : t(`${COPY_KEY}.unreadableCsv`),
         )
     } finally {
       if (request === parseRequest.current) {
@@ -188,7 +191,7 @@ export const StepOneLoginRestrictions = ({
       <Toggle
         isDisabled={isDisabled || isParsing}
         isChecked={value.isSingleSubmission}
-        label="Limit each unique NRIC/FIN/UEN to one response"
+        label={t(`${COPY_KEY}.singleSubmission`)}
         labelStyles={{ ...textStyles.h4, color: 'inherit' }}
         onChange={() =>
           onChange({ isSingleSubmission: !value.isSingleSubmission })
@@ -197,16 +200,15 @@ export const StepOneLoginRestrictions = ({
       {divider}
       <Box>
         <Text textStyle="h4" mb="0.25rem">
-          Restrict form to eligible NRIC/FIN/UENs only
+          {t(`${COPY_KEY}.whitelistTitle`)}
         </Text>
         <Text textStyle="body-2" color="secondary.400" mb="1rem">
-          Only NRIC/FIN/UENs in this list can submit a response. Upload a
-          single-column CSV with the “Respondent” header.{' '}
+          {t(`${COPY_KEY}.whitelistDescription`)}{' '}
           <Link
             href="https://go.gov.sg/formsg-whitelist-respondents-sample-csv"
             isExternal
           >
-            Download a sample .csv file
+            {t(`${COPY_KEY}.downloadSample`)}
           </Link>
         </Text>
         <Attachment
@@ -233,7 +235,7 @@ export const StepOneLoginRestrictions = ({
         />
         {isParsing ? (
           <Text textStyle="caption-1" role="status">
-            Checking CSV…
+            {t(`${COPY_KEY}.checkingCsv`)}
           </Text>
         ) : null}
         {error ? (

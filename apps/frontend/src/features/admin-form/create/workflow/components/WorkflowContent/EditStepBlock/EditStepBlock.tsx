@@ -78,6 +78,8 @@ export const APPROVAL_ENABLED_NAME = 'is_approval_enabled'
 
 const SECTION_REVEAL_SCROLL_DELAY_MS = 100
 const STEP_TABS_KEY = 'features.adminForm.sidebar.workflow.stepLogin.tabs'
+const SAVE_ERRORS_KEY =
+  'features.adminForm.sidebar.workflow.stepLogin.saveErrors'
 
 type WriteStep = FormWorkflowStepWriteDto & { _id: string }
 
@@ -283,9 +285,7 @@ export const EditStepBlock = ({
   const handleSubmit = formMethods.handleSubmit(
     async (inputs: EditStepInputs) => {
       if (inputs.first_step_restrictions_parsing) {
-        setSaveError(
-          'Wait for the eligible respondent list to finish checking.',
-        )
+        setSaveError(t(`${SAVE_ERRORS_KEY}.restrictionsParsing`))
         cancelPendingSwitch()
         return
       }
@@ -321,10 +321,10 @@ export const EditStepBlock = ({
         cancelPendingSwitch()
         setSaveError(
           didSaveStep
-            ? 'The step was saved, but some Step 1 restrictions could not be saved. Check the current settings and try again.'
+            ? t(`${SAVE_ERRORS_KEY}.restrictionsFailed`)
             : error instanceof Error
               ? error.message
-              : 'The step could not be saved. Please try again.',
+              : t(`${SAVE_ERRORS_KEY}.stepFailed`),
         )
       } finally {
         setIsSavingRestrictions(false)
