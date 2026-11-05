@@ -13,8 +13,12 @@ const CONFIRM =
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, values?: { emails?: string }) =>
-      values?.emails ? `${key}:${values.emails}` : key,
+    t: (key: string, values?: { emails?: string; stepName?: string }) =>
+      values?.stepName
+        ? `Currently assigned to ${values.stepName}`
+        : values?.emails
+          ? `${key}:${values.emails}`
+          : key,
   }),
 }))
 
@@ -22,6 +26,7 @@ const showModal = (onConfirm: (emails: string[]) => void) =>
   render(
     <AddAssigneeModal
       isOpen
+      stepName="Step 3 · Finance"
       onClose={vi.fn()}
       onConfirm={onConfirm}
       currentAssignees={['lead@agency.gov.sg']}
@@ -77,6 +82,7 @@ describe('AddAssigneeModal', () => {
     const props = {
       onClose: vi.fn(),
       onConfirm,
+      stepName: 'Step 3 · Finance',
       currentAssignees: ['lead@agency.gov.sg'],
     }
     rerender(<AddAssigneeModal {...props} isOpen={false} />)
@@ -91,13 +97,16 @@ describe('AddAssigneeModal', () => {
     render(
       <AddAssigneeModal
         isOpen
+        stepName="Step 3 · Finance"
         onClose={vi.fn()}
         onConfirm={vi.fn()}
         currentAssignees={['lead@agency.gov.sg', 'deputy@agency.gov.sg']}
       />,
     )
 
-    expect(screen.getByText(/currentlyAssignedLabel$/)).toBeInTheDocument()
+    expect(
+      screen.getByText('Currently assigned to Step 3 · Finance'),
+    ).toBeInTheDocument()
     const lead = screen.getByText('lead@agency.gov.sg')
     const deputy = screen.getByText('deputy@agency.gov.sg')
     expect(
@@ -116,6 +125,7 @@ describe('AddAssigneeModal', () => {
     render(
       <AddAssigneeModal
         isOpen
+        stepName="Step 3 · Finance"
         onClose={vi.fn()}
         onConfirm={vi.fn()}
         currentAssignees={[]}

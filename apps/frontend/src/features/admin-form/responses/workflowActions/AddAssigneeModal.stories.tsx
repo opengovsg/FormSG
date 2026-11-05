@@ -22,6 +22,7 @@ export default {
   },
   args: {
     isOpen: true,
+    stepName: 'Step 3 · Finance',
     onClose: () => undefined,
     onConfirm: () => undefined,
     currentAssignees: ['daniel_tan@agency.gov.sg'],

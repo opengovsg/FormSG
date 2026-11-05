@@ -26,6 +26,7 @@ export interface AddAssigneeModalProps {
   onConfirm: (emails: string[]) => void
   isLoading?: boolean
   currentAssignees: string[]
+  stepName: string
 }
 
 export const AddAssigneeModal = ({
@@ -34,6 +35,7 @@ export const AddAssigneeModal = ({
   onConfirm,
   isLoading,
   currentAssignees,
+  stepName,
 }: AddAssigneeModalProps): JSX.Element => {
   const { t } = useTranslation()
   const [emails, setEmails] = useState<string[]>([])
@@ -90,7 +92,7 @@ export const AddAssigneeModal = ({
       <Stack spacing="1.5rem">
         <Box>
           <FormLabel.Label as="div">
-            {t(`${I18N_PREFIX}.currentlyAssignedLabel`)}
+            {t(`${I18N_PREFIX}.currentlyAssignedLabel`, { stepName })}
           </FormLabel.Label>
           {currentAssignees.length ? (
             <Flex flexWrap="wrap" gap="0.5rem">

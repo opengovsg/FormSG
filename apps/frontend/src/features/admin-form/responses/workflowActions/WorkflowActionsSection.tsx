@@ -70,6 +70,20 @@ export const WorkflowActionsSection = ({
   const sendBackMutation = useSendBackWorkflowMutation(formId)
   const events = history.workflowEvents
   const pendingStepNumber = history.submittedSteps.length + 1
+  const pendingStepName =
+    history.workflow[pendingStepNumber - 1]?.step_name?.trim()
+  const pendingStepLabel = `${t(
+    `${WORKFLOW_ACTIONS_I18N}.activityLog.stepNumber`,
+    {
+      stepNumber: pendingStepNumber,
+    },
+  )}${
+    pendingStepName
+      ? t(`${WORKFLOW_ACTIONS_I18N}.activityLog.stepNameLabel`, {
+          name: pendingStepName,
+        })
+      : ''
+  }`
 
   if (mrf?.stoppedAt || mrf?.workflowStatus !== WorkflowStatus.PENDING) {
     return overview ? <ResponseOverview>{overview}</ResponseOverview> : null
@@ -198,6 +212,7 @@ export const WorkflowActionsSection = ({
         onConfirm={handleAddAssignees}
         isLoading={addAssigneesMutation.isLoading}
         currentAssignees={pendingStepAssignees}
+        stepName={pendingStepLabel}
       />
       <SendBackModal
         isOpen={sendBackModal.isOpen}

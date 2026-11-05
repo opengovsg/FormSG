@@ -49,7 +49,7 @@ export const enSG: ResponsesIndividualResponse = {
       description:
         'We’ll email them a link to complete this step. People already assigned to this step can still respond.',
       label: 'Email addresses of new people',
-      currentlyAssignedLabel: 'Currently assigned to this step',
+      currentlyAssignedLabel: 'Currently assigned to {stepName}',
       noCurrentAssignees: 'No one is currently assigned to this step.',
       requiredEmail: 'Enter at least one email address',
       invalidEmail: 'Enter a valid email',
