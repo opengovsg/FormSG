@@ -9,7 +9,11 @@ import {
 import { IHashes } from 'src/types'
 import { PossiblyPrefilledField } from 'src/types/field/myinfoField'
 
-import { ProcessedChildrenResponse } from '../../submission/submission.types'
+import {
+  ProcessedChildrenResponse,
+  ProcessedFieldResponse,
+} from '../../submission/submission.types'
+import { hashMyInfoValue } from '../myinfo.hash'
 import {
   compareHashedValues,
   getMyInfoAttr,
@@ -47,6 +51,78 @@ describe('myinfo.util', () => {
       expect(
         Object.keys(hashFieldValues(fields, undefined, { skipUinFin: true })),
       ).toEqual([MyInfoAttribute.Name])
+    })
+  })
+
+  describe('compareHashedValues (HMAC hashes)', () => {
+    const resolve = async (
+      map: Map<string, Promise<boolean>>,
+    ): Promise<Record<string, boolean>> =>
+      Object.fromEntries(
+        await Promise.all(
+          [...map.entries()].map(async ([k, p]) => [k, await p] as const),
+        ),
+      )
+
+    const makeNameResponse = (fieldId: string, answer: string) =>
+      ({
+        _id: fieldId,
+        question: 'Name',
+        fieldType: BasicField.ShortText,
+        answer,
+        myInfo: { attr: MyInfoAttribute.Name },
+        isVisible: true,
+      }) as unknown as ProcessedFieldResponse
+
+    it('should verify a field against an HMAC hash keyed by its attribute', async () => {
+      const fieldId = new ObjectId().toHexString()
+      const hashes = {
+        [MyInfoAttribute.Name]: hashMyInfoValue(MyInfoAttribute.Name, 'TAN'),
+      } as IHashes
+
+      await expect(
+        resolve(
+          compareHashedValues([makeNameResponse(fieldId, 'TAN')], hashes),
+        ),
+      ).resolves.toEqual({ [fieldId]: true })
+      await expect(
+        resolve(
+          compareHashedValues([makeNameResponse(fieldId, 'LIM')], hashes),
+        ),
+      ).resolves.toEqual({ [fieldId]: false })
+    })
+
+    it('should verify a child against HMAC hashes keyed by its MyInfo record', async () => {
+      const fieldId = new ObjectId().toHexString()
+      const subFields = [
+        MyInfoChildAttributes.ChildName,
+        MyInfoChildAttributes.ChildDateOfBirth,
+      ]
+      const recordKey = (attr: MyInfoChildAttributes) =>
+        getMyInfoChildHashKey(fieldId, attr, 1, 'SECOND CHILD')
+      const hashes = {
+        [recordKey(MyInfoChildAttributes.ChildName)]: hashMyInfoValue(
+          recordKey(MyInfoChildAttributes.ChildName),
+          'SECOND CHILD',
+        ),
+        [recordKey(MyInfoChildAttributes.ChildDateOfBirth)]: hashMyInfoValue(
+          recordKey(MyInfoChildAttributes.ChildDateOfBirth),
+          '04/03/2018',
+        ),
+      } as IHashes
+      const response = {
+        _id: fieldId,
+        question: 'Children',
+        fieldType: BasicField.Children,
+        answerArray: [['SECOND CHILD', '04/03/2018']],
+        childSubFieldsArray: subFields,
+        myInfo: { attr: MyInfoAttribute.ChildrenBirthRecords },
+        isVisible: true,
+      } as unknown as ProcessedChildrenResponse
+
+      const results = await resolve(compareHashedValues([response], hashes))
+
+      expect(Object.values(results)).toEqual([true, true])
     })
   })
 
