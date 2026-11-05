@@ -5,7 +5,8 @@ set -euo pipefail
 # (Datadog Synthetics API schema); ids.json maps each file's basename to the
 # public_id of the test it manages in Datadog.
 #
-#   sync.sh push   create/update every tests/*.json in Datadog
+#   sync.sh push   create/update every tests/*.json in Datadog; delete tests
+#                  whose definition was removed (ids.json entry, no file)
 #   sync.sh pull   overwrite tests/*.json from the live Datadog definitions
 #
 # push on a file with no ids.json entry first looks for a live test with the
@@ -39,6 +40,21 @@ read_path() { if [ "$1" = browser ]; then echo "/tests/browser/$2"; else echo "/
 
 push() {
   local file slug type id name created=false failed=
+  # A definition deleted from the repo is deleted in Datadog too — the CI
+  # suite is tag-scoped, so a live test nobody maintains would otherwise keep
+  # gating releases. Runs before the file loop so a renamed file never adopts
+  # the id this is about to delete. If the test is already gone (404), drop
+  # the ids.json entry by hand.
+  for slug in $(jq -r 'keys[]' "$IDS"); do
+    [ -f "$DIR/tests/$slug.json" ] && continue
+    id=$(jq -r --arg s "$slug" '.[$s]' "$IDS")
+    if dd POST "/tests/delete" --data "{\"public_ids\":[\"$id\"]}" >/dev/null; then
+      jq --arg s "$slug" 'del(.[$s])' "$IDS" >"$IDS.tmp" && mv "$IDS.tmp" "$IDS"
+      echo "deleted $slug ($id)"
+    else
+      failed="$failed $slug"
+    fi
+  done
   for file in "$DIR"/tests/*.json; do
     slug=$(basename "$file" .json)
     type=$(jq -r '.type' "$file")
