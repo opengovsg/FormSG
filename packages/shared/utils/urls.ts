@@ -50,3 +50,20 @@ export const getStatusTrackerPath = (
 ) => {
   return `${formId}/status/${submissionId}`
 }
+
+const SECRET_QUERY_PARAMS = ['key', 'token']
+
+export const redactSecretQueryParams = (url: string): string => {
+  let parsed: URL
+  try {
+    parsed = new URL(url)
+  } catch {
+    return url
+  }
+  const secretParams = SECRET_QUERY_PARAMS.filter((param) =>
+    parsed.searchParams.has(param),
+  )
+  if (secretParams.length === 0) return url
+  secretParams.forEach((param) => parsed.searchParams.set(param, 'REDACTED'))
+  return parsed.toString()
+}

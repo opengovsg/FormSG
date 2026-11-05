@@ -5,6 +5,8 @@ import { ReactQueryDevtools } from 'react-query/devtools'
 import { ChakraProvider } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
 
+import { redactSecretQueryParams } from 'formsg-shared/utils/urls'
+
 import { theme } from '~theme/index'
 import { AuthProvider } from '~contexts/AuthContext'
 import { GrowthBookProvider } from '~contexts/GrowthbookContext'
@@ -41,6 +43,13 @@ datadogLogs.init({
   version: import.meta.env.VITE_APP_VERSION,
   forwardErrorsToLogs: true,
   sampleRate: 100,
+  beforeSend: (log) => {
+    log.view.url = redactSecretQueryParams(log.view.url)
+    if (log.view.referrer) {
+      log.view.referrer = redactSecretQueryParams(log.view.referrer)
+    }
+    return true
+  },
 })
 
 export const App = (): JSX.Element => {
