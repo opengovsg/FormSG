@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 import { Box, Stack, Text } from '@chakra-ui/react'
@@ -37,6 +38,9 @@ import {
   StepOneLoginRestrictionsDraft,
 } from './StepOneLoginRestrictions'
 
+const STEP_COPY_KEY = 'features.adminForm.sidebar.workflow.stepLogin'
+const COPY_KEY = `${STEP_COPY_KEY}.settings` as const
+
 interface StepAuthSettingsEditorProps {
   form: AdminMultirespondentFormDto
   settings: MultirespondentFormSettings
@@ -63,6 +67,7 @@ export const StepAuthSettingsEditor = ({
   onSavingChange,
   onSaveReady,
 }: StepAuthSettingsEditorProps): JSX.Element => {
+  const { t } = useTranslation()
   const { formId } = useParams()
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
@@ -84,7 +89,10 @@ export const StepAuthSettingsEditor = ({
 
   const saveMutation = useMutation(
     async () => {
-      if (!formId) throw new Error('No formId provided')
+      if (!formId)
+        throw new Error(
+          t('features.adminForm.settings.mutations.missingFormId'),
+        )
       const trimmedEsrvcId = esrvcId.trim()
       const corppassId =
         authType === FormAuthType.CP && trimmedEsrvcId
@@ -136,10 +144,10 @@ export const StepAuthSettingsEditor = ({
           await saveStepOneLoginRestrictions(formId, baseline, restrictions)
       } catch (cause) {
         const message =
-          cause instanceof Error ? cause.message : 'Unable to save settings.'
+          cause instanceof Error ? cause.message : t(`${COPY_KEY}.saveFailed`)
         throw new Error(
           loginSaved
-            ? `The login was saved, but some Step 1 restrictions could not be saved. ${message} Review the saved settings before trying again.`
+            ? t(`${COPY_KEY}.restrictionsFailed`, { message })
             : message,
         )
       } finally {
@@ -148,7 +156,7 @@ export const StepAuthSettingsEditor = ({
     },
     {
       onSuccess: () => {
-        toast({ description: 'Authentication settings saved.' })
+        toast({ description: t(`${COPY_KEY}.saved`) })
         onDirtyChange(false)
         onClose()
       },
@@ -188,16 +196,14 @@ export const StepAuthSettingsEditor = ({
   const save = async (): Promise<boolean> => {
     if (inFlightSave.current) return inFlightSave.current
     if (loginSwitch.isPending) {
-      setError(
-        'Confirm or cancel the authentication change before leaving this card.',
-      )
+      setError(t(`${COPY_KEY}.confirmSwitchFirst`))
       return false
     }
     if (isSaveBlocked) {
       setError(
         isParsing
-          ? 'Wait for the eligible respondent list to finish checking.'
-          : 'Check the authentication settings before saving.',
+          ? t(`${STEP_COPY_KEY}.saveErrors.restrictionsParsing`)
+          : t(`${COPY_KEY}.checkBeforeSaving`),
       )
       return false
     }
@@ -238,11 +244,7 @@ export const StepAuthSettingsEditor = ({
           }}
           isDisabled={isPublic || isLoading}
           isLoading={isLoading}
-          notice={
-            isPublic
-              ? 'Close your form to change authentication settings.'
-              : undefined
-          }
+          notice={isPublic ? t(`${COPY_KEY}.closeFormToEdit`) : undefined}
         />
         {stepIndex === 0 && authType !== FormAuthType.NIL ? (
           <StepOneLoginRestrictions
@@ -258,8 +260,8 @@ export const StepAuthSettingsEditor = ({
         {draftFieldIds.length < step.edit.length ? (
           <Text textStyle="body-2" color="secondary.400">
             {deletedFieldIds.length
-              ? 'Confirmed fields will be deleted from the form when you save or navigate away.'
-              : 'Incompatible fields will be unassigned when you save or navigate away. They remain in the form.'}
+              ? t(`${COPY_KEY}.deleteNotice`)
+              : t(`${COPY_KEY}.unassignNotice`)}
           </Text>
         ) : null}
         {error ? (
@@ -270,8 +272,8 @@ export const StepAuthSettingsEditor = ({
       </Stack>
       <Box mt="1.5rem" py="2rem" borderTopWidth="1px" borderColor="neutral.300">
         <SaveActionGroup
-          submitButtonLabel="Save"
-          ariaLabelName="authentication settings"
+          submitButtonLabel={t('features.common.save')}
+          ariaLabelName={t(`${COPY_KEY}.ariaLabelName`)}
           isLoading={isLoading}
           isSubmitDisabled={isSaveBlocked}
           handleSubmit={() => {

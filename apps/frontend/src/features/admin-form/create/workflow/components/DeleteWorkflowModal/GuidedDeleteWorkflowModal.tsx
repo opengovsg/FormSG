@@ -20,7 +20,6 @@ import {
   FormStatus,
   WorkflowStepAuthType,
 } from 'formsg-shared/types'
-import { STEP_LOGIN_PROVIDER_LABELS } from 'formsg-shared/utils/step-login'
 
 import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
 import Button from '~components/Button'
@@ -40,8 +39,12 @@ import {
   getRetainedAuthDeletedFields,
   getWorkflowAuthOptions,
 } from '../../utils/authFieldRemoval'
+import { STEP_LOGIN_LABEL_KEYS } from '../../utils/stepLoginAvailability'
 import { AffectedAuthFieldRules } from '../AffectedAuthFieldRules'
 import { DeletedAuthFields } from '../DeletedAuthFields'
+
+const COPY_KEY =
+  'features.adminForm.sidebar.workflow.conditionalRouting.modals.guidedDeleteWorkflow'
 
 interface GuidedDeleteWorkflowModalProps {
   isOpen: boolean
@@ -153,7 +156,7 @@ export const GuidedDeleteWorkflowModal = ({
       <ModalContent ref={dialogRef}>
         <ModalCloseButton isDisabled={isLoading} />
         <ModalHeader color="secondary.700">
-          {showPicker ? 'Choose authentication to keep' : copy.title}
+          {showPicker ? t(`${COPY_KEY}.pickerTitle`) : copy.title}
         </ModalHeader>
         <ModalBody>
           <Stack spacing="1rem">
@@ -162,10 +165,7 @@ export const GuidedDeleteWorkflowModal = ({
             ) : null}
             {showPicker ? (
               <>
-                <Text>
-                  Your form will have one respondent after deleting the
-                  workflow. Choose which authentication it should keep.
-                </Text>
+                <Text>{t(`${COPY_KEY}.pickerDescription`)}</Text>
                 {providers.length > 1 ? (
                   <Radio.RadioGroup
                     value={retainedProvider ?? ''}
@@ -179,19 +179,17 @@ export const GuidedDeleteWorkflowModal = ({
                         value={provider}
                         allowDeselect={false}
                       >
-                        {STEP_LOGIN_PROVIDER_LABELS[provider]}
+                        {t(STEP_LOGIN_LABEL_KEYS[provider])}
                       </Radio>
                     ))}
                   </Radio.RadioGroup>
                 ) : (
-                  <Text>Keep Corppass authentication.</Text>
+                  <Text>{t(`${COPY_KEY}.keepCorppass`)}</Text>
                 )}
                 {retainedProvider === FormAuthType.CP &&
                 cpOptions.length > 1 ? (
                   <Box>
-                    <Text mb="0.75rem">
-                      Choose the Corppass e-service ID to keep.
-                    </Text>
+                    <Text mb="0.75rem">{t(`${COPY_KEY}.chooseEsrvcId`)}</Text>
                     <Radio.RadioGroup
                       value={
                         selectedEsrvcId === ''
@@ -210,7 +208,7 @@ export const GuidedDeleteWorkflowModal = ({
                           value={option.esrvcId || '__empty-esrvc-id__'}
                           allowDeselect={false}
                         >
-                          {option.esrvcId || 'No e-service ID configured'}
+                          {option.esrvcId || t(`${COPY_KEY}.noEsrvcId`)}
                         </Radio>
                       ))}
                     </Radio.RadioGroup>
@@ -222,20 +220,19 @@ export const GuidedDeleteWorkflowModal = ({
             ) : (
               <>
                 {entryPoint === 'first-step' ? (
-                  <Text>Deleting Step 1 deletes the entire workflow.</Text>
+                  <Text>{t(`${COPY_KEY}.deletesWorkflow`)}</Text>
                 ) : null}
                 <Text>
-                  All workflow steps, approvals and workflow routing will be
-                  removed. The form will keep{' '}
                   {retainedProvider
-                    ? STEP_LOGIN_PROVIDER_LABELS[retainedProvider]
-                    : 'no'}{' '}
-                  authentication.
+                    ? t(`${COPY_KEY}.keepProvider`, {
+                        provider: t(STEP_LOGIN_LABEL_KEYS[retainedProvider]),
+                      })
+                    : t(`${COPY_KEY}.keepNone`)}
                 </Text>
                 {deletedFields.length ? (
                   <>
                     <Text textStyle="subhead-1">
-                      These fields will be deleted from your form:
+                      {t(`${COPY_KEY}.deletedFieldsIntro`)}
                     </Text>
                     <DeletedAuthFields
                       fields={deletedFields}
@@ -243,24 +240,24 @@ export const GuidedDeleteWorkflowModal = ({
                     />
                   </>
                 ) : (
-                  <Text>All form fields will be kept.</Text>
+                  <Text>{t(`${COPY_KEY}.keepAllFields`)}</Text>
                 )}
                 <AffectedAuthFieldRules rules={rules} />
                 {resetRestrictions ? (
-                  <Text>
-                    The original Step 1 eligibility list and one-response limit
-                    will be reset because its authentication provider is
-                    changing.
-                  </Text>
+                  <Text>{t(`${COPY_KEY}.resetRestrictions`)}</Text>
                 ) : null}
-                <Text>Historical responses will not be deleted.</Text>
+                <Text>
+                  {t(
+                    'features.adminForm.sidebar.workflow.stepLogin.historicalResponsesKept',
+                  )}
+                </Text>
               </>
             )}
             {deleteWorkflowMutation.isError ? (
               <InlineMessage variant="error">
                 {deleteWorkflowMutation.error instanceof Error
                   ? deleteWorkflowMutation.error.message
-                  : 'The workflow could not be deleted. Your changes have not been applied.'}
+                  : t(`${COPY_KEY}.failed`)}
               </InlineMessage>
             ) : null}
           </Stack>
@@ -281,7 +278,9 @@ export const GuidedDeleteWorkflowModal = ({
                   : close
               }
             >
-              {!showPicker && needsPicker && !isFormOpen ? 'Back' : copy.cancel}
+              {!showPicker && needsPicker && !isFormOpen
+                ? t('features.common.back')
+                : copy.cancel}
             </Button>
             {isFormOpen ? (
               <Button
@@ -301,7 +300,7 @@ export const GuidedDeleteWorkflowModal = ({
                 }}
                 isDisabled={!selectionReady}
               >
-                Next
+                {t('features.common.next')}
               </Button>
             ) : (
               <Button
