@@ -148,13 +148,19 @@ export const SendBackModal = ({
                 stepName: targetStep?.label,
               })}
             </FormLabel.Label>
-            <Flex flexWrap="wrap" gap="0.5rem">
-              {recipients.map((email) => (
-                <LogicBadge key={email} overflowWrap="anywhere">
-                  {email}
-                </LogicBadge>
-              ))}
-            </Flex>
+            {recipients.length > 0 ? (
+              <Flex flexWrap="wrap" gap="0.5rem">
+                {recipients.map((email) => (
+                  <LogicBadge key={email} overflowWrap="anywhere">
+                    {email}
+                  </LogicBadge>
+                ))}
+              </Flex>
+            ) : (
+              <FormLabel.Description>
+                {t(`${WORKFLOW_ACTIONS_I18N}.whoIsNotifiedNone`)}
+              </FormLabel.Description>
+            )}
           </Box>
         ) : null}
         {isToStepOne ? (

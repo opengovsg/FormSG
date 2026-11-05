@@ -132,6 +132,25 @@ describe('SendBackModal', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('explains when the selected step has no recipients', () => {
+    render(
+      <SendBackModal
+        isOpen
+        onClose={vi.fn()}
+        onConfirm={vi.fn()}
+        history={{
+          ...history,
+          submittedSteps: [step([]), step([]), step([])],
+          workflowEvents: [],
+        }}
+      />,
+    )
+
+    expect(screen.getByText('People in Step 3')).toBeInTheDocument()
+    expect(screen.getByText('whoIsNotifiedNone')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'confirm' })).toBeEnabled()
+  })
+
   it('sends back to the chosen step with trimmed remarks', async () => {
     const onConfirm = showModal()
 

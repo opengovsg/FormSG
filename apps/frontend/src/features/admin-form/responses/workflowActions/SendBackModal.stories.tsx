@@ -72,3 +72,19 @@ StepOne.args = {
     workflowEvents: [],
   },
 }
+
+export const NoRecipients = Template.bind({})
+NoRecipients.args = {
+  history: {
+    submittedSteps: [
+      { ...submittedStep, nextStepRecipientEmails: [] },
+      submittedStep,
+    ],
+    workflow: [
+      { _id: 'step-1', step_name: 'Applicant' },
+      { _id: 'step-2', step_name: 'Team lead' },
+      { _id: 'step-3', step_name: 'Finance' },
+    ],
+    workflowEvents: [],
+  },
+}
