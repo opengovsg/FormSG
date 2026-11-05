@@ -31,6 +31,7 @@ import {
   FormStatus,
   FormWebhookResponseModeSettings,
   FormWebhookSettings,
+  FormWorkflowDto,
   Language,
   LogicConditionState,
   LogicDto,
@@ -51,6 +52,12 @@ import {
   isLoginField,
   isMyInfoDataField,
 } from 'formsg-shared/utils/login-identity'
+import {
+  formUsesAuthType,
+  getLoginFieldPublishErrors,
+  getResultingLoginErrors,
+  hasLaterStepLogin,
+} from 'formsg-shared/utils/step-login'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import { omit, pick } from 'lodash'
@@ -131,6 +138,10 @@ import WorkflowStepSchema, {
   WorkflowStepDynamicSchema,
   WorkflowStepStaticSchema,
 } from './form_workflow_step.server.schema'
+import {
+  getStepLoginAuthenticationConfigGuard,
+  saveWithAuthenticationConfigGuard,
+} from './form-authentication-config'
 import getUserModel from './user.server.model'
 import { isPositiveInteger } from './utils'
 
@@ -576,11 +587,21 @@ MultirespondentFormSchema.methods.getWhitelistedSubmitterIds = function () {
 MultirespondentFormSchema.methods.getDuplicateParams = function (
   overrideProps: OverrideProps,
 ) {
-  const newForm = pick(this, [
-    ...FORM_SCHEMA_COMMON_DUPLICATE_PARAMS,
-    'workflow',
-  ]) as PickDuplicateForm
-  return { ...newForm, ...overrideProps }
+  if (!hasLaterStepLogin(this.workflow)) {
+    const newForm = pick(this, [
+      ...FORM_SCHEMA_COMMON_DUPLICATE_PARAMS,
+      'workflow',
+    ]) as PickDuplicateForm
+    return { ...newForm, ...overrideProps }
+  }
+  const newForm = pick(this, FORM_SCHEMA_COMMON_DUPLICATE_PARAMS)
+  // Later steps keep their login but not their Corppass e-service ID
+  const sourceWorkflow: FormWorkflowDto = this.toObject().workflow ?? []
+  const workflow = sourceWorkflow.map((step) =>
+    step.auth ? { ...step, auth: omit(step.auth, 'esrvc_id') } : step,
+  )
+  return { ...newForm, workflow, ...overrideProps } as PickDuplicateForm &
+    OverrideProps
 }
 
 const MultirespondentFormWorkflowPath = MultirespondentFormSchema.path(
@@ -667,9 +688,16 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         validate: [
           {
             validator: function (this: IFormSchema) {
+              // Any step's Singpass login may fill Myinfo fields; the
+              // pre-validate hook checks each field's owning step.
               return (
-                this.authType === FormAuthType.MyInfo ||
-                !(this.form_fields ?? []).some(isMyInfoDataField)
+                formUsesAuthType(
+                  {
+                    authType: this.authType ?? FormAuthType.NIL,
+                    workflow: this.get('workflow'),
+                  },
+                  FormAuthType.MyInfo,
+                ) || !(this.form_fields ?? []).some(isMyInfoDataField)
               )
             },
             message: 'Myinfo fields need Singpass login.',
@@ -1315,9 +1343,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   FormDocumentSchema.methods.updateFormFieldById = function (
+    this: IFormDocument,
     fieldId: string,
     newField: FormFieldDto,
   ) {
+    const checkedConfig = getStepLoginAuthenticationConfigGuard(this)
     const fieldToUpdate = getFormFieldById(this.form_fields, fieldId)
     if (!fieldToUpdate) return Promise.resolve(null)
 
@@ -1327,13 +1357,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       fieldToUpdate.set(newField)
     }
 
-    return this.save()
+    return saveWithAuthenticationConfigGuard(this, checkedConfig)
   }
 
   FormDocumentSchema.methods.insertFormField = function (
+    this: IFormDocument,
     newField: FormField,
     to?: number,
   ) {
+    const checkedConfig = getStepLoginAuthenticationConfigGuard(this)
     const formFields = this.form_fields as Types.DocumentArray<IFieldSchema>
     // Must use undefined check since number can be 0; i.e. falsey.
     if (to !== undefined) {
@@ -1342,13 +1374,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     } else {
       formFields.push(newField)
     }
-    return this.save()
+    return saveWithAuthenticationConfigGuard(this, checkedConfig)
   }
 
   FormDocumentSchema.methods.insertFormFields = function (
+    this: IFormDocument,
     newFields: FormField[],
     to?: number,
   ) {
+    const checkedConfig = getStepLoginAuthenticationConfigGuard(this)
     const formFields = this.form_fields as Types.DocumentArray<IFieldSchema>
     // Must use undefined check since number can be 0; i.e. falsey.
     if (to !== undefined) {
@@ -1357,12 +1391,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     } else {
       formFields.push(...newFields)
     }
-    return this.save()
+    return saveWithAuthenticationConfigGuard(this, checkedConfig)
   }
 
   FormDocumentSchema.method<IFormDocument>(
     'duplicateFormFieldByIdAndIndex',
     function (fieldId: string, insertionIndex: number) {
+      const checkedConfig = getStepLoginAuthenticationConfigGuard(this)
       const fieldToDuplicate = getFormFieldById(this.form_fields, fieldId)
       if (!fieldToDuplicate) return Promise.resolve(null)
 
@@ -1373,7 +1408,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       ) as FormFieldSchema
 
       this.form_fields.splice(insertionIndex, 0, duplicatedField)
-      return this.save()
+      return saveWithAuthenticationConfigGuard(this, checkedConfig)
     },
   )
 
@@ -1383,6 +1418,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       fieldId: string,
       newPosition: number,
     ): Promise<IFormDocument | null> {
+      const checkedConfig = getStepLoginAuthenticationConfigGuard(this)
       const existingFieldPosition = this.form_fields.findIndex(
         (f) => String(f._id) === fieldId,
       )
@@ -1396,7 +1432,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         newPosition,
       )
       this.form_fields = updatedFormFields
-      return this.save()
+      return saveWithAuthenticationConfigGuard(this, checkedConfig)
     },
   )
 
@@ -1688,13 +1724,20 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       return next(validationError)
     }
 
-    const loginIdentityErrors = getLoginIdentityConfigErrors({
+    const loginConfig = {
       authType: this.authType ?? FormAuthType.NIL,
       responseMode: this.responseMode,
       isSubmitterIdCollectionEnabled: this.isSubmitterIdCollectionEnabled,
       form_fields: this.form_fields,
       workflow: this.get('workflow'),
-    })
+    }
+    // Step login rules apply only to forms with a later-step login, which
+    // only an admin with mrf-singpass-all-steps on can add.
+    const loginIdentityErrors = !hasLaterStepLogin(loginConfig.workflow)
+      ? getLoginIdentityConfigErrors(loginConfig)
+      : this.status === FormStatus.Public
+        ? getLoginFieldPublishErrors(loginConfig)
+        : getResultingLoginErrors(loginConfig)
     if (loginIdentityErrors.length > 0) {
       const validationError = this.invalidate(
         'form_fields',

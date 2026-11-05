@@ -11,6 +11,8 @@ import { FCC } from '~typings/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 
+import { saveBeforeNavigation } from '~features/admin-form/common/navigationSave'
+
 import { FieldListTabIndex } from '../../builder-and-design/constants'
 import {
   DesignState,
@@ -23,6 +25,7 @@ import {
   setToInactiveSelector,
   useFieldBuilderStore,
 } from '../../builder-and-design/useFieldBuilderStore'
+import { useIsMrfStepLoginEnabled } from '../../workflow/hooks/useIsMrfStepLoginEnabled'
 
 export enum DrawerTabs {
   Builder,
@@ -109,7 +112,7 @@ export const useCreatePageSidebarContext =
       if (activeTab !== DrawerTabs.Design) setDesignState(DesignState.Inactive)
     }, [activeTab, setDesignState])
 
-    const setActiveOrPendingTab = useCallback(
+    const applyTab = useCallback(
       (tab: DrawerTabs | null, shouldBePending?: boolean) => {
         if (shouldBePending) {
           setPendingTab(tab)
@@ -125,6 +128,26 @@ export const useCreatePageSidebarContext =
         }
       },
       [fieldBuilderState, isMobile, setFieldsToInactive],
+    )
+
+    // Leaving the Workflow tab saves the open step first, like leaving the
+    // page does. Only the step login editor registers that save.
+    const isStepLoginEnabled = useIsMrfStepLoginEnabled()
+    const setActiveOrPendingTab = useCallback(
+      (tab: DrawerTabs | null, shouldBePending?: boolean) => {
+        if (
+          isStepLoginEnabled &&
+          activeTab === DrawerTabs.Workflow &&
+          tab !== DrawerTabs.Workflow
+        ) {
+          void saveBeforeNavigation().then((saved) => {
+            if (saved) applyTab(tab, shouldBePending)
+          })
+          return
+        }
+        applyTab(tab, shouldBePending)
+      },
+      [activeTab, applyTab, isStepLoginEnabled],
     )
 
     const clearPendingTab = useCallback(() => {

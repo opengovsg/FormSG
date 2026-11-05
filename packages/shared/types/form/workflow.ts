@@ -82,7 +82,7 @@ type AuthFieldDeletionInput = {
 
 type WithWriteAuth<T> = Omit<T, 'auth'> &
   AuthFieldDeletionInput & {
-    // Absent or null means no login. The admin UI always sends the whole step.
+    // Absent keeps the saved login, null removes it.
     auth?: FormWorkflowStepAuth | null
     // Step 1 only. See FirstStepLoginInput.
     first_step_login?: FirstStepLoginInput

@@ -1,6 +1,7 @@
 import {
   FormPermission,
   FormResponseMode,
+  FormWorkflowDto,
   SubmissionType,
 } from 'formsg-shared/types'
 
@@ -73,6 +74,11 @@ export const isFormMultirespondent = (
 ): form is IMultirespondentFormSchema => {
   return form.responseMode === FormResponseMode.Multirespondent
 }
+
+/** The saved MRF workflow, or no steps for other forms. */
+export const getSavedWorkflow = (
+  form: IFormSchema | IPopulatedForm,
+): FormWorkflowDto => (isFormMultirespondent(form) ? (form.workflow ?? []) : [])
 
 /**
  * Typeguard to check if given form is a multirespondentform.

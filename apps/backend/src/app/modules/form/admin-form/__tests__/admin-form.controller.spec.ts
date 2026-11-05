@@ -5630,6 +5630,8 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_REQ.body,
         false,
+        // mrf-singpass-all-steps is off
+        false,
       )
     })
 
@@ -5740,6 +5742,8 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_REQ.body,
         false,
+        // mrf-singpass-all-steps is off
+        false,
       )
     })
 
@@ -5817,6 +5821,8 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_REQ.body,
         false,
+        // mrf-singpass-all-steps is off
+        false,
       )
     })
 
@@ -5858,6 +5864,8 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.updateFormSettings).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_REQ.body,
+        false,
+        // mrf-singpass-all-steps is off
         false,
       )
     })
@@ -5927,6 +5935,8 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.updateFormSettings).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_REQ.body,
+        false,
+        // mrf-singpass-all-steps is off
         false,
       )
     })
