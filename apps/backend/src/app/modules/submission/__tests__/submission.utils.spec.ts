@@ -610,40 +610,6 @@ describe('submission.utils', () => {
   })
 
   describe('areAttachmentsMoreThanLimit', () => {
-    describe('email mode', () => {
-      it('should pass attachments when they are smaller than 7MB', () => {
-        expect(
-          areAttachmentsMoreThanLimit(
-            [validSingleFile, zipOnlyValid],
-            FormResponseMode.Email,
-          ),
-        ).toBe(false)
-      })
-
-      it('should fail when a single attachment is larger than 7MB', () => {
-        const modifiedBigFile = cloneDeep(validSingleFile)
-        modifiedBigFile.content = Buffer.alloc(7000001)
-        expect(
-          areAttachmentsMoreThanLimit(
-            [modifiedBigFile],
-            FormResponseMode.Email,
-          ),
-        ).toBe(true)
-      })
-
-      it('should fail when attachments add up to more than 7MB', () => {
-        const modifiedBigFile1 = cloneDeep(validSingleFile)
-        const modifiedBigFile2 = cloneDeep(validSingleFile)
-        modifiedBigFile1.content = Buffer.alloc(3500000)
-        modifiedBigFile2.content = Buffer.alloc(3500001)
-        expect(
-          areAttachmentsMoreThanLimit(
-            [modifiedBigFile1, modifiedBigFile2],
-            FormResponseMode.Email,
-          ),
-        ).toBe(true)
-      })
-    })
     describe('storage mode', () => {
       it('should pass attachments when they are smaller than 20MB', () => {
         expect(

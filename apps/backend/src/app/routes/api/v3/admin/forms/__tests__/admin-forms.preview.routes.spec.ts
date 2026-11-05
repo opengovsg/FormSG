@@ -17,7 +17,6 @@ import mongoose from 'mongoose'
 import supertest, { Session } from 'supertest-session'
 
 import getFormModel, {
-  getEmailFormModel,
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
@@ -39,7 +38,6 @@ jest.mock('src/app/modules/spcp/spcp.oidc.client.ts')
 
 const UserModel = getUserModel(mongoose)
 const FormModel = getFormModel(mongoose)
-const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)
 
 const app = setupApp('/admin/forms', AdminFormsRouter, {
@@ -104,10 +102,10 @@ describe('admin-form.preview.routes', () => {
           shortName: 'someUser',
         })
       ).user
-      const collabFormToPreview = await EmailFormModel.create({
+      const collabFormToPreview = await EncryptFormModel.create({
         title: 'some form',
         admin: anotherUser._id,
-        emails: [anotherUser.email],
+        publicKey: 'some public key',
         // Only read permissions.
         permissionList: [{ email: defaultUser.email }],
       })
@@ -138,10 +136,10 @@ describe('admin-form.preview.routes', () => {
           shortName: 'someUser',
         })
       ).user
-      const unauthedForm = await EmailFormModel.create({
+      const unauthedForm = await EncryptFormModel.create({
         title: 'some form',
         admin: anotherUser._id,
-        emails: [anotherUser.email],
+        publicKey: 'some public key',
         // defaultUser does not have read permissions.
       })
 
@@ -196,11 +194,11 @@ describe('admin-form.preview.routes', () => {
 
     it('should return 422 when user in session cannot be found in the database', async () => {
       // Arrange
-      const formToPreview = await EmailFormModel.create({
+      const formToPreview = await EncryptFormModel.create({
         title: 'some other form',
         admin: defaultUser._id,
         status: FormStatus.Public,
-        emails: [defaultUser.email],
+        publicKey: 'some public key',
       })
       // Delete user after login.
       await dbHandler.clearCollection(UserModel.collection.name)
@@ -219,11 +217,11 @@ describe('admin-form.preview.routes', () => {
 
     it('should return 500 when database error occurs whilst retrieving form to preview', async () => {
       // Arrange
-      const formToPreview = await EmailFormModel.create({
+      const formToPreview = await EncryptFormModel.create({
         title: 'some other form',
         admin: defaultUser._id,
         status: FormStatus.Public,
-        emails: [defaultUser.email],
+        publicKey: 'some public key',
       })
       // Mock database error.
       jest

@@ -43,7 +43,7 @@ describe('singpass.oidc.router', () => {
     beforeEach(async () => {
       mockClient.createJWT.mockResolvedValue(MOCK_JWT)
       jest.restoreAllMocks()
-      await dbHandler.insertEmailForm({
+      await dbHandler.insertEncryptForm({
         formId: new ObjectId(MOCK_TARGET),
         formOptions: {
           authType: FormAuthType.SP,

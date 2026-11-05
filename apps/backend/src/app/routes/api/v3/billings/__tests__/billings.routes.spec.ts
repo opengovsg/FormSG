@@ -229,7 +229,8 @@ const generateLoginStatistics = async ({
     FormModel.create({
       title: `example form title ${idx}`,
       admin: user._id,
-      responseMode: FormResponseMode.Email,
+      responseMode: FormResponseMode.Encrypt,
+      publicKey: 'some public key',
       emails: [user.email],
     }),
   )

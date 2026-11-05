@@ -11,11 +11,7 @@ import { Box, FormControl } from '@chakra-ui/react'
 import { get, isEmpty, isEqual } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import {
-  EmailFormSettings,
-  FormResponseMode,
-  StorageFormSettings,
-} from 'formsg-shared/types/form'
+import { StorageFormSettings } from 'formsg-shared/types/form'
 
 import {
   useOptionalAdminEmailValidationRules,
@@ -35,7 +31,7 @@ import { RespondentCopyToggle } from './EmailNotificationsSection/RespondentCopy
 
 interface EmailFormSectionProps {
   isDisabled: boolean
-  settings: EmailFormSettings | StorageFormSettings
+  settings: StorageFormSettings
   isHighContrast?: boolean
 }
 
@@ -79,9 +75,7 @@ const AdminEmailRecipientsInput = ({
       control={control}
       name={EMAILS_FIELD_NAME}
       rules={
-        (settings?.responseMode === FormResponseMode.Email
-          ? requiredAdminEmailValidationRules
-          : optionalAdminEmailValidationRules) as RegisterOptions<{
+        optionalAdminEmailValidationRules as RegisterOptions<{
           emails: string[]
           isRequired: boolean
         }>
@@ -132,8 +126,6 @@ export const FormEmailSection = ({
 
   useEffect(() => reset({ emails: settings.emails }), [settings.emails, reset])
 
-  const isEmailMode = settings.responseMode === FormResponseMode.Email
-
   const DESCRIPTION_TEXT = `All email addresses below will be notified. Ensure that inboxes can support the classification and sensitivity.`
 
   return (
@@ -141,7 +133,6 @@ export const FormEmailSection = ({
       <FormProvider {...formMethods}>
         <FormControl isInvalid={!isEmpty(errors)} isDisabled={isDisabled}>
           <FormLabel
-            isRequired={isEmailMode}
             useMarkdownForDescription
             description={DESCRIPTION_TEXT}
             isHighContrast={isHighContrast}

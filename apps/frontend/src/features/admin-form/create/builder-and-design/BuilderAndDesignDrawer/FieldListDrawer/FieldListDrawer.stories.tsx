@@ -43,8 +43,6 @@ const mrfModeHandlers = [
   getAdminFormView({ mode: FormResponseMode.Multirespondent }),
 ]
 
-const emailModeHandlers = [getAdminFormView({ mode: FormResponseMode.Email })]
-
 export const EncryptMode = {
   parameters: {
     msw: { handlers: { default: encryptModeHandlers } },
@@ -54,11 +52,5 @@ export const EncryptMode = {
 export const MrfMode = {
   parameters: {
     msw: { handlers: { default: mrfModeHandlers } },
-  },
-}
-
-export const EmailMode = {
-  parameters: {
-    msw: { handlers: { default: emailModeHandlers } },
   },
 }

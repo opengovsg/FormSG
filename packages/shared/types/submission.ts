@@ -5,7 +5,7 @@ import { ErrorDto } from './core'
 import { FormFieldDto, MyInfoAttribute, PaymentFieldsDto } from './field'
 import { FormAuthType, StrippedFormFieldDto } from './form/form'
 import { DateString } from './generic'
-import { EmailResponse, FieldResponse, MobileResponse } from './response'
+import { EmailResponse, MobileResponse } from './response'
 import { PaymentStatus } from './payment'
 import {
   FormWorkflowDto,
@@ -19,7 +19,6 @@ export type SubmissionId = Opaque<string, 'SubmissionId'>
 export const SubmissionId = z.string() as unknown as z.Schema<SubmissionId>
 
 export enum SubmissionType {
-  Email = 'emailSubmission',
   Encrypt = 'encryptSubmission',
   Multirespondent = 'multirespondentSubmission',
 }
@@ -71,17 +70,6 @@ export const SubmissionBase = z.object({
   webhookResponses: z.array(WebhookResponse).optional(),
 })
 export type SubmissionBase = z.infer<typeof SubmissionBase>
-
-/**
- * Email mode submission typings as stored in the database.
- */
-export interface EmailModeSubmissionBase extends SubmissionBase {
-  submissionType: SubmissionType.Email
-  recipientEmails: string[]
-  responseHash: string
-  responseSalt: string
-  hasBounced: boolean
-}
 
 /**
  * Storage mode submission typings as stored in the database.
@@ -429,13 +417,6 @@ export type FormSubmissionMetadataQueryDto = RequireAtLeastOne<
   },
   'page' | 'submissionId'
 > & { pageSize?: number; startDate?: string; endDate?: string }
-
-/**
- * Shape of email form submissions
- */
-export type EmailModeSubmissionContentDto = {
-  responses: FieldResponse[]
-}
 
 export type SubmissionAttachment = {
   encryptedFile?: {

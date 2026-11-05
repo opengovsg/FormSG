@@ -41,33 +41,6 @@ describe('admin-form.settings.routes', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('PUT /admin/forms/:formId/settings', () => {
-    it('should return 200 with latest form settings on successful update for email mode forms', async () => {
-      // Arrange
-      const { form: formToUpdate, user } = await dbHandler.insertEmailForm()
-      const session = await createAuthedSession(user.email, request)
-
-      const settingsToUpdate: SettingsUpdateDto = {
-        title: 'new title to update',
-      }
-      expect(formToUpdate.title).not.toEqual(settingsToUpdate.title)
-
-      // Act
-      const response = await session
-        .patch(`/admin/forms/${formToUpdate._id}/settings`)
-        .send(settingsToUpdate)
-
-      // Assert
-      const expectedResponse = JSON.parse(
-        JSON.stringify({
-          ...formToUpdate.getSettings(),
-          // Should get updated with new settings
-          ...settingsToUpdate,
-        }),
-      )
-      expect(response.status).toEqual(200)
-      expect(response.body).toEqual(expectedResponse)
-    })
-
     it('should return 200 with latest form settings on successful update for encrypt mode forms', async () => {
       // Arrange
       const { form: formToUpdate, user } = await dbHandler.insertEncryptForm()
@@ -100,7 +73,7 @@ describe('admin-form.settings.routes', () => {
 
     it('should return 200 and persist closeAt when given a valid ISO date', async () => {
       // Arrange
-      const { form: formToUpdate, user } = await dbHandler.insertEmailForm()
+      const { form: formToUpdate, user } = await dbHandler.insertEncryptForm()
       const session = await createAuthedSession(user.email, request)
 
       const closeAt = '2026-12-31T15:59:00.000Z'
@@ -118,7 +91,7 @@ describe('admin-form.settings.routes', () => {
 
     it('should return 200 and clear closeAt when given null', async () => {
       // Arrange
-      const { form: formToUpdate, user } = await dbHandler.insertEmailForm()
+      const { form: formToUpdate, user } = await dbHandler.insertEncryptForm()
       const session = await createAuthedSession(user.email, request)
       await session
         .patch(`/admin/forms/${formToUpdate._id}/settings`)
@@ -136,7 +109,7 @@ describe('admin-form.settings.routes', () => {
 
     it('should return 400 when closeAt is not an ISO date', async () => {
       // Arrange
-      const { form, user } = await dbHandler.insertEmailForm()
+      const { form, user } = await dbHandler.insertEncryptForm()
       const session = await createAuthedSession(user.email, request)
 
       // Act
@@ -159,7 +132,7 @@ describe('admin-form.settings.routes', () => {
     it('should return 400 when patching with empty form settings', async () => {
       // Arrange
       // Log in user.
-      const { form, user } = await dbHandler.insertEmailForm({
+      const { form, user } = await dbHandler.insertEncryptForm({
         userId: USER_ID,
       })
       const session = await createAuthedSession(user.email, request)
@@ -339,7 +312,7 @@ describe('admin-form.settings.routes', () => {
     ]
     it('should return 200 when the collaborators are updated successfully', async () => {
       // Arrange
-      const { form, user } = await dbHandler.insertEmailForm()
+      const { form, user } = await dbHandler.insertEncryptForm()
       const session = await createAuthedSession(user.email, request)
       const expectedResponse = jsonParseStringify(MOCK_COLLABORATORS)
 
@@ -356,7 +329,7 @@ describe('admin-form.settings.routes', () => {
 
     it('should return 403 when the current session user does not have sufficient permissions to update the collaborators', async () => {
       // Arrange
-      const { form } = await dbHandler.insertEmailForm()
+      const { form } = await dbHandler.insertEncryptForm()
       const fakeUser = await dbHandler.insertUser({
         mailName: 'fakeUser',
         agencyId: new ObjectId(),
@@ -380,7 +353,7 @@ describe('admin-form.settings.routes', () => {
 
     it('should return 404 when the form could not be found', async () => {
       // Arrange
-      const { user } = await dbHandler.insertEmailForm()
+      const { user } = await dbHandler.insertEncryptForm()
       const session = await createAuthedSession(user.email, request)
       const expectedResponse = jsonParseStringify({
         message: 'Form not found',
@@ -398,7 +371,7 @@ describe('admin-form.settings.routes', () => {
 
     it('should return 410 when the form has been archived', async () => {
       // Arrange
-      const { form, user } = await dbHandler.insertEmailForm({
+      const { form, user } = await dbHandler.insertEncryptForm({
         formOptions: {
           status: FormStatus.Archived,
         },
@@ -420,7 +393,7 @@ describe('admin-form.settings.routes', () => {
 
     it('should return 422 when the current session user cannot be retrieved', async () => {
       // Arrange
-      const { form, user } = await dbHandler.insertEmailForm()
+      const { form, user } = await dbHandler.insertEncryptForm()
       const session = await createAuthedSession(user.email, request)
       const expectedResponse = jsonParseStringify({
         message: 'User not found',
@@ -439,7 +412,7 @@ describe('admin-form.settings.routes', () => {
 
     it('should return 500 when a database error occurs', async () => {
       // Arrange
-      const { form, user } = await dbHandler.insertEmailForm()
+      const { form, user } = await dbHandler.insertEncryptForm()
       const session = await createAuthedSession(user.email, request)
       const expectedResponse = jsonParseStringify({
         message: 'Something went wrong. Please try again.',
@@ -468,7 +441,7 @@ describe('admin-form.settings.routes', () => {
     ]
     it('should return the list of collaborators on a valid request', async () => {
       // Arrange
-      const { form, user } = await dbHandler.insertEmailForm({
+      const { form, user } = await dbHandler.insertEncryptForm({
         formOptions: {
           permissionList: MOCK_COLLABORATORS,
         },
@@ -489,7 +462,7 @@ describe('admin-form.settings.routes', () => {
 
     it('should return 403 when the current user does not have read permissions for the specified form', async () => {
       // Arrange
-      const { form } = await dbHandler.insertEmailForm({
+      const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
           permissionList: MOCK_COLLABORATORS,
         },
@@ -517,7 +490,7 @@ describe('admin-form.settings.routes', () => {
 
     it('should return 404 when the form could not be found', async () => {
       // Arrange
-      const { user } = await dbHandler.insertEmailForm()
+      const { user } = await dbHandler.insertEncryptForm()
       const session = await createAuthedSession(user.email, request)
       const expectedResponse = jsonParseStringify({
         message: 'Form not found',
@@ -535,7 +508,7 @@ describe('admin-form.settings.routes', () => {
 
     it('should return 410 when the form has been archived', async () => {
       // Arrange
-      const { form, user } = await dbHandler.insertEmailForm({
+      const { form, user } = await dbHandler.insertEncryptForm({
         formOptions: {
           status: FormStatus.Archived,
         },
@@ -557,7 +530,7 @@ describe('admin-form.settings.routes', () => {
 
     it('should return 422 when the current session user cannot be retrieved', async () => {
       // Arrange
-      const { form, user } = await dbHandler.insertEmailForm()
+      const { form, user } = await dbHandler.insertEncryptForm()
       const session = await createAuthedSession(user.email, request)
       const expectedResponse = jsonParseStringify({
         message: 'User not found',
@@ -576,7 +549,7 @@ describe('admin-form.settings.routes', () => {
 
     it('should return 500 when a database error occurs', async () => {
       // Arrange
-      const { form, user } = await dbHandler.insertEmailForm()
+      const { form, user } = await dbHandler.insertEncryptForm()
       const session = await createAuthedSession(user.email, request)
       const expectedResponse = jsonParseStringify({
         message: 'Something went wrong. Please try again.',

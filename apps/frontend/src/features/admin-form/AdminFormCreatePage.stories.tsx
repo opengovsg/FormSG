@@ -135,7 +135,7 @@ DesktopAllFields.parameters = {
       default: buildMswRoutes({
         form_fields: MOCK_FORM_FIELDS_WITH_MYINFO,
         authType: FormAuthType.MyInfo,
-        responseMode: FormResponseMode.Email,
+        responseMode: FormResponseMode.Encrypt,
       }),
     },
   },
@@ -215,7 +215,7 @@ AllFieldsFieldsHiddenByLogic.parameters = {
         form_fields: MOCK_FORM_FIELDS_WITH_MYINFO,
         form_logics: MOCK_FORM_LOGICS,
         authType: FormAuthType.MyInfo,
-        responseMode: FormResponseMode.Email,
+        responseMode: FormResponseMode.Encrypt,
       }),
     },
   },

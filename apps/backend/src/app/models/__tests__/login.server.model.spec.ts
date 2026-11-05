@@ -167,7 +167,7 @@ describe('login.server.model', () => {
       let testForm: IFormSchema
 
       beforeEach(async () => {
-        const { form, agency, user } = await dbHandler.insertEmailForm()
+        const { form, agency, user } = await dbHandler.insertEncryptForm()
 
         mockLoginDocuments = [
           {

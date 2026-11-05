@@ -42,7 +42,6 @@ import {
   DatabaseValidationError,
 } from 'src/app/modules/core/core.errors'
 import * as FeedbackService from 'src/app/modules/feedback/feedback.service'
-import * as EmailSubmissionService from 'src/app/modules/submission/email-submission/email-submission.service'
 import * as EncryptSubmissionService from 'src/app/modules/submission/encrypt-submission/encrypt-submission.service'
 import IncomingEncryptSubmission from 'src/app/modules/submission/encrypt-submission/IncomingEncryptSubmission.class'
 import {
@@ -100,9 +99,6 @@ jest.mock(
 )
 const MockEncryptSubmissionService = jest.mocked(EncryptSubmissionService)
 jest.mock(
-  'src/app/modules/submission/email-submission/email-submission.service',
-)
-jest.mock(
   'src/app/modules/submission/encrypt-submission/IncomingEncryptSubmission.class',
 )
 const MockIncomingEncryptSubmission = jest.mocked(IncomingEncryptSubmission)
@@ -114,7 +110,6 @@ jest.mock(
     ),
   }),
 )
-const MockEmailSubmissionService = jest.mocked(EmailSubmissionService)
 jest.mock('../admin-form.service')
 const MockAdminFormService = jest.mocked(AdminFormService)
 jest.mock('../../form.service')
@@ -1816,10 +1811,6 @@ describe('admin-form.controller', () => {
         ...MOCK_FORM,
         responseMode: FormResponseMode.Encrypt,
       } as IPopulatedForm
-      const MOCK_EMAIL_MODE_FORM = {
-        ...MOCK_FORM,
-        responseMode: FormResponseMode.Email,
-      } as IPopulatedForm
       const MOCK_MULTI_RESPONDENT_FORM = {
         ...MOCK_FORM,
         responseMode: FormResponseMode.Multirespondent,
@@ -1831,20 +1822,17 @@ describe('admin-form.controller', () => {
       MockUserService.getPopulatedUserById
         .mockReturnValueOnce(okAsync(MOCK_USER as IPopulatedUser))
         .mockReturnValueOnce(okAsync(MOCK_USER as IPopulatedUser))
-        .mockReturnValueOnce(okAsync(MOCK_USER as IPopulatedUser))
       MockAuthService.getFormAfterPermissionChecks
         .mockReturnValueOnce(okAsync(MOCK_STORAGE_MODE_FORM as IPopulatedForm))
-        .mockReturnValueOnce(okAsync(MOCK_EMAIL_MODE_FORM as IPopulatedForm)) // Email mode form
         .mockReturnValueOnce(
           okAsync(MOCK_MULTI_RESPONDENT_FORM as IPopulatedForm),
         )
       MockSubmissionService.getFormSubmissionsCount
         .mockReturnValueOnce(okAsync(expectedSubmissionCount))
         .mockReturnValueOnce(okAsync(expectedSubmissionCount))
-        .mockReturnValueOnce(okAsync(expectedSubmissionCount))
 
-      // Act - Invoke 3 times to test each form response mode
-      for (let i = 0; i < 3; i++) {
+      // Act - Invoke 2 times to test each form response mode
+      for (let i = 0; i < 2; i++) {
         await AdminFormController.countFormSubmissions(
           mockReqWithQuery,
           mockRes,
@@ -1862,13 +1850,6 @@ describe('admin-form.controller', () => {
       expect(
         MockSubmissionService.getFormSubmissionsCount,
       ).toHaveBeenNthCalledWith(2, {
-        formId: String(MOCK_FORM._id),
-        formResponseMode: FormResponseMode.Email,
-        dateRange: {},
-      })
-      expect(
-        MockSubmissionService.getFormSubmissionsCount,
-      ).toHaveBeenNthCalledWith(3, {
         formId: String(MOCK_FORM._id),
         formResponseMode: FormResponseMode.Multirespondent,
         dateRange: {},
@@ -4110,7 +4091,8 @@ describe('admin-form.controller', () => {
     it('should return copied template form view on duplicate success', async () => {
       // Arrange
       const expectedParams: DuplicateFormBodyDto = {
-        responseMode: FormResponseMode.Email,
+        responseMode: FormResponseMode.Encrypt,
+        publicKey: 'some public key',
         emails: ['some-email@example.com'],
         title: 'mock new template title',
       }
@@ -5452,10 +5434,6 @@ describe('admin-form.controller', () => {
       )
       MockAuthService.checkFormForPermissions.mockReturnValueOnce(adminCheck)
 
-      MockEmailSubmissionService.checkFormIsNotEmailMode.mockReturnValueOnce(
-        ok(MOCK_FORM as IPopulatedEncryptedForm),
-      )
-
       const getForWhitelistSettingSpy = jest.spyOn(
         AdminFormService,
         'getFormWhitelistSetting',
@@ -6586,7 +6564,7 @@ describe('admin-form.controller', () => {
       MockEncryptSubmissionService.checkFormIsEncryptMode.mockReturnValueOnce(
         err(
           new ResponseModeError(
-            FormResponseMode.Email,
+            FormResponseMode.Multirespondent,
             FormResponseMode.Encrypt,
           ),
         ),

@@ -16,32 +16,6 @@ import { mapRouteError } from './receiver.utils'
 const logger = createLoggerWithLabel(module)
 
 /**
- * Used for email mode only.
- * Parses multipart-form data request. Parsed attachments are
- * placed into req.attachments and parsed fields are placed into
- * req.body.
- *
- * @param req - Express request object
- * @param res - Express response object
- * @param next - Express next middleware function
- */
-export const receiveEmailSubmission: ControllerHandler<
-  unknown,
-  { message: string },
-  { responses: FieldResponse[] }
-> = async (req, res, next) => {
-  return receiveSubmission(
-    req,
-    res,
-    next,
-    SubmissionReceiver.createMultipartReceiver(
-      req.headers,
-      FormResponseMode.Email,
-    ),
-  )
-}
-
-/**
  * Used for storage mode only.
  * Parses multipart-form data request. Parsed attachments are
  * placed into req.attachments and parsed fields are placed into

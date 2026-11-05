@@ -22,9 +22,6 @@ const TABLE_HANDLER = {
     let tableTitle = `${field.title} (${field.columns
       .map((x) => x.title)
       .join(', ')})`
-    if (responseView.mode === FormResponseMode.Email) {
-      tableTitle = '[table] ' + tableTitle
-    }
     return tableTitle
   },
   getValues: (
@@ -33,8 +30,6 @@ const TABLE_HANDLER = {
   ): string[] => {
     if (field.fieldType !== BasicField.Table) return []
     switch (responseView.mode) {
-      case FormResponseMode.Email:
-        return field.val.map((row) => row.join(','))
       case FormResponseMode.Encrypt:
         // storage mode has a space
         if (responseView.csv) return field.val.map((row) => row.join(';'))
@@ -68,8 +63,6 @@ export const getResponseTitle = (
   }
   if (field.fieldType === BasicField.Attachment) {
     switch (responseView.mode) {
-      case FormResponseMode.Email:
-        return `[attachment] ${field.title}`
       case FormResponseMode.Encrypt:
         return field.title
     }

@@ -8,12 +8,9 @@ import {
 import {
   FormFieldSchema,
   FormLogicSchema,
-  IEmailFormSchema,
   IEncryptedFormSchema,
-  IFormHasEmailSchema,
   IFormSchema,
   IMultirespondentFormSchema,
-  IPopulatedEmailForm,
   IPopulatedForm,
 } from '../../../types'
 import { isMongooseDocumentArray } from '../../utils/mongoose'
@@ -40,17 +37,6 @@ export const transformEmails = (v: string | string[]): string[] => {
   } else {
     return transformEmailString(v)
   }
-}
-
-/**
- * Typeguard to check if given form is an email mode form.
- * @param form the form to check
- * @returns true if form is email mode form, false otherwise.
- */
-export const isFormEmailMode = (
-  form: IFormSchema | IPopulatedForm,
-): form is IEmailFormSchema => {
-  return form.responseMode === FormResponseMode.Email
 }
 
 /**
@@ -120,7 +106,7 @@ export const getCollabEmailsWithPermission = (
 }
 
 export const getAdminEmails = (
-  form: Partial<IFormHasEmailSchema>,
+  form: Partial<Pick<IFormSchema, 'emails'>>,
 ): string[] => {
   if (form.emails == null) {
     return []
@@ -131,16 +117,6 @@ export const getAdminEmails = (
   }
 
   return form.emails
-}
-
-/**
- * Type guard for whether a populated form is email mode
- * @param form Form document to check
- */
-export const isEmailModeForm = (
-  form: IPopulatedForm,
-): form is IPopulatedEmailForm => {
-  return form.responseMode === FormResponseMode.Email
 }
 
 /**
@@ -218,8 +194,6 @@ export const getSubmissionType = (
       return SubmissionType.Encrypt
     case FormResponseMode.Multirespondent:
       return SubmissionType.Multirespondent
-    case FormResponseMode.Email:
-      return SubmissionType.Email
   }
 }
 

@@ -5,7 +5,6 @@ export enum FilterOption {
   AllForms = 'All forms',
   OpenForms = 'Open forms',
   ClosedForms = 'Closed forms',
-  EmailForms = 'Email mode forms',
   StorageForms = 'Storage mode forms',
   MultiRespondentForms = 'Multi-respondent forms',
   // TODO [MRF-CUTOVER]: Remove after cutover. Shown only while the flag is on;

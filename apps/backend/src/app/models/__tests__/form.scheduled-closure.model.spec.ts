@@ -22,7 +22,8 @@ describe('closeAt hydration on pre-existing documents', () => {
     const form = await Form.create({
       title: 'pre-existing form',
       admin: ADMIN,
-      responseMode: FormResponseMode.Email,
+      responseMode: FormResponseMode.Encrypt,
+      publicKey: 'some public key',
       emails: ['a@example.com'],
     })
 
@@ -46,7 +47,8 @@ describe('closeAt hydration on pre-existing documents', () => {
     const form = await Form.create({
       title: 'brand new form',
       admin: ADMIN,
-      responseMode: FormResponseMode.Email,
+      responseMode: FormResponseMode.Encrypt,
+      publicKey: 'some public key',
       emails: ['a@example.com'],
     })
     expect(form.closeAt).toBeNull()

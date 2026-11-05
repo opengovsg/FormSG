@@ -43,7 +43,7 @@ export const PaymentEndPageBlock = ({
     window.location.reload()
   }
 
-  if (!isPaymentEnabled) {
+  if (!form || !isPaymentEnabled) {
     return <></>
   }
 

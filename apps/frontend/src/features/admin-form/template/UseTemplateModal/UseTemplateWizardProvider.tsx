@@ -125,9 +125,6 @@ export const useUseTemplateWizardContext = (
           },
         )
       }
-      case FormResponseMode.Email: {
-        return
-      }
       default: {
         const _: never = responseMode
         throw new Error(`Unhandled response mode: ${_}`)

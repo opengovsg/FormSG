@@ -14,7 +14,6 @@ import validator from 'validator'
 import {
   BounceType,
   EmailDataField,
-  IFormHasEmailSchema,
   IPopulatedForm,
   ISubmissionSchema,
 } from '../../../types'
@@ -851,7 +850,7 @@ export class MailService {
     includeFormIdInResponseJson,
   }: {
     replyToEmails?: string[]
-    form: Pick<IFormHasEmailSchema, '_id' | 'title' | 'emails'>
+    form: Pick<IPopulatedForm, '_id' | 'title' | 'emails'>
     submission: Pick<ISubmissionSchema, 'id' | 'created'>
     submissionAttachments?: Mail.Attachment[]
     formData: EmailDataField[]

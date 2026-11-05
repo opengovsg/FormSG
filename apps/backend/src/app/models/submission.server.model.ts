@@ -18,8 +18,6 @@ import mongoose, {
 
 import {
   FindFormsWithSubsAboveResult,
-  IEmailSubmissionModel,
-  IEmailSubmissionSchema,
   IEncryptedSubmissionSchema,
   IEncryptSubmissionModel,
   IMultirespondentSubmissionModel,
@@ -517,40 +515,6 @@ SubmissionSchema.statics.getEncryptedOrMultirespondentSubmissionCursorByFormId =
       >
     )
   }
-
-// Exported for use in pending submissions model
-export const EmailSubmissionSchema = new Schema<IEmailSubmissionSchema>({
-  recipientEmails: {
-    type: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
-  },
-  responseHash: {
-    type: String,
-    trim: true,
-    required: true,
-  },
-  responseSalt: {
-    type: String,
-    trim: true,
-    required: true,
-  },
-  hasBounced: {
-    type: Boolean,
-    default: false,
-  },
-})
-
-// EmailSubmission Instance methods
-/**
- * Returns null as email submission does not have a webhook view
- */
-EmailSubmissionSchema.methods.getWebhookView = function (): Promise<null> {
-  return Promise.resolve(null)
-}
 
 // Exported for use in pending submissions model
 export const EncryptSubmissionSchema = new Schema<
@@ -1351,7 +1315,6 @@ const compileSubmissionModel = (db: Mongoose): ISubmissionModel => {
     SUBMISSION_SCHEMA_ID,
     SubmissionSchema,
   )
-  Submission.discriminator(SubmissionType.Email, EmailSubmissionSchema)
   Submission.discriminator(SubmissionType.Encrypt, EncryptSubmissionSchema)
   Submission.discriminator(
     SubmissionType.Multirespondent,
@@ -1369,15 +1332,6 @@ const getSubmissionModel = (db: Mongoose): ISubmissionModel => {
   } catch {
     return compileSubmissionModel(db)
   }
-}
-
-export const getEmailSubmissionModel = (
-  db: Mongoose,
-): IEmailSubmissionModel => {
-  getSubmissionModel(db)
-  return db.model<IEmailSubmissionSchema, IEmailSubmissionModel>(
-    SubmissionType.Email,
-  )
 }
 
 export const getEncryptSubmissionModel = (

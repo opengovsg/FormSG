@@ -11,7 +11,6 @@ export const FILTER_OPTIONS: FilterOption[] = [
   FilterOption.ClosedForms,
   FilterOption.StorageForms,
   FilterOption.MultiRespondentForms,
-  FilterOption.EmailForms,
 ]
 
 // TODO [MRF-CUTOVER]: Remove after cutover. During the experiment the

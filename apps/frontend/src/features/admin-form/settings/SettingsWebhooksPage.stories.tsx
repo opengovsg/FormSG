@@ -114,25 +114,6 @@ StorageModeRetryEnabled.parameters = {
   },
 }
 
-export const UnsupportedEmailMode = Template.bind({})
-
-export const PlumberConnectedEmailMode = Template.bind({})
-PlumberConnectedEmailMode.parameters = {
-  msw: {
-    handlers: {
-      default: buildMswRoutes({
-        overrides: {
-          responseMode: FormResponseMode.Email,
-          webhook: {
-            url: 'https://plumber.gov.sg/webhooks/abc',
-            isRetryEnabled: false,
-          },
-        },
-      }),
-    },
-  },
-}
-
 export const UnsupportedMultirespondentMode = Template.bind({})
 UnsupportedMultirespondentMode.parameters = {
   msw: {

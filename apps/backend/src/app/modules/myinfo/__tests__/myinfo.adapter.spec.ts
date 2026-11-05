@@ -870,12 +870,6 @@ describe('myinfo.adapter', () => {
           true,
         ),
       ).toBe(false)
-      expect(
-        shouldFetchSponsoredChildren(
-          { responseMode: FormResponseMode.Email },
-          true,
-        ),
-      ).toBe(false)
     })
 
     it('should stay off for every response mode while the feature flag is off', () => {

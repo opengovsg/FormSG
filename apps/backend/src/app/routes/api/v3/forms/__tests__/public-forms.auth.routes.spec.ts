@@ -114,7 +114,7 @@ describe('public-form.auth.routes', () => {
 
     it('should return 200 with the FAPI redirect URL and set the FAPI session cookie when the form is valid and has authType MyInfo', async () => {
       // Arrange
-      const { form } = await dbHandler.insertEmailForm({
+      const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
           authType: FormAuthType.MyInfo,
           status: FormStatus.Public,
@@ -150,7 +150,7 @@ describe('public-form.auth.routes', () => {
 
     it('should return 400 when the request has an invalid type for isPersistentLogin', async () => {
       // Arrange
-      const { form } = await dbHandler.insertEmailForm({
+      const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
           authType: FormAuthType.MyInfo,
           status: FormStatus.Public,
@@ -267,7 +267,7 @@ describe('public-form.auth.routes', () => {
 
     it('should return 500 when the redirect url could not be created', async () => {
       // Arrange
-      const { form } = await dbHandler.insertEmailForm({
+      const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
           authType: FormAuthType.SP,
           status: FormStatus.Public,

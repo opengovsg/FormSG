@@ -22,7 +22,6 @@ const PUBLIC_FORM_FIELDS = [
   'hasRespondentCopy',
 ] as const
 
-export const EMAIL_PUBLIC_FORM_FIELDS = PUBLIC_FORM_FIELDS
 export const STORAGE_PUBLIC_FORM_FIELDS = [
   ...PUBLIC_FORM_FIELDS,
   'payments_field',
@@ -58,10 +57,6 @@ const FORM_SETTINGS_FIELDS = [
   'hasRespondentCopy',
 ] as const
 
-export const EMAIL_FORM_SETTINGS_FIELDS = [
-  ...FORM_SETTINGS_FIELDS,
-  'emails',
-] as const
 export const STORAGE_FORM_SETTINGS_FIELDS = [
   ...FORM_SETTINGS_FIELDS,
   'payments_channel',

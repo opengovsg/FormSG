@@ -153,7 +153,8 @@ describe('postman-sms.service', () => {
         title: 'Test Form',
         emails: [testUser.email],
         admin: testUser._id,
-        responseMode: FormResponseMode.Email,
+        responseMode: FormResponseMode.Encrypt,
+        publicKey: 'some public key',
       })
 
       mockOtpData = {

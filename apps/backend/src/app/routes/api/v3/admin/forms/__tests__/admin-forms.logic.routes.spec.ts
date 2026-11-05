@@ -34,29 +34,6 @@ describe('admin-form.logic.routes', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('DELETE /forms/:formId/logic/:logicId', () => {
-    it('should return 200 on successful form logic delete for email mode form', async () => {
-      // Arrange
-      const formLogicId = new ObjectId()
-      const { form: formToUpdate, user } = await dbHandler.insertEmailForm({
-        formOptions: {
-          form_logics: [
-            {
-              _id: formLogicId,
-            } as FormLogicSchema,
-          ],
-        },
-      })
-      const session = await createAuthedSession(user.email, request)
-
-      // Act
-      const response = await session
-        .delete(`/admin/forms/${formToUpdate._id}/logic/${formLogicId}`)
-        .send()
-
-      // Assert
-      expect(response.status).toEqual(200)
-    })
-
     it('should return 200 on successful form logic delete for encrypt mode form', async () => {
       // Arrange
       const formLogicId = new ObjectId()
@@ -117,7 +94,7 @@ describe('admin-form.logic.routes', () => {
       // Arrange
       const formLogicId = new ObjectId()
       const wrongLogicId = new ObjectId()
-      const { form: formToUpdate, user } = await dbHandler.insertEmailForm({
+      const { form: formToUpdate, user } = await dbHandler.insertEncryptForm({
         formOptions: {
           form_logics: [
             {
@@ -144,7 +121,7 @@ describe('admin-form.logic.routes', () => {
     it('should return 404 with error message if form does not exist', async () => {
       // Arrange
       const formLogicId = new ObjectId()
-      const { user } = await dbHandler.insertEmailForm({
+      const { user } = await dbHandler.insertEncryptForm({
         formOptions: {
           form_logics: [
             {
@@ -172,7 +149,7 @@ describe('admin-form.logic.routes', () => {
     it('should return 422 when userId cannot be found in the database', async () => {
       // Arrange
       const formLogicId = new ObjectId()
-      const { form: formToUpdate, user } = await dbHandler.insertEmailForm({
+      const { form: formToUpdate, user } = await dbHandler.insertEncryptForm({
         formOptions: {
           form_logics: [
             {
@@ -201,38 +178,6 @@ describe('admin-form.logic.routes', () => {
   })
 
   describe('PUT /forms/:formId/logic/:logicId', () => {
-    it('should return 200 on successful form logic update for email mode form', async () => {
-      // Arrange
-      const formLogicId = new ObjectId()
-      const { form: formToUpdate, user } = await dbHandler.insertEmailForm({
-        formOptions: {
-          form_logics: [
-            {
-              _id: formLogicId,
-              logicType: LogicType.ShowFields,
-            } as FormLogicSchema,
-          ],
-        },
-      })
-
-      const updatedLogic = {
-        _id: formLogicId,
-        logicType: LogicType.PreventSubmit,
-        conditions: [],
-        preventSubmitMessage: 'Some message',
-      } as unknown as FormLogicSchema
-
-      const session = await createAuthedSession(user.email, request)
-
-      // Act
-      const response = await session
-        .put(`/admin/forms/${formToUpdate._id}/logic/${formLogicId}`)
-        .send(updatedLogic)
-
-      // Assert
-      expect(response.status).toEqual(200)
-    })
-
     it('should return 200 on successful form logic update for encrypt mode form', async () => {
       // Arrange
       const formLogicId = new ObjectId()
@@ -310,7 +255,7 @@ describe('admin-form.logic.routes', () => {
       // Arrange
       const formLogicId = new ObjectId()
       const wrongLogicId = new ObjectId()
-      const { form: formToUpdate, user } = await dbHandler.insertEmailForm({
+      const { form: formToUpdate, user } = await dbHandler.insertEncryptForm({
         formOptions: {
           form_logics: [
             {
@@ -345,7 +290,7 @@ describe('admin-form.logic.routes', () => {
     it('should return 404 with error message if form does not exist', async () => {
       // Arrange
       const formLogicId = new ObjectId()
-      const { user } = await dbHandler.insertEmailForm({
+      const { user } = await dbHandler.insertEncryptForm({
         formOptions: {
           form_logics: [
             {
@@ -381,7 +326,7 @@ describe('admin-form.logic.routes', () => {
     it('should return 422 when userId cannot be found in the database', async () => {
       // Arrange
       const formLogicId = new ObjectId()
-      const { form: formToUpdate, user } = await dbHandler.insertEmailForm({
+      const { form: formToUpdate, user } = await dbHandler.insertEncryptForm({
         formOptions: {
           form_logics: [
             {

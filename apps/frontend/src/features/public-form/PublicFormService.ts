@@ -237,42 +237,6 @@ export type SubmitMultirespondentFormWithVirusScanningArgs =
     payments?: PaymentFieldsDto
   }
 
-export const submitEmailModeForm = async ({
-  formFields,
-  formLogics,
-  formInputs,
-  formId,
-  captchaResponse = null,
-  captchaType = '',
-  responseMetadata,
-  selectedFormLanguage = Language.ENGLISH,
-}: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
-  const filteredInputs = filterHiddenInputs({
-    formFields,
-    formInputs,
-    formLogics,
-  })
-  const formData = createClearSubmissionFormData({
-    formFields,
-    formInputs: filteredInputs,
-    responseMetadata,
-  })
-
-  return ApiService.post<SubmissionResponseDto>(
-    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email`,
-    formData,
-    {
-      params: {
-        captchaResponse: String(captchaResponse),
-        captchaType: captchaType,
-      },
-      headers: {
-        [X_FORMSG_SELECTED_FORM_LANGUAGE]: selectedFormLanguage,
-      },
-    },
-  ).then(({ data }) => data)
-}
-
 // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
 // Submit storage mode form with virus scanning (storage v2.1+)
 export const submitStorageModeFormWithFetch = async ({
@@ -377,46 +341,6 @@ export const submitStorageModeForm = async ({
       },
     },
   ).then(({ data }) => data)
-}
-
-// TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
-export const submitEmailModeFormWithFetch = async ({
-  formFields,
-  formLogics,
-  formInputs,
-  formId,
-  captchaResponse = null,
-  captchaType = '',
-  responseMetadata,
-}: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
-  const filteredInputs = filterHiddenInputs({
-    formFields,
-    formInputs,
-    formLogics,
-  })
-  const formData = createClearSubmissionFormData({
-    formFields,
-    formInputs: filteredInputs,
-    responseMetadata,
-  })
-
-  // Add captcha response to query string
-  const queryString = new URLSearchParams({
-    captchaResponse: String(captchaResponse),
-    captchaType,
-  }).toString()
-
-  const url = `${API_BASE_URL}${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email?${queryString}`
-  const response = await fetch(url, {
-    method: 'POST',
-    body: formData,
-    headers: {
-      Accept: 'application/json',
-      ...getClientVersionHeader(url),
-    },
-  })
-
-  return processFetchResponse(response)
 }
 
 // Submit multirespondent form with virus scanning

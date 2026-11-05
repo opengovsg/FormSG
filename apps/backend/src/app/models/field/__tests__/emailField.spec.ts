@@ -72,36 +72,6 @@ describe('models.fields.emailField', () => {
     expect(actual.field.toObject()).toEqual(expected)
   })
 
-  it('should set includeFormSummary to given value on ResponseMode.Email forms', async () => {
-    // Arrange
-    const mockEmailField = {
-      autoReplyOptions: {
-        hasAutoReply: true,
-        autoReplySubject: 'some subject',
-        autoReplySender: 'some sender',
-        autoReplyMessage: 'This is a test message',
-        // Set includeFormSummary to true.
-        includeFormSummary: true,
-      },
-    }
-    // Act
-    const actual = await MockParent.create({
-      responseMode: FormResponseMode.Email,
-      field: mockEmailField,
-    })
-
-    // Assert
-    const expected = merge(EMAIL_FIELD_DEFAULTS, mockEmailField, {
-      _id: expect.anything(),
-      autoReplyOptions: {
-        // Should be initial value (true)
-        // Do not really need to declare here, but here just to be explicit.
-        includeFormSummary: true,
-      },
-    })
-    expect(actual.field.toObject()).toEqual(expected)
-  })
-
   it('should set includeFormSummary to given on ResponseMode.Multirespondent forms', async () => {
     // Arrange
     const mockEmailField = {

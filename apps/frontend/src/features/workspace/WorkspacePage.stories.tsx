@@ -30,7 +30,8 @@ const createForm = (num: number, overrideTitle?: string) => {
     return {
       _id: `618b2d5e648fb700700002b${x}`,
       status: x % 2 ? FormStatus.Public : FormStatus.Private,
-      responseMode: x % 2 ? FormResponseMode.Email : FormResponseMode.Encrypt,
+      responseMode:
+        x % 2 ? FormResponseMode.Multirespondent : FormResponseMode.Encrypt,
       title: overrideTitle ?? `Test workspace form email ${x}`,
       admin: {
         _id: '618b2cc0648fb70070000292',

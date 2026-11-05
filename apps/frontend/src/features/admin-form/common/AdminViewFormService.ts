@@ -19,7 +19,6 @@ import {
 } from '~services/ApiService'
 
 import { augmentWithMyInfoDisplayValue } from '~features/myinfo/utils'
-import { SubmitEmailFormArgs } from '~features/public-form/PublicFormService'
 import {
   createClearSubmissionFormData,
   filterHiddenInputs,
@@ -148,31 +147,6 @@ export const removeSelfFromFormCollaborators = async (
 }
 
 /**
- * Submit an email mode form in preview mode
- */
-export const submitEmailModeFormPreview = async ({
-  formFields,
-  formLogics,
-  formInputs,
-  formId,
-}: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
-  const filteredInputs = filterHiddenInputs({
-    formFields,
-    formInputs,
-    formLogics,
-  })
-  const formData = createClearSubmissionFormData({
-    formFields,
-    formInputs: filteredInputs,
-  })
-
-  return ApiService.post<SubmissionResponseDto>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`,
-    formData,
-  ).then(({ data }) => data)
-}
-
-/**
  * Submit a storage mode form in preview mode
  */
 export const submitStorageModeFormPreview = async ({
@@ -186,38 +160,6 @@ export const submitStorageModeFormPreview = async ({
     `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/storage`,
     emptyFormData,
   ).then(({ data }) => data)
-}
-
-/**
- * Submit an email mode form in preview mode using fetch
- * TODO(#5826): Fallback using Fetch. Remove once network error is resolved
- */
-export const submitEmailModeFormPreviewWithFetch = async ({
-  formFields,
-  formLogics,
-  formInputs,
-  formId,
-}: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
-  const filteredInputs = filterHiddenInputs({
-    formFields,
-    formInputs,
-    formLogics,
-  })
-  const formData = createClearSubmissionFormData({
-    formFields,
-    formInputs: filteredInputs,
-  })
-
-  const url = `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`
-  const response = await fetch(url, {
-    method: 'POST',
-    body: formData,
-    headers: {
-      Accept: 'application/json',
-      ...getClientVersionHeader(url),
-    },
-  })
-  return processFetchResponse(response)
 }
 
 /**

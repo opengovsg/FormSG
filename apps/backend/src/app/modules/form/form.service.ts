@@ -16,7 +16,6 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { decodeBase64 } from 'tweetnacl-util'
 
 import {
-  IEmailFormModel,
   IEncryptedFormModel,
   IFormSchema,
   IMultirespondentFormModel,
@@ -26,7 +25,6 @@ import { smsConfig } from '../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { TIMEZONE } from '../../constants/timezone'
 import getFormModel, {
-  getEmailFormModel,
   getEncryptedFormModel,
   getMultirespondentFormModel,
 } from '../../models/form.server.model'
@@ -61,7 +59,6 @@ import {
 
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
-const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptedFormModel = getEncryptedFormModel(mongoose)
 const MultirespondentFormModel = getMultirespondentFormModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
@@ -614,10 +611,8 @@ export const checkHasSingleSubmissionValidationFailure = (
 
 export const getFormModelByResponseMode = (
   responseMode: FormResponseMode,
-): IEmailFormModel | IEncryptedFormModel | IMultirespondentFormModel => {
+): IEncryptedFormModel | IMultirespondentFormModel => {
   switch (responseMode) {
-    case FormResponseMode.Email:
-      return EmailFormModel
     case FormResponseMode.Encrypt:
       return EncryptedFormModel
     case FormResponseMode.Multirespondent:

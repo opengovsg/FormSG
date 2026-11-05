@@ -26,7 +26,7 @@ import {
 import { ProcessedFieldResponse } from '../submission.types'
 
 describe('ParsedResponsesObject', () => {
-  it('should return list of parsed responses for email form submission successfully', async () => {
+  it('should return list of parsed responses for form submission successfully', async () => {
     // Add answer to subset of field types
     const shortTextField = generateDefaultField(BasicField.ShortText)
     const decimalField = generateDefaultField(BasicField.Decimal)
@@ -49,7 +49,7 @@ describe('ParsedResponsesObject', () => {
 
     const result = ParsedResponsesObject.parseResponses(
       {
-        responseMode: FormResponseMode.Email,
+        responseMode: FormResponseMode.Encrypt,
         form_fields: [shortTextField, decimalField],
       } as IFormDocument,
       [shortTextResponse, decimalResponse],
@@ -64,12 +64,12 @@ describe('ParsedResponsesObject', () => {
     expect(result._unsafeUnwrap().getAllResponses()).toEqual(expectedParsed)
   })
 
-  it('should return error when email form has more fields than responses', async () => {
+  it('should return error when form has more fields than responses', async () => {
     const extraField = generateDefaultField(BasicField.Mobile)
 
     const result = ParsedResponsesObject.parseResponses(
       {
-        responseMode: FormResponseMode.Email,
+        responseMode: FormResponseMode.Encrypt,
         form_fields: [extraField],
       } as IFormDocument,
       [],
@@ -81,14 +81,14 @@ describe('ParsedResponsesObject', () => {
     )
   })
 
-  it('should return error when any responses are not valid for email form submission', async () => {
+  it('should return error when any responses are not valid for form submission', async () => {
     // Set NRIC field in form as required.
     const nricField = generateDefaultField(BasicField.Nric)
     const nricResponse = generateSingleAnswerResponse(nricField, 'invalid')
 
     const result = ParsedResponsesObject.parseResponses(
       {
-        responseMode: FormResponseMode.Email,
+        responseMode: FormResponseMode.Encrypt,
         form_fields: [nricField],
       } as IFormDocument,
       [nricResponse],
@@ -100,7 +100,7 @@ describe('ParsedResponsesObject', () => {
     )
   })
 
-  it('should return error when email form submission is prevented by logic', async () => {
+  it('should return error when form submission is prevented by logic', async () => {
     // Mock logic util to return non-empty to check if error is thrown.
     const mockReturnLogicUnit = {
       preventSubmitMessage: 'mock prevent submit',
@@ -115,7 +115,7 @@ describe('ParsedResponsesObject', () => {
 
     const result = ParsedResponsesObject.parseResponses(
       {
-        responseMode: FormResponseMode.Email,
+        responseMode: FormResponseMode.Encrypt,
         form_fields: [] as FormFieldSchema[],
       } as IFormDocument,
       [],
@@ -155,7 +155,7 @@ describe('ParsedResponsesObject', () => {
 
     const result = ParsedResponsesObject.parseResponses(
       {
-        responseMode: FormResponseMode.Email,
+        responseMode: FormResponseMode.Encrypt,
         form_fields: [shortTextField, decimalField],
       } as IFormDocument,
       [shortTextResponse, decimalResponse],

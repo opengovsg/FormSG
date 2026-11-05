@@ -4,12 +4,7 @@ import { Skeleton } from '@chakra-ui/react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import { FormResponseMode } from 'formsg-shared/types/form/form'
-
-import {
-  useOptionalAdminEmailValidationRules,
-  useRequiredAdminEmailValidationRules,
-} from '~utils/formValidation'
+import { useOptionalAdminEmailValidationRules } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
 import { TagInput } from '~components/TagInput'
@@ -30,11 +25,6 @@ export const EmailFormRecipientsInput = (): JSX.Element => {
   const { user, isLoading } = useUser()
   const { formMethods } = useCreateFormWizard()
 
-  const { watch } = formMethods
-  const responseModeValue = watch('responseMode')
-
-  const requiredAdminEmailValidationRules =
-    useRequiredAdminEmailValidationRules()
   const optionalAdminEmailValidationRules =
     useOptionalAdminEmailValidationRules()
 
@@ -59,9 +49,7 @@ export const EmailFormRecipientsInput = (): JSX.Element => {
         defaultValue={[user.email]}
         name="emails"
         rules={
-          (responseModeValue === FormResponseMode.Email
-            ? requiredAdminEmailValidationRules
-            : optionalAdminEmailValidationRules) as RegisterOptions<CreateFormWizardInputProps>
+          optionalAdminEmailValidationRules as RegisterOptions<CreateFormWizardInputProps>
         }
         render={({ field }) => (
           <TagInput

@@ -199,7 +199,7 @@ describe('Verification Model', () => {
     describe('createTransactionFromForm', () => {
       describe('Email mode forms', () => {
         it('should return null when there are no verifiable fields', async () => {
-          const { form } = await dbHandler.insertEmailForm({
+          const { form } = await dbHandler.insertEncryptForm({
             formOptions: {
               form_fields: [
                 generateDefaultField(BasicField.ShortText),
@@ -220,7 +220,7 @@ describe('Verification Model', () => {
           const verifiableField = generateDefaultField(BasicField.Email, {
             isVerifiable: true,
           })
-          const { form } = await dbHandler.insertEmailForm({
+          const { form } = await dbHandler.insertEncryptForm({
             formOptions: {
               form_fields: [
                 generateDefaultField(BasicField.ShortText),
@@ -244,7 +244,7 @@ describe('Verification Model', () => {
           const verifiableField2 = generateDefaultField(BasicField.Mobile, {
             isVerifiable: true,
           })
-          const { form } = await dbHandler.insertEmailForm({
+          const { form } = await dbHandler.insertEncryptForm({
             formOptions: {
               form_fields: [
                 generateDefaultField(BasicField.ShortText),

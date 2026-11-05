@@ -38,7 +38,8 @@ const createForm = async ({
   Form.create({
     title,
     admin: MOCK_ADMIN_OBJ_ID,
-    responseMode: FormResponseMode.Email,
+    responseMode: FormResponseMode.Encrypt,
+    publicKey: 'some public key',
     emails: ['test@example.com'],
     status,
     closeAt,

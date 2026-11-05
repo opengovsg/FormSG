@@ -11,8 +11,6 @@ import { FormLogo } from './form_logo'
 import type { Except, Merge, Tagged, PartialDeep } from 'type-fest'
 import {
   ADMIN_FORM_META_FIELDS,
-  EMAIL_FORM_SETTINGS_FIELDS,
-  EMAIL_PUBLIC_FORM_FIELDS,
   MULTIRESPONDENT_FORM_SETTINGS_FIELDS,
   MULTIRESPONDENT_PUBLIC_FORM_FIELDS,
   STORAGE_FORM_SETTINGS_FIELDS,
@@ -115,7 +113,6 @@ export type FormWebhook = {
 
 export enum FormResponseMode {
   Encrypt = 'encrypt',
-  Email = 'email',
   Multirespondent = 'multirespondent',
 }
 
@@ -286,11 +283,6 @@ export interface FormBase {
   supportedLanguages?: Language[]
 }
 
-export interface EmailFormBase extends FormBase {
-  responseMode: FormResponseMode.Email
-  emails: string[]
-}
-
 export interface WhitelistedSubmitterIds {
   isWhitelistEnabled: boolean
 }
@@ -337,25 +329,19 @@ type FormDtoBase = {
 
 export type StorageFormDto = Merge<StorageFormBase, FormDtoBase>
 
-export type EmailFormDto = Merge<EmailFormBase, FormDtoBase>
-
 export type MultirespondentFormDto = Merge<
   MultirespondentFormBase,
   FormDtoBase & { workflow: FormWorkflowDto }
 >
 
-export type FormDto = StorageFormDto | EmailFormDto | MultirespondentFormDto
+export type FormDto = StorageFormDto | MultirespondentFormDto
 
 export type AdminStorageFormDto = Merge<StorageFormDto, { admin: UserDto }>
-export type AdminEmailFormDto = Merge<EmailFormDto, { admin: UserDto }>
 export type AdminMultirespondentFormDto = Merge<
   MultirespondentFormDto,
   { admin: UserDto }
 >
-export type AdminFormDto =
-  | AdminStorageFormDto
-  | AdminEmailFormDto
-  | AdminMultirespondentFormDto
+export type AdminFormDto = AdminStorageFormDto | AdminMultirespondentFormDto
 
 type PublicFormBase = {
   admin: PublicUserDto
@@ -368,16 +354,6 @@ export type PublicStorageFormDto = Merge<
     // Arrays like typeof list have numeric index signatures, so their number key
     // yields the union of all numerically-indexed properties.
     (typeof STORAGE_PUBLIC_FORM_FIELDS)[number]
-  >,
-  PublicFormBase
->
-
-export type PublicEmailFormDto = Merge<
-  Pick<
-    EmailFormDto,
-    // Arrays like typeof list have numeric index signatures, so their number key
-    // yields the union of all numerically-indexed properties.
-    (typeof EMAIL_PUBLIC_FORM_FIELDS)[number]
   >,
   PublicFormBase
 >
@@ -412,13 +388,8 @@ export type StrippedFormFieldDto<T extends FormFieldDto = FormFieldDto> =
 
 export type PublicFormDto =
   | PublicStorageFormDto
-  | PublicEmailFormDto
   | StrippedPublicMultirespondentFormDto
 
-export type EmailFormSettings = Pick<
-  EmailFormDto,
-  (typeof EMAIL_FORM_SETTINGS_FIELDS)[number]
->
 export type StorageFormSettings = Pick<
   StorageFormDto,
   (typeof STORAGE_FORM_SETTINGS_FIELDS)[number]
@@ -429,10 +400,7 @@ export type MultirespondentFormSettings = Pick<
   (typeof MULTIRESPONDENT_FORM_SETTINGS_FIELDS)[number]
 >
 
-export type FormSettings =
-  | EmailFormSettings
-  | StorageFormSettings
-  | MultirespondentFormSettings
+export type FormSettings = StorageFormSettings | MultirespondentFormSettings
 
 export type FormWebhookSettings = Pick<FormSettings, 'webhook'>
 

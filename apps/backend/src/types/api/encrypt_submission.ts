@@ -4,6 +4,7 @@ import {
   FormResponseMode,
   PaymentFieldsDto,
   ProductItem,
+  ResponseMetadata,
   StorageModeSubmissionContentDto,
 } from 'formsg-shared/types'
 import type { Merge } from 'type-fest'
@@ -12,7 +13,6 @@ import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.ty
 
 import { IPopulatedEncryptedForm, IPopulatedForm } from '../form'
 
-import { ParsedEmailModeSubmissionBody } from './email_submission'
 import { ParsedClearFormFieldResponse } from './submission'
 
 export type EncryptSubmissionDto = Merge<
@@ -33,7 +33,9 @@ export type EncryptFormFieldResponse =
  * Storage submission body after req.body's FormData has passed through the
  * ReceiverMiddleware.receiveStorageSubmission middleware.
  */
-export type ParsedStorageModeSubmissionBody = ParsedEmailModeSubmissionBody & {
+export type ParsedStorageModeSubmissionBody = {
+  responses: ParsedClearFormFieldResponse[]
+  responseMetadata?: ResponseMetadata
   paymentProducts?: Array<ProductItem>
   paymentReceiptEmail?: string
   payments?: PaymentFieldsDto

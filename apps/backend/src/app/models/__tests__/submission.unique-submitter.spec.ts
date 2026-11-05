@@ -3,13 +3,14 @@ import { ObjectId } from 'bson'
 import { SubmissionType } from 'formsg-shared/types'
 import mongoose from 'mongoose'
 
-import {
-  getEmailSubmissionModel,
+import getSubmissionModel, {
   getEncryptSubmissionModel,
+  getMultirespondentSubmissionModel,
 } from 'src/app/models/submission.server.model'
 
+const Submission = getSubmissionModel(mongoose)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
-const EmailSubmission = getEmailSubmissionModel(mongoose)
+const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
 
 const SUBMITTER_ID = 'hashed-submitter-id'
 
@@ -22,18 +23,6 @@ const MODELS = [
       submissionType: SubmissionType.Encrypt,
       encryptedContent: 'content',
       version: 1,
-      submitterId: SUBMITTER_ID,
-    }),
-  },
-  {
-    name: 'EmailSubmission',
-    model: EmailSubmission,
-    buildContent: (form: ObjectId) => ({
-      form,
-      submissionType: SubmissionType.Email,
-      recipientEmails: ['admin@example.com'],
-      responseHash: 'hash',
-      responseSalt: 'salt',
       submitterId: SUBMITTER_ID,
     }),
   },
@@ -51,8 +40,14 @@ describe.each(MODELS)(
         ) => Promise<unknown>
       )(String(formId), SUBMITTER_ID, buildContent(formId))
 
+    // Await every compiled model's index build; a build still running when the
+    // first transaction starts trips mongo's 5ms transaction lock timeout.
     beforeAll(() =>
-      replSetDbHandler.connect([EncryptSubmission, EmailSubmission]),
+      replSetDbHandler.connect([
+        Submission,
+        EncryptSubmission,
+        MultirespondentSubmission,
+      ]),
     )
     afterEach(() => replSetDbHandler.clearDatabase())
     afterAll(() => replSetDbHandler.closeDatabase())
