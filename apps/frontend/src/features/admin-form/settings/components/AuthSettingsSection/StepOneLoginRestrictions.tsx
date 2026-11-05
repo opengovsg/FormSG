@@ -53,9 +53,11 @@ export const saveStepOneLoginRestrictions = async (
   formId: string,
   baseline: Pick<MultirespondentFormSettings, 'isSingleSubmission'>,
   draft: StepOneLoginRestrictionsDraft,
+  onSingleSubmissionSaved?: (enabled: boolean) => void,
 ): Promise<void> => {
   if (draft.isSingleSubmission !== !!baseline.isSingleSubmission) {
     await updateIsSingleSubmission(formId, draft.isSingleSubmission)
+    onSingleSubmissionSaved?.(draft.isSingleSubmission)
   }
   if (draft.whitelist.kind !== 'unchanged') {
     await updateFormWhitelistSetting(

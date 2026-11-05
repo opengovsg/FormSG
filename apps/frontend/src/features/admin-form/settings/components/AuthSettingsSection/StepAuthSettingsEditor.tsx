@@ -81,7 +81,9 @@ export const StepAuthSettingsEditor = ({
   const [esrvcId, setEsrvcId] = useState(
     getStepEsrvcId(settings, form.workflow, stepIndex) ?? '',
   )
-  const [baseline] = useState(settings)
+  const [reviewed] = useState({ form, step, stepIndex })
+  const baseline = useRef({ isSingleSubmission: settings.isSingleSubmission })
+  const [loginSaved, setLoginSaved] = useState(false)
   const [draftFieldIds, setDraftFieldIds] = useState(step.edit)
   const [restrictions, setRestrictions] = useState(() =>
     createStepOneLoginRestrictionsDraft(settings),
@@ -99,48 +101,59 @@ export const StepAuthSettingsEditor = ({
         )
       const confirmation = {
         delete_auth_field_ids: deletedFieldIds,
-        expected_last_modified: form.lastModified,
+        expected_last_modified: reviewed.form.lastModified,
       }
-      let loginSaved = false
+      let didSaveLogin = loginSaved
       try {
-        await updateWorkflowStep(
-          formId,
-          stepIndex,
-          stepIndex === 0
-            ? {
-                ...confirmation,
-                _id: step._id,
-                workflow_type: WorkflowType.Static,
-                emails: [],
-                edit: draftFieldIds,
-                step_name: step.step_name,
-                approval_field: step.approval_field,
-                is_approval_enabled: step.is_approval_enabled,
-                ...normaliseFirstStepLogin(
-                  isStepLoginAuthType(authType)
-                    ? { auth_type: authType, esrvc_id: esrvcId }
-                    : undefined,
-                ),
-              }
-            : {
-                ...step,
-                ...confirmation,
-                edit: draftFieldIds,
-                auth: normaliseStepAuth(
-                  isWorkflowStepAuthType(authType)
-                    ? { auth_type: authType, esrvc_id: esrvcId }
-                    : null,
-                ),
-              },
-        )
-        loginSaved = true
-        if (stepIndex === 0 && authType !== FormAuthType.NIL)
-          await saveStepOneLoginRestrictions(formId, baseline, restrictions)
+        if (!loginSaved) {
+          await updateWorkflowStep(
+            formId,
+            reviewed.stepIndex,
+            reviewed.stepIndex === 0
+              ? {
+                  ...confirmation,
+                  _id: reviewed.step._id,
+                  workflow_type: WorkflowType.Static,
+                  emails: [],
+                  edit: draftFieldIds,
+                  step_name: reviewed.step.step_name,
+                  approval_field: reviewed.step.approval_field,
+                  is_approval_enabled: reviewed.step.is_approval_enabled,
+                  ...normaliseFirstStepLogin(
+                    isStepLoginAuthType(authType)
+                      ? { auth_type: authType, esrvc_id: esrvcId }
+                      : undefined,
+                  ),
+                }
+              : {
+                  ...reviewed.step,
+                  ...confirmation,
+                  edit: draftFieldIds,
+                  auth: normaliseStepAuth(
+                    isWorkflowStepAuthType(authType)
+                      ? { auth_type: authType, esrvc_id: esrvcId }
+                      : null,
+                  ),
+                },
+          )
+          didSaveLogin = true
+          setLoginSaved(true)
+          setDeletedFieldIds([])
+        }
+        if (reviewed.stepIndex === 0 && authType !== FormAuthType.NIL)
+          await saveStepOneLoginRestrictions(
+            formId,
+            baseline.current,
+            restrictions,
+            (isSingleSubmission) => {
+              baseline.current = { isSingleSubmission }
+            },
+          )
       } catch (cause) {
         const message =
           cause instanceof Error ? cause.message : t(`${COPY_KEY}.saveFailed`)
         throw new Error(
-          loginSaved
+          didSaveLogin
             ? t(`${COPY_KEY}.restrictionsFailed`, { message })
             : message,
         )
@@ -160,11 +173,11 @@ export const StepAuthSettingsEditor = ({
   )
   const isLoading = saveMutation.isLoading
   const loginSwitch = useStepLoginSwitch({
-    form,
-    stepNumber: stepIndex,
+    form: reviewed.form,
+    stepNumber: reviewed.stepIndex,
     authType,
     assignedIds: draftFieldIds,
-    isDisabled: isPublic || isLoading,
+    isDisabled: isPublic || isLoading || loginSaved,
     onSwitch: ({ authType: next, unassignedIds, deletedIds }) => {
       const unassigned = new Set(unassignedIds)
       setDraftFieldIds((ids) => ids.filter((id) => !unassigned.has(id)))
@@ -236,7 +249,7 @@ export const StepAuthSettingsEditor = ({
             onDirtyChange(true)
             setError('')
           }}
-          isDisabled={isPublic || isLoading}
+          isDisabled={isPublic || isLoading || loginSaved}
           isLoading={isLoading}
           notice={isPublic ? t(`${COPY_KEY}.closeFormToEdit`) : undefined}
         />
