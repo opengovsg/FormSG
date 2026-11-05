@@ -38,6 +38,7 @@ import { generateHashedSubmitterId } from '../../submission.utils'
 import {
   createFormsgAndRetrieveForm,
   encryptSubmission,
+  ensureMrfStepLoginNotSuspended,
   handleNdiResponses,
   scanAndRetrieveAttachments,
   validateMultirespondentRemindBody,
@@ -1393,6 +1394,73 @@ describe('Multirespondent Submission Middleware', () => {
       expect(
         jest.mocked(MyInfoService.checkMyInfoHashes),
       ).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('ensureMrfStepLoginNotSuspended', () => {
+    const STEP = { workflow_type: 'static', emails: [], edit: [] }
+    const NO_LATER_LOGIN = [STEP, STEP]
+    const LATER_LOGIN = [STEP, { ...STEP, auth: { auth_type: 'MyInfo' } }]
+
+    it.each([
+      {
+        name: 'blocks a new submission on a form with a later-step login',
+        formWorkflow: LATER_LOGIN,
+        savedWorkflow: undefined,
+        isBlocked: true,
+      },
+      {
+        name: 'blocks an update whose saved workflow has one, even if the form dropped it',
+        formWorkflow: NO_LATER_LOGIN,
+        savedWorkflow: LATER_LOGIN,
+        isBlocked: true,
+      },
+      {
+        name: 'allows an update whose saved workflow has none',
+        formWorkflow: LATER_LOGIN,
+        savedWorkflow: NO_LATER_LOGIN,
+        isBlocked: false,
+      },
+      {
+        name: 'allows a new submission on a form without one',
+        formWorkflow: NO_LATER_LOGIN,
+        savedWorkflow: undefined,
+        isBlocked: false,
+      },
+    ])(
+      'with the kill switch on, $name',
+      ({ formWorkflow, savedWorkflow, isBlocked }) => {
+        const mockReq = createMockReq({ formId: 'form-id' })
+        mockReq.growthbook.isOn.mockImplementation(
+          (flag: string) => flag === featureFlags.mrfStepLoginKillSwitch,
+        )
+        mockReq.formsg = {
+          formDef: { _id: 'form-id', workflow: formWorkflow },
+          mrfSubmission: savedWorkflow && {
+            _id: 'submission-id',
+            workflow: savedWorkflow,
+          },
+        }
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        ensureMrfStepLoginNotSuspended(mockReq, mockRes as any, mockNext)
+
+        expect(mockNext).toHaveBeenCalledTimes(isBlocked ? 0 : 1)
+        expect(mockRes.status.mock.calls).toEqual(
+          isBlocked ? [[StatusCodes.UNPROCESSABLE_ENTITY]] : [],
+        )
+      },
+    )
+
+    it('lets a later-step login through while the kill switch is off', () => {
+      const mockReq = createMockReq({ formId: 'form-id' })
+      mockReq.formsg = { formDef: { _id: 'form-id', workflow: LATER_LOGIN } }
+      const mockNext = jest.fn()
+
+      ensureMrfStepLoginNotSuspended(mockReq, createMockRes() as any, mockNext)
+
+      expect(mockNext).toHaveBeenCalled()
     })
   })
 

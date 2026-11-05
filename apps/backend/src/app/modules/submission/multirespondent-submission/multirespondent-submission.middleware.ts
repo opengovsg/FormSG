@@ -75,6 +75,7 @@ import {
 import {
   InvalidSubmissionTypeError,
   MissingSubmitterIdError,
+  MrfStepLoginSuspendedError,
   MrfWorkflowOverflowError,
   MrfWorkflowStoppedError,
   ProcessingError,
@@ -114,6 +115,7 @@ import { resolveMrfMyInfoReadOnlyFields } from './myinfo-read-only-fields'
 import {
   clearMrfStepAuthCookie,
   getLoginIdentityValue,
+  isMrfStepLoginSuspended,
   ResolvedMrfStepAuth,
   resolveMrfStepAuth,
   verifyMrfStepAuthCookie,
@@ -327,6 +329,32 @@ export const createFormsgAndRetrieveForm = (
             })
         })
     })
+}
+
+/**
+ * Blocks submissions on a workflow with a later-step login while the kill
+ * switch is on. A new submission checks the live form and an update checks its
+ * saved workflow, so in-flight submissions are blocked too.
+ */
+export const ensureMrfStepLoginNotSuspended = (
+  req: ProcessedMultirespondentSubmissionHandlerRequest,
+  res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
+  next: NextFunction,
+) => {
+  const { formDef, mrfSubmission } = req.formsg
+  const workflow = mrfSubmission?.workflow ?? formDef.workflow
+  if (!hasLaterStepLogin(workflow) || !isMrfStepLoginSuspended(req.growthbook))
+    return next()
+  logger.warn({
+    message: 'Blocked MRF submission: mrf-step-login-kill-switch is on',
+    meta: {
+      action: 'ensureMrfStepLoginNotSuspended',
+      formId: String(formDef._id),
+      submissionId: mrfSubmission ? String(mrfSubmission._id) : undefined,
+      ...createReqMeta(req),
+    },
+  })
+  return sendRouteError(res, mapRouteError(new MrfStepLoginSuspendedError()))
 }
 
 /**
