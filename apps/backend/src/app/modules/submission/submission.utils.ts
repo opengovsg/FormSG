@@ -150,6 +150,7 @@ import {
   MrfReminderRecipientEmailsEmptyError,
   MrfSendBackInvalidStepError,
   MrfStepLinkSupersededError,
+  MrfSubmissionStaleError,
   MrfWorkflowActionsUnavailableError,
   MrfWorkflowNotPendingError,
   MrfWorkflowOverflowError,
@@ -247,6 +248,11 @@ const errorMapper: MapRouteError = (
     case StepTokenVerificationError:
       return {
         statusCode: StatusCodes.FORBIDDEN,
+        errorMessage: error.message,
+      }
+    case MrfSubmissionStaleError:
+      return {
+        statusCode: StatusCodes.CONFLICT,
         errorMessage: error.message,
       }
     case FormRespondentSingleSubmissionValidationError:

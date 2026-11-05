@@ -9,6 +9,7 @@ import {
   SubmissionAttachmentsMap,
 } from 'formsg-shared/types'
 
+import type { ResolvedMrfStepAuth } from '../../app/modules/submission/multirespondent-submission/step-auth'
 import { IPopulatedMultirespondentForm } from '../form'
 import { IMultirespondentSubmissionSchema } from '../submission'
 
@@ -48,6 +49,10 @@ export type MultirespondentFormLoadedDto = {
   respondentEmails?: string[]
   // Resolved by verifyMyInfoHashes, before the payload is encrypted.
   myInfoReadOnlyFields?: string[]
+  // Set by verifyMrfStepAuth when the submission's saved workflow uses step login.
+  stepAuth?: ResolvedMrfStepAuth
+  // This step's identity answers, filled from its verified login.
+  loginFilledFieldIds?: string[]
 }
 
 export type MultirespondentFormCompleteDto = MultirespondentFormLoadedDto & {

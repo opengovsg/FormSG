@@ -1,16 +1,18 @@
 import { celebrate, Joi, Segments } from 'celebrate'
+import { Response } from 'express'
 import { OTP_REGEX } from 'formsg-shared/constants'
 import {
   ErrorDto,
   FormAuthType,
-  FormResponseMode,
   SendFormOtpResponseDto,
 } from 'formsg-shared/types'
+import { hasLaterStepLogin } from 'formsg-shared/utils/step-login'
 import { SALT_ROUNDS } from 'formsg-shared/utils/verification'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
-import { errAsync, okAsync, Result } from 'neverthrow'
+import { errAsync, ok, okAsync, Result } from 'neverthrow'
 
+import { IMultirespondentSubmissionSchema } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
@@ -20,10 +22,16 @@ import { setFormTags } from '../datadog/datadog.utils'
 import * as FormService from '../form/form.service'
 import { MyInfoService } from '../myinfo/myinfo.service'
 import * as MyInfoUtil from '../myinfo/myinfo.util'
+import { InvalidJwtError, VerifyJwtError } from '../spcp/spcp.errors'
 import { getOidcService } from '../spcp/spcp.oidc.service'
+import { getMultirespondentSubmission } from '../submission/multirespondent-submission/multirespondent-submission.service'
 import { MrfJwtPayload } from '../submission/multirespondent-submission/multirespondent-submission.types'
 import { getMrfCookieName } from '../submission/multirespondent-submission/multirespondent-submission.utils'
-import * as SubmissionService from '../submission/submission.service'
+import {
+  clearMrfStepAuthCookie,
+  resolveMrfStepAuth,
+} from '../submission/multirespondent-submission/step-auth'
+import { SubmissionNotFoundError } from '../submission/submission.errors'
 
 import { MrfJwtValidationError } from './verification.errors'
 import * as VerificationService from './verification.service'
@@ -41,6 +49,44 @@ const buildErrorDto = ({
   ...(errorMessageKey ? { messageKey: errorMessageKey } : {}),
   ...(errorMessageParams ? { messageParams: errorMessageParams } : {}),
 })
+
+/**
+ * Checks the login of the MRF step a continuing respondent fills in, read from
+ * the submission's saved workflow. Submissions whose saved workflow has no
+ * later-step login pass unchanged.
+ */
+const verifyMrfStepLoginForOtp = ({
+  formId,
+  submission,
+  cookies,
+  res,
+  logMeta,
+}: {
+  formId: string
+  submission: IMultirespondentSubmissionSchema
+  cookies: Record<string, string | undefined>
+  res: Response
+  logMeta: { action: string; [other: string]: unknown }
+}) =>
+  (hasLaterStepLogin(submission.workflow)
+    ? resolveMrfStepAuth(formId, submission, {
+        stepAuthCookies: cookies,
+      }).map(() => undefined)
+    : ok(undefined)
+  ).mapErr((error) => {
+    logger.warn({
+      message: 'Failed to verify MRF step login for OTP',
+      meta: logMeta,
+      error,
+    })
+    if (error instanceof VerifyJwtError || error instanceof InvalidJwtError) {
+      clearMrfStepAuthCookie(res, {
+        formId,
+        submissionId: String(submission._id),
+      })
+    }
+    return error
+  })
 
 /**
  * Handler for POST /forms/:formId/fieldverifications
@@ -130,9 +176,8 @@ export const _handleGenerateOtp: ControllerHandler<
       .andThen((form) => FormService.isFormPublic(form).map(() => form))
       // Step 3: Verify SPCP/MyInfo, if form requires it
       .andThen((form) => {
-        // If previousSubmissionId exists, this means it is coming from a 2+ step MRF workflow
-        // verify MRF JWT and skip SPCP/MyInfo since Singpass is currently only enabled for MRF first step
-        // TODO: revisit this logic when Singpass is enabled for all MRF steps (fix is to run validation check if step is Singpass-enabled)
+        // A previousSubmissionId means a later MRF step. Verify the MRF JWT,
+        // then that step's own login. The form-level login is Step 1's only.
         if (previousSubmissionId) {
           const mrfCookie =
             req.cookies[getMrfCookieName({ formId, previousSubmissionId })]
@@ -156,23 +201,26 @@ export const _handleGenerateOtp: ControllerHandler<
               return error
             })
             .asyncAndThen((decoded) => {
-              return SubmissionService.getSubmissionMetadata(
-                FormResponseMode.Multirespondent,
-                formId,
-                decoded.prevSubmissionId,
-              )
-                .andThen((foundMrfSubmissionMetadata) => {
+              return getMultirespondentSubmission(decoded.prevSubmissionId)
+                .orElse((error) =>
+                  error instanceof SubmissionNotFoundError
+                    ? okAsync(null)
+                    : errAsync(error),
+                )
+                .andThen((submission) => {
                   // Validate all MRF JWT conditions
                   // 1. submission is present, belongs to the same form
                   // 2. previousSubmissionId in JWT matches that in request body (from client FE context)
                   // 3. workflow step in JWT matches that of submission
+                  const submissionStepNumber = submission
+                    ? submission.workflowStep + 1
+                    : undefined
 
                   if (
-                    !foundMrfSubmissionMetadata ||
+                    !submission ||
+                    String(submission.form) !== formId ||
                     decoded.prevSubmissionId !== previousSubmissionId ||
-                    foundMrfSubmissionMetadata.mrf
-                      ?.workflowCurrentStepNumber !==
-                      decoded.currentWorkflowStep
+                    submissionStepNumber !== decoded.currentWorkflowStep
                   ) {
                     logger.error({
                       message: 'MRF JWT submission mismatch',
@@ -181,8 +229,7 @@ export const _handleGenerateOtp: ControllerHandler<
                         jwtSubmissionIdFromMetadata: decoded.prevSubmissionId,
                         previousSubmissionId: previousSubmissionId,
                         submissionWorkflowStepFromMetadata:
-                          foundMrfSubmissionMetadata?.mrf
-                            ?.workflowCurrentStepNumber,
+                          submissionStepNumber,
                         jwtWorkflowStep: decoded.currentWorkflowStep,
                       },
                     })
@@ -191,8 +238,8 @@ export const _handleGenerateOtp: ControllerHandler<
                     )
                   }
 
-                  // MRF JWT is valid, skip SPCP/MyInfo verification
-                  return okAsync(form)
+                  // MRF JWT is valid; the step's own login is checked next
+                  return okAsync(submission)
                 })
                 .mapErr((error) => {
                   logger.error({
@@ -203,6 +250,16 @@ export const _handleGenerateOtp: ControllerHandler<
                   return error
                 })
             })
+            .andThen((submission) =>
+              verifyMrfStepLoginForOtp({
+                formId,
+                submission,
+                cookies: req.cookies ?? {},
+                res,
+                logMeta,
+              }),
+            )
+            .map(() => form)
         }
 
         // No previousSubmissionId, proceed with SPCP/MyInfo verification

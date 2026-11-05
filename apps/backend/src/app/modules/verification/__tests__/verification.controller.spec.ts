@@ -49,9 +49,11 @@ import {
 import { InvalidJwtError, MissingJwtError } from '../../spcp/spcp.errors'
 import { CpOidcServiceClass } from '../../spcp/spcp.oidc.service/spcp.oidc.service.cp'
 import { SpOidcServiceClass } from '../../spcp/spcp.oidc.service/spcp.oidc.service.sp'
+import * as MrfSubmissionService from '../../submission/multirespondent-submission/multirespondent-submission.service'
 import { MrfJwtPayload } from '../../submission/multirespondent-submission/multirespondent-submission.types'
 import { getMrfCookieName } from '../../submission/multirespondent-submission/multirespondent-submission.utils'
-import * as SubmissionService from '../../submission/submission.service'
+import * as StepAuth from '../../submission/multirespondent-submission/step-auth'
+import { SubmissionNotFoundError } from '../../submission/submission.errors'
 import * as VerificationController from '../verification.controller'
 import {
   FieldNotFoundInTransactionError,
@@ -92,8 +94,12 @@ jest.mock('../../myinfo/myinfo.util')
 const MockMyInfoUtil = jest.mocked(MyInfoUtils)
 jest.mock('../../myinfo/myinfo.service')
 const MockMyInfoService = jest.mocked(MyInfoService)
-jest.mock('../../submission/submission.service')
-const MockSubmissionService = jest.mocked(SubmissionService)
+jest.mock(
+  '../../submission/multirespondent-submission/multirespondent-submission.service',
+)
+const MockMrfSubmissionService = jest.mocked(MrfSubmissionService)
+jest.mock('../../submission/multirespondent-submission/step-auth')
+const MockStepAuth = jest.mocked(StepAuth)
 
 const mockSpOidcServiceClass = jest.mocked(
   MockSpOidcServiceClass.mock.instances[0],
@@ -1840,20 +1846,78 @@ describe('Verification controller', () => {
         },
       })
 
-      it('should return 201 when MRF JWT is valid and all checks pass', async () => {
-        // Arrange
-        MockSubmissionService.getSubmissionMetadata.mockReturnValueOnce(
-          okAsync({
-            number: Number(MOCK_PREVIOUS_SUBMISSION_ID),
-            refNo: MOCK_PREVIOUS_SUBMISSION_ID,
-            submissionTime: '1st Jan 2024, 12:00:00 pm',
-            payments: null,
-            mrf: {
-              workflowCurrentStepNumber: MOCK_WORKFLOW_STEP,
-            },
-          } as any),
+      // The submission the MRF JWT points at, pending the JWT's step
+      const MOCK_MRF_SUBMISSION = {
+        _id: MOCK_PREVIOUS_SUBMISSION_ID,
+        form: MOCK_FORM_ID,
+        workflowStep: MOCK_WORKFLOW_STEP - 1,
+        workflow: [],
+      }
+
+      beforeEach(() => {
+        MockMrfSubmissionService.getMultirespondentSubmission.mockReturnValue(
+          okAsync(MOCK_MRF_SUBMISSION as any),
+        )
+        // The pending step has no login of its own
+        MockStepAuth.resolveMrfStepAuth.mockReturnValue(ok({} as any))
+      })
+
+      // A saved workflow whose Step 2 has its own login
+      const MOCK_STEP_LOGIN_SUBMISSION = {
+        ...MOCK_MRF_SUBMISSION,
+        workflow: [{}, { auth: { auth_type: FormAuthType.MyInfo } }],
+      }
+
+      it('should not check a step login when the saved workflow has none', async () => {
+        await VerificationController._handleGenerateOtp(
+          MOCK_MRF_REQ,
+          mockRes,
+          jest.fn(),
         )
 
+        expect(MockStepAuth.resolveMrfStepAuth).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
+      })
+
+      it('should check the pending step login with the request cookies', async () => {
+        MockMrfSubmissionService.getMultirespondentSubmission.mockReturnValueOnce(
+          okAsync(MOCK_STEP_LOGIN_SUBMISSION as any),
+        )
+
+        await VerificationController._handleGenerateOtp(
+          MOCK_MRF_REQ,
+          mockRes,
+          jest.fn(),
+        )
+
+        expect(MockStepAuth.resolveMrfStepAuth).toHaveBeenCalledWith(
+          MOCK_FORM_ID,
+          MOCK_STEP_LOGIN_SUBMISSION,
+          { stepAuthCookies: MOCK_MRF_REQ.cookies },
+        )
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
+      })
+
+      it('should return 400 without sending an OTP when the step login is missing', async () => {
+        MockMrfSubmissionService.getMultirespondentSubmission.mockReturnValueOnce(
+          okAsync(MOCK_STEP_LOGIN_SUBMISSION as any),
+        )
+        MockStepAuth.resolveMrfStepAuth.mockReturnValueOnce(
+          err(new MissingJwtError()),
+        )
+
+        await VerificationController._handleGenerateOtp(
+          MOCK_MRF_REQ,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Same response as a missing Step 1 login
+        expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+      })
+
+      it('should return 201 when MRF JWT is valid and all checks pass', async () => {
         // Act
         await VerificationController._handleGenerateOtp(
           MOCK_MRF_REQ,
@@ -1866,12 +1930,11 @@ describe('Verification controller', () => {
           MOCK_FORM_ID,
         )
         expect(
-          MockSubmissionService.getSubmissionMetadata,
-        ).toHaveBeenCalledWith(
-          'multirespondent',
-          MOCK_FORM_ID,
-          MOCK_PREVIOUS_SUBMISSION_ID,
-        )
+          MockMrfSubmissionService.getMultirespondentSubmission,
+        ).toHaveBeenCalledTimes(1)
+        expect(
+          MockMrfSubmissionService.getMultirespondentSubmission,
+        ).toHaveBeenCalledWith(MOCK_PREVIOUS_SUBMISSION_ID)
         expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
         expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
           EXPECTED_PARAMS_FOR_SENDING_FORM_OTP,
@@ -1879,10 +1942,10 @@ describe('Verification controller', () => {
         expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
       })
 
-      it('should return 400 when submission metadata cannot be found for given formId and previousSubmissionId', async () => {
+      it('should return 400 when the submission cannot be found', async () => {
         // Arrange
-        MockSubmissionService.getSubmissionMetadata.mockReturnValueOnce(
-          okAsync(null), // Submission not found for this form
+        MockMrfSubmissionService.getMultirespondentSubmission.mockReturnValueOnce(
+          errAsync(new SubmissionNotFoundError()),
         )
         const expectedResponse = {
           message: 'Sorry, something went wrong. Please refresh and try again.',
@@ -1896,20 +1959,32 @@ describe('Verification controller', () => {
         )
 
         // Assert
-        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-          MOCK_FORM_ID,
-        )
-        expect(
-          MockSubmissionService.getSubmissionMetadata,
-        ).toHaveBeenCalledWith(
-          'multirespondent',
-          MOCK_FORM_ID,
-          MOCK_PREVIOUS_SUBMISSION_ID,
-        )
         expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
         expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
         expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
         expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+      })
+
+      it('should return 400 when the submission belongs to another form', async () => {
+        // Arrange
+        MockMrfSubmissionService.getMultirespondentSubmission.mockReturnValueOnce(
+          okAsync({
+            ...MOCK_MRF_SUBMISSION,
+            form: new ObjectId().toHexString(),
+          } as any),
+        )
+
+        // Act
+        await VerificationController._handleGenerateOtp(
+          MOCK_MRF_REQ,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert
+        expect(MockStepAuth.resolveMrfStepAuth).not.toHaveBeenCalled()
+        expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       })
 
       it('should return 400 when previousSubmissionId does not match JWT', async () => {
@@ -1933,19 +2008,6 @@ describe('Verification controller', () => {
             })]: MOCK_MRF_JWT,
           },
         })
-
-        MockSubmissionService.getSubmissionMetadata.mockReturnValueOnce(
-          okAsync({
-            number: Number(MOCK_PREVIOUS_SUBMISSION_ID),
-            refNo: MOCK_PREVIOUS_SUBMISSION_ID,
-            submissionTime: '1st Jan 2024, 12:00:00 pm',
-            payments: null,
-            mrf: {
-              workflowCurrentStepNumber: MOCK_WORKFLOW_STEP,
-            },
-          } as any),
-        )
-
         const expectedResponse = {
           message: 'Sorry, something went wrong. Please refresh and try again.',
         }
@@ -1958,16 +2020,9 @@ describe('Verification controller', () => {
         )
 
         // Assert
-        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-          MOCK_FORM_ID,
-        )
         expect(
-          MockSubmissionService.getSubmissionMetadata,
-        ).toHaveBeenCalledWith(
-          'multirespondent',
-          MOCK_FORM_ID,
-          MOCK_PREVIOUS_SUBMISSION_ID,
-        )
+          MockMrfSubmissionService.getMultirespondentSubmission,
+        ).toHaveBeenCalledWith(MOCK_PREVIOUS_SUBMISSION_ID)
         expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
         expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
         expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -1976,15 +2031,10 @@ describe('Verification controller', () => {
 
       it('should return 400 when workflow step does not match', async () => {
         // Arrange
-        MockSubmissionService.getSubmissionMetadata.mockReturnValueOnce(
+        MockMrfSubmissionService.getMultirespondentSubmission.mockReturnValueOnce(
           okAsync({
-            number: Number(MOCK_PREVIOUS_SUBMISSION_ID),
-            refNo: MOCK_PREVIOUS_SUBMISSION_ID,
-            submissionTime: '1st Jan 2024, 12:00:00 pm',
-            payments: null,
-            mrf: {
-              workflowCurrentStepNumber: 3, // Different workflow step
-            },
+            ...MOCK_MRF_SUBMISSION,
+            workflowStep: MOCK_WORKFLOW_STEP, // Already a step further
           } as any),
         )
         const expectedResponse = {
@@ -1999,16 +2049,6 @@ describe('Verification controller', () => {
         )
 
         // Assert
-        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-          MOCK_FORM_ID,
-        )
-        expect(
-          MockSubmissionService.getSubmissionMetadata,
-        ).toHaveBeenCalledWith(
-          'multirespondent',
-          MOCK_FORM_ID,
-          MOCK_PREVIOUS_SUBMISSION_ID,
-        )
         expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
         expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
         expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -2042,11 +2082,8 @@ describe('Verification controller', () => {
         )
 
         // Assert
-        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-          MOCK_FORM_ID,
-        )
         expect(
-          MockSubmissionService.getSubmissionMetadata,
+          MockMrfSubmissionService.getMultirespondentSubmission,
         ).not.toHaveBeenCalled()
         expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
         expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
@@ -2083,11 +2120,8 @@ describe('Verification controller', () => {
         )
 
         // Assert
-        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-          MOCK_FORM_ID,
-        )
         expect(
-          MockSubmissionService.getSubmissionMetadata,
+          MockMrfSubmissionService.getMultirespondentSubmission,
         ).not.toHaveBeenCalled()
         expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
         expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
@@ -2095,10 +2129,10 @@ describe('Verification controller', () => {
         expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
       })
 
-      it('should return 404 when submission is not found', async () => {
+      it('should return 500 when the submission read fails', async () => {
         // Arrange
-        MockSubmissionService.getSubmissionMetadata.mockReturnValueOnce(
-          errAsync(new DatabaseError('Submission not found')),
+        MockMrfSubmissionService.getMultirespondentSubmission.mockReturnValueOnce(
+          errAsync(new DatabaseError()),
         )
         const expectedResponse = {
           message: 'Sorry, something went wrong. Please refresh and try again.',
@@ -2112,16 +2146,6 @@ describe('Verification controller', () => {
         )
 
         // Assert
-        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-          MOCK_FORM_ID,
-        )
-        expect(
-          MockSubmissionService.getSubmissionMetadata,
-        ).toHaveBeenCalledWith(
-          'multirespondent',
-          MOCK_FORM_ID,
-          MOCK_PREVIOUS_SUBMISSION_ID,
-        )
         expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
         expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
         expect(mockRes.status).toHaveBeenCalledWith(

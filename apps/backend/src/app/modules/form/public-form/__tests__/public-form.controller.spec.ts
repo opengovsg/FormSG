@@ -89,6 +89,7 @@ describe('public-form.controller', () => {
       admin: MOCK_USER,
       _id: MOCK_FORM_ID,
       title: MOCK_SCRUBBED_FORM.title,
+      form_fields: [],
       getUniqueMyInfoAttrs: jest.fn().mockReturnValue([MyInfoAttribute.Name]),
       getPublicView: jest.fn().mockReturnValue(MOCK_SCRUBBED_FORM),
     }

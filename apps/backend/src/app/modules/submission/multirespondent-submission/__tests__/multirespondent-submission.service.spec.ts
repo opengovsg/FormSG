@@ -41,8 +41,8 @@ import * as FormService from '../../../form/form.service'
 import {
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
+  MrfSubmissionStaleError,
   MrfWorkflowStoppedError,
-  StepTokenVerificationError,
   SubmissionSaveError,
 } from '../../submission.errors'
 import { mapRouteError } from '../../submission.utils'
@@ -4387,7 +4387,7 @@ describe('multirespondent-submission.service', () => {
         ])
       })
 
-      it('rejects a submit whose step link was replaced after it was checked', async () => {
+      it('reports a submit whose step link was replaced after it was checked as stale', async () => {
         const row = await Model.create({
           form: mockFormId,
           submissionType: SubmissionType.Multirespondent,
@@ -4411,17 +4411,109 @@ describe('multirespondent-submission.service', () => {
             webhook: undefined,
           }),
           encryptedPayload: buildV4Payload({ workflowStep: 1 }),
+          expectedPrevious: {
+            workflowStep: 0,
+            stepTokenHash: 'hash-when-checked',
+          },
           logMeta: { action: 'test' },
-          validatedSubmission: { stepTokenHash: 'hash-when-checked' },
         })
 
         expect(result._unsafeUnwrapErr()).toBeInstanceOf(
-          StepTokenVerificationError,
+          MrfSubmissionStaleError,
         )
         expect(MockSnapshotStore.writeSnapshot).not.toHaveBeenCalled()
         const saved = await Model.findById(row._id).lean()
         expect(saved?.submittedSteps).toHaveLength(1)
         expect(saved?.stepTokenHash).toBe('hash-after-send-back')
+      })
+
+      describe('with the step state the request was checked against', () => {
+        const expectedPrevious = {
+          workflowStep: 0,
+          stepTokenHash: 'hash-when-checked',
+        }
+        const createPendingStep2 = (
+          state: { workflowStep: number; stepTokenHash: string } = {
+            workflowStep: 0,
+            stepTokenHash: 'hash-when-checked',
+          },
+        ) =>
+          Model.create({
+            form: mockFormId,
+            submissionType: SubmissionType.Multirespondent,
+            form_fields: [],
+            form_logics: [],
+            workflow: fourStepWorkflow,
+            submissionPublicKey: 'pk',
+            encryptedSubmissionSecretKey: 'esk',
+            encryptedContent: 'ec',
+            version: 2,
+            submittedSteps: [legacySteps[0]],
+            ...state,
+          })
+        const submitStep2 = (submissionId: string) =>
+          updateMultiRespondentFormSubmission({
+            submissionId,
+            snapshottedFormDef: buildSnapshottedFormDef({
+              workflow: fourStepWorkflow,
+              webhook: undefined,
+            }),
+            encryptedPayload: buildV4Payload({ workflowStep: 1 }),
+            expectedPrevious,
+            logMeta: { action: 'test' },
+          })
+
+        it('saves the step while the submission is still at that state', async () => {
+          const row = await createPendingStep2()
+
+          const result = await submitStep2(String(row._id))
+
+          expect(result.isOk()).toBe(true)
+          const saved = await Model.findById(row._id).lean()
+          expect(saved?.submittedSteps).toHaveLength(2)
+        })
+
+        it('reports a submission that already advanced as stale', async () => {
+          const row = await createPendingStep2({
+            workflowStep: 1,
+            stepTokenHash: 'hash-for-step-3',
+          })
+          MockSnapshotStore.writeSnapshot.mockClear()
+
+          const result = await submitStep2(String(row._id))
+
+          expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+            MrfSubmissionStaleError,
+          )
+          expect(MockSnapshotStore.writeSnapshot).not.toHaveBeenCalled()
+          const saved = await Model.findById(row._id).lean()
+          expect(saved?.submittedSteps).toHaveLength(1)
+          expect(saved?.stepTokenHash).toBe('hash-for-step-3')
+        })
+
+        it('reports a concurrent advance between the read and the save as stale', async () => {
+          const row = await createPendingStep2()
+          const findById = Model.findById.bind(Model)
+          // A concurrent submit advances the stored submission after this
+          // request has read it.
+          jest.spyOn(Model, 'findById').mockImplementationOnce(((id: string) =>
+            findById(id).then(async (submission) => {
+              await Model.updateOne(
+                { _id: id },
+                { $set: { workflowStep: 1, stepTokenHash: 'hash-for-step-3' } },
+              )
+              return submission
+            })) as unknown as typeof Model.findById)
+
+          const result = await submitStep2(String(row._id))
+
+          expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+            MrfSubmissionStaleError,
+          )
+          const saved = await Model.findById(row._id).lean()
+          expect(saved?.submittedSteps).toHaveLength(1)
+          expect(saved?.stepTokenHash).toBe('hash-for-step-3')
+        })
       })
 
       it('records step 1 submitted again after a send back to step 1', async () => {
