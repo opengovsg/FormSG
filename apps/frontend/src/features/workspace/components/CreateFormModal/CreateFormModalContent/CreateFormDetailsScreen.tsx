@@ -52,7 +52,6 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
   const { t } = useTranslation()
   const {
     formMethods,
-    handleEmailFeedbackSubmit,
     handleProceedFromDetails,
     isLoading,
     isFetching,
@@ -70,9 +69,6 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
 
   const responseModeValue = watch('responseMode')
   const isEscapeHatchEnabled = useFeatureIsOn(featureFlags.escapeHatch)
-  const handleEmailButtonPress = () => {
-    handleEmailFeedbackSubmit()
-  }
 
   return (
     <>
@@ -111,7 +107,6 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
                     <FormResponseOptions
                       {...field}
                       hasMyInfoChildren={hasMyInfoChildren}
-                      handleEmailButtonPress={handleEmailButtonPress}
                     />
                   )}
                   rules={{

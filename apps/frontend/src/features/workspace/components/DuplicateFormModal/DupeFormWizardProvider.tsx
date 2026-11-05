@@ -1,15 +1,12 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { FormResponseMode, PublicFormViewDto } from 'formsg-shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
 import { FormId } from 'formsg-shared/types/form/form'
 
 import { usePreviewForm } from '~features/admin-form/common/queries'
 import { useUser } from '~features/user/queries'
-import {
-  useDuplicateFormMutations,
-  useEmailModeFeedbackMutation,
-} from '~features/workspace/mutations'
+import { useDuplicateFormMutations } from '~features/workspace/mutations'
 import { useDashboard } from '~features/workspace/queries'
 import { buildFormClientMetadata } from '~features/workspace/utils/buildFormClientMetadata'
 import { makeDuplicateFormTitle } from '~features/workspace/utils/createDuplicateFormTitle'
@@ -107,8 +104,6 @@ export const useDupeFormWizardContext = (
   const { user } = useUser()
   const adminEmail = user?.email
 
-  const { emailModeFeedbackMutation } = useEmailModeFeedbackMutation()
-
   const workspaceId = source.workspaceId
 
   const createDuplicateForm = ({
@@ -182,51 +177,6 @@ export const useDupeFormWizardContext = (
   const handleProceedFromDetails =
     makeHandleProceedFromDetails(createDuplicateForm)
 
-  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
-  // Collect email mode usage feedback before creating the form
-  const handleEmailFeedbackSubmit = () => {
-    // explicit set response to email as email feedback "button" interaction
-    // is not handled handled in FormResponseOptions
-    // setValue('responseMode', FormResponseMode.Email)
-    setCurrentStep([CreateFormFlowStates.EmailFeedback, 1])
-  }
-
-  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
-  const submitEmailModeFeedback = (feedbackForm: PublicFormViewDto) => {
-    return handleSubmit((inputs) => {
-      if (!inputs.reason) {
-        return new Error('Reason is required')
-      }
-
-      emailModeFeedbackMutation.mutate(
-        {
-          body: { reason: inputs.reason, adminEmail },
-          feedbackForm,
-        },
-        {
-          onSuccess: () => {
-            setValue('responseMode', FormResponseMode.Email)
-            setCurrentStep([CreateFormFlowStates.EmailModeCreation, 1])
-          },
-        },
-      )
-    })
-  }
-
-  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
-  const handleCreateEmailModeForm = () =>
-    handleSubmit((inputs) => {
-      if (!sourceFormId) return
-
-      return dupeEmailModeFormMutation.mutate({
-        formIdToDuplicate: sourceFormId,
-        emails: (inputs.emails ?? []).filter(Boolean),
-        title: inputs.title,
-        responseMode: FormResponseMode.Email,
-        workspaceId,
-      })
-    })
-
   return {
     isFetching: isWorkspaceLoading || isPreviewFormLoading,
     isLoading:
@@ -243,9 +193,6 @@ export const useDupeFormWizardContext = (
     isPaperTrackingSetUpPageEnabled,
     isLegacySetup,
     proceedCtaLabel,
-    handleEmailFeedbackSubmit,
-    handleCreateEmailModeForm,
-    submitEmailModeFeedback,
     isSingpass,
     hasMyInfoChildren,
     modalHeader: t('features.workspace.modals.forms.create.title.duplicate'),

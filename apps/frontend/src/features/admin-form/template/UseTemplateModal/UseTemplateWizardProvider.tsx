@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { FormResponseMode, PublicFormViewDto } from 'formsg-shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
 
 import { useFormTemplate } from '~features/admin-form/common/queries'
 import { useUser } from '~features/user/queries'
@@ -12,7 +12,6 @@ import {
   CreateFormWizardInputProps,
 } from '~features/workspace/components/CreateFormModal/CreateFormWizardContext'
 import { useCommonFormWizardProvider } from '~features/workspace/components/CreateFormModal/CreateFormWizardProvider'
-import { useEmailModeFeedbackMutation } from '~features/workspace/mutations'
 import { buildFormClientMetadata } from '~features/workspace/utils/buildFormClientMetadata'
 
 import { useUseTemplateMutations } from '../mutation'
@@ -74,8 +73,6 @@ export const useUseTemplateWizardContext = (
 
   const { user } = useUser()
   const adminEmail = user?.email
-
-  const { emailModeFeedbackMutation } = useEmailModeFeedbackMutation()
 
   const createFormFromTemplate = ({
     title,
@@ -147,48 +144,6 @@ export const useUseTemplateWizardContext = (
     createFormFromTemplate,
   )
 
-  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
-  // Collect email mode usage feedback before creating the form
-  const handleEmailFeedbackSubmit = () => {
-    // explicit set response to email as email feedback "button" interaction
-    // is not handled handled in FormResponseOptions
-    // setValue('responseMode', FormResponseMode.Email) // set in handleEmailModeCreation
-    setCurrentStep([CreateFormFlowStates.EmailFeedback, 1])
-  }
-
-  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
-  const submitEmailModeFeedback = (feedbackForm: PublicFormViewDto) => {
-    return handleSubmit((inputs) => {
-      if (!inputs.reason) {
-        return new Error('Reason is required')
-      }
-
-      emailModeFeedbackMutation.mutate(
-        {
-          body: { reason: inputs.reason, adminEmail },
-          feedbackForm,
-        },
-        {
-          onSuccess: () => {
-            setValue('responseMode', FormResponseMode.Email)
-            setCurrentStep([CreateFormFlowStates.EmailModeCreation, 1])
-          },
-        },
-      )
-    })
-  }
-
-  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
-  const handleCreateEmailModeForm = () =>
-    handleSubmit((inputs) => {
-      return useEmailModeFormTemplateMutation.mutate({
-        formIdToDuplicate: formId,
-        emails: (inputs.emails ?? []).filter(Boolean),
-        title: inputs.title,
-        responseMode: FormResponseMode.Email,
-      })
-    })
-
   return {
     isFetching: isTemplateFormLoading,
     isLoading:
@@ -205,9 +160,6 @@ export const useUseTemplateWizardContext = (
     isPaperTrackingSetUpPageEnabled,
     isLegacySetup,
     proceedCtaLabel,
-    handleEmailFeedbackSubmit,
-    handleCreateEmailModeForm,
-    submitEmailModeFeedback,
     isSingpass,
     hasMyInfoChildren,
     modalHeader: t('features.workspace.modals.forms.create.title.duplicate'),

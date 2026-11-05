@@ -7,7 +7,6 @@ import { FormOrigin, FormResponseMode } from 'formsg-shared/types'
 import { useFormTemplate } from '~features/admin-form/common/queries'
 import { useUser } from '~features/user/queries'
 import { CreateFormFlowStates } from '~features/workspace/components/CreateFormModal/CreateFormWizardContext'
-import { useEmailModeFeedbackMutation } from '~features/workspace/mutations'
 
 import { useUseTemplateMutations } from '../mutation'
 
@@ -75,10 +74,6 @@ describe('UseTemplateWizardProvider — cutover behaviour', () => {
       useEmailModeFormTemplateMutation,
       useStorageModeFormTemplateMutation,
       useMultirespondentFormTemplateMutation,
-    } as any)
-
-    vi.mocked(useEmailModeFeedbackMutation).mockReturnValue({
-      emailModeFeedbackMutation: { isLoading: false, mutate: vi.fn() },
     } as any)
   })
 

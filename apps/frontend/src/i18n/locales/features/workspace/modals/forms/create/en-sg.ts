@@ -151,28 +151,4 @@ export const enSG: CreateFormModal = {
   emailFormRecipient: {
     placeholder: 'Separate emails with a comma',
   },
-  emailModeFeedback: {
-    header: 'Before you get started',
-    description:
-      "We'd love to understand why you chose to create an Email mode form. This will help us ensure a smooth transition once we phase out Email mode.",
-    question: {
-      title: 'Why are you creating an Email mode form?',
-      options: {
-        sensitiveHigh: 'I need to collect Sensitive High data',
-      },
-    },
-    next: 'Next: Set up your form',
-  },
-  emailModeCreation: {
-    header: 'Set up your form in Email mode',
-    formName: {
-      label: 'Form name',
-    },
-    notifications: {
-      label: 'Notifications for new responses',
-      description:
-        'All email addresses below will be notified. Learn more on [how to guard against email bounces]({GUIDE_PREVENT_EMAIL_BOUNCE}).',
-    },
-    create: 'Create form',
-  },
 }

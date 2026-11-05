@@ -129,26 +129,4 @@ export interface CreateFormModal {
   emailFormRecipient: {
     placeholder: string
   }
-  emailModeFeedback: {
-    header: string
-    description: string
-    question: {
-      title: string
-      options: {
-        sensitiveHigh: string
-      }
-    }
-    next: string
-  }
-  emailModeCreation: {
-    header: string
-    formName: {
-      label: string
-    }
-    notifications: {
-      label: string
-      description: string
-    }
-    create: string
-  }
 }

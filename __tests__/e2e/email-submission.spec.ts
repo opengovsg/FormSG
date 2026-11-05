@@ -20,7 +20,6 @@ import {
 } from './constants'
 import { test } from './fixtures'
 import {
-  createFeedbackForm,
   createForm,
   createSubmissionTestRunnerForResponseMode,
   verifySubmissionDisabled,
@@ -47,8 +46,6 @@ test.describe('Email form submission', () => {
     // Create models
     db = (await makeMongooseFixtures()).connection
     Form = makeModel(db, 'form.server.model', 'Form')
-
-    await createFeedbackForm()
   })
 
   test.afterAll(async () => {

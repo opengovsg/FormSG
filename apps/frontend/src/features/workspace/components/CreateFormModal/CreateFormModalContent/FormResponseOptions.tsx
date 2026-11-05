@@ -11,7 +11,6 @@ import SingleRespondentIllustration from '~features/workspace/components/CreateF
 
 export interface FormResponseOptionsProps {
   onChange: (option: FormResponseMode) => void
-  handleEmailButtonPress: () => void
   value: FormResponseMode
   hasMyInfoChildren: boolean
 }
