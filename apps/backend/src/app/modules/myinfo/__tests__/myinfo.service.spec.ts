@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson'
 import jwt from 'jsonwebtoken'
 import mongoose from 'mongoose'
@@ -40,9 +39,6 @@ import {
 
 const MyInfoHash = getMyInfoHashModel(mongoose)
 
-jest.mock('bcrypt')
-const MockBcrypt = jest.mocked(bcrypt)
-
 jest.mock('jsonwebtoken')
 const MockJwtLibrary = jest.mocked(jwt)
 
@@ -60,7 +56,10 @@ describe('MyInfoServiceClass', () => {
     myInfoService = new MyInfoServiceClass(MOCK_SERVICE_PARAMS)
     MockSpcpConfig.myInfoJwtSecret = MOCK_MYINFO_JWT_SECRET
   })
-  afterEach(async () => await dbHandler.clearDatabase())
+  afterEach(async () => {
+    jest.restoreAllMocks()
+    await dbHandler.clearDatabase()
+  })
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('class constructor', () => {
@@ -211,8 +210,7 @@ describe('MyInfoServiceClass', () => {
 
   describe('checkMyInfoHashes', () => {
     it('should return the set of hashed attributes when the hashes match', async () => {
-      // @ts-ignore
-      MockBcrypt.compare.mockResolvedValue(true)
+      jest.spyOn(MyInfoHashModule, 'compareMyInfoValue').mockResolvedValue(true)
 
       const result = await myInfoService.checkMyInfoHashes(
         MOCK_RESPONSES as unknown as ProcessedFieldResponse[],
@@ -223,8 +221,7 @@ describe('MyInfoServiceClass', () => {
     })
 
     it('should return HashingError when hashing fails', async () => {
-      // @ts-ignore
-      MockBcrypt.compare.mockRejectedValue('')
+      jest.spyOn(MyInfoHashModule, 'compareMyInfoValue').mockRejectedValue('')
 
       const result = await myInfoService.checkMyInfoHashes(
         MOCK_RESPONSES as unknown as ProcessedFieldResponse[],
@@ -238,12 +235,14 @@ describe('MyInfoServiceClass', () => {
 
     it('should return HashDidNotMatchError when the hashes do not match', async () => {
       // Return false for the first hash
-      MockBcrypt.compare.mockImplementation((answer) => {
-        if (answer === MOCK_RESPONSES[0].answer) {
-          return Promise.resolve(false)
-        }
-        return Promise.resolve(true)
-      })
+      jest
+        .spyOn(MyInfoHashModule, 'compareMyInfoValue')
+        .mockImplementation((_hashKey, answer) => {
+          if (answer === MOCK_RESPONSES[0].answer) {
+            return Promise.resolve(false)
+          }
+          return Promise.resolve(true)
+        })
 
       const result = await myInfoService.checkMyInfoHashes(
         MOCK_RESPONSES as unknown as ProcessedFieldResponse[],
