@@ -94,7 +94,7 @@ export const getStepEsrvcId = (
     : getAuthEsrvcId((workflow ?? [])[stepIndex]?.auth)
 
 export const hasLaterStepLogin = (
-  workflow: readonly StepLoginStep[] | null | undefined,
+  workflow: readonly Pick<StepLoginStep, 'auth'>[] | null | undefined,
 ): boolean => (workflow ?? []).slice(1).some((step) => !!step.auth)
 
 /**
@@ -103,7 +103,7 @@ export const hasLaterStepLogin = (
  * forms keep the rules from before step logins existed.
  */
 export const usesStepLoginRules = (
-  workflow: readonly StepLoginStep[] | null | undefined,
+  workflow: readonly Pick<StepLoginStep, 'auth'>[] | null | undefined,
   isFlagOn: boolean,
 ): boolean => isFlagOn || hasLaterStepLogin(workflow)
 

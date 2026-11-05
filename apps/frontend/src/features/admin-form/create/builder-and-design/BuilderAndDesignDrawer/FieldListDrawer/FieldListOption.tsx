@@ -23,7 +23,7 @@ import {
   BASICFIELD_TO_DRAWER_META,
   MYINFO_FIELD_TO_DRAWER_META,
 } from '~features/admin-form/create/constants'
-import { useIsMrfStepLoginEnabled } from '~features/admin-form/create/workflow/hooks/useIsMrfStepLoginEnabled'
+import { useUsesStepLoginRules } from '~features/admin-form/create/workflow/hooks/useUsesStepLoginRules'
 
 import { useCreateTabForm } from '../../useCreateTabForm'
 import {
@@ -305,7 +305,7 @@ export const LoginIdentityFieldOption = forwardRef<
 
   const newFieldMeta = useMemo(() => createLoginIdentityField(attr), [attr])
   const meta = BASICFIELD_TO_DRAWER_META[newFieldMeta.fieldType]
-  const isStepLoginEnabled = useIsMrfStepLoginEnabled()
+  const isStepLoginEnabled = useUsesStepLoginRules()
 
   const updateCreateState = useFieldBuilderStore(updateCreateStateSelector)
 

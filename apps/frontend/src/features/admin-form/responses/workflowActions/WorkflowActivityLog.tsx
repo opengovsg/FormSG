@@ -22,6 +22,7 @@ import {
   WorkflowStatus,
   WorkflowStepAuthType,
 } from 'formsg-shared/types'
+import { usesStepLoginRules } from 'formsg-shared/utils/step-login'
 
 import type { ResponsesIndividualResponse } from '~/i18n/locales/features/admin-form/responses/individual-response'
 
@@ -82,6 +83,8 @@ export const WorkflowActivityLog = ({
     workflow,
     workflowEvents: events = [],
   } = history
+  // The submission's own copy decides, so a login it used is never hidden.
+  const showsStepLogins = usesStepLoginRules(workflow, isStepLoginEnabled)
   // Logins are enforced against the submission's copy, so it is the login used.
   const stepAuthType = (stepNumber: number) => {
     const stepAuth =
@@ -357,7 +360,7 @@ export const WorkflowActivityLog = ({
                 >
                   {title}
                 </Text>
-                {isStepLoginEnabled && authType && (
+                {showsStepLogins && authType && (
                   <Tag mt="0.25rem" colorScheme="secondary">
                     {t(STEP_LOGIN_LABEL_KEYS[authType])}
                   </Tag>

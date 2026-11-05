@@ -25,7 +25,7 @@ import {
   setToInactiveSelector,
   useFieldBuilderStore,
 } from '../../builder-and-design/useFieldBuilderStore'
-import { useIsMrfStepLoginEnabled } from '../../workflow/hooks/useIsMrfStepLoginEnabled'
+import { useUsesStepLoginRules } from '../../workflow/hooks/useUsesStepLoginRules'
 
 export enum DrawerTabs {
   Builder,
@@ -132,7 +132,7 @@ export const useCreatePageSidebarContext =
 
     // Leaving the Workflow tab saves the open step first, like leaving the
     // page does. Only the step login editor registers that save.
-    const isStepLoginEnabled = useIsMrfStepLoginEnabled()
+    const isStepLoginEnabled = useUsesStepLoginRules()
     const setActiveOrPendingTab = useCallback(
       (tab: DrawerTabs | null, shouldBePending?: boolean) => {
         if (

@@ -6,6 +6,11 @@ import {
   useSidebarWidth,
 } from './CreatePageSidebarContext'
 
+// The provider reads the routed admin form for its save-on-leave gate.
+vi.mock('../../workflow/hooks/useUsesStepLoginRules', () => ({
+  useUsesStepLoginRules: () => false,
+}))
+
 const Readout = () => <span data-testid="width">{useSidebarWidth()}</span>
 
 const Reporter = ({ width }: { width: number }) => {
