@@ -35,7 +35,6 @@ export default {
     },
   },
   decorators: [
-    StoryRouter({ initialEntries: ['/12345'], path: '/:formId' }),
     (Story: StoryFn) => (
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       <DragDropContext onDragEnd={() => {}}>
@@ -44,6 +43,7 @@ export default {
         </CreatePageSidebarProvider>
       </DragDropContext>
     ),
+    StoryRouter({ initialEntries: ['/12345'], path: '/:formId' }),
   ],
 }
 
