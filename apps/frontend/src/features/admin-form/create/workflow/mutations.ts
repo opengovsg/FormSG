@@ -1,9 +1,11 @@
 import { useCallback } from 'react'
-import { useMutation, useQueryClient } from 'react-query'
+import { QueryClient, useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 
 import {
   AdminFormDto,
+  AuthFieldDeletionInput,
+  DeleteWorkflowAuthDto,
   FormResponseMode,
   FormWorkflowStepWriteDto,
 } from 'formsg-shared/types/form'
@@ -17,14 +19,23 @@ import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedb
 import { useAdminFormWorkflow } from './hooks/useAdminFormWorkflow'
 import { useUsesStepLoginRules } from './hooks/useUsesStepLoginRules'
 import {
-  AuthFieldDeletionConfirmation,
   createWorkflowStep,
   deleteWorkflow,
-  DeleteWorkflowOptions,
   deleteWorkflowStep,
   updateWorkflowStep,
 } from './FormWorkflowService'
 import { isWorkflowFeedbackEligible } from './workflow.utils'
+
+/** A login change can also change the form's fields and its settings. */
+export const invalidateLoginQueries = (
+  queryClient: QueryClient,
+  formId: string,
+) =>
+  Promise.all([
+    queryClient.invalidateQueries(adminFormKeys.id(formId)),
+    queryClient.invalidateQueries(adminFormSettingsKeys.id(formId)),
+    queryClient.invalidateQueries(adminFormSettingsKeys.whitelist(formId)),
+  ])
 
 export const useWorkflowMutations = () => {
   const { formId } = useParams()
@@ -43,10 +54,8 @@ export const useWorkflowMutations = () => {
   // and delete login fields, so refetch the form and its settings.
   const invalidateFormQueries = useCallback(() => {
     if (!usesStepLoginRules) return
-    void queryClient.invalidateQueries(adminFormKey)
-    void queryClient.invalidateQueries(adminFormSettingsKeys.id(formId))
-    void queryClient.invalidateQueries(adminFormSettingsKeys.whitelist(formId))
-  }, [adminFormKey, formId, usesStepLoginRules, queryClient])
+    void invalidateLoginQueries(queryClient, formId)
+  }, [formId, usesStepLoginRules, queryClient])
 
   const handleError = useCallback(
     (error: Error) => {
@@ -91,7 +100,7 @@ export const useWorkflowMutations = () => {
       confirmation,
     }: {
       stepNumber: number
-      confirmation?: AuthFieldDeletionConfirmation
+      confirmation?: AuthFieldDeletionInput
     }) => deleteWorkflowStep(formId, stepNumber, confirmation),
     {
       onSuccess: (updatedWorkflow) => {
@@ -113,7 +122,7 @@ export const useWorkflowMutations = () => {
   )
 
   const deleteWorkflowMutation = useMutation(
-    (options?: DeleteWorkflowOptions) => deleteWorkflow(formId, options),
+    (options?: DeleteWorkflowAuthDto) => deleteWorkflow(formId, options),
     {
       onSuccess: (updatedWorkflow) => {
         toast.closeAll()

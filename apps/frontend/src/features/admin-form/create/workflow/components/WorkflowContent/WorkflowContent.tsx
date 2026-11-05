@@ -10,7 +10,6 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 
-import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import IconButton from '~components/IconButton'
 
 import { StatusTrackerToggle } from '~features/admin-form/settings/components/EmailNotificationsSection/StatusTrackerToggle'
@@ -36,6 +35,7 @@ import { CompletionEmailBlock } from './CompletionEmailBlock'
 import { NewStepBlock } from './NewStepBlock'
 import { WorkflowBlockFactory } from './WorkflowBlockFactory'
 import { WorkflowCompletionMessageBlock } from './WorkflowCompletionMessageBlock'
+import { WorkflowStepBlockDivider } from './WorkflowStepBlockDivider'
 
 export const STEP_CONNECTOR_TEST_ID = 'workflow-step-connector'
 
@@ -126,7 +126,10 @@ export const WorkflowContent = (): JSX.Element | null => {
         </Box>
         <GuidedSetupFinishedPeekCard />
       </Stack>
-      <Stack spacing="0" divider={<WorkflowStepBlockDivider />}>
+      <Stack
+        spacing="0"
+        divider={<WorkflowStepBlockDivider testId={STEP_CONNECTOR_TEST_ID} />}
+      >
         {formWorkflow?.map((step, i) => (
           <WorkflowBlockFactory key={i} stepNumber={i} step={step} />
         ))}
@@ -142,28 +145,3 @@ export const WorkflowContent = (): JSX.Element | null => {
     </Stack>
   )
 }
-
-const WorkflowStepBlockDivider = () => (
-  <Box
-    data-testid={STEP_CONNECTOR_TEST_ID}
-    alignSelf="center"
-    justifyContent="center"
-    border="none"
-  >
-    <Divider
-      orientation="vertical"
-      h="1rem"
-      borderLeftWidth="2px"
-      marginLeft="7px"
-      borderColor="secondary.200"
-    />
-    <BxsChevronDown />
-    <Divider
-      orientation="vertical"
-      h="1rem"
-      borderLeftWidth="2px"
-      marginLeft="7px"
-      borderColor="secondary.200"
-    />
-  </Box>
-)

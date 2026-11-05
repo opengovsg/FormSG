@@ -1,7 +1,8 @@
 import {
+  AuthFieldDeletionInput,
+  DeleteWorkflowAuthDto,
   FormWorkflowDto,
   FormWorkflowStepWriteDto,
-  WorkflowStepAuthType,
 } from 'formsg-shared/types/form'
 
 import { ApiService } from '~services/ApiService'
@@ -18,20 +19,11 @@ export const createWorkflowStep = (
   ).then(({ data }) => data)
 }
 
-export interface AuthFieldDeletionConfirmation {
-  expected_last_modified?: string
-  delete_auth_field_ids?: string[]
-}
-export interface DeleteWorkflowOptions extends AuthFieldDeletionConfirmation {
-  retained_auth_type?: WorkflowStepAuthType
-  retained_esrvc_id?: string
-}
-
 /** Without a confirmation, the request has no body, as before step logins. */
 export const deleteWorkflowStep = (
   formId: string,
   stepNumber: number,
-  confirmation?: AuthFieldDeletionConfirmation,
+  confirmation?: AuthFieldDeletionInput,
 ) => {
   return ApiService.delete<FormWorkflowDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/workflow/${stepNumber}`,
@@ -47,7 +39,7 @@ export const deleteWorkflowStep = (
  */
 export const deleteWorkflow = (
   formId: string,
-  options?: DeleteWorkflowOptions,
+  options?: DeleteWorkflowAuthDto,
 ) => {
   return ApiService.delete<FormWorkflowDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/workflow`,

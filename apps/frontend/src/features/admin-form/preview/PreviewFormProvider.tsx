@@ -10,7 +10,7 @@ import simplur from 'simplur'
 import { FormAuthType, FormResponseMode } from 'formsg-shared/types/form'
 import {
   getStepAuthType,
-  hasLaterStepLogin,
+  usesStepLoginRules,
 } from 'formsg-shared/utils/step-login'
 
 import { usePreviewForm } from '~/features/admin-form/common/queries'
@@ -365,7 +365,7 @@ export const PreviewFormProvider = ({
       !data ||
       !previewWorkflow ||
       currentWorkflowStepNumber === 0 ||
-      !(isStepLoginEnabled || hasLaterStepLogin(previewWorkflow))
+      !usesStepLoginRules(previewWorkflow, isStepLoginEnabled)
     ) {
       return data
     }

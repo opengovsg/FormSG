@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Modal,
@@ -18,12 +18,11 @@ import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 import { ModalCloseButton } from '~components/Modal'
 
-import { useAdminForm } from '~features/admin-form/common/queries'
-
 import {
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../adminWorkflowStore'
+import { useAdminFormOnOpen } from '../../hooks/useAdminFormOnOpen'
 import { useUsesStepLoginRules } from '../../hooks/useUsesStepLoginRules'
 import { useWorkflowMutations } from '../../mutations'
 import {
@@ -45,13 +44,7 @@ export const DeleteStepModal = ({
   stepNumber,
 }: DeleteStepModalProps): JSX.Element => {
   const { t } = useTranslation()
-  const { data: loadedForm } = useAdminForm()
-  const [form, setForm] = useState(loadedForm)
-  const wasOpen = useRef(false)
-  useEffect(() => {
-    if (isOpen && !wasOpen.current) setForm(loadedForm)
-    wasOpen.current = isOpen
-  }, [isOpen, loadedForm])
+  const form = useAdminFormOnOpen(isOpen)
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
   const { deleteStepMutation } = useWorkflowMutations()
   // Without step logins, deleting a step never removes login fields.
