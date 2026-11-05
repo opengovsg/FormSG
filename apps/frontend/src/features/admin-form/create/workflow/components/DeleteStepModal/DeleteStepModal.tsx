@@ -32,6 +32,9 @@ import {
 import { AffectedAuthFieldRules } from '../AffectedAuthFieldRules'
 import { DeletedAuthFields } from '../DeletedAuthFields'
 
+const COPY_KEY =
+  'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteStep'
+
 interface DeleteStepModalProps {
   onClose: () => void
   isOpen: boolean
@@ -65,7 +68,7 @@ export const DeleteStepModal = ({
     : []
   const loginError =
     deletedFields.length && form?.status === FormStatus.Public
-      ? 'Close your form before deleting a step that removes authentication fields.'
+      ? t(`${COPY_KEY}.closeFormFirst`)
       : undefined
   const modalSize = useBreakpointValue({
     base: 'mobile',
@@ -112,10 +115,9 @@ export const DeleteStepModal = ({
     )
   }
 
-  const { title, description, confirm, cancel } = t(
-    'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteStep',
-    { returnObjects: true },
-  )
+  const { title, description, confirm, cancel } = t(COPY_KEY, {
+    returnObjects: true,
+  })
   return (
     <Modal
       isOpen={isOpen}
@@ -135,23 +137,24 @@ export const DeleteStepModal = ({
             </Text>
             {deletedFields.length ? (
               <>
-                <Text>
-                  This is the last step using its authentication provider. These
-                  fields will be deleted from your form:
-                </Text>
+                <Text>{t(`${COPY_KEY}.deletedFieldsIntro`)}</Text>
                 <DeletedAuthFields
                   fields={deletedFields}
                   formFields={form?.form_fields ?? []}
                 />
                 <AffectedAuthFieldRules rules={affectedRules} />
-                <Text>Historical responses will not be deleted.</Text>
+                <Text>
+                  {t(
+                    'features.adminForm.sidebar.workflow.stepLogin.historicalResponsesKept',
+                  )}
+                </Text>
               </>
             ) : null}
             {usesStepLoginRules && deleteStepMutation.isError ? (
               <InlineMessage variant="error">
                 {deleteStepMutation.error instanceof Error
                   ? deleteStepMutation.error.message
-                  : 'The step could not be deleted.'}
+                  : t(`${COPY_KEY}.failed`)}
               </InlineMessage>
             ) : null}
             {loginError ? (

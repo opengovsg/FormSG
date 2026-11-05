@@ -53,6 +53,23 @@ export interface Workflow {
         description: string
         confirm: string
         cancel: string
+        closeFormFirst: string
+        deletedFieldsIntro: string
+        failed: string
+      }
+      guidedDeleteWorkflow: {
+        pickerTitle: string
+        pickerDescription: string
+        keepCorppass: string
+        chooseEsrvcId: string
+        noEsrvcId: string
+        deletesWorkflow: string
+        keepProvider: string
+        keepNone: string
+        deletedFieldsIntro: string
+        keepAllFields: string
+        resetRestrictions: string
+        failed: string
       }
       deleteWorkflow: {
         title: string
@@ -169,6 +186,22 @@ export interface Workflow {
     closeFormToEdit: string
     inactiveLabel: string
     tabs: { fields: string; approvals: string; login: string }
+    historicalResponsesKept: string
+    publishErrors: { title: string; description: string }
+    settings: {
+      description: string
+      editWorkflow: string
+      notEnabled: string
+      closeFormToEdit: string
+      saved: string
+      saveFailed: string
+      restrictionsFailed: string
+      confirmSwitchFirst: string
+      checkBeforeSaving: string
+      deleteNotice: string
+      unassignNotice: string
+      ariaLabelName: string
+    }
     unassignedNotice: string
     fieldTags: { assignedToStep: string; providerOnly: string }
     saveErrors: {

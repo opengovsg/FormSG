@@ -1,4 +1,5 @@
 import { Fragment, useCallback, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiPencil } from 'react-icons/bi'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
@@ -20,7 +21,6 @@ import {
 import {
   getStepAuthType,
   isWorkflowStepAuthType,
-  STEP_LOGIN_PROVIDER_LABELS,
 } from 'formsg-shared/utils/step-login'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
@@ -36,6 +36,7 @@ import { LogicBadge } from '~features/admin-form/create/logic/components/LogicCo
 import { StepLabel } from '~features/admin-form/create/workflow/components/WorkflowContent/StepLabel'
 import { WorkflowStepBlockDivider } from '~features/admin-form/create/workflow/components/WorkflowContent/WorkflowStepBlockDivider'
 import { useWorkflowSurfaces } from '~features/admin-form/create/workflow/hooks/useWorkflowSurfaces'
+import { STEP_LOGIN_LABEL_KEYS } from '~features/admin-form/create/workflow/utils/stepLoginAvailability'
 
 import { StepAuthSettingsEditor } from './StepAuthSettingsEditor'
 
@@ -44,11 +45,14 @@ interface StepLoginAccordionProps {
   settings: FormSettings
 }
 
+const COPY_KEY = 'features.adminForm.sidebar.workflow.stepLogin.settings'
+
 /** Familiar workflow cards, focused on authentication. All start collapsed. */
 export const StepLoginAccordion = ({
   form,
   settings,
 }: StepLoginAccordionProps): JSX.Element => {
+  const { t } = useTranslation()
   const { formId } = useParams()
   const navigate = useNavigate()
   const { cardRadius, activeCardBg } = useWorkflowSurfaces()
@@ -84,9 +88,9 @@ export const StepLoginAccordion = ({
       <NavigationSaveGuard />
       <Box>
         <Text textStyle="body-1">
-          Manage authentication for each step in your workflow.{' '}
+          {t(`${COPY_KEY}.description`)}{' '}
           <Link as="button" type="button" onClick={() => requestChange(-2)}>
-            Edit your full workflow ↗
+            {t(`${COPY_KEY}.editWorkflow`)}
           </Link>
         </Text>
       </Box>
@@ -99,7 +103,7 @@ export const StepLoginAccordion = ({
         {form.workflow.map((step, stepIndex) => {
           const authType = getStepAuthType(settings, form.workflow, stepIndex)
           const label = isWorkflowStepAuthType(authType)
-            ? STEP_LOGIN_PROVIDER_LABELS[authType]
+            ? t(STEP_LOGIN_LABEL_KEYS[authType])
             : undefined
           return (
             <Fragment key={step._id}>
@@ -139,7 +143,7 @@ export const StepLoginAccordion = ({
                               <LogicBadge>{label}</LogicBadge>
                             ) : (
                               <Text textStyle="body-2" color="secondary.400">
-                                Singpass authentication not enabled
+                                {t(`${COPY_KEY}.notEnabled`)}
                               </Text>
                             )}
                           </Box>
