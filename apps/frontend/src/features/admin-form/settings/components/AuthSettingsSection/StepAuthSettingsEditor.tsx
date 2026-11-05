@@ -26,6 +26,10 @@ import { SaveActionGroup } from '~features/admin-form/create/logic/components/Lo
 import { updateWorkflowStep } from '~features/admin-form/create/workflow/FormWorkflowService'
 import { useStepLoginSwitch } from '~features/admin-form/create/workflow/hooks/useStepLoginSwitch'
 import { invalidateLoginQueries } from '~features/admin-form/create/workflow/mutations'
+import {
+  normaliseFirstStepLogin,
+  normaliseStepAuth,
+} from '~features/admin-form/create/workflow/workflow.utils'
 
 import { isValidEsrvcId } from '../../utils'
 
@@ -93,11 +97,6 @@ export const StepAuthSettingsEditor = ({
         throw new Error(
           t('features.adminForm.settings.mutations.missingFormId'),
         )
-      const trimmedEsrvcId = esrvcId.trim()
-      const corppassId =
-        authType === FormAuthType.CP && trimmedEsrvcId
-          ? { esrvc_id: trimmedEsrvcId }
-          : {}
       const confirmation = {
         delete_auth_field_ids: deletedFieldIds,
         expected_last_modified: form.lastModified,
@@ -117,26 +116,21 @@ export const StepAuthSettingsEditor = ({
                 step_name: step.step_name,
                 approval_field: step.approval_field,
                 is_approval_enabled: step.is_approval_enabled,
-                first_step_login: isStepLoginAuthType(authType)
-                  ? {
-                      auth_type: authType,
-                      // Sent even when cleared, so the form-level ID is saved
-                      ...(authType === FormAuthType.CP
-                        ? { esrvc_id: trimmedEsrvcId }
-                        : {}),
-                    }
-                  : undefined,
+                ...normaliseFirstStepLogin(
+                  isStepLoginAuthType(authType)
+                    ? { auth_type: authType, esrvc_id: esrvcId }
+                    : undefined,
+                ),
               }
             : {
                 ...step,
                 ...confirmation,
                 edit: draftFieldIds,
-                // null removes the login. Leaving auth out keeps it.
-                auth: !isWorkflowStepAuthType(authType)
-                  ? null
-                  : authType === FormAuthType.CP
-                    ? { auth_type: authType, ...corppassId }
-                    : { auth_type: authType },
+                auth: normaliseStepAuth(
+                  isWorkflowStepAuthType(authType)
+                    ? { auth_type: authType, esrvc_id: esrvcId }
+                    : null,
+                ),
               },
         )
         loginSaved = true
