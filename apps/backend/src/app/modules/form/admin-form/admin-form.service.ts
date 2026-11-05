@@ -448,9 +448,8 @@ export const transferFormOwnership = (
  * @param currentOwnerEmail the email of the current owner
  * @param newOwnerEmail the email of the new owner to transfer to
  *
- * @return ok(true) if transfer is successful
- * @return err(MissingUserError) if the current form admin cannot be found
- * @return err(TransferOwnershipError) if new owner cannot be found in the database or new owner email is same as current owner
+ * @return ok(true) if transfer is successful, or if new owner cannot be found in the database
+ * @return err(TransferOwnershipError) if new owner email is same as current owner
  * @return err(DatabaseError) if any database errors like missing admin of current owner occurs
  */
 export const transferAllFormsOwnership = (
@@ -473,18 +472,18 @@ export const transferAllFormsOwnership = (
     // Step 1: Retrieve user document for new owner.
     UserService.findUserByEmail(newOwnerEmail)
       .mapErr((error) => {
-        logger.error({
-          message:
-            'Error occurred whilst finding new owner email to transfer ownership to',
-          meta: logMeta,
-          error,
-        })
-        // Override MissingUserError with more specific message if new owner
-        // cannot be found.
         if (error instanceof MissingUserError) {
-          return new TransferOwnershipError(
-            `${newOwnerEmail} must have logged in once before being added as Owner`,
-          )
+          logger.info({
+            message: 'New owner email to transfer ownership to has no account',
+            meta: logMeta,
+          })
+        } else {
+          logger.error({
+            message:
+              'Error occurred whilst finding new owner email to transfer ownership to',
+            meta: logMeta,
+            error,
+          })
         }
         return error
       })
@@ -525,6 +524,9 @@ export const transferAllFormsOwnership = (
       )
       // Step 3: On success, return true
       .map(() => true)
+      .orElse((error) =>
+        error instanceof MissingUserError ? okAsync(true) : errAsync(error),
+      )
   )
 }
 
