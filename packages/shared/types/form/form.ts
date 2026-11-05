@@ -485,10 +485,6 @@ export type DuplicateFormOverwriteDto = {
   title: string
 } & (
   | {
-      responseMode: FormResponseMode.Email
-      emails: string | string[]
-    }
-  | {
       responseMode: FormResponseMode.Encrypt
       publicKey: string
       emails: string[]
@@ -506,11 +502,6 @@ export type DuplicateFormBodyDto = DuplicateFormOverwriteDto & {
   metadata?: Pick<FormMetadata, 'formOrigins'>
 }
 
-export type CreateEmailFormBodyDto = Pick<
-  EmailFormDto,
-  'emails' | 'responseMode' | 'title'
-> & { workspaceId?: string }
-
 export type CreateStorageFormBodyDto = Pick<
   StorageFormDto,
   'publicKey' | 'responseMode' | 'title' | 'emails'
@@ -526,7 +517,6 @@ export type CreateMultirespondentFormBodyDto = Pick<
 }
 
 export type CreateFormBodyDto =
-  | CreateEmailFormBodyDto
   | CreateStorageFormBodyDto
   | CreateMultirespondentFormBodyDto
 

@@ -95,11 +95,8 @@ export const useDupeFormWizardContext = (
 
   const { handleSubmit, setValue } = formMethods
 
-  const {
-    dupeEmailModeFormMutation,
-    dupeStorageModeFormMutation,
-    dupeMultirespondentModeFormMutation,
-  } = useDuplicateFormMutations()
+  const { dupeStorageModeFormMutation, dupeMultirespondentModeFormMutation } =
+    useDuplicateFormMutations()
 
   const { user } = useUser()
   const adminEmail = user?.email
@@ -180,7 +177,6 @@ export const useDupeFormWizardContext = (
   return {
     isFetching: isWorkspaceLoading || isPreviewFormLoading,
     isLoading:
-      dupeEmailModeFormMutation.isLoading ||
       dupeStorageModeFormMutation.isLoading ||
       dupeMultirespondentModeFormMutation.isLoading,
     keypair,

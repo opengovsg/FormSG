@@ -304,28 +304,6 @@ describe('admin-form.utils', () => {
       }
       expect(actual).toEqual(expected)
     })
-
-    it('should return processed props for ResponseMode.Email', async () => {
-      // Arrange
-      const newAdminId = new ObjectId().toHexString()
-      const params: DuplicateFormBodyDto = {
-        responseMode: FormResponseMode.Email,
-        emails: ['some@example.com', 'another@example.com'],
-        title: 'some title',
-      }
-
-      // Act
-      const actual = processDuplicateOverrideProps(params, newAdminId)
-
-      // Assert
-      const expected: OverrideProps = {
-        responseMode: params.responseMode,
-        title: params.title,
-        admin: newAdminId,
-        emails: params.emails,
-      }
-      expect(actual).toEqual(expected)
-    })
   })
 
   describe('getUpdatedFormFields', () => {

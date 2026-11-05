@@ -66,7 +66,6 @@ export const useUseTemplateWizardContext = (
   const { handleSubmit, setValue } = formMethods
 
   const {
-    useEmailModeFormTemplateMutation,
     useStorageModeFormTemplateMutation,
     useMultirespondentFormTemplateMutation,
   } = useUseTemplateMutations()
@@ -147,7 +146,6 @@ export const useUseTemplateWizardContext = (
   return {
     isFetching: isTemplateFormLoading,
     isLoading:
-      useEmailModeFormTemplateMutation.isLoading ||
       useStorageModeFormTemplateMutation.isLoading ||
       useMultirespondentFormTemplateMutation.isLoading,
     keypair,

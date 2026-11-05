@@ -144,7 +144,6 @@ export const useCreateFormWizardContext = (
   const { handleSubmit, setValue } = formMethods
 
   const {
-    createEmailModeFormMutation,
     createStorageModeFormMutation,
     createMultirespondentModeFormMutation,
   } = useCreateFormMutations()
@@ -248,7 +247,6 @@ export const useCreateFormWizardContext = (
   return {
     isFetching: false,
     isLoading:
-      createEmailModeFormMutation.isLoading ||
       createStorageModeFormMutation.isLoading ||
       createMultirespondentModeFormMutation.isLoading,
     keypair,

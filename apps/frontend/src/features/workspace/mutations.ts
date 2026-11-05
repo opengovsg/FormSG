@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 
 import { AdminCsatScore, AdminFeedbackTriggerSource } from 'formsg-shared/types'
 import {
-  CreateEmailFormBodyDto,
   CreateMultirespondentFormBodyDto,
   CreateStorageFormBodyDto,
   DuplicateFormBodyDto,
@@ -23,13 +22,11 @@ import { trackCreateFormFailed } from '~features/analytics/AnalyticsService'
 import { workspaceKeys } from './queries'
 import {
   createAdminFeedback,
-  createEmailModeForm,
   createMultirespondentModeForm,
   createStorageModeForm,
   createWorkspace,
   deleteAdminForm,
   deleteWorkspace,
-  dupeEmailModeForm,
   dupeMultirespondentModeForm,
   dupeStorageModeForm,
   moveFormsToWorkspace,
@@ -42,15 +39,6 @@ const useCommonHooks = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'danger', isClosable: true })
-
-  const handleSuccess = useCallback(
-    (data: Pick<FormDto, '_id'>) => {
-      queryClient.invalidateQueries(workspaceKeys.dashboard)
-      queryClient.invalidateQueries(workspaceKeys.workspaces)
-      navigate(`${ADMINFORM_ROUTE}/${data._id}`)
-    },
-    [navigate, queryClient],
-  )
 
   const handleSuccessWithoutRedirect = useCallback(
     (data: FormDto) => {
@@ -72,26 +60,15 @@ const useCommonHooks = () => {
   )
 
   return {
-    handleSuccess,
     handleSuccessWithoutRedirect,
     handleError,
   }
 }
 
 export const useCreateFormMutations = () => {
-  const { handleError, handleSuccess, handleSuccessWithoutRedirect } =
-    useCommonHooks()
+  const { handleError, handleSuccessWithoutRedirect } = useCommonHooks()
 
   const queryClient = useQueryClient()
-
-  const createEmailModeFormMutation = useMutation<
-    FormDto,
-    ApiError,
-    CreateEmailFormBodyDto
-  >((params) => createEmailModeForm(params), {
-    onSuccess: handleSuccess,
-    onError: handleError,
-  })
 
   const createStorageModeFormMutation = useMutation<
     FormDto,
@@ -118,30 +95,15 @@ export const useCreateFormMutations = () => {
   })
 
   return {
-    createEmailModeFormMutation,
     createStorageModeFormMutation,
     createMultirespondentModeFormMutation,
   }
 }
 
 export const useDuplicateFormMutations = () => {
-  const { handleSuccess, handleSuccessWithoutRedirect, handleError } =
-    useCommonHooks()
+  const { handleSuccessWithoutRedirect, handleError } = useCommonHooks()
 
   const queryClient = useQueryClient()
-
-  const dupeEmailModeFormMutation = useMutation<
-    FormDto,
-    ApiError,
-    DuplicateFormBodyDto & { formIdToDuplicate: FormId }
-  >(
-    ({ formIdToDuplicate, ...params }) =>
-      dupeEmailModeForm(formIdToDuplicate, params),
-    {
-      onSuccess: handleSuccess,
-      onError: handleError,
-    },
-  )
 
   const dupeStorageModeFormMutation = useMutation<
     FormDto,
@@ -176,7 +138,6 @@ export const useDuplicateFormMutations = () => {
   )
 
   return {
-    dupeEmailModeFormMutation,
     dupeStorageModeFormMutation,
     dupeMultirespondentModeFormMutation,
   }

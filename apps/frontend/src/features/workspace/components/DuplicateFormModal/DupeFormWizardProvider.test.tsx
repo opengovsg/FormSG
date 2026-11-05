@@ -75,7 +75,6 @@ describe('DupeFormWizardProvider', () => {
     } as any)
 
     vi.mocked(useDuplicateFormMutations).mockReturnValue({
-      dupeEmailModeFormMutation: mockMutation as any,
       dupeStorageModeFormMutation: mockMutation as any,
       dupeMultirespondentModeFormMutation: mockMutation as any,
     } as any)

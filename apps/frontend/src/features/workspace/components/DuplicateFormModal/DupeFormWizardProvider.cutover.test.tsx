@@ -55,7 +55,6 @@ describe('DupeFormWizardProvider — cutover behaviour', () => {
     isLoading: false,
     mutate: vi.fn(),
   }
-  const dupeEmailModeFormMutation = { isLoading: false, mutate: vi.fn() }
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -77,7 +76,6 @@ describe('DupeFormWizardProvider — cutover behaviour', () => {
     } as any)
 
     vi.mocked(useDuplicateFormMutations).mockReturnValue({
-      dupeEmailModeFormMutation,
       dupeStorageModeFormMutation,
       dupeMultirespondentModeFormMutation,
     } as any)

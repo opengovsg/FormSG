@@ -6,7 +6,6 @@ import {
 } from 'formsg-shared/types'
 import {
   AdminDashboardFormMetaDto,
-  CreateEmailFormBodyDto,
   CreateMultirespondentFormBodyDto,
   CreateStorageFormBodyDto,
   DuplicateFormBodyDto,
@@ -95,14 +94,6 @@ export const removeFormsFromWorkspaces = async ({
   return ApiService.post(`${ADMIN_WORKSPACES_ENDPOINT}/remove`, { formIds })
 }
 
-export const createEmailModeForm = async (
-  body: CreateEmailFormBodyDto,
-): Promise<FormDto> => {
-  return ApiService.post<FormDto>(ADMIN_FORM_ENDPOINT, { form: body }).then(
-    ({ data }) => data,
-  )
-}
-
 export const createStorageModeForm = async (
   body: CreateStorageFormBodyDto,
 ): Promise<FormDto> => {
@@ -117,16 +108,6 @@ export const createMultirespondentModeForm = async (
   return ApiService.post<FormDto>(ADMIN_FORM_ENDPOINT, { form: body }).then(
     ({ data }) => data,
   )
-}
-
-export const dupeEmailModeForm = async (
-  formId: string,
-  body: DuplicateFormBodyDto,
-): Promise<FormDto> => {
-  return ApiService.post<FormDto>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/duplicate`,
-    body,
-  ).then(({ data }) => data)
 }
 
 export const dupeStorageModeForm = async (

@@ -47,7 +47,6 @@ const setFlags = ({
 beforeEach(() => {
   vi.clearAllMocks()
   vi.mocked(useCreateFormMutations).mockReturnValue({
-    createEmailModeFormMutation: { isLoading: false, mutate: vi.fn() },
     createStorageModeFormMutation: storageMutation,
     createMultirespondentModeFormMutation: mrfMutation,
   } as any)
