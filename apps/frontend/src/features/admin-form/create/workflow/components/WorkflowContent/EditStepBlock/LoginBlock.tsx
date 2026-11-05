@@ -155,10 +155,11 @@ const WorkflowStepOneRestrictions = ({
 
   if (!settings || settings.responseMode !== FormResponseMode.Multirespondent)
     return null
+  const value = draft?.value ?? createStepOneLoginRestrictionsDraft(settings)
   return (
     <StepOneLoginRestrictions
       settings={settings}
-      value={draft?.value ?? createStepOneLoginRestrictionsDraft(settings)}
+      value={value}
       isDisabled={isDisabled}
       authType={authType}
       onGoToFields={(tab: FieldListTabIndex) => {
@@ -175,11 +176,7 @@ const WorkflowStepOneRestrictions = ({
             baselineIsSingleSubmission:
               draft?.baselineIsSingleSubmission ??
               !!settings.isSingleSubmission,
-            value: {
-              ...(draft?.value ??
-                createStepOneLoginRestrictionsDraft(settings)),
-              ...patch,
-            },
+            value: { ...value, ...patch },
           },
           { shouldDirty: true },
         )

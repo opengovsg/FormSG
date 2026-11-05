@@ -25,6 +25,11 @@ export type StepLoginSwitch = {
 
 type PendingSwitch = { authType: StepLoginAuthType; assignedId?: string }
 
+const NO_CONSEQUENCES: ReturnType<typeof getAuthSwitchConsequences> = {
+  deletedFields: [],
+  unassignedFields: [],
+}
+
 /**
  * Changing a step's login can strand fields: those on the step move off it,
  * and those no step can fill any more are deleted. Every way of changing a
@@ -48,10 +53,10 @@ export const useStepLoginSwitch = ({
 }) => {
   const [pending, setPending] = useState<PendingSwitch>()
 
-  const consequencesOf = (next: StepLoginAuthType) =>
-    form
+  const consequencesOf = (next: StepLoginAuthType | undefined) =>
+    form && next !== undefined
       ? getAuthSwitchConsequences(form, stepNumber, next, assignedIds)
-      : { deletedFields: [], unassignedFields: [] }
+      : NO_CONSEQUENCES
 
   const apply = ({ authType: next, assignedId }: PendingSwitch) => {
     const { deletedFields, unassignedFields } = consequencesOf(next)
@@ -74,9 +79,7 @@ export const useStepLoginSwitch = ({
     apply({ authType: next })
   }
 
-  const consequences = pending
-    ? consequencesOf(pending.authType)
-    : { deletedFields: [], unassignedFields: [] }
+  const consequences = consequencesOf(pending?.authType)
   const isDeleting = consequences.deletedFields.length > 0
   const formFields = form?.form_fields ?? []
 

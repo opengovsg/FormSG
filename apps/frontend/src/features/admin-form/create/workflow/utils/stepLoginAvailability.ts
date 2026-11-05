@@ -2,9 +2,16 @@ import {
   AdminFormDto,
   FormAuthType,
   FormResponseMode,
+  WorkflowStepAuthType,
 } from 'formsg-shared/types'
 import { canConvertSubmitterIdCollection } from 'formsg-shared/utils/login-identity'
 import { formUsesAuthType } from 'formsg-shared/utils/step-login'
+
+export const STEP_LOGIN_LABEL_KEYS = {
+  [FormAuthType.MyInfo]:
+    'features.adminForm.sidebar.workflow.stepLogin.singpass',
+  [FormAuthType.CP]: 'features.adminForm.sidebar.workflow.stepLogin.corppass',
+} as const satisfies Record<WorkflowStepAuthType, string>
 
 type StepLoginAvailabilityForm = Pick<
   AdminFormDto,
