@@ -14,7 +14,6 @@ import {
 } from '@chakra-ui/react'
 
 import {
-  FirstStepLoginInput,
   FormAuthType,
   FormWorkflowStepAuth,
   FormWorkflowStepBase,
@@ -49,6 +48,10 @@ import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilde
 import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
 import { EditStepInputs } from '../../../types'
 import { getGuidedSecondaryAction } from '../../../utils/guidedStepPolicy'
+import {
+  normaliseFirstStepLogin,
+  normaliseStepAuth,
+} from '../../../workflow.utils'
 import { SpotlightGroup } from '../../Spotlight'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
@@ -82,40 +85,6 @@ const SAVE_ERRORS_KEY =
   'features.adminForm.sidebar.workflow.stepLogin.saveErrors'
 
 type WriteStep = FormWorkflowStepWriteDto & { _id: string }
-
-/**
- * A later step's login as sent: null when the step has none, since the
- * backend keeps the saved login when auth is absent.
- */
-const normaliseStepAuth = (
-  auth: FormWorkflowStepAuth | null | undefined,
-): FormWorkflowStepAuth | null => {
-  if (!auth) return null
-  if (auth.auth_type === FormAuthType.MyInfo)
-    return { auth_type: auth.auth_type }
-  // An empty e-service ID is omitted.
-  const esrvcId = auth.esrvc_id?.trim()
-  return {
-    auth_type: FormAuthType.CP,
-    ...(esrvcId ? { esrvc_id: esrvcId } : {}),
-  }
-}
-
-// Step 1's login updates the form-level settings, where a missing e-service
-// ID means "unchanged". Send a cleared Corppass ID as '' so it is saved.
-const normaliseFirstStepLogin = (
-  login: FirstStepLoginInput | undefined,
-): { first_step_login?: FirstStepLoginInput } =>
-  login
-    ? {
-        first_step_login: {
-          auth_type: login.auth_type,
-          ...(login.auth_type === FormAuthType.CP
-            ? { esrvc_id: login.esrvc_id?.trim() ?? '' }
-            : {}),
-        },
-      }
-    : {}
 
 export const buildWorkflowStep = (
   rawInputs: EditStepInputs,
