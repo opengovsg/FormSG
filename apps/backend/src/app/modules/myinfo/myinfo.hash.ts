@@ -1,4 +1,3 @@
-import bcrypt from 'bcrypt'
 import crypto from 'crypto'
 
 import { sessionSecret } from '../../config/config'
@@ -27,8 +26,7 @@ export const hashMyInfoValue = (hashKey: string, value: string): string =>
   `${HMAC_HASH_PREFIX}${hmacDigest(hashKey, value).toString('hex')}`
 
 /**
- * Checks a submitted value against a stored MyInfo hash. Accepts both HMAC
- * hashes from hashMyInfoValue and legacy bcrypt hashes.
+ * Checks a submitted value against a stored MyInfo hash from hashMyInfoValue.
  */
 export const compareMyInfoValue = (
   hashKey: string,
@@ -36,7 +34,7 @@ export const compareMyInfoValue = (
   hash: string,
 ): Promise<boolean> => {
   if (!hash.startsWith(HMAC_HASH_PREFIX)) {
-    return bcrypt.compare(value, hash)
+    return Promise.resolve(false)
   }
   const expected = hmacDigest(hashKey, value)
   const actual = Buffer.from(hash.slice(HMAC_HASH_PREFIX.length), 'hex')
