@@ -13,8 +13,12 @@ const CONFIRM =
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, values?: { emails?: string }) =>
-      values?.emails ? `${key}:${values.emails}` : key,
+    t: (key: string, values?: { emails?: string; stepName?: string }) =>
+      values?.stepName
+        ? `Currently assigned to ${values.stepName}`
+        : values?.emails
+          ? `${key}:${values.emails}`
+          : key,
   }),
 }))
 
@@ -22,6 +26,7 @@ const showModal = (onConfirm: (emails: string[]) => void) =>
   render(
     <AddAssigneeModal
       isOpen
+      stepName="Step 3 · Finance"
       onClose={vi.fn()}
       onConfirm={onConfirm}
       currentAssignees={['lead@agency.gov.sg']}
@@ -77,6 +82,7 @@ describe('AddAssigneeModal', () => {
     const props = {
       onClose: vi.fn(),
       onConfirm,
+      stepName: 'Step 3 · Finance',
       currentAssignees: ['lead@agency.gov.sg'],
     }
     rerender(<AddAssigneeModal {...props} isOpen={false} />)
@@ -85,6 +91,47 @@ describe('AddAssigneeModal', () => {
     expect(screen.queryByText(REQUIRED)).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: CONFIRM })).toBeEnabled()
     expect(onConfirm).not.toHaveBeenCalled()
+  })
+
+  it('shows current assignees above the email input as read-only tags', () => {
+    render(
+      <AddAssigneeModal
+        isOpen
+        stepName="Step 3 · Finance"
+        onClose={vi.fn()}
+        onConfirm={vi.fn()}
+        currentAssignees={['lead@agency.gov.sg', 'deputy@agency.gov.sg']}
+      />,
+    )
+
+    expect(
+      screen.getByText('Currently assigned to Step 3 · Finance'),
+    ).toBeInTheDocument()
+    const lead = screen.getByText('lead@agency.gov.sg')
+    const deputy = screen.getByText('deputy@agency.gov.sg')
+    expect(
+      lead.compareDocumentPosition(deputy) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(
+      deputy.compareDocumentPosition(screen.getByRole('textbox')) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(
+      screen.queryByRole('button', { name: 'Remove selected option' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('shows the empty current-assignee message', () => {
+    render(
+      <AddAssigneeModal
+        isOpen
+        stepName="Step 3 · Finance"
+        onClose={vi.fn()}
+        onConfirm={vi.fn()}
+        currentAssignees={[]}
+      />,
+    )
+    expect(screen.getByText(/noCurrentAssignees$/)).toBeInTheDocument()
   })
 
   it('does not show a notification summary', () => {
@@ -113,7 +160,7 @@ describe('AddAssigneeModal', () => {
 
     await typeEmails('Lead@agency.gov.sg,')
 
-    expect(screen.getByText(/lead@agency\.gov\.sg/)).toBeInTheDocument()
+    expect(screen.getByText(/alreadyAssigned:/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: CONFIRM })).toBeDisabled()
     expect(onConfirm).not.toHaveBeenCalled()
   })

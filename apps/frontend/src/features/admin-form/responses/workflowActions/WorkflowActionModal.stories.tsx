@@ -67,3 +67,15 @@ WithInputs.args = {
     </FormControl>
   ),
 }
+
+export const MultipleLongReminderRecipients = Template.bind({})
+MultipleLongReminderRecipients.args = {
+  notifiedEmails: [
+    'daniel_tan@agency.gov.sg',
+    'wei_ling_koh@agency.gov.sg',
+    'a.very.long.recipient.email.address.for.wrapping@department.agency.gov.sg',
+  ],
+}
+MultipleLongReminderRecipients.parameters = {
+  argos: { modes: viewportModes('mobile') },
+}

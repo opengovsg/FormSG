@@ -279,6 +279,34 @@ describe('sendBackMultirespondentSubmission', () => {
       })
     })
 
+    it('sends step 1 only to the entered email when it has historical added assignees', async () => {
+      const submission = await createSubmission({
+        workflowEvents: [
+          ...STEP_SUBMITTED_EVENTS,
+          {
+            type: WorkflowEventType.AssigneesAdded,
+            actorId: actor._id,
+            actorEmail: actor.email,
+            stepNumber: 1,
+            emails: ['previous@example.com'],
+            created: new Date(),
+          },
+        ],
+      })
+
+      const result = await sendBack(submission._id, 1, {
+        stepOneRecipientEmail: 'New@example.com',
+      })
+
+      expect(result._unsafeUnwrap().emails).toEqual(['new@example.com'])
+      const stored = await MultirespondentSubmission.findById(
+        submission._id,
+      ).lean()
+      expect(stored?.workflowEvents?.at(-1)?.emails).toEqual([
+        'new@example.com',
+      ])
+    })
+
     it('refuses step 1 on a form with a login', async () => {
       const submission = await createSubmission()
 

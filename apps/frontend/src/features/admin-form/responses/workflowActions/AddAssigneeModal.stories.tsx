@@ -22,6 +22,7 @@ export default {
   },
   args: {
     isOpen: true,
+    stepName: 'Step 3 · Finance',
     onClose: () => undefined,
     onConfirm: () => undefined,
     currentAssignees: ['daniel_tan@agency.gov.sg'],
@@ -34,3 +35,18 @@ const Template: StoryFn<AddAssigneeModalProps> = (args) => (
 
 export const Default = Template.bind({})
 Default.parameters = { argos: { modes: viewportModes('mobile') } }
+
+export const NoCurrentAssignees = Template.bind({})
+NoCurrentAssignees.args = { currentAssignees: [] }
+
+export const MultipleCurrentAssignees = Template.bind({})
+MultipleCurrentAssignees.args = {
+  currentAssignees: [
+    'daniel_tan@agency.gov.sg',
+    'previously_added@agency.gov.sg',
+    'a.very.long.recipient.email.address.for.wrapping@department.agency.gov.sg',
+  ],
+}
+MultipleCurrentAssignees.parameters = {
+  argos: { modes: viewportModes('mobile') },
+}

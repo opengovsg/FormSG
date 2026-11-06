@@ -1,10 +1,18 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FormControl, FormErrorMessage } from '@chakra-ui/react'
+import {
+  Box,
+  Flex,
+  FormControl,
+  FormErrorMessage,
+  Stack,
+} from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
 import FormLabel from '~components/FormControl/FormLabel'
 import { TagInput } from '~components/TagInput'
+
+import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 
 import { formatEmailList } from './formatEmailList'
 import { WORKFLOW_ACTIONS_I18N } from './i18n'
@@ -18,6 +26,7 @@ export interface AddAssigneeModalProps {
   onConfirm: (emails: string[]) => void
   isLoading?: boolean
   currentAssignees: string[]
+  stepName: string
 }
 
 export const AddAssigneeModal = ({
@@ -26,6 +35,7 @@ export const AddAssigneeModal = ({
   onConfirm,
   isLoading,
   currentAssignees,
+  stepName,
 }: AddAssigneeModalProps): JSX.Element => {
   const { t } = useTranslation()
   const [emails, setEmails] = useState<string[]>([])
@@ -79,26 +89,46 @@ export const AddAssigneeModal = ({
       isConfirmLoading={isLoading}
       onConfirm={handleConfirm}
     >
-      <FormControl isInvalid={!!error}>
-        <FormLabel isRequired>{t(`${I18N_PREFIX}.label`)}</FormLabel>
-        <TagInput
-          value={emails}
-          onChange={(values) =>
-            setEmails(values.filter((value) => value.trim() !== ''))
-          }
-          placeholder={emails.length > 0 ? undefined : 'me@example.com'}
-          tagValidation={isEmail}
-        />
-        {error ? (
-          <FormErrorMessage>{error}</FormErrorMessage>
-        ) : (
-          <FormLabel.Description color="secondary.400" mt="0.5rem">
-            {t(
-              'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.descriptionRedesign',
-            )}
-          </FormLabel.Description>
-        )}
-      </FormControl>
+      <Stack spacing="1.5rem">
+        <Box>
+          <FormLabel.Label as="div">
+            {t(`${I18N_PREFIX}.currentlyAssignedLabel`, { stepName })}
+          </FormLabel.Label>
+          {currentAssignees.length ? (
+            <Flex flexWrap="wrap" gap="0.5rem">
+              {currentAssignees.map((email) => (
+                <LogicBadge key={email} overflowWrap="anywhere">
+                  {email}
+                </LogicBadge>
+              ))}
+            </Flex>
+          ) : (
+            <FormLabel.Description>
+              {t(`${I18N_PREFIX}.noCurrentAssignees`)}
+            </FormLabel.Description>
+          )}
+        </Box>
+        <FormControl isInvalid={!!error}>
+          <FormLabel isRequired>{t(`${I18N_PREFIX}.label`)}</FormLabel>
+          <TagInput
+            value={emails}
+            onChange={(values) =>
+              setEmails(values.filter((value) => value.trim() !== ''))
+            }
+            placeholder={emails.length > 0 ? undefined : 'me@example.com'}
+            tagValidation={isEmail}
+          />
+          {error ? (
+            <FormErrorMessage>{error}</FormErrorMessage>
+          ) : (
+            <FormLabel.Description color="secondary.400" mt="0.5rem">
+              {t(
+                'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.descriptionRedesign',
+              )}
+            </FormLabel.Description>
+          )}
+        </FormControl>
+      </Stack>
     </WorkflowActionModal>
   )
 }

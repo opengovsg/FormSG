@@ -49,6 +49,8 @@ export const enSG: ResponsesIndividualResponse = {
       description:
         'We’ll email them a link to complete this step. People already assigned to this step can still respond.',
       label: 'Email addresses of new people',
+      currentlyAssignedLabel: 'Currently assigned to {stepName}',
+      noCurrentAssignees: 'No one is currently assigned to this step.',
       requiredEmail: 'Enter at least one email address',
       invalidEmail: 'Enter a valid email',
       alreadyAssigned:
@@ -70,11 +72,12 @@ export const enSG: ResponsesIndividualResponse = {
       description:
         'We’ll email the people on that step a new link to amend their answers. Answers given so far stay filled in. Every step after it will need to be completed again.',
       stepLabel: 'Send back to',
+      recipientsLabel: 'People in {stepName}',
       stepOneEmailLabel: 'Email address of who fills in Step 1',
       stepOneEmailDescription:
-        'Step 1 has no set recipient, so we’ll email the new link to this address.',
+        'Step 1 has no set recipient, so we’ll email the new link to this email address.',
       remarksLabel: 'Remarks',
-      remarksDescription: 'Included in the email to the people on that step.',
+      remarksDescription: 'Tell them what they need to fix.',
       remarksTooLong: 'Remarks must be {max} characters or fewer',
       confirm: 'Send back',
       toastSuccess: 'The response was sent back to Step {stepNumber}.',

@@ -17,7 +17,14 @@ const mockAddAssignees = vi.fn()
 const mockSendBack = vi.fn()
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (k: string) => k }),
+  useTranslation: () => ({
+    t: (key: string, values: Record<string, unknown> = {}) => {
+      if (key.endsWith('activityLog.stepNumber'))
+        return `Step ${values.stepNumber}`
+      if (key.endsWith('activityLog.stepNameLabel')) return ` · ${values.name}`
+      return key
+    },
+  }),
 }))
 
 vi.mock('react-router-dom', () => ({
@@ -76,13 +83,19 @@ vi.mock('./AddAssigneeModal', () => ({
   AddAssigneeModal: ({
     isOpen,
     onConfirm,
+    stepName,
   }: {
     isOpen: boolean
+    stepName: string
     onConfirm: (emails: string[]) => void
   }) =>
     isOpen ? (
-      <button onClick={() => onConfirm(['new@agency.gov.sg'])}>
+      <button
+        aria-label="confirm add"
+        onClick={() => onConfirm(['new@agency.gov.sg'])}
+      >
         confirm add
+        <span>{stepName}</span>
       </button>
     ) : null,
 }))
@@ -126,6 +139,7 @@ const renderSection = (
   recipients: string[] = ['lead@agency.gov.sg'],
   withOverview = false,
   submittedStepCount = 1,
+  stepName?: string,
 ) =>
   render(
     <WorkflowActionsSection
@@ -140,7 +154,7 @@ const renderSection = (
         })),
         workflow: [
           { _id: 'step-1' },
-          { _id: 'step-2' },
+          { _id: 'step-2', step_name: stepName },
           { _id: 'step-3' },
           { _id: 'step-4' },
         ],
@@ -220,6 +234,19 @@ describe('WorkflowActionsSection', () => {
     renderSection(pendingMrf({ workflowStatus: WorkflowStatus.APPROVED }))
     expect(screen.queryByRole('button', { name: STOP })).not.toBeInTheDocument()
   })
+
+  it.each([
+    ['Finance', 'Step 2 · Finance'],
+    [undefined, 'Step 2'],
+    ['   ', 'Step 2'],
+  ])(
+    'uses the pending step name %j in the assignment modal',
+    async (name, label) => {
+      renderSection(pendingMrf(), ['lead@agency.gov.sg'], false, 1, name)
+      await userEvent.click(screen.getByRole('button', { name: REASSIGN }))
+      expect(screen.getByText(label)).toBeInTheDocument()
+    },
+  )
 
   it('adds assignees with the step link credentials', async () => {
     renderSection()

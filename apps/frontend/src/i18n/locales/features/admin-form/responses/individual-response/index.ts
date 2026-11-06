@@ -43,6 +43,8 @@ export interface ResponsesIndividualResponse {
     reassignButton: string
     sendBackButton: string
     addAssigneeModal: {
+      currentlyAssignedLabel: string
+      noCurrentAssignees: string
       title: string
       description: string
       label: string
@@ -60,6 +62,7 @@ export interface ResponsesIndividualResponse {
       toastSuccess: string
     }
     sendBackModal: {
+      recipientsLabel: string
       title: string
       description: string
       stepLabel: string

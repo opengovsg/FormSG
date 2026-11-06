@@ -2554,7 +2554,9 @@ export const sendBackMultirespondentSubmission = ({
               ? [stepOneRecipientEmail as string]
               : (keptSteps[keptSteps.length - 1].nextStepRecipientEmails ??
                 [])),
-            ...getAddedAssignees(submission.workflowEvents, targetStepNumber),
+            ...(isToStepOne
+              ? []
+              : getAddedAssignees(submission.workflowEvents, targetStepNumber)),
           ].map((email) => email.toLowerCase()),
         ),
       )

@@ -18,6 +18,7 @@ vi.mock('react-i18next', () => ({
       if (key.endsWith('activityLog.stepNumber'))
         return `Step ${values.stepNumber}`
       if (key.endsWith('activityLog.stepNameLabel')) return ` · ${values.name}`
+      if (key.endsWith('recipientsLabel')) return `People in ${values.stepName}`
       if (key.endsWith('remarksTooLong')) return `Too long, max ${values.max}`
       return key.split('.').pop()
     },
@@ -103,6 +104,7 @@ describe('SendBackModal', () => {
       screen.getAllByRole('option').map((option) => option.textContent),
     ).toEqual(['Step 2 · Team lead', 'Step 3'])
     expect(screen.getByRole('combobox', { name: 'step' })).toHaveValue('3')
+    expect(screen.getByText('People in Step 3')).toBeInTheDocument()
   })
 
   it("shows the chosen step's people, including those added to it", async () => {
@@ -113,9 +115,40 @@ describe('SendBackModal', () => {
       '2',
     )
 
+    expect(screen.getByText('People in Step 2 · Team lead')).toBeInTheDocument()
+    const lead = screen.getByText('lead@agency.gov.sg')
+    const deputy = screen.getByText('deputy@agency.gov.sg')
     expect(
-      screen.getByText('lead@agency.gov.sg and deputy@agency.gov.sg'),
-    ).toBeInTheDocument()
+      lead.compareDocumentPosition(deputy) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(
+      deputy.compareDocumentPosition(screen.getByRole('textbox')) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(screen.queryByText('whoIsNotifiedLabel')).not.toBeInTheDocument()
+    expect(screen.queryByText('hr@agency.gov.sg')).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Remove selected option' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('explains when the selected step has no recipients', () => {
+    render(
+      <SendBackModal
+        isOpen
+        onClose={vi.fn()}
+        onConfirm={vi.fn()}
+        history={{
+          ...history,
+          submittedSteps: [step([]), step([]), step([])],
+          workflowEvents: [],
+        }}
+      />,
+    )
+
+    expect(screen.getByText('People in Step 3')).toBeInTheDocument()
+    expect(screen.getByText('whoIsNotifiedNone')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'confirm' })).toBeEnabled()
   })
 
   it('sends back to the chosen step with trimmed remarks', async () => {
@@ -190,7 +223,12 @@ describe('SendBackModal', () => {
         'Applicant@Agency.gov.sg',
       )
 
-      expect(screen.getByText('applicant@agency.gov.sg')).toBeInTheDocument()
+      expect(screen.queryByText(/^People in /)).not.toBeInTheDocument()
+      expect(screen.queryByText('whoIsNotifiedLabel')).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('applicant@agency.gov.sg'),
+      ).not.toBeInTheDocument()
+      expect(screen.getByText('stepOneEmailDescription')).toBeInTheDocument()
       await userEvent.click(screen.getByRole('button', { name: 'confirm' }))
       expect(onConfirm).toHaveBeenCalledWith({
         targetStepNumber: 1,
@@ -199,20 +237,43 @@ describe('SendBackModal', () => {
       })
     })
 
-    it('blocks an invalid email', async () => {
-      showStepOneModal()
-
+    it('shows invalid-email feedback after first blur then updates while editing', async () => {
+      const onConfirm = showStepOneModal()
       await userEvent.selectOptions(
         screen.getByRole('combobox', { name: 'step' }),
         '1',
       )
-      await userEvent.type(
-        screen.getByPlaceholderText('me@example.com'),
-        'not-an-email',
-      )
+      const email = screen.getByPlaceholderText('me@example.com')
+      const confirm = screen.getByRole('button', { name: 'confirm' })
+      expect(screen.queryByText('invalidEmail')).not.toBeInTheDocument()
+      expect(email).not.toHaveAttribute('aria-invalid', 'true')
+      expect(confirm).toBeDisabled()
 
+      await userEvent.type(email, 'sufy')
+      expect(email).toHaveFocus()
+      expect(screen.queryByText('invalidEmail')).not.toBeInTheDocument()
+      expect(email).not.toHaveAttribute('aria-invalid', 'true')
+      expect(confirm).toBeDisabled()
+
+      await userEvent.tab()
       expect(screen.getByText('invalidEmail')).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'confirm' })).toBeDisabled()
+      expect(email).toHaveAttribute('aria-invalid', 'true')
+      expect(confirm).toBeDisabled()
+
+      await userEvent.click(email)
+      expect(screen.getByText('invalidEmail')).toBeInTheDocument()
+      expect(email).toHaveAttribute('aria-invalid', 'true')
+      expect(confirm).toBeDisabled()
+
+      await userEvent.type(email, '@agency.gov.sg')
+      expect(screen.queryByText('invalidEmail')).not.toBeInTheDocument()
+      expect(email).not.toHaveAttribute('aria-invalid', 'true')
+      expect(confirm).toBeEnabled()
+      await userEvent.tab()
+      expect(screen.queryByText('invalidEmail')).not.toBeInTheDocument()
+      expect(email).not.toHaveAttribute('aria-invalid', 'true')
+      expect(confirm).toBeEnabled()
+      expect(onConfirm).not.toHaveBeenCalled()
     })
   })
 })
