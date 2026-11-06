@@ -41,6 +41,7 @@ import {
 } from '../types'
 import useDecryptionWorkers from '../useDecryptionWorkers'
 import { CsvExportView } from '../utils/csvExportView'
+import { isZipStorageFullError } from '../utils/zipStaging'
 
 import { DownloadWithAttachmentModal } from './DownloadWithAttachmentModal'
 import { ProgressModal } from './ProgressModal'
@@ -318,10 +319,12 @@ export const DownloadButton = ({
           ]}response[|s] [was|were] decrypted.`,
         })
       },
-      onError: () => {
+      onError: (error) => {
         toast({
           status: 'danger',
-          description: 'Failed to start download. Please try again later.',
+          description: isZipStorageFullError(error)
+            ? 'Not enough storage space. Free up space or download a shorter date range.'
+            : 'Failed to start download. Please try again later.',
         })
       },
       onSettled: (decryptResult) => {
