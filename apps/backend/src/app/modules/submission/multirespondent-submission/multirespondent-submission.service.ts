@@ -16,6 +16,7 @@ import {
   WorkflowStatus,
 } from 'formsg-shared/types'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
+import { omit } from 'lodash'
 import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -36,6 +37,7 @@ import {
   SnapshottedFormDef,
 } from '../../../../types/api'
 import config, { isTest } from '../../../config/config'
+import formsgSdk from '../../../config/formsg-sdk'
 import {
   createLoggerWithLabel,
   CustomLoggerParams,
@@ -79,6 +81,7 @@ import {
   MrfReminderInvalidWorkflowStepError,
   MrfReminderLimitReachedError,
   MrfReminderRecipientEmailsEmptyError,
+  MrfSendBackClearFailedError,
   MrfSendBackInvalidStepError,
   MrfSubmissionStaleError,
   MrfWorkflowNotPendingError,
@@ -2486,6 +2489,61 @@ export const stopMultirespondentSubmission = ({
       stopped ? okAsync(stopped) : errAsync(new MrfWorkflowNotPendingError()),
     )
 
+export const getFieldIdsClearedBySendBack = (
+  workflow: { edit?: unknown[] }[],
+  targetStepNumber: number,
+): string[] => {
+  const editableIn = (steps: { edit?: unknown[] }[]) =>
+    steps.flatMap((step) => (step.edit ?? []).map(String))
+  const keptFieldIds = new Set(
+    editableIn(workflow.slice(0, targetStepNumber - 1)),
+  )
+  return Array.from(
+    new Set(editableIn(workflow.slice(targetStepNumber - 1))),
+  ).filter((fieldId) => !keptFieldIds.has(fieldId))
+}
+
+type SendBackClearUpdate = {
+  $set?: { encryptedContent: string }
+  $unset?: Record<string, ''>
+}
+
+const clearSentBackResponses = ({
+  submission,
+  targetStepNumber,
+  submissionSecretKey,
+}: {
+  submission: IMultirespondentSubmissionSchema
+  targetStepNumber: number
+  submissionSecretKey: string
+}): Result<SendBackClearUpdate, MrfSendBackClearFailedError> => {
+  const decrypted = formsgSdk.cryptoV3.decryptFromSubmissionKey(
+    submissionSecretKey,
+    {
+      encryptedContent: submission.encryptedContent,
+      version: submission.version,
+    },
+  )
+  if (!decrypted) {
+    return err(new MrfSendBackClearFailedError())
+  }
+  const clearedFieldIds = getFieldIdsClearedBySendBack(
+    submission.workflow,
+    targetStepNumber,
+  )
+  return ok({
+    $set: {
+      encryptedContent: formsgSdk.crypto.encrypt(
+        omit(decrypted.responses, clearedFieldIds),
+        submission.submissionPublicKey,
+      ),
+    },
+    $unset: Object.fromEntries(
+      clearedFieldIds.map((fieldId) => [`attachmentMetadata.${fieldId}`, '']),
+    ),
+  })
+}
+
 export const sendBackMultirespondentSubmission = ({
   formId,
   formPublicKey,
@@ -2495,6 +2553,8 @@ export const sendBackMultirespondentSubmission = ({
   remarks,
   stepOneRecipientEmail,
   canSendBackToStepOne,
+  clearResponses,
+  submissionSecretKey,
   actor,
 }: {
   formId: string
@@ -2505,6 +2565,8 @@ export const sendBackMultirespondentSubmission = ({
   remarks?: string
   stepOneRecipientEmail?: string
   canSendBackToStepOne: boolean
+  clearResponses: boolean
+  submissionSecretKey: string
   actor: { _id?: unknown; email: string }
 }): ResultAsync<
   { stepNumber: number; emails: string[]; stepToken: string },
@@ -2512,6 +2574,7 @@ export const sendBackMultirespondentSubmission = ({
   | SubmissionNotFoundError
   | MrfWorkflowNotPendingError
   | MrfSendBackInvalidStepError
+  | MrfSendBackClearFailedError
 > =>
   getMultirespondentSubmission(submissionId)
     .andThen((submission) => {
@@ -2560,9 +2623,24 @@ export const sendBackMultirespondentSubmission = ({
           ].map((email) => email.toLowerCase()),
         ),
       )
-      return okAsync({ submission, keptSteps, pendingStepNumber, emails })
+      const clear = clearResponses
+        ? clearSentBackResponses({
+            submission,
+            targetStepNumber,
+            submissionSecretKey,
+          })
+        : ok<SendBackClearUpdate>({})
+      return clear.isErr()
+        ? errAsync(clear.error)
+        : okAsync({
+            submission,
+            keptSteps,
+            pendingStepNumber,
+            emails,
+            clear: clear.value,
+          })
     })
-    .andThen(({ submission, keptSteps, pendingStepNumber, emails }) => {
+    .andThen(({ submission, keptSteps, pendingStepNumber, emails, clear }) => {
       const newStepToken = stepToken.generate()
       return ResultAsync.fromPromise(
         MultirespondentSubmission.findOneAndUpdate(
@@ -2575,11 +2653,13 @@ export const sendBackMultirespondentSubmission = ({
           },
           {
             $set: {
+              ...clear.$set,
               submittedSteps: keptSteps,
               workflowStep: targetStepNumber - 2,
               stepTokenHash: stepToken.hash(newStepToken),
               encryptedStepToken: stepToken.wrap(newStepToken, formPublicKey),
             },
+            ...(clear.$unset ? { $unset: clear.$unset } : {}),
             $push: {
               workflowEvents: {
                 $each: [
