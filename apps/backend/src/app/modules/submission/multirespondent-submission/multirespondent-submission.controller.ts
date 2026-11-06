@@ -27,6 +27,7 @@ import {
 import { stripe } from '../../../loaders/stripe'
 import getPaymentModel from '../../../models/payment.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
+import MailService from '../../../services/mail/mail.service'
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
 import { Pipeline } from '../../../utils/pipeline-middleware'
 import { createReqMeta } from '../../../utils/request'
@@ -64,6 +65,7 @@ import {
 } from '../submission.service'
 import { mapRouteError, sendRouteError } from '../submission.utils'
 
+import { isFixingStep } from './fix-step'
 import { ensureSubmitterIdIsWhitelisted } from './multirespondent-submission.ensures'
 import * as MultirespondentSubmissionMiddleware from './multirespondent-submission.middleware'
 import {
@@ -71,6 +73,7 @@ import {
   createMultiRespondentFormPendingSubmission,
   createMultiRespondentFormSubmission,
   getMultirespondentSubmission,
+  getPendingStepAssignees,
   getPendingStepRecipientEmailsFromSubmittedStepsMeta,
   performMultiRespondentPostSubmissionCreateActions,
   performMultiRespondentPostSubmissionUpdateActions,
@@ -538,6 +541,7 @@ const updateMultirespondentSubmission = async (
 
   const { submission, snapshot } =
     updateMultiRespondentFormSubmissionResult.value
+  const isFix = !!mrfSubmission && isFixingStep(mrfSubmission)
 
   // The step is done, so its login cannot be reused.
   if (stepAuth && stepAuth.kind !== 'open') {
@@ -551,6 +555,32 @@ const updateMultirespondentSubmission = async (
     timestamp: (submission.created || new Date()).getTime(),
     mrfStep: submission.workflowStep,
   })
+
+  if (isFix) {
+    const emails = getPendingStepAssignees(submission)
+    if (emails.length === 0) return
+    await MailService.sendMrfWorkflowStepFixedEmail({
+      emails,
+      formId,
+      formTitle: snapshottedFormDef.title,
+      responseId: submissionId,
+      responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
+        formId,
+        submissionId,
+        {
+          key: encryptedPayload.submissionSecretKey,
+          stepToken: encryptedPayload.stepToken,
+        },
+      )}`,
+    }).mapErr((error) =>
+      logger.error({
+        message: 'Failed to email the pending step after a fix',
+        meta: logMeta,
+        error,
+      }),
+    )
+    return
+  }
 
   const currentStepNumber = submission.workflowStep
 
@@ -658,7 +688,9 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
           submissionData.stepTokenHash &&
           !stepToken.verify(presentedStepToken, submissionData.stepTokenHash) &&
           submissionData.workflowEvents?.some(
-            ({ type }) => type === WorkflowEventType.SentBack,
+            ({ type }) =>
+              type === WorkflowEventType.SentBack ||
+              type === WorkflowEventType.FixStep,
           )
         ) {
           return errAsync(new MrfStepLinkSupersededError())

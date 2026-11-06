@@ -7,6 +7,7 @@ export enum WorkflowEventType {
   ReminderSent = 'reminder_sent',
   StepSubmitted = 'step_submitted',
   SentBack = 'sent_back',
+  FixStep = 'fix_step',
 }
 
 export type AdminWorkflowEventType = Exclude<

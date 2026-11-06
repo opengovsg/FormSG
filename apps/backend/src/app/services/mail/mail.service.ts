@@ -1428,6 +1428,68 @@ export class MailService {
       actionName: 'sendMrfWorkflowSentBackEmail',
     })
 
+  sendMrfWorkflowFixStepEmail = ({
+    emails,
+    formId,
+    formTitle,
+    responseId,
+    responseUrl,
+    remarks,
+  }: {
+    emails: string[]
+    formId: string
+    formTitle: string
+    responseId: string
+    responseUrl: string
+    remarks?: string
+  }): ResultAsync<true, MailGenerationError | MailSendError> =>
+    this.#sendEmailWithTemplate({
+      emails,
+      formId,
+      subject: `Fix requested - ${formTitle} (${responseId})`,
+      htmlData: {
+        emailTitle: `Fix your part of ${formTitle}`,
+        emailBody: [
+          'The form admin has asked you to fix your answers. Once you submit, the response goes back to the step it was at.',
+          ...(remarks ? ['', 'Remarks from the form admin:', remarks] : []),
+        ].join('\n'),
+        formTitle,
+        responseId,
+        reviewUrl: responseUrl,
+      },
+      emailType: EmailType.WorkflowFixStep,
+      actionName: 'sendMrfWorkflowFixStepEmail',
+    })
+
+  sendMrfWorkflowStepFixedEmail = ({
+    emails,
+    formId,
+    formTitle,
+    responseId,
+    responseUrl,
+  }: {
+    emails: string[]
+    formId: string
+    formTitle: string
+    responseId: string
+    responseUrl: string
+  }): ResultAsync<true, MailGenerationError | MailSendError> =>
+    this.#sendEmailWithTemplate({
+      emails,
+      formId,
+      subject: `Ready for you again - ${formTitle} (${responseId})`,
+      htmlData: {
+        emailTitle: `Continue your part of ${formTitle}`,
+        emailBody:
+          'An earlier step was fixed, so the link you had no longer works. Use this link to complete your step.',
+        formTitle,
+        responseId,
+        reviewUrl: responseUrl,
+      },
+      emailType: EmailType.WorkflowFixStep,
+      actionName: 'sendMrfWorkflowStepFixedEmail',
+    })
+
   sendMrfWorkflowStoppedEmail = (props: {
     emails: string[]
     formId: string

@@ -82,6 +82,18 @@ export class MrfSendBackInvalidStepError extends ApplicationError {
   }
 }
 
+export class MrfFixChangesWorkflowPathError extends ApplicationError {
+  constructor(
+    message = 'These changes would change who handles later steps or which questions they answer. Undo them, or ask the form admin to send this response back instead.',
+  ) {
+    super(
+      message,
+      undefined,
+      ErrorCodes.SUBMISSION_MRF_FIX_CHANGES_WORKFLOW_PATH,
+    )
+  }
+}
+
 export class MrfWorkflowNotPendingError extends ApplicationError {
   constructor(message = 'This workflow is no longer pending.') {
     super(message, undefined, ErrorCodes.SUBMISSION_MRF_WORKFLOW_NOT_PENDING)

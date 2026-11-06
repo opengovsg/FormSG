@@ -1,8 +1,8 @@
 import { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BiStopCircle, BiUndo, BiUser } from 'react-icons/bi'
+import { BiStopCircle, BiUndo, BiUser, BiWrench } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
-import { Flex, useDisclosure } from '@chakra-ui/react'
+import { Flex, Text, useDisclosure } from '@chakra-ui/react'
 
 import {
   FormAuthType,
@@ -25,6 +25,7 @@ import { getStepRecipients, WorkflowHistory } from './getStopNotifiedEmails'
 import { WORKFLOW_ACTIONS_I18N } from './i18n'
 import {
   useAddAssigneesMutation,
+  useFixStepMutation,
   useSendBackWorkflowMutation,
   useStopWorkflowMutation,
 } from './mutations'
@@ -65,9 +66,11 @@ export const WorkflowActionsSection = ({
   const stopModal = useDisclosure()
   const addAssigneeModal = useDisclosure()
   const sendBackModal = useDisclosure()
+  const fixStepModal = useDisclosure()
   const stopMutation = useStopWorkflowMutation(formId)
   const addAssigneesMutation = useAddAssigneesMutation(formId)
   const sendBackMutation = useSendBackWorkflowMutation(formId)
+  const fixStepMutation = useFixStepMutation(formId)
   const events = history.workflowEvents
   const pendingStepNumber = history.submittedSteps.length + 1
 
@@ -80,14 +83,16 @@ export const WorkflowActionsSection = ({
     events,
     stepNumber: pendingStepNumber,
   })
-  const canRemind = isDelightfulDashboard && pendingStepAssignees.length > 0
+  const isFixing = mrf.workflowCurrentStepNumber < history.submittedSteps.length
+  const canRemind =
+    isDelightfulDashboard && !isFixing && pendingStepAssignees.length > 0
   const canActOnWorkflow = isWorkflowActionsOn && hasEditAccess
   const canSendBackToStepOne = form?.authType === FormAuthType.NIL
-  const canSendBack =
-    isSendBackOn &&
+  const canRewind =
     hasEditAccess &&
     pendingStepNumber >= (canSendBackToStepOne ? 2 : 3) &&
     mrf.workflowCurrentStepNumber === history.submittedSteps.length
+  const canSendBack = isSendBackOn && canRewind
 
   if (!canRemind && !canActOnWorkflow && !canSendBack)
     return overview ? <ResponseOverview>{overview}</ResponseOverview> : null
@@ -129,6 +134,29 @@ export const WorkflowActionsSection = ({
     )
   }
 
+  const handleFixStep = ({
+    targetStepNumber,
+    remarks,
+    stepOneRecipientEmail,
+  }: {
+    targetStepNumber: number
+    remarks?: string
+    stepOneRecipientEmail?: string
+  }) => {
+    if (!submissionSecretKey) return
+    fixStepMutation.mutate(
+      {
+        submissionId,
+        targetStepNumber,
+        expectedStepNumber: pendingStepNumber,
+        submissionSecretKey,
+        remarks,
+        stepOneRecipientEmail,
+      },
+      { onSuccess: fixStepModal.onClose },
+    )
+  }
+
   const handleStop = (emails: string[]) =>
     stopMutation.mutate(
       { submissionId, emails },
@@ -146,7 +174,15 @@ export const WorkflowActionsSection = ({
           recipients={pendingStepAssignees}
         />
       ) : null}
-      {canActOnWorkflow ? (
+      {isFixing ? (
+        <Text textStyle="body-2" color="secondary.500" w="100%">
+          {t(`${WORKFLOW_ACTIONS_I18N}.fixingStep`, {
+            stepNumber: mrf.workflowCurrentStepNumber + 1,
+            returnStepNumber: pendingStepNumber,
+          })}
+        </Text>
+      ) : null}
+      {canActOnWorkflow && !isFixing ? (
         <Button
           size="sm"
           variant="outline"
@@ -168,6 +204,18 @@ export const WorkflowActionsSection = ({
           onClick={sendBackModal.onOpen}
         >
           {t(`${WORKFLOW_ACTIONS_I18N}.sendBackButton`)}
+        </Button>
+      ) : null}
+      {canSendBack ? (
+        <Button
+          size="sm"
+          variant="outline"
+          colorScheme="secondary"
+          leftIcon={<BiWrench fontSize="1.25rem" />}
+          isDisabled={isLoading || !submissionSecretKey}
+          onClick={fixStepModal.onOpen}
+        >
+          {t(`${WORKFLOW_ACTIONS_I18N}.fixStepButton`)}
         </Button>
       ) : null}
       {canActOnWorkflow ? (
@@ -206,6 +254,15 @@ export const WorkflowActionsSection = ({
         isLoading={sendBackMutation.isLoading}
         history={history}
         canSendBackToStepOne={canSendBackToStepOne}
+      />
+      <SendBackModal
+        isOpen={fixStepModal.isOpen}
+        onClose={fixStepModal.onClose}
+        onConfirm={handleFixStep}
+        isLoading={fixStepMutation.isLoading}
+        history={history}
+        canSendBackToStepOne={canSendBackToStepOne}
+        modal="fixStepModal"
       />
       {canActOnWorkflow && (
         <StopWorkflowModal

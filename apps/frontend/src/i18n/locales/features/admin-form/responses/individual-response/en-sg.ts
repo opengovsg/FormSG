@@ -40,10 +40,15 @@ export const enSG: ResponsesIndividualResponse = {
       notificationRecipients: 'Notification recipients',
       sentBack:
         'Sent back from Step {fromStepNumber} to {step}{stepName}{actor}',
+      fixStep:
+        'Fix requested for {step}{stepName}{actor}, returning to Step {fromStepNumber}',
       remarks: 'Remarks',
     },
     reassignButton: 'Reassign',
     sendBackButton: 'Send back',
+    fixStepButton: 'Fix step',
+    fixingStep:
+      'Step {stepNumber} is being fixed. The response returns to Step {returnStepNumber} once it is submitted.',
     addAssigneeModal: {
       title: 'Assign new people to this step',
       description:
@@ -64,6 +69,20 @@ export const enSG: ResponsesIndividualResponse = {
       label: 'Email addresses of who to notify',
       confirm: 'Stop workflow',
       toastSuccess: 'The workflow was successfully stopped.',
+    },
+    fixStepModal: {
+      title: 'Fix an earlier step',
+      description:
+        'We’ll email the people on that step a link to fix their answers. Once they submit, the response returns to the current step. Later steps do not need to be redone, and approvals are kept.',
+      stepLabel: 'Step to fix',
+      stepOneEmailLabel: 'Email address of who fills in Step 1',
+      stepOneEmailDescription:
+        'Step 1 has no set recipient, so we’ll email the link to this address.',
+      remarksLabel: 'Remarks',
+      remarksDescription: 'Included in the email to the people on that step.',
+      remarksTooLong: 'Remarks must be {max} characters or fewer',
+      confirm: 'Request fix',
+      toastSuccess: 'Step {stepNumber} was reopened for fixing.',
     },
     sendBackModal: {
       title: 'Send back to an earlier step',

@@ -15,6 +15,7 @@ let mockIsV2 = true
 const mockMutate = vi.fn()
 const mockAddAssignees = vi.fn()
 const mockSendBack = vi.fn()
+const mockFixStep = vi.fn()
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k: string) => k }),
@@ -48,20 +49,23 @@ vi.mock('./mutations', () => ({
     mutate: mockSendBack,
     isLoading: false,
   }),
+  useFixStepMutation: () => ({ mutate: mockFixStep, isLoading: false }),
 }))
 vi.mock('./SendBackModal', () => ({
   SendBackModal: ({
     isOpen,
     onConfirm,
+    modal,
   }: {
     isOpen: boolean
     onConfirm: (params: { targetStepNumber: number; remarks?: string }) => void
+    modal?: string
   }) =>
     isOpen ? (
       <button
         onClick={() => onConfirm({ targetStepNumber: 2, remarks: 'Fix it' })}
       >
-        confirm send back
+        {modal === 'fixStepModal' ? 'confirm fix step' : 'confirm send back'}
       </button>
     ) : null,
 }))
@@ -155,6 +159,7 @@ describe('WorkflowActionsSection', () => {
   afterEach(() => {
     mockIsGateOn = true
     mockIsSendBackOn = false
+    mockFixStep.mockReset()
     mockAuthType = 'SP'
     mockSendBack.mockReset()
     mockHasEditAccess = true
@@ -396,6 +401,59 @@ describe('WorkflowActionsSection', () => {
       )
 
       expect(screen.getByRole('button', { name: SEND_BACK })).toBeVisible()
+    })
+  })
+
+  describe('Fix step', () => {
+    const I18N =
+      'features.adminForm.responses.individualResponse.workflowActions'
+    const FIX_STEP = `${I18N}.fixStepButton`
+
+    beforeEach(() => {
+      mockIsSendBackOn = true
+    })
+
+    it('reopens the chosen step against the pending step the page saw', async () => {
+      renderSection(
+        pendingMrf({ workflowCurrentStepNumber: 2 }),
+        undefined,
+        false,
+        2,
+      )
+
+      await userEvent.click(screen.getByRole('button', { name: FIX_STEP }))
+      await userEvent.click(
+        screen.getByRole('button', { name: 'confirm fix step' }),
+      )
+
+      expect(mockFixStep).toHaveBeenCalledWith(
+        {
+          submissionId: 'mock-submission-id',
+          targetStepNumber: 2,
+          expectedStepNumber: 3,
+          submissionSecretKey: 'mock-secret-key',
+          remarks: 'Fix it',
+        },
+        expect.anything(),
+      )
+    })
+
+    it('only offers Stop while a step is being fixed', () => {
+      renderSection(
+        pendingMrf({ workflowCurrentStepNumber: 1 }),
+        undefined,
+        false,
+        3,
+      )
+
+      expect(screen.getByText(`${I18N}.fixingStep`)).toBeVisible()
+      expect(screen.getByRole('button', { name: STOP })).toBeVisible()
+      for (const name of [FIX_STEP, `${I18N}.sendBackButton`, REASSIGN]) {
+        expect(screen.queryByRole('button', { name })).not.toBeInTheDocument()
+      }
+      expect(
+        screen.queryByRole('button', { name: /^remind/ }),
+      ).not.toBeInTheDocument()
     })
   })
 })

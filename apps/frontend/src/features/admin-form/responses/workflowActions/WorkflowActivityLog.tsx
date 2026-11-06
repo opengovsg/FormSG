@@ -8,6 +8,7 @@ import {
   BiStopCircle,
   BiUndo,
   BiUserPlus,
+  BiWrench,
   BiX,
 } from 'react-icons/bi'
 import { Box, Stack, Text } from '@chakra-ui/react'
@@ -226,18 +227,21 @@ export const WorkflowActivityLog = ({
           ]
           break
         case WorkflowEventType.SentBack:
+        case WorkflowEventType.FixStep:
           entries = [
             {
               ...entry(
                 id,
                 event.created,
-                'sentBack',
+                event.type === WorkflowEventType.FixStep
+                  ? 'fixStep'
+                  : 'sentBack',
                 {
                   fromStepNumber: String(event.fromStepNumber ?? ''),
                   ...stepValues(event.stepNumber),
                   actor,
                 },
-                BiUndo,
+                event.type === WorkflowEventType.FixStep ? BiWrench : BiUndo,
               ),
               detail: event.remarks
                 ? { heading: t(`${I18N_PREFIX}.remarks`), body: event.remarks }

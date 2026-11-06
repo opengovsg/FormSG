@@ -7,6 +7,7 @@ import { useToast } from '~hooks/useToast'
 
 import {
   addAssignees,
+  fixWorkflowStep,
   sendBackWorkflow,
   stopWorkflow,
 } from '../AdminSubmissionsService'
@@ -96,6 +97,39 @@ export const useSendBackWorkflowMutation = (formId: string) => {
               stepNumber,
             },
           ),
+        })
+      },
+      onError: (error: ApiError) => {
+        toast({ status: 'danger', description: error.message })
+      },
+      onSettled: () => {
+        void queryClient.invalidateQueries(adminFormResponsesKeys.id(formId))
+      },
+    },
+  )
+}
+
+export const useFixStepMutation = (formId: string) => {
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
+  const toast = useToast({ isClosable: true })
+
+  return useMutation(
+    (params: {
+      submissionId: string
+      targetStepNumber: number
+      expectedStepNumber: number
+      submissionSecretKey: string
+      remarks?: string
+      stepOneRecipientEmail?: string
+    }) => fixWorkflowStep({ formId, ...params }),
+    {
+      onSuccess: ({ stepNumber }) => {
+        toast({
+          status: 'success',
+          description: t(`${WORKFLOW_ACTIONS_I18N}.fixStepModal.toastSuccess`, {
+            stepNumber,
+          }),
         })
       },
       onError: (error: ApiError) => {

@@ -361,3 +361,31 @@ export const sendBackWorkflow = ({
       stepOneRecipientEmail,
     },
   ).then(({ data }) => data)
+
+export const fixWorkflowStep = ({
+  formId,
+  submissionId,
+  targetStepNumber,
+  expectedStepNumber,
+  submissionSecretKey,
+  remarks,
+  stepOneRecipientEmail,
+}: {
+  formId: string
+  submissionId: string
+  targetStepNumber: number
+  expectedStepNumber: number
+  submissionSecretKey: string
+  remarks?: string
+  stepOneRecipientEmail?: string
+}): Promise<{ stepNumber: number; emails: string[] }> =>
+  ApiService.post<{ stepNumber: number; emails: string[] }>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}/fix-step`,
+    {
+      targetStepNumber,
+      expectedStepNumber,
+      submissionSecretKey,
+      remarks,
+      stepOneRecipientEmail,
+    },
+  ).then(({ data }) => data)
