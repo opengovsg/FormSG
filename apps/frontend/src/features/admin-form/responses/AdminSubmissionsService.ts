@@ -207,6 +207,7 @@ export const getDecryptedSubmissionById = async ({
       encryptedSubmission.submissionType === SubmissionType.Multirespondent
         ? {
             submittedSteps: encryptedSubmission.submittedSteps ?? [],
+            authType: encryptedSubmission.authType,
             workflow: encryptedSubmission.workflow,
             workflowEvents: encryptedSubmission.workflowEvents ?? [],
           }

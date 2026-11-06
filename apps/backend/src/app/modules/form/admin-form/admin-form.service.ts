@@ -15,6 +15,7 @@ import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
 import {
   AdminDashboardFormMetaDto,
   BasicField,
+  DeleteWorkflowAuthDto,
   DropdownFieldBase,
   DuplicateFormOverwriteDto,
   EndPageUpdateDto,
@@ -66,6 +67,7 @@ import {
   getResultingLoginErrors,
   hasLaterCorppassStepWithoutEsrvcId,
   hasLaterStepLogin,
+  usesStepLoginRules,
 } from 'formsg-shared/utils/step-login'
 import { isUenValid } from 'formsg-shared/utils/uen-validation'
 import {
@@ -143,7 +145,10 @@ import {
   isFormMultirespondent,
 } from '../form.utils'
 
-import { prepareAuthFieldDeletion } from './admin-form.auth-field-deletion'
+import {
+  getRetainedWorkflowAuth,
+  prepareAuthFieldDeletion,
+} from './admin-form.auth-field-deletion'
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
   EditFieldError,
@@ -1735,16 +1740,6 @@ const getCheckedWebhookFilterIfMultistepWorkflow = (
   stepCount: number,
 ) => (stepCount >= 2 ? getCheckedWebhookFilter(form) : {})
 
-/**
- * Step login rules apply once the rollout flag is on, or to a form that
- * already has a later-step login so it can be maintained or removed. Other
- * forms keep the rules from before step logins existed.
- */
-const usesStepLoginRules = (
-  form: IPopulatedForm,
-  isStepLoginEnabled: boolean,
-): boolean => isStepLoginEnabled || hasLaterStepLogin(getSavedWorkflow(form))
-
 /** Request-only step keys that only step login rules accept. */
 const hasStepLoginRequestKeys = (step: FormWorkflowStepWriteDto): boolean =>
   !!step.auth ||
@@ -1774,7 +1769,10 @@ const checkStepLoginRules = (
   },
   StepLoginWriteError
 > => {
-  const useStepLoginRules = usesStepLoginRules(form, isStepLoginEnabled)
+  const useStepLoginRules = usesStepLoginRules(
+    getSavedWorkflow(form),
+    isStepLoginEnabled,
+  )
   if (!useStepLoginRules) {
     if (hasStepLoginRequestKeys(step)) {
       return err(new MalformedParametersError(STEP_LOGIN_NOT_AVAILABLE))
@@ -1816,6 +1814,13 @@ const checkStepLoginRules = (
     authConfigFilter: getCheckedAuthenticationConfigFilter(form),
   }))
 }
+
+/** Request-only delete keys that only step login rules accept. */
+const hasStepLoginDeleteKeys = (input: DeleteWorkflowAuthDto): boolean =>
+  input.retained_auth_type !== undefined ||
+  input.retained_esrvc_id !== undefined ||
+  input.expected_last_modified !== undefined ||
+  input.delete_auth_field_ids !== undefined
 
 const checkResultingWorkflowIsAllowed = (
   form: IPopulatedForm,
@@ -2259,12 +2264,16 @@ export const updateFormWorkflowStep = (
  */
 export const deleteFormWorkflow = (
   originalForm: IPopulatedForm,
+  input: DeleteWorkflowAuthDto = {},
+  { isStepLoginEnabled = false }: { isStepLoginEnabled?: boolean } = {},
 ): ResultAsync<
   FormWorkflowDto,
   | DatabaseError
   | FormNotFoundError
+  | FormChangedWhileEditingError
   | FormInvalidResponseModeError
   | FormOpenToResponsesError
+  | MalformedParametersError
 > => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
@@ -2283,15 +2292,63 @@ export const deleteFormWorkflow = (
   }
 
   const originalMrfForm = originalForm as IPopulatedMultirespondentForm
+  const useStepLoginRules = usesStepLoginRules(
+    getSavedWorkflow(originalForm),
+    isStepLoginEnabled,
+  )
+  if (!useStepLoginRules && hasStepLoginDeleteKeys(input)) {
+    return errAsync(new MalformedParametersError(STEP_LOGIN_NOT_AVAILABLE))
+  }
+
+  // With step logins, the admin picks which step's login the form keeps and
+  // confirms the login fields that no longer have a step to fill them.
+  let guard = {}
+  let update: Record<string, unknown> = { workflow: [] }
+  if (useStepLoginRules) {
+    const retained = getRetainedWorkflowAuth(originalMrfForm, input)
+    if (retained.isErr()) return errAsync(retained.error)
+    const deletion = prepareAuthFieldDeletion({
+      form: originalForm,
+      workflow: [],
+      authType: retained.value.authType,
+      confirmedIds: input.delete_auth_field_ids,
+      expectedLastModified: input.expected_last_modified,
+    })
+    if (deletion.isErr()) return errAsync(deletion.error)
+    const check = checkResultingWorkflowIsAllowed(originalForm, [], {
+      authType: retained.value.authType,
+      formFields: deletion.value.form_fields,
+      useStepLoginRules,
+    })
+    if (check.isErr()) return errAsync(check.error)
+    // The admin chose which login to keep from the form as it was: every
+    // write bumps lastModified, so this rejects any change since.
+    guard = {
+      ...getCheckedAuthenticationConfigFilter(originalForm),
+      lastModified: originalForm.lastModified,
+    }
+    update = {
+      workflow: [],
+      ...retained.value,
+      form_fields: deletion.value.form_fields,
+      form_logics: deletion.value.form_logics,
+      ...(retained.value.authType !== originalForm.authType
+        ? {
+            isSingleSubmission: false,
+            whitelistedSubmitterIds: { isWhitelistEnabled: false },
+          }
+        : {}),
+    }
+  }
 
   const MultirespondentFormModel = getFormModelByResponseMode(
     originalForm.responseMode,
   ) as IMultirespondentFormModel
 
   return ResultAsync.fromPromise(
-    MultirespondentFormModel.findByIdAndUpdate(
-      originalMrfForm._id,
-      { workflow: [] },
+    MultirespondentFormModel.findOneAndUpdate(
+      { _id: originalMrfForm._id, ...guard },
+      update,
       { new: true, runValidators: true },
     ).exec(),
     (error) => {
@@ -2307,7 +2364,12 @@ export const deleteFormWorkflow = (
     },
   ).andThen((updatedForm) => {
     if (!updatedForm) {
-      return errAsync(new FormNotFoundError())
+      // Only the step login path guards the write on the form's state.
+      return errAsync(
+        useStepLoginRules
+          ? new FormChangedWhileEditingError()
+          : new FormNotFoundError(),
+      )
     }
     return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
   })
@@ -2316,6 +2378,11 @@ export const deleteFormWorkflow = (
 export const deleteFormWorkflowStep = (
   originalForm: IPopulatedForm,
   stepNumber: number,
+  input: Pick<
+    DeleteWorkflowAuthDto,
+    'delete_auth_field_ids' | 'expected_last_modified'
+  > = {},
+  { isStepLoginEnabled = false }: { isStepLoginEnabled?: boolean } = {},
 ): ResultAsync<
   FormWorkflowDto,
   DatabaseError | FormChangedWhileEditingError
@@ -2342,12 +2409,44 @@ export const deleteFormWorkflowStep = (
     return errAsync(new MalformedParametersError('Invalid step number'))
   }
 
-  const updatedWorkflow = originalWorkflow.filter(
+  let updatedWorkflow = originalWorkflow.filter(
     (_step, index) => index !== targetStepNumber,
   )
 
+  const useStepLoginRules = usesStepLoginRules(
+    getSavedWorkflow(originalForm),
+    isStepLoginEnabled,
+  )
+  if (!useStepLoginRules && hasStepLoginDeleteKeys(input)) {
+    return errAsync(new MalformedParametersError(STEP_LOGIN_NOT_AVAILABLE))
+  }
+
+  // With step logins, removing a step can leave login fields with no step
+  // whose login fills them; the admin confirms deleting those first.
+  let formFields = originalForm.form_fields
+  let guard = {}
+  let deletionUpdate = {}
+  if (useStepLoginRules) {
+    const deletion = prepareAuthFieldDeletion({
+      form: originalForm,
+      workflow: updatedWorkflow,
+      authType: originalForm.authType,
+      confirmedIds: input.delete_auth_field_ids,
+      expectedLastModified: input.expected_last_modified,
+    })
+    if (deletion.isErr()) return errAsync(deletion.error)
+    updatedWorkflow = deletion.value.workflow
+    formFields = deletion.value.form_fields
+    guard = {
+      ...getCheckedAuthenticationConfigFilter(originalForm),
+      ...deletion.value.deletionGuard,
+    }
+    deletionUpdate = deletion.value.deletionUpdate
+  }
+
   const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow, {
-    useStepLoginRules: usesStepLoginRules(originalForm, false),
+    formFields,
+    useStepLoginRules,
   })
   if (check.isErr()) return errAsync(check.error)
 
@@ -2359,12 +2458,13 @@ export const deleteFormWorkflowStep = (
     MultirespondentFormModel.findOneAndUpdate(
       {
         _id: originalMrfForm._id,
+        ...guard,
         ...getCheckedWebhookFilterIfMultistepWorkflow(
           originalForm,
           updatedWorkflow.length,
         ),
       },
-      { workflow: updatedWorkflow },
+      { workflow: updatedWorkflow, ...deletionUpdate },
       {
         new: true,
         runValidators: true,
@@ -2572,7 +2672,10 @@ export const updateFormSettings = (
     }
   }
 
-  const useStepLoginRules = usesStepLoginRules(originalForm, isStepLoginEnabled)
+  const useStepLoginRules = usesStepLoginRules(
+    getSavedWorkflow(originalForm),
+    isStepLoginEnabled,
+  )
 
   if (useStepLoginRules && body.status === FormStatus.Public) {
     const loginErrors = getLoginFieldPublishErrors({

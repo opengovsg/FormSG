@@ -27,7 +27,7 @@ import { OpenFieldListTabOnArrival } from './common/OpenFieldListTabOnArrival'
 import { OpenWorkflowTabOnArrival } from './common/OpenWorkflowTabOnArrival'
 import { StageFieldOnArrival } from './common/StageFieldOnArrival'
 import { FeatureTour } from './featureTour/FeatureTour'
-import { useIsMrfStepLoginEnabled } from './workflow/hooks/useIsMrfStepLoginEnabled'
+import { useUsesStepLoginRules } from './workflow/hooks/useUsesStepLoginRules'
 
 export const CreatePage = (): JSX.Element => {
   const { formId } = useParams()
@@ -62,7 +62,7 @@ export const CreatePage = (): JSX.Element => {
   }, [isLoading, hasAdminSeenFeatureTour])
 
   const isDirty = useDirtyFieldStore(isDirtySelector)
-  const isStepLoginEnabled = useIsMrfStepLoginEnabled()
+  const isStepLoginEnabled = useUsesStepLoginRules()
 
   return (
     <>

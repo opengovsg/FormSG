@@ -1,12 +1,16 @@
 import {
   AdminSubmittedStep,
+  FormWorkflowStepAuth,
+  SubmissionAuthType,
   WorkflowEventDto,
   WorkflowEventType,
 } from 'formsg-shared/types'
 
 export type WorkflowHistory = {
   submittedSteps: AdminSubmittedStep[]
-  workflow: { _id: string; step_name?: string }[]
+  // The submission's own copy of the logins, never today's form settings
+  authType?: SubmissionAuthType
+  workflow: { _id: string; step_name?: string; auth?: FormWorkflowStepAuth }[]
   workflowEvents?: WorkflowEventDto[]
 }
 
