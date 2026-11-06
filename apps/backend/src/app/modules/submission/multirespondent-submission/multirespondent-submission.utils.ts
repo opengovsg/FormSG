@@ -56,7 +56,7 @@ import { MyInfoKey } from '../../myinfo/myinfo.types'
 import { getMyInfoChildHashKey } from '../../myinfo/myinfo.util'
 import { startsWithSPCPFieldTitle } from '../../spcp/spcp.util'
 import { toWorkflowEventDtos } from '../../workflow-event/workflow-event.service'
-import { MYINFO_PREFIX } from '../email-submission/email-submission.constants'
+import { MYINFO_PREFIX } from '../notification-email/notification-email.constants'
 import {
   InvalidWorkflowTypeError,
   ProcessingError,

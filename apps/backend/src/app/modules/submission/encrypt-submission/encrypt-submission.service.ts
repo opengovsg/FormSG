@@ -29,9 +29,9 @@ import {
   WebhookValidationError,
 } from '../../webhook/webhook.errors'
 import { WebhookFactory } from '../../webhook/webhook.factory'
-import { MYINFO_PREFIX } from '../email-submission/email-submission.constants'
-import * as EmailSubmissionService from '../email-submission/email-submission.service'
-import { SubmissionEmailObj } from '../email-submission/email-submission.util'
+import { MYINFO_PREFIX } from '../notification-email/notification-email.constants'
+import * as NotificationEmailService from '../notification-email/notification-email.service'
+import { SubmissionEmailObj } from '../notification-email/notification-email.util'
 import {
   ResponseModeError,
   SendEmailConfirmationError,
@@ -307,7 +307,7 @@ export const performEncryptPostSubmissionActions = ({
         return ResultAsync.combine([
           MailService.sendSubmissionToAdmin({
             replyToEmails:
-              EmailSubmissionService.extractEmailAnswers(emailFields),
+              NotificationEmailService.extractEmailAnswers(emailFields),
             form,
             submission: {
               created: submission.created,

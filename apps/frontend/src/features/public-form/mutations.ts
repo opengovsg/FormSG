@@ -19,7 +19,7 @@ import {
   getPublicFormAuthRedirectUrl,
   logoutMrfStep,
   logoutPublicForm,
-  SubmitEmailFormArgs,
+  SubmitFormArgs,
   submitFormFeedback,
   submitFormIssue,
   submitMultirespondentForm,

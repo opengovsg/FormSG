@@ -87,8 +87,8 @@ import {
   SIGNATURE_PREFIX,
   TABLE_PREFIX,
   VERIFIED_PREFIX,
-} from './email-submission.constants'
-import { ResponseFormattedForEmail } from './email-submission.types'
+} from './notification-email.constants'
+import { ResponseFormattedForEmail } from './notification-email.types'
 
 const logger = createLoggerWithLabel(module)
 
