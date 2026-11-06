@@ -246,10 +246,13 @@ describe('submission.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(expectedSubmissionCount)
     })
 
-    it('should return correct form counts when form response mode is provided', async () => {
+    it('should count both encrypt and multirespondent submissions for storage mode forms', async () => {
       // Arrange
-      const expectedSubmissionCount = 4
-      const subEncryptPromise = times(expectedSubmissionCount, () =>
+      // A storage mode form reverted from multirespondent mode retains its
+      // multirespondent submissions; only email submissions stay excluded.
+      const encryptSubmissionCount = 4
+      const expectedSubmissionCount = encryptSubmissionCount + 1
+      const subEncryptPromise = times(encryptSubmissionCount, () =>
         Submission.create({
           submissionType: SubmissionType.Encrypt,
           form: MOCK_FORM_ID,
@@ -1126,8 +1129,12 @@ describe('submission.service', () => {
         },
       }
       const getMetaSpy = jest
-        .spyOn(EncryptSubmission, 'findSingleMetadata')
+        .spyOn(Submission, 'findEncryptedOrMultirespondentSingleMetadata')
         .mockResolvedValueOnce(expectedMetadata)
+      // A storage mode form reverted from multirespondent mode retains its
+      // multirespondent submissions, so the encrypt discriminator must not be
+      // used.
+      const encryptMetaSpy = jest.spyOn(EncryptSubmission, 'findSingleMetadata')
 
       // Act
       const actualResult = await SubmissionService.getSubmissionMetadata(
@@ -1140,6 +1147,7 @@ describe('submission.service', () => {
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(expectedMetadata)
       expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, mockSubmissionId)
+      expect(encryptMetaSpy).not.toHaveBeenCalled()
     })
 
     it('should look up multirespondent form metadata across both submission types via the base model', async () => {
@@ -1193,7 +1201,7 @@ describe('submission.service', () => {
       // Arrange
       const mockSubmissionId = new ObjectId().toHexString()
       const getMetaSpy = jest
-        .spyOn(EncryptSubmission, 'findSingleMetadata')
+        .spyOn(Submission, 'findEncryptedOrMultirespondentSingleMetadata')
         .mockResolvedValueOnce(null)
 
       // Act
@@ -1214,7 +1222,7 @@ describe('submission.service', () => {
       const mockSubmissionId = new ObjectId().toHexString()
       const mockErrorString = 'some database error message'
       const getMetaSpy = jest
-        .spyOn(EncryptSubmission, 'findSingleMetadata')
+        .spyOn(Submission, 'findEncryptedOrMultirespondentSingleMetadata')
         .mockRejectedValueOnce(new Error(mockErrorString))
 
       // Act
@@ -1249,8 +1257,14 @@ describe('submission.service', () => {
         count: 1,
       }
       const getMetaSpy = jest
-        .spyOn(EncryptSubmission, 'findAllMetadataByFormId')
+        .spyOn(Submission, 'findAllEncryptedOrMultirespondentMetadataByFormId')
         .mockResolvedValueOnce(expectedResult)
+      // See getSubmissionMetadata: the encrypt discriminator would hide
+      // multirespondent rows on a reverted storage mode form.
+      const encryptMetaSpy = jest.spyOn(
+        EncryptSubmission,
+        'findAllMetadataByFormId',
+      )
 
       // Act
       const actualResult = await SubmissionService.getSubmissionMetadataList(
@@ -1264,6 +1278,7 @@ describe('submission.service', () => {
       expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, {
         page: undefined,
       })
+      expect(encryptMetaSpy).not.toHaveBeenCalled()
     })
 
     it('should list multirespondent form metadata across both submission types via the base model', async () => {
@@ -1340,7 +1355,7 @@ describe('submission.service', () => {
         count: 1,
       }
       const getMetaSpy = jest
-        .spyOn(EncryptSubmission, 'findAllMetadataByFormId')
+        .spyOn(Submission, 'findAllEncryptedOrMultirespondentMetadataByFormId')
         .mockResolvedValueOnce(expectedResult)
 
       // Act
@@ -1362,7 +1377,7 @@ describe('submission.service', () => {
       // Arrange
       const mockErrorString = 'some database error message'
       const getMetaSpy = jest
-        .spyOn(EncryptSubmission, 'findAllMetadataByFormId')
+        .spyOn(Submission, 'findAllEncryptedOrMultirespondentMetadataByFormId')
         .mockRejectedValueOnce(new Error(mockErrorString))
 
       // Act
@@ -1397,15 +1412,20 @@ describe('submission.service', () => {
       } as StorageModeSubmissionData
 
       const getSubmissionSpy = jest
-        .spyOn(EncryptSubmission, 'findEncryptedSubmissionById')
+        .spyOn(Submission, 'findEncryptedOrMultirespondentSubmissionById')
         .mockResolvedValueOnce(expected)
+      // See getSubmissionMetadata: the encrypt discriminator would hide
+      // multirespondent rows on a reverted storage mode form.
+      const encryptLookupSpy = jest.spyOn(
+        EncryptSubmission,
+        'findEncryptedSubmissionById',
+      )
       const mockFormId = new ObjectId().toHexString()
       const mockSubmissionId = new ObjectId().toHexString()
 
       // Act
       const actualResult = await SubmissionService.getEncryptedSubmissionData(
         FormResponseMode.Encrypt,
-
         mockFormId,
         mockSubmissionId,
       )
@@ -1417,13 +1437,14 @@ describe('submission.service', () => {
         mockFormId,
         mockSubmissionId,
       )
+      expect(encryptLookupSpy).not.toHaveBeenCalled()
     })
 
     it('should return SubmissionNotFoundError when submissionId does not exist in the database', async () => {
       // Arrange
       // Return null submission.
       const getSubmissionSpy = jest
-        .spyOn(EncryptSubmission, 'findEncryptedSubmissionById')
+        .spyOn(Submission, 'findEncryptedOrMultirespondentSubmissionById')
         .mockResolvedValueOnce(null)
       const mockFormId = new ObjectId().toHexString()
       const mockSubmissionId = new ObjectId().toHexString()
@@ -1454,7 +1475,7 @@ describe('submission.service', () => {
       // Return error when querying for submission.
       const mockErrorString = 'some error'
       const getSubmissionSpy = jest
-        .spyOn(EncryptSubmission, 'findEncryptedSubmissionById')
+        .spyOn(Submission, 'findEncryptedOrMultirespondentSubmissionById')
         .mockRejectedValueOnce(new Error(mockErrorString))
       const mockFormId = new ObjectId().toHexString()
       const mockSubmissionId = new ObjectId().toHexString()
@@ -1541,13 +1562,23 @@ describe('submission.service', () => {
   })
 
   describe('getSubmissionCursor', () => {
-    it('should return cursor successfully when date range is not provided', async () => {
+    it('should stream storage mode forms across both submission types via the base model', async () => {
       // Arrange
+      // A storage mode form reverted from multirespondent mode retains its
+      // multirespondent submissions; the encrypt discriminator cursor would
+      // silently omit them from the download stream.
+      const encryptCursorSpy = jest.spyOn(
+        EncryptSubmission,
+        'getSubmissionCursorByFormId',
+      )
       const mockCursor = jest.fn() as unknown as ReturnType<
-        typeof EncryptSubmission.getSubmissionCursorByFormId
+        typeof Submission.getEncryptedOrMultirespondentSubmissionCursorByFormId
       >
       const getSubmissionSpy = jest
-        .spyOn(EncryptSubmission, 'getSubmissionCursorByFormId')
+        .spyOn(
+          Submission,
+          'getEncryptedOrMultirespondentSubmissionCursorByFormId',
+        )
         .mockReturnValueOnce(mockCursor)
       const mockFormId = new ObjectId().toHexString()
 
@@ -1565,6 +1596,7 @@ describe('submission.service', () => {
         undefined,
         undefined,
       )
+      expect(encryptCursorSpy).not.toHaveBeenCalled()
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(mockCursor)
     })
@@ -1611,10 +1643,13 @@ describe('submission.service', () => {
     it('should return cursor successfully when date range is provided', async () => {
       // Arrange
       const mockCursor = jest.fn() as unknown as ReturnType<
-        typeof EncryptSubmission.getSubmissionCursorByFormId
+        typeof Submission.getEncryptedOrMultirespondentSubmissionCursorByFormId
       >
       const getSubmissionSpy = jest
-        .spyOn(EncryptSubmission, 'getSubmissionCursorByFormId')
+        .spyOn(
+          Submission,
+          'getEncryptedOrMultirespondentSubmissionCursorByFormId',
+        )
         .mockReturnValueOnce(mockCursor)
       const mockFormId = new ObjectId().toHexString()
       const mockDateRange = {
@@ -1644,8 +1679,8 @@ describe('submission.service', () => {
     it('should return MalformedParametersError when start date is invalid', async () => {
       // Arrange
       const getSubmissionSpy = jest.spyOn(
-        EncryptSubmission,
-        'getSubmissionCursorByFormId',
+        Submission,
+        'getEncryptedOrMultirespondentSubmissionCursorByFormId',
       )
 
       const mockFormId = new ObjectId().toHexString()
@@ -1672,8 +1707,8 @@ describe('submission.service', () => {
     it('should return MalformedParametersError when end date is invalid', async () => {
       // Arrange
       const getSubmissionSpy = jest.spyOn(
-        EncryptSubmission,
-        'getSubmissionCursorByFormId',
+        Submission,
+        'getEncryptedOrMultirespondentSubmissionCursorByFormId',
       )
 
       const mockFormId = new ObjectId().toHexString()
@@ -1741,8 +1776,8 @@ describe('submission.service', () => {
     it('should return MalformedParametersError when limit is invalid ie, negative', () => {
       // Arrange
       const getSubmissionSpy = jest.spyOn(
-        EncryptSubmission,
-        'getSubmissionCursorByFormId',
+        Submission,
+        'getEncryptedOrMultirespondentSubmissionCursorByFormId',
       )
       const mockFormId = new ObjectId().toHexString()
       const mockDateRange = {

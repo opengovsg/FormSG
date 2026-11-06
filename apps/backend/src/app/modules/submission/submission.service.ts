@@ -147,17 +147,17 @@ export const getFormSubmissionsCount = ({
     return errAsync(new MalformedParametersError('Malformed date parameter'))
   }
 
-  // RATIONALE: For storage mode forms converted from email mode, only count
-  // encrypt mode submissions. Multirespondent forms mode-migrated from
-  // storage mode retain their pre-migration encrypt submissions, so both
+  // RATIONALE: Forms mode-migrated between storage and multirespondent mode
+  // (in either direction) retain submissions of both types, so both
   // admin-viewable types count — on the dashboard and toward the submission
-  // limit alike.
+  // limit alike. Email submissions carry no encrypted content and stay
+  // excluded for storage mode forms converted from email mode.
   const submissionType =
     formResponseMode === undefined
       ? undefined
-      : formResponseMode === FormResponseMode.Multirespondent
-        ? { $in: [SubmissionType.Encrypt, SubmissionType.Multirespondent] }
-        : getSubmissionType(formResponseMode)
+      : formResponseMode === FormResponseMode.Email
+        ? getSubmissionType(formResponseMode)
+        : { $in: [SubmissionType.Encrypt, SubmissionType.Multirespondent] }
 
   const countQuery = {
     form: formId,
@@ -611,18 +611,17 @@ export const getSubmissionMetadata = (
     return okAsync(null)
   }
 
+  // The mode lookup is kept purely as the guard rejecting email mode forms.
   return getEncryptedSubmissionModelByResponseMode(responseMode).asyncAndThen(
-    (modelToUse) =>
+    () =>
       ResultAsync.fromPromise(
-        // Multirespondent forms mode-migrated from storage mode retain their
-        // pre-migration encrypt submissions, so metadata lookups must span
-        // both submission types via the base model.
-        responseMode === FormResponseMode.Multirespondent
-          ? SubmissionModel.findEncryptedOrMultirespondentSingleMetadata(
-              formId,
-              submissionId,
-            )
-          : modelToUse.findSingleMetadata(formId, submissionId),
+        // Forms mode-migrated between storage and multirespondent mode (in
+        // either direction) retain submissions of both types, so metadata
+        // lookups must span both via the base model.
+        SubmissionModel.findEncryptedOrMultirespondentSingleMetadata(
+          formId,
+          submissionId,
+        ),
         (error) => {
           logger.error({
             message: 'Failure retrieving metadata from database',
@@ -647,35 +646,28 @@ export const getSubmissionMetadataList = (
   pageSize?: number,
   dateRange: { startDate?: string; endDate?: string } = {},
 ): ResultAsync<SubmissionMetadataList, ResponseModeError | DatabaseError> =>
-  getEncryptedSubmissionModelByResponseMode(responseMode).asyncAndThen(
-    (modelToUse) =>
-      ResultAsync.fromPromise(
-        // See getSubmissionMetadata: mode-migrated multirespondent forms mix
-        // submission types, and the page and count must agree across both.
-        responseMode === FormResponseMode.Multirespondent
-          ? SubmissionModel.findAllEncryptedOrMultirespondentMetadataByFormId(
-              formId,
-              { page, pageSize, ...dateRange },
-            )
-          : modelToUse.findAllMetadataByFormId(formId, {
-              page,
-              pageSize,
-              ...dateRange,
-            }),
-        (error) => {
-          logger.error({
-            message: 'Failure retrieving metadata page from database',
-            meta: {
-              action: 'getSubmissionMetadataList',
-              responseMode,
-              formId,
-              page,
-            },
-            error,
-          })
-          return new DatabaseError(getMongoErrorMessage(error))
-        },
+  getEncryptedSubmissionModelByResponseMode(responseMode).asyncAndThen(() =>
+    ResultAsync.fromPromise(
+      // See getSubmissionMetadata: mode-migrated forms mix submission
+      // types, and the page and count must agree across both.
+      SubmissionModel.findAllEncryptedOrMultirespondentMetadataByFormId(
+        formId,
+        { page, pageSize, ...dateRange },
       ),
+      (error) => {
+        logger.error({
+          message: 'Failure retrieving metadata page from database',
+          meta: {
+            action: 'getSubmissionMetadataList',
+            responseMode,
+            formId,
+            page,
+          },
+          error,
+        })
+        return new DatabaseError(getMongoErrorMessage(error))
+      },
+    ),
   )
 
 /**
@@ -694,52 +686,45 @@ export const getEncryptedSubmissionData = (
   SubmissionData,
   ResponseModeError | SubmissionNotFoundError | DatabaseError
 > =>
-  getEncryptedSubmissionModelByResponseMode(responseMode).asyncAndThen(
-    (modelToUse) =>
-      ResultAsync.fromPromise(
-        // Multirespondent forms mode-migrated from storage mode retain their
-        // pre-migration encrypt submissions, so the lookup must span both
-        // submission types via the base model.
-        responseMode === FormResponseMode.Multirespondent
-          ? SubmissionModel.findEncryptedOrMultirespondentSubmissionById(
-              formId,
-              submissionId,
-            )
-          : (modelToUse.findEncryptedSubmissionById(
-              formId,
-              submissionId,
-            ) as Promise<SubmissionData | null>),
-        (error) => {
-          logger.error({
-            message: 'Failure retrieving encrypted submission from database',
-            meta: {
-              action: 'getEncryptedSubmissionData',
-              responseMode,
-              formId,
-              submissionId,
-            },
-            error,
-          })
-          return new DatabaseError(getMongoErrorMessage(error))
-        },
-      ).andThen((submission) => {
-        if (!submission) {
-          logger.error({
-            message: 'Unable to find encrypted submission from database',
-            meta: {
-              action: 'getEncryptedResponse',
-              formId,
-              submissionId,
-            },
-          })
-          return errAsync(
-            new SubmissionNotFoundError(
-              'Unable to find encrypted submission from database',
-            ),
-          )
-        }
-        return okAsync(submission)
-      }),
+  getEncryptedSubmissionModelByResponseMode(responseMode).asyncAndThen(() =>
+    ResultAsync.fromPromise(
+      // See getSubmissionMetadata: mode-migrated forms mix submission
+      // types, so the lookup must span both via the base model.
+      SubmissionModel.findEncryptedOrMultirespondentSubmissionById(
+        formId,
+        submissionId,
+      ),
+      (error) => {
+        logger.error({
+          message: 'Failure retrieving encrypted submission from database',
+          meta: {
+            action: 'getEncryptedSubmissionData',
+            responseMode,
+            formId,
+            submissionId,
+          },
+          error,
+        })
+        return new DatabaseError(getMongoErrorMessage(error))
+      },
+    ).andThen((submission) => {
+      if (!submission) {
+        logger.error({
+          message: 'Unable to find encrypted submission from database',
+          meta: {
+            action: 'getEncryptedResponse',
+            formId,
+            submissionId,
+          },
+        })
+        return errAsync(
+          new SubmissionNotFoundError(
+            'Unable to find encrypted submission from database',
+          ),
+        )
+      }
+      return okAsync(submission)
+    }),
   )
 
 /**
@@ -779,26 +764,17 @@ export const getSubmissionCursor = (
     return err(new MalformedParametersError('Invalid limit parameter'))
   }
 
-  return getEncryptedSubmissionModelByResponseMode(responseMode).andThen(
-    (modelToUse) =>
-      ok(
-        // Multirespondent forms mode-migrated from storage mode retain their
-        // pre-migration encrypt submissions, so their stream must span both
-        // submission types via the base model.
-        responseMode === FormResponseMode.Multirespondent
-          ? SubmissionModel.getEncryptedOrMultirespondentSubmissionCursorByFormId(
-              formId,
-              dateRange,
-              isSortByLatest,
-              limit,
-            )
-          : modelToUse.getSubmissionCursorByFormId(
-              formId,
-              dateRange,
-              isSortByLatest,
-              limit,
-            ),
+  return getEncryptedSubmissionModelByResponseMode(responseMode).andThen(() =>
+    ok(
+      // See getSubmissionMetadata: mode-migrated forms mix submission
+      // types, so the stream must span both via the base model.
+      SubmissionModel.getEncryptedOrMultirespondentSubmissionCursorByFormId(
+        formId,
+        dateRange,
+        isSortByLatest,
+        limit,
       ),
+    ),
   )
 }
 
