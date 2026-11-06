@@ -41,6 +41,7 @@ import {
 } from '../types'
 import useDecryptionWorkers from '../useDecryptionWorkers'
 import { CsvExportView } from '../utils/csvExportView'
+import { isZipStorageFullError } from '../utils/zipStaging'
 
 import { DownloadWithAttachmentModal } from './DownloadWithAttachmentModal'
 import { ProgressModal } from './ProgressModal'
@@ -151,6 +152,7 @@ export const DownloadButton = ({
   isIconOnly?: boolean
 }): JSX.Element => {
   const { formId } = useParams()
+  const { t } = useTranslation()
   const isDelightfulDashboard = useIsDelightfulDashboard()
   const {
     visibleSubmissionIds,
@@ -318,10 +320,14 @@ export const DownloadButton = ({
           ]}response[|s] [was|were] decrypted.`,
         })
       },
-      onError: () => {
+      onError: (error) => {
         toast({
           status: 'danger',
-          description: 'Failed to start download. Please try again later.',
+          description: t(
+            isZipStorageFullError(error)
+              ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.toast.storageFull'
+              : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.toast.startFailed',
+          ),
         })
       },
       onSettled: (decryptResult) => {
@@ -438,8 +444,6 @@ export const DownloadButton = ({
     resetDownload()
     setDownloadMetadata({ isCanceled: true })
   }, [resetDownload])
-
-  const { t } = useTranslation()
 
   return (
     <>
