@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.66.1](https://github.com/opengovsg/formsg/compare/v9.66.0...v9.66.1) (2026-11-06)
+
+
+### Bug Fixes
+
+* **responses:** show matching counts beside view names (#10516) ([#10516](https://github.com/opengovsg/formsg/commit/77f80274e57fb2ec029641723ca67a5dc4fff132))
+* **workflow-actions:** clarify step recipients (#10515) ([#10515](https://github.com/opengovsg/formsg/commit/f5689c2cc3efbe4cadd89e1a11f918f8f45c8d6e))
+
+
+### Dependencies
+
+* **deps:** bump mongoose to 7.8.13 (#10544) ([#10544](https://github.com/opengovsg/formsg/commit/3d4adfbfd24bec8733979a37e31b2810864d40f1))
+
 ## [9.66.0](https://github.com/opengovsg/formsg/compare/v9.65.0...v9.66.0) (2026-11-06)
 
 
