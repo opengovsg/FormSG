@@ -33,6 +33,7 @@
     "axios": "^1.20.0",
     "broadcast-channel": "^4.13.0",
     "browser-image-compression": "^2.0.2",
+    "client-zip": "^2.5.1",
     "comlink": "^4.3.1",
     "country-flag-icons": "^1.4.19",
     "csv-string": "^4.1.0",
