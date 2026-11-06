@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.65.0](https://github.com/opengovsg/formsg/compare/v9.64.0...v9.65.0) (2026-11-06)
+
+
+### Features
+
+* **guardduty:** add zip-packaged scanner alongside the container image (#10501) ([#10501](https://github.com/opengovsg/formsg/commit/68a10424adab85aafc8195a8243d9053ee4b7b80))
+* **results:** log filter, sort and column changes to analyticsEvents (#10536) ([#10536](https://github.com/opengovsg/formsg/commit/e320ead8bd4da8175b19b2d4eee8580f38cc8527))
+
+
+### Bug Fixes
+
+* **admin-form:** standardise transfer-all-forms responses (#10519) ([#10519](https://github.com/opengovsg/formsg/commit/66a4eacef648f1bd8623dffffce7c683c370fdbe))
+* **frontend:** redact key and token from telemetry page URLs (#10520) ([#10520](https://github.com/opengovsg/formsg/commit/b0681f88239bcc938e6d93a741fbd4b454ccca69))
+* **otp:** hash OTPs with a bcrypt cost of 10 (#10523) ([#10523](https://github.com/opengovsg/formsg/commit/9023984d51e63616a753c4364f19b22f74e11090))
+* **responses:** truncate long column headers on the v2 dashboard (#10534) ([#10534](https://github.com/opengovsg/formsg/commit/0fde948239b44a595fab24d927b39f2f26cdddb1))
+
+
+### Dependencies
+
+* **deps:** override patched joi, follow-redirects, qs, ip-address, fflate, pbkdf2 (#10529) ([#10529](https://github.com/opengovsg/formsg/commit/95a3ba0d9141a1e0a21647e10a88f744c626a1f2))
+
 ## [9.64.0](https://github.com/opengovsg/formsg/compare/v9.63.0...v9.64.0) (2026-11-05)
 
 
