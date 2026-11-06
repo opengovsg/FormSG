@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.66.0](https://github.com/opengovsg/formsg/compare/v9.65.0...v9.66.0) (2026-11-06)
+
+
+### Features
+
+* **submission:** read both submission types on storage mode forms (#10540) ([#10540](https://github.com/opengovsg/formsg/commit/9897996324279cb8075e89fc62134ad6429d392e))
+
 ## [9.65.0](https://github.com/opengovsg/formsg/compare/v9.64.0...v9.65.0) (2026-11-06)
 
 
