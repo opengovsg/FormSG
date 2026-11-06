@@ -79,7 +79,7 @@ const fixStepOfPendingMrfSubmission: ControllerHandler<
     userId: authedUserId,
     formId,
     growthbook: req.growthbook,
-    flag: featureFlags.workflowActionsFixStep,
+    flag: featureFlags.workflowActionsSendBack,
   })
     .andThen(({ form, user }) =>
       startFixingStep({
