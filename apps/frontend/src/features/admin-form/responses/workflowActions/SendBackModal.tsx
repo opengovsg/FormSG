@@ -15,6 +15,8 @@ import { WORKFLOW_ACTIONS_I18N } from './i18n'
 import { WorkflowActionModal } from './WorkflowActionModal'
 
 const I18N_PREFIX = `${WORKFLOW_ACTIONS_I18N}.sendBackModal` as const
+const KEEP_FILLED = 'keep'
+const CLEAR_FIELDS = 'clear'
 
 export interface SendBackModalProps {
   isOpen: boolean
@@ -23,6 +25,7 @@ export interface SendBackModalProps {
     targetStepNumber: number
     remarks?: string
     stepOneRecipientEmail?: string
+    clearResponses: boolean
   }) => void
   isLoading?: boolean
   history: WorkflowHistory
@@ -44,12 +47,14 @@ export const SendBackModal = ({
   const [step, setStep] = useState(defaultStep)
   const [remarks, setRemarks] = useState('')
   const [stepOneEmail, setStepOneEmail] = useState('')
+  const [keepFilled, setKeepFilled] = useState(KEEP_FILLED)
 
   useEffect(() => {
     if (!isOpen) return
     setStep(defaultStep)
     setRemarks('')
     setStepOneEmail('')
+    setKeepFilled(KEEP_FILLED)
   }, [isOpen, defaultStep])
 
   const firstTargetStep = canSendBackToStepOne ? 1 : 2
@@ -114,6 +119,7 @@ export const SendBackModal = ({
         onConfirm({
           targetStepNumber,
           remarks: remarks.trim() || undefined,
+          clearResponses: keepFilled === CLEAR_FIELDS,
           ...(isToStepOne
             ? { stepOneRecipientEmail: trimmedStepOneEmail }
             : {}),
@@ -156,6 +162,19 @@ export const SendBackModal = ({
             onChange={(event) => setRemarks(event.target.value)}
           />
           <FormErrorMessage>{remarksError}</FormErrorMessage>
+        </FormControl>
+        <FormControl isRequired>
+          <FormLabel>{t(`${I18N_PREFIX}.keepFilledLabel`)}</FormLabel>
+          <SingleSelect
+            name="sendBackKeepFilled"
+            items={[
+              { value: KEEP_FILLED, label: t(`${I18N_PREFIX}.keepFilledYes`) },
+              { value: CLEAR_FIELDS, label: t(`${I18N_PREFIX}.keepFilledNo`) },
+            ]}
+            value={keepFilled}
+            isClearable={false}
+            onChange={setKeepFilled}
+          />
         </FormControl>
       </Stack>
     </WorkflowActionModal>

@@ -55,11 +55,21 @@ vi.mock('./SendBackModal', () => ({
     onConfirm,
   }: {
     isOpen: boolean
-    onConfirm: (params: { targetStepNumber: number; remarks?: string }) => void
+    onConfirm: (params: {
+      targetStepNumber: number
+      remarks?: string
+      clearResponses: boolean
+    }) => void
   }) =>
     isOpen ? (
       <button
-        onClick={() => onConfirm({ targetStepNumber: 2, remarks: 'Fix it' })}
+        onClick={() =>
+          onConfirm({
+            targetStepNumber: 2,
+            remarks: 'Fix it',
+            clearResponses: true,
+          })
+        }
       >
         confirm send back
       </button>
@@ -330,6 +340,7 @@ describe('WorkflowActionsSection', () => {
           expectedStepNumber: 3,
           submissionSecretKey: 'mock-secret-key',
           remarks: 'Fix it',
+          clearResponses: true,
         },
         expect.anything(),
       )

@@ -342,6 +342,7 @@ export const sendBackWorkflow = ({
   submissionSecretKey,
   remarks,
   stepOneRecipientEmail,
+  clearResponses,
 }: {
   formId: string
   submissionId: string
@@ -350,6 +351,7 @@ export const sendBackWorkflow = ({
   submissionSecretKey: string
   remarks?: string
   stepOneRecipientEmail?: string
+  clearResponses: boolean
 }): Promise<{ stepNumber: number; emails: string[] }> =>
   ApiService.post<{ stepNumber: number; emails: string[] }>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}/send-back`,
@@ -359,5 +361,6 @@ export const sendBackWorkflow = ({
       submissionSecretKey,
       remarks,
       stepOneRecipientEmail,
+      clearResponses,
     },
   ).then(({ data }) => data)

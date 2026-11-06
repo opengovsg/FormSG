@@ -179,6 +179,7 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/send-back', () => 
     ['the pending step', { targetStepNumber: 4 }],
     ['remarks that are too long', { remarks: 'x'.repeat(1001) }],
     ['no secret key', { submissionSecretKey: undefined }],
+    ['clearing with a key that cannot decrypt', { clearResponses: true }],
   ])('returns 400 for %s', async (_label, body) => {
     const form = await createForm()
     const submission = await createSubmission(form._id)

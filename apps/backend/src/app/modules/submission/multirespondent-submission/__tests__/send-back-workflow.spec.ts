@@ -13,12 +13,14 @@ import { getMultirespondentSubmissionModel } from 'src/app/models/submission.ser
 
 import {
   MrfAssigneeAlreadyAssignedError,
+  MrfSendBackClearFailedError,
   MrfSendBackInvalidStepError,
   MrfWorkflowNotPendingError,
 } from '../../submission.errors'
 import { buildMrfMetadata } from '../../submission.utils'
 import {
   addAssigneesToPendingStep,
+  getFieldIdsClearedBySendBack,
   getPendingStepRecipientEmailsFromSubmittedStepsMeta,
   sendBackMultirespondentSubmission,
   stopMultirespondentSubmission,
@@ -85,11 +87,15 @@ const sendBack = (
     remarks,
     stepOneRecipientEmail,
     canSendBackToStepOne = true,
+    clearResponses = false,
+    submissionSecretKey = 'submission-secret-key',
   }: {
     expectedStepNumber?: number
     remarks?: string
     stepOneRecipientEmail?: string
     canSendBackToStepOne?: boolean
+    clearResponses?: boolean
+    submissionSecretKey?: string
   } = {},
 ) =>
   sendBackMultirespondentSubmission({
@@ -101,6 +107,8 @@ const sendBack = (
     remarks,
     stepOneRecipientEmail,
     canSendBackToStepOne,
+    clearResponses,
+    submissionSecretKey,
     actor,
   })
 
@@ -375,6 +383,128 @@ describe('sendBackMultirespondentSubmission', () => {
       expect(duplicate._unsafeUnwrapErr()).toBeInstanceOf(
         MrfAssigneeAlreadyAssignedError,
       )
+    })
+  })
+
+  describe('clearing form fields', () => {
+    const FIELD_IDS = [1, 2, 3, 4, 5].map(() => String(new ObjectId()))
+    const [
+      applicantField,
+      leadField,
+      financeField,
+      directorField,
+      sharedField,
+    ] = FIELD_IDS
+    const WORKFLOW = [
+      { _id: 'step-1', edit: [applicantField, sharedField] },
+      { _id: 'step-2', edit: [leadField] },
+      { _id: 'step-3', edit: [financeField, sharedField] },
+      { _id: 'step-4', edit: [directorField] },
+      { _id: 'step-5', edit: [] },
+    ]
+    const RESPONSES = Object.fromEntries(
+      FIELD_IDS.map((id) => [
+        id,
+        { fieldType: 'textfield', answer: `answer-${id}` },
+      ]),
+    )
+
+    const createEncryptedSubmission = async () => {
+      const { encryptedContent, submissionPublicKey, submissionSecretKey } =
+        formsgSdk.cryptoV3.encrypt(RESPONSES, formPublicKey)
+      const submission = await createSubmission({
+        workflow: WORKFLOW,
+        encryptedContent,
+        submissionPublicKey,
+        attachmentMetadata: {
+          [applicantField]: 'applicant-upload',
+          [financeField]: 'finance-upload',
+        },
+      })
+      return { submission, submissionSecretKey }
+    }
+
+    const readResponses = async (
+      submissionId: unknown,
+      submissionSecretKey: string,
+    ) => {
+      const stored =
+        await MultirespondentSubmission.findById(submissionId).lean()
+      return formsgSdk.cryptoV3.decryptFromSubmissionKey(submissionSecretKey, {
+        encryptedContent: stored?.encryptedContent as string,
+        version: 3,
+      })?.responses
+    }
+
+    it('clears fields the target step and later steps fill', async () => {
+      const { submission, submissionSecretKey } =
+        await createEncryptedSubmission()
+
+      const result = await sendBack(submission._id, 2, {
+        clearResponses: true,
+        submissionSecretKey,
+      })
+
+      expect(result.isOk()).toBe(true)
+      expect(await readResponses(submission._id, submissionSecretKey)).toEqual({
+        [applicantField]: RESPONSES[applicantField],
+        [sharedField]: RESPONSES[sharedField],
+      })
+      const stored = await MultirespondentSubmission.findById(
+        submission._id,
+      ).lean()
+      expect(stored?.attachmentMetadata).toEqual({
+        [applicantField]: 'applicant-upload',
+      })
+    })
+
+    it('clears every field when sent back to step 1', async () => {
+      const { submission, submissionSecretKey } =
+        await createEncryptedSubmission()
+
+      await sendBack(submission._id, 1, {
+        stepOneRecipientEmail: 'applicant@example.com',
+        clearResponses: true,
+        submissionSecretKey,
+      })
+
+      expect(await readResponses(submission._id, submissionSecretKey)).toEqual(
+        {},
+      )
+    })
+
+    it('keeps every field when not asked to clear', async () => {
+      const { submission, submissionSecretKey } =
+        await createEncryptedSubmission()
+
+      await sendBack(submission._id, 2, { submissionSecretKey })
+
+      expect(await readResponses(submission._id, submissionSecretKey)).toEqual(
+        RESPONSES,
+      )
+    })
+
+    it('changes nothing when the secret key cannot decrypt the response', async () => {
+      const { submission } = await createEncryptedSubmission()
+
+      const result = await sendBack(submission._id, 2, {
+        clearResponses: true,
+        submissionSecretKey: formsgSdk.crypto.generate().secretKey,
+      })
+
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        MrfSendBackClearFailedError,
+      )
+      const stored = await MultirespondentSubmission.findById(submission._id)
+      expect(stored?.submittedSteps).toHaveLength(3)
+      expect(stored?.encryptedContent).toBe(submission.encryptedContent)
+    })
+
+    it('keeps fields an earlier step also fills', () => {
+      expect(getFieldIdsClearedBySendBack(WORKFLOW, 3)).toEqual([
+        financeField,
+        directorField,
+      ])
     })
   })
 
