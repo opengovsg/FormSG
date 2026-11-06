@@ -55,6 +55,7 @@ import {
   MyInfoMissingHashError,
   MyInfoMissingLoginCookieError,
 } from './myinfo.errors'
+import { compareMyInfoValue } from './myinfo.hash'
 import {
   MyInfoChildKey,
   MyInfoComparePromises,
@@ -169,7 +170,7 @@ const compareSingleHash = (
   field: VisibleMyInfoResponse,
 ): Promise<boolean> => {
   const transformedAnswer = transformAnswer(field)
-  return bcrypt.compare(transformedAnswer, hash)
+  return compareMyInfoValue(field.myInfo.attr, transformedAnswer, hash)
 }
 
 /**
@@ -456,8 +457,20 @@ export const handleMyInfoChildHashResponse = (
       [...candidates.entries()].map(async ([childIdx, record]) => {
         const matches = await Promise.all(
           childAnswer.map((attrAnswer, subFieldIndex) => {
-            const hash = record[subFields[subFieldIndex]]
-            return hash ? bcrypt.compare(attrAnswer, hash) : undefined
+            const subField = subFields[subFieldIndex]
+            const hash = record[subField]
+            return hash
+              ? compareMyInfoValue(
+                  getMyInfoChildHashKey(
+                    field._id,
+                    subField,
+                    childIdx,
+                    childName,
+                  ),
+                  attrAnswer,
+                  hash,
+                )
+              : undefined
           }),
         )
         return { childIdx, matches }
