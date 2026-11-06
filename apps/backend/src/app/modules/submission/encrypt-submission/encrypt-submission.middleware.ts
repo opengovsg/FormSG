@@ -28,12 +28,12 @@ import * as FormService from '../../form/form.service'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
 import * as PaymentsService from '../../payments/payments.service'
-import { IPopulatedStorageFormWithResponsesAndHash } from '../email-submission/email-submission.types'
 import {
   checkLoginIdentityAnswers,
   getLoginIdentityValuesFromCookies,
   prefixLoginIdentityQuestions,
 } from '../login-identity-answers'
+import { IPopulatedStorageFormWithResponsesAndHash } from '../notification-email/notification-email.types'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { sharedSubmissionParams } from '../submission.constants'
 import * as SubmissionService from '../submission.service'

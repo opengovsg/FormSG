@@ -192,7 +192,7 @@ export const getMultirespondentSubmissionById = async ({
   })
 }
 
-export type SubmitEmailFormArgs = {
+export type SubmitFormArgs = {
   formId: string
   captchaResponse?: string | null
   captchaType?: string
@@ -204,14 +204,14 @@ export type SubmitEmailFormArgs = {
   selectedFormLanguage?: Language
 }
 
-export type SubmitStorageFormArgs = SubmitEmailFormArgs & {
+export type SubmitStorageFormArgs = SubmitFormArgs & {
   publicKey: string
   paymentReceiptEmail?: string
   paymentProducts?: Array<ProductItem>
   payments?: PaymentFieldsDto
 }
 
-export type SubmitStorageFormClearArgs = SubmitEmailFormArgs & {
+export type SubmitStorageFormClearArgs = SubmitFormArgs & {
   paymentReceiptEmail?: string
   paymentProducts?: Array<ProductItem>
   payments?: PaymentFieldsDto
@@ -227,15 +227,14 @@ export type SubmitStorageFormWithVirusScanningArgs =
     fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[]
   }
 
-export type SubmitMultirespondentFormWithVirusScanningArgs =
-  SubmitEmailFormArgs & {
-    submissionSecretKey?: string
-    stepToken?: string
-    fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[]
-    paymentReceiptEmail?: string
-    paymentProducts?: Array<ProductItem>
-    payments?: PaymentFieldsDto
-  }
+export type SubmitMultirespondentFormWithVirusScanningArgs = SubmitFormArgs & {
+  submissionSecretKey?: string
+  stepToken?: string
+  fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[]
+  paymentReceiptEmail?: string
+  paymentProducts?: Array<ProductItem>
+  payments?: PaymentFieldsDto
+}
 
 // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
 // Submit storage mode form with virus scanning (storage v2.1+)

@@ -118,12 +118,12 @@ import { JwtName } from '../spcp/spcp.types'
 import { MissingUserError } from '../user/user.errors'
 import { MalformedVerifiedContentError } from '../verified-content/verified-content.errors'
 
-import { MYINFO_PREFIX } from './email-submission/email-submission.constants'
-import { ResponseFormattedForEmail } from './email-submission/email-submission.types'
 import {
   SnapshotWriteError,
   V1ContentMappingError,
 } from './multirespondent-submission/webhook/submission-snapshot.errors'
+import { MYINFO_PREFIX } from './notification-email/notification-email.constants'
+import { ResponseFormattedForEmail } from './notification-email/notification-email.types'
 import {
   AttachmentSizeLimitExceededError,
   AttachmentTooLargeError,

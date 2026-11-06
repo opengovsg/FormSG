@@ -29,7 +29,7 @@ import { FormFieldValues } from '~templates/Field'
 import NotFoundErrorPage from '~pages/NotFoundError'
 import { useIsWorkflowBuilderRedesign } from '~features/admin-form/create/workflow/hooks/useIsWorkflowBuilderRedesign'
 import { isFormPaymentsEnabled } from '~features/form/utils/isFormPaymentsEnabled'
-import { SubmitEmailFormArgs } from '~features/public-form/PublicFormService'
+import { SubmitFormArgs } from '~features/public-form/PublicFormService'
 
 import { useEnv } from '../../env/queries'
 import { axiosDebugFlow } from '../../public-form/utils'
@@ -133,7 +133,7 @@ export const PreviewFormProvider = ({
     async (formInputs) => {
       const { form } = data ?? {}
       if (!form) return
-      const formData: Omit<SubmitEmailFormArgs, 'formId'> = {
+      const formData: Omit<SubmitFormArgs, 'formId'> = {
         formFields: form.form_fields,
         formLogics: form.form_logics,
         formInputs: formInputs,

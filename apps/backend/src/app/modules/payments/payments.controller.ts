@@ -111,7 +111,7 @@ export const _handleSendOnboardingEmail: ControllerHandler<
           meta: logMeta,
           error,
         })
-        // Error code 400 based on what is set in src/app/modules/submission/email-submission/email-submission.util.ts
+        // Error code 400 based on what is set in src/app/modules/submission/notification-email/notification-email.util.ts
         return res.sendStatus(StatusCodes.BAD_REQUEST)
       } else {
         // Database error

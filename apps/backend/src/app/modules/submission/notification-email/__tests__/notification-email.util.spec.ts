@@ -24,13 +24,13 @@ import {
   MYINFO_PREFIX,
   TABLE_PREFIX,
   VERIFIED_PREFIX,
-} from '../email-submission.constants'
-import { ResponseFormattedForEmail } from '../email-submission.types'
+} from '../notification-email.constants'
+import { ResponseFormattedForEmail } from '../notification-email.types'
 import {
   getFormDataPrefixedQuestion,
   getJsonPrefixedQuestion,
   SubmissionEmailObj,
-} from '../email-submission.util'
+} from '../notification-email.util'
 
 const MOCK_ANSWER = 'mockAnswer'
 
@@ -52,7 +52,7 @@ const ALL_SINGLE_SUBMITTED_RESPONSES = basicTypes
   )
   .map((t) => generateNewSingleAnswerResponse(t.name))
 
-describe('email-submission.util', () => {
+describe('notification-email.util', () => {
   describe('Submission Email Object', () => {
     const response1 = getResponse(
       String(new ObjectId()),
