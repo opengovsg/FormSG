@@ -35,6 +35,8 @@ export const featureFlags = {
   paymentEmailLookup: 'payment-email-lookup' as const,
   settingsIntegrations: 'settings-integrations' as const,
   settingsIntegrationsJson: 'settings-integrations-json' as const,
+  attachmentsMultiUploadAndOneZip:
+    'attachments-multi-upload-and-one-zip' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {

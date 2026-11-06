@@ -21,6 +21,19 @@ export type AttachmentsDownloadMap = Map<
   { url: string; filename?: string }
 >
 
+export type DecryptedAttachmentFile = {
+  filename: string
+  content: Uint8Array<ArrayBuffer>
+}
+
+/**
+ * A response's decrypted attachments: one zip per response, or under
+ * Attachments v2 the files themselves, for the download zip.
+ */
+export type DecryptedAttachments =
+  | { kind: 'zip'; blob: Blob }
+  | { kind: 'files'; files: DecryptedAttachmentFile[] }
+
 export type DecryptionCtx = {
   formsgSdk: ReturnType<typeof formsgPackage>
 }
@@ -44,6 +57,7 @@ export interface SubmissionDataForDecryption {
   formsgSdkMode: string
   useV4?: boolean
   isWorkflowActionsOn?: boolean
+  isAttachmentsV2Enabled: boolean
 }
 
 export type CleanableDecryptionWorkerApi = {
@@ -76,7 +90,7 @@ export type DecryptedData = {
     isDownloadAndDecryptSubmissionAttachmentsSuccessful: boolean
   }
   materializedCsvRecord?: MaterializedCsvRecord
-  attachmentDownloadBlob?: Blob
+  attachments?: DecryptedAttachments
   parsedSubmission?: SubmissionStreamDto
   decryptedResponses?: FormField[]
 }
