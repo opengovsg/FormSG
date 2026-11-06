@@ -34,7 +34,7 @@ export const enSG: Logic = {
     fieldRemoved: 'This field was deleted and has been removed from your logic',
   },
   fieldBadge: {
-    fieldLabel: '{{label}} field',
+    fieldLabel: '{label} field',
   },
   mutations: {
     createSuccess: 'The logic was successfully created.',

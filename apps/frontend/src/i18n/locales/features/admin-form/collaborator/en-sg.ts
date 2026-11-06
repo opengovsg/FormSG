@@ -31,7 +31,7 @@ export const enSG: Collaborator = {
   transferOwnership: {
     header: 'Transfer form ownership',
     message:
-      'You are transferring this form to <email>{{email}}</email>. You will lose form ownership and the right to delete this form. You will still have Editor rights.',
+      'You are transferring this form to <email>{email}</email>. You will lose form ownership and the right to delete this form. You will still have Editor rights.',
     button: {
       confirm: 'Yes, transfer form',
     },
