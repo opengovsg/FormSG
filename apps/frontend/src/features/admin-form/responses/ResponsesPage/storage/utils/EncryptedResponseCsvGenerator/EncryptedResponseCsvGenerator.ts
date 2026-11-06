@@ -377,6 +377,13 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     this.triggerFileDownload(filename)
   }
 
+  /** The CSV file, for the download zip. */
+  getCsvBlob(): Blob {
+    this.sort()
+    this.process()
+    return this.toBlob()
+  }
+
   /**
    * Comparator for dates
    * @param firstDate first date to compare
