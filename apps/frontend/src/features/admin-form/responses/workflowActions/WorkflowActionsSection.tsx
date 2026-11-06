@@ -33,7 +33,6 @@ import { RemindButton } from './RemindButton'
 import { SendBackModal } from './SendBackModal'
 import { StopWorkflowModal } from './StopWorkflowModal'
 import {
-  useWorkflowActionsFixStepGate,
   useWorkflowActionsGate,
   useWorkflowActionsSendBackGate,
 } from './useWorkflowActionsGate'
@@ -61,7 +60,6 @@ export const WorkflowActionsSection = ({
   const { formId = '' } = useParams()
   const isWorkflowActionsOn = useWorkflowActionsGate()
   const isSendBackOn = useWorkflowActionsSendBackGate()
-  const isFixStepOn = useWorkflowActionsFixStepGate()
   const isDelightfulDashboard = useIsDelightfulDashboard()
   const { hasEditAccess } = useAdminFormCollaborators(formId)
   const { data: form } = useAdminForm()
@@ -95,9 +93,8 @@ export const WorkflowActionsSection = ({
     pendingStepNumber >= (canSendBackToStepOne ? 2 : 3) &&
     mrf.workflowCurrentStepNumber === history.submittedSteps.length
   const canSendBack = isSendBackOn && canRewind
-  const canFixStep = isFixStepOn && canRewind
 
-  if (!canRemind && !canActOnWorkflow && !canSendBack && !canFixStep)
+  if (!canRemind && !canActOnWorkflow && !canSendBack)
     return overview ? <ResponseOverview>{overview}</ResponseOverview> : null
 
   const handleAddAssignees = (emails: string[]) => {
@@ -209,7 +206,7 @@ export const WorkflowActionsSection = ({
           {t(`${WORKFLOW_ACTIONS_I18N}.sendBackButton`)}
         </Button>
       ) : null}
-      {canFixStep ? (
+      {canSendBack ? (
         <Button
           size="sm"
           variant="outline"

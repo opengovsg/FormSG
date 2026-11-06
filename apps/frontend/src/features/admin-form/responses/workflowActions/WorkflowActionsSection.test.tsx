@@ -9,7 +9,6 @@ import { WorkflowActionsSection } from './WorkflowActionsSection'
 
 let mockIsGateOn = true
 let mockIsSendBackOn = false
-let mockIsFixStepOn = false
 let mockAuthType = 'SP'
 let mockHasEditAccess = true
 let mockIsV2 = true
@@ -29,7 +28,6 @@ vi.mock('react-router-dom', () => ({
 vi.mock('./useWorkflowActionsGate', () => ({
   useWorkflowActionsGate: () => mockIsGateOn,
   useWorkflowActionsSendBackGate: () => mockIsSendBackOn,
-  useWorkflowActionsFixStepGate: () => mockIsFixStepOn,
 }))
 
 vi.mock('~features/admin-form/common/queries', () => ({
@@ -161,7 +159,6 @@ describe('WorkflowActionsSection', () => {
   afterEach(() => {
     mockIsGateOn = true
     mockIsSendBackOn = false
-    mockIsFixStepOn = false
     mockFixStep.mockReset()
     mockAuthType = 'SP'
     mockSendBack.mockReset()
@@ -413,7 +410,7 @@ describe('WorkflowActionsSection', () => {
     const FIX_STEP = `${I18N}.fixStepButton`
 
     beforeEach(() => {
-      mockIsFixStepOn = true
+      mockIsSendBackOn = true
     })
 
     it('reopens the chosen step against the pending step the page saw', async () => {
@@ -442,7 +439,6 @@ describe('WorkflowActionsSection', () => {
     })
 
     it('only offers Stop while a step is being fixed', () => {
-      mockIsSendBackOn = true
       renderSection(
         pendingMrf({ workflowCurrentStepNumber: 1 }),
         undefined,
