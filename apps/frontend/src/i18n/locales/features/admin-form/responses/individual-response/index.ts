@@ -71,6 +71,9 @@ export interface ResponsesIndividualResponse {
       remarksLabel: string
       remarksDescription: string
       remarksTooLong: string
+      keepFilledLabel: string
+      keepFilledYes: string
+      keepFilledNo: string
       confirm: string
       toastSuccess: string
     }

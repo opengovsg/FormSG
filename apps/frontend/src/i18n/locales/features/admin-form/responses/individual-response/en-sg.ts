@@ -70,7 +70,7 @@ export const enSG: ResponsesIndividualResponse = {
     sendBackModal: {
       title: 'Send back to an earlier step',
       description:
-        'We’ll email the people on that step a new link to amend their answers. Answers given so far stay filled in. Every step after it will need to be completed again.',
+        'We’ll email the people on that step a new link to amend their answers. Every step after it will need to be completed again.',
       stepLabel: 'Send back to',
       recipientsLabel: 'People in {stepName}',
       stepOneEmailLabel: 'Email address of who fills in Step 1',
@@ -79,6 +79,9 @@ export const enSG: ResponsesIndividualResponse = {
       remarksLabel: 'Remarks',
       remarksDescription: 'Tell them what they need to fix.',
       remarksTooLong: 'Remarks must be {max} characters or fewer',
+      keepFilledLabel: 'Should keep existing form fields filled?',
+      keepFilledYes: 'Yes, keep filled',
+      keepFilledNo: 'No, clear form fields',
       confirm: 'Send back',
       toastSuccess: 'The response was sent back to Step {stepNumber}.',
     },

@@ -124,10 +124,12 @@ export const WorkflowActionsSection = ({
     targetStepNumber,
     remarks,
     stepOneRecipientEmail,
+    clearResponses,
   }: {
     targetStepNumber: number
     remarks?: string
     stepOneRecipientEmail?: string
+    clearResponses: boolean
   }) => {
     if (!submissionSecretKey) return
     sendBackMutation.mutate(
@@ -138,6 +140,7 @@ export const WorkflowActionsSection = ({
         submissionSecretKey,
         remarks,
         stepOneRecipientEmail,
+        clearResponses,
       },
       { onSuccess: sendBackModal.onClose },
     )
