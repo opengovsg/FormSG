@@ -1,5 +1,7 @@
+import { GrowthBook } from '@growthbook/growthbook'
 import { createHmac } from 'crypto'
 import { CookieOptions, Response } from 'express'
+import { featureFlags } from 'formsg-shared/constants'
 import {
   CorppassAttribute,
   FormAuthType,
@@ -208,6 +210,13 @@ const isSameMrfStepAuthContext = (
   a.workflowStep === b.workflowStep &&
   a.authType === b.authType &&
   (a.stepTokenHash ?? '') === (b.stepTokenHash ?? '')
+
+/**
+ * Kill switch for later-step login, turned on to stop respondents while a
+ * release problem is fixed. Fails open, so a GrowthBook outage never blocks.
+ */
+export const isMrfStepLoginSuspended = (growthbook?: GrowthBook): boolean =>
+  growthbook?.isOn(featureFlags.mrfStepLoginKillSwitch) ?? false
 
 /**
  * Resolves who may fill in the pending step of an MRF submission from the

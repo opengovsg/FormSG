@@ -172,6 +172,23 @@ describe('step-auth.controller', () => {
       expect(res.status).toHaveBeenCalledWith(400)
     })
 
+    it('rejects the login while the kill switch is on', async () => {
+      mockStep(FormAuthType.MyInfo)
+      const res = expressHandler.mockResponse()
+      const req = Object.assign(makeRequest(), {
+        growthbook: {
+          isOn: jest.fn(() => true),
+          getAttributes: jest.fn(),
+          setAttributes: jest.fn(),
+        },
+      })
+
+      await _handleMrfStepAuthRedirect(req, res, jest.fn())
+
+      expect(res.status).toHaveBeenCalledWith(422)
+      expect(MockFapiService.startLogin).not.toHaveBeenCalled()
+    })
+
     it("starts a MyInfo login bound to the step, for the step's fields only", async () => {
       mockStep(FormAuthType.MyInfo)
       MockFapiService.startLogin.mockReturnValue(

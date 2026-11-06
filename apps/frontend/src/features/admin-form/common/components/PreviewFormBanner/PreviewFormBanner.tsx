@@ -149,8 +149,15 @@ export const PreviewFormBanner = ({
         display="flex"
         width="100%"
       >
-        <Flex align="center" flex={1} justify="space-between" flexDir="row">
-          <Flex align="center" gap="1rem">
+        <Flex
+          align="center"
+          flex={1}
+          justify="space-between"
+          flexDir="row"
+          flexWrap="wrap"
+          gap="1rem"
+        >
+          <Flex align="center" gap="1rem" flexWrap="wrap">
             <Flex align="center" flexShrink={0}>
               <Icon
                 aria-hidden

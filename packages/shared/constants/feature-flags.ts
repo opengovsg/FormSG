@@ -42,6 +42,7 @@ export const featureFlags = {
   mrfChildren: 'mrf-children' as const,
   isNricFieldEnabled: 'is-nric-field-enabled' as const,
   mrfStepLogin: 'mrf-singpass-all-steps' as const,
+  mrfStepLoginKillSwitch: 'mrf-step-login-kill-switch' as const,
   delightfulDashboard: 'delightful-dashboard' as const,
   suiteLauncher: 'suite-launcher' as const,
   escapeHatch: 'mrf-cutover-escape-hatch' as const,
