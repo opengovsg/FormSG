@@ -7,3 +7,6 @@ export const useWorkflowActionsGate = (): boolean =>
 
 export const useWorkflowActionsSendBackGate = (): boolean =>
   useFeatureIsOn(featureFlags.workflowActionsSendBack)
+
+export const useWorkflowActionsFixStepGate = (): boolean =>
+  useFeatureIsOn(featureFlags.workflowActionsFixStep)

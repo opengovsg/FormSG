@@ -14,8 +14,6 @@ import { getStepRecipients, WorkflowHistory } from './getStopNotifiedEmails'
 import { WORKFLOW_ACTIONS_I18N } from './i18n'
 import { WorkflowActionModal } from './WorkflowActionModal'
 
-const I18N_PREFIX = `${WORKFLOW_ACTIONS_I18N}.sendBackModal` as const
-
 export interface SendBackModalProps {
   isOpen: boolean
   onClose: () => void
@@ -27,6 +25,7 @@ export interface SendBackModalProps {
   isLoading?: boolean
   history: WorkflowHistory
   canSendBackToStepOne?: boolean
+  modal?: 'sendBackModal' | 'fixStepModal'
 }
 
 export const SendBackModal = ({
@@ -36,7 +35,9 @@ export const SendBackModal = ({
   isLoading,
   history,
   canSendBackToStepOne = false,
+  modal = 'sendBackModal',
 }: SendBackModalProps): JSX.Element => {
+  const I18N_PREFIX = `${WORKFLOW_ACTIONS_I18N}.${modal}` as const
   const { t } = useTranslation()
   const { submittedSteps, workflow, workflowEvents } = history
   const pendingStepNumber = submittedSteps.length + 1
