@@ -80,7 +80,7 @@
     "moment-timezone": "0.6.0",
     "mongodb-memory-server-core": "^9.5.0",
     "mongodb-uri": "^0.9.7",
-    "mongoose": "^7.8.10",
+    "mongoose": "7.8.13",
     "neverthrow": "^8.0.0",
     "node-cache": "^5.1.2",
     "nodemailer": "^10.1.4",

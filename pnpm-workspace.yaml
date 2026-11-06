@@ -93,7 +93,7 @@ overrides:
   minimatch@>=9.0.0 <9.0.7: ^9.0.7
   moment@>=2.29.2 <2.31.0: ^2.31.0
   mongodb: 5.9.2
-  mongoose@>=7.0.0 <7.8.10: 7.8.10
+  mongoose@>=7.0.0 <7.8.13: 7.8.13
   morgan@<1.11.0: ^1.11.0
   morgan@<1.12.0: ^1.12.0
   morgan@<1.12.1: ^1.12.1
@@ -149,6 +149,6 @@ trustPolicy: no-downgrade
 trustPolicyExclude:
   - semver@5.7.2
   - semver@6.3.1
-  - mongoose@7.8.10
+  - mongoose@7.8.13
 
 trustPolicyIgnoreAfter: 1576800
