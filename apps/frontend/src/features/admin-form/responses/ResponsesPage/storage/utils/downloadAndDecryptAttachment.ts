@@ -2,7 +2,11 @@ import { datadogLogs } from '@datadog/browser-logs'
 import { decode as decodeBase64 } from '@stablelib/base64'
 import JSZip from 'jszip'
 
-import { AttachmentsDownloadMap, DecryptionCtx } from '../types'
+import {
+  AttachmentsDownloadMap,
+  DecryptedAttachmentFile,
+  DecryptionCtx,
+} from '../types'
 
 export const downloadAndDecryptAttachment = async (
   ctx: DecryptionCtx,
@@ -31,41 +35,50 @@ export const downloadAndDecryptAttachment = async (
   return (await ctx.formsgSdk.crypto.decryptFile(
     secretKey,
     data.encryptedFile,
-  )) as Uint8Array<ArrayBuffer>
+  )) as Uint8Array<ArrayBuffer> | null
+}
+
+/**
+ * Downloads and decrypts every file in the map, naming each
+ * `Question N - <filename>`.
+ */
+export const downloadAndDecryptAttachments = async (
+  ctx: DecryptionCtx,
+  attachmentDownloadUrls: AttachmentsDownloadMap,
+  secretKey: string,
+): Promise<DecryptedAttachmentFile[]> => {
+  const files = Array.from(attachmentDownloadUrls).map(
+    ([questionNum, { url, filename }]) => ({
+      url,
+      filename: `Question ${questionNum} - ${filename}`,
+    }),
+  )
+  const decryptedFiles = await Promise.all(
+    files.map(async ({ url, filename }) => ({
+      filename,
+      content: await downloadAndDecryptAttachment(ctx, url, secretKey),
+    })),
+  )
+  // A file that fails to decrypt is left out, as it always has been
+  return decryptedFiles.flatMap(({ filename, content }) =>
+    content ? [{ filename, content }] : [],
+  )
 }
 
 export const downloadAndDecryptAttachmentsAsZip = async (
   ctx: DecryptionCtx,
   attachmentDownloadUrls: AttachmentsDownloadMap,
   secretKey: string,
-  extraAttachments?: {
-    filename: string
-    blob: Blob
-  }[],
 ) => {
   const zip = new JSZip()
-  const downloadPromises = []
-  for (const [questionNum, metadata] of attachmentDownloadUrls) {
-    downloadPromises.push(
-      downloadAndDecryptAttachment(ctx, metadata.url, secretKey).then(
-        (bytesArray) => {
-          if (bytesArray) {
-            zip.file(
-              'Question ' + questionNum + ' - ' + metadata.filename,
-              bytesArray,
-            )
-          }
-        },
-      ),
-    )
+  const files = await downloadAndDecryptAttachments(
+    ctx,
+    attachmentDownloadUrls,
+    secretKey,
+  )
+  for (const { filename, content } of files) {
+    zip.file(filename, content)
   }
 
-  if (extraAttachments?.length) {
-    for (const attachment of extraAttachments) {
-      zip.file(attachment.filename, attachment.blob)
-    }
-  }
-
-  await Promise.all(downloadPromises)
   return await zip.generateAsync({ type: 'blob' })
 }
