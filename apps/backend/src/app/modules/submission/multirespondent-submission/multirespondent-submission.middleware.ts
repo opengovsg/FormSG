@@ -91,6 +91,7 @@ import {
   sendRouteError,
 } from '../submission.utils'
 
+import { checkFixKeepsWorkflowPath, isFixingStep } from './fix-step'
 import {
   checkFormIsMultirespondent,
   getMultirespondentSubmission,
@@ -899,6 +900,19 @@ export const validateMultirespondentSubmission = async (
                     }),
                   )
               })
+              .andThen((previousResponses) =>
+                mrfSubmission &&
+                previousResponses &&
+                isFixingStep(mrfSubmission)
+                  ? checkFixKeepsWorkflowPath({
+                      form: { ...formPropertiesForLogicComputation, workflow },
+                      workflowStep,
+                      previousResponses:
+                        previousResponses as unknown as FieldResponsesV4,
+                      responses: req.body.responses as FieldResponsesV4,
+                    }).map(() => previousResponses)
+                  : ok(previousResponses),
+              )
               .andThen((previousResponses) => {
                 return validateMrfFieldResponses({
                   formId,
