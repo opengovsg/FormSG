@@ -12,6 +12,7 @@ import { CSV_FIXED_COLUMN_IDS } from '~features/admin-form/responses/constants'
 import { CsvGenerator } from '../../../../common/utils'
 import { matchesColumnFilters } from '../../../../common/utils/responseSearch'
 import type { DecryptedSubmissionData } from '../../types'
+import { getAttachmentQuestionLabel } from '../attachmentQuestionLabel'
 import type { Response } from '../csv-response-classes'
 import {
   compareAnswers,
@@ -45,15 +46,20 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
   fieldIdToNumCols: Record<string, number>
   unprocessed: UnprocessedRecord[]
   view: CsvExportView
+  isAttachmentsV2Enabled: boolean
 
   constructor(
     expectedNumberOfRecords: number,
     numOfMetaDataRows: number,
     view: CsvExportView = {},
+    {
+      isAttachmentsV2Enabled = false,
+    }: { isAttachmentsV2Enabled?: boolean } = {},
   ) {
     super(expectedNumberOfRecords, numOfMetaDataRows)
 
     this.view = view
+    this.isAttachmentsV2Enabled = isAttachmentsV2Enabled
 
     this.hasBeenProcessed = false
     this.hasBeenSorted = false
@@ -105,7 +111,14 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
           content.answerArray = [SIGNATURE_CAPTURED_STRING]
       }
 
-      const fieldRecord = getDecryptedResponseInstance(content)
+      const fieldRecord = getDecryptedResponseInstance({
+        ...content,
+        question: getAttachmentQuestionLabel({
+          question: content.question,
+          fieldType: content.fieldType,
+          isAttachmentsV2Enabled: this.isAttachmentsV2Enabled,
+        }),
+      })
       this._prepareFieldResponse(fieldRecord, created)
       fieldRecords.push(fieldRecord)
       // return fieldRecord

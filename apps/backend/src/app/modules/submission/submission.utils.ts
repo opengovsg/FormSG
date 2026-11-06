@@ -1075,6 +1075,10 @@ export const buildMrfMetadata = ({
   }
 }
 
+/** Whether Attachments v2 is on, for the `[attachment]` label in outputs. */
+export const isAttachmentsV2Enabled = (growthbook?: GrowthBook): boolean =>
+  growthbook?.isOn(featureFlags.attachmentsV2) ?? false
+
 export const isAdminEmailPdfEnabled = ({
   growthbook,
   formFields,
