@@ -5,7 +5,6 @@
  * NOTE: The test compares JSON strings, not object keys since JSON is the
  * data that the server encrypts.
  */
-import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson'
 import {
   BasicField,
@@ -26,6 +25,7 @@ import {
 } from '../../../../types'
 import { ParsedClearFormFieldResponsesV4 } from '../../../../types/api'
 import formsgSdk from '../../../config/formsg-sdk'
+import { hashMyInfoValue } from '../../myinfo/myinfo.hash'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { MyInfoKey } from '../../myinfo/myinfo.types'
 import {
@@ -435,7 +435,7 @@ describe('V4 -> V1 flatten is byte-identical to the storage-mode producer', () =
                 )
                 .map(async ([attr, value]) => [
                   attr,
-                  await bcrypt.hash(value, 4),
+                  hashMyInfoValue(attr, value),
                 ]),
             ),
           )
