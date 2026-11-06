@@ -2,8 +2,7 @@ version: '3'
 services:
   guardduty-scanner:
     build:
-      context: ../../
-      dockerfile: services/virus-scanner-guardduty/Dockerfile
+      context: .
     expose:
       - '8080'
     ports:

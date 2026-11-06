@@ -64,5 +64,4 @@ jobs:
         env:
           ENV: ${{ inputs.environment }}
           CONCURRENCY: ${{ inputs.provisionedConcurrency }}
-          BUILDX_NO_DEFAULT_ATTESTATIONS: 1
         run: pnpm --filter formsg-virus-scanner-guardduty run deploy

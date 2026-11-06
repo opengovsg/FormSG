@@ -1,43 +1,8 @@
-FROM node:22.23.4-bookworm-slim
+# Local development only. Deployments ship dist/ as a zip via serverless.yml.
+# The AWS base image bundles the runtime interface client and emulator, so
+# docker-compose.dev.yml can serve the Lambda Invoke API on port 8080.
+FROM public.ecr.aws/lambda/nodejs:22
 
-# Install aws-lambda-cpp build dependencies
-RUN apt-get update && \
-  apt-get install -y \
-  g++ \
-  make \
-  cmake \
-  unzip \
-  libcurl4-openssl-dev \
-  autoconf \
-  libtool \
-  automake \
-  python3 \
-  xz-utils
+COPY dist/ ${LAMBDA_TASK_ROOT}/
 
-# Install pnpm
-RUN npm install -g pnpm@10.30.3
-
-WORKDIR /workspace
-
-# Copy workspace config and lockfile from monorepo root
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-COPY patches ./patches/
-COPY services/virus-scanner-guardduty/package.json ./services/virus-scanner-guardduty/
-
-# Install only virus-scanner dependencies
-RUN pnpm install --filter formsg-virus-scanner-guardduty
-
-WORKDIR /workspace/services/virus-scanner-guardduty
-
-# Copy virus scanner source
-COPY services/virus-scanner-guardduty/ ./
-
-RUN pnpm run build
-
-# Add lambda rie to run entry.sh shell script
-ADD https://github.com/aws/aws-lambda-runtime-interface-emulator/releases/latest/download/aws-lambda-rie /usr/bin/aws-lambda-rie
-
-RUN chmod +x /usr/bin/aws-lambda-rie
-RUN chmod +x entry.sh
-
-ENTRYPOINT ["sh", "entry.sh", "build/index.handler"]
+CMD ["index.handler"]
