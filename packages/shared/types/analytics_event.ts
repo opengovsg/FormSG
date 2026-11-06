@@ -4,6 +4,9 @@ export enum AnalyticsEventType {
   ResultsSavedViewUpdated = 'results.saved_view.updated',
   ResultsSavedViewApplied = 'results.saved_view.applied',
   ResultsVersionToggled = 'results.version_toggled',
+  ResultsFilterApplied = 'results.filter.applied',
+  ResultsSortApplied = 'results.sort.applied',
+  ResultsColumnToggled = 'results.column.toggled',
 }
 
 export type ResultsDashboardVersion = 'v1' | 'v2'
@@ -30,6 +33,20 @@ export type ResultsVersionToggledContent = {
   to: ResultsDashboardVersion
 }
 
+export type ResultsFilterAppliedContent =
+  | { filter: 'date_range' }
+  | { filter: 'column'; columnId: string }
+
+export type ResultsSortAppliedContent = {
+  direction: 'asc' | 'desc'
+  columnId: string
+}
+
+export type ResultsColumnToggledContent = {
+  visible: boolean
+  columnId: string
+}
+
 export type AnalyticsEventInput =
   | {
       type: AnalyticsEventType.ResultsDownload
@@ -45,4 +62,16 @@ export type AnalyticsEventInput =
   | {
       type: AnalyticsEventType.ResultsVersionToggled
       content: ResultsVersionToggledContent
+    }
+  | {
+      type: AnalyticsEventType.ResultsFilterApplied
+      content: ResultsFilterAppliedContent
+    }
+  | {
+      type: AnalyticsEventType.ResultsSortApplied
+      content: ResultsSortAppliedContent
+    }
+  | {
+      type: AnalyticsEventType.ResultsColumnToggled
+      content: ResultsColumnToggledContent
     }

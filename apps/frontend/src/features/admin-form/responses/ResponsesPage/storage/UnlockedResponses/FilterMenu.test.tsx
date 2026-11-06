@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import {
+  AnalyticsEventType,
   DateString,
   Language,
   SavedViewColumnFilter,
@@ -11,6 +12,8 @@ import {
 import i18n from '~/i18n/i18n'
 
 import { theme } from '~theme/index'
+
+import { logAnalyticsEvent } from '~features/analytics/AnalyticsEventService'
 
 import { FilterMenu } from './FilterMenu'
 
@@ -34,6 +37,15 @@ vi.mock('./UnlockedResponsesProvider', () => ({
     setColumnFilter: mockSetColumnFilter,
     clearColumnFilters: mockClearColumnFilters,
   }),
+}))
+
+vi.mock('react-router-dom', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-router-dom')>()),
+  useParams: () => ({ formId: 'form-1' }),
+}))
+
+vi.mock('~features/analytics/AnalyticsEventService', () => ({
+  logAnalyticsEvent: vi.fn(),
 }))
 
 vi.mock('../StorageResponsesContext', () => ({
@@ -103,5 +115,23 @@ describe('the Filter menu', () => {
     mockDateRange = ['2026-10-06', '2026-10-08'] as DateString[]
 
     expect(await openFilterMenu()).toBeEnabled()
+  })
+
+  it('logs a date range filter once both dates are set', async () => {
+    await openFilterMenu()
+    const [start, end] = screen.getAllByRole('textbox')
+
+    await userEvent.type(start, '06/10/2026')
+    expect(logAnalyticsEvent).not.toHaveBeenCalled()
+    await userEvent.type(end, '08/10/2026')
+
+    expect(mockSetDateRange).toHaveBeenLastCalledWith([
+      '2026-10-06',
+      '2026-10-08',
+    ])
+    expect(logAnalyticsEvent).toHaveBeenCalledWith('form-1', {
+      type: AnalyticsEventType.ResultsFilterApplied,
+      content: { filter: 'date_range' },
+    })
   })
 })

@@ -130,6 +130,49 @@ describe('admin-forms.analytics-events.routes', () => {
       expect(await AnalyticsEventModel.countDocuments()).toEqual(0)
     })
 
+    it.each([
+      [AnalyticsEventType.ResultsFilterApplied, { filter: 'date_range' }],
+      [
+        AnalyticsEventType.ResultsFilterApplied,
+        { filter: 'column', columnId: 'submissionTime' },
+      ],
+      [
+        AnalyticsEventType.ResultsSortApplied,
+        { direction: 'asc', columnId: 'submissionTime' },
+      ],
+      [
+        AnalyticsEventType.ResultsColumnToggled,
+        { visible: false, columnId: 'submissionTime' },
+      ],
+    ])(
+      'should return 204 and store a %s event with %j',
+      async (type, content) => {
+        const response = await post(form._id, { type, content })
+
+        expect(response.status).toEqual(204)
+        const events = await AnalyticsEventModel.find().lean()
+        expect(events).toEqual([expect.objectContaining({ type, content })])
+      },
+    )
+
+    it.each([
+      [AnalyticsEventType.ResultsFilterApplied, { filter: 'column' }],
+      [
+        AnalyticsEventType.ResultsFilterApplied,
+        { filter: 'date_range', columnId: 'submissionTime' },
+      ],
+      [
+        AnalyticsEventType.ResultsSortApplied,
+        { direction: 'dsc', columnId: 'submissionTime' },
+      ],
+      [AnalyticsEventType.ResultsColumnToggled, { visible: true }],
+    ])('should return 400 for a %s event with %j', async (type, content) => {
+      const response = await post(form._id, { type, content })
+
+      expect(response.status).toEqual(400)
+      expect(await AnalyticsEventModel.countDocuments()).toEqual(0)
+    })
+
     it('should return 400 when content does not match the event type', async () => {
       const response = await post(form._id, {
         type: AnalyticsEventType.ResultsDownload,

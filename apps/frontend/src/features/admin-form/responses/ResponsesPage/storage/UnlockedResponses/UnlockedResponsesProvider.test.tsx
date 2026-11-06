@@ -1,10 +1,13 @@
 import { act, renderHook } from '@testing-library/react'
 
 import {
+  AnalyticsEventType,
   DateString,
   FormSavedView,
   SavedViewSortDirection,
 } from 'formsg-shared/types'
+
+import { logAnalyticsEvent } from '~features/analytics/AnalyticsEventService'
 
 import {
   ALL_RESPONSES_VIEW_ID,
@@ -106,5 +109,100 @@ describe('UnlockedResponsesProvider', () => {
     expect(result.current.columnFilters).toEqual([
       { columnId: 'a', text: 'approved' },
     ])
+  })
+
+  describe('analytics', () => {
+    const loggedEvents = () =>
+      vi.mocked(logAnalyticsEvent).mock.calls.map(([, event]) => event)
+
+    it('logs a column filter when it is set, not when it is cleared', () => {
+      const result = setupProvider()
+
+      act(() => result.current.setColumnFilter('a', 'approved'))
+      act(() => result.current.setColumnFilter('a', ' '))
+      act(() => result.current.setColumnFilter('b', []))
+
+      expect(loggedEvents()).toEqual([
+        {
+          type: AnalyticsEventType.ResultsFilterApplied,
+          content: { filter: 'column', columnId: 'a' },
+        },
+      ])
+    })
+
+    it('logs a sort, naming the response number column for the default sort', () => {
+      const result = setupProvider()
+
+      act(() => result.current.setSort('a', SavedViewSortDirection.Ascending))
+      act(() =>
+        result.current.setSort(undefined, SavedViewSortDirection.Descending),
+      )
+
+      expect(loggedEvents()).toEqual([
+        {
+          type: AnalyticsEventType.ResultsSortApplied,
+          content: { direction: 'asc', columnId: 'a' },
+        },
+        {
+          type: AnalyticsEventType.ResultsSortApplied,
+          content: { direction: 'desc', columnId: 'number' },
+        },
+      ])
+    })
+
+    it('logs whether a toggled column is now visible', () => {
+      const result = setupProvider()
+
+      act(() => result.current.toggleColumnVisibility('a'))
+      act(() => result.current.toggleColumnVisibility('a'))
+
+      expect(loggedEvents()).toEqual([
+        {
+          type: AnalyticsEventType.ResultsColumnToggled,
+          content: { visible: false, columnId: 'a' },
+        },
+        {
+          type: AnalyticsEventType.ResultsColumnToggled,
+          content: { visible: true, columnId: 'a' },
+        },
+      ])
+    })
+
+    it('logs the filters, sort and hidden columns of an applied view', () => {
+      const result = setupProvider()
+
+      act(() => result.current.applyView(VIEW._id))
+
+      expect(loggedEvents()).toEqual([
+        {
+          type: AnalyticsEventType.ResultsSavedViewApplied,
+          content: { savedViewId: VIEW._id },
+        },
+        {
+          type: AnalyticsEventType.ResultsFilterApplied,
+          content: { filter: 'date_range' },
+        },
+        {
+          type: AnalyticsEventType.ResultsFilterApplied,
+          content: { filter: 'column', columnId: 'a' },
+        },
+        {
+          type: AnalyticsEventType.ResultsSortApplied,
+          content: { direction: 'asc', columnId: 'a' },
+        },
+        {
+          type: AnalyticsEventType.ResultsColumnToggled,
+          content: { visible: false, columnId: 'b' },
+        },
+      ])
+    })
+
+    it('logs nothing beyond the reset when All responses is applied', () => {
+      const result = setupProvider()
+
+      act(() => result.current.applyView(ALL_RESPONSES_VIEW_ID))
+
+      expect(logAnalyticsEvent).not.toHaveBeenCalled()
+    })
   })
 })

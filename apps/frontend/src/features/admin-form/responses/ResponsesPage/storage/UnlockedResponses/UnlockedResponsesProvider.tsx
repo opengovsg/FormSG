@@ -35,6 +35,7 @@ import { exceedsTableLimit } from './responseLimit'
 import {
   fromSavedView,
   hasActiveViewState,
+  RESPONSE_NUMBER_COLUMN_ID,
   ResponsesViewState,
   withColumnFilter,
 } from './savedViews'
@@ -50,6 +51,53 @@ const EMPTY_VIEW_STATE: ResponsesViewState = {
 }
 
 export type ResponseSortDirection = SavedViewSortDirection
+
+const isFilterValueSet = (value: string | string[]) =>
+  Array.isArray(value) ? value.length > 0 : value.trim() !== ''
+
+const logFilterApplied = (formId: string | undefined, columnId?: string) =>
+  logAnalyticsEvent(formId, {
+    type: AnalyticsEventType.ResultsFilterApplied,
+    content: columnId
+      ? { filter: 'column', columnId }
+      : { filter: 'date_range' },
+  })
+
+const logSortApplied = (
+  formId: string | undefined,
+  columnId: string | undefined,
+  direction: ResponseSortDirection,
+) =>
+  logAnalyticsEvent(formId, {
+    type: AnalyticsEventType.ResultsSortApplied,
+    content: { direction, columnId: columnId ?? RESPONSE_NUMBER_COLUMN_ID },
+  })
+
+const logColumnToggled = (
+  formId: string | undefined,
+  columnId: string,
+  visible: boolean,
+) =>
+  logAnalyticsEvent(formId, {
+    type: AnalyticsEventType.ResultsColumnToggled,
+    content: { visible, columnId },
+  })
+
+const logViewState = (
+  formId: string | undefined,
+  state: ResponsesViewState,
+) => {
+  if (state.dateRange.length === 2) logFilterApplied(formId)
+  state.columnFilters.forEach(({ columnId }) =>
+    logFilterApplied(formId, columnId),
+  )
+  if (state.sortColumnId) {
+    logSortApplied(formId, state.sortColumnId, state.sortDirection)
+  }
+  state.hiddenColumnIds.forEach((columnId) =>
+    logColumnToggled(formId, columnId, false),
+  )
+}
 
 export interface ResponseColumnOption {
   id: string
@@ -134,17 +182,23 @@ export const useUnlockedResponses = (): UnlockedResponsesContextProps => {
 
 const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
   const isInfiniteScroll = useIsDelightfulDashboard()
+  const { data: form } = useAdminForm()
+  const formId = form?._id
 
   const [columnOptions, setColumnOptions] = useState<ResponseColumnOption[]>([])
   const [hiddenColumnIds, setHiddenColumnIds] = useState<string[]>([])
 
-  const toggleColumnVisibility = useCallback((columnId: string) => {
-    setHiddenColumnIds((hidden) =>
-      hidden.includes(columnId)
-        ? hidden.filter((id) => id !== columnId)
-        : [...hidden, columnId],
-    )
-  }, [])
+  const toggleColumnVisibility = useCallback(
+    (columnId: string) => {
+      logColumnToggled(formId, columnId, hiddenColumnIds.includes(columnId))
+      setHiddenColumnIds((hidden) =>
+        hidden.includes(columnId)
+          ? hidden.filter((id) => id !== columnId)
+          : [...hidden, columnId],
+      )
+    },
+    [formId, hiddenColumnIds],
+  )
 
   const setAllColumnsVisible = useCallback(
     (isVisible: boolean) =>
@@ -159,10 +213,11 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
 
   const setSort = useCallback(
     (columnId: string | undefined, direction: ResponseSortDirection) => {
+      logSortApplied(formId, columnId, direction)
       setSortColumnId(columnId)
       setSortDirection(direction)
     },
-    [],
+    [formId],
   )
 
   const [renderedRowCount, setRenderedRowCount] = useState(0)
@@ -173,11 +228,13 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
   )
 
   const setColumnFilter = useCallback(
-    (columnId: string, value: string | string[]) =>
+    (columnId: string, value: string | string[]) => {
+      if (isFilterValueSet(value)) logFilterApplied(formId, columnId)
       setColumnFilters((current) =>
         withColumnFilter(current, columnId, value, columnOptions),
-      ),
-    [columnOptions],
+      )
+    },
+    [columnOptions, formId],
   )
 
   const clearColumnFilters = useCallback(() => setColumnFilters([]), [])
@@ -348,7 +405,6 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     [isInfiniteScroll, navigableMetadata, nextMetadata, prevMetadata],
   )
 
-  const { data: form } = useAdminForm()
   const { dateRange, setDateRange } = useStorageResponsesContext()
   const savedViews = useMemo(() => form?.savedViews ?? [], [form?.savedViews])
   const [selectedViewId, setSelectedViewId] = useState(ALL_RESPONSES_VIEW_ID)
@@ -371,19 +427,20 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
       setSelectedViewId(viewId)
       const view = savedViews.find(({ _id }) => _id === viewId)
       if (view) {
-        logAnalyticsEvent(form?._id, {
+        logAnalyticsEvent(formId, {
           type: AnalyticsEventType.ResultsSavedViewApplied,
           content: { savedViewId: view._id },
         })
       }
       const next = view ? fromSavedView(view, columnOptions) : EMPTY_VIEW_STATE
+      if (view) logViewState(formId, next)
       setDateRange(next.dateRange)
       setColumnFilters(next.columnFilters)
       setHiddenColumnIds(next.hiddenColumnIds)
       setSortColumnId(next.sortColumnId)
       setSortDirection(next.sortDirection)
     },
-    [columnOptions, form?._id, savedViews, setDateRange],
+    [columnOptions, formId, savedViews, setDateRange],
   )
 
   return {
