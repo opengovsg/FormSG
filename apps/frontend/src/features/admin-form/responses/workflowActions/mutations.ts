@@ -85,6 +85,7 @@ export const useSendBackWorkflowMutation = (formId: string) => {
       submissionSecretKey: string
       remarks?: string
       stepOneRecipientEmail?: string
+      clearResponses: boolean
     }) => sendBackWorkflow({ formId, ...params }),
     {
       onSuccess: ({ stepNumber }) => {

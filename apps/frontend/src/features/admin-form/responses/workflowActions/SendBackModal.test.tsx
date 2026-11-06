@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import {
@@ -27,16 +27,18 @@ vi.mock('react-i18next', () => ({
 vi.mock('~components/Dropdown', async (importOriginal) => ({
   ...(await importOriginal<typeof import('~components/Dropdown')>()),
   SingleSelect: ({
+    name,
     value,
     onChange,
     items,
   }: {
+    name: string
     value: string
     onChange: (value: string) => void
     items: { value: string; label: string }[]
   }) => (
     <select
-      aria-label="step"
+      aria-label={name}
       value={value}
       onChange={(event) => onChange(event.target.value)}
     >
@@ -100,16 +102,20 @@ describe('SendBackModal', () => {
     showModal()
 
     expect(
-      screen.getAllByRole('option').map((option) => option.textContent),
+      within(screen.getByRole('combobox', { name: 'sendBackStep' }))
+        .getAllByRole('option')
+        .map((option) => option.textContent),
     ).toEqual(['Step 2 · Team lead', 'Step 3'])
-    expect(screen.getByRole('combobox', { name: 'step' })).toHaveValue('3')
+    expect(screen.getByRole('combobox', { name: 'sendBackStep' })).toHaveValue(
+      '3',
+    )
   })
 
   it("shows the chosen step's people, including those added to it", async () => {
     showModal()
 
     await userEvent.selectOptions(
-      screen.getByRole('combobox', { name: 'step' }),
+      screen.getByRole('combobox', { name: 'sendBackStep' }),
       '2',
     )
 
@@ -122,7 +128,7 @@ describe('SendBackModal', () => {
     const onConfirm = showModal()
 
     await userEvent.selectOptions(
-      screen.getByRole('combobox', { name: 'step' }),
+      screen.getByRole('combobox', { name: 'sendBackStep' }),
       '2',
     )
     await userEvent.type(screen.getByRole('textbox'), '  Fix the dates  ')
@@ -131,6 +137,7 @@ describe('SendBackModal', () => {
     expect(onConfirm).toHaveBeenCalledWith({
       targetStepNumber: 2,
       remarks: 'Fix the dates',
+      clearResponses: false,
     })
   })
 
@@ -142,7 +149,25 @@ describe('SendBackModal', () => {
     expect(onConfirm).toHaveBeenCalledWith({
       targetStepNumber: 3,
       remarks: undefined,
+      clearResponses: false,
     })
+  })
+
+  it('keeps form fields filled unless told to clear them', async () => {
+    const onConfirm = showModal()
+
+    expect(
+      screen.getByRole('combobox', { name: 'sendBackKeepFilled' }),
+    ).toHaveDisplayValue('keepFilledYes')
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'sendBackKeepFilled' }),
+      'clear',
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'confirm' }))
+
+    expect(onConfirm).toHaveBeenCalledWith(
+      expect.objectContaining({ clearResponses: true }),
+    )
   })
 
   it('blocks remarks over the limit', async () => {
@@ -173,7 +198,9 @@ describe('SendBackModal', () => {
       showStepOneModal()
 
       expect(
-        screen.getAllByRole('option').map((option) => option.textContent),
+        within(screen.getByRole('combobox', { name: 'sendBackStep' }))
+          .getAllByRole('option')
+          .map((option) => option.textContent),
       ).toEqual(['Step 1 · Applicant', 'Step 2 · Team lead', 'Step 3'])
     })
 
@@ -181,7 +208,7 @@ describe('SendBackModal', () => {
       const onConfirm = showStepOneModal()
 
       await userEvent.selectOptions(
-        screen.getByRole('combobox', { name: 'step' }),
+        screen.getByRole('combobox', { name: 'sendBackStep' }),
         '1',
       )
       expect(screen.getByRole('button', { name: 'confirm' })).toBeDisabled()
@@ -195,6 +222,7 @@ describe('SendBackModal', () => {
       expect(onConfirm).toHaveBeenCalledWith({
         targetStepNumber: 1,
         remarks: undefined,
+        clearResponses: false,
         stepOneRecipientEmail: 'applicant@agency.gov.sg',
       })
     })
@@ -203,7 +231,7 @@ describe('SendBackModal', () => {
       showStepOneModal()
 
       await userEvent.selectOptions(
-        screen.getByRole('combobox', { name: 'step' }),
+        screen.getByRole('combobox', { name: 'sendBackStep' }),
         '1',
       )
       await userEvent.type(
