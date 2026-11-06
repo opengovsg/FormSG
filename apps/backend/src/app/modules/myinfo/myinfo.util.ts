@@ -1,4 +1,3 @@
-import bcrypt from 'bcrypt'
 import {
   myInfoCountries,
   myInfoDialects,
@@ -55,7 +54,7 @@ import {
   MyInfoMissingHashError,
   MyInfoMissingLoginCookieError,
 } from './myinfo.errors'
-import { compareMyInfoValue } from './myinfo.hash'
+import { compareMyInfoValue, hashMyInfoValue } from './myinfo.hash'
 import {
   MyInfoChildKey,
   MyInfoComparePromises,
@@ -65,7 +64,6 @@ import {
 } from './myinfo.types'
 
 const logger = createLoggerWithLabel(module)
-const HASH_SALT_ROUNDS = 1
 
 /**
  * See hashFieldValues for usage.
@@ -106,9 +104,15 @@ function hashChildrenFieldValues(
       if (subField === MyInfoChildAttributes.ChildDateOfBirth) {
         myInfoFormattedValue = formatMyinfoDate(value)
       }
-      readOnlyHashPromises[
-        getMyInfoChildHashKey(field._id, subField, childIdx, childName)
-      ] = bcrypt.hash(myInfoFormattedValue, HASH_SALT_ROUNDS)
+      const hashKey = getMyInfoChildHashKey(
+        field._id,
+        subField,
+        childIdx,
+        childName,
+      )
+      readOnlyHashPromises[hashKey] = new Promise((resolve) =>
+        resolve(hashMyInfoValue(hashKey, myInfoFormattedValue)),
+      )
     })
   })
 }
@@ -139,9 +143,10 @@ export const hashFieldValues = (
     }
     if (!field.myInfo?.attr || !field.fieldValue || !field.disabled) return
     if (skipUinFin && field.myInfo.attr === MyInfoAttribute.UinFin) return
-    readOnlyHashPromises[field.myInfo.attr] = bcrypt.hash(
-      field.fieldValue.toString(),
-      HASH_SALT_ROUNDS,
+    const attr = field.myInfo.attr
+    const value = field.fieldValue.toString()
+    readOnlyHashPromises[attr] = new Promise((resolve) =>
+      resolve(hashMyInfoValue(attr, value)),
     )
   })
 
