@@ -46,7 +46,7 @@ describe('getCreateFormProgress', () => {
   it('hides the indicator on a step outside the sequence', () => {
     expect(
       getCreateFormProgress({
-        currentStep: CreateFormFlowStates.EmailFeedback,
+        currentStep: CreateFormFlowStates.StorageModeDetails,
         isLegacySetup: false,
         isPaperTrackingSetUpPageEnabled: true,
       }).show,

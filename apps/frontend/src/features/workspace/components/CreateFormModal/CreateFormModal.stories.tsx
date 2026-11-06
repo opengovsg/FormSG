@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { SyntheticEvent, useCallback } from 'react'
-import { useForm } from 'react-hook-form'
-import { UseQueryResult } from 'react-query'
 import { MemoryRouter } from 'react-router-dom'
 import {
   Modal,
@@ -14,29 +12,17 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { featureFlags } from 'formsg-shared/constants'
 import { UserId } from 'formsg-shared/types'
-import { PublicFormViewDto } from 'formsg-shared/types/form'
 import { Workspace, WorkspaceId } from 'formsg-shared/types/workspace'
 
 import { userHandlers } from '~/mocks/msw/handlers/user'
-
-import { ApiError } from '~typings/core'
 
 import { fullScreenDecorator, LoggedInDecorator } from '~utils/storybook'
 import { ModalCloseButton } from '~components/Modal'
 
 import { WorkspaceProvider } from '~features/workspace/WorkspaceProvider'
 
-import {
-  EmailModeCreationScreen,
-  EmailModeFeedbackScreen,
-} from './CreateFormModalContent/EmailModeFeedbackAndCreateScreen'
 import { SaveSecretKeyScreen } from './CreateFormModalContent/SaveSecretKeyScreen'
 import { CreateFormModal, CreateFormModalProps } from './CreateFormModal'
-import {
-  CreateFormFlowStates,
-  CreateFormWizardContextReturn,
-  CreateFormWizardInputProps,
-} from './CreateFormWizardContext'
 import { CreateFormWizardProvider } from './CreateFormWizardProvider'
 
 const MOCK_DEFAULT_WORKSPACE = {
@@ -149,114 +135,6 @@ export const StorageModeAckScreen = () => {
           <CreateFormWizardProvider onClose={() => console.log('close modal')}>
             <ModalCloseButton />
             <SaveSecretKeyScreen useSaveSecretKeyHook={mockHook} />
-          </CreateFormWizardProvider>
-        </ModalContent>
-      </Modal>
-    </WorkspaceProvider>
-  )
-}
-
-export const EmailModeFeedback = () => {
-  const formMethods = useForm<CreateFormWizardInputProps>()
-
-  const mockHook = useCallback(
-    () =>
-      ({
-        currentStep: CreateFormFlowStates.EmailFeedback,
-        direction: 1,
-        formMethods,
-        handleDetailsSubmit: () => console.log('handle details submit'),
-        handleEmailFeedbackSubmit: () => console.log('handle email feedback'),
-        handleCreateEmailModeForm: () => () => console.log('create email form'),
-        submitEmailModeFeedback: () => () => console.log('submit feedback'),
-        handleCreateStorageModeOrMultirespondentForm: () =>
-          Promise.resolve(console.log('create storage/multi form')),
-        keypair: {
-          publicKey: 'mock-public-key',
-          privateKey: 'mock-private-key',
-        },
-        isFetching: false,
-        isLoading: false,
-        modalHeader: 'Email Mode Creation',
-        isSingpass: false,
-      }) as unknown as CreateFormWizardContextReturn,
-    [formMethods],
-  )
-
-  return (
-    <WorkspaceProvider
-      currentWorkspace={MOCK_DEFAULT_WORKSPACE._id}
-      defaultWorkspace={MOCK_DEFAULT_WORKSPACE}
-      setCurrentWorkspace={() => {
-        return
-      }}
-    >
-      <Modal isOpen onClose={() => console.log('close modal')} size="full">
-        <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
-          <ModalCloseButton />
-          <CreateFormWizardProvider onClose={() => console.log('close modal')}>
-            <EmailModeFeedbackScreen
-              useCreateFormWizardParam={mockHook}
-              useAdminUseEmailModeFormViewParam={() => {
-                return {
-                  data: {},
-                } as unknown as UseQueryResult<PublicFormViewDto, ApiError>
-              }}
-            />
-          </CreateFormWizardProvider>
-        </ModalContent>
-      </Modal>
-    </WorkspaceProvider>
-  )
-}
-
-export const EmailModeCreation = () => {
-  const formMethods = useForm<CreateFormWizardInputProps>()
-
-  const mockHook = useCallback(
-    () =>
-      ({
-        currentStep: CreateFormFlowStates.EmailModeCreation,
-        direction: 1,
-        formMethods,
-        handleDetailsSubmit: () => console.log('handle details submit'),
-        handleEmailFeedbackSubmit: () => console.log('handle email feedback'),
-        handleCreateEmailModeForm: () => () => console.log('create email form'),
-        submitEmailModeFeedback: () => () => console.log('submit feedback'),
-        handleCreateStorageModeOrMultirespondentForm: () =>
-          Promise.resolve(console.log('create storage/multi form')),
-        keypair: {
-          publicKey: 'mock-public-key',
-          privateKey: 'mock-private-key',
-        },
-        isFetching: false,
-        isLoading: false,
-        modalHeader: 'Email Mode Creation',
-        isSingpass: false,
-      }) as unknown as CreateFormWizardContextReturn,
-    [formMethods],
-  )
-
-  return (
-    <WorkspaceProvider
-      currentWorkspace={MOCK_DEFAULT_WORKSPACE._id}
-      defaultWorkspace={MOCK_DEFAULT_WORKSPACE}
-      setCurrentWorkspace={() => {
-        return
-      }}
-    >
-      <Modal isOpen onClose={console.log} size="full">
-        <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
-          <ModalCloseButton />
-          <CreateFormWizardProvider onClose={() => console.log('close modal')}>
-            <EmailModeCreationScreen
-              useCreateFormWizardParam={mockHook}
-              useAdminUseEmailModeFormViewParam={() => {
-                return {
-                  data: {},
-                } as unknown as UseQueryResult<PublicFormViewDto, ApiError>
-              }}
-            />
           </CreateFormWizardProvider>
         </ModalContent>
       </Modal>

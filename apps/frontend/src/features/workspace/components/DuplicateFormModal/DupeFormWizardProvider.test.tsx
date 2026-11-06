@@ -2,10 +2,7 @@ import { act, renderHook } from '@testing-library/react'
 
 import { usePreviewForm } from '~features/admin-form/common/queries'
 import { useUser } from '~features/user/queries'
-import {
-  useDuplicateFormMutations,
-  useEmailModeFeedbackMutation,
-} from '~features/workspace/mutations'
+import { useDuplicateFormMutations } from '~features/workspace/mutations'
 import { useDashboard } from '~features/workspace/queries'
 
 import { CreateFormFlowStates } from '../CreateFormModal/CreateFormWizardContext'
@@ -78,13 +75,8 @@ describe('DupeFormWizardProvider', () => {
     } as any)
 
     vi.mocked(useDuplicateFormMutations).mockReturnValue({
-      dupeEmailModeFormMutation: mockMutation as any,
       dupeStorageModeFormMutation: mockMutation as any,
       dupeMultirespondentModeFormMutation: mockMutation as any,
-    } as any)
-
-    vi.mocked(useEmailModeFeedbackMutation).mockReturnValue({
-      emailModeFeedbackMutation: mockMutation as any,
     } as any)
   })
 

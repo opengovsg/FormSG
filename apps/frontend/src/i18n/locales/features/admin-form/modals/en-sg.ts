@@ -20,10 +20,6 @@ export const enSG = {
   dirty: {
     cancelButtonText: 'No, return to editing',
   },
-  emailModeMigration: {
-    title:
-      'Your form must first be converted to storage mode. Download your Secret Key to proceed.',
-  },
   magicFormBuilder: {
     promptMaxLengthError:
       'Your description cannot be longer than {maxLength} characters. ({currentLength}/{maxLength})',

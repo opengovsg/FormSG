@@ -8,7 +8,6 @@ import {
 } from 'apps/frontend/src/features/admin-form/create/constants'
 import { readFileSync } from 'fs'
 import mongoose from 'mongoose'
-import { TEST_EMAIL_MODE_DEPRECATION_FEEDBACK_FORM_ID } from 'formsg-shared/constants/form'
 import {
   BasicField,
   DateSelectedValidation,
@@ -839,41 +838,3 @@ const addLogics = async (
   await page.reload()
 }
 
-export const createFeedbackForm = async () => {
-  const EncryptFormModel = getEncryptedFormModel(mongoose)
-
-  const user = (await findUserByEmail(ADMIN_EMAIL))._unsafeUnwrap()
-
-  try {
-    await EncryptFormModel.create({
-      title: 'Email mode deprecation feedback form',
-      admin: user,
-      responseMode: FormResponseMode.Encrypt,
-      _id: TEST_EMAIL_MODE_DEPRECATION_FEEDBACK_FORM_ID,
-      publicKey: 'vuUYOfkrC7eiyqZ1OCZhMcjAvMQ7R4Z4zzDWB+og4G4=',
-      status: FormStatus.Public,
-      hasCaptcha: false,
-      form_fields: [
-        {
-          _id: new ObjectId().toHexString(),
-          globalId: new ObjectId().toHexString(),
-          fieldType: BasicField.Checkbox,
-          fieldOptions: ['I need to collect Sensitive High data'],
-          othersRadioButton: true,
-          required: true,
-          disabled: false,
-          title: 'Checkbox',
-          description: '',
-        },
-      ],
-    })
-  } catch (error) {
-    // Check for duplicate key error (code 11000)
-    if (error instanceof Error && 'code' in error && error.code === 11000) {
-      return
-    }
-    throw error
-  }
-
-  return
-}

@@ -3,7 +3,6 @@ import { useMutation, useQueryClient } from 'react-query'
 import { useNavigate } from 'react-router-dom'
 
 import {
-  CreateEmailFormBodyDto,
   CreateMultirespondentFormBodyDto,
   CreateStorageFormBodyDto,
   FormDto,
@@ -18,7 +17,6 @@ import { trackCreateFormFailed } from '~features/analytics/AnalyticsService'
 import { workspaceKeys } from '~features/workspace/queries'
 
 import {
-  createEmailModeTemplateForm,
   createMultirespondentTemplateForm,
   createStorageModeTemplateForm,
 } from './TemplateFormService'
@@ -27,15 +25,6 @@ const useCommonHooks = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'danger', isClosable: true })
-
-  const handleSuccess = useCallback(
-    (data: Pick<FormDto, '_id'>) => {
-      queryClient.invalidateQueries(workspaceKeys.dashboard)
-      queryClient.invalidateQueries(workspaceKeys.workspaces)
-      navigate(`${ADMINFORM_ROUTE}/${data._id}`)
-    },
-    [navigate, queryClient],
-  )
 
   const handleSuccessWithoutRedirect = useCallback(
     (data: FormDto) => {
@@ -56,7 +45,6 @@ const useCommonHooks = () => {
   )
 
   return {
-    handleSuccess,
     handleSuccessWithoutRedirect,
     handleError,
   }
@@ -67,23 +55,9 @@ const useCommonHooks = () => {
  * "UseTemplate" is a FormSG functionality referring to the FormSG feature of utilising another form as a starting template.
  */
 export const useUseTemplateMutations = () => {
-  const { handleSuccess, handleSuccessWithoutRedirect, handleError } =
-    useCommonHooks()
+  const { handleSuccessWithoutRedirect, handleError } = useCommonHooks()
 
   const queryClient = useQueryClient()
-
-  const useEmailModeFormTemplateMutation = useMutation<
-    FormDto,
-    ApiError,
-    CreateEmailFormBodyDto & { formIdToDuplicate: string }
-  >(
-    ({ formIdToDuplicate, ...params }) =>
-      createEmailModeTemplateForm(formIdToDuplicate, params),
-    {
-      onSuccess: handleSuccess,
-      onError: handleError,
-    },
-  )
 
   const useStorageModeFormTemplateMutation = useMutation<
     FormDto,
@@ -122,7 +96,6 @@ export const useUseTemplateMutations = () => {
   )
 
   return {
-    useEmailModeFormTemplateMutation,
     useStorageModeFormTemplateMutation,
     useMultirespondentFormTemplateMutation,
   }

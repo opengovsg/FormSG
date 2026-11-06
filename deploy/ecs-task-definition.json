@@ -400,10 +400,6 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/UPLOAD_FORM_WHITELIST_RATE_LIMIT"
         },
         {
-          "name": "KILL_EMAIL_MODE_FEEDBACK_FORMID",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/KILL_EMAIL_MODE_FEEDBACK_FORMID"
-        },
-        {
           "name": "OGP_IP_LIST",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/OGP_IP_LIST"
         },

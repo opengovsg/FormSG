@@ -149,44 +149,20 @@ const createFormValidator = celebrate({
   [Segments.BODY]: {
     form: BaseJoi.object<CreateFormBodyDto>()
       .keys({
-        // Require valid responsesMode field.
+        // Email mode is retired; only Storage and Multirespondent forms can
+        // be created.
         responseMode: Joi.string()
-          .valid(...Object.values(FormResponseMode))
+          .valid(FormResponseMode.Encrypt, FormResponseMode.Multirespondent)
           .required(),
         // Require title field.
         title: Joi.string().min(4).max(200).required(),
-        // Require emails string (for backwards compatibility) or string
-        // array if form to be created in Email mode.
         // Must be string array (which can be empty) if form is to be created in Encrypt mode.
         emails: Joi.when('responseMode', {
-          switch: [
-            {
-              is: FormResponseMode.Email,
-              then: Joi.alternatives()
-                .try(
-                  Joi.array().items(Joi.string().email()).min(1),
-                  Joi.string().email(),
-                )
-                .required(),
-            },
-            {
-              is: FormResponseMode.Encrypt,
-              then: Joi.array().items(Joi.string().email()).required(),
-            },
-            {
-              is: FormResponseMode.Multirespondent,
-              then: Joi.forbidden(),
-            },
-          ],
+          is: FormResponseMode.Encrypt,
+          then: Joi.array().items(Joi.string().email()).required(),
           otherwise: Joi.forbidden(),
         }),
-        // Require publicKey field if form to be created in Storage mode or
-        // Multirespondent mode
-        publicKey: Joi.when('responseMode', {
-          is: [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
-          then: Joi.string().required().disallow(''),
-          otherwise: Joi.forbidden(),
-        }),
+        publicKey: Joi.string().required().disallow(''),
         workspaceId: Joi.string(),
         metadata: clientMetadataValidator,
       })
@@ -197,55 +173,30 @@ const createFormValidator = celebrate({
   },
 })
 
-const duplicateFormValidator = celebrate({
-  // uses CreateFormBodyDto as that is the shape of the data used in client's WorkspaceService
-  [Segments.BODY]: BaseJoi.object<DuplicateFormBodyDto>({
-    // Require valid responsesMode field.
-    responseMode: Joi.string()
-      .valid(...Object.values(FormResponseMode))
-      .required(),
-    // Require title field.
-    title: Joi.string().min(4).max(200).required(),
-    // Require emails string (for backwards compatibility) or string array
-    // if form to be duplicated in Email mode.
-    emails: Joi.when('responseMode', {
-      switch: [
-        {
-          is: FormResponseMode.Email,
-          then: Joi.alternatives()
-            .try(
-              Joi.array().items(Joi.string().email()).min(1),
-              Joi.string().email(),
-            )
-            .required(),
-        },
-        {
-          is: FormResponseMode.Encrypt,
-          then: Joi.array().items(Joi.string().email()).required(),
-        },
-        {
-          is: FormResponseMode.Multirespondent,
-          then: Joi.forbidden(),
-        },
-      ],
-      otherwise: Joi.forbidden(),
-    }),
-    // Require publicKey field if form to be duplicated in Storage mode or
-    // Multirespondent mode
-    publicKey: Joi.when('responseMode', {
-      is: [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
-      then: Joi.string().required().disallow(''),
-      otherwise: Joi.forbidden(),
-    }),
-    workspaceId: Joi.string(),
-    metadata: clientMetadataValidator,
+// Shared by duplicate and use-template: both take the same body shape from
+// the client's WorkspaceService and must only produce Storage or
+// Multirespondent forms now that Email mode is retired.
+const duplicateFormBodySchema = BaseJoi.object<DuplicateFormBodyDto>({
+  responseMode: Joi.string()
+    .valid(FormResponseMode.Encrypt, FormResponseMode.Multirespondent)
+    .required(),
+  title: Joi.string().min(4).max(200).required(),
+  emails: Joi.when('responseMode', {
+    is: FormResponseMode.Encrypt,
+    then: Joi.array().items(Joi.string().email()).required(),
+    otherwise: Joi.forbidden(),
   }),
+  publicKey: Joi.string().required().disallow(''),
+  workspaceId: Joi.string(),
+  metadata: clientMetadataValidator,
+})
+
+const duplicateFormValidator = celebrate({
+  [Segments.BODY]: duplicateFormBodySchema,
 })
 
 const copyTemplateFormValidator = celebrate({
-  [Segments.BODY]: BaseJoi.object<DuplicateFormBodyDto>({
-    metadata: clientMetadataValidator,
-  }).unknown(true),
+  [Segments.BODY]: duplicateFormBodySchema,
 })
 
 const transferFormOwnershipValidator = celebrate({
@@ -3690,45 +3641,6 @@ export const handleSetGoLinkSuffix: ControllerHandler<
         return res.status(statusCode).json({ message: errorMessage })
       })
   )
-}
-
-export const handleConvertEmailToStorageMode: ControllerHandler<
-  { formId: string },
-  unknown,
-  { publicKey: string }
-> = (req, res) => {
-  const { formId } = req.params
-  const { publicKey } = req.body
-  const sessionUserId = (req.session as AuthedSessionData).user._id
-
-  return UserService.getPopulatedUserById(sessionUserId)
-    .andThen((user) => {
-      return AuthService.getFormAfterPermissionChecks({
-        user,
-        formId,
-        level: PermissionLevel.Write,
-      })
-    })
-    .andThen((form) => EmailSubmissionService.checkFormIsEmailMode(form))
-    .map((form) => {
-      return AdminFormService.convertEmailToStorageMode({ form, publicKey })
-    })
-    .map(() => {
-      logger.info({
-        message: 'Form successfully converted to storage mode',
-        meta: {
-          action: 'handleConvertEmailToStorageMode',
-          ...createReqMeta(req),
-          userId: sessionUserId,
-          formId,
-        },
-      })
-      return res.sendStatus(StatusCodes.OK)
-    })
-    .mapErr((error) => {
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
 }
 
 /**

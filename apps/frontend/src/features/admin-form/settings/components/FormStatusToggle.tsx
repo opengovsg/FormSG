@@ -3,11 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Flex, Skeleton, Stack, Text, useDisclosure } from '@chakra-ui/react'
 
 import { BasicField } from 'formsg-shared/types'
-import {
-  EmailFormDto,
-  FormResponseMode,
-  FormStatus,
-} from 'formsg-shared/types/form/form'
+import { FormResponseMode, FormStatus } from 'formsg-shared/types/form/form'
 
 import InlineMessage from '~components/InlineMessage'
 import { Switch } from '~components/Toggle/Switch'
@@ -18,7 +14,6 @@ import { useIncompleteWorkflowStepLabels } from '~features/admin-form/create/wor
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
 
-import { EmailModeConvertModal } from './EmailModeConvertModal'
 import { IncompleteWorkflowModal } from './IncompleteWorkflowModal'
 import { SecretKeyActivationModal } from './SecretKeyActivationModal'
 import { isEsrvcidRequired } from './utils'
@@ -79,12 +74,6 @@ export const FormStatusToggle = (): JSX.Element => {
     `features.adminForm.settings.general.status.description.${isFormPublic ? 'open' : 'closed'}`,
   )
 
-  const isForceConvertFromEmailToStorage =
-    responseMode === FormResponseMode.Email &&
-    (adminFormData as EmailFormDto).isForceConvertToStorageMode
-  const emailModeConvertModalProps = useDisclosure()
-  const { onOpen: onOpenEmailModeConvertModal } = emailModeConvertModalProps
-
   const incompleteWorkflowModalProps = useDisclosure()
   const { onOpen: onOpenIncompleteWorkflowModal } = incompleteWorkflowModalProps
   const incompleteStepLabels = useIncompleteWorkflowStepLabels()
@@ -93,29 +82,17 @@ export const FormStatusToggle = (): JSX.Element => {
     if (!isFormPublic && incompleteStepLabels.length > 0) {
       return onOpenIncompleteWorkflowModal()
     }
-    if (!isFormPublic && isForceConvertFromEmailToStorage) {
-      return onOpenEmailModeConvertModal()
-    }
     return handleToggleStatus()
   }, [
     handleToggleStatus,
     incompleteStepLabels.length,
-    isForceConvertFromEmailToStorage,
     isFormPublic,
-    onOpenEmailModeConvertModal,
     onOpenIncompleteWorkflowModal,
   ])
 
   return (
     <Skeleton isLoaded={!isLoadingFormSettings && !isLoadingForm && !!status}>
       <Stack>
-        {isForceConvertFromEmailToStorage && (
-          <EmailModeConvertModal
-            {...emailModeConvertModalProps}
-            formTitle={formSettings!.title}
-            formId={formId!}
-          />
-        )}
         {formId ? (
           <IncompleteWorkflowModal
             {...incompleteWorkflowModalProps}

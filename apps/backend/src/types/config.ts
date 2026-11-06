@@ -121,7 +121,6 @@ export type Config = {
   rateLimitConfig: RateLimitConfig
   iacMigration: IacMigrationConfig
   reactMigration: ReactMigrationConfig
-  killEmailMode: IOptionalVarsSchema['killEmailMode']
   secretEnv: string
   envSiteName: string
   publicApiConfig: PublicApiConfig
@@ -251,9 +250,6 @@ export interface IOptionalVarsSchema {
   reactMigration: {
     // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
     useFetchForSubmissions: boolean
-  }
-  killEmailMode: {
-    feedbackFormId: string
   }
   publicApi: {
     apiKeyVersion: string

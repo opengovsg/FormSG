@@ -15,7 +15,6 @@ export interface Toasts {
       attachmentLimitExceeded: string
     }
   }
-  emailModeMigration: Toast
   respondentCopy: {
     successBefore: string
     disabled: string

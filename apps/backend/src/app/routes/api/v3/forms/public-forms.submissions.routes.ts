@@ -8,8 +8,6 @@ import * as SubmissionController from '../../../../modules/submission/submission
 import * as WogaaController from '../../../../modules/wogaa/wogaa.controller'
 import { limitRate } from '../../../../utils/limit-rate'
 
-import { authAndInjectFeedbackFormUrl } from './public-form.middleware'
-
 export const PublicFormsSubmissionsRouter = Router()
 
 /**
@@ -26,17 +24,6 @@ PublicFormsSubmissionsRouter.route(
 ).post(
   limitRate({ max: rateLimitConfig.submissions }),
   WogaaController.handleSubmit,
-  EncryptSubmissionController.handleStorageSubmission,
-)
-
-/**
- * TODO: (Kill Email Mode) Remove this after kill email mode is fully implemented.
- */
-PublicFormsSubmissionsRouter.route(
-  '/submissions/storage/email-mode-feedback',
-).post(
-  limitRate({ max: rateLimitConfig.submissions }),
-  authAndInjectFeedbackFormUrl,
   EncryptSubmissionController.handleStorageSubmission,
 )
 

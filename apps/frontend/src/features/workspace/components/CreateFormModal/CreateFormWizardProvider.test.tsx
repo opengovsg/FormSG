@@ -8,10 +8,7 @@ import {
 import { FormOrigin, FormResponseMode } from 'formsg-shared/types/form/form'
 
 import { useUser } from '~features/user/queries'
-import {
-  useCreateFormMutations,
-  useEmailModeFeedbackMutation,
-} from '~features/workspace/mutations'
+import { useCreateFormMutations } from '~features/workspace/mutations'
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 import { CreateFormFlowStates } from './CreateFormWizardContext'
@@ -50,12 +47,8 @@ const setFlags = ({
 beforeEach(() => {
   vi.clearAllMocks()
   vi.mocked(useCreateFormMutations).mockReturnValue({
-    createEmailModeFormMutation: { isLoading: false, mutate: vi.fn() },
     createStorageModeFormMutation: storageMutation,
     createMultirespondentModeFormMutation: mrfMutation,
-  } as any)
-  vi.mocked(useEmailModeFeedbackMutation).mockReturnValue({
-    emailModeFeedbackMutation: { isLoading: false, mutate: vi.fn() },
   } as any)
   vi.mocked(useUser).mockReturnValue({
     user: { email: 'admin@example.com' },

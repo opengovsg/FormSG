@@ -8,7 +8,6 @@ import { ApiError } from '~typings/core'
 import { MONGODB_ID_REGEX } from '~constants/routes'
 
 import {
-  getAdminUseEmailModeFeedbackFormView,
   getMrfStepAuthSession,
   getMultirespondentSubmissionById,
   getPublicFormView,
@@ -111,21 +110,5 @@ export const useEncryptedSubmission = (
         (!submissionId || MONGODB_ID_REGEX.test(submissionId)) &&
         enabled,
     },
-  )
-}
-
-/**
- * TODO: (Kill Email Mode) Remove this after kill email mode is fully implemented.
- * Queries the BE defined feedback form for admins to answer why they are using email mode
- * @returns
- */
-export const useAdminUseEmailModeFormView = (): UseQueryResult<
-  PublicFormViewDto,
-  ApiError
-> => {
-  return useQuery<PublicFormViewDto, ApiError>(
-    publicFormKeys.id('useAdminUseEmailModeFormView'),
-    () => getAdminUseEmailModeFeedbackFormView(),
-    {},
   )
 }

@@ -3,22 +3,16 @@ import { createContext, useContext } from 'react'
 import { UseFormHandleSubmit, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
-import {
-  FormResponseMode,
-  PublicFormViewDto,
-} from 'formsg-shared/types/form/form'
+import { FormResponseMode } from 'formsg-shared/types/form/form'
 import { CheckboxFieldResponsesV3 } from 'formsg-shared/types/response-v3'
 
 import formsgSdk from '~utils/formSdk'
-import { CheckboxFieldValues } from '~templates/Field'
 
 export enum CreateFormFlowStates {
   Landing = 'landing',
   Details = 'details',
   Origin = 'origin',
   StorageModeDetails = 'storageModeDetails',
-  EmailFeedback = 'emailFeedback',
-  EmailModeCreation = 'emailModeCreation',
 }
 
 export type FormOriginProcessAnswer = 'new' | 'existing'
@@ -35,17 +29,12 @@ export interface CreateFormWizardInputProps {
   // Q2: mediums already used to collect this data today (only answered when
   // formOriginProcess is 'existing').
   formOrigins?: CheckboxFieldResponsesV3
-  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
-  reason?: CheckboxFieldValues // for kill email mode
 }
 
 export type CreateFormWizardContextReturn = {
   currentStep: CreateFormFlowStates
   direction: number
   formMethods: UseFormReturn<CreateFormWizardInputProps>
-  handleEmailFeedbackSubmit: () => void
-  handleCreateEmailModeForm: () => () => void
-  submitEmailModeFeedback: (feedbackForm: PublicFormViewDto) => () => void
   handleCreateStorageModeOrMultirespondentForm: ReturnType<
     UseFormHandleSubmit<CreateFormWizardInputProps>
   >

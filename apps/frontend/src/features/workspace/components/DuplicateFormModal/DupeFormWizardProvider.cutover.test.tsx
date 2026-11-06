@@ -9,10 +9,7 @@ import { FormOrigin, FormResponseMode } from 'formsg-shared/types'
 
 import { usePreviewForm } from '~features/admin-form/common/queries'
 import { useUser } from '~features/user/queries'
-import {
-  useDuplicateFormMutations,
-  useEmailModeFeedbackMutation,
-} from '~features/workspace/mutations'
+import { useDuplicateFormMutations } from '~features/workspace/mutations'
 import { useDashboard } from '~features/workspace/queries'
 
 import { CreateFormFlowStates } from '../CreateFormModal/CreateFormWizardContext'
@@ -58,7 +55,6 @@ describe('DupeFormWizardProvider — cutover behaviour', () => {
     isLoading: false,
     mutate: vi.fn(),
   }
-  const dupeEmailModeFormMutation = { isLoading: false, mutate: vi.fn() }
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -80,13 +76,8 @@ describe('DupeFormWizardProvider — cutover behaviour', () => {
     } as any)
 
     vi.mocked(useDuplicateFormMutations).mockReturnValue({
-      dupeEmailModeFormMutation,
       dupeStorageModeFormMutation,
       dupeMultirespondentModeFormMutation,
-    } as any)
-
-    vi.mocked(useEmailModeFeedbackMutation).mockReturnValue({
-      emailModeFeedbackMutation: { isLoading: false, mutate: vi.fn() },
     } as any)
   })
 

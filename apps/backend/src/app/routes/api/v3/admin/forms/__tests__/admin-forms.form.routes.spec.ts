@@ -199,34 +199,25 @@ describe('admin-form.form.routes', () => {
   })
 
   describe('POST /admin/forms', () => {
-    it('should return 200 with newly created email mode form', async () => {
-      // Arrange
-      const createEmailParams = {
+    it('should return 400 when creating an email mode form', async () => {
+      // Act
+      const response = await request.post('/admin/forms').send({
         form: {
           emails: defaultUser.email,
-          responseMode: 'email',
+          responseMode: FormResponseMode.Email,
           title: 'email mode form test',
-          // Extra keys should be fine.
-          someExtraKey: 'extra value that will be ignored.',
         },
-      }
-
-      // Act
-      const response = await request
-        .post('/admin/forms')
-        .send(createEmailParams)
+      })
 
       // Assert
-      expect(response.status).toEqual(200)
+      expect(response.status).toEqual(400)
       expect(response.body).toEqual(
-        expect.objectContaining({
-          admin: String(defaultUser._id),
-          emails: [defaultUser.email],
-          responseMode: FormResponseMode.Email,
-          status: FormStatus.Private,
-          title: createEmailParams.form.title,
-          form_fields: [],
-          form_logics: [],
+        buildCelebrateError({
+          body: {
+            key: 'form.responseMode',
+            message:
+              '"form.responseMode" must be one of [encrypt, multirespondent]',
+          },
         }),
       )
     })
@@ -235,9 +226,10 @@ describe('admin-form.form.routes', () => {
       // Act
       const response = await request.post('/admin/forms').send({
         form: {
-          emails: defaultUser.email,
-          responseMode: FormResponseMode.Email,
+          responseMode: FormResponseMode.Encrypt,
           title: 'new form gets save draft',
+          publicKey: 'some random public key',
+          emails: [],
         },
       })
 
@@ -549,65 +541,8 @@ describe('admin-form.form.routes', () => {
       const response = await request.post('/admin/forms').send({
         form: {
           // title is missing.
-          responseMode: FormResponseMode.Email,
-          emails: 'some@example.com',
-        },
-      })
-
-      // Assert
-      expect(response.status).toEqual(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({ body: { key: 'form.title' } }),
-      )
-    })
-
-    it('should return 400 when body.form.emails is missing when creating an email form', async () => {
-      // Act
-      const response = await request.post('/admin/forms').send({
-        form: {
-          title: 'new email form',
-          responseMode: FormResponseMode.Email,
-          // body.emails missing.
-        },
-      })
-
-      // Assert
-      expect(response.status).toEqual(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: { key: 'form.emails' },
-        }),
-      )
-    })
-
-    it('should return 400 when body.form.emails is an empty string when creating an email form', async () => {
-      // Act
-      const response = await request.post('/admin/forms').send({
-        form: {
-          title: 'new email form',
-          responseMode: FormResponseMode.Email,
-          emails: '',
-        },
-      })
-
-      // Assert
-      expect(response.status).toEqual(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: {
-            key: 'form.emails',
-            message: '"form.emails" is not allowed to be empty',
-          },
-        }),
-      )
-    })
-
-    it('should return 400 when body.form.emails is an empty array when creating an email form', async () => {
-      // Act
-      const response = await request.post('/admin/forms').send({
-        form: {
-          title: 'new email form',
-          responseMode: FormResponseMode.Email,
+          responseMode: FormResponseMode.Encrypt,
+          publicKey: 'some random public key',
           emails: [],
         },
       })
@@ -615,12 +550,7 @@ describe('admin-form.form.routes', () => {
       // Assert
       expect(response.status).toEqual(400)
       expect(response.body).toEqual(
-        buildCelebrateError({
-          body: {
-            key: 'form.emails',
-            message: '"form.emails" must contain at least 1 items',
-          },
-        }),
+        buildCelebrateError({ body: { key: 'form.title' } }),
       )
     })
 
@@ -713,11 +643,12 @@ describe('admin-form.form.routes', () => {
 
     it('should return 422 when user cannot be found in the database', async () => {
       // Arrange
-      const createEmailParams = {
+      const createStorageParams = {
         form: {
-          emails: defaultUser.email,
-          responseMode: 'email',
-          title: 'email mode form test',
+          responseMode: 'encrypt',
+          title: 'storage mode form test',
+          publicKey: 'some random public key',
+          emails: [],
         },
       }
       await dbHandler.clearCollection(UserModel.collection.name)
@@ -725,7 +656,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const response = await request
         .post('/admin/forms')
-        .send(createEmailParams)
+        .send(createStorageParams)
 
       // Assert
       expect(response.status).toEqual(422)
@@ -734,11 +665,12 @@ describe('admin-form.form.routes', () => {
 
     it('should return 422 when form creation results in a database validation error', async () => {
       // Arrange
-      const emailParamsWithInvalidDomain = {
+      const paramsWithInvalidDomain = {
         form: {
-          emails: defaultUser.email,
-          responseMode: 'email',
-          title: 'email mode form test should fail',
+          responseMode: 'encrypt',
+          title: 'storage mode form test should fail',
+          publicKey: 'some random public key',
+          emails: [],
           permissionList: [{ email: 'not a valid email' }],
         },
       }
@@ -746,7 +678,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const response = await request
         .post('/admin/forms')
-        .send(emailParamsWithInvalidDomain)
+        .send(paramsWithInvalidDomain)
 
       // Assert
       expect(response.status).toEqual(422)
@@ -1274,9 +1206,10 @@ describe('admin-form.form.routes', () => {
       "should inherit the source form's save draft setting of %s, rather than the new-form default",
       async (isSaveDraftEnabled) => {
         // Arrange
-        const formToDupe = await EmailFormModel.create({
+        const formToDupe = await EncryptFormModel.create({
           title: `source form, save draft ${isSaveDraftEnabled}`,
-          emails: [defaultUser.email],
+          publicKey: 'some random key',
+          emails: [],
           admin: defaultUser._id,
           isSaveDraftEnabled,
         })
@@ -1285,9 +1218,10 @@ describe('admin-form.form.routes', () => {
         const response = await request
           .post(`/admin/forms/${formToDupe._id}/duplicate`)
           .send({
-            responseMode: FormResponseMode.Email,
+            responseMode: FormResponseMode.Encrypt,
             title: `duplicate, save draft ${isSaveDraftEnabled}`,
-            emails: [defaultUser.email],
+            publicKey: 'some random key',
+            emails: [],
           })
 
         // Assert
@@ -1297,7 +1231,7 @@ describe('admin-form.form.routes', () => {
       },
     )
 
-    it('should return 400 when body.emails is missing when duplicating to an email form', async () => {
+    it('should return 400 when duplicating to an email form', async () => {
       // Arrange
       const formToDupe = await EncryptFormModel.create({
         title: 'some form',
@@ -1312,34 +1246,7 @@ describe('admin-form.form.routes', () => {
         .send({
           title: 'new email form',
           responseMode: FormResponseMode.Email,
-          // body.emails missing.
-        })
-
-      // Assert
-      expect(response.status).toEqual(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: { key: 'emails' },
-        }),
-      )
-    })
-
-    it('should return 400 when body.emails is an empty string when duplicating to an email form', async () => {
-      // Arrange
-      const formToDupe = await EncryptFormModel.create({
-        title: 'some form',
-        admin: defaultUser._id,
-        publicKey: 'some random key',
-        emails: [],
-      })
-
-      // Act
-      const response = await request
-        .post(`/admin/forms/${formToDupe._id}/duplicate`)
-        .send({
-          title: 'new email form',
-          responseMode: FormResponseMode.Email,
-          emails: '',
+          emails: [defaultUser.email],
         })
 
       // Assert
@@ -1347,38 +1254,8 @@ describe('admin-form.form.routes', () => {
       expect(response.body).toEqual(
         buildCelebrateError({
           body: {
-            key: 'emails',
-            message: '"emails" is not allowed to be empty',
-          },
-        }),
-      )
-    })
-
-    it('should return 400 when body.emails is an empty array when duplicating to an email form', async () => {
-      // Arrange
-      const formToDupe = await EncryptFormModel.create({
-        title: 'some form',
-        admin: defaultUser._id,
-        publicKey: 'some random key',
-        emails: [],
-      })
-
-      // Act
-      const response = await request
-        .post(`/admin/forms/${formToDupe._id}/duplicate`)
-        .send({
-          title: 'new email form',
-          responseMode: FormResponseMode.Email,
-          emails: [],
-        })
-
-      // Assert
-      expect(response.status).toEqual(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: {
-            key: 'emails',
-            message: '"emails" must contain at least 1 items',
+            key: 'responseMode',
+            message: '"responseMode" must be one of [encrypt, multirespondent]',
           },
         }),
       )
@@ -1548,8 +1425,9 @@ describe('admin-form.form.routes', () => {
         .post(`/admin/forms/${formToDupe._id}/duplicate`)
         .send({
           // title is missing.
-          responseMode: FormResponseMode.Email,
-          emails: 'test@example.com',
+          responseMode: FormResponseMode.Encrypt,
+          publicKey: 'some random key',
+          emails: [],
         })
 
       // Assert
@@ -1676,8 +1554,9 @@ describe('admin-form.form.routes', () => {
       const response = await request
         .post(`/admin/forms/${archivedForm._id}/duplicate`)
         .send({
-          responseMode: FormResponseMode.Email,
-          emails: 'anyrandomEmail@example.com',
+          responseMode: FormResponseMode.Encrypt,
+          publicKey: 'some random key',
+          emails: [],
           title: 'cool new title',
         })
 
@@ -1709,15 +1588,17 @@ describe('admin-form.form.routes', () => {
     it('should return 400 when duplicating form with invalid email', async () => {
       // Arrange
       // Create form.
-      const formToDupe = await EmailFormModel.create({
+      const formToDupe = await EncryptFormModel.create({
         title: 'Original form title',
-        emails: [defaultUser.email],
+        publicKey: 'some random key',
+        emails: [],
         admin: defaultUser._id,
       })
 
       const invalidEmailDupeParams = {
-        responseMode: FormResponseMode.Email,
-        emails: 'notAnEmail, should return error',
+        responseMode: FormResponseMode.Encrypt,
+        publicKey: 'some random key',
+        emails: ['notAnEmail, should return error'],
         title: 'cool new title',
       }
 
@@ -1731,8 +1612,8 @@ describe('admin-form.form.routes', () => {
       expect(response.body).toEqual(
         buildCelebrateError({
           body: {
-            key: 'emails',
-            message: '"emails" must be a valid email',
+            key: 'emails.0',
+            message: '"emails[0]" must be a valid email',
           },
         }),
       )

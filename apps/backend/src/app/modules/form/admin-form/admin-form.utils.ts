@@ -368,9 +368,6 @@ export const processDuplicateOverrideProps = (
       overrideProps.submissionLimit = null
       overrideProps.emails = params.emails
       break
-    case FormResponseMode.Email:
-      overrideProps.emails = params.emails
-      break
   }
 
   return overrideProps

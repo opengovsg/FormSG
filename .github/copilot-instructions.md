@@ -220,19 +220,14 @@ formsg/
 
 ### Form Response Modes
 
-**Critical**: FormSG has three distinct submission modes with different implementations:
+**Critical**: FormSG has two distinct submission modes with different implementations:
 
-1. **Email Mode** (`FormResponseMode.Email`)
-   - Responses emailed directly to admin
-   - No server storage
-   - Being deprecated ("Kill Email Mode")
-
-2. **Storage/Encrypt Mode** (`FormResponseMode.Encrypt`)
+1. **Storage/Encrypt Mode** (`FormResponseMode.Encrypt`)
    - End-to-end encrypted submissions
    - Client-side encryption before transmission
    - Stored encrypted in MongoDB
 
-3. **Multi-Respondent Form (MRF)** (`FormResponseMode.Multirespondent`)
+2. **Multi-Respondent Form (MRF)** (`FormResponseMode.Multirespondent`)
    - Workflow-based with sequential respondents
    - Each step handled by different users
    - Version 3 submission format

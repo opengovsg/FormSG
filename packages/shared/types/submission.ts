@@ -479,12 +479,3 @@ export type StatusTrackerData = {
   form: string
   stoppedAt?: string
 }
-
-// TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
-export type AdminUseEmailModeFeedbackDto = {
-  reason: {
-    value: string[] | false
-    othersInput?: string
-  }
-  adminEmail?: string
-}
