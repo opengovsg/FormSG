@@ -38,10 +38,13 @@ export interface ResponsesIndividualResponse {
       stopped: string
       notificationRecipients: string
       sentBack: string
+      fixStep: string
       remarks: string
     }
     reassignButton: string
     sendBackButton: string
+    fixStepButton: string
+    fixingStep: string
     addAssigneeModal: {
       currentlyAssignedLabel: string
       noCurrentAssignees: string
@@ -58,6 +61,19 @@ export interface ResponsesIndividualResponse {
       title: string
       description: string
       label: string
+      confirm: string
+      toastSuccess: string
+    }
+    fixStepModal: {
+      title: string
+      description: string
+      stepLabel: string
+      recipientsLabel: string
+      stepOneEmailLabel: string
+      stepOneEmailDescription: string
+      remarksLabel: string
+      remarksDescription: string
+      remarksTooLong: string
       confirm: string
       toastSuccess: string
     }
