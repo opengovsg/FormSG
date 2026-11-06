@@ -8,6 +8,8 @@ export type ComboboxItem<T = string> =
       label?: string
       /** Description to render below label if provided */
       description?: string
+      /** Optional compact status shown alongside a menu option. */
+      descriptionTag?: string
       /** Whether item is disabled */
       disabled?: boolean
       /**

@@ -12,10 +12,12 @@ import { useSelectContext } from '~components/Dropdown/SelectContext'
 import { ComboboxItem } from '~components/Dropdown/types'
 import {
   isItemAction,
+  isItemDisabled,
   itemToDescriptionString,
   itemToIcon,
   itemToLabelString,
 } from '~components/Dropdown/utils/itemUtils'
+import { Tag } from '~components/Tag'
 
 import { DropdownItemTextHighlighter } from '../DropdownItem/DropdownItemTextHighlighter'
 
@@ -58,17 +60,19 @@ export const MultiDropdownItem = ({
       {...getItemProps({
         item,
         index,
-        disabled: isDisabled,
+        disabled: isDisabled || isItemDisabled(item),
       })}
+      aria-disabled={isDisabled || isItemDisabled(item) || undefined}
       title={label}
     >
       <Stack direction="row" spacing="1rem" overflowX="auto">
         {isAction ? null : <ItemCheckboxIcon isChecked={isSelected} />}
-        <Flex flexDir="column" minW={0}>
+        <Flex flexDir="column" flex={1} minW={0}>
           <Stack direction="row" spacing="0.5rem" align="center">
             {icon ? <Icon as={icon} sx={styles.icon} /> : null}
             <Text
               textStyle="body-1"
+              flex={1}
               minWidth={0}
               textOverflow="ellipsis"
               whiteSpace="nowrap"
@@ -80,6 +84,11 @@ export const MultiDropdownItem = ({
                 textToHighlight={label}
               />
             </Text>
+            {typeof item === 'object' && item?.descriptionTag ? (
+              <Tag colorScheme="secondary" flexShrink={0}>
+                {item.descriptionTag}
+              </Tag>
+            ) : null}
           </Stack>
           {description && (
             <Text
