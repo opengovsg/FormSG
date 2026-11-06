@@ -83,6 +83,8 @@ export const enSG: ResponsesResponsesPage = {
         clearAllFilters: 'Clear all filters',
       },
       views: {
+        countUnavailable: 'Count unavailable',
+        loadingCount: 'Loading response count',
         allResponses: 'All responses',
         saveAsNewView: 'Save as new view',
         saveView: 'Save view',
@@ -132,6 +134,7 @@ export const enSG: ResponsesResponsesPage = {
         resultsFound: '{count, plural, =1 {result} other {results}} found',
         responsesToDate:
           '{count, plural, =1 {response} other {responses}} to date',
+        noMatchingResponses: 'No responses match your search or filters.',
         recentOnly: 'Only showing the most recent {limit} responses',
         recentOnlyWithView:
           'Only applying filters and sorting to the most recent {limit} responses',

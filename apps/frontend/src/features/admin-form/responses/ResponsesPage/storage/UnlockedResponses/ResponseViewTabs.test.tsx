@@ -22,6 +22,48 @@ const renderWithTheme = (ui: JSX.Element) =>
 describe('the saved view tabs', () => {
   beforeAll(() => i18n.changeLanguage(Language.ENGLISH))
 
+  it.each([
+    ['all-responses', 'All responses (1,234)'],
+    ['view-1', 'Pending approvals (1,234)'],
+  ])('counts only the selected view %s', (selectedViewId, label) => {
+    renderWithTheme(
+      <ResponseViewTabs
+        views={VIEWS}
+        selectedViewId={selectedViewId}
+        countState={{ status: 'ready', count: 1234 }}
+      />,
+    )
+    expect(screen.getByRole('button', { name: label })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Last quarter' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Delete view Pending approvals' }),
+    ).toBeInTheDocument()
+  })
+
+  it('shows successful zero', () => {
+    renderWithTheme(
+      <ResponseViewTabs countState={{ status: 'ready', count: 0 }} />,
+    )
+    expect(
+      screen.getByRole('button', { name: 'All responses (0)' }),
+    ).toBeInTheDocument()
+  })
+
+  it.each(['loading', 'error'] as const)(
+    'does not show a numeric count when %s',
+    (status) => {
+      renderWithTheme(<ResponseViewTabs countState={{ status }} />)
+      expect(
+        screen.getByRole('button', { name: /All responses/ }),
+      ).not.toHaveTextContent('(0)')
+      expect(screen.getByRole('status')).toHaveTextContent(
+        status === 'error' ? 'Count unavailable' : 'Loading response count',
+      )
+    },
+  )
+
   it('offers a delete button on every saved view, but not on All responses', () => {
     renderWithTheme(<ResponseViewTabs views={VIEWS} />)
 

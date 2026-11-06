@@ -40,6 +40,8 @@ import {
   withColumnFilter,
 } from './savedViews'
 
+const EMPTY_METADATA: SubmissionMetadata[] = []
+
 export const ALL_RESPONSES_VIEW_ID = 'all-responses'
 
 const EMPTY_VIEW_STATE: ResponsesViewState = {
@@ -49,6 +51,11 @@ const EMPTY_VIEW_STATE: ResponsesViewState = {
   sortColumnId: undefined,
   sortDirection: SavedViewSortDirection.Descending,
 }
+
+export type ResponseCountState =
+  | { status: 'loading' }
+  | { status: 'error' }
+  | { status: 'ready'; count: number }
 
 export type ResponseSortDirection = SavedViewSortDirection
 
@@ -133,9 +140,9 @@ interface UnlockedResponsesContextProps {
     columnId: string | undefined,
     direction: ResponseSortDirection,
   ) => void
-  /** Rows left by the column filters, undefined when none are applied. */
-  filterResultCount?: number
-  setFilterResultCount: (count?: number) => void
+  responseCountState: ResponseCountState
+  responseCountScope: object
+  reportMatchingCount: (result: { scope: object; count: number }) => void
   visibleSubmissionIds?: string[]
   setVisibleSubmissionIds: (submissionIds?: string[]) => void
   isFullyLoaded: boolean
@@ -221,7 +228,10 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
   )
 
   const [renderedRowCount, setRenderedRowCount] = useState(0)
-  const [filterResultCount, setFilterResultCount] = useState<number>()
+  const [matchingCount, reportMatchingCount] = useState<{
+    scope: object
+    count: number
+  }>()
   const [visibleSubmissionIds, setVisibleSubmissionIds] = useState<string[]>()
   const [columnFilters, setColumnFilters] = useState<SavedViewColumnFilter[]>(
     [],
@@ -260,8 +270,13 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
   }, [currentPage, submissionId])
 
   const {
-    data: { count: filteredCount, metadata: filteredMetadata = [] } = {},
+    data: {
+      count: filteredCount,
+      metadata: filteredMetadata = EMPTY_METADATA,
+    } = {},
     isFetching: isFilterFetching,
+    isError: isFilterError,
+    dataUpdatedAt: searchUpdatedAt,
   } = useFormResponses({
     // Will not run if submissionId does not exist.
     page: 0,
@@ -296,20 +311,31 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     isFetching: isNextFetching,
   } = useFormResponses({ page: pages.next, enabled: paginationEnabled })
 
-  const { data: allData, isLoading: isLoadingAll } = useAllFormResponses({
+  const {
+    data: allData,
+    isLoading: isLoadingAll,
+    isFetching: isFetchingAll,
+    isError: isAllError,
+    dataUpdatedAt: allUpdatedAt,
+  } = useAllFormResponses({
     enabled: isInfiniteScroll && !submissionId,
   })
 
-  const { isFetching: isDecryptingAll } = useDecryptedResponsesBySubmissionId({
+  const {
+    data: decryptedResponses,
+    isFetching: isDecryptingAll,
+    isError: isDecryptError,
+    dataUpdatedAt: decryptUpdatedAt,
+  } = useDecryptedResponsesBySubmissionId({
     enabled: isInfiniteScroll,
   })
 
   const allMetadata = useMemo(() => allData?.metadata ?? [], [allData])
 
-  useDecryptNewResponses({
-    metadata: allMetadata,
+  const newDecryption = useDecryptNewResponses({
+    metadata: submissionId ? filteredMetadata : allMetadata,
     isDecryptingAll,
-    enabled: isInfiniteScroll && !submissionId,
+    enabled: isInfiniteScroll,
   })
 
   const isTableLoading = isLoadingAll || isDecryptingAll
@@ -420,6 +446,57 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     [columnFilters, dateRange, hiddenColumnIds, sortColumnId, sortDirection],
   )
 
+  // A report belongs to both its inputs and its result sources. Old table
+  // effects cannot publish a count for a newly selected view or refreshed data.
+  const responseCountScope = useMemo(
+    () => ({}),
+    // This opaque token changes whenever any count input or source changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      submissionId,
+      dateRange,
+      columnFilters,
+      allData,
+      allUpdatedAt,
+      filteredMetadata,
+      searchUpdatedAt,
+      decryptedResponses,
+      decryptUpdatedAt,
+      isFetchingAll,
+      isFilterFetching,
+      isDecryptingAll,
+    ],
+  )
+  const countSource = submissionId ? filteredCount : count
+  const countMetadata = submissionId ? filteredMetadata : allMetadata
+  const hasUndecryptedRows = countMetadata.some(
+    ({ refNo }) => !decryptedResponses?.has(refNo),
+  )
+  let responseCountState: ResponseCountState
+  if (
+    (submissionId ? isFilterFetching : isLoadingAll || isFetchingAll) ||
+    isDecryptingAll
+  ) {
+    responseCountState = { status: 'loading' }
+  } else if (
+    (submissionId ? isFilterError : isAllError) ||
+    isDecryptError ||
+    newDecryption?.isError
+  ) {
+    responseCountState = { status: 'error' }
+  } else if (
+    hasUndecryptedRows ||
+    countSource === undefined ||
+    (columnFilters.length > 0 && matchingCount?.scope !== responseCountScope)
+  ) {
+    responseCountState = { status: 'loading' }
+  } else {
+    responseCountState = {
+      status: 'ready',
+      count: columnFilters.length ? matchingCount!.count : countSource,
+    }
+  }
+
   const hasActiveFilters = hasActiveViewState(currentViewState)
 
   const applyView = useCallback(
@@ -462,8 +539,9 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     sortColumnId,
     sortDirection,
     setSort,
-    filterResultCount,
-    setFilterResultCount,
+    responseCountState,
+    responseCountScope,
+    reportMatchingCount,
     visibleSubmissionIds,
     setVisibleSubmissionIds,
     isFullyLoaded,

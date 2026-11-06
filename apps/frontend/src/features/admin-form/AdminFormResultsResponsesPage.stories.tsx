@@ -211,6 +211,85 @@ StorageFormUnlockedV2.decorators = [
   ),
 ]
 
+// Real page states retain the toolbar, table and count lifecycle together.
+export const StorageFormCountLoading = Template.bind({})
+StorageFormCountLoading.decorators = StorageFormUnlockedV2.decorators
+StorageFormCountLoading.parameters = {
+  msw: {
+    handlers: {
+      default: [
+        ...storageFormHandlers,
+        getStorageSubmissionsStream({
+          publicKey: MOCK_KEYPAIR.publicKey,
+          delay: 'infinite',
+        }),
+      ],
+    },
+  },
+}
+StorageFormCountLoading.play = async ({ canvasElement }) => {
+  await unlockResponses(canvasElement)
+  await expect(
+    await within(canvasElement).findByRole('status', { name: '' }),
+  ).toHaveTextContent('Loading response count')
+}
+
+export const StorageFormCountLimitedScope = Template.bind({})
+StorageFormCountLimitedScope.decorators = StorageFormUnlockedV2.decorators
+StorageFormCountLimitedScope.parameters = {
+  msw: {
+    handlers: {
+      default: [
+        ...storageFormHandlers.filter(
+          (handler) =>
+            !handler.info.path.toString().endsWith('/submissions/metadata'),
+        ),
+        getStorageSubmissionMetadataResponse({ count: 25000 }),
+        getStorageSubmissionsStream({ publicKey: MOCK_KEYPAIR.publicKey }),
+        getStorageSubmission({ publicKey: MOCK_KEYPAIR.publicKey }),
+      ],
+    },
+  },
+}
+StorageFormCountLimitedScope.play = async (context) => {
+  await StorageFormUnlockedV2.play?.(context)
+  const canvas = within(context.canvasElement)
+  await expect(
+    await canvas.findByRole(
+      'button',
+      { name: /All responses\s*\(25,000\)/ },
+      { timeout: 30000 },
+    ),
+  ).toBeVisible()
+  await expect(
+    canvas.getByText('Only showing the most recent 10,000 responses'),
+  ).toBeVisible()
+}
+
+export const StorageFormCountFilteredZero = Template.bind({})
+StorageFormCountFilteredZero.decorators = StorageFormUnlockedV2.decorators
+StorageFormCountFilteredZero.parameters = StorageFormUnlockedV2.parameters
+StorageFormCountFilteredZero.play = async (context) => {
+  await StorageFormUnlockedV2.play?.(context)
+  const canvas = within(context.canvasElement)
+  await canvas.findByRole(
+    'button',
+    { name: /All responses\s*\(\d+\)/ },
+    { timeout: 30000 },
+  )
+  await userEvent.click(canvas.getByRole('button', { name: /filter/i }))
+  await userEvent.click(
+    await screen.findByRole('button', { name: 'Response ID' }),
+  )
+  await userEvent.type(
+    await screen.findByRole('textbox', { name: 'Response ID' }),
+    'no-matching-response',
+  )
+  await expect(
+    await canvas.findByRole('button', { name: /All responses\s*\(0\)/ }),
+  ).toBeVisible()
+}
+
 export const StorageFormLoading = Template.bind({})
 StorageFormLoading.parameters = {
   msw: {

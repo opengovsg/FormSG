@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import {
+  QueryClient,
   useInfiniteQuery,
   UseInfiniteQueryResult,
   useQuery,
@@ -61,6 +62,27 @@ export const adminFormResponsesKeys = {
   individual: (id: string, submissionId: string) =>
     [...adminFormResponsesKeys.id(id), 'individual', submissionId] as const,
   secretKey: (id: string) => [...adminFormResponsesKeys.id(id), 'secretKey'],
+}
+
+/** Update decrypted answers without completing a concurrent bulk fetch. */
+export const updateDecryptedResponsesCache = (
+  queryClient: QueryClient,
+  queryKey: ReturnType<typeof adminFormResponsesKeys.decryptedResponses>,
+  update: (
+    current: Map<string, FormField[]> | undefined,
+  ) => Map<string, FormField[]>,
+): void => {
+  const query = queryClient
+    .getQueryCache()
+    .find<Map<string, FormField[]>>(queryKey)
+  if (!query) return
+  // react-query 3 setQueryData dispatches success and clears isFetching.
+  // These partial/individual answers must preserve the bulk query lifecycle.
+  query.setState({
+    ...query.state,
+    data: update(query.state.data),
+    dataUpdatedAt: Date.now(),
+  })
 }
 
 export const adminFormFeedbackKeys = {
@@ -229,7 +251,11 @@ export const useDecryptedResponsesBySubmissionId = ({
       logProgress('decrypt start', { limit: TABLE_RESPONSE_LIMIT })
 
       const publish = () => {
-        queryClient.setQueryData(queryKey, new Map(decrypted))
+        updateDecryptedResponsesCache(
+          queryClient,
+          queryKey,
+          () => new Map(decrypted),
+        )
       }
 
       await getAllDecryptedSubmission({
