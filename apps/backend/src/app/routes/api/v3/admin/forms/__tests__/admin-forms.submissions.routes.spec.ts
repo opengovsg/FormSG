@@ -1145,7 +1145,7 @@ describe('admin-form.submissions.routes', () => {
     it('should return 500 when database error occurs whilst retrieving submission', async () => {
       // Arrange
       jest
-        .spyOn(EncryptSubmissionModel, 'findEncryptedSubmissionById')
+        .spyOn(SubmissionModel, 'findEncryptedOrMultirespondentSubmissionById')
         .mockRejectedValueOnce(new Error('ohno'))
       const submission = await createEncryptSubmission({
         form: defaultForm,
@@ -1585,7 +1585,10 @@ describe('admin-form.submissions.routes', () => {
     it('should return 500 when database error occurs whilst retrieving submission metadata list', async () => {
       // Arrange
       jest
-        .spyOn(EncryptSubmissionModel, 'findAllMetadataByFormId')
+        .spyOn(
+          SubmissionModel,
+          'findAllEncryptedOrMultirespondentMetadataByFormId',
+        )
         .mockRejectedValueOnce(new Error('ohno'))
 
       // Act
@@ -1605,7 +1608,7 @@ describe('admin-form.submissions.routes', () => {
     it('should return 500 when database error occurs whilst retrieving single submission metadata', async () => {
       // Arrange
       jest
-        .spyOn(EncryptSubmissionModel, 'findSingleMetadata')
+        .spyOn(SubmissionModel, 'findEncryptedOrMultirespondentSingleMetadata')
         .mockRejectedValueOnce(new Error('ohno'))
 
       // Act
