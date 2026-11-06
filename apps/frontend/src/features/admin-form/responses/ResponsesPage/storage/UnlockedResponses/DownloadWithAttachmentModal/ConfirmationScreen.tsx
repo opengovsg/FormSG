@@ -13,6 +13,9 @@ import {
   Text,
   Wrap,
 } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
+
+import { featureFlags } from 'formsg-shared/constants'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
@@ -54,6 +57,7 @@ export const ConfirmationScreen = ({
   isResponsesCountHidden,
 }: ConfirmationScreenProps): JSX.Element => {
   const isCsvOnly = isCsvOnlyDownload(downloadOptions)
+  const isAttachmentsV2Enabled = useFeatureIsOn(featureFlags.attachmentsV2)
   const isMobile = useIsMobile()
   const { t: confirmationScreenTranslation } = useTranslation('translation', {
     keyPrefix:
@@ -110,7 +114,15 @@ export const ConfirmationScreen = ({
           {downloadOptions.isDownloadCsv && isCsvFollowingTable ? (
             <Text>{confirmationScreenTranslation('csvAppliesTableView')}</Text>
           ) : undefined}
-          {downloadOptions.isDownloadAttachments ? (
+          {isAttachmentsV2Enabled && !isCsvOnly ? (
+            <Text>
+              <Trans
+                t={confirmationScreenTranslation}
+                i18nKey={'zipDescription'}
+              />
+            </Text>
+          ) : undefined}
+          {!isAttachmentsV2Enabled && downloadOptions.isDownloadAttachments ? (
             <Text>
               <Trans
                 t={confirmationScreenTranslation}
@@ -118,7 +130,7 @@ export const ConfirmationScreen = ({
               />
             </Text>
           ) : undefined}
-          {downloadOptions.isDownloadPdf ? (
+          {!isAttachmentsV2Enabled && downloadOptions.isDownloadPdf ? (
             <Text>
               <Trans
                 t={confirmationScreenTranslation}

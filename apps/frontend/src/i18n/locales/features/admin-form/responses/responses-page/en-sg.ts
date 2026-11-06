@@ -25,6 +25,8 @@ export const enSG: ResponsesResponsesPage = {
             'For PDFs, all files will be bundled into a <strong>single zip</strong>.',
           attachmentsDescription:
             'For attachments, <strong>a separate zip file</strong> will be downloaded for each response.',
+          zipDescription:
+            'Everything will be saved in <strong>a single zip file</strong> when the download finishes. If you stop the download, nothing is saved.',
           downloadTitle: 'Download {downloadItems}',
           csvTitle: 'Download CSV',
           csvAppliesTableView:
@@ -53,6 +55,8 @@ export const enSG: ResponsesResponsesPage = {
         modal: {
           progressMessage:
             'Up to {responsesCount} files are being downloaded into your destination folder. Navigating away from this page will stop the download.',
+          zipProgressMessage:
+            '{responsesCount} responses are being added to a zip file, which is saved when the download finishes. Navigating away from this page will stop the download.',
         },
       },
       progressModal: {
