@@ -145,6 +145,21 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/stop', () => {
     )
   })
 
+  it('stops a workflow sent back to step 1', async () => {
+    const form = await createForm()
+    const submission = await createSubmission(form._id, { submittedSteps: [] })
+
+    const response = await stop(form._id, submission._id, [])
+
+    expect(response.status).toEqual(200)
+    const stored = await MultirespondentSubmission.findById(submission._id)
+    expect(stored?.stoppedAt).toBeInstanceOf(Date)
+    expect(stored?.workflowEvents?.[0]).toMatchObject({
+      type: WorkflowEventType.Stopped,
+      stepNumber: 1,
+    })
+  })
+
   it('sends no email when nobody is chosen', async () => {
     const sendSpy = jest.spyOn(MailService, 'sendMrfWorkflowStoppedEmail')
     const form = await createForm()

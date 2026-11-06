@@ -91,7 +91,10 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/remind', () => {
     })
   }
 
-  const createSubmission = (formId: unknown) =>
+  const createSubmission = (
+    formId: unknown,
+    overrides: Record<string, unknown> = {},
+  ) =>
     MultirespondentSubmission.create({
       form: formId,
       submissionType: SubmissionType.Multirespondent,
@@ -110,6 +113,7 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/remind', () => {
           nextStepRecipientEmails: ['two@example.com'],
         },
       ],
+      ...overrides,
     })
 
   const remind = (formId: unknown, submissionId: unknown) =>
@@ -131,6 +135,35 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/remind', () => {
       actorEmail: defaultUser.email,
       stepNumber: 2,
       emails: ['two@example.com'],
+    })
+  })
+
+  it('reminds the step 1 address after a send back to step 1', async () => {
+    const form = await createForm()
+    const submission = await createSubmission(form._id, {
+      workflowStep: -1,
+      submittedSteps: [],
+      workflowEvents: [
+        {
+          type: WorkflowEventType.SentBack,
+          actorId: defaultUser._id,
+          actorEmail: defaultUser.email,
+          stepNumber: 1,
+          fromStepNumber: 2,
+          emails: ['applicant@example.com'],
+          created: new Date(),
+        },
+      ],
+    })
+
+    const response = await remind(form._id, submission._id)
+
+    expect(response.status).toEqual(200)
+    const stored = await MultirespondentSubmission.findById(submission._id)
+    expect(stored?.workflowEvents?.at(-1)).toMatchObject({
+      type: WorkflowEventType.ReminderSent,
+      stepNumber: 1,
+      emails: ['applicant@example.com'],
     })
   })
 
