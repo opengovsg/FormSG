@@ -1184,6 +1184,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        isAttachmentsV2Enabled: false,
       })
 
       expect(result).toEqual([
@@ -1221,6 +1222,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        isAttachmentsV2Enabled: false,
       })
 
       expect(result).toEqual([
@@ -1284,6 +1286,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        isAttachmentsV2Enabled: false,
       })
 
       expect(result).toEqual([
@@ -1316,6 +1319,7 @@ describe('multirespondent-submission.utils', () => {
         formFields,
         responses,
         includeVerifiedPrefix: false,
+        isAttachmentsV2Enabled: false,
       })
 
       expect(result).toEqual([
@@ -1364,6 +1368,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        isAttachmentsV2Enabled: false,
       })
 
       // Question naming matches getAnswersForChild, used by email/storage
@@ -1417,6 +1422,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        isAttachmentsV2Enabled: false,
       })
 
       expect(result.map((pair) => pair.question)).toEqual([
@@ -1457,6 +1463,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        isAttachmentsV2Enabled: false,
       })
 
       expect(result).toEqual([
@@ -1518,6 +1525,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        isAttachmentsV2Enabled: false,
       })
 
       expect(result).toEqual([
@@ -1567,6 +1575,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        isAttachmentsV2Enabled: false,
       })
 
       expect(result).toEqual([
@@ -1605,6 +1614,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        isAttachmentsV2Enabled: false,
       })
 
       expect(result).toEqual([
@@ -1646,6 +1656,7 @@ describe('multirespondent-submission.utils', () => {
         formFields,
         responses,
         includeSignatureDataPngDataUri: true,
+        isAttachmentsV2Enabled: false,
       })
 
       const expectedSignatureDataPngDataUri =
@@ -1685,6 +1696,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        isAttachmentsV2Enabled: false,
       })
 
       expect(result).toEqual([
@@ -1711,6 +1723,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        isAttachmentsV2Enabled: false,
       })
 
       expect(result).toEqual([
@@ -1969,6 +1982,7 @@ describe('multirespondent-submission.utils', () => {
     const result = getQuestionAnswerPairsForMultipleFields({
       formFields,
       responses,
+      isAttachmentsV2Enabled: false,
     })
 
     expect(result).toEqual([])
@@ -1986,12 +2000,14 @@ describe('multirespondent-submission.utils', () => {
     const undefinedResult = getQuestionAnswerPairsForMultipleFields({
       formFields,
       responses: undefined as unknown as FieldResponsesV3,
+      isAttachmentsV2Enabled: false,
     })
     expect(undefinedResult).toEqual([])
 
     const nullResult = getQuestionAnswerPairsForMultipleFields({
       formFields,
       responses: null as unknown as FieldResponsesV3,
+      isAttachmentsV2Enabled: false,
     })
     expect(nullResult).toEqual([])
   })
@@ -2001,6 +2017,7 @@ describe('multirespondent-submission.utils', () => {
       formId: 'form123',
       responseId: 'abc123',
       timestamp: '1 Jan 2025',
+      isAttachmentsV2Enabled: false,
     }
 
     it('should emit one entry per child attribute for children responses', () => {
