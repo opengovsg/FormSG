@@ -61,6 +61,10 @@ const NUM_OF_METADATA_ROWS = 5
 const ATTACHMENT_DOWNLOAD_CONVOY_SIZE = 5
 const ATTACHMENT_DOWNLOAD_CONVOY_MINIMUM_SEPARATION_TIME = 1000
 
+// At most this many responses are decrypted but not yet
+// in the zip, so memory stays bounded however big the download is.
+const MAX_PENDING_ZIP_RESPONSES = 4
+
 export type DownloadEncryptedParams = EncryptedResponsesStreamParams & {
   // The key to decrypt the submission responses.
   secretKey: string
@@ -217,6 +221,14 @@ const useDecryptionWorkers = ({
       let zipQueue: Promise<void> = Promise.resolve()
       // A download that errored never saves its zip
       let hasDownloadFailed = false
+      // Responses sent for decryption but not yet written to the zip
+      let pendingZipCount = 0
+      // Wakes the stream reader once a pending response reaches the zip
+      let onZipSlotFree: (() => void) | undefined
+      // Cancelling kills the workers, so their pending responses never settle
+      freshAbortController.signal.addEventListener('abort', () =>
+        onZipSlotFree?.(),
+      )
       const csvFilename = `${adminForm.title}-${adminForm._id}.csv`
 
       /**
@@ -462,14 +474,35 @@ const useDecryptionWorkers = ({
                 })
                 return saveQueue.then(() => decryptResult)
               })
+              // Lets the stream reader stop early. The error still reaches
+              // Promise.all below.
+              .catch((error) => {
+                hasDownloadFailed = true
+                throw error
+              })
               // Step 4: Update the progress bar only once the attachments for the decrypted submission have been downloaded (if needed).
               .finally(() => {
                 onDecryptionProgress(
                   (prevDecryptionProgress) => prevDecryptionProgress + 1,
                 )
+                if (zipWorker) {
+                  pendingZipCount -= 1
+                  onZipSlotFree?.()
+                  onZipSlotFree = undefined
+                }
               }),
           )
           currentSubmissionIndex += 1 // used to assign the next submission to the next worker
+          if (zipWorker) {
+            pendingZipCount += 1
+            // Hold back the stream while the zip is behind
+            if (pendingZipCount >= MAX_PENDING_ZIP_RESPONSES) {
+              await new Promise<void>((resolve) => (onZipSlotFree = resolve))
+            }
+            // A failed response fails the download, so stop sending more. On
+            // cancel, the next read rejects as the stream is aborted.
+            if (hasDownloadFailed) return
+          }
           return reader.read().then(read)
         }),
       )
