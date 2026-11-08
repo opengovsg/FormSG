@@ -221,9 +221,9 @@ const useDecryptionWorkers = ({
 
       /**
        * Writes a response's attachments and PDF into the download zip, in its
-       * response folder when attachments are downloaded. A response that
-       * failed to decrypt gets no folder. One that decrypted keeps its folder
-       * and PDF even if its attachments failed to download.
+       * response folder when attachments are downloaded. A folder exists only
+       * when something goes in it, so a response that failed to decrypt, or
+       * has no attachments and no PDF, gets none.
        */
       const addToZip = (
         { workerApi }: CleanableZipWorkerApi,
@@ -241,8 +241,8 @@ const useDecryptionWorkers = ({
             const folderPath = downloadAttachments
               ? `${getResponseFolderName({ refNo: parsedSubmission._id })}/`
               : ''
-            // A response without attachments still gets its folder
-            const entries: ZipEntry[] = folderPath ? [{ name: folderPath }] : []
+            // No folder entry: unzipping creates the folder from its files' paths
+            const entries: ZipEntry[] = []
             const files = attachments?.kind === 'files' ? attachments.files : []
             for (const { filename, content } of files) {
               entries.push({ name: `${folderPath}${filename}`, content })
