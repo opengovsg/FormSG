@@ -803,6 +803,14 @@ export const duplicateForm = (
 
   const duplicateParams = originalForm.getDuplicateParams(overrideProps)
 
+  if (duplicateParams.responseMode === FormResponseMode.Email) {
+    duplicateParams.form_fields?.forEach((field) => {
+      if (field.fieldType === BasicField.Attachment) {
+        field.allowMultiple = false
+      }
+    })
+  }
+
   if (overrideEmails) {
     // override emails for static workflow steps
     duplicateParams.workflow?.forEach((step) => {

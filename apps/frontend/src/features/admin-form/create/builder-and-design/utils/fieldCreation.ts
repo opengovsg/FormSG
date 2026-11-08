@@ -40,6 +40,7 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         fieldType,
         ...baseMeta,
         attachmentSize: AttachmentSize.OneMb,
+        allowMultiple: false,
       }
     }
     case BasicField.YesNo:
