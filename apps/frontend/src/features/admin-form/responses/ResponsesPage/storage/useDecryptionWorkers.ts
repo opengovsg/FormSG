@@ -61,6 +61,8 @@ const NUM_OF_METADATA_ROWS = 5
 const ATTACHMENT_DOWNLOAD_CONVOY_SIZE = 5
 const ATTACHMENT_DOWNLOAD_CONVOY_MINIMUM_SEPARATION_TIME = 1000
 
+const MAX_PENDING_ZIP_RESPONSES = 4
+
 export type DownloadEncryptedParams = EncryptedResponsesStreamParams & {
   // The key to decrypt the submission responses.
   secretKey: string
@@ -230,6 +232,13 @@ const useDecryptionWorkers = ({
       let zipQueue: Promise<void> = Promise.resolve()
       // A download that errored never saves its zip
       let hasDownloadFailed = false
+      let pendingZipCount = 0
+      let onZipSlotFree: (() => void) | undefined
+      const releaseZipSlotOnCancel = () => onZipSlotFree?.()
+      freshAbortController.signal.addEventListener(
+        'abort',
+        releaseZipSlotOnCancel,
+      )
       const csvFilename = `${adminForm.title}-${adminForm._id}.csv`
 
       /**
@@ -479,18 +488,39 @@ const useDecryptionWorkers = ({
                 })
                 return saveQueue.then(() => decryptResult)
               })
+              .catch((error) => {
+                hasDownloadFailed = true
+                throw error
+              })
               // Step 4: Update the progress bar only once the attachments for the decrypted submission have been downloaded (if needed).
               .finally(() => {
                 onDecryptionProgress(
                   (prevDecryptionProgress) => prevDecryptionProgress + 1,
                 )
+                if (zipWorker) {
+                  pendingZipCount -= 1
+                  onZipSlotFree?.()
+                  onZipSlotFree = undefined
+                }
               }),
           )
           currentSubmissionIndex += 1 // used to assign the next submission to the next worker
+          if (zipWorker) {
+            pendingZipCount += 1
+            if (pendingZipCount >= MAX_PENDING_ZIP_RESPONSES) {
+              await new Promise<void>((resolve) => (onZipSlotFree = resolve))
+            }
+            if (hasDownloadFailed) return reader.cancel()
+          }
           return reader.read().then(read)
         }),
       )
-      await stopWorkersOnError(readStream)
+      await stopWorkersOnError(readStream).finally(() =>
+        freshAbortController.signal.removeEventListener(
+          'abort',
+          releaseZipSlotOnCancel,
+        ),
+      )
 
       return new Promise<DownloadResult>((resolve, reject) => {
         // Step 1: Decrypt all submissions and their attachments (into blobs), add the submissions into the csv object and save the attachments into user's computer.
