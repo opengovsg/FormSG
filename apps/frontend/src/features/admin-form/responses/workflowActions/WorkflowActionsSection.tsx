@@ -96,6 +96,7 @@ export const WorkflowActionsSection = ({
   })
   const canRemind = isDelightfulDashboard && pendingStepAssignees.length > 0
   const canActOnWorkflow = isWorkflowActionsOn && hasEditAccess
+  const canReassign = canActOnWorkflow && pendingStepNumber > 1
   const canSendBackToStepOne = form?.authType === FormAuthType.NIL
   const canSendBack =
     isSendBackOn &&
@@ -160,7 +161,7 @@ export const WorkflowActionsSection = ({
           recipients={pendingStepAssignees}
         />
       ) : null}
-      {canActOnWorkflow ? (
+      {canReassign ? (
         <Button
           size="sm"
           variant="outline"

@@ -1,7 +1,12 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { SubmissionMrfMetadata, WorkflowStatus } from 'formsg-shared/types'
+import {
+  DateString,
+  SubmissionMrfMetadata,
+  WorkflowEventType,
+  WorkflowStatus,
+} from 'formsg-shared/types'
 
 import { render } from '~/test-utils'
 
@@ -272,6 +277,39 @@ describe('WorkflowActionsSection', () => {
     expect(
       screen.queryByRole('button', { name: REASSIGN }),
     ).not.toBeInTheDocument()
+  })
+
+  it('offers Remind and Stop but not Reassign once sent back to step 1', () => {
+    render(
+      <WorkflowActionsSection
+        submissionId="mock-submission-id"
+        mrf={pendingMrf({ workflowCurrentStepNumber: 0 })}
+        history={{
+          submittedSteps: [],
+          workflow: [{ _id: 'step-1' }, { _id: 'step-2' }],
+          workflowEvents: [
+            {
+              type: WorkflowEventType.SentBack,
+              actorEmail: 'admin@agency.gov.sg',
+              stepNumber: 1,
+              fromStepNumber: 2,
+              emails: ['applicant@agency.gov.sg'],
+              created: '2026-10-08T01:00:00.000Z' as DateString,
+            },
+          ],
+        }}
+        submissionSecretKey="mock-secret-key"
+        isLoading={false}
+      />,
+    )
+
+    expect(
+      screen.queryByRole('button', { name: REASSIGN }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'remind applicant@agency.gov.sg' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: STOP })).toBeInTheDocument()
   })
 
   it("offers Remind to the pending step's people", () => {
