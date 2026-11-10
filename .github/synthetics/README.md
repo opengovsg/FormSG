@@ -43,6 +43,12 @@ update rather than duplicate. Keep test names unique. Abandoned PRs can
 leave orphan paused tests in Datadog; delete them in the UI if they bother
 you.
 
+Removing a test: delete the JSON (leave its `ids.json` entry: that is how
+sync finds the orphan), open a PR. The sync workflow deletes the test in
+Datadog, drops the `ids.json` entry and commits that back — on the PR, so like creation it
+leaves the release gate before the PR merges. Rename a file the same way:
+the old name is deleted and the new one created, with a new `public_id`.
+
 You can also run `sync.sh push` locally with your own
 `DD_API_KEY`/`DD_APP_KEY` (needs `synthetics_read` + `synthetics_write`) —
 e.g. to record placeholder steps in the UI before opening the PR.
