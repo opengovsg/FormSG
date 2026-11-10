@@ -128,7 +128,11 @@ export class CsvRecord {
       )
     }
 
-    if (this.mrfData) {
+    // A submission to a multirespondent form with no workflow has nothing to
+    // report in these columns. Gated per submission, so one workflow
+    // submission anywhere in the export is enough to bring the columns in, on
+    // either dashboard.
+    if (this.mrfData && this.mrfData.workflowNumTotalSteps > 0) {
       const workflowStatus = this.mrfData.workflowStatus
       const isStopped = !!this.mrfData.stoppedAt
       const mrfSubmissionStatus = isStopped
