@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.67.1](https://github.com/opengovsg/formsg/compare/v9.67.0...v9.67.1) (2026-11-10)
+
+
+### Bug Fixes
+
+* **responses:** drop workflow CSV columns for submissions with no workflow (#10550) ([#10550](https://github.com/opengovsg/formsg/commit/b0f05c0b9a567171513543acf5ab46cf9dde1f14))
+
 ## [9.67.0](https://github.com/opengovsg/formsg/compare/v9.66.1...v9.67.0) (2026-11-10)
 
 
