@@ -72,6 +72,12 @@ export const enSG: CreateFormModal = {
     suffix: '.',
   },
   origin: {
+    question: "What's this form for?",
+    options: {
+      digitalNew: 'Collecting something new',
+      digitalExisting: 'Improving something we already collect online',
+      paper: 'Replacing a paper form',
+    },
     topicSentence: 'Tell us about your process',
     q1: {
       label: 'Is this form based on a new or existing process?',
@@ -93,6 +99,7 @@ export const enSG: CreateFormModal = {
     },
     otherInputLabel: 'Other source',
     errors: {
+      required: 'Please select an option.',
       q1Required: 'Please select an option.',
       atLeastOne: 'Please select at least 1 option.',
       otherRequired: 'Please specify a value for the "others" option',

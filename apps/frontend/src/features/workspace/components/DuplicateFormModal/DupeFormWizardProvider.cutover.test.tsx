@@ -1,10 +1,7 @@
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { act, renderHook } from '@testing-library/react'
 
-import {
-  CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
-  featureFlags,
-} from 'formsg-shared/constants'
+import { featureFlags } from 'formsg-shared/constants'
 import { FormOrigin, FormResponseMode } from 'formsg-shared/types'
 
 import { usePreviewForm } from '~features/admin-form/common/queries'
@@ -174,34 +171,6 @@ describe('DupeFormWizardProvider — cutover behaviour', () => {
     expect(dupeStorageModeFormMutation.mutate).not.toHaveBeenCalled()
   })
 
-  it('submits only the new-process value when formOriginProcess is "new", discarding stale Q2 ticks', async () => {
-    setFlags({ cutover: true, paperTracking: true })
-    const { result } = renderHook(() =>
-      useDupeFormWizardContext(vi.fn(), {
-        formIdToDuplicate: MOCK_FORM_ID as any,
-      }),
-    )
-
-    act(() => {
-      result.current.formMethods.setValue('title', 'New title')
-      result.current.formMethods.setValue('formOriginProcess', 'new')
-      result.current.formMethods.setValue('formOrigins', {
-        value: [FormOrigin.Paper],
-      })
-    })
-    await act(async () => {
-      await result.current.handleCreateStorageModeOrMultirespondentForm()
-    })
-
-    expect(dupeMultirespondentModeFormMutation.mutate.mock.calls[0][0]).toEqual(
-      expect.objectContaining({
-        metadata: {
-          formOrigins: { value: [FormOrigin.DigitalNew] },
-        },
-      }),
-    )
-  })
-
   it('re-asks origins and duplicates with them as metadata', async () => {
     setFlags({ cutover: true, paperTracking: true })
     const { result } = renderHook(() =>
@@ -212,11 +181,7 @@ describe('DupeFormWizardProvider — cutover behaviour', () => {
 
     act(() => {
       result.current.formMethods.setValue('title', 'New title')
-      result.current.formMethods.setValue('formOriginProcess', 'existing')
-      result.current.formMethods.setValue('formOrigins', {
-        value: [FormOrigin.Paper, CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
-        othersInput: 'Fax',
-      })
+      result.current.formMethods.setValue('formOrigin', FormOrigin.Paper)
     })
     await act(async () => {
       await result.current.handleCreateStorageModeOrMultirespondentForm()
@@ -225,12 +190,7 @@ describe('DupeFormWizardProvider — cutover behaviour', () => {
     expect(dupeMultirespondentModeFormMutation.mutate).toHaveBeenCalledTimes(1)
     expect(dupeMultirespondentModeFormMutation.mutate.mock.calls[0][0]).toEqual(
       expect.objectContaining({
-        metadata: {
-          formOrigins: {
-            value: [FormOrigin.Paper, CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
-            othersInput: 'Fax',
-          },
-        },
+        metadata: { formOrigins: { value: [FormOrigin.Paper] } },
       }),
     )
   })

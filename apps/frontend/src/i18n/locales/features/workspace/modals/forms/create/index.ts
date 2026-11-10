@@ -63,6 +63,12 @@ export interface CreateFormModal {
     suffix: string
   }
   origin: {
+    question: string
+    options: {
+      digitalNew: string
+      digitalExisting: string
+      paper: string
+    }
     topicSentence: string
     q1: {
       label: string
@@ -84,6 +90,7 @@ export interface CreateFormModal {
     }
     otherInputLabel: string
     errors: {
+      required: string
       q1Required: string
       atLeastOne: string
       otherRequired: string

@@ -4,6 +4,7 @@ import { UseFormHandleSubmit, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
 import {
+  FormOrigin,
   FormResponseMode,
   PublicFormViewDto,
 } from 'formsg-shared/types/form/form'
@@ -35,6 +36,8 @@ export interface CreateFormWizardInputProps {
   // Q2: mediums already used to collect this data today (only answered when
   // formOriginProcess is 'existing').
   formOrigins?: CheckboxFieldResponsesV3
+  // Answer to "What's this form for?" on the origin step.
+  formOrigin?: FormOrigin
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
   reason?: CheckboxFieldValues // for kill email mode
 }
