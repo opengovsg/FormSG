@@ -122,6 +122,7 @@ export enum FormResponseMode {
 export enum FormOrigin {
   Paper = 'paper',
   DigitalNew = 'digitalNew',
+  DigitalExisting = 'digitalExisting',
   DigitalEmail = 'digitalEmail',
   DigitalDocument = 'digitalDocument',
   DigitalSpreadsheet = 'digitalSpreadsheet',
