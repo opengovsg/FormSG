@@ -536,6 +536,8 @@ export class MyInfoData implements MyInfoDataTransformer<
    * 3 - Not Applicable (e.g. CPF data for foreigners)
    * 4 - Data retrieved from SingPass (e.g. email, mobileno)
    *
+   * Admin preview locks sample values with `isMyInfoAttrLockedWhenVerified`
+   * from formsg-shared, so keep the two in step. A test checks that they match.
    */
   _isDataReadOnly(
     attr: ExternalAttr,
