@@ -168,14 +168,14 @@ describe('admin-form.step-login', () => {
     })
 
     describe('rollout flag', () => {
-      it('rejects adding a login while the flag is off', () => {
+      it("rejects a form's first later-step login while the flag is off", () => {
         const result = update({ next: { auth: SINGPASS }, enabled: false })
         expect(result._unsafeUnwrapErr()).toEqual(
           new ForbiddenFormError(STEP_LOGIN_NOT_AVAILABLE),
         )
       })
 
-      it('rejects switching provider while the flag is off', () => {
+      it('allows switching provider while the flag is off once the form has a later-step login', () => {
         const form = makeForm({
           workflow: [step([PLAIN_FIELD_ID]), step([], { auth: CORPPASS })],
         })
@@ -184,9 +184,24 @@ describe('admin-form.step-login', () => {
           next: { auth: SINGPASS },
           enabled: false,
         })
-        expect(result._unsafeUnwrapErr()).toEqual(
-          new ForbiddenFormError(STEP_LOGIN_NOT_AVAILABLE),
-        )
+        expect(result.isOk()).toBe(true)
+      })
+
+      it('allows adding a login to another step while the flag is off once the form has a later-step login', () => {
+        const form = makeForm({
+          workflow: [
+            step([PLAIN_FIELD_ID]),
+            step([], { auth: CORPPASS }),
+            step([]),
+          ],
+        })
+        const result = update({
+          form,
+          stepNumber: 2,
+          next: { auth: SINGPASS },
+          enabled: false,
+        })
+        expect(result.isOk()).toBe(true)
       })
 
       it.each([

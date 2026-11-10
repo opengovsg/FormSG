@@ -10,6 +10,7 @@ import {
   getLoginFieldPublishErrors,
   getStepLoginConfigErrors,
   hasLaterStepLogin,
+  usesStepLoginRules,
 } from '../step-login'
 
 import {
@@ -75,8 +76,14 @@ describe('step-login', () => {
   })
 
   it('hasLaterStepLogin ignores Step 1', () => {
-    expect(hasLaterStepLogin([{ edit: [] }])).toBe(false)
-    expect(hasLaterStepLogin([{ edit: [] }, singpassStep])).toBe(true)
+    expect(hasLaterStepLogin([{}])).toBe(false)
+    expect(hasLaterStepLogin([{}, singpassStep])).toBe(true)
+  })
+
+  it('usesStepLoginRules follows the flag, or a saved later-step login', () => {
+    expect(usesStepLoginRules([{}, {}], false)).toBe(false)
+    expect(usesStepLoginRules([{}, {}], true)).toBe(true)
+    expect(usesStepLoginRules([{}, singpassStep], false)).toBe(true)
   })
 
   it('getStepFields gives every field to Step 1 of a form without a workflow', () => {

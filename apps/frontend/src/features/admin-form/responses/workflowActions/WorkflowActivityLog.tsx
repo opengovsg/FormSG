@@ -15,13 +15,21 @@ import { formatInTimeZone } from 'date-fns-tz'
 
 import {
   AdminWorkflowEventDto,
+  FormAuthType,
   StepSubmittedEventDto,
   WorkflowEventDto,
   WorkflowEventType,
   WorkflowStatus,
+  WorkflowStepAuthType,
 } from 'formsg-shared/types'
+import { usesStepLoginRules } from 'formsg-shared/utils/step-login'
 
 import type { ResponsesIndividualResponse } from '~/i18n/locales/features/admin-form/responses/individual-response'
+
+import { Tag } from '~components/Tag'
+
+import { useIsMrfStepLoginEnabled } from '~features/admin-form/create/workflow/hooks/useIsMrfStepLoginEnabled'
+import { STEP_LOGIN_LABEL_KEYS } from '~features/admin-form/create/workflow/utils/stepLoginAvailability'
 
 import { formatEmailList } from './formatEmailList'
 import { WorkflowHistory } from './getStopNotifiedEmails'
@@ -36,6 +44,7 @@ interface ActivityEntry {
   title: string
   icon: IconType
   detail?: { heading: string; body: string }
+  authType?: WorkflowStepAuthType
 }
 
 interface StepRecord {
@@ -67,7 +76,23 @@ export const WorkflowActivityLog = ({
   history?: WorkflowHistory
 }): JSX.Element => {
   const { t } = useTranslation()
-  const { submittedSteps, workflow, workflowEvents: events = [] } = history
+  const isStepLoginEnabled = useIsMrfStepLoginEnabled()
+  const {
+    submittedSteps,
+    authType = FormAuthType.NIL,
+    workflow,
+    workflowEvents: events = [],
+  } = history
+  // The submission's own copy decides, so a login it used is never hidden.
+  const showsStepLogins = usesStepLoginRules(workflow, isStepLoginEnabled)
+  // Logins are enforced against the submission's copy, so it is the login used.
+  const stepAuthType = (stepNumber: number) => {
+    const stepAuth =
+      stepNumber === 1 ? authType : workflow[stepNumber - 1]?.auth?.auth_type
+    return stepAuth === FormAuthType.MyInfo || stepAuth === FormAuthType.CP
+      ? stepAuth
+      : undefined
+  }
   const stepValues = (stepNumber: number) => {
     const name = workflow[stepNumber - 1]?.step_name?.trim()
     return {
@@ -96,20 +121,23 @@ export const WorkflowActivityLog = ({
   ): ActivityGroup => {
     const rejected = outcome === WorkflowStatus.REJECTED
     const approved = outcome === WorkflowStatus.APPROVED
-    const entries = [
-      entry(
-        id,
-        at,
-        rejected
-          ? 'stepRejected'
-          : approved
-            ? 'stepApproved'
-            : stepNumber === 1
-              ? 'submitted'
-              : 'stepSubmitted',
-        stepValues(stepNumber),
-        rejected ? BiX : approved ? BiCheck : BiFile,
-      ),
+    const entries: ActivityEntry[] = [
+      {
+        ...entry(
+          id,
+          at,
+          rejected
+            ? 'stepRejected'
+            : approved
+              ? 'stepApproved'
+              : stepNumber === 1
+                ? 'submitted'
+                : 'stepSubmitted',
+          stepValues(stepNumber),
+          rejected ? BiX : approved ? BiCheck : BiFile,
+        ),
+        authType: stepAuthType(stepNumber),
+      },
     ]
     if (!rejected && stepNumber < workflow.length && recipients.length) {
       entries.push(
@@ -286,83 +314,90 @@ export const WorkflowActivityLog = ({
       aria-label={t(`${I18N_PREFIX}.title`)}
       data-dd-privacy="mask"
     >
-      {entries.map(({ id, at, title, icon: EventIcon, detail }, index) => (
-        <Box
-          as="li"
-          key={id}
-          position="relative"
-          pb={index === entries.length - 1 ? 0 : '2rem'}
-        >
-          {index !== entries.length - 1 && (
+      {entries.map(
+        ({ id, at, title, icon: EventIcon, detail, authType }, index) => (
+          <Box
+            as="li"
+            key={id}
+            position="relative"
+            pb={index === entries.length - 1 ? 0 : '2rem'}
+          >
+            {index !== entries.length - 1 && (
+              <Box
+                position="absolute"
+                left="15px"
+                top="1rem"
+                bottom="-1rem"
+                w="2px"
+                bg="neutral.300"
+                aria-hidden
+              />
+            )}
             <Box
               position="absolute"
-              left="15px"
-              top="1rem"
-              bottom="-1rem"
-              w="2px"
-              bg="neutral.300"
+              top={0}
+              left={0}
+              boxSize="2rem"
+              bg="secondary.100"
+              color="secondary.500"
+              borderRadius="full"
+              borderWidth="3px"
+              borderColor="white"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
               aria-hidden
-            />
-          )}
-          <Box
-            position="absolute"
-            top={0}
-            left={0}
-            boxSize="2rem"
-            bg="secondary.100"
-            color="secondary.500"
-            borderRadius="full"
-            borderWidth="3px"
-            borderColor="white"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            aria-hidden
-          >
-            <EventIcon fontSize="1.25rem" />
-          </Box>
-          <Stack ml="3rem" spacing="0.75rem" minW={0}>
-            <Box>
-              <Text
-                as="h3"
-                textStyle="subhead-1"
-                pt="0.125rem"
-                overflowWrap="anywhere"
-              >
-                {title}
-              </Text>
-              <Text
-                as="time"
-                dateTime={at}
-                display="block"
-                textStyle="body-2"
-                color="secondary.400"
-                mt="0.25rem"
-              >
-                {formatInTimeZone(
-                  new Date(at),
-                  'Asia/Singapore',
-                  'EEE, d MMM yyyy, hh:mm:ss a',
-                )}
-              </Text>
+            >
+              <EventIcon fontSize="1.25rem" />
             </Box>
-            {detail && (
-              <Box bg="secondary.100" p="1rem" borderRadius="8px">
-                <Text textStyle="subhead-2" mb="0.25rem">
-                  {detail.heading}
-                </Text>
+            <Stack ml="3rem" spacing="0.75rem" minW={0}>
+              <Box>
                 <Text
-                  textStyle="body-2"
-                  whiteSpace="pre-wrap"
+                  as="h3"
+                  textStyle="subhead-1"
+                  pt="0.125rem"
                   overflowWrap="anywhere"
                 >
-                  {detail.body}
+                  {title}
+                </Text>
+                {showsStepLogins && authType && (
+                  <Tag mt="0.25rem" colorScheme="secondary">
+                    {t(STEP_LOGIN_LABEL_KEYS[authType])}
+                  </Tag>
+                )}
+                <Text
+                  as="time"
+                  dateTime={at}
+                  display="block"
+                  textStyle="body-2"
+                  color="secondary.400"
+                  mt="0.25rem"
+                >
+                  {formatInTimeZone(
+                    new Date(at),
+                    'Asia/Singapore',
+                    'EEE, d MMM yyyy, hh:mm:ss a',
+                  )}
                 </Text>
               </Box>
-            )}
-          </Stack>
-        </Box>
-      ))}
+              {detail && (
+                <Box bg="secondary.100" p="1rem" borderRadius="8px">
+                  <Text textStyle="subhead-2" mb="0.25rem">
+                    {detail.heading}
+                  </Text>
+                  <Text
+                    textStyle="body-2"
+                    whiteSpace="pre-wrap"
+                    overflowWrap="anywhere"
+                  >
+                    {detail.body}
+                  </Text>
+                </Box>
+              )}
+            </Stack>
+          </Box>
+        ),
+      )}
     </Box>
   )
 }

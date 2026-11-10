@@ -94,8 +94,18 @@ export const getStepEsrvcId = (
     : getAuthEsrvcId((workflow ?? [])[stepIndex]?.auth)
 
 export const hasLaterStepLogin = (
-  workflow: readonly StepLoginStep[] | null | undefined,
+  workflow: readonly Pick<StepLoginStep, 'auth'>[] | null | undefined,
 ): boolean => (workflow ?? []).slice(1).some((step) => !!step.auth)
+
+/**
+ * Step login rules apply once the rollout flag is on, or to a workflow that
+ * already has a later-step login so it can be maintained or removed. Other
+ * forms keep the rules from before step logins existed.
+ */
+export const usesStepLoginRules = (
+  workflow: readonly Pick<StepLoginStep, 'auth'>[] | null | undefined,
+  isFlagOn: boolean,
+): boolean => isFlagOn || hasLaterStepLogin(workflow)
 
 /** Whether Step 1 or any later step uses the given login. */
 export const formUsesAuthType = (

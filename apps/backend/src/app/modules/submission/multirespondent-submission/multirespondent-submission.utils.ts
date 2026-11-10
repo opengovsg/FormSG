@@ -96,6 +96,7 @@ export const createMultirespondentSubmissionDto = (
       submissionData.myInfoReadOnlyFields ?? [],
     ),
     form_logics: submissionData.form_logics,
+    authType: submissionData.authType,
     workflow: submissionData.workflow,
 
     submissionPublicKey: submissionData.submissionPublicKey,
