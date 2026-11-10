@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.67.0](https://github.com/opengovsg/formsg/compare/v9.66.1...v9.67.0) (2026-11-10)
+
+
+### Features
+
+* **admin-form:** step logins in Settings, deletion, palette and preview (#10454) ([#10454](https://github.com/opengovsg/formsg/commit/a316aaa141c8a8e74026b06549f5d467a6c781c4))
+* **mrf:** respondent kill switch for later-step login (#10531) ([#10531](https://github.com/opengovsg/formsg/commit/5f4c9e059857456251d4780c9b082014937240b7))
+* **workflow:** edit a step's login in the workflow editor (#10453) ([#10453](https://github.com/opengovsg/formsg/commit/dd3c084fee76a055a04af596dac82f90f7d93055))
+
 ## [9.66.1](https://github.com/opengovsg/formsg/compare/v9.66.0...v9.66.1) (2026-11-06)
 
 
