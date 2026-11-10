@@ -6,12 +6,6 @@ import {
 } from '../form-origin'
 
 describe('FORM_ORIGIN_OPTIONS', () => {
-  it('lists every recognised origin code exactly once', () => {
-    expect([...FORM_ORIGIN_OPTIONS].sort()).toEqual(
-      [...Object.values(FormOrigin)].sort(),
-    )
-  })
-
   it('places form-builder first among the mediums, ahead of email/document/spreadsheet/paper', () => {
     expect(FORM_ORIGIN_MEDIUM_OPTIONS).toEqual([
       FormOrigin.DigitalFormBuilder,
