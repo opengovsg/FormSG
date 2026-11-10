@@ -67,7 +67,7 @@ export const enSG: Workflow = {
         noEsrvcId: 'No e-service ID configured',
         deletesWorkflow: 'Deleting Step 1 deletes the entire workflow.',
         keepProvider:
-          'All workflow steps, approvals and workflow routing will be removed. The form will keep {{provider}} authentication.',
+          'All workflow steps, approvals and workflow routing will be removed. The form will keep {provider} authentication.',
         keepNone:
           'All workflow steps, approvals and workflow routing will be removed. The form will keep no authentication.',
         deletedFieldsIntro: 'These fields will be deleted from your form:',
@@ -234,7 +234,7 @@ export const enSG: Workflow = {
       saved: 'Authentication settings saved.',
       saveFailed: 'Unable to save settings.',
       restrictionsFailed:
-        'The login was saved, but some Step 1 restrictions could not be saved. {{message}} Review the saved settings before trying again.',
+        'The login was saved, but some Step 1 restrictions could not be saved. {message} Review the saved settings before trying again.',
       confirmSwitchFirst:
         'Confirm or cancel the authentication change before leaving this card.',
       checkBeforeSaving: 'Check the authentication settings before saving.',
@@ -247,8 +247,8 @@ export const enSG: Workflow = {
     unassignedNotice:
       'Incompatible fields are unassigned in this draft. Confirmed field deletions apply only when you save or navigate away.',
     fieldTags: {
-      assignedToStep: 'Assigned to Step {{stepNumber}}',
-      providerOnly: '{{provider}} only',
+      assignedToStep: 'Assigned to Step {stepNumber}',
+      providerOnly: '{provider} only',
     },
     saveErrors: {
       restrictionsParsing:
@@ -271,28 +271,28 @@ export const enSG: Workflow = {
     switchConfirmation: {
       noAuthentication: 'no authentication',
       titleTurnOff: 'Turn off authentication',
-      titleSwitch: 'Switch to {{provider}}',
+      titleSwitch: 'Switch to {provider}',
       assignedField:
-        '"{{field}}" needs {{provider}}. Switching this step to {{provider}} assigns it to this step.',
+        '"{field}" needs {provider}. Switching this step to {provider} assigns it to this step.',
       deleteBodyTurnOff:
-        'This is the only step using {{current}}. Turning off authentication means these {{current}} fields can no longer be used:',
+        'This is the only step using {current}. Turning off authentication means these {current} fields can no longer be used:',
       deleteBodySwitch:
-        'This is the only step using {{current}}. Switching to {{provider}} means these {{current}} fields can no longer be used:',
+        'This is the only step using {current}. Switching to {provider} means these {current} fields can no longer be used:',
       unassignBodyTurnOff:
-        'These fields need {{current}}, so they cannot be filled in on a step without authentication:',
+        'These fields need {current}, so they cannot be filled in on a step without authentication:',
       unassignBodySwitch:
-        'These fields need {{current}}, so they cannot be filled in on a step using {{provider}}:',
+        'These fields need {current}, so they cannot be filled in on a step using {provider}:',
       affectedRules: 'References to these fields will also be removed from:',
       deleteNote:
         'These fields will be deleted from your form when you save this step or navigate away. Past responses will be kept.',
       unassignNote:
         'These fields will be unassigned from this step when you save or navigate away. They will stay in your form.',
       cancel: 'Cancel',
-      confirmAssign: 'Switch to {{provider}} and assign field',
+      confirmAssign: 'Switch to {provider} and assign field',
       confirmDeleteTurnOff: 'Delete fields and turn off',
       confirmUnassignTurnOff: 'Unassign fields and turn off',
-      confirmDeleteSwitch: 'Delete fields and switch to {{provider}}',
-      confirmUnassignSwitch: 'Unassign fields and switch to {{provider}}',
+      confirmDeleteSwitch: 'Delete fields and switch to {provider}',
+      confirmUnassignSwitch: 'Unassign fields and switch to {provider}',
     },
   },
   addField: {

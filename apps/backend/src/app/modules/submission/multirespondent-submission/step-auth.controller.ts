@@ -46,7 +46,10 @@ import {
 import { MissingJwtError } from '../../spcp/spcp.errors'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getRedirectTargetSpcpOidc } from '../../spcp/spcp.util'
-import { SubmissionNotFoundError } from '../submission.errors'
+import {
+  MrfStepLoginSuspendedError,
+  SubmissionNotFoundError,
+} from '../submission.errors'
 import {
   mapRouteError as mapSubmissionRouteError,
   sendRouteError,
@@ -58,6 +61,7 @@ import {
 } from './multirespondent-submission.service'
 import {
   clearMrfStepAuthCookie,
+  isMrfStepLoginSuspended,
   prefillLoginIdentityFields,
   resolveMrfStepAuth,
   setCpStepBindingCookie,
@@ -115,6 +119,7 @@ const mapRouteError: typeof mapSubmissionRouteError = (error, ...rest) =>
  * @returns 400 when the step has no login
  * @returns 403 when the step token is invalid
  * @returns 409 when the submission is completed or rejected
+ * @returns 422 while the step login kill switch is on
  */
 export const _handleMrfStepAuthRedirect: ControllerHandler<
   MrfStepAuthParams,
@@ -132,6 +137,9 @@ export const _handleMrfStepAuthRedirect: ControllerHandler<
 
   return loadPendingStepAuth(req, stepToken)
     .andThen(({ form, resolved }) => {
+      if (isMrfStepLoginSuspended(req.growthbook)) {
+        return errAsync(new MrfStepLoginSuspendedError())
+      }
       if (resolved.kind === 'open') {
         return errAsync(new AuthTypeMismatchError(FormAuthType.NIL))
       }

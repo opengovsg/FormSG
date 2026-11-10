@@ -81,6 +81,7 @@ export const APPROVAL_ENABLED_NAME = 'is_approval_enabled'
 
 const SECTION_REVEAL_SCROLL_DELAY_MS = 100
 const STEP_TABS_KEY = 'features.adminForm.sidebar.workflow.stepLogin.tabs'
+const WRAPPING_TAB_PROPS = { _notFirst: { ml: 0 }, _notLast: { mr: 0 } }
 const SAVE_ERRORS_KEY =
   'features.adminForm.sidebar.workflow.stepLogin.saveErrors'
 
@@ -364,10 +365,19 @@ export const EditStepBlock = ({
   const tabbedSections = (
     <Tabs key="step-settings" index={activeTab} onChange={setActiveTab}>
       <Box px={{ base: '1.5rem', md: '2rem' }}>
-        <TabList mx="-0.25rem" w="100%">
-          <Tab>{t(`${STEP_TABS_KEY}.fields`)}</Tab>
-          {!isFirstStep && <Tab>{t(`${STEP_TABS_KEY}.approvals`)}</Tab>}
-          <Tab>{t(`${STEP_TABS_KEY}.login`)}</Tab>
+        <TabList
+          mx="-0.25rem"
+          w="100%"
+          overflowX="visible"
+          flexWrap="wrap"
+          columnGap="1.5rem"
+          rowGap="0.25rem"
+        >
+          <Tab {...WRAPPING_TAB_PROPS}>{t(`${STEP_TABS_KEY}.fields`)}</Tab>
+          {!isFirstStep && (
+            <Tab {...WRAPPING_TAB_PROPS}>{t(`${STEP_TABS_KEY}.approvals`)}</Tab>
+          )}
+          <Tab {...WRAPPING_TAB_PROPS}>{t(`${STEP_TABS_KEY}.login`)}</Tab>
         </TabList>
         <Divider w="auto" mx={{ base: '-1.5rem', md: '-2rem' }} />
       </Box>
