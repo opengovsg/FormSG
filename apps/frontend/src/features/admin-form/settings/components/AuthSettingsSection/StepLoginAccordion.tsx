@@ -126,7 +126,10 @@ export const StepLoginAccordion = ({
                       position="relative"
                       textAlign="left"
                       disabled={isSaving}
-                      _hover={{ bg: 'primary.50' }}
+                      // An open card's header would tint down over its
+                      // editor, so only a closed card shows the hover.
+                      cursor={isExpanded ? 'default' : 'pointer'}
+                      _hover={{ bg: isExpanded ? 'transparent' : 'primary.50' }}
                     >
                       <Stack
                         flex="1"
