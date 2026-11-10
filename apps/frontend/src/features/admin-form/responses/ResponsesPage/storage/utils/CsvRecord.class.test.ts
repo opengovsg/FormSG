@@ -88,6 +88,33 @@ describe('CsvRecord', () => {
       })
     })
 
+    describe('when the form has no workflow', () => {
+      it('should output no mrf columns', () => {
+        const record = new CsvRecord(
+          'mockId',
+          '2025-02-17T00:00:00.000Z',
+          CsvRecordStatus.Ok,
+          'mockFormId',
+          'mockHostOrigin',
+          undefined,
+          {
+            workflowStatus: undefined,
+            workflowCurrentStepNumber: 0,
+            workflowNumTotalSteps: 0,
+            lastSubmittedAt: undefined,
+            hasNextStepRecipientEmails: false,
+          },
+        )
+
+        record.materializeSubmissionData()
+
+        const { record: recordResult } = record.submissionData!
+        expect(recordResult).toEqual([
+          expect.objectContaining({ question: 'Download Status' }),
+        ])
+      })
+    })
+
     describe('when paymentData is defined and mrfData is undefined', () => {
       it('should output payment columns and no mrf columns for a pre-migration encrypt row', () => {
         // Arrange
