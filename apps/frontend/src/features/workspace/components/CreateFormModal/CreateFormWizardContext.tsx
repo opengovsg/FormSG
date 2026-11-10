@@ -8,7 +8,6 @@ import {
   FormResponseMode,
   PublicFormViewDto,
 } from 'formsg-shared/types/form/form'
-import { CheckboxFieldResponsesV3 } from 'formsg-shared/types/response-v3'
 
 import formsgSdk from '~utils/formSdk'
 import { CheckboxFieldValues } from '~templates/Field'
@@ -22,8 +21,6 @@ export enum CreateFormFlowStates {
   EmailModeCreation = 'emailModeCreation',
 }
 
-export type FormOriginProcessAnswer = 'new' | 'existing'
-
 export interface CreateFormWizardInputProps {
   title: string
   responseMode: FormResponseMode
@@ -31,12 +28,7 @@ export interface CreateFormWizardInputProps {
   emails?: string[]
   // Storage form props
   storageAck?: boolean
-  // Q1: whether the data collection is a new or existing process.
-  formOriginProcess?: FormOriginProcessAnswer
-  // Q2: mediums already used to collect this data today (only answered when
-  // formOriginProcess is 'existing').
-  formOrigins?: CheckboxFieldResponsesV3
-  // Answer to "What's this form for?" on the origin step.
+  // Answer to the origin question on the origin step.
   formOrigin?: FormOrigin
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
   reason?: CheckboxFieldValues // for kill email mode

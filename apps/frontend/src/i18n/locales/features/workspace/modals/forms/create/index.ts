@@ -69,32 +69,8 @@ export interface CreateFormModal {
       digitalExisting: string
       paper: string
     }
-    topicSentence: string
-    q1: {
-      label: string
-      options: {
-        new: string
-        existing: string
-      }
-    }
-    q2: {
-      label: string
-      options: {
-        digitalFormbuilder: string
-        digitalEmail: string
-        digitalDocument: string
-        digitalSpreadsheet: string
-        paper: string
-        others: string
-      }
-    }
-    otherInputLabel: string
     errors: {
       required: string
-      q1Required: string
-      atLeastOne: string
-      otherRequired: string
-      otherMaxLength: string
     }
     cta: {
       next: string
