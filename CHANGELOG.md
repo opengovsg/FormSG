@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.68.0](https://github.com/opengovsg/formsg/compare/v9.67.1...v9.68.0) (2026-11-10)
+
+
+### Features
+
+* **workflow-actions:** hide Reassign once sent back to step 1 (#10543) ([#10543](https://github.com/opengovsg/formsg/commit/95cd3817f63aed8a8ccd5d6daab5bd9a250463a4))
+
+
+### CI
+
+* **synthetics:** drop the liveness tests from the smoke gate (#10527) ([#10527](https://github.com/opengovsg/formsg/commit/cc80fd90c88769ce9343f57623df80568a54aa53))
+
 ## [9.67.1](https://github.com/opengovsg/formsg/compare/v9.67.0...v9.67.1) (2026-11-10)
 
 
