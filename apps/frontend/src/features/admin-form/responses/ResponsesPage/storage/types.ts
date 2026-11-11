@@ -58,7 +58,8 @@ export interface SubmissionDataForDecryption {
   formsgSdkMode: string
   useV4?: boolean
   isWorkflowActionsOn?: boolean
-  isAttachmentsV2Enabled: boolean
+  // Return attachments as files for the one zip download
+  isOneZipDownload: boolean
 }
 
 export type CleanableDecryptionWorkerApi = {

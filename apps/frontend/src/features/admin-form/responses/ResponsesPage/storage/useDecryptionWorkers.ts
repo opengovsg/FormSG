@@ -13,6 +13,7 @@ import { env } from '~/env'
 import { waitForMs } from '~utils/waitForMs'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { useIsOneZipDownload } from '~features/admin-form/responses/hooks'
 import {
   trackDownloadNetworkFailure,
   trackDownloadResponseFailure,
@@ -94,7 +95,7 @@ const useDecryptionWorkers = ({
 }: UseDecryptionWorkersProps) => {
   const [workers, setWorkers] = useState<CleanableDecryptionWorkerApi[]>([])
   const abortControllerRef = useRef(new AbortController())
-  // Builds the current download's zip, under Attachments v2
+  // Builds the current download's one zip
   const zipWorkerRef = useRef<CleanableZipWorkerApi>()
 
   const { data: adminForm } = useAdminForm()
@@ -104,6 +105,7 @@ const useDecryptionWorkers = ({
     featureFlags.keepV4AttachmentPrefix,
   )
   const isAttachmentsV2Enabled = useFeatureIsOn(featureFlags.attachmentsV2)
+  const isOneZipDownload = useIsOneZipDownload()
 
   useEffect(() => {
     return () => killWorkers(workers)
@@ -170,11 +172,11 @@ const useDecryptionWorkers = ({
       const expectedResponsesCount =
         visibleSubmissionIds?.length ?? responsesCount
 
-      // Under Attachments v2, everything ticked goes into one zip that is
+      // For the one zip download, everything ticked goes into one zip that is
       // saved once at the end. A CSV on its own stays a plain CSV.
       zipWorkerRef.current?.abort()
       const zipWorker =
-        isAttachmentsV2Enabled && (downloadAttachments || isDownloadPdf)
+        isOneZipDownload && (downloadAttachments || isDownloadPdf)
           ? makeZipWorkerApiAndCleanup()
           : undefined
       zipWorkerRef.current = zipWorker
@@ -193,6 +195,7 @@ const useDecryptionWorkers = ({
         num_workers: numWorkers,
         expectedNumSubmissions: expectedResponsesCount,
         adminId: user?._id,
+        isOneZipDownload,
         ...zipSinkMeta,
       }
       // Trigger analytics here before starting decryption worker
@@ -374,7 +377,7 @@ const useDecryptionWorkers = ({
                 formId: adminForm._id,
                 hostOrigin: window.location.origin,
                 isWorkflowActionsOn,
-                isAttachmentsV2Enabled,
+                isOneZipDownload,
                 // Resolved here (on the main thread) so the worker doesn't
                 // need to import env.ts (which references window).
                 formsgSdkMode: env.formsgSdkMode,
@@ -757,6 +760,7 @@ const useDecryptionWorkers = ({
       adminForm,
       isAttachmentsV2Enabled,
       keepV4AttachmentPrefix,
+      isOneZipDownload,
       isWorkflowActionsOn,
       onDecryptionProgress,
       onPdfGenerationProgress,

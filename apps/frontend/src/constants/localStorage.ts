@@ -41,3 +41,9 @@ export const ADMIN_FEEDBACK_HISTORY_PREFIX = 'last-seen-admin-feedback-'
 export const GUIDED_WORKFLOW_MODE_KEY_PREFIX = 'prefers-guided-workflow-'
 
 export const RESULTS_DASHBOARD_VERSION_KEY = 'results-dashboard-version'
+
+/**
+ * Key to store whether an admin downloads responses as one zip (v2) or a zip
+ * per response (v1), under Attachments v2.
+ */
+export const RESPONSES_DOWNLOAD_VERSION_KEY = 'responses-download-version'

@@ -21,6 +21,16 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 import { ModalCloseButton } from '~components/Modal'
+import { Switch } from '~components/Toggle/Switch'
+
+import {
+  V1Icon,
+  V2Icon,
+} from '~features/admin-form/responses/components/versionIcons'
+import {
+  useIsOneZipDownload,
+  useResponsesDownloadVersion,
+} from '~features/admin-form/responses/hooks'
 
 import { DownloadOptions, isCsvOnlyDownload } from '../../types'
 
@@ -58,6 +68,10 @@ export const ConfirmationScreen = ({
 }: ConfirmationScreenProps): JSX.Element => {
   const isCsvOnly = isCsvOnlyDownload(downloadOptions)
   const isAttachmentsV2Enabled = useFeatureIsOn(featureFlags.attachmentsV2)
+  // The switch carries the Beta badge when it shows, so the title doesn't
+  const isVersionSwitchShown = isAttachmentsV2Enabled && !isCsvOnly
+  const isOneZip = useIsOneZipDownload()
+  const [, setDownloadVersion] = useResponsesDownloadVersion()
   const isMobile = useIsMobile()
   const { t: confirmationScreenTranslation } = useTranslation('translation', {
     keyPrefix:
@@ -97,7 +111,7 @@ export const ConfirmationScreen = ({
       <ModalHeader color="secondary.700" pr="4.5rem">
         <Wrap shouldWrapChildren direction="row" align="center">
           <Text>{getTitle()}</Text>
-          {isCsvOnly ? null : (
+          {isCsvOnly || isVersionSwitchShown ? null : (
             <Badge
               w="fit-content"
               colorScheme="primary"
@@ -114,7 +128,34 @@ export const ConfirmationScreen = ({
           {downloadOptions.isDownloadCsv && isCsvFollowingTable ? (
             <Text>{confirmationScreenTranslation('csvAppliesTableView')}</Text>
           ) : undefined}
-          {isAttachmentsV2Enabled && !isCsvOnly ? (
+          {isVersionSwitchShown ? (
+            <Flex align="center" gap="0.5rem">
+              <Text textStyle="subhead-1" color="secondary.700">
+                {confirmationScreenTranslation('downloadVersionLabel')}
+              </Text>
+              <Flex lineHeight={0}>
+                <Switch
+                  isChecked={isOneZip}
+                  onChange={(event) =>
+                    setDownloadVersion(event.target.checked ? 'v2' : 'v1')
+                  }
+                  checkedIcon={V2Icon}
+                  uncheckedIcon={V1Icon}
+                  aria-label={confirmationScreenTranslation(
+                    'downloadVersionLabel',
+                  )}
+                />
+              </Flex>
+              <Badge
+                colorScheme="primary"
+                variant="subtle"
+                color="secondary.500"
+              >
+                {t('features.common.betaBadgeLabel')}
+              </Badge>
+            </Flex>
+          ) : undefined}
+          {isOneZip && !isCsvOnly ? (
             <Text>
               <Trans
                 t={confirmationScreenTranslation}
@@ -122,7 +163,7 @@ export const ConfirmationScreen = ({
               />
             </Text>
           ) : undefined}
-          {!isAttachmentsV2Enabled && downloadOptions.isDownloadAttachments ? (
+          {!isOneZip && downloadOptions.isDownloadAttachments ? (
             <Text>
               <Trans
                 t={confirmationScreenTranslation}
@@ -130,7 +171,7 @@ export const ConfirmationScreen = ({
               />
             </Text>
           ) : undefined}
-          {!isAttachmentsV2Enabled && downloadOptions.isDownloadPdf ? (
+          {!isOneZip && downloadOptions.isDownloadPdf ? (
             <Text>
               <Trans
                 t={confirmationScreenTranslation}
