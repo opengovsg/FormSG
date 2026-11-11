@@ -12,6 +12,8 @@ import {
   LoginIdentityFieldBase,
 } from 'formsg-shared/utils/login-identity'
 
+import InlineMessage from '~components/InlineMessage'
+
 import {
   BASICFIELD_TO_DRAWER_META,
   MYINFO_FIELD_TO_DRAWER_META,
@@ -117,6 +119,21 @@ interface MemoFieldDrawerContentProps {
   field: FieldCreateDto
 }
 
+interface UnsupportedFieldTypeMessageProps {
+  fieldType: string
+}
+
+const UnsupportedFieldTypeMessage = ({
+  fieldType,
+}: UnsupportedFieldTypeMessageProps): JSX.Element => {
+  return (
+    <InlineMessage m="1.5rem" role="alert" variant="error">
+      Unable to edit this field type ({fieldType}). Please contact support if
+      this issue persists.
+    </InlineMessage>
+  )
+}
+
 export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
   ({ field, ...props }) => {
     const { user } = useUser()
@@ -140,7 +157,9 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
       return <EditMyInfo {...props} field={field} />
     }
 
-    switch (field.fieldType) {
+    const fieldType = field.fieldType
+
+    switch (fieldType) {
       case BasicField.Attachment:
         return <EditAttachment {...props} field={field} />
       case BasicField.Checkbox:
@@ -187,8 +206,12 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
         return <EditAddress {...props} field={field} />
       case BasicField.Signature:
         return <EditSignature {...props} field={field} />
-      default:
-        return <div>TODO: Insert field options here</div>
+      case BasicField.Children:
+        return <UnsupportedFieldTypeMessage fieldType={fieldType} />
+      default: {
+        const _exhaustiveCheck: never = fieldType
+        return <UnsupportedFieldTypeMessage fieldType={_exhaustiveCheck} />
+      }
     }
   },
 )
