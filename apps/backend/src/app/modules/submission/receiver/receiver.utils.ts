@@ -8,7 +8,7 @@ import { VIRUS_SCANNER_SUBMISSION_VERSION } from 'formsg-shared/constants'
 import { BasicField, FieldResponse } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
-import { z } from 'zod/v4'
+import { z } from 'zod'
 
 import { IAttachmentInfo, MapRouteError } from '../../../../types'
 import {
@@ -36,7 +36,7 @@ const attachmentAnswerV4Schema = z.object({
   hasBeenScanned: z.boolean().default(false),
   md5Hash: z.string().optional(),
   // RATIONALE: pin to the AttachmentAnswerV4 type to avoid type drift
-}) satisfies z.ZodType<AttachmentAnswerV4, unknown>
+}) satisfies z.ZodType<AttachmentAnswerV4>
 
 export const mapRouteError: MapRouteError = (error) => {
   switch (error.constructor) {
