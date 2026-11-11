@@ -72,11 +72,11 @@ export const enSG: CreateFormModal = {
     suffix: '.',
   },
   origin: {
-    question: "What's this form for?",
+    question: 'Before FormSG, how did you collect this?',
     options: {
-      digitalNew: 'Starting a completely new process',
-      digitalExisting: 'Improving something we already collect digitally',
-      paper: 'Replacing a paper form/manual process',
+      digitalNew: 'Not collected',
+      digitalExisting: 'Digitally',
+      paper: 'On paper',
     },
     errors: {
       required: 'Please select an option.',

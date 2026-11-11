@@ -16,11 +16,10 @@ import { CreateFormOriginScreen } from './CreateFormOriginScreen'
 vi.mock('react-i18next', () => {
   const P = 'features.workspace.modals.forms.create.origin'
   const translations: Record<string, string> = {
-    [`${P}.question`]: "What's this form for?",
-    [`${P}.options.digitalNew`]: 'Starting a completely new process',
-    [`${P}.options.digitalExisting`]:
-      'Improving something we already collect digitally',
-    [`${P}.options.paper`]: 'Replacing a paper form/manual process',
+    [`${P}.question`]: 'Before FormSG, how did you collect this?',
+    [`${P}.options.digitalNew`]: 'Not collected',
+    [`${P}.options.digitalExisting`]: 'Digitally',
+    [`${P}.options.paper`]: 'On paper',
     [`${P}.errors.required`]: 'Please select an option.',
     [`${P}.cta.next`]: 'Next step',
     [`${P}.cta.back`]: 'Back',
@@ -71,19 +70,17 @@ const clickNext = async (user: ReturnType<typeof userEvent.setup>) => {
 }
 
 describe('CreateFormOriginScreen', () => {
-  it('asks "What\'s this form for?" with the three answers in order', () => {
+  it('asks "Before FormSG, how did you collect this?" with the three answers in order', () => {
     renderOriginScreen()
 
-    expect(screen.getByText("What's this form for?")).toBeInTheDocument()
+    expect(
+      screen.getByText('Before FormSG, how did you collect this?'),
+    ).toBeInTheDocument()
     const radios = screen.getAllByRole('radio')
     expect(radios).toHaveLength(3)
-    expect(radios[0]).toHaveAccessibleName('Starting a completely new process')
-    expect(radios[1]).toHaveAccessibleName(
-      'Improving something we already collect digitally',
-    )
-    expect(radios[2]).toHaveAccessibleName(
-      'Replacing a paper form/manual process',
-    )
+    expect(radios[0]).toHaveAccessibleName('Not collected')
+    expect(radios[1]).toHaveAccessibleName('Digitally')
+    expect(radios[2]).toHaveAccessibleName('On paper')
   })
 
   it('blocks submission and shows an error when no answer is chosen', async () => {
@@ -99,12 +96,9 @@ describe('CreateFormOriginScreen', () => {
   })
 
   it.each([
-    ['Starting a completely new process', FormOrigin.DigitalNew],
-    [
-      'Improving something we already collect digitally',
-      FormOrigin.DigitalExisting,
-    ],
-    ['Replacing a paper form/manual process', FormOrigin.Paper],
+    ['Not collected', FormOrigin.DigitalNew],
+    ['Digitally', FormOrigin.DigitalExisting],
+    ['On paper', FormOrigin.Paper],
   ])(
     'creates the form with "%s" as the origin, without a follow-up question',
     async (label, expected) => {
