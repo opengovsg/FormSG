@@ -7,6 +7,7 @@ import { formatInTimeZone } from 'date-fns-tz'
 import { DateString } from 'formsg-shared/types'
 import {
   FormAuthType,
+  FormOrigin,
   FormResponseMode,
   FormSettings,
   FormStatus,
@@ -45,6 +46,7 @@ import {
   updateFormIsSaveDraftEnabled,
   updateFormIssueNotification,
   updateFormLimit,
+  updateFormOrigins,
   updateFormRespondentCopy,
   updateFormStatus,
   updateFormSupportedLanguages,
@@ -130,6 +132,15 @@ export const useMutateFormSettings = () => {
       generateErrorToast(error.message)
     },
     [generateErrorToast],
+  )
+
+  const mutateFormOrigins = useMutation(
+    (formOrigin: FormOrigin) => updateFormOrigins(formId, formOrigin),
+    {
+      // So reopening this form later doesn't ask again.
+      onSuccess: () => queryClient.invalidateQueries(adminFormKeys.id(formId)),
+      onError: handleError,
+    },
   )
 
   const mutateFormStatus = useMutation(
@@ -654,6 +665,7 @@ export const useMutateFormSettings = () => {
   )
 
   return {
+    mutateFormOrigins,
     mutateWebhookFormat,
     mutateWebhookRetries,
     mutateFormWebhookUrl,

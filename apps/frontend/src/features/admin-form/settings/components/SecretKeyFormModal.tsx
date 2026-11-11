@@ -40,6 +40,8 @@ export interface SecretKeyFormModalProps extends Pick<
   submitButtonText: string
   onSubmit: (secretKeyFormInputs: SecretKeyFormInputs) => void
   hasAck?: boolean
+  /** Shown above the title, e.g. the progress indicator. */
+  header?: React.ReactNode
 }
 
 export const SecretKeyFormModal = ({
@@ -51,6 +53,7 @@ export const SecretKeyFormModal = ({
   submitButtonText,
   onSubmit,
   hasAck = false,
+  header,
 }: SecretKeyFormModalProps): JSX.Element => {
   const { t } = useTranslation()
   const {
@@ -95,6 +98,7 @@ export const SecretKeyFormModal = ({
     <Modal isOpen={isOpen} onClose={handleSecretKeyFormClose} size={modalSize}>
       <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
         <ModalCloseButton />
+        {header}
         {/* Hidden input field to trigger file selector, can be anywhere in the DOM */}
         <Input
           name="secretKeyFile"
