@@ -5,12 +5,10 @@ import {
   MyInfoChildrenScope,
   MyInfoChildVaxxStatus,
 } from 'formsg-shared/types'
-import { isMyInfoAttrLockedWhenVerified } from 'formsg-shared/utils/myinfo-read-only'
 import type { SetRequired } from 'type-fest'
 
 import {
   internalAttrListToScopes,
-  internalAttrToExternal,
   internalAttrToSponsoredChildScope,
   MyInfoData,
 } from '../myinfo.adapter'
@@ -18,7 +16,6 @@ import {
   IPerson,
   IPersonResponse,
   MyInfoAttribute as ExternalAttr,
-  MyInfoSource,
   MyInfoVehicleFull,
 } from '../myinfo.person.types'
 import { shouldFetchSponsoredChildren } from '../myinfo.util'
@@ -895,33 +892,5 @@ describe('myinfo.adapter', () => {
         ),
       ).toBe(false)
     })
-  })
-
-  describe('_isDataReadOnly', () => {
-    // Admin preview locks sample values with the shared rule, so it must match
-    // what a real verified login locks.
-    const PREFILLED_ATTRS = Object.values(MyInfoAttribute).filter(
-      (attr) =>
-        attr !== MyInfoAttribute.UinFin &&
-        attr !== MyInfoAttribute.ChildrenBirthRecords &&
-        !(Object.values(MyInfoChildAttributes) as string[]).includes(attr),
-    )
-
-    it.each(PREFILLED_ATTRS)(
-      'locks a verified %s exactly when the shared rule does',
-      (attr) => {
-        const externalAttr = internalAttrToExternal(attr)
-        const myInfoData = new MyInfoData({
-          uinFin: MOCK_UINFIN,
-          data: {
-            [externalAttr]: { source: MyInfoSource.GovtVerified },
-          } as unknown as IPerson,
-        })
-
-        expect(myInfoData._isDataReadOnly(externalAttr, 'value')).toBe(
-          isMyInfoAttrLockedWhenVerified(attr),
-        )
-      },
-    )
   })
 })

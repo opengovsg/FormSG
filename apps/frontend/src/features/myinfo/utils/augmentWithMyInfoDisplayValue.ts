@@ -11,7 +11,6 @@ import {
   getLoginIdentityAttr,
   LoginIdentityAttribute,
 } from 'formsg-shared/utils/login-identity'
-import { isMyInfoAttrLockedWhenVerified } from 'formsg-shared/utils/myinfo-read-only'
 
 import { isMyInfo } from './isMyInfo'
 
@@ -40,16 +39,5 @@ export const augmentWithMyInfoDisplayValue = (
   if (!isMyInfo(field)) return field
 
   const myInfoBlock = MAP_ATTR_TO_NAME[field.myInfo.attr]
-  // Locked like a verified value from a real login. A dropdown can only show a
-  // sample that is one of its options, so one that can't stays editable.
-  const isSampleShown =
-    !myInfoBlock.fieldOptions ||
-    myInfoBlock.fieldOptions.includes(myInfoBlock.previewValue)
-  return {
-    ...field,
-    fieldValue: myInfoBlock.previewValue,
-    ...(isSampleShown && isMyInfoAttrLockedWhenVerified(field.myInfo.attr)
-      ? { disabled: true }
-      : {}),
-  }
+  return { ...field, fieldValue: myInfoBlock.previewValue }
 }
