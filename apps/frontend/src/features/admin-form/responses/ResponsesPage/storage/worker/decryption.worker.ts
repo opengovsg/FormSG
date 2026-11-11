@@ -21,7 +21,7 @@ import {
 } from '../types'
 import { CsvRecord } from '../utils/CsvRecord.class'
 import {
-  downloadAndDecryptAttachments,
+  downloadAndDecryptAttachmentFiles,
   downloadAndDecryptAttachmentsAsZip,
 } from '../utils/downloadAndDecryptAttachment'
 import {
@@ -281,11 +281,13 @@ async function _downloadAndDecryptSubmissionAttachments(
       isOneZipDownload
         ? {
             kind: 'files',
-            files: await downloadAndDecryptAttachments(
+            // A file that fails is marked in the zip, so the response still
+            // counts as downloaded
+            ...(await downloadAndDecryptAttachmentFiles(
               ctx,
               attachmentDownloadUrls,
               attachmentDecryptionKey,
-            ),
+            )),
           }
         : {
             kind: 'zip',
@@ -334,6 +336,8 @@ type LineData = {
   hostOrigin: string
   isWorkflowActionsOn: boolean
   isDownloadAttachmentsSuccessful: boolean
+  // Some files became placeholders in the one zip download
+  hasFailedAttachments?: boolean
 } & DecryptionResult
 
 /**
@@ -353,6 +357,7 @@ async function getMaterializedCsvRecord(
     hostOrigin,
     isWorkflowActionsOn,
     isDownloadAttachmentsSuccessful,
+    hasFailedAttachments,
   } = lineData
 
   if (!isParseSuccessful) {
@@ -424,9 +429,12 @@ async function getMaterializedCsvRecord(
       csvRecord.materializeSubmissionData()
       return csvRecord as MaterializedCsvRecord
     }
+    // The row stays, as the zip marks the files that failed
     csvRecord.setStatus(
       CsvRecordStatus.Ok,
-      'Success (with Downloaded Attachment)',
+      hasFailedAttachments
+        ? 'Success (attachment failed to download)'
+        : 'Success (with Downloaded Attachment)',
     )
   }
   csvRecord.materializeSubmissionData()
@@ -554,6 +562,8 @@ async function getDecryptedData(
       isWorkflowActionsOn: !!isWorkflowActionsOn,
       isDownloadAttachmentsSuccessful:
         isDownloadAndDecryptSubmissionAttachmentsSuccessful,
+      hasFailedAttachments:
+        attachments?.kind === 'files' && attachments.failed.length > 0,
       ...decryptedSubmissionResult,
     })
   }

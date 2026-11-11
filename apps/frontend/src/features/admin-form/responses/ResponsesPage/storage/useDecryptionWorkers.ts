@@ -27,11 +27,19 @@ import {
   killWorkers,
   makeWorkerApiAndCleanup,
 } from '../../common/utils/decryptionWorker'
-import { generateResponsePdfBlob } from '../../IndividualResponsePage/utils/generateResponsePdf'
+import {
+  generateResponsePdfBlob,
+  getPdfTitle,
+} from '../../IndividualResponsePage/utils/generateResponsePdf'
 
 import { CsvExportView } from './utils/csvExportView'
 import { downloadResponseAttachment } from './utils/downloadCsv'
 import { EncryptedResponseCsvGenerator } from './utils/EncryptedResponseCsvGenerator'
+import {
+  FAILED_RESPONSE_NAME,
+  getTombstoneContent,
+  getTombstoneName,
+} from './utils/failedDownloads'
 import {
   getResponseFolderName,
   removeInvalidFileNameCharacters,
@@ -52,6 +60,7 @@ import {
   DecryptedData,
   DecryptedSubmissionData,
   DownloadResult,
+  FailedDownload,
 } from './types'
 
 const NUM_OF_METADATA_ROWS = 5
@@ -65,6 +74,24 @@ const ATTACHMENT_DOWNLOAD_CONVOY_MINIMUM_SEPARATION_TIME = 1000
 // At most this many responses are decrypted but not yet
 // in the zip, so memory stays bounded however big the download is.
 const MAX_PENDING_ZIP_RESPONSES = 4
+
+/**
+ * A response on its way to the one zip. `failedRefNo` marks one that failed to
+ * download or decrypt as a whole.
+ */
+type ZipResponse = DecryptedData & { failedRefNo?: string }
+
+/** The ref no of a streamed response, if it can be read. */
+const getStreamedRefNo = (submissionStreamDtoString: string): string => {
+  try {
+    return (
+      (JSON.parse(submissionStreamDtoString) as { _id?: string })._id ??
+      'unknown'
+    )
+  } catch {
+    return 'unknown'
+  }
+}
 
 export type DownloadEncryptedParams = EncryptedResponsesStreamParams & {
   // The key to decrypt the submission responses.
@@ -234,41 +261,79 @@ const useDecryptionWorkers = ({
       )
       const csvFilename = `${adminForm.title}-${adminForm._id}.csv`
 
+      // What the one zip leaves out, each marked by a placeholder in its place
+      const failedDownloads: FailedDownload[] = []
+
       /**
        * Writes a response's attachments and PDF into the download zip, in its
        * response folder when attachments are downloaded. A folder exists only
        * when something goes in it, so a response that failed to decrypt, or
-       * has no attachments and no PDF, gets none.
+       * has no attachments and no PDF, gets none. Anything that failed gets a
+       * placeholder file in its place instead.
        */
       const addToZip = (
         { workerApi }: CleanableZipWorkerApi,
-        decryptResult: DecryptedData,
+        decryptResult: ZipResponse,
       ): Promise<DecryptedData> => {
         zipQueue = zipQueue.then(async () => {
           if (freshAbortController.signal.aborted) return
-          const { status, parsedSubmission, decryptedResponses, attachments } =
-            decryptResult
-          if (
+          const {
+            status,
+            parsedSubmission,
+            decryptedResponses,
+            attachments,
+            failedRefNo,
+          } = decryptResult
+          const getFolderPath = (refNo: string) =>
+            downloadAttachments ? `${getResponseFolderName({ refNo })}/` : ''
+          // No folder entry: unzipping creates the folder from its files' paths
+          const entries: ZipEntry[] = []
+          const addPlaceholder = (failure: FailedDownload, path: string) => {
+            failedDownloads.push(failure)
+            entries.push({ name: path, content: getTombstoneContent(failure) })
+          }
+          const files = attachments?.kind === 'files' ? attachments.files : []
+          if (failedRefNo !== undefined) {
+            // With folders the response gets one of its own, otherwise its
+            // PDF is what's missing
+            addPlaceholder(
+              {
+                refNo: failedRefNo,
+                name: FAILED_RESPONSE_NAME,
+                reason: 'response',
+              },
+              getFolderPath(failedRefNo) +
+                getTombstoneName(
+                  downloadAttachments
+                    ? FAILED_RESPONSE_NAME
+                    : getPdfTitle({ submissionId: failedRefNo }),
+                ),
+            )
+          } else if (
             status.isDecryptionSuccessful &&
             parsedSubmission &&
             decryptedResponses
           ) {
-            const folderPath = downloadAttachments
-              ? `${getResponseFolderName({ refNo: parsedSubmission._id })}/`
-              : ''
-            // No folder entry: unzipping creates the folder from its files' paths
-            const entries: ZipEntry[] = []
-            const files = attachments?.kind === 'files' ? attachments.files : []
+            const refNo = parsedSubmission._id
+            const folderPath = getFolderPath(refNo)
             for (const { filename, content } of files) {
               entries.push({ name: `${folderPath}${filename}`, content })
             }
+            if (attachments?.kind === 'files') {
+              for (const { filename, reason } of attachments.failed) {
+                addPlaceholder(
+                  { refNo, name: filename, reason },
+                  `${folderPath}${getTombstoneName(filename)}`,
+                )
+              }
+            }
             if (isDownloadPdf) {
-              // A PDF that fails is left out, so the other responses carry on
+              // A PDF that fails is marked, so the other responses carry on
               try {
                 const { pdfBlob, pdfTitle } = await generateResponsePdfBlob({
                   form: adminForm,
                   submission: {
-                    refNo: parsedSubmission._id,
+                    refNo,
                     submissionTime: parsedSubmission.created,
                     responses: decryptedResponses,
                   },
@@ -282,15 +347,22 @@ const useDecryptionWorkers = ({
                 datadogLogs.logger.error('Response PDF generation failed', {
                   meta: {
                     ...logMeta,
-                    submissionId: parsedSubmission._id,
+                    submissionId: refNo,
                     error:
                       error instanceof Error
                         ? { message: error.message, stack: error.stack }
                         : String(error),
                   },
                 })
+                const pdfTitle = getPdfTitle({ submissionId: refNo })
+                addPlaceholder(
+                  { refNo, name: pdfTitle, reason: 'pdf' },
+                  `${folderPath}${getTombstoneName(pdfTitle)}`,
+                )
               }
             }
+          }
+          if (entries.length) {
             // Move the file bytes to the zip worker instead of copying them
             await workerApi.add(
               transfer(entries, [
@@ -306,6 +378,37 @@ const useDecryptionWorkers = ({
         })
         // Keep only what the counts need, so the zip alone holds the files
         return zipQueue.then(() => ({ status: decryptResult.status }))
+      }
+
+      /**
+       * Stands in for a response that failed as a whole, so the download
+       * carries on without it and marks it in the zip.
+       */
+      const toFailedZipResponse = (
+        error: unknown,
+        submissionStreamDtoString: string,
+      ): ZipResponse => {
+        const refNo = getStreamedRefNo(submissionStreamDtoString)
+        datadogLogs.logger.error('Response download failed', {
+          meta: {
+            ...logMeta,
+            submissionId: refNo,
+            error:
+              error instanceof Error
+                ? { message: error.message, stack: error.stack }
+                : String(error),
+          },
+        })
+        // Step 2 counts it as a decryption failure, but it has no CSV record
+        // to count, and the CSV waits until every response is counted
+        if (isDownloadCsv) csvOutcomeCounts.errorCount++
+        return {
+          status: {
+            isDecryptionSuccessful: false,
+            isDownloadAndDecryptSubmissionAttachmentsSuccessful: false,
+          },
+          failedRefNo: refNo,
+        }
       }
 
       /** Finishes the zip and saves it. Resolves with its size for the logs. */
@@ -378,6 +481,11 @@ const useDecryptionWorkers = ({
                 // Resolved here (on the main thread) so the worker doesn't
                 // need to import env.ts (which references window).
                 formsgSdkMode: env.formsgSdkMode,
+              })
+              // A response that fails as a whole doesn't stop the one zip
+              .catch((error) => {
+                if (!zipWorker) throw error
+                return toFailedZipResponse(error, result.value)
               })
               // Step 2: Update the Csv record status based on the decryption result.
               .then(async (decryptResult) => {
@@ -621,11 +729,16 @@ const useDecryptionWorkers = ({
                       meta: {
                         ...logMeta,
                         ...zipMeta,
+                        failedDownloadCount: failedDownloads.length,
                         duration: performance.now() - downloadStartTime,
                       },
                     })
                   }
-                  resolve(result)
+                  resolve(
+                    failedDownloads.length
+                      ? { ...result, failedDownloads }
+                      : result,
+                  )
                 },
                 (err) => {
                   datadogLogs.logger.info('Download response failure', {
