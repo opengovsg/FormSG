@@ -300,6 +300,8 @@ export const enSG: Workflow = {
     email: 'Add an Email field',
     dropdown: 'Add a Dropdown field',
     yesNo: 'Add a Yes/No field',
+    saveFailed:
+      "This step couldn't be saved. Fix it, then add the field again.",
   },
   approvals: {
     title: 'Approvals',

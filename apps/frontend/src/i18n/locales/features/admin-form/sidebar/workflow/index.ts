@@ -243,6 +243,7 @@ export interface Workflow {
     email: string
     dropdown: string
     yesNo: string
+    saveFailed: string
   }
   approvals: {
     title: string

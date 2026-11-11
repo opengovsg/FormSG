@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 import { useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
@@ -6,8 +7,13 @@ import { useParams } from 'react-router-dom'
 import { BasicField } from 'formsg-shared/types'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
+import { useToast } from '~hooks/useToast'
 import { ComboboxItem } from '~components/Dropdown/types'
 
+import {
+  saveBeforeNavigation,
+  useNavigationDraft,
+} from '~features/admin-form/common/navigationSave'
 import { adminFormKeys } from '~features/admin-form/common/queries'
 
 /** Sentinel picker value for the "add a field" row. Never reaches form state. */
@@ -32,7 +38,8 @@ interface UseAddFieldPickerProps {
  * Adds an "add a field" action to a field picker. The action is an ordinary
  * item, so it reuses the dropdown's own rendering, search and keyboard
  * handling, and it opens the Build tab in a new tab rather than navigating
- * away from a half-filled form.
+ * away from a half-filled form. An editor that registers a navigation save
+ * (the step login editor) is saved first, so the new tab sees its changes.
  */
 export const useAddFieldPicker = ({
   label,
@@ -52,12 +59,39 @@ export const useAddFieldPicker = ({
     return () => window.removeEventListener('focus', refetch)
   }, [enabled, formId, queryClient])
 
+  const { t } = useTranslation()
+  const toast = useToast({ status: 'danger', isClosable: true })
+
   const openBuilderInNewTab = useCallback(() => {
     if (!formId) return
     const url = new URL(`${ADMINFORM_ROUTE}/${formId}`, window.location.origin)
     url.searchParams.set(ADD_FIELD_SEARCH_PARAM, fieldType ?? ADD_FIELD_ANY)
-    window.open(url.toString(), '_blank', 'noopener')
-  }, [formId, fieldType])
+    const draft = useNavigationDraft.getState().draft
+    if (!draft?.dirty && !draft?.saving) {
+      window.open(url.toString(), '_blank', 'noopener')
+      return
+    }
+    // The new tab only sees the saved form, eg a step's new login, so save the
+    // open step first. Open the tab now: browsers block one opened after a wait.
+    const tab = window.open('', '_blank')
+    void saveBeforeNavigation().then((saved) => {
+      if (!saved) {
+        tab?.close()
+        toast({
+          description: t(
+            'features.adminForm.sidebar.workflow.addField.saveFailed',
+          ),
+        })
+        return
+      }
+      if (!tab) {
+        window.open(url.toString(), '_blank', 'noopener')
+        return
+      }
+      tab.opener = null
+      tab.location.href = url.toString()
+    })
+  }, [formId, fieldType, t, toast])
 
   /** Appends the action row to a picker's items. */
   const withAddFieldItem = useCallback(

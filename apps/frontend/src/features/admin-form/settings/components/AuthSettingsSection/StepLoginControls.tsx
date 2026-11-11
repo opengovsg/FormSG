@@ -101,17 +101,13 @@ export const StepLoginControls = ({
                   isDisabled={isDisabled || isLoading}
                   isInvalid={isEsrvcIdInvalid}
                 >
-                  <Stack
-                    ml="2.75rem"
-                    mb="1.25rem"
-                    spacing="0.5rem"
-                    maxW="20rem"
-                  >
+                  <Stack ml="2.75rem" mb="1.25rem" spacing="0.5rem">
                     <FormLabel mb={0}>
                       {t(`${COPY_KEY}.esrvcIdLabel`)}
                     </FormLabel>
                     <EsrvcHelperText authType={FormAuthType.CP} />
                     <Input
+                      maxW="20rem"
                       value={esrvcId}
                       placeholder={t(`${COPY_KEY}.esrvcIdPlaceholder`)}
                       onChange={(e) => onEsrvcIdChange(e.target.value)}
