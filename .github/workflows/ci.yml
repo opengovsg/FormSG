@@ -375,3 +375,6 @@ jobs:
         env:
           DD_TAGS: layer:sdk
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
+          # Datadog's test impact analysis skips suites it has seen pass,
+          # which drops coverage below jest's global threshold
+          DD_CIVISIBILITY_ITR_ENABLED: 'false'
