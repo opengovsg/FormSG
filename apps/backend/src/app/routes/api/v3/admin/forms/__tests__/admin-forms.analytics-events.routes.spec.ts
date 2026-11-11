@@ -65,6 +65,8 @@ describe('admin-forms.analytics-events.routes', () => {
         savedViewId: new Types.ObjectId().toHexString(),
         isSavedViewModified: true,
         responsesCount: 42,
+        dateRange: { startDate: '2026-01-01', endDate: '2026-01-31' },
+        columnFilters: [{ columnId: 'a', type: 'values' }],
       }
 
       const response = await post(form._id, {
@@ -166,6 +168,24 @@ describe('admin-forms.analytics-events.routes', () => {
         { direction: 'dsc', columnId: 'submissionTime' },
       ],
       [AnalyticsEventType.ResultsColumnToggled, { visible: true }],
+      [
+        AnalyticsEventType.ResultsDownload,
+        {
+          dashboardVersion: 'v2',
+          formats: ['csv'],
+          scope: 'bulk',
+          columnFilters: [{ columnId: 'a', type: 'text', text: 'S1234567D' }],
+        },
+      ],
+      [
+        AnalyticsEventType.ResultsDownload,
+        {
+          dashboardVersion: 'v2',
+          formats: ['csv'],
+          scope: 'bulk',
+          dateRange: { startDate: '01/01/2026', endDate: '2026-01-31' },
+        },
+      ],
     ])('should return 400 for a %s event with %j', async (type, content) => {
       const response = await post(form._id, { type, content })
 

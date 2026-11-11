@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event'
 
 import {
   AnalyticsEventType,
+  DateString,
   FormSavedView,
   Language,
   SavedViewSortDirection,
@@ -176,6 +177,7 @@ describe('DownloadButton analytics events', () => {
         dashboardVersion: 'v2',
         formats: ['pdf'],
         scope: 'bulk',
+        columnFilters: [{ columnId: 'a', type: 'text' }],
         savedViewId: VIEW._id,
         isSavedViewModified: false,
         responsesCount: 12,
@@ -212,6 +214,34 @@ describe('DownloadButton analytics events', () => {
       expect.objectContaining({
         content: expect.not.objectContaining({
           savedViewId: expect.anything(),
+        }),
+      }),
+    )
+  })
+
+  it('logs the date range and column filters of a v2 download', async () => {
+    renderButton({
+      currentViewState: {
+        ...VIEW_STATE,
+        dateRange: ['2026-01-01', '2026-01-31'] as DateString[],
+        columnFilters: [
+          { columnId: 'a', text: 'pending' },
+          { columnId: 'b', values: ['Yes', 'No'] },
+        ],
+      },
+    })
+
+    await startDownload(/pdf/i)
+
+    expect(mockLogAnalyticsEvent).toHaveBeenCalledWith(
+      FORM_ID,
+      expect.objectContaining({
+        content: expect.objectContaining({
+          dateRange: { startDate: '2026-01-01', endDate: '2026-01-31' },
+          columnFilters: [
+            { columnId: 'a', type: 'text' },
+            { columnId: 'b', type: 'values' },
+          ],
         }),
       }),
     )
