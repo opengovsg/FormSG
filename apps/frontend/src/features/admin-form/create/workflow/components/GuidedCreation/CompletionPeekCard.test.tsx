@@ -1,7 +1,5 @@
-import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { fireEvent, render, screen } from '@testing-library/react'
 
-import { featureFlags } from 'formsg-shared/constants'
 import { Language } from 'formsg-shared/types'
 
 import i18n from '~/i18n/i18n'
@@ -11,22 +9,8 @@ import { useAdminWorkflowStore } from '../../adminWorkflowStore'
 import { CompletionPeekMomentType } from './utils/completionPeekContent'
 import { CompletionPeekCard } from './CompletionPeekCard'
 
-const withFlag = (isOn: boolean) =>
-  new GrowthBook({
-    features: {
-      [featureFlags.workflowBuilderRedesign]: { defaultValue: isOn },
-    },
-  })
-
-const renderCard = (
-  props: Parameters<typeof CompletionPeekCard>[0],
-  { isFlagOn = true }: { isFlagOn?: boolean } = {},
-) =>
-  render(
-    <GrowthBookProvider growthbook={withFlag(isFlagOn)}>
-      <CompletionPeekCard {...props} />
-    </GrowthBookProvider>,
-  )
+const renderCard = (props: Parameters<typeof CompletionPeekCard>[0]) =>
+  render(<CompletionPeekCard {...props} />)
 
 describe('CompletionPeekCard', () => {
   // The app's i18n instance, imported so the suite does not rely on the setup
@@ -103,20 +87,6 @@ describe('CompletionPeekCard', () => {
     ])
     fireEvent.click(screen.getByRole('button', { name: 'Done' }))
     expect(onFinish).toHaveBeenCalledTimes(1)
-  })
-
-  // Requirement 6, and the one that matters most: this is live for the whole
-  // Singapore government, so flag-off must render nothing at all.
-  it('should render nothing when the redesign flag is off', () => {
-    const { container } = renderCard(
-      {
-        type: CompletionPeekMomentType.GuidedSetupFinished,
-        onFinish: () => undefined,
-      },
-      { isFlagOn: false },
-    )
-
-    expect(container).toBeEmptyDOMElement()
   })
 
   // A peek card reports on a finished card, so while one is open for editing

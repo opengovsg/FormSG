@@ -19,7 +19,7 @@ vi.mock('~features/user/queries', () => ({
   }),
 }))
 
-const { WithWorkflowRedesignOn } = composeStories(pageStories)
+const { WithWorkflow } = composeStories(pageStories)
 
 const SWITCH = { name: /guided setup/i }
 const CONFIRM = { name: /^skip guided setup$/i }
@@ -35,7 +35,7 @@ const guidedModeKeys = () =>
 
 const openTab = async () => {
   await act(async () => {
-    render(<WithWorkflowRedesignOn />)
+    render(<WithWorkflow />)
   })
   await screen.findByRole('heading', { name: /^workflow$/i }, { timeout: 8000 })
   return userEvent.setup()

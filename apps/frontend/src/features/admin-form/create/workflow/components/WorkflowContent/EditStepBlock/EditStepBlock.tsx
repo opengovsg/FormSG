@@ -44,7 +44,6 @@ import {
 } from '../../../adminWorkflowStore'
 import { useGuidedStepReveal } from '../../../hooks/useGuidedStepReveal'
 import { useIsStepLoginShown } from '../../../hooks/useIsStepLoginShown'
-import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
 import { EditStepInputs } from '../../../types'
 import { getGuidedSecondaryAction } from '../../../utils/guidedStepPolicy'
@@ -199,7 +198,6 @@ export const EditStepBlock = ({
   const cancelPendingSwitch = useAdminWorkflowStore(cancelPendingSwitchSelector)
   const isCreatingState = useAdminWorkflowStore(isCreatingStateSelector)
   const isGuidedSetup = useAdminWorkflowStore(isGuidedSetupSelector)
-  const isRedesign = useIsWorkflowBuilderRedesign()
   const isLoginShown = useIsStepLoginShown(stepNumber)
   const { t } = useTranslation()
   const { cardRadius, activeCardBg, activeCardBorderWidth, activeCardShadow } =
@@ -335,7 +333,7 @@ export const EditStepBlock = ({
 
   const hasSubmittedForPendingSwitch = useRef(false)
 
-  const isGuided = isRedesign && isCreatingState && isGuidedSetup
+  const isGuided = isCreatingState && isGuidedSetup
 
   const questionsSection = (
     <QuestionsBlock
@@ -361,7 +359,7 @@ export const EditStepBlock = ({
     />
   )
 
-  const useProposedTabs = isRedesign && isLoginShown && !isGuided
+  const useProposedTabs = isLoginShown && !isGuided
   const tabbedSections = (
     <Tabs key="step-settings" index={activeTab} onChange={setActiveTab}>
       <Box px={{ base: '1.5rem', md: '2rem' }}>
@@ -410,13 +408,11 @@ export const EditStepBlock = ({
       formMethods={formMethods}
       isLoading={_isLoading}
     />,
-    // Login follows the respondent in both orders: who fills the step, then
-    // how they log in, then what they do.
+    // Login follows the respondent: who fills the step, then how they log in,
+    // then what they do.
     ...(useProposedTabs
       ? [tabbedSections]
-      : isRedesign
-        ? [loginSection, approvalsSection, questionsSection]
-        : [loginSection, questionsSection, approvalsSection]
+      : [loginSection, approvalsSection, questionsSection]
     ).filter((section): section is JSX.Element => section !== null),
   ]
 
@@ -512,9 +508,7 @@ export const EditStepBlock = ({
           <SaveActionGroup
             isLoading={_isLoading}
             handleSubmit={() => void saveForNavigation()}
-            handleDelete={
-              !isFirstStep || isRedesign ? handleOpenDeleteModal : undefined
-            }
+            handleDelete={handleOpenDeleteModal}
             handleCancel={setToInactive}
             submitButtonLabel={submitButtonLabel}
             ariaLabelName="step"

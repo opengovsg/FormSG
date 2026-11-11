@@ -8,12 +8,8 @@ import { SPOTLIGHT_TEST_ID } from '../Spotlight'
 
 import * as cardStories from './CompletionEmailBlock.stories'
 
-const {
-  WithWorkflow,
-  WithWorkflowRedesignOn,
-  WithWorkflowRedesignOnClosedForm,
-  Step1RedesignOn,
-} = composeStories(pageStories)
+const { WithWorkflow, WithWorkflowClosedForm, Step1 } =
+  composeStories(pageStories)
 const { Active, SettingsError } = composeStories(cardStories)
 
 const SETTINGS_LINK = /email notifications/i
@@ -52,20 +48,9 @@ describe('completion email seam', () => {
 
   afterEach(() => resetStore(true))
 
-  it('keeps the Settings inline message when the redesign flag is off', async () => {
+  it('shows the completion email card in place of the inline message', async () => {
     await act(async () => {
       render(<WithWorkflow />)
-    })
-
-    expect(
-      await screen.findByRole('link', { name: SETTINGS_LINK }),
-    ).toBeInTheDocument()
-    expect(screen.queryByText(DIVIDER)).not.toBeInTheDocument()
-  })
-
-  it('replaces the inline message with the card when the flag is on', async () => {
-    await act(async () => {
-      render(<WithWorkflowRedesignOn />)
     })
 
     expect(await screen.findByText(DIVIDER)).toBeInTheDocument()
@@ -120,7 +105,7 @@ describe('completion email seam', () => {
   })
   it('saves pending edits before Add step opens the new step form', async () => {
     await act(async () => {
-      render(<WithWorkflowRedesignOnClosedForm />)
+      render(<WithWorkflowClosedForm />)
     })
 
     const card = await screen.findByRole(
@@ -168,7 +153,7 @@ describe('guided handover to the completion email card', () => {
 
   const declineAnotherStep = async () => {
     await act(async () => {
-      render(<WithWorkflowRedesignOn />)
+      render(<WithWorkflow />)
     })
     await screen.findByRole('button', { name: /add step/i }, { timeout: 10000 })
     await act(async () => {
@@ -227,7 +212,7 @@ describe('guided handover to the completion email card', () => {
   it('keeps Save changes and all three sections when opened on its own', async () => {
     resetStore(false)
     await act(async () => {
-      render(<WithWorkflowRedesignOn />)
+      render(<WithWorkflow />)
     })
     const card = await screen.findByRole(
       'button',
@@ -261,7 +246,7 @@ describe('when the workflow stops at step 1', () => {
 
   it('shows no completion email block at all', async () => {
     await act(async () => {
-      render(<Step1RedesignOn />)
+      render(<Step1 />)
     })
     await screen.findByRole('button', { name: /add step/i }, { timeout: 10000 })
 
@@ -276,7 +261,7 @@ describe('when the workflow stops at step 1', () => {
 
   it('dismisses the report instead of handing over, since there is nowhere to go', async () => {
     await act(async () => {
-      render(<Step1RedesignOn />)
+      render(<Step1 />)
     })
     await screen.findByRole('button', { name: /add step/i }, { timeout: 10000 })
     await act(async () => {

@@ -30,8 +30,6 @@ interface UseAddFieldPickerProps {
   label: string
   /** Field type to pre-stage in the Build tab. Omit to open the field list. */
   fieldType?: BasicField
-  /** Set false to leave the picker untouched. Defaults to true. */
-  enabled?: boolean
 }
 
 /**
@@ -44,7 +42,6 @@ interface UseAddFieldPickerProps {
 export const useAddFieldPicker = ({
   label,
   fieldType,
-  enabled = true,
 }: UseAddFieldPickerProps) => {
   const { formId } = useParams()
   const queryClient = useQueryClient()
@@ -52,12 +49,12 @@ export const useAddFieldPicker = ({
   // Fields created in the other tab land here on return. The global staleTime
   // blunts react-query's own focus refetch, so invalidate explicitly.
   useEffect(() => {
-    if (!enabled || !formId) return
+    if (!formId) return
     const refetch = () =>
       void queryClient.invalidateQueries(adminFormKeys.id(formId))
     window.addEventListener('focus', refetch)
     return () => window.removeEventListener('focus', refetch)
-  }, [enabled, formId, queryClient])
+  }, [formId, queryClient])
 
   const { t } = useTranslation()
   const toast = useToast({ status: 'danger', isClosable: true })
@@ -95,20 +92,17 @@ export const useAddFieldPicker = ({
 
   /** Appends the action row to a picker's items. */
   const withAddFieldItem = useCallback(
-    <Item extends ComboboxItem>(items: Item[]): (Item | ComboboxItem)[] =>
-      enabled
-        ? [
-            ...items,
-            {
-              value: ADD_FIELD_ITEM_VALUE,
-              label,
-              icon: BiPlus,
-              // An action, not a value: renders without a multiselect checkbox.
-              isAction: true,
-            },
-          ]
-        : items,
-    [enabled, label],
+    <Item extends ComboboxItem>(items: Item[]): (Item | ComboboxItem)[] => [
+      ...items,
+      {
+        value: ADD_FIELD_ITEM_VALUE,
+        label,
+        icon: BiPlus,
+        // An action, not a value: renders without a multiselect checkbox.
+        isAction: true,
+      },
+    ],
+    [label],
   )
 
   /**
@@ -118,14 +112,13 @@ export const useAddFieldPicker = ({
   const withAddFieldAction = useCallback(
     <Value extends string | string[]>(onChange: (value: Value) => void) =>
       (value: Value) => {
-        if (!enabled) return onChange(value)
         const isAction = Array.isArray(value)
           ? value.includes(ADD_FIELD_ITEM_VALUE)
           : value === ADD_FIELD_ITEM_VALUE
         if (isAction) return openBuilderInNewTab()
         onChange(value)
       },
-    [enabled, openBuilderInNewTab],
+    [openBuilderInNewTab],
   )
 
   return { withAddFieldItem, withAddFieldAction }

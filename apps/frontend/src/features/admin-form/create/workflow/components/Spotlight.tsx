@@ -1,7 +1,6 @@
 import { Children, createContext, ReactNode, useContext } from 'react'
 import { Box, Divider, Stack, usePrefersReducedMotion } from '@chakra-ui/react'
 
-import { useIsWorkflowBuilderRedesign } from '../hooks/useIsWorkflowBuilderRedesign'
 import { useWorkflowSurfaces } from '../hooks/useWorkflowSurfaces'
 
 export const SPOTLIGHT_TEST_ID = 'workflow-spotlight'
@@ -31,10 +30,9 @@ export const Spotlight = ({
   children,
 }: SpotlightProps): JSX.Element => {
   const prefersReducedMotion = usePrefersReducedMotion()
-  const isRedesign = useIsWorkflowBuilderRedesign()
   const { cardRadius } = useWorkflowSurfaces()
 
-  if (!isEnabled || !isRedesign) return <>{children}</>
+  if (!isEnabled) return <>{children}</>
 
   return (
     <Box
@@ -87,11 +85,9 @@ export const SpotlightGroup = ({
   isEnabled = true,
   children,
 }: SpotlightGroupProps): JSX.Element => {
-  const isRedesign = useIsWorkflowBuilderRedesign()
-
   const sections = Children.toArray(children)
 
-  if (!isEnabled || !isRedesign) {
+  if (!isEnabled) {
     return (
       <Stack spacing={BAND_GAP} pt={BAND_GAP}>
         {sections.flatMap((section, i) =>

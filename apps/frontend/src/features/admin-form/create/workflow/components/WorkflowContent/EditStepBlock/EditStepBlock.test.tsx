@@ -7,12 +7,8 @@ import * as pageStories from '../../../CreatePageWorkflowTab.stories'
 import { AdminEditWorkflowState } from '../../../types'
 import { SPOTLIGHT_TEST_ID } from '../../Spotlight'
 
-const {
-  NoWorkflowRedesignOn,
-  WithWorkflowRedesignOn,
-  WithWorkflow,
-  NewStepOnPrivateFormRedesignOn,
-} = composeStories(pageStories)
+const { NoWorkflow, WithWorkflow, NewStepOnPrivateForm } =
+  composeStories(pageStories)
 
 const STEP_NAME_LABEL = /step name/i
 const PEOPLE_LABEL = /who should fill in this step/i
@@ -29,7 +25,7 @@ const bandCount = () => screen.queryAllByTestId(SPOTLIGHT_TEST_ID).length
 const findOpenCard = () =>
   screen.findByText(STEP_NAME_LABEL, {}, { timeout: 10000 })
 
-const openNewStepCard = async (Story: typeof NoWorkflowRedesignOn) => {
+const openNewStepCard = async (Story: typeof NoWorkflow) => {
   await act(async () => {
     render(<Story />)
   })
@@ -54,7 +50,7 @@ describe('one decision at a time', () => {
 
   describe('building step 1', () => {
     it('asks only for the step name, with nothing to go back to', async () => {
-      await openNewStepCard(NoWorkflowRedesignOn)
+      await openNewStepCard(NoWorkflow)
 
       expect(screen.getByText(STEP_NAME_LABEL)).toBeInTheDocument()
       expect(screen.queryByText(PEOPLE_LABEL)).not.toBeInTheDocument()
@@ -66,7 +62,7 @@ describe('one decision at a time', () => {
     })
 
     it('reveals the next decision on Continue, and offers Back once there is one', async () => {
-      const user = await openNewStepCard(NoWorkflowRedesignOn)
+      const user = await openNewStepCard(NoWorkflow)
 
       await act(async () => {
         await user.click(screen.getByRole('button', CONTINUE))
@@ -78,7 +74,7 @@ describe('one decision at a time', () => {
     })
 
     it('offers Done rather than Continue once the last decision is on screen', async () => {
-      const user = await openNewStepCard(NoWorkflowRedesignOn)
+      const user = await openNewStepCard(NoWorkflow)
 
       await act(async () => {
         await user.click(screen.getByRole('button', CONTINUE))
@@ -95,7 +91,7 @@ describe('one decision at a time', () => {
     })
 
     it('takes the revealed decision back off screen on Back', async () => {
-      const user = await openNewStepCard(NoWorkflowRedesignOn)
+      const user = await openNewStepCard(NoWorkflow)
 
       await act(async () => {
         await user.click(screen.getByRole('button', CONTINUE))
@@ -111,7 +107,7 @@ describe('one decision at a time', () => {
 
   describe('building a later step', () => {
     it('is paced the same way, and offers Cancel where step 1 offers nothing', async () => {
-      await openNewStepCard(WithWorkflowRedesignOn)
+      await openNewStepCard(WithWorkflow)
 
       expect(bandCount()).toBe(1)
       expect(screen.getByRole('button', CONTINUE)).toBeInTheDocument()
@@ -119,7 +115,7 @@ describe('one decision at a time', () => {
     })
 
     it('asks what they do, which step 1 has no section for', async () => {
-      const user = await openNewStepCard(WithWorkflowRedesignOn)
+      const user = await openNewStepCard(WithWorkflow)
 
       await act(async () => {
         await user.click(screen.getByRole('button', CONTINUE))
@@ -137,7 +133,7 @@ describe('one decision at a time', () => {
   describe('re-opening a saved step', () => {
     it('is not paced, since the admin came back for one part of it', async () => {
       await act(async () => {
-        render(<WithWorkflowRedesignOn />)
+        render(<WithWorkflow />)
       })
       await act(async () => {
         useAdminWorkflowStore.getState().setToEditing(0)
@@ -148,18 +144,6 @@ describe('one decision at a time', () => {
       expect(bandCount()).toBe(0)
       expect(
         screen.getByRole('button', { name: /save step/i }),
-      ).toBeInTheDocument()
-      expect(screen.queryByRole('button', CONTINUE)).not.toBeInTheDocument()
-    })
-  })
-
-  describe('with the redesign flag off', () => {
-    it('opens a new step with every section at once and the usual Save row', async () => {
-      await openNewStepCard(WithWorkflow)
-
-      expect(bandCount()).toBe(0)
-      expect(
-        screen.getByRole('button', { name: /add step/i }),
       ).toBeInTheDocument()
       expect(screen.queryByRole('button', CONTINUE)).not.toBeInTheDocument()
     })
@@ -182,9 +166,7 @@ describe('what an unfinished step is allowed to save as', () => {
   const NO_RESPONDENT_TYPE = /please choose who fills in this step/i
   const NO_YES_NO_FIELD = /select a yes\/no field/i
 
-  const reachDoneWithNothingChosen = async (
-    Story: typeof WithWorkflowRedesignOn,
-  ) => {
+  const reachDoneWithNothingChosen = async (Story: typeof WithWorkflow) => {
     const user = await openNewStepCard(Story)
     const advance = async () => {
       await act(async () => {
@@ -208,14 +190,14 @@ describe('what an unfinished step is allowed to save as', () => {
   }
 
   it('keeps both prompts quiet while the form is closed', async () => {
-    await reachDoneWithNothingChosen(NewStepOnPrivateFormRedesignOn)
+    await reachDoneWithNothingChosen(NewStepOnPrivateForm)
 
     expect(screen.queryByText(NO_RESPONDENT_TYPE)).not.toBeInTheDocument()
     expect(screen.queryByText(NO_YES_NO_FIELD)).not.toBeInTheDocument()
   })
 
   it('still blocks on both once the form is public', async () => {
-    await reachDoneWithNothingChosen(WithWorkflowRedesignOn)
+    await reachDoneWithNothingChosen(WithWorkflow)
 
     expect(await screen.findByText(NO_RESPONDENT_TYPE)).toBeInTheDocument()
     expect(screen.getByText(NO_YES_NO_FIELD)).toBeInTheDocument()
@@ -235,7 +217,7 @@ describe('a guided step card that has not reached its last section', () => {
   afterEach(() => useAdminWorkflowStore.getState().reset())
 
   it('stays put when another step is clicked, rather than saving a half step', async () => {
-    await openNewStepCard(WithWorkflowRedesignOn)
+    await openNewStepCard(WithWorkflow)
 
     await act(async () => {
       useAdminWorkflowStore.getState().requestSwitchTo(0)

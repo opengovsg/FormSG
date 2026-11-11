@@ -5,7 +5,7 @@ import { useAdminWorkflowStore } from '../../adminWorkflowStore'
 import * as pageStories from '../../CreatePageWorkflowTab.stories'
 import { GuidedWrapUp } from '../../types'
 
-const { WithWorkflowRedesignOn } = composeStories(pageStories)
+const { WithWorkflow } = composeStories(pageStories)
 
 const EMAIL_SET_UP = /you've set up the completion email/i
 const FINISHED = /you've finished guided setup/i
@@ -39,7 +39,7 @@ describe('the guided wrap-up after the completion email', () => {
 
   const renderTab = async () => {
     await act(async () => {
-      render(<WithWorkflowRedesignOn />)
+      render(<WithWorkflow />)
     })
     await screen.findByRole('button', { name: /add step/i }, { timeout: 10000 })
   }

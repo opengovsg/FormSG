@@ -5,8 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { useAdminWorkflowStore } from '../../../adminWorkflowStore'
 import * as pageStories from '../../../CreatePageWorkflowTab.stories'
 
-const { Step3ApprovalRedesignOn, Step3ApprovalFieldDeletedRedesignOn } =
-  composeStories(pageStories)
+const { Step3Approval, Step3ApprovalFieldDeleted } = composeStories(pageStories)
 
 const APPROVAL_TOGGLE = { name: /make this person approve/i }
 const CHOSEN_FIELD = /approve time off\?/i
@@ -26,7 +25,7 @@ describe('the approval toggle', () => {
 
   const openApprovalStep = async () => {
     await act(async () => {
-      render(<Step3ApprovalRedesignOn />)
+      render(<Step3Approval />)
     })
     await screen.findByRole('button', { name: /add step/i }, { timeout: 10000 })
     await act(async () => {
@@ -57,7 +56,7 @@ describe('the approval toggle', () => {
 
   it('stays on when the chosen field was deleted, so the step reads as unfinished', async () => {
     await act(async () => {
-      render(<Step3ApprovalFieldDeletedRedesignOn />)
+      render(<Step3ApprovalFieldDeleted />)
     })
     await screen.findByRole('button', { name: /add step/i }, { timeout: 10000 })
     await act(async () => {

@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { useAdminWorkflowStore } from '../../../adminWorkflowStore'
 import * as pageStories from '../../../CreatePageWorkflowTab.stories'
 
-const { WithWorkflowRedesignOn } = composeStories(pageStories)
+const { WithWorkflow } = composeStories(pageStories)
 
 const STEP_NAME_HINT = /name this step, or keep it as/i
 const RESPONDENT_HINT = /choose who formsg sends the form to in this step/i
@@ -26,7 +26,7 @@ describe('guided section hints', () => {
   afterEach(() => useAdminWorkflowStore.getState().reset())
 
   const openGuidedStep = async () => {
-    render(<WithWorkflowRedesignOn />)
+    render(<WithWorkflow />)
     await screen.findByRole('button', { name: /add step/i }, { timeout: 10000 })
     await act(async () => {
       useAdminWorkflowStore.getState().setToCreating()
@@ -57,7 +57,7 @@ describe('guided section hints', () => {
   })
 
   it('stays quiet on a card opened for editing, which is not guided', async () => {
-    render(<WithWorkflowRedesignOn />)
+    render(<WithWorkflow />)
     await screen.findByRole('button', { name: /add step/i }, { timeout: 10000 })
     await act(async () => {
       useAdminWorkflowStore.getState().setToEditing(1)

@@ -14,11 +14,10 @@ import { AdminEditWorkflowState } from '../types'
 
 import { SPOTLIGHT_TEST_ID } from './Spotlight'
 
-const { NoWorkflow, NoWorkflowRedesignOn } = composeStories(pageStories)
+const { NoWorkflow } = composeStories(pageStories)
 
 const NEW_HEADER = /start creating a workflow for your form/i
 const NEW_SUBHEADER = /split your form into steps and send each one/i
-const OLD_HEADER = /create a workflow to collect responses/i
 
 const GUIDED = { name: /start with guided setup/i }
 const MANUAL = { name: /set up manually/i }
@@ -92,140 +91,97 @@ describe('the workflow tab intro screen', () => {
     useAdminWorkflowStore.getState().reset()
   })
 
-  describe('with the redesign flag on', () => {
-    const renderIntro = async () => {
+  const renderIntro = async () => {
+    await act(async () => {
+      render(<NoWorkflow />)
+    })
+    await screen.findByText(NEW_HEADER, {}, { timeout: 10000 })
+    await settleUser()
+  }
+
+  it('says what a workflow does, and offers both ways in', async () => {
+    await renderIntro()
+
+    expect(screen.getByText(NEW_SUBHEADER)).toBeInTheDocument()
+    expect(screen.getByRole('button', GUIDED)).toBeInTheDocument()
+    expect(screen.getByRole('button', MANUAL)).toBeInTheDocument()
+  })
+
+  it('illustrates a form rather than borrowing the real title', async () => {
+    await renderIntro()
+
+    expect(screen.getByText('My form')).toBeInTheDocument()
+  })
+
+  it('shows the logo a real form falls back to', async () => {
+    await renderIntro()
+
+    expect(screen.getByAltText('FormSG')).toBeInTheDocument()
+  })
+
+  describe('the fork', () => {
+    it('skips the card for an admin who has been taught', async () => {
+      const user = userEvent.setup()
+      withGuidedSetupFlag(1)
+      await renderIntro()
+
       await act(async () => {
-        render(<NoWorkflowRedesignOn />)
+        await user.click(screen.getByRole('button', GUIDED))
       })
-      await screen.findByText(NEW_HEADER, {}, { timeout: 10000 })
-      await settleUser()
-    }
 
-    it('says what a workflow does, and offers both ways in', async () => {
-      await renderIntro()
-
-      expect(screen.getByText(NEW_SUBHEADER)).toBeInTheDocument()
-      expect(screen.getByRole('button', GUIDED)).toBeInTheDocument()
-      expect(screen.getByRole('button', MANUAL)).toBeInTheDocument()
-    })
-
-    it('drops the heading that named the feature and the guide link', async () => {
-      await renderIntro()
-
-      expect(screen.queryByText(OLD_HEADER)).not.toBeInTheDocument()
       expect(
-        screen.queryByRole('link', { name: /learn how to create a workflow/i }),
+        screen.queryByText(/let's start with step 1/i),
       ).not.toBeInTheDocument()
+      await waitFor(() =>
+        expect(screen.getAllByTestId(SPOTLIGHT_TEST_ID)).toHaveLength(1),
+      )
     })
 
-    it('illustrates a form rather than borrowing the real title', async () => {
+    it('still shows the card to an admin seeded as pre-existing', async () => {
+      const user = userEvent.setup()
+      withGuidedSetupFlag(0)
       await renderIntro()
 
-      expect(screen.getByText('My form')).toBeInTheDocument()
+      await act(async () => {
+        await user.click(screen.getByRole('button', GUIDED))
+      })
+
+      expect(screen.getByText(/let's start with step 1/i)).toBeInTheDocument()
     })
 
-    it('shows the logo a real form falls back to', async () => {
+    it('orients on the welcome card before asking for anything', async () => {
+      const user = userEvent.setup()
       await renderIntro()
 
-      expect(screen.getByAltText('FormSG')).toBeInTheDocument()
+      await act(async () => {
+        await user.click(screen.getByRole('button', GUIDED))
+      })
+
+      expect(useAdminWorkflowStore.getState().isGuidedSetup).toBe(true)
+      expect(screen.getByText(/let's start with step 1/i)).toBeInTheDocument()
+      expect(useAdminWorkflowStore.getState().createOrEditData).toBeNull()
     })
 
-    describe('the fork', () => {
-      it('skips the card for an admin who has been taught', async () => {
-        const user = userEvent.setup()
-        withGuidedSetupFlag(1)
-        await renderIntro()
+    it('paces the step one decision at a time after the welcome card', async () => {
+      const user = userEvent.setup()
+      await renderIntro()
 
-        await act(async () => {
-          await user.click(screen.getByRole('button', GUIDED))
-        })
-
-        expect(
-          screen.queryByText(/let's start with step 1/i),
-        ).not.toBeInTheDocument()
-        await waitFor(() =>
-          expect(screen.getAllByTestId(SPOTLIGHT_TEST_ID)).toHaveLength(1),
-        )
+      await act(async () => {
+        await user.click(screen.getByRole('button', GUIDED))
       })
-
-      it('still shows the card to an admin seeded as pre-existing', async () => {
-        const user = userEvent.setup()
-        withGuidedSetupFlag(0)
-        await renderIntro()
-
-        await act(async () => {
-          await user.click(screen.getByRole('button', GUIDED))
-        })
-
-        expect(screen.getByText(/let's start with step 1/i)).toBeInTheDocument()
+      await act(async () => {
+        await user.click(screen.getByRole('button', { name: /let's go/i }))
       })
+      await waitFor(() =>
+        expect(screen.getAllByTestId(SPOTLIGHT_TEST_ID)).toHaveLength(1),
+      )
 
-      it('orients on the welcome card before asking for anything', async () => {
-        const user = userEvent.setup()
-        await renderIntro()
-
-        await act(async () => {
-          await user.click(screen.getByRole('button', GUIDED))
-        })
-
-        expect(useAdminWorkflowStore.getState().isGuidedSetup).toBe(true)
-        expect(screen.getByText(/let's start with step 1/i)).toBeInTheDocument()
-        expect(useAdminWorkflowStore.getState().createOrEditData).toBeNull()
-      })
-
-      it('paces the step one decision at a time after the welcome card', async () => {
-        const user = userEvent.setup()
-        await renderIntro()
-
-        await act(async () => {
-          await user.click(screen.getByRole('button', GUIDED))
-        })
-        await act(async () => {
-          await user.click(screen.getByRole('button', { name: /let's go/i }))
-        })
-        await waitFor(() =>
-          expect(screen.getAllByTestId(SPOTLIGHT_TEST_ID)).toHaveLength(1),
-        )
-
-        expect(
-          screen.getByRole('button', { name: /^continue$/i }),
-        ).toBeInTheDocument()
-      })
-
-      it('opens every section at once from manual setup', async () => {
-        const user = userEvent.setup()
-        await renderIntro()
-
-        await act(async () => {
-          await user.click(screen.getByRole('button', MANUAL))
-        })
-
-        expect(useAdminWorkflowStore.getState().isGuidedSetup).toBe(false)
-        expect(screen.queryAllByTestId(SPOTLIGHT_TEST_ID)).toHaveLength(0)
-        expect(
-          screen.queryByRole('button', { name: /^continue$/i }),
-        ).not.toBeInTheDocument()
-      })
-
-      it('leaves manual setup without completion reports', async () => {
-        const user = userEvent.setup()
-        await renderIntro()
-
-        await act(async () => {
-          await user.click(screen.getByRole('button', MANUAL))
-        })
-        await act(async () => {
-          useAdminWorkflowStore.getState().setCompletedStep(0)
-          useAdminWorkflowStore.getState().setToInactive()
-        })
-
-        expect(
-          screen.queryByText(/step 1 is the public-facing step/i),
-        ).not.toBeInTheDocument()
-      })
+      expect(
+        screen.getByRole('button', { name: /^continue$/i }),
+      ).toBeInTheDocument()
     })
 
-    it('starts a step straight away from manual setup', async () => {
+    it('opens every section at once from manual setup', async () => {
       const user = userEvent.setup()
       await renderIntro()
 
@@ -233,28 +189,41 @@ describe('the workflow tab intro screen', () => {
         await user.click(screen.getByRole('button', MANUAL))
       })
 
-      expect(useAdminWorkflowStore.getState().createOrEditData).toEqual({
-        state: AdminEditWorkflowState.CreatingStep,
+      expect(useAdminWorkflowStore.getState().isGuidedSetup).toBe(false)
+      expect(screen.queryAllByTestId(SPOTLIGHT_TEST_ID)).toHaveLength(0)
+      expect(
+        screen.queryByRole('button', { name: /^continue$/i }),
+      ).not.toBeInTheDocument()
+    })
+
+    it('leaves manual setup without completion reports', async () => {
+      const user = userEvent.setup()
+      await renderIntro()
+
+      await act(async () => {
+        await user.click(screen.getByRole('button', MANUAL))
       })
+      await act(async () => {
+        useAdminWorkflowStore.getState().setCompletedStep(0)
+        useAdminWorkflowStore.getState().setToInactive()
+      })
+
+      expect(
+        screen.queryByText(/step 1 is the public-facing step/i),
+      ).not.toBeInTheDocument()
     })
   })
 
-  describe('with the redesign flag off', () => {
-    it('keeps the pre-redesign screen whole', async () => {
-      await act(async () => {
-        render(<NoWorkflow />)
-      })
+  it('starts a step straight away from manual setup', async () => {
+    const user = userEvent.setup()
+    await renderIntro()
 
-      expect(
-        await screen.findByText(OLD_HEADER, {}, { timeout: 10000 }),
-      ).toBeInTheDocument()
-      expect(
-        screen.getByRole('link', { name: /learn how to create a workflow/i }),
-      ).toBeInTheDocument()
-      expect(
-        screen.getByRole('button', { name: /create workflow/i }),
-      ).toBeInTheDocument()
-      expect(screen.queryByText(NEW_HEADER)).not.toBeInTheDocument()
+    await act(async () => {
+      await user.click(screen.getByRole('button', MANUAL))
+    })
+
+    expect(useAdminWorkflowStore.getState().createOrEditData).toEqual({
+      state: AdminEditWorkflowState.CreatingStep,
     })
   })
 })

@@ -6,7 +6,6 @@ describe('nextEditFieldsForApproval', () => {
       nextEditFieldsForApproval({
         edit: [],
         approvalFieldId: 'field-a',
-        isEnabled: true,
       }),
     ).toEqual(['field-a'])
   })
@@ -16,7 +15,6 @@ describe('nextEditFieldsForApproval', () => {
       nextEditFieldsForApproval({
         edit: ['field-x'],
         approvalFieldId: 'field-a',
-        isEnabled: true,
       }),
     ).toEqual(['field-x', 'field-a'])
   })
@@ -26,7 +24,6 @@ describe('nextEditFieldsForApproval', () => {
       nextEditFieldsForApproval({
         edit: ['field-a'],
         approvalFieldId: 'field-a',
-        isEnabled: true,
       }),
     ).toEqual(['field-a'])
   })
@@ -35,13 +32,11 @@ describe('nextEditFieldsForApproval', () => {
     const afterA = nextEditFieldsForApproval({
       edit: [],
       approvalFieldId: 'field-a',
-      isEnabled: true,
     })
     expect(
       nextEditFieldsForApproval({
         edit: afterA,
         approvalFieldId: 'field-b',
-        isEnabled: true,
       }),
     ).toEqual(['field-a', 'field-b'])
   })
@@ -51,19 +46,8 @@ describe('nextEditFieldsForApproval', () => {
       nextEditFieldsForApproval({
         edit: ['field-a'],
         approvalFieldId: '',
-        isEnabled: true,
       }),
     ).toEqual(['field-a'])
-  })
-
-  it('does nothing when auto-assign is disabled', () => {
-    expect(
-      nextEditFieldsForApproval({
-        edit: ['field-x'],
-        approvalFieldId: 'field-a',
-        isEnabled: false,
-      }),
-    ).toEqual(['field-x'])
   })
 
   it('returns the same array reference when there is nothing to add', () => {
@@ -72,7 +56,6 @@ describe('nextEditFieldsForApproval', () => {
       nextEditFieldsForApproval({
         edit,
         approvalFieldId: 'field-a',
-        isEnabled: true,
       }),
     ).toBe(edit)
   })

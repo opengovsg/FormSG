@@ -5,14 +5,11 @@ import { Skeleton } from '@chakra-ui/react'
 import Badge from '~components/Badge'
 import Toggle from '~components/Toggle'
 
-import { useIsWorkflowBuilderRedesign } from '~features/admin-form/create/workflow/hooks/useIsWorkflowBuilderRedesign'
-
 import { useMutateFormSettings } from '../../mutations'
 import { useAdminFormSettings } from '../../queries'
 
 export const RespondentCopyToggle = (): JSX.Element => {
   const { t } = useTranslation()
-  const isRedesign = useIsWorkflowBuilderRedesign()
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
@@ -39,9 +36,7 @@ export const RespondentCopyToggle = (): JSX.Element => {
         isLoading={mutateFormRespondentCopy.isLoading}
         isChecked={hasRespondentCopy}
         label={t(
-          isRedesign
-            ? 'features.adminForm.settings.emailNotifications.section.regular.infoRedesign'
-            : 'features.adminForm.settings.emailNotifications.section.regular.info',
+          'features.adminForm.settings.emailNotifications.section.regular.info',
         )}
         onChange={() => handleToggleRespondentCopy()}
       />

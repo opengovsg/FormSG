@@ -204,16 +204,6 @@ export default {
   },
 }
 
-const redesignOn = new GrowthBook({
-  features: { [featureFlags.workflowBuilderRedesign]: { defaultValue: true } },
-})
-
-const withRedesignOn = (Story: StoryFn) => (
-  <GrowthBookProvider growthbook={redesignOn}>
-    <Story />
-  </GrowthBookProvider>
-)
-
 const GuidedCreation = ({ children }: { children: ReactNode }): JSX.Element => {
   const [isCreating, setIsCreating] = useState(false)
 
@@ -223,11 +213,7 @@ const GuidedCreation = ({ children }: { children: ReactNode }): JSX.Element => {
     return () => useAdminWorkflowStore.getState().reset()
   }, [])
 
-  return (
-    <GrowthBookProvider growthbook={redesignOn}>
-      {isCreating ? children : null}
-    </GrowthBookProvider>
-  )
+  return <>{isCreating ? children : null}</>
 }
 
 const withGuidedCreation = (Story: StoryFn) => (
@@ -301,7 +287,7 @@ export const Step2FixedEmailDefault = {
     )
     await waitFor(
       async () => {
-        await userEvent.click(await canvas.getByText('Specific email(s)'))
+        await userEvent.click(await canvas.getByText('Specific emails'))
       },
       {
         timeout: 5000,
@@ -328,7 +314,7 @@ export const Step2FixedEmailEmpty = {
     )
     await waitFor(
       async () => {
-        await userEvent.click(await canvas.getByText('Specific email(s)'))
+        await userEvent.click(await canvas.getByText('Specific emails'))
       },
       {
         timeout: 5000,
@@ -651,7 +637,7 @@ export const Step4ApprovalFieldNotInEditErrorMessage = {
 
     await expect(
       await canvas.findByText(
-        /the selected yes\/no field has not been assigned to this respondent/i,
+        /the selected yes\/no field has not been assigned to this person/i,
         undefined,
         { timeout: 5000 },
       ),
@@ -692,13 +678,11 @@ const selectRespondentOption =
 
 export const EmptyStateFieldsPicker = {
   args: { stepNumber: 0 },
-  decorators: [withRedesignOn],
   parameters: { msw: { handlers: { default: mrfFormViewWith([]) } } },
 }
 
 export const EmptyStateFieldsPickerMyInfoOnly = {
   args: { stepNumber: 1 },
-  decorators: [withRedesignOn],
   parameters: {
     msw: { handlers: { default: mrfFormViewWith([myinfo_field]) } },
   },
@@ -706,7 +690,6 @@ export const EmptyStateFieldsPickerMyInfoOnly = {
 
 export const EmptyStateEmailRouting = {
   args: { stepNumber: 1 },
-  decorators: [withRedesignOn],
   parameters: {
     msw: {
       handlers: {
@@ -723,7 +706,6 @@ export const EmptyStateEmailRouting = {
 
 export const EmptyStateConditionalRouting = {
   args: { stepNumber: 1 },
-  decorators: [withRedesignOn],
   parameters: {
     msw: {
       handlers: {
@@ -741,7 +723,6 @@ export const EmptyStateApprovalField = {
     stepNumber: 1,
     defaultValues: { approval_field: 'deleted_objectId' },
   },
-  decorators: [withRedesignOn],
   parameters: {
     msw: {
       handlers: {
@@ -758,7 +739,6 @@ export const EmptyStateApprovalField = {
 // Login block: Step 1 edits the form-level login, later steps their own.
 const stepLoginOn = new GrowthBook({
   features: {
-    [featureFlags.workflowBuilderRedesign]: { defaultValue: true },
     [featureFlags.mrfStepLogin]: { defaultValue: true },
     [featureFlags.isNricFieldEnabled]: { defaultValue: true },
   },

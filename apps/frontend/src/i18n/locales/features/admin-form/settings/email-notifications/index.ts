@@ -19,7 +19,6 @@ export interface EmailNotifications extends HasTitle {
         stepN: {
           label: {
             overall: string
-            overallRedesign: string
             each: string
           }
           placeholder: string
@@ -27,7 +26,6 @@ export interface EmailNotifications extends HasTitle {
         others: {
           label: string
           description: string
-          descriptionRedesign: string
           tooltipText: string
         }
       }
@@ -35,13 +33,9 @@ export interface EmailNotifications extends HasTitle {
     regular: {
       label: string
       info: string
-      infoRedesign: string
       description: string
-      descriptionRedesign: string
       statusTrackerInfo: string
-      statusTrackerInfoRedesign: string
       statusTrackerDescription: string
-      statusTrackerDescriptionRedesign: string
     }
   }
 }

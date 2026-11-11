@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
 import { useAdminWorkflowStore } from '../../adminWorkflowStore'
-import { useIsWorkflowBuilderRedesign } from '../../hooks/useIsWorkflowBuilderRedesign'
 
 import {
   CompletionPeekMomentType,
@@ -55,20 +54,15 @@ export type CompletionPeekCardProps =
  * A peek card for one of the guided flow's completion moments, wired to its
  * copy and its actions.
  *
- * Owns the two conditions under which no peek card should appear at all, rather
- * than leaving them to five call sites that could each forget one:
- *
- * - Behind `workflow-builder-redesign`. No exceptions; this is live for the
- *   whole Singapore government.
- * - Hidden while any step or email card is open for editing. A peek card
- *   reports on a finished card, and while the admin is editing, nothing is
- *   finished.
+ * Owns the condition under which no peek card should appear at all, rather
+ * than leaving it to five call sites that could each forget it: hidden while
+ * any step or email card is open for editing. A peek card reports on a
+ * finished card, and while the admin is editing, nothing is finished.
  */
 export const CompletionPeekCard = (
   props: CompletionPeekCardProps,
 ): JSX.Element | null => {
   const { t } = useTranslation()
-  const isRedesign = useIsWorkflowBuilderRedesign()
   // One check rather than one per card type: an open card is an open card. The
   // completion email card of FRM-2495 becomes a third variant of
   // createOrEditData rather than separate state, so it is covered here the day
@@ -77,7 +71,7 @@ export const CompletionPeekCard = (
     (state) => state.createOrEditData !== null,
   )
 
-  if (!isRedesign || isAnyCardOpen) return null
+  if (isAnyCardOpen) return null
 
   const { title, subtitle } = getCompletionPeekContent(t, props)
   const labels = getCompletionPeekActionLabels(t)

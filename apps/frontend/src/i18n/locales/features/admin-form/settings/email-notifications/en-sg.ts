@@ -20,13 +20,11 @@ export const enSG = {
           label: 'Any email addresses you choose',
           tooltipText:
             "Include the admin's email to notify them whenever a response is submitted",
-          description: 'Separate multiple email addresses with a comma',
-          descriptionRedesign: 'Separate multiple emails with a comma',
+          description: 'Separate multiple emails with a comma',
         },
         stepN: {
           label: {
-            overall: 'People who are filling up a workflow step',
-            overallRedesign: 'People who fill in a workflow step',
+            overall: 'People who fill in a workflow step',
             each: 'People in Step {stepNumber}',
           },
           placeholder: 'Select steps from your form',
@@ -35,15 +33,10 @@ export const enSG = {
     },
     regular: {
       label: 'Notifications for new responses',
-      info: 'Allow respondents to receive a copy of their submission',
-      infoRedesign: 'Allow people to receive a copy of their submission',
-      description: 'Separate multiple email addresses with a comma',
-      descriptionRedesign: 'Separate multiple emails with a comma',
-      statusTrackerInfo: 'Allow respondents to track their submission status',
-      statusTrackerInfoRedesign:
-        'Allow people to track their submission status',
-      statusTrackerDescription: 'View a sample status tracking link',
-      statusTrackerDescriptionRedesign: 'See a sample status tracking page',
+      info: 'Allow people to receive a copy of their submission',
+      description: 'Separate multiple emails with a comma',
+      statusTrackerInfo: 'Allow people to track their submission status',
+      statusTrackerDescription: 'See a sample status tracking page',
     },
   },
 }

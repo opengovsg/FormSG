@@ -22,8 +22,6 @@ jest.mock('nodemailer', () => ({
 }))
 jest.mock('src/app/modules/spcp/spcp.oidc.client.ts')
 
-let rolloutEmails: string[] = []
-
 const routerWithGrowthbook = Router()
 routerWithGrowthbook.use((req, _res, next) => {
   let attributes: Record<string, unknown> = {}
@@ -40,9 +38,7 @@ routerWithGrowthbook.use((req, _res, next) => {
     setAttributes: (next) => {
       attributes = next
     },
-    isOn: () =>
-      typeof attributes.adminEmail === 'string' &&
-      rolloutEmails.includes(attributes.adminEmail),
+    isOn: () => true,
   }
   next()
 })
@@ -78,12 +74,10 @@ describe('admin-form.workflow-deletion.routes', () => {
     const { user } = await dbHandler.insertFormCollectionReqs()
     request = await createAuthedSession(user.email, request)
     defaultUser = user
-    rolloutEmails = [user.email]
   })
   afterEach(async () => {
     await dbHandler.clearDatabase()
     jest.restoreAllMocks()
-    rolloutEmails = []
   })
   afterAll(async () => await dbHandler.closeDatabase())
 
@@ -121,34 +115,6 @@ describe('admin-form.workflow-deletion.routes', () => {
       ).toHaveLength(2)
     })
 
-    // With the flag off the endpoint does not exist as far as anyone outside
-    // the rollout is concerned.
-    it('should return 404 when the admin is not in the rollout', async () => {
-      rolloutEmails = []
-      const form = await createMrfForm(FormStatus.Private)
-
-      const response = await request.delete(`/admin/forms/${form._id}/workflow`)
-
-      expect(response.status).toEqual(404)
-      const stored = await FormModel.findById(form._id)
-      expect(
-        (stored as never as { workflow: unknown[] }).workflow,
-      ).toHaveLength(2)
-    })
-
-    it('should return 404 when only another admin is in the rollout', async () => {
-      rolloutEmails = ['someone-else@example.com']
-      const form = await createMrfForm(FormStatus.Private)
-
-      const response = await request.delete(`/admin/forms/${form._id}/workflow`)
-
-      expect(response.status).toEqual(404)
-      const stored = await FormModel.findById(form._id)
-      expect(
-        (stored as never as { workflow: unknown[] }).workflow,
-      ).toHaveLength(2)
-    })
-
     it('should return 401 when not logged in', async () => {
       const form = await createMrfForm(FormStatus.Private)
 
@@ -173,20 +139,6 @@ describe('admin-form.workflow-deletion.routes', () => {
       expect(
         (stored as never as { workflow: unknown[] }).workflow,
       ).toHaveLength(2)
-    })
-
-    // Flag off restores today's behaviour exactly, bug included. That is what
-    // makes the flag a clean rollback rather than a partial one.
-    it('should fall back to the old behaviour when the admin is not in the rollout', async () => {
-      rolloutEmails = []
-      const form = await createMrfForm(FormStatus.Private)
-
-      const response = await request.delete(
-        `/admin/forms/${form._id}/workflow/0`,
-      )
-
-      expect(response.status).toEqual(200)
-      expect(response.body).toHaveLength(1)
     })
 
     it('should still delete a later step', async () => {

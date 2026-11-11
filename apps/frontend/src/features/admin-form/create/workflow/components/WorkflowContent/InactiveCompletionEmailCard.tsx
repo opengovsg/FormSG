@@ -57,7 +57,7 @@ export const InactiveCompletionEmailCard = ({
         },
         {
           id: 'stepN',
-          label: t(`${PREFIX}.stepN.label.overallRedesign`),
+          label: t(`${PREFIX}.stepN.label.overall`),
           values: recipients.notifiedSteps.map((step) =>
             formatNotifiedStepLabel(t, step),
           ),

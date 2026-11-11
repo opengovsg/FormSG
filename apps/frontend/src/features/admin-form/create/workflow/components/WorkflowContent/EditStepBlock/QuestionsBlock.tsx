@@ -25,7 +25,6 @@ import { NON_RESPONSE_FIELD_SET } from '~features/form/constants'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { useIsStepLoginShown } from '../../../hooks/useIsStepLoginShown'
-import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { STEP_LOGIN_LABEL_KEYS } from '../../../utils/stepLoginAvailability'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
@@ -47,12 +46,9 @@ export const QuestionsBlock = ({
   stepNumber,
 }: QuestionsBlockProps): JSX.Element => {
   const { t } = useTranslation()
-  const isRedesign = useIsWorkflowBuilderRedesign()
   const isLoginShown = useIsStepLoginShown(stepNumber)
-  const isProposed = isRedesign && isLoginShown
   const { withAddFieldItem, withAddFieldAction } = useAddFieldPicker({
     label: t('features.adminForm.sidebar.workflow.addField.fields'),
-    enabled: isRedesign,
   })
   const { data: form } = useAdminForm()
   const {
@@ -103,7 +99,7 @@ export const QuestionsBlock = ({
           !isLoginField(f) ||
           savedStepFieldIds.includes(f._id)
         )
-      if (isProposed || pickedFieldIds.includes(f._id)) return true
+      if (isLoginShown || pickedFieldIds.includes(f._id)) return true
       if (!canStepLoginFillField(f, editedAuthType)) return false
       if (!getFieldSourceProvider(f)) return true
       const owner = getOwningStepIndex(f, formWorkflow)
@@ -112,7 +108,7 @@ export const QuestionsBlock = ({
     .map((f) => {
       const provider = getFieldSourceProvider(f)
       const owner = provider ? getOwningStepIndex(f, formWorkflow) : undefined
-      const isUnavailable = isProposed && !pickedFieldIds.includes(f._id)
+      const isUnavailable = isLoginShown && !pickedFieldIds.includes(f._id)
       const ownedElsewhere =
         isUnavailable && owner !== undefined && owner !== stepNumber
       // A step with the other login cannot take this field.
@@ -142,28 +138,15 @@ export const QuestionsBlock = ({
 
   return (
     <EditStepBlockContainer>
-      {isProposed ? <AuthSwitchConfirmation {...confirmationProps} /> : null}
+      {isLoginShown ? <AuthSwitchConfirmation {...confirmationProps} /> : null}
       <FormControl
         isReadOnly={isLoading}
         id={FIELDS_TO_EDIT_NAME}
         isRequired
         isInvalid={!!errors.edit}
       >
-        <FormLabel
-          style={textStyles.h4}
-          tooltipVariant="info"
-          tooltipPlacement="top"
-          tooltipText={
-            isRedesign
-              ? undefined
-              : t('features.adminForm.sidebar.workflow.questions.tooltip')
-          }
-        >
-          {t(
-            isRedesign
-              ? 'features.adminForm.sidebar.workflow.questions.labelRedesign'
-              : 'features.adminForm.sidebar.workflow.questions.label',
-          )}
+        <FormLabel style={textStyles.h4}>
+          {t('features.adminForm.sidebar.workflow.questions.label')}
         </FormLabel>
         <Controller
           control={control}
@@ -175,7 +158,7 @@ export const QuestionsBlock = ({
                 const added = formFields.find((f) => f._id === addedId)
                 const provider = added && getFieldSourceProvider(added)
                 if (
-                  isProposed &&
+                  isLoginShown &&
                   added &&
                   provider &&
                   !canStepLoginFillField(added, editedAuthType)
@@ -184,7 +167,7 @@ export const QuestionsBlock = ({
                   return
                 }
                 onChange(newValue)
-                if (isRedesign && selectedApprovalField) {
+                if (selectedApprovalField) {
                   void trigger(APPROVAL_FIELD_NAME)
                 }
               },
@@ -193,9 +176,7 @@ export const QuestionsBlock = ({
               <MultiSelect
                 isDisabled={isLoading}
                 placeholder={t(
-                  isRedesign
-                    ? 'features.adminForm.sidebar.workflow.questions.placeholderRedesign'
-                    : 'features.adminForm.sidebar.workflow.questions.placeholder',
+                  'features.adminForm.sidebar.workflow.questions.placeholder',
                 )}
                 items={withAddFieldItem(fieldItems)}
                 isSelectedItemFullWidth
@@ -206,7 +187,7 @@ export const QuestionsBlock = ({
             )
           }}
         />
-        {isRedesign && hasOnlyLoginFields ? (
+        {hasOnlyLoginFields ? (
           <FormHelperText>
             {t(
               isLoginShown
@@ -215,10 +196,10 @@ export const QuestionsBlock = ({
             )}
           </FormHelperText>
         ) : null}
-        {isRedesign && selectedApprovalField ? (
+        {selectedApprovalField ? (
           <FormHelperText>
             {t(
-              'features.adminForm.sidebar.workflow.questions.autoAddHelperTextRedesign',
+              'features.adminForm.sidebar.workflow.questions.autoAddHelperText',
             )}
           </FormHelperText>
         ) : null}

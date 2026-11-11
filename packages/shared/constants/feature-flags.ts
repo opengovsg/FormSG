@@ -32,7 +32,6 @@ export const featureFlags = {
   enablePaperTrackingSetUpPage: 'enable-paper-tracking-set-up-page' as const,
   sidebarNavLabels: 'enable-sidebar-nav-labels' as const,
   fiveStarAdminRating: '5star-admin-rating' as const,
-  workflowBuilderRedesign: 'workflow-builder-redesign' as const,
   formIdJson: 'formid-json' as const,
   mrfPayments: 'mrf-payments' as const,
   workflowDeletion: 'workflow-deletion' as const,

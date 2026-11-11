@@ -71,7 +71,7 @@ export const StopWorkflowModal = ({
         ) : (
           <FormLabel.Description color="secondary.400" mt="0.5rem">
             {t(
-              'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.descriptionRedesign',
+              'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.description',
             )}
           </FormLabel.Description>
         )}

@@ -1,18 +1,11 @@
 import { Box, Stack } from '@chakra-ui/react'
-import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
-
-import { featureFlags } from 'formsg-shared/constants'
 
 import { CompletionPeekMomentType } from './utils/completionPeekContent'
 import {
   CompletionPeekCard,
   CompletionPeekCardProps,
 } from './CompletionPeekCard'
-
-const redesignOn = new GrowthBook({
-  features: { [featureFlags.workflowBuilderRedesign]: { defaultValue: true } },
-})
 
 /**
  * Stand-in for the card the peek card reports on. The tucked treatment only
@@ -35,13 +28,6 @@ export default {
   title:
     'Features/AdminForm/create/workflow/components/GuidedCreation/CompletionPeekCard',
   component: CompletionPeekCard,
-  decorators: [
-    (Story: StoryFn) => (
-      <GrowthBookProvider growthbook={redesignOn}>
-        <Story />
-      </GrowthBookProvider>
-    ),
-  ],
 } as Meta<CompletionPeekCardProps>
 
 const TuckedTemplate: StoryFn<CompletionPeekCardProps> = (args) => (

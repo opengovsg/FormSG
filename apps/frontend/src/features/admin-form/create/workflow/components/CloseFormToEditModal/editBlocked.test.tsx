@@ -4,8 +4,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import { useAdminWorkflowStore } from '../../adminWorkflowStore'
 import * as pageStories from '../../CreatePageWorkflowTab.stories'
 
-const { WithWorkflowRedesignOn, NewStepOnPrivateFormRedesignOn } =
-  composeStories(pageStories)
+const { WithWorkflow, NewStepOnPrivateForm } = composeStories(pageStories)
 
 const BLOCKED_TITLE = /close your form first/i
 const BLOCKED_BODY = /you can only edit your workflow when your form is closed/i
@@ -24,7 +23,7 @@ describe('editing a workflow on a live form', () => {
 
   afterEach(() => act(() => useAdminWorkflowStore.getState().reset()))
 
-  const mountTab = async (Story: typeof WithWorkflowRedesignOn) => {
+  const mountTab = async (Story: typeof WithWorkflow) => {
     await act(async () => {
       render(<Story />)
     })
@@ -32,7 +31,7 @@ describe('editing a workflow on a live form', () => {
   }
 
   it('asks the admin to close the form instead of opening a step', async () => {
-    await mountTab(WithWorkflowRedesignOn)
+    await mountTab(WithWorkflow)
 
     await act(async () => {
       fireEvent.click(screen.getAllByRole('button', { name: /step 1/i })[0])
@@ -44,7 +43,7 @@ describe('editing a workflow on a live form', () => {
   })
 
   it('asks the same for Add step', async () => {
-    await mountTab(WithWorkflowRedesignOn)
+    await mountTab(WithWorkflow)
 
     await act(async () => {
       fireEvent.click(screen.getByRole('button', ADD_STEP))
@@ -55,7 +54,7 @@ describe('editing a workflow on a live form', () => {
   })
 
   it('opens the step as before once the form is closed', async () => {
-    await mountTab(NewStepOnPrivateFormRedesignOn)
+    await mountTab(NewStepOnPrivateForm)
 
     await act(async () => {
       fireEvent.click(screen.getByRole('button', ADD_STEP))

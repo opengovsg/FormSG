@@ -1,12 +1,10 @@
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ChakraProvider } from '@chakra-ui/react'
-import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 
-import { featureFlags } from 'formsg-shared/constants'
 import { Language, SeenFlags } from 'formsg-shared/types'
 
 import i18n from '~/i18n/i18n'
@@ -34,17 +32,7 @@ const renderCard = () =>
     // @ts-expect-error missing FC type in old version
     <QueryClientProvider client={new QueryClient()}>
       <ChakraProvider theme={theme}>
-        <GrowthBookProvider
-          growthbook={
-            new GrowthBook({
-              features: {
-                [featureFlags.workflowBuilderRedesign]: { defaultValue: true },
-              },
-            })
-          }
-        >
-          <WelcomeCard />
-        </GrowthBookProvider>
+        <WelcomeCard />
       </ChakraProvider>
     </QueryClientProvider>,
   )

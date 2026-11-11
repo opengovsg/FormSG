@@ -14,36 +14,28 @@ export const enSG: Workflow = {
     deleteWorkflow: 'Delete workflow',
   },
   respondentBlock: {
-    stepRespondent: 'Respondent in this step',
-    stepRespondentRedesign: 'Who should fill in this step?',
-    anyone: 'Anyone who has access to your form',
-    anyoneRedesign: 'Anyone with your form link can fill in Step 1.',
-    select: 'Select a respondent',
-    selectRedesign: 'Who should fill in this step?',
+    stepRespondent: 'Who should fill in this step?',
+    anyone: 'Anyone with your form link can fill in Step 1.',
+    select: 'Who should fill in this step?',
     fieldsToFill: 'Fields to fill',
     clickToEdit: 'Click to edit',
   },
   staticRespondent: {
-    invalidEmailsRedesign:
+    invalidEmails:
       "Enter valid emails separated by commas, like me@example.com. Invalid emails won't be saved.",
   },
   dynamicRespondent: {
     title: 'An Email field from the form',
-    required: 'Please select a field.',
-    requiredRedesign: 'Select a field.',
-    mustBeEmail: 'Field is not an Email field',
-    mustBeEmailRedesign: 'Choose an Email field.',
+    required: 'Select a field.',
+    mustBeEmail: 'Choose an Email field.',
     select: 'Select a field',
   },
   conditionalRouting: {
     title: 'Emails assigned to options in a Dropdown field',
-    addEmailsToOptions: 'Add emails to options',
-    addEmailsToOptionsRedesign: 'Assign emails to options',
+    addEmailsToOptions: 'Assign emails to options',
     validation: {
-      noField: 'Please select a field.',
-      noFieldRedesign: 'Select a field.',
-      notDropdown: 'Field is not a Dropdown field',
-      notDropdownRedesign: 'Choose a Dropdown field.',
+      noField: 'Select a field.',
+      notDropdown: 'Choose a Dropdown field.',
     },
     modals: {
       deleteStep: {
@@ -118,8 +110,7 @@ export const enSG: Workflow = {
       },
       addMapping: {
         step1: {
-          title: 'Add emails to options',
-          titleRedesign: 'Assign emails to options',
+          title: 'Assign emails to options',
           download: {
             templateCreated:
               'We have created a CSV template with the options from the field you selected.',
@@ -176,10 +167,8 @@ export const enSG: Workflow = {
     },
     errors: {
       respondentType: {
-        required: 'Please select a respondent type',
-        requiredRedesign: 'Please choose who fills in this step',
-        invalid: 'The selected respondent type is invalid',
-        invalidRedesign: 'The selected option is invalid',
+        required: 'Please choose who fills in this step',
+        invalid: 'The selected option is invalid',
       },
       csv: {
         required: 'Please upload a CSV file',
@@ -194,14 +183,9 @@ export const enSG: Workflow = {
     },
   },
   questions: {
-    tooltip:
-      'Respondent will only be able to fill the fields you have selected',
-    label: 'Select field(s) for this respondent to fill',
-    labelRedesign: 'Choose the fields this person fills in',
-    placeholder: 'Select field(s) from your form',
-    placeholderRedesign: 'Select fields from your form',
-    autoAddHelperTextRedesign:
-      'The approval field is added here automatically.',
+    label: 'Choose the fields this person fills in',
+    placeholder: 'Select fields from your form',
+    autoAddHelperText: 'The approval field is added here automatically.',
     stepOneOnlyHelperText:
       'Your form only has MyInfo fields, which can only be used in the first step.',
     loginFieldsHelperText:
@@ -309,32 +293,21 @@ export const enSG: Workflow = {
       'This Yes/No field was deleted, please select another Yes/No field',
     notRequired: 'Approval not required in this step',
     toggle: {
-      label: 'Make this step an approval',
-      labelRedesign: "Make this person approve what's been filled in so far",
-      description:
-        'If respondent selects Yes, the form is Approved and continues to the next step. If they select No, the form is Not approved and stops at this step.',
-      descriptionRedesign:
-        'If they reject the submission, the workflow stops here.',
-      tooltip:
-        'Use this for steps that involve any type of decision, such as reviews or endorsements. Decision will be shown on dashboard and tracking links.',
+      label: "Make this person approve what's been filled in so far",
+      description: 'If they reject the submission, the workflow stops here.',
       placeholder: 'Select a field',
     },
     validation: {
-      noField: 'Please select a Yes/No field',
-      noFieldRedesign: 'Select a Yes/No field.',
+      noField: 'Select a Yes/No field.',
       fieldAlreadyUsed:
         'The selected field has been assigned to another step. Please choose a different field',
       fieldNotAssignedToUser:
-        'The selected Yes/No field has not been assigned to this respondent',
-      fieldNotAssignedToUserRedesign:
         'The selected Yes/No field has not been assigned to this person',
     },
     addStep: 'Add step',
     complete: {
       prefix:
         'When the workflow is complete, email notifications can be sent to respondents and other parties. Set up',
-      prefixRedesign:
-        'When the workflow is done, email notifications can be sent to people and other parties. Set up',
       link: 'email notifications',
       suffix: 'in Settings.',
     },

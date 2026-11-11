@@ -201,7 +201,7 @@ describe('webhook and workflow compatibility', () => {
 
       const response =
         count === 0
-          ? await session.delete(`/admin/forms/${form._id}/workflow/0`)
+          ? await session.delete(`/admin/forms/${form._id}/workflow`)
           : await session.post(`/admin/forms/${form._id}/workflow`).send(step())
 
       expect(response.status).toBe(rejected ? 400 : 200)

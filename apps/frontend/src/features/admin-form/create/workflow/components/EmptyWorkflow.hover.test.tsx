@@ -11,7 +11,7 @@ import {
   ILLUSTRATION_STEPS_LAYER_TEST_ID,
 } from './FormToWorkflowIllustration'
 
-const { NoWorkflowRedesignOn } = composeStories(pageStories, {
+const { NoWorkflow } = composeStories(pageStories, {
   parameters: {
     msw: {
       handlers: {
@@ -26,7 +26,7 @@ const INTRO_HEADER = /start creating a workflow for your form/i
 describe('the intro card illustration on hover', () => {
   const mountIntro = async () => {
     await act(async () => {
-      render(<NoWorkflowRedesignOn />)
+      render(<NoWorkflow />)
     })
     await screen.findByText(INTRO_HEADER, {}, { timeout: 10000 })
     return screen.getByTestId(INTRO_ILLUSTRATION_TEST_ID)

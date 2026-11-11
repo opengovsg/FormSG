@@ -10,7 +10,6 @@ import Radio from '~components/Radio'
 
 import { useAddFieldPicker } from '~features/admin-form/create/common/useAddFieldPicker'
 
-import { useIsWorkflowBuilderRedesign } from '../../../../../hooks/useIsWorkflowBuilderRedesign'
 import { useIsWorkflowSavePermissive } from '../../../../../hooks/useIsWorkflowSavePermissive'
 
 import { useWorkflowTypeValidation } from './hooks'
@@ -35,12 +34,10 @@ export const DynamicRespondentOption = ({
   } = formMethods
 
   const workflowTypeValidation = useWorkflowTypeValidation()
-  const isRedesign = useIsWorkflowBuilderRedesign()
   const isSavePermissive = useIsWorkflowSavePermissive()
   const { withAddFieldItem, withAddFieldAction } = useAddFieldPicker({
     label: t('features.adminForm.sidebar.workflow.addField.email'),
     fieldType: BasicField.Email,
-    enabled: isRedesign,
   })
 
   return (
@@ -77,9 +74,7 @@ export const DynamicRespondentOption = ({
                 required: isSavePermissive
                   ? false
                   : t(
-                      isRedesign
-                        ? 'features.adminForm.sidebar.workflow.dynamicRespondent.requiredRedesign'
-                        : 'features.adminForm.sidebar.workflow.dynamicRespondent.required',
+                      'features.adminForm.sidebar.workflow.dynamicRespondent.required',
                     ),
                 validate: (selectedValue) => {
                   if (!selectedValue) return true
@@ -90,9 +85,7 @@ export const DynamicRespondentOption = ({
                       ({ value: fieldValue }) => fieldValue === selectedValue,
                     ) ||
                     t(
-                      isRedesign
-                        ? 'features.adminForm.sidebar.workflow.dynamicRespondent.mustBeEmailRedesign'
-                        : 'features.adminForm.sidebar.workflow.dynamicRespondent.mustBeEmail',
+                      'features.adminForm.sidebar.workflow.dynamicRespondent.mustBeEmail',
                     )
                   )
                 },
