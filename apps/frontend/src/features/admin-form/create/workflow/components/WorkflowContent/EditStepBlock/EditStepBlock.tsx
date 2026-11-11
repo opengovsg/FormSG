@@ -379,7 +379,7 @@ export const EditStepBlock = ({
           )}
           <Tab {...WRAPPING_TAB_PROPS}>{t(`${STEP_TABS_KEY}.login`)}</Tab>
         </TabList>
-        <Divider w="auto" mx={{ base: '-1.5rem', md: '-2rem' }} />
+        <Divider />
       </Box>
       <TabPanels>
         <TabPanel px="0" pt="1.5rem">
