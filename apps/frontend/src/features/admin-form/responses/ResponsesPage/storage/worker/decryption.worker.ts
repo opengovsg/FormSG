@@ -240,8 +240,7 @@ type _DownloadAndDecryptSubmissionAttachmentsParams = {
   attachmentDecryptionKey: string
   attachmentMetadata: Record<string, string>
   decryptedResponses: FormField[]
-  // Return the files for the download zip instead of one zip per response
-  isAttachmentsV2Enabled: boolean
+  isOneZipDownload: boolean
 }
 async function _downloadAndDecryptSubmissionAttachments(
   ctx: WorkerCtx,
@@ -249,7 +248,7 @@ async function _downloadAndDecryptSubmissionAttachments(
     attachmentDecryptionKey,
     attachmentMetadata,
     decryptedResponses,
-    isAttachmentsV2Enabled,
+    isOneZipDownload,
   }: _DownloadAndDecryptSubmissionAttachmentsParams,
 ): Promise<
   | {
@@ -278,7 +277,7 @@ async function _downloadAndDecryptSubmissionAttachments(
   })
   try {
     const attachments: DecryptedAttachments = await queue.add(async () =>
-      isAttachmentsV2Enabled
+      isOneZipDownload
         ? {
             kind: 'files',
             files: await downloadAndDecryptAttachments(
@@ -309,7 +308,7 @@ async function downloadAndDecryptSubmissionAttachments(
   ctx: WorkerCtx,
   downloadAndDecryptSubmissionAttachmentsParams: Pick<
     _DownloadAndDecryptSubmissionAttachmentsParams,
-    'attachmentMetadata' | 'decryptedResponses' | 'isAttachmentsV2Enabled'
+    'attachmentMetadata' | 'decryptedResponses' | 'isOneZipDownload'
   > &
     GetAttachmentDecryptionKeyParams,
 ) {
@@ -323,8 +322,8 @@ async function downloadAndDecryptSubmissionAttachments(
       downloadAndDecryptSubmissionAttachmentsParams.attachmentMetadata,
     decryptedResponses:
       downloadAndDecryptSubmissionAttachmentsParams.decryptedResponses,
-    isAttachmentsV2Enabled:
-      downloadAndDecryptSubmissionAttachmentsParams.isAttachmentsV2Enabled,
+    isOneZipDownload:
+      downloadAndDecryptSubmissionAttachmentsParams.isOneZipDownload,
   })
 }
 
@@ -535,7 +534,7 @@ async function getDecryptedData(
           submission: parsedSubmission,
           secretKey,
           mrfSubmissionSecretKey,
-          isAttachmentsV2Enabled: getDecryptedDataParams.isAttachmentsV2Enabled,
+          isOneZipDownload: getDecryptedDataParams.isOneZipDownload,
         })
       isDownloadAndDecryptSubmissionAttachmentsSuccessful =
         downloadAndDecryptSubmissionAttachmentsResult.isDownloadSuccessful
