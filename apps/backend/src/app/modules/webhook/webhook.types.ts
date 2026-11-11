@@ -1,5 +1,5 @@
 import { FormWorkflowDto, WebhookSubmittedStep } from 'formsg-shared/types'
-import * as z from 'zod'
+import * as z from 'zod/v4'
 
 import { IFormSchema, ISubmissionSchema, WebhookView } from '../../../types'
 

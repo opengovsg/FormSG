@@ -19,7 +19,7 @@ import {
 } from 'formsg-shared/utils/step-login'
 import jwt, { TokenExpiredError } from 'jsonwebtoken'
 import { err, ok, Result } from 'neverthrow'
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 import {
   Environment,
