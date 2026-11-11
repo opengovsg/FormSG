@@ -18,7 +18,6 @@ import Toggle from '~components/Toggle'
 
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 import { useGuidedSetupPreference } from '../../hooks/useGuidedSetupPreference'
-import { useIsWorkflowBuilderRedesign } from '../../hooks/useIsWorkflowBuilderRedesign'
 
 const WORKFLOW_I18N_PREFIX = 'features.adminForm.sidebar.workflow'
 const SKIP_I18N_PREFIX = `${WORKFLOW_I18N_PREFIX}.skipGuidance`
@@ -26,7 +25,6 @@ const SKIP_I18N_PREFIX = `${WORKFLOW_I18N_PREFIX}.skipGuidance`
 export const GuidedSetupToggle = (): JSX.Element | null => {
   const { t } = useTranslation()
   const { isOpen, onOpen, onClose } = useDisclosure()
-  const isRedesign = useIsWorkflowBuilderRedesign()
   const { isGuidedSetup, setGuidedSetup } = useGuidedSetupPreference()
   const { formWorkflow } = useAdminFormWorkflow()
 
@@ -46,8 +44,6 @@ export const GuidedSetupToggle = (): JSX.Element | null => {
     setGuidedSetup(false)
     onClose()
   }
-
-  if (!isRedesign) return null
 
   const label = t(`${WORKFLOW_I18N_PREFIX}.guidedMode.label`)
 

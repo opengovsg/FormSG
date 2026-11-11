@@ -24,7 +24,6 @@ import {
 } from '~features/admin-form/settings/components/AuthSettingsSection/StepOneLoginRestrictions'
 import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 
-import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { EditStepInputs } from '../../../types'
 import { useIsSpotlightActiveSection } from '../../Spotlight'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
@@ -72,7 +71,6 @@ const StepLogin = ({
   isLoading,
 }: LoginBlockProps & { form: AdminMultirespondentFormDto }) => {
   const { t } = useTranslation()
-  const isRedesign = useIsWorkflowBuilderRedesign()
   const isGuidedSection = useIsSpotlightActiveSection()
   const [hasUnassignedFields, setHasUnassignedFields] = useState(false)
   const isFormPublic = form.status === FormStatus.Public
@@ -89,11 +87,11 @@ const StepLogin = ({
   return (
     <EditStepBlockContainer>
       <AuthSwitchConfirmation {...confirmationProps} />
-      {!isRedesign || isGuidedSection ? (
+      {isGuidedSection ? (
         <Text style={textStyles.h4}>{t(`${COPY_KEY}.title`)}</Text>
       ) : null}
       <StepLoginControls
-        isTitleToggle={isRedesign && !isGuidedSection}
+        isTitleToggle={!isGuidedSection}
         idPrefix={`step-${stepNumber}-login`}
         authType={login.auth_type}
         esrvcId={esrvcId ?? ''}

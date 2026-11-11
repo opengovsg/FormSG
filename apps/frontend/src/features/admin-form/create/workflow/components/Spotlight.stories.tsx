@@ -1,20 +1,10 @@
 import { Box, Stack, Text } from '@chakra-ui/react'
-import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
-
-import { featureFlags } from 'formsg-shared/constants'
 
 import Button from '~components/Button'
 import Input from '~components/Input'
 
 import { SpotlightGroup, SpotlightGroupProps } from './Spotlight'
-
-const withFlag = (isOn: boolean) =>
-  new GrowthBook({
-    features: {
-      [featureFlags.workflowBuilderRedesign]: { defaultValue: isOn },
-    },
-  })
 
 export default {
   title: 'Features/AdminForm/create/workflow/components/Spotlight',
@@ -48,12 +38,9 @@ const Section = ({ name }: { name: string }): JSX.Element => (
  * when it adopts the group.
  */
 const CardTemplate =
-  (
-    activeIndex: number | null,
-    { isEnabled = true, isFlagOn = true } = {},
-  ): StoryFn =>
+  (activeIndex: number | null, { isEnabled = true } = {}): StoryFn =>
   () => (
-    <GrowthBookProvider growthbook={withFlag(isFlagOn)}>
+    <>
       {/* Story-only gutter. The lit band is wider than the card, so without
           room either side the left overhang is clipped by the canvas edge and
           the treatment looks asymmetric. */}
@@ -86,7 +73,7 @@ const CardTemplate =
           </Stack>
         </Box>
       </Box>
-    </GrowthBookProvider>
+    </>
   )
 
 export const FirstSectionActive = CardTemplate(0)
@@ -129,17 +116,6 @@ Disabled.parameters = {
     description: {
       story:
         'Sections render untouched, in the pre-redesign structure: sibling dividers, the same 1.5rem rhythm, no band, no outline, no enlargement, no dimming. Compare against section 1 active to confirm no band styling leaks through.',
-    },
-  },
-}
-
-export const FlagOff = CardTemplate(0, { isFlagOn: false })
-FlagOff.storyName = 'Redesign flag off'
-FlagOff.parameters = {
-  docs: {
-    description: {
-      story:
-        'Identical to the disabled story. Flag-off has to be untouched sections everywhere, which is the same thing isEnabled already means.',
     },
   },
 }

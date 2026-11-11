@@ -345,7 +345,6 @@ PrivateStorageMyInfoUpdateWhitelistValidationErrorForm.parameters = {
 const stepLoginOn = new GrowthBook({
   features: {
     [featureFlags.mrfStepLogin]: { defaultValue: true },
-    [featureFlags.workflowBuilderRedesign]: { defaultValue: true },
     [featureFlags.isNricFieldEnabled]: { defaultValue: true },
   },
 })

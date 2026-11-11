@@ -14,7 +14,6 @@ import { useAddFieldPicker } from '~features/admin-form/create/common/useAddFiel
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
-import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { useIsWorkflowSavePermissive } from '../../../hooks/useIsWorkflowSavePermissive'
 import { EditStepInputs } from '../../../types'
 import { useIsSpotlightActiveSection } from '../../Spotlight'
@@ -37,13 +36,11 @@ export const ApprovalsBlock = ({
   stepNumber,
 }: ApprovalsBlockProps): JSX.Element => {
   const { t } = useTranslation()
-  const isRedesign = useIsWorkflowBuilderRedesign()
   const isSavePermissive = useIsWorkflowSavePermissive()
   const isActiveSection = useIsSpotlightActiveSection()
   const { withAddFieldItem, withAddFieldAction } = useAddFieldPicker({
     label: t('features.adminForm.sidebar.workflow.addField.yesNo'),
     fieldType: BasicField.YesNo,
-    enabled: isRedesign,
   })
   const {
     control,
@@ -87,7 +84,6 @@ export const ApprovalsBlock = ({
     const nextEdit = nextEditFieldsForApproval({
       edit: currentEdit,
       approvalFieldId,
-      isEnabled: isRedesign,
     })
     if (nextEdit !== currentEdit) {
       setValue(FIELDS_TO_EDIT_NAME, nextEdit, { shouldDirty: true })
@@ -133,29 +129,16 @@ export const ApprovalsBlock = ({
         onChange={onApprovalToggleChange}
         isChecked={isApprovalToggleChecked}
         labelStyles={{ ...textStyles.h4, color: 'inherit' }}
-        label={t(
-          isRedesign
-            ? 'features.adminForm.sidebar.workflow.approvals.toggle.labelRedesign'
-            : 'features.adminForm.sidebar.workflow.approvals.toggle.label',
-        )}
+        label={t('features.adminForm.sidebar.workflow.approvals.toggle.label')}
         description={t(
-          isRedesign
-            ? 'features.adminForm.sidebar.workflow.approvals.toggle.descriptionRedesign'
-            : 'features.adminForm.sidebar.workflow.approvals.toggle.description',
+          'features.adminForm.sidebar.workflow.approvals.toggle.description',
         )}
-        descriptionStyles={isRedesign ? { color: 'secondary.700' } : undefined}
-        tooltipText={
-          isRedesign
-            ? undefined
-            : t('features.adminForm.sidebar.workflow.approvals.toggle.tooltip')
-        }
-        tooltipVariant="info"
-        tooltipPlacement="top"
+        descriptionStyles={{ color: 'secondary.700' }}
       />
       {isApprovalToggleChecked ? (
         <FormControl
           isInvalid={!!errors.approval_field?.message}
-          {...(isRedesign ? { isRequired: !isSavePermissive } : {})}
+          isRequired={!isSavePermissive}
         >
           <Controller
             name={APPROVAL_FIELD_NAME}
@@ -164,9 +147,7 @@ export const ApprovalsBlock = ({
               validate: (value) => {
                 if (!value && isApprovalToggleChecked && !isSavePermissive) {
                   return t(
-                    isRedesign
-                      ? 'features.adminForm.sidebar.workflow.approvals.validation.noFieldRedesign'
-                      : 'features.adminForm.sidebar.workflow.approvals.validation.noField',
+                    'features.adminForm.sidebar.workflow.approvals.validation.noField',
                   )
                 }
                 if (value && approvalFieldsFromOtherSteps.includes(value)) {
@@ -179,9 +160,7 @@ export const ApprovalsBlock = ({
                   !(getValues(FIELDS_TO_EDIT_NAME) ?? []).includes(value)
                 ) {
                   return t(
-                    isRedesign
-                      ? 'features.adminForm.sidebar.workflow.approvals.validation.fieldNotAssignedToUserRedesign'
-                      : 'features.adminForm.sidebar.workflow.approvals.validation.fieldNotAssignedToUser',
+                    'features.adminForm.sidebar.workflow.approvals.validation.fieldNotAssignedToUser',
                   )
                 }
               },

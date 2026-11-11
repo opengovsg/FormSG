@@ -12,7 +12,6 @@ const {
   SingleStepV4Webhook,
   NoWorkflowGenericWebhook,
   SingleStepGenericWebhook,
-  SingleStepGenericWebhookRedesign,
   SingleStepPlumberWebhook,
 } = composeStories(stories)
 
@@ -26,100 +25,88 @@ describe('webhook workflow restrictions', () => {
     delete (Element.prototype as Partial<Element>).scrollIntoView
   })
 
-  it.each([
-    ['original', stories.SingleStepGenericWebhook],
-    ['redesign', stories.SingleStepGenericWebhookRedesign],
-  ] as const)(
-    'refreshes the webhook restriction on window focus in the %s editor',
-    async (_, story) => {
-      const webhook = { url: '', isRetryEnabled: false }
-      const UpdatedWebhook = composeStory(
-        {
-          ...story,
-          parameters: {
-            msw: {
-              handlers: {
-                default: [
-                  getAdminFormView({
-                    overrides: {
-                      responseMode: FormResponseMode.Multirespondent,
-                      workflow: [
-                        {
-                          _id: 'step-0',
-                          workflow_type: WorkflowType.Static,
-                          emails: [],
-                          edit: [],
-                        },
-                      ],
-                      webhook,
-                    },
-                  }),
-                  ...story.parameters!.msw.handlers.default,
-                ],
-              },
+  it('refreshes the webhook restriction on window focus', async () => {
+    const story = stories.SingleStepGenericWebhook
+    const webhook = { url: '', isRetryEnabled: false }
+    const UpdatedWebhook = composeStory(
+      {
+        ...story,
+        parameters: {
+          msw: {
+            handlers: {
+              default: [
+                getAdminFormView({
+                  overrides: {
+                    responseMode: FormResponseMode.Multirespondent,
+                    workflow: [
+                      {
+                        _id: 'step-0',
+                        workflow_type: WorkflowType.Static,
+                        emails: [],
+                        edit: [],
+                      },
+                    ],
+                    webhook,
+                  },
+                }),
+                ...story.parameters!.msw.handlers.default,
+              ],
             },
           },
         },
-        stories.default,
-      )
-      await act(async () => {
-        render(<UpdatedWebhook />)
-      })
-      expect(
-        await screen.findByRole('button', { name: /add step/i }),
-      ).toBeEnabled()
+      },
+      stories.default,
+    )
+    await act(async () => {
+      render(<UpdatedWebhook />)
+    })
+    expect(
+      await screen.findByRole('button', { name: /add step/i }),
+    ).toBeEnabled()
 
-      // Another tab adds a webhook while this tab retains its cached form.
-      webhook.url = 'https://example.com/webhook'
-      act(() => {
-        window.dispatchEvent(new Event('focus'))
-      })
-      await waitFor(() =>
-        expect(
-          screen.getByRole('button', { name: /add step/i }),
-        ).toBeDisabled(),
-      )
-      expect(
-        screen.getByRole('link', { name: 'webhook settings' }),
-      ).toBeInTheDocument()
+    // Another tab adds a webhook while this tab retains its cached form.
+    webhook.url = 'https://example.com/webhook'
+    act(() => {
+      window.dispatchEvent(new Event('focus'))
+    })
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /add step/i })).toBeDisabled(),
+    )
+    expect(
+      screen.getByRole('link', { name: 'webhook settings' }),
+    ).toBeInTheDocument()
 
-      webhook.url = ''
-      act(() => {
-        window.dispatchEvent(new Event('focus'))
-      })
-      await waitFor(() =>
-        expect(screen.getByRole('button', { name: /add step/i })).toBeEnabled(),
-      )
-      expect(
-        screen.queryByRole('link', { name: 'webhook settings' }),
-      ).not.toBeInTheDocument()
-    },
-  )
+    webhook.url = ''
+    act(() => {
+      window.dispatchEvent(new Event('focus'))
+    })
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /add step/i })).toBeEnabled(),
+    )
+    expect(
+      screen.queryByRole('link', { name: 'webhook settings' }),
+    ).not.toBeInTheDocument()
+  })
 
-  it.each([
-    ['original', SingleStepGenericWebhook],
-    ['redesign', SingleStepGenericWebhookRedesign],
-  ] as const)(
-    'blocks a second step and links to webhook settings in the %s editor',
-    async (_, Story) => {
-      await act(async () => {
-        render(<Story />)
-      })
+  it('blocks a second step and links to webhook settings', async () => {
+    const Story = SingleStepGenericWebhook
+    await act(async () => {
+      render(<Story />)
+    })
 
-      expect(
-        await screen.findByRole('button', { name: /add step/i }),
-      ).toBeDisabled()
-      expect(
-        screen.getByRole('link', { name: 'webhook settings' }),
-      ).toHaveAttribute('href', '/admin/form/12345/settings/webhooks')
-    },
-  )
+    expect(
+      await screen.findByRole('button', { name: /add step/i }),
+    ).toBeDisabled()
+    expect(
+      screen.getByRole('link', { name: 'webhook settings' }),
+    ).toHaveAttribute('href', '/admin/form/12345/settings/webhooks')
+  })
 
   it.each([
     [
       'the first step with a generic webhook',
       NoWorkflowGenericWebhook,
-      /create workflow/i,
+      /set up manually/i,
     ],
     [
       'a second step with a generic V4 webhook',

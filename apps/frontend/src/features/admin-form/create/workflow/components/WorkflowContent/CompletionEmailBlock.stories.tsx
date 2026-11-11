@@ -1,9 +1,7 @@
 import { useEffect } from 'react'
-import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 import { http, HttpResponse } from 'msw'
 
-import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
   FormFieldDto,
@@ -76,10 +74,6 @@ const step2: FormWorkflowStepDto = {
   step_name: 'Approver',
 }
 
-const redesignOn = new GrowthBook({
-  features: { [featureFlags.workflowBuilderRedesign]: { defaultValue: true } },
-})
-
 const mocks = (
   settingsOverrides: Partial<MultirespondentFormSettings>,
   settingsDelay: number | 'infinite' = 0,
@@ -118,14 +112,7 @@ export default {
   component: CompletionEmailBlock,
   title:
     'Features/AdminForm/create/workflow/components/WorkflowContent/CompletionEmailBlock',
-  decorators: [
-    StoryRouter({ initialEntries: ['/12345'], path: '/:formId' }),
-    (Story: StoryFn) => (
-      <GrowthBookProvider growthbook={redesignOn}>
-        <Story />
-      </GrowthBookProvider>
-    ),
-  ],
+  decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
 } as Meta
 
 const Template: StoryFn = () => <CompletionEmailBlock />

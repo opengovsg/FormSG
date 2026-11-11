@@ -37,7 +37,6 @@ import {
 } from '../../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { useIsStepLoginShown } from '../../../hooks/useIsStepLoginShown'
-import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { useIsWorkflowEditBlocked } from '../../../hooks/useIsWorkflowEditBlocked'
 import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
 import { STEP_LOGIN_LABEL_KEYS } from '../../../utils/stepLoginAvailability'
@@ -145,7 +144,6 @@ export const InactiveStepBlock = ({
   step,
 }: InactiveStepBlockProps): JSX.Element | null => {
   const { t } = useTranslation()
-  const isRedesign = useIsWorkflowBuilderRedesign()
   const {
     cardRadius,
     sectionLabelTextStyle,
@@ -253,7 +251,7 @@ export const InactiveStepBlock = ({
     ) : null
   const hideEmptyApprovals = isLoginShown
     ? !step.approval_field || step.is_approval_enabled === false
-    : isRedesign && !step.approval_field
+    : !step.approval_field
   const approvalsSection =
     isFirstStep || hideEmptyApprovals ? null : (
       <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />
@@ -285,17 +283,13 @@ export const InactiveStepBlock = ({
           <Stack>
             <Text textStyle={sectionLabelTextStyle}>
               {t(
-                isRedesign
-                  ? 'features.adminForm.sidebar.workflow.respondentBlock.stepRespondentRedesign'
-                  : 'features.adminForm.sidebar.workflow.respondentBlock.stepRespondent',
+                'features.adminForm.sidebar.workflow.respondentBlock.stepRespondent',
               )}
             </Text>
             {isFirstStep ? (
               <Text>
                 {t(
-                  isRedesign
-                    ? 'features.adminForm.sidebar.workflow.respondentBlock.anyoneRedesign'
-                    : 'features.adminForm.sidebar.workflow.respondentBlock.anyone',
+                  'features.adminForm.sidebar.workflow.respondentBlock.anyone',
                 )}
               </Text>
             ) : (
@@ -314,17 +308,8 @@ export const InactiveStepBlock = ({
           </Stack>
 
           {loginSection}
-          {isRedesign ? (
-            <>
-              {approvalsSection}
-              {fieldsSection}
-            </>
-          ) : (
-            <>
-              {fieldsSection}
-              {approvalsSection}
-            </>
-          )}
+          {approvalsSection}
+          {fieldsSection}
         </Stack>
       </chakra.button>
       <Icon

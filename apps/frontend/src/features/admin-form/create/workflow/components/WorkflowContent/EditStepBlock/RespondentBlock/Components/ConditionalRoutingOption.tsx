@@ -33,7 +33,6 @@ import { useAddFieldPicker } from '~features/admin-form/create/common/useAddFiel
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
-import { useIsWorkflowBuilderRedesign } from '../../../../../hooks/useIsWorkflowBuilderRedesign'
 import { useIsWorkflowSavePermissive } from '../../../../../hooks/useIsWorkflowSavePermissive'
 
 import { ConditionalRoutingMappingDeleteModal } from './ConditionalRoutingMappingDeleteModal'
@@ -360,13 +359,11 @@ export const ConditionalRoutingOption = ({
   }
 
   const workflowTypeValidation = useWorkflowTypeValidation()
-  const isRedesign = useIsWorkflowBuilderRedesign()
   const isSavePermissive = useIsWorkflowSavePermissive()
 
   const { withAddFieldItem, withAddFieldAction } = useAddFieldPicker({
     label: t('features.adminForm.sidebar.workflow.addField.dropdown'),
     fieldType: BasicField.Dropdown,
-    enabled: isRedesign,
   })
 
   const handleOpenModal = () => {
@@ -436,9 +433,7 @@ export const ConditionalRoutingOption = ({
                   required: isSavePermissive
                     ? false
                     : t(
-                        isRedesign
-                          ? 'features.adminForm.sidebar.workflow.conditionalRouting.validation.noFieldRedesign'
-                          : 'features.adminForm.sidebar.workflow.conditionalRouting.validation.noField',
+                        'features.adminForm.sidebar.workflow.conditionalRouting.validation.noField',
                       ),
                   validate: (selectedValue) => {
                     if (!selectedValue) return true
@@ -456,9 +451,7 @@ export const ConditionalRoutingOption = ({
                         ({ value: fieldValue }) => fieldValue === selectedValue,
                       ) ||
                       t(
-                        isRedesign
-                          ? 'features.adminForm.sidebar.workflow.conditionalRouting.validation.notDropdownRedesign'
-                          : 'features.adminForm.sidebar.workflow.conditionalRouting.validation.notDropdown',
+                        'features.adminForm.sidebar.workflow.conditionalRouting.validation.notDropdown',
                       )
                     )
                   },
@@ -499,17 +492,13 @@ export const ConditionalRoutingOption = ({
                   <Button
                     w="100%"
                     variant="outline"
-                    {...(isRedesign ? EMPTY_STATE_ACTION_STYLES : {})}
-                    leftIcon={
-                      <BiPlus fontSize={isRedesign ? undefined : '1.5rem'} />
-                    }
+                    {...EMPTY_STATE_ACTION_STYLES}
+                    leftIcon={<BiPlus />}
                     onClick={handleOpenModal}
                     isDisabled={!isSelectedConditionalFieldFound}
                   >
                     {t(
-                      isRedesign
-                        ? 'features.adminForm.sidebar.workflow.conditionalRouting.addEmailsToOptionsRedesign'
-                        : 'features.adminForm.sidebar.workflow.conditionalRouting.addEmailsToOptions',
+                      'features.adminForm.sidebar.workflow.conditionalRouting.addEmailsToOptions',
                     )}
                   </Button>
                 )

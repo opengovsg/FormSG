@@ -18,34 +18,26 @@ export interface Workflow {
   title: string
   respondentBlock: {
     stepRespondent: string
-    stepRespondentRedesign: string
     anyone: string
-    anyoneRedesign: string
     select: string
-    selectRedesign: string
     fieldsToFill: string
     clickToEdit: string
   }
   staticRespondent: {
-    invalidEmailsRedesign: string
+    invalidEmails: string
   }
   dynamicRespondent: {
     title: string
     required: string
-    requiredRedesign: string
     mustBeEmail: string
-    mustBeEmailRedesign: string
     select: string
   }
   conditionalRouting: {
     title: string
     addEmailsToOptions: string
-    addEmailsToOptionsRedesign: string
     validation: {
       noField: string
-      noFieldRedesign: string
       notDropdown: string
-      notDropdownRedesign: string
     }
     modals: {
       deleteStep: {
@@ -104,7 +96,6 @@ export interface Workflow {
       addMapping: {
         step1: {
           title: string
-          titleRedesign: string
           nextButton: string
           download: {
             templateCreated: string
@@ -149,9 +140,7 @@ export interface Workflow {
     errors: {
       respondentType: {
         required: string
-        requiredRedesign: string
         invalid: string
-        invalidRedesign: string
       }
       csv: {
         required: string
@@ -165,12 +154,9 @@ export interface Workflow {
     }
   }
   questions: {
-    tooltip: string
     label: string
-    labelRedesign: string
     placeholder: string
-    placeholderRedesign: string
-    autoAddHelperTextRedesign: string
+    autoAddHelperText: string
     stepOneOnlyHelperText: string
     loginFieldsHelperText: string
   }
@@ -251,23 +237,17 @@ export interface Workflow {
     notRequired: string
     toggle: {
       label: string
-      labelRedesign: string
       description: string
-      descriptionRedesign: string
-      tooltip: string
       placeholder: string
     }
     validation: {
       noField: string
-      noFieldRedesign: string
       fieldAlreadyUsed: string
       fieldNotAssignedToUser: string
-      fieldNotAssignedToUserRedesign: string
     }
     addStep: string
     complete: {
       prefix: string
-      prefixRedesign: string
       link: string
       suffix: string
     }

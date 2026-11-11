@@ -25,7 +25,6 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import { TagInput } from '~components/TagInput'
 
-import { useIsWorkflowBuilderRedesign } from '~features/admin-form/create/workflow/hooks/useIsWorkflowBuilderRedesign'
 import { useUser } from '~features/user/queries'
 
 import { useMutateFormSettings } from '../mutations'
@@ -105,7 +104,6 @@ export const FormEmailSection = ({
   isHighContrast = true,
 }: EmailFormSectionProps): JSX.Element => {
   const { t } = useTranslation()
-  const isRedesign = useIsWorkflowBuilderRedesign()
   const initialEmailSet = useMemo(
     () => new Set(settings.emails),
     [settings.emails],
@@ -162,9 +160,7 @@ export const FormEmailSection = ({
               opacity="1"
             >
               {t(
-                isRedesign
-                  ? 'features.adminForm.settings.emailNotifications.section.regular.descriptionRedesign'
-                  : 'features.adminForm.settings.emailNotifications.section.regular.description',
+                'features.adminForm.settings.emailNotifications.section.regular.description',
               )}
             </FormLabel.Description>
           ) : null}

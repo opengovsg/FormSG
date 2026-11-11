@@ -25,8 +25,6 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import { ModalCloseButton } from '~components/Modal'
 import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
 
-import { useIsWorkflowBuilderRedesign } from '../../../../../hooks/useIsWorkflowBuilderRedesign'
-
 import carouselImage1 from './carouselImages/image-carousel-1.png'
 import carouselImage2 from './carouselImages/image-carousel-2.png'
 import carouselImage3 from './carouselImages/image-carousel-3.png'
@@ -56,7 +54,6 @@ const StepOneModalContent = ({
   onClose,
 }: StepOneModalContentProps) => {
   const { t } = useTranslation()
-  const isRedesign = useIsWorkflowBuilderRedesign()
 
   //carousel image variables
   const carouselImages = [
@@ -90,9 +87,7 @@ const StepOneModalContent = ({
       <ModalHeader>
         <Text mb="0.25rem">
           {t(
-            isRedesign
-              ? 'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.titleRedesign'
-              : 'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.title',
+            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.title',
           )}
         </Text>
         <ProgressIndicator

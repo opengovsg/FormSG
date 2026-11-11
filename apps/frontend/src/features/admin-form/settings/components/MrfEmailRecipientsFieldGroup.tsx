@@ -20,7 +20,6 @@ import { TagInput } from '~components/TagInput'
 import { useAddFieldPicker } from '~features/admin-form/create/common/useAddFieldPicker'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { useAdminFormWorkflow } from '~features/admin-form/create/workflow/hooks/useAdminFormWorkflow'
-import { useIsWorkflowBuilderRedesign } from '~features/admin-form/create/workflow/hooks/useIsWorkflowBuilderRedesign'
 
 export const WORKFLOW_EMAIL_MULTISELECT_NAME = 'email-multi-select'
 export const STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME =
@@ -58,7 +57,6 @@ const OtherPartiesRecipientControl = ({
     control,
     name: OTHER_PARTIES_EMAIL_INPUT_NAME,
   })
-  const isRedesign = useIsWorkflowBuilderRedesign()
   const optionalAdminEmailValidationRules =
     useOptionalAdminEmailValidationRules()
 
@@ -101,9 +99,7 @@ const OtherPartiesRecipientControl = ({
       {isEmpty(errors[OTHER_PARTIES_EMAIL_INPUT_NAME]) ? (
         <FormLabel.Description color="secondary.400" mt="0.5rem">
           {t(
-            isRedesign
-              ? 'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.descriptionRedesign'
-              : 'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.description',
+            'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.description',
           )}
         </FormLabel.Description>
       ) : (
@@ -122,11 +118,9 @@ const StepOneRecipientControl = ({
 }: MrfEmailRecipientControlProps): JSX.Element => {
   const { t } = useTranslation()
   const { isLoading, emailFormFields = [] } = useAdminFormWorkflow()
-  const isRedesign = useIsWorkflowBuilderRedesign()
   const { withAddFieldItem, withAddFieldAction } = useAddFieldPicker({
     label: t('features.adminForm.sidebar.workflow.addField.email'),
     fieldType: BasicField.Email,
-    enabled: isRedesign,
   })
 
   const emailFieldItems = emailFormFields.map(
@@ -178,7 +172,6 @@ const WorkflowStepsRecipientControl = ({
 }: MrfEmailRecipientControlProps): JSX.Element => {
   const { t } = useTranslation()
   const { isLoading, formWorkflow } = useAdminFormWorkflow()
-  const isRedesign = useIsWorkflowBuilderRedesign()
 
   const formWorkflowStepsWithStepNumber =
     formWorkflow?.map((step, index) => ({
@@ -190,9 +183,7 @@ const WorkflowStepsRecipientControl = ({
     <>
       <FormLabel mb="0.75rem" textColor="secondary.700">
         {t(
-          isRedesign
-            ? 'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.overallRedesign'
-            : 'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.overall',
+          'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.overall',
         )}
       </FormLabel>
       <Skeleton isLoaded={!isLoading}>

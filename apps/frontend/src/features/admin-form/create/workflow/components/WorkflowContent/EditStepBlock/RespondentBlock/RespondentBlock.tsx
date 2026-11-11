@@ -13,7 +13,6 @@ import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants
 import { EditStepInputs } from '~features/admin-form/create/workflow/types'
 
 import { useAdminFormWorkflow } from '../../../../hooks/useAdminFormWorkflow'
-import { useIsWorkflowBuilderRedesign } from '../../../../hooks/useIsWorkflowBuilderRedesign'
 import { useIsSpotlightActiveSection } from '../../../Spotlight'
 import { isFirstStepByStepNumber } from '../../utils/isFirstStepByStepNumber'
 import { EditStepBlockContainer } from '../EditStepBlockContainer'
@@ -42,7 +41,6 @@ export const RespondentBlock = ({
 
   const { emailFormFields = [], dropdownFormFields = [] } =
     useAdminFormWorkflow()
-  const isRedesign = useIsWorkflowBuilderRedesign()
   const isActiveSection = useIsSpotlightActiveSection()
 
   const emailFieldItems = emailFormFields.map(
@@ -63,17 +61,11 @@ export const RespondentBlock = ({
         <Stack spacing="0.5rem">
           <Text style={textStyles.h4}>
             {t(
-              isRedesign
-                ? 'features.adminForm.sidebar.workflow.respondentBlock.stepRespondentRedesign'
-                : 'features.adminForm.sidebar.workflow.respondentBlock.stepRespondent',
+              'features.adminForm.sidebar.workflow.respondentBlock.stepRespondent',
             )}
           </Text>
           <Text>
-            {t(
-              isRedesign
-                ? 'features.adminForm.sidebar.workflow.respondentBlock.anyoneRedesign'
-                : 'features.adminForm.sidebar.workflow.respondentBlock.anyone',
-            )}
+            {t('features.adminForm.sidebar.workflow.respondentBlock.anyone')}
           </Text>
         </Stack>
       ) : (
@@ -83,11 +75,7 @@ export const RespondentBlock = ({
           isInvalid={!!errors.workflow_type}
         >
           <FormLabel style={textStyles.h4}>
-            {t(
-              isRedesign
-                ? 'features.adminForm.sidebar.workflow.respondentBlock.selectRedesign'
-                : 'features.adminForm.sidebar.workflow.respondentBlock.select',
-            )}
+            {t('features.adminForm.sidebar.workflow.respondentBlock.select')}
           </FormLabel>
           {isActiveSection ? (
             <Text textStyle="body-2" color="secondary.400" mb="0.5rem">

@@ -1,8 +1,4 @@
-import { ReactNode } from 'react'
-import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { render, screen } from '@testing-library/react'
-
-import { featureFlags } from 'formsg-shared/constants'
 
 import {
   Spotlight,
@@ -13,49 +9,26 @@ import {
 
 const CHILD_LABEL = 'Pick a field'
 
-const withFlag = (isFlagOn: boolean, children: ReactNode) => (
-  <GrowthBookProvider
-    growthbook={
-      new GrowthBook({
-        features: {
-          [featureFlags.workflowBuilderRedesign]: { defaultValue: isFlagOn },
-        },
-      })
-    }
-  >
-    {children}
-  </GrowthBookProvider>
-)
-
-const renderSpotlight = (
-  props: Omit<SpotlightProps, 'children'>,
-  { isFlagOn = true }: { isFlagOn?: boolean } = {},
-) =>
+const renderSpotlight = (props: Omit<SpotlightProps, 'children'>) =>
   render(
-    withFlag(
-      isFlagOn,
-      <Spotlight {...props}>
-        <button type="button">{CHILD_LABEL}</button>
-      </Spotlight>,
-    ),
+    <Spotlight {...props}>
+      <button type="button">{CHILD_LABEL}</button>
+    </Spotlight>,
   )
 
-const renderGroup = (
-  {
-    activeIndex,
-    isEnabled,
-  }: { activeIndex: number | null; isEnabled?: boolean },
-  { isFlagOn = true }: { isFlagOn?: boolean } = {},
-) =>
+const renderGroup = ({
+  activeIndex,
+  isEnabled,
+}: {
+  activeIndex: number | null
+  isEnabled?: boolean
+}) =>
   render(
-    withFlag(
-      isFlagOn,
-      <SpotlightGroup activeIndex={activeIndex} isEnabled={isEnabled}>
-        <button type="button">Step name</button>
-        <button type="button">Who fills this in</button>
-        <button type="button">What they can see</button>
-      </SpotlightGroup>,
-    ),
+    <SpotlightGroup activeIndex={activeIndex} isEnabled={isEnabled}>
+      <button type="button">Step name</button>
+      <button type="button">Who fills this in</button>
+      <button type="button">What they can see</button>
+    </SpotlightGroup>,
   )
 
 const child = () => screen.getByRole('button', { name: CHILD_LABEL })
@@ -166,16 +139,6 @@ describe('Spotlight', () => {
     expect(wrapper()).not.toBeInTheDocument()
     expect(child()).toBeInTheDocument()
   })
-
-  // Requirement 7, and the one that matters most: this is live for the whole
-  // Singapore government, so flag-off must leave every section exactly as it
-  // was, including one the flow would otherwise have spotlit.
-  it('should render children with no wrapper at all when the flag is off', () => {
-    renderSpotlight({ isActive: true }, { isFlagOn: false })
-
-    expect(wrapper()).not.toBeInTheDocument()
-    expect(child()).toBeInTheDocument()
-  })
 })
 
 describe('SpotlightGroup', () => {
@@ -266,23 +229,17 @@ describe('SpotlightGroup', () => {
     ])
   })
 
-  // Flag-off and spotlight-off keep the pre-redesign structure: sibling
-  // dividers, no bands. Asserted as structure rather than styling, because
-  // "looks the same" is exactly what a band with neutral styling would pass.
-  it.each([
-    ['disabled', { activeIndex: 0, isEnabled: false }, { isFlagOn: true }],
-    ['the flag is off', { activeIndex: 0 }, { isFlagOn: false }],
-  ])(
-    'should render sibling dividers and no bands when %s',
-    (_, props, opts) => {
-      renderGroup(props, opts)
+  // Spotlight-off keeps the plain structure: sibling dividers, no bands.
+  // Asserted as structure rather than styling, because "looks the same" is
+  // exactly what a band with neutral styling would pass.
+  it('should render sibling dividers and no bands when disabled', () => {
+    renderGroup({ activeIndex: 0, isEnabled: false })
 
-      expect(bands()).toHaveLength(0)
-      // Two between the three sections, plus the group's trailing boundary.
-      expect(screen.getAllByRole('separator')).toHaveLength(3)
-      expect(
-        screen.getByRole('button', { name: 'Who fills this in' }),
-      ).toBeInTheDocument()
-    },
-  )
+    expect(bands()).toHaveLength(0)
+    // Two between the three sections, plus the group's trailing boundary.
+    expect(screen.getAllByRole('separator')).toHaveLength(3)
+    expect(
+      screen.getByRole('button', { name: 'Who fills this in' }),
+    ).toBeInTheDocument()
+  })
 })

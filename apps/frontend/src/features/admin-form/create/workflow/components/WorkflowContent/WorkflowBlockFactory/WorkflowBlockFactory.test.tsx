@@ -11,14 +11,14 @@ import * as pageStories from '../../../CreatePageWorkflowTab.stories'
 import { AdminEditWorkflowState } from '../../../types'
 import { STEP_CONNECTOR_TEST_ID } from '../WorkflowContent'
 
-const { WithWorkflowRedesignOn, WithWorkflow } = composeStories(pageStories)
+const { WithWorkflow } = composeStories(pageStories)
 
 const STEP_ONE_DONE = /step 1 is the public-facing step/i
 const STEP_TWO_DONE = /nice, step 2 is all set/i
 const ADD_ANOTHER = { name: /yes, add a step/i }
 const DECLINE = { name: /no, i'm done/i }
 
-const renderWorkflow = async (Story: typeof WithWorkflowRedesignOn) => {
+const renderWorkflow = async (Story: typeof WithWorkflow) => {
   await act(async () => {
     render(<Story />)
   })
@@ -45,7 +45,7 @@ describe('completion peek card after a step is built', () => {
   afterEach(() => useAdminWorkflowStore.getState().reset())
 
   it('reports step 1 in its own words, since its respondents are not chosen', async () => {
-    await renderWorkflow(WithWorkflowRedesignOn)
+    await renderWorkflow(WithWorkflow)
     await finishCreating(0)
 
     expect(screen.getByText(STEP_ONE_DONE)).toBeInTheDocument()
@@ -53,14 +53,14 @@ describe('completion peek card after a step is built', () => {
   })
 
   it('names a later step, counting from one', async () => {
-    await renderWorkflow(WithWorkflowRedesignOn)
+    await renderWorkflow(WithWorkflow)
     await finishCreating(1)
 
     expect(screen.getByText(STEP_TWO_DONE)).toBeInTheDocument()
   })
 
   it('reports on the step that was built and no other', async () => {
-    await renderWorkflow(WithWorkflowRedesignOn)
+    await renderWorkflow(WithWorkflow)
     await finishCreating(1)
 
     expect(screen.queryByText(STEP_ONE_DONE)).not.toBeInTheDocument()
@@ -68,7 +68,7 @@ describe('completion peek card after a step is built', () => {
 
   it('opens a new step card and stops reporting when another step is asked for', async () => {
     const user = userEvent.setup()
-    await renderWorkflow(WithWorkflowRedesignOn)
+    await renderWorkflow(WithWorkflow)
     await finishCreating(0)
 
     await act(async () => {
@@ -83,7 +83,7 @@ describe('completion peek card after a step is built', () => {
 
   it('hands over to the completion email card when the admin says they are done', async () => {
     const user = userEvent.setup()
-    await renderWorkflow(WithWorkflowRedesignOn)
+    await renderWorkflow(WithWorkflow)
     await finishCreating(0)
 
     await act(async () => {
@@ -98,7 +98,7 @@ describe('completion peek card after a step is built', () => {
 
   it('remembers the step it reported on, so cancelling can bring it back', async () => {
     const user = userEvent.setup()
-    await renderWorkflow(WithWorkflowRedesignOn)
+    await renderWorkflow(WithWorkflow)
     await finishCreating(0)
 
     await act(async () => {
@@ -112,7 +112,7 @@ describe('completion peek card after a step is built', () => {
   })
 
   it('stays out of the way while the step it reports on is open for editing', async () => {
-    await renderWorkflow(WithWorkflowRedesignOn)
+    await renderWorkflow(WithWorkflow)
     await finishCreating(0)
     await act(async () => {
       useAdminWorkflowStore.getState().setToEditing(0)
@@ -123,7 +123,7 @@ describe('completion peek card after a step is built', () => {
 
   describe('while a step is reporting', () => {
     it('withholds the Add step button, leaving the report the only way on', async () => {
-      await renderWorkflow(WithWorkflowRedesignOn)
+      await renderWorkflow(WithWorkflow)
       expect(
         screen.getByRole('button', { name: /add step/i }),
       ).toBeInTheDocument()
@@ -136,7 +136,7 @@ describe('completion peek card after a step is built', () => {
     })
 
     it('takes the connector with it, so nothing dangles under the report', async () => {
-      await renderWorkflow(WithWorkflowRedesignOn)
+      await renderWorkflow(WithWorkflow)
       const before = screen.queryAllByTestId(STEP_CONNECTOR_TEST_ID).length
 
       await finishCreating(0)
@@ -148,7 +148,7 @@ describe('completion peek card after a step is built', () => {
 
     it('gives the Add step button back once the admin says they are done', async () => {
       const user = userEvent.setup()
-      await renderWorkflow(WithWorkflowRedesignOn)
+      await renderWorkflow(WithWorkflow)
       await finishCreating(0)
 
       await act(async () => {
@@ -159,22 +159,6 @@ describe('completion peek card after a step is built', () => {
         await screen.findByRole('button', { name: /add step/i }),
       ).toBeInTheDocument()
     })
-
-    it('keeps the Add step button when the flag is off, since no report shows', async () => {
-      await renderWorkflow(WithWorkflow)
-      await finishCreating(0)
-
-      expect(
-        screen.getByRole('button', { name: /add step/i }),
-      ).toBeInTheDocument()
-    })
-  })
-
-  it('does not appear with the redesign flag off', async () => {
-    await renderWorkflow(WithWorkflow)
-    await finishCreating(0)
-
-    expect(screen.queryByText(STEP_ONE_DONE)).not.toBeInTheDocument()
   })
 })
 

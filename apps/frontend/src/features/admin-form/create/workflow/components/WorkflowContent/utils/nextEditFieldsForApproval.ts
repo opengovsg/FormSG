@@ -10,15 +10,12 @@
 export const nextEditFieldsForApproval = ({
   edit,
   approvalFieldId,
-  isEnabled,
 }: {
   edit: string[]
   /** The newly selected approval field, or '' when cleared. */
   approvalFieldId: string
-  /** Whether auto-assign applies at all (the redesign flag). */
-  isEnabled: boolean
 }): string[] => {
-  if (!isEnabled || !approvalFieldId || edit.includes(approvalFieldId)) {
+  if (!approvalFieldId || edit.includes(approvalFieldId)) {
     return edit
   }
   return [...edit, approvalFieldId]

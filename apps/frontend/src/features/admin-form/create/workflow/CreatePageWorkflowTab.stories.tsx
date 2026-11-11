@@ -270,23 +270,36 @@ const FORM_WITH_WORKFLOW: Partial<AdminFormDto> = {
   workflow: [workflow_step_1, workflow_step_2],
 }
 
-const redesignOn = new GrowthBook({
-  features: { [featureFlags.workflowBuilderRedesign]: { defaultValue: true } },
-})
-
-const withRedesignOn = (Story: StoryFn) => (
-  <GrowthBookProvider growthbook={redesignOn}>
-    <Story />
-  </GrowthBookProvider>
-)
-
 const Template: StoryFn = () => <CreatePageWorkflowTab />
 export const NoWorkflow = Template.bind({})
-NoWorkflow.parameters = { argos: { modes: viewportModes('mobile') } }
+NoWorkflow.parameters = {
+  argos: { modes: viewportModes('mobile') },
+  msw: {
+    handlers: {
+      default: buildMswRoutes({ ...FORM_WITH_WORKFLOW, workflow: [] }),
+    },
+  },
+}
 
 export const WithWorkflow = Template.bind({})
 WithWorkflow.parameters = {
-  msw: { handlers: { default: buildMswRoutes(FORM_WITH_WORKFLOW) } },
+  msw: {
+    handlers: {
+      default: [
+        ...buildMswRoutes(FORM_WITH_WORKFLOW),
+        getAdminFormSettings({
+          mode: FormResponseMode.Multirespondent,
+          overrides: {
+            status: FormStatus.Private,
+            emails: ['admin@example.gov.sg'],
+            stepsToNotify: [workflow_step_2._id],
+            stepOneEmailNotificationFieldId: form_field_5._id,
+          } satisfies Partial<MultirespondentFormSettings>,
+        }),
+        patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+      ],
+    },
+  },
   documentation: {
     storyDescription:
       'The whole step card is clickable and shows a hover affordance (border, background, pencil tint). Hover only appears in the canvas, as there is no pseudo-state addon.',
@@ -305,37 +318,32 @@ export const Step1 = Template.bind({})
 Step1.parameters = {
   msw: {
     handlers: {
-      default: buildMswRoutes({
-        ...FORM_WITH_WORKFLOW,
-        workflow: [workflow_step_1],
-      }),
+      default: [
+        ...buildMswRoutes({
+          ...FORM_WITH_WORKFLOW,
+          workflow: [workflow_step_1],
+        }),
+        getAdminFormSettings({
+          mode: FormResponseMode.Multirespondent,
+          overrides: {
+            status: FormStatus.Private,
+            emails: ['admin@example.gov.sg'],
+            stepsToNotify: [],
+            stepOneEmailNotificationFieldId: form_field_5._id,
+          } satisfies Partial<MultirespondentFormSettings>,
+        }),
+        patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+      ],
     },
   },
   documentation: {
     storyDescription:
-      'Step 1 of a workflow should not show any respondent selected',
+      'A workflow that stops at step 1. The completion email card waits for a second step, so the page ends at the Add step button.',
   },
 }
 
 export const Step3Approval = Template.bind({})
 Step3Approval.parameters = {
-  msw: {
-    handlers: {
-      default: buildMswRoutes({
-        ...FORM_WITH_WORKFLOW,
-        workflow: [
-          workflow_step_1,
-          workflow_step_2,
-          workflow_step_3_with_approval,
-        ],
-      }),
-    },
-  },
-}
-
-export const Step3ApprovalRedesignOn = Template.bind({})
-Step3ApprovalRedesignOn.decorators = [withRedesignOn]
-Step3ApprovalRedesignOn.parameters = {
   msw: {
     handlers: {
       default: buildMswRoutes({
@@ -357,23 +365,6 @@ Step3ApprovalRedesignOn.parameters = {
 
 export const Step3ApprovalFieldDeleted = Template.bind({})
 Step3ApprovalFieldDeleted.parameters = {
-  msw: {
-    handlers: {
-      default: buildMswRoutes({
-        ...FORM_WITH_WORKFLOW,
-        workflow: [
-          workflow_step_1,
-          workflow_step_2,
-          workflow_step_3_with_deleted_approval,
-        ],
-      }),
-    },
-  },
-}
-
-export const Step3ApprovalFieldDeletedRedesignOn = Template.bind({})
-Step3ApprovalFieldDeletedRedesignOn.decorators = [withRedesignOn]
-Step3ApprovalFieldDeletedRedesignOn.parameters = {
   msw: {
     handlers: {
       default: buildMswRoutes({
@@ -463,31 +454,8 @@ Step2InvalidConditionalRecipientSelected.parameters = {
   },
 }
 
-export const WithWorkflowRedesignOn = Template.bind({})
-WithWorkflowRedesignOn.decorators = [withRedesignOn]
-WithWorkflowRedesignOn.parameters = {
-  msw: {
-    handlers: {
-      default: [
-        ...buildMswRoutes(FORM_WITH_WORKFLOW),
-        getAdminFormSettings({
-          mode: FormResponseMode.Multirespondent,
-          overrides: {
-            status: FormStatus.Private,
-            emails: ['admin@example.gov.sg'],
-            stepsToNotify: [workflow_step_2._id],
-            stepOneEmailNotificationFieldId: form_field_5._id,
-          } satisfies Partial<MultirespondentFormSettings>,
-        }),
-        patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
-      ],
-    },
-  },
-}
-
-export const WithWorkflowRedesignOnClosedForm = Template.bind({})
-WithWorkflowRedesignOnClosedForm.decorators = [withRedesignOn]
-WithWorkflowRedesignOnClosedForm.parameters = {
+export const WithWorkflowClosedForm = Template.bind({})
+WithWorkflowClosedForm.parameters = {
   msw: {
     handlers: {
       default: [
@@ -510,9 +478,8 @@ WithWorkflowRedesignOnClosedForm.parameters = {
   },
 }
 
-export const NoCompletionEmailRedesignOn = Template.bind({})
-NoCompletionEmailRedesignOn.decorators = [withRedesignOn]
-NoCompletionEmailRedesignOn.parameters = {
+export const NoCompletionEmail = Template.bind({})
+NoCompletionEmail.parameters = {
   msw: {
     handlers: {
       default: [
@@ -536,48 +503,8 @@ NoCompletionEmailRedesignOn.parameters = {
   },
 }
 
-export const Step1RedesignOn = Template.bind({})
-Step1RedesignOn.decorators = [withRedesignOn]
-Step1RedesignOn.parameters = {
-  msw: {
-    handlers: {
-      default: [
-        ...buildMswRoutes({
-          ...FORM_WITH_WORKFLOW,
-          workflow: [workflow_step_1],
-        }),
-        getAdminFormSettings({
-          mode: FormResponseMode.Multirespondent,
-          overrides: {
-            status: FormStatus.Private,
-            emails: ['admin@example.gov.sg'],
-            stepsToNotify: [],
-            stepOneEmailNotificationFieldId: form_field_5._id,
-          } satisfies Partial<MultirespondentFormSettings>,
-        }),
-        patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
-      ],
-    },
-  },
-  documentation: {
-    storyDescription:
-      'A workflow that stops at step 1. The completion email card waits for a second step, so the page ends at the Add step button.',
-  },
-}
-
-export const NoWorkflowRedesignOn = Template.bind({})
-NoWorkflowRedesignOn.decorators = [withRedesignOn]
-NoWorkflowRedesignOn.parameters = {
-  msw: {
-    handlers: {
-      default: buildMswRoutes({ ...FORM_WITH_WORKFLOW, workflow: [] }),
-    },
-  },
-}
-
-export const NewStepOnPrivateFormRedesignOn = Template.bind({})
-NewStepOnPrivateFormRedesignOn.decorators = [withRedesignOn]
-NewStepOnPrivateFormRedesignOn.parameters = {
+export const NewStepOnPrivateForm = Template.bind({})
+NewStepOnPrivateForm.parameters = {
   msw: {
     handlers: {
       default: buildMswRoutes({
@@ -609,8 +536,10 @@ const webhookWorkflowParameters = (
         getAdminFormSettings({
           overrides: { responseMode: FormResponseMode.Multirespondent },
         }),
+        // Closed, since an open form blocks workflow edits outright.
         ...buildMswRoutes({
           ...FORM_WITH_WORKFLOW,
+          status: FormStatus.Private,
           workflow,
           webhook: { url, isRetryEnabled: false, webhookFormat },
         }),
@@ -629,11 +558,6 @@ SingleStepPlumberWebhook.parameters = webhookWorkflowParameters(
   'https://plumber.gov.sg/webhooks/abc',
 )
 
-export const SingleStepGenericWebhookRedesign = Template.bind({})
-SingleStepGenericWebhookRedesign.decorators = [withRedesignOn]
-SingleStepGenericWebhookRedesign.parameters =
-  SingleStepGenericWebhook.parameters
-
 export const NoWorkflowGenericWebhook = Template.bind({})
 NoWorkflowGenericWebhook.parameters = webhookWorkflowParameters(
   'https://example.com/webhook',
@@ -649,7 +573,6 @@ SingleStepV4Webhook.parameters = webhookWorkflowParameters(
 
 const stepLoginFlags = new GrowthBook({
   features: {
-    [featureFlags.workflowBuilderRedesign]: { defaultValue: true },
     [featureFlags.mrfStepLogin]: { defaultValue: true },
     [featureFlags.isNricFieldEnabled]: { defaultValue: true },
   },

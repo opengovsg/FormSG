@@ -6,7 +6,7 @@ import { useAdminWorkflowStore } from '../../adminWorkflowStore'
 import * as pageStories from '../../CreatePageWorkflowTab.stories'
 import { SPOTLIGHT_TEST_ID } from '../Spotlight'
 
-const { WithWorkflowRedesignOn, WithWorkflow } = composeStories(pageStories)
+const { WithWorkflow } = composeStories(pageStories)
 
 const SWITCH = { name: /guided setup/i }
 const CONFIRM = { name: /^skip guided setup$/i }
@@ -14,7 +14,7 @@ const CONFIRM_TITLE = /skip guided setup\?/i
 
 const bandCount = () => screen.queryAllByTestId(SPOTLIGHT_TEST_ID).length
 
-const openTab = async (Story: typeof WithWorkflowRedesignOn) => {
+const openTab = async (Story: typeof WithWorkflow) => {
   await act(async () => {
     render(<Story />)
   })
@@ -23,7 +23,7 @@ const openTab = async (Story: typeof WithWorkflowRedesignOn) => {
 }
 
 const openPacedStep = async () => {
-  const ui = await openTab(WithWorkflowRedesignOn)
+  const ui = await openTab(WithWorkflow)
   await act(async () => {
     useAdminWorkflowStore.getState().setToCreating()
   })
@@ -47,19 +47,13 @@ describe('the Guided setup switch', () => {
   })
 
   it('sits in the workflow card, on by default', async () => {
-    await openTab(WithWorkflowRedesignOn)
+    await openTab(WithWorkflow)
 
     expect(screen.getByRole('checkbox', SWITCH)).toBeChecked()
   })
 
-  it('is absent with the redesign flag off', async () => {
-    await openTab(WithWorkflow)
-
-    expect(screen.queryByRole('checkbox', SWITCH)).not.toBeInTheDocument()
-  })
-
   it('asks before switching off', async () => {
-    const ui = await openTab(WithWorkflowRedesignOn)
+    const ui = await openTab(WithWorkflow)
 
     await act(async () => {
       await ui.click(screen.getByRole('checkbox', SWITCH))
@@ -73,7 +67,7 @@ describe('the Guided setup switch', () => {
     ['cancel', /^cancel$/i],
     ['the close icon', /close/i],
   ])('changes nothing on %s', async (_label, name) => {
-    const ui = await openTab(WithWorkflowRedesignOn)
+    const ui = await openTab(WithWorkflow)
 
     await act(async () => {
       await ui.click(screen.getByRole('checkbox', SWITCH))

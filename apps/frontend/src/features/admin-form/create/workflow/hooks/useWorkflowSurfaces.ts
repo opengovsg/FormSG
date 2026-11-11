@@ -1,7 +1,5 @@
 import { usePrefersReducedMotion } from '@chakra-ui/react'
 
-import { useIsWorkflowBuilderRedesign } from './useIsWorkflowBuilderRedesign'
-
 export interface WorkflowSurfaces {
   cardRadius: string
   stepLabelTextStyle: string
@@ -13,19 +11,7 @@ export interface WorkflowSurfaces {
   activeCardShadow: string
 }
 
-const LEGACY: WorkflowSurfaces = {
-  cardRadius: '4px',
-  stepLabelTextStyle: 'subhead-3',
-  sectionLabelTextStyle: 'subhead-3',
-  iconRestColor: 'neutral.500',
-  iconTransitionDuration: 'normal',
-  activeCardBg: 'white',
-  activeCardBorderWidth: '1px',
-  activeCardShadow: '0 0 0 1px var(--chakra-colors-primary-500)',
-}
-
-const REDESIGN: WorkflowSurfaces = {
-  ...LEGACY,
+const SURFACES: WorkflowSurfaces = {
   cardRadius: '8px',
   stepLabelTextStyle: 'subhead-1',
   sectionLabelTextStyle: 'subhead-2',
@@ -37,13 +23,10 @@ const REDESIGN: WorkflowSurfaces = {
 }
 
 export const useWorkflowSurfaces = (): WorkflowSurfaces => {
-  const isRedesign = useIsWorkflowBuilderRedesign()
   const prefersReducedMotion = usePrefersReducedMotion()
 
-  const surfaces = isRedesign ? REDESIGN : LEGACY
-
   if (prefersReducedMotion) {
-    return { ...surfaces, iconTransitionDuration: '0s' }
+    return { ...SURFACES, iconTransitionDuration: '0s' }
   }
-  return surfaces
+  return SURFACES
 }
