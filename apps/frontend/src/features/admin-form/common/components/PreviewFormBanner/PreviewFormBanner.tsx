@@ -1,6 +1,11 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BiArrowBack, BiDotsHorizontalRounded, BiShow } from 'react-icons/bi'
+import {
+  BiArrowBack,
+  BiDotsHorizontalRounded,
+  BiShow,
+  BiUser,
+} from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
 import { Waypoint } from 'react-waypoint'
 import {
@@ -39,6 +44,7 @@ import {
   USE_TEMPLATE_TOUR_TARGET_ID,
 } from '~features/admin-form/template/UseTemplateNudges/UseTemplateTour.constants'
 import { useEnv } from '~features/env/queries'
+import { isFieldEnabledByMrfWorkflow } from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
 import { isMyInfo } from '~features/myinfo/utils'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 // Explicit import to avoid circular dependency warnings by rollup
@@ -117,20 +123,24 @@ const PreviewStepSelect = ({
 
 /**
  * On a Singpass Myinfo step, preview shows Myinfo fields as a Singaporean sees
- * them. Only Singaporeans for now.
+ * them. Only Singaporeans for now. Shown only when this step fills in a
+ * Myinfo field.
  */
 const PreviewViewingAs = (): JSX.Element | null => {
   const { t } = useTranslation()
-  const { form } = usePublicFormContext()
+  const { form, currentWorkflowStep } = usePublicFormContext()
   const hasMyInfoView =
     form?.authType === FormAuthType.MyInfo &&
     form.form_fields.some(
-      (field) => isMyInfo(field) && field.fieldType !== BasicField.Children,
+      (field) =>
+        isMyInfo(field) &&
+        field.fieldType !== BasicField.Children &&
+        isFieldEnabledByMrfWorkflow(currentWorkflowStep, field),
     )
   if (!hasMyInfoView) return null
   return (
     <Flex align="center" gap="0.5rem" color="secondary.500">
-      <Icon aria-hidden as={BiShow} fontSize="1.25rem" />
+      <Icon aria-hidden as={BiUser} fontSize="1.25rem" />
       <Text textStyle="body-2">
         {t('features.adminForm.preview.viewingAs', {
           respondentType: t('features.adminForm.preview.respondentType.SG'),
