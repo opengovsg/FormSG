@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.70.0](https://github.com/opengovsg/formsg/compare/v9.69.0...v9.70.0) (2026-11-11)
+
+
+### Features
+
+* **analytics:** log which filters were applied on results download (#10560) ([#10560](https://github.com/opengovsg/formsg/commit/47c1f1d8f8b63b6180d10180566029def3032f5f))
+* **myinfo:** write MyInfo field hashes as HMAC (#10525) ([#10525](https://github.com/opengovsg/formsg/commit/4b8c4a6cc1446818a215ea935ba560a896630ab1))
+
+
+### Bug Fixes
+
+* **step-login:** save step before adding fields, tidy Settings cards (#10556) ([#10556](https://github.com/opengovsg/formsg/commit/e2fe91f4402838a9c9379276c13886ca91079c83))
+
 ## [9.69.0](https://github.com/opengovsg/formsg/compare/v9.68.0...v9.69.0) (2026-11-11)
 
 

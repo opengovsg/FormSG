@@ -1,6 +1,6 @@
 {
   "name": "formsg-virus-scanner-guardduty",
-  "version": "9.69.0",
+  "version": "9.70.0",
   "private": true,
   "description": "Lambda that waits for the GuardDuty malware scan verdict on a quarantined form attachment and copies clean files to the clean bucket",
   "scripts": {
