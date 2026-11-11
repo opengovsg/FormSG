@@ -319,7 +319,7 @@ export const getResultingLoginErrors = ({
 }
 
 export const CORPPASS_STEPS_NEED_ESRVC_ID =
-  'Add an e-service ID to every Corppass step before opening your form.'
+  'Add a valid e-service ID to every Corppass step before opening your form.'
 
 /**
  * Whether a step after Step 1 logs in with Corppass but has no e-service ID

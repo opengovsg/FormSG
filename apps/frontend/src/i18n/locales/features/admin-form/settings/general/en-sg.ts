@@ -2,9 +2,9 @@ export const enSG = {
   title: 'General',
   status: {
     supplySingpassEServiceId:
-      'This form cannot be activated until a valid e-service ID is entered in the Singpass section.',
+      'Add a valid Corppass e-service ID in the Singpass section before opening your form.',
     supplyStepEServiceIds:
-      'Add an e-service ID to every Corppass step before opening your form.',
+      'Add a valid e-service ID to every Corppass step before opening your form.',
     noEmailsInMRF:
       'Email confirmation is not supported in multi-respondent forms. Please remove email confirmations from email fields before activating your form.',
     description: {
