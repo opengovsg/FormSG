@@ -19,6 +19,8 @@ import {
 import { DatabaseError } from '../../core/core.errors'
 import { MyInfoData } from '../myinfo.adapter'
 import { MyInfoInvalidLoginCookieError } from '../myinfo.errors'
+import * as MyInfoHashModule from '../myinfo.hash'
+import { hashMyInfoValue } from '../myinfo.hash'
 
 import {
   MOCK_ACCESS_TOKEN,
@@ -88,11 +90,13 @@ describe('MyInfoServiceClass', () => {
       const mockUpdateHashes = jest
         .spyOn(MyInfoHash, 'updateHashes')
         .mockResolvedValueOnce(mockReturnValue as unknown as IMyInfoHashSchema)
-      MockBcrypt.hash.mockImplementation((v) => Promise.resolve(v))
       const expectedHashes = {} as Record<string, string>
       MOCK_POPULATED_FORM_FIELDS.forEach((field) => {
         if (field.disabled && field.myInfo?.attr) {
-          expectedHashes[field.myInfo.attr] = field.fieldValue
+          expectedHashes[field.myInfo.attr] = hashMyInfoValue(
+            field.myInfo.attr,
+            String(field.fieldValue),
+          )
         }
       })
 
@@ -113,8 +117,11 @@ describe('MyInfoServiceClass', () => {
     })
 
     it('should throw HashingError when hashing fails', async () => {
-      // @ts-ignore
-      MockBcrypt.hash.mockRejectedValue('')
+      const hashSpy = jest
+        .spyOn(MyInfoHashModule, 'hashMyInfoValue')
+        .mockImplementation(() => {
+          throw new Error('hash failed')
+        })
 
       const result = await myInfoService.saveMyInfoHashes(
         MOCK_UINFIN,
@@ -125,10 +132,10 @@ describe('MyInfoServiceClass', () => {
       expect(result._unsafeUnwrapErr()).toEqual(
         new Error('Error occurred while hashing data'),
       )
+      hashSpy.mockRestore()
     })
 
     it('should throw DatabaseError when database update fails', async () => {
-      MockBcrypt.hash.mockImplementation((v) => Promise.resolve(v))
       jest.spyOn(MyInfoHash, 'updateHashes').mockRejectedValueOnce('')
       const result = await myInfoService.saveMyInfoHashes(
         MOCK_UINFIN,
