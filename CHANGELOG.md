@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.69.0](https://github.com/opengovsg/formsg/compare/v9.68.0...v9.69.0) (2026-11-11)
+
+
+### Features
+
+* **myinfo:** accept HMAC hashes when checking MyInfo fields (#10524) ([#10524](https://github.com/opengovsg/formsg/commit/a071d85625db365fca6e09e0fd3a8165ad24ab7e))
+* **settings:** remove the response deadline flag and beta badge (#10553) ([#10553](https://github.com/opengovsg/formsg/commit/5fa64d8a9ccfd1093191deaf7a502331d7d58bfd))
+
 ## [9.68.0](https://github.com/opengovsg/formsg/compare/v9.67.1...v9.68.0) (2026-11-10)
 
 
