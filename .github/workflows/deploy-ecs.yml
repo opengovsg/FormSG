@@ -117,7 +117,7 @@ on:
 
 concurrency:
   group: deploy-${{ inputs.environment-site-name }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 # used to configure IAM to trust Github's OIDC provider
 permissions:
@@ -304,6 +304,47 @@ jobs:
             --release-version="$APP_VERSION" \
             --minified-path-prefix="$APP_URL" \
             --repository-url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
+
+      - name: Hand off from an in-progress deployment
+        env:
+          CODEDEPLOY_APPLICATION: ${{ inputs.codedeploy-application }}
+          CODEDEPLOY_DEPLOYMENT_GROUP: ${{ inputs.codedeploy-deployment-group }}
+        run: |
+          set -euo pipefail
+          DEPLOYMENT_IDS=$(aws deploy list-deployments \
+            --application-name "$CODEDEPLOY_APPLICATION" \
+            --deployment-group-name "$CODEDEPLOY_DEPLOYMENT_GROUP" \
+            --include-only-statuses Created Queued InProgress Ready \
+            --query 'deployments' --output text)
+
+          for DEPLOYMENT_ID in $DEPLOYMENT_IDS; do
+            TARGET_ID=$(aws deploy list-deployment-targets --deployment-id "$DEPLOYMENT_ID" \
+              --query 'targetIds[0]' --output text)
+            TRAFFIC_SHIFTED=$(aws deploy get-deployment-target --deployment-id "$DEPLOYMENT_ID" \
+              --target-id "$TARGET_ID" \
+              --query "deploymentTarget.ecsTarget.lifecycleEvents[?lifecycleEventName=='AfterAllowTraffic'].status | [0]" \
+              --output text)
+
+            if [ "$TRAFFIC_SHIFTED" = "Succeeded" ]; then
+              echo "Ending the termination wait of $DEPLOYMENT_ID"
+              aws deploy continue-deployment --deployment-id "$DEPLOYMENT_ID" \
+                --deployment-wait-type TERMINATION_WAIT
+            else
+              echo "Stopping and rolling back $DEPLOYMENT_ID"
+              aws deploy stop-deployment --deployment-id "$DEPLOYMENT_ID" --auto-rollback-enabled
+            fi
+
+            for _ in $(seq 1 60); do
+              STATUS=$(aws deploy get-deployment --deployment-id "$DEPLOYMENT_ID" \
+                --query 'deploymentInfo.status' --output text)
+              case "$STATUS" in
+                Succeeded|Failed|Stopped) echo "$DEPLOYMENT_ID is $STATUS"; continue 2 ;;
+              esac
+              sleep 10
+            done
+            echo "$DEPLOYMENT_ID did not finish within 10 minutes" >&2
+            exit 1
+          done
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a # v1.4.11
