@@ -20,6 +20,7 @@ import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 import { ModalCloseButton } from '~components/Modal'
+import { XMotionBox } from '~templates/MotionBox'
 
 import {
   ACK_NAME,
@@ -42,6 +43,11 @@ export interface SecretKeyFormModalProps extends Pick<
   hasAck?: boolean
   /** Shown above the title, e.g. the progress indicator. */
   header?: React.ReactNode
+  /**
+   * Slide the content in from the right, as the create-form steps do,
+   * when this modal follows another step.
+   */
+  slideIn?: boolean
 }
 
 export const SecretKeyFormModal = ({
@@ -54,6 +60,7 @@ export const SecretKeyFormModal = ({
   onSubmit,
   hasAck = false,
   header,
+  slideIn = false,
 }: SecretKeyFormModalProps): JSX.Element => {
   const { t } = useTranslation()
   const {
@@ -95,88 +102,97 @@ export const SecretKeyFormModal = ({
   })
 
   return (
-    <Modal isOpen={isOpen} onClose={handleSecretKeyFormClose} size={modalSize}>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleSecretKeyFormClose}
+      size={modalSize}
+      motionPreset={slideIn ? 'none' : undefined}
+    >
       <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
         <ModalCloseButton />
         {header}
-        {/* Hidden input field to trigger file selector, can be anywhere in the DOM */}
-        <Input
-          name="secretKeyFile"
-          ref={secretKeyFileUploadRef}
-          type="file"
-          accept="text/plain"
-          onChange={handleSecretKeyFileChange}
-          display="none"
-        />
-        <ModalHeader color="secondary.500">
-          <Container maxW="42.5rem">{modalActionText}</Container>
-        </ModalHeader>
-        <ModalBody whiteSpace="pre-wrap">
-          <Container maxW="42.5rem">
-            <FormActivationSvg mb="2rem" />
-            <form onSubmit={handleVerifyKeyPairAndSubmit} noValidate>
-              <FormControl
-                isRequired
-                isInvalid={!!errors.secretKey}
-                mb="1rem"
-                isDisabled={isLoading}
-              >
-                <FormLabel>{fieldLabel}</FormLabel>
-                <Stack direction="row" spacing="0.5rem">
-                  <Input
-                    type="password"
-                    {...register(SECRET_KEY_NAME, {
-                      required: requiredSecretKeyMessage,
-                      pattern: {
-                        value: SECRET_KEY_REGEX,
-                        message: invalidSecretKeyMessage,
-                      },
-                      setValueAs: (v) => v.trim(),
-                    })}
-                    placeholder={
-                      dragging ? draggingPlaceholder : defaultPlaceholder
-                    }
-                    onDragEnter={handleDragEnter}
-                    onDragLeave={handleDragLeave}
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop}
-                  />
-                  <IconButton
-                    isDisabled={isLoading}
-                    variant="outline"
-                    aria-label={uploadFromFileAriaLabel}
-                    icon={<BiUpload />}
-                    onClick={() => secretKeyFileUploadRef.current?.click()}
-                  />
-                </Stack>
-                <FormErrorMessage>{errors.secretKey?.message}</FormErrorMessage>
-              </FormControl>
-              {hasAck ? (
-                <FormControl hidden={!isSecretKeyUploaded} mb="1.25rem">
-                  <Checkbox
-                    isDisabled={isLoading}
-                    isInvalid={!!errors.ack}
-                    {...register(ACK_NAME, {
-                      required: true,
-                    })}
-                  >
-                    {ackLabel}
-                  </Checkbox>
+        <XMotionBox animateFirstLoad={slideIn} direction={1}>
+          {/* Hidden input field to trigger file selector, can be anywhere in the DOM */}
+          <Input
+            name="secretKeyFile"
+            ref={secretKeyFileUploadRef}
+            type="file"
+            accept="text/plain"
+            onChange={handleSecretKeyFileChange}
+            display="none"
+          />
+          <ModalHeader color="secondary.500">
+            <Container maxW="42.5rem">{modalActionText}</Container>
+          </ModalHeader>
+          <ModalBody whiteSpace="pre-wrap">
+            <Container maxW="42.5rem">
+              <FormActivationSvg mb="2rem" />
+              <form onSubmit={handleVerifyKeyPairAndSubmit} noValidate>
+                <FormControl
+                  isRequired
+                  isInvalid={!!errors.secretKey}
+                  mb="1rem"
+                  isDisabled={isLoading}
+                >
+                  <FormLabel>{fieldLabel}</FormLabel>
+                  <Stack direction="row" spacing="0.5rem">
+                    <Input
+                      type="password"
+                      {...register(SECRET_KEY_NAME, {
+                        required: requiredSecretKeyMessage,
+                        pattern: {
+                          value: SECRET_KEY_REGEX,
+                          message: invalidSecretKeyMessage,
+                        },
+                        setValueAs: (v) => v.trim(),
+                      })}
+                      placeholder={
+                        dragging ? draggingPlaceholder : defaultPlaceholder
+                      }
+                      onDragEnter={handleDragEnter}
+                      onDragLeave={handleDragLeave}
+                      onDragOver={handleDragOver}
+                      onDrop={handleDrop}
+                    />
+                    <IconButton
+                      isDisabled={isLoading}
+                      variant="outline"
+                      aria-label={uploadFromFileAriaLabel}
+                      icon={<BiUpload />}
+                      onClick={() => secretKeyFileUploadRef.current?.click()}
+                    />
+                  </Stack>
+                  <FormErrorMessage>
+                    {errors.secretKey?.message}
+                  </FormErrorMessage>
                 </FormControl>
-              ) : null}
-              <Button
-                rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
-                type="submit"
-                isFullWidth
-                hidden={!isSecretKeyUploaded}
-                isDisabled={!isSecretKeyFormCompleted}
-                isLoading={isLoading}
-              >
-                {submitButtonText}
-              </Button>
-            </form>
-          </Container>
-        </ModalBody>
+                {hasAck ? (
+                  <FormControl hidden={!isSecretKeyUploaded} mb="1.25rem">
+                    <Checkbox
+                      isDisabled={isLoading}
+                      isInvalid={!!errors.ack}
+                      {...register(ACK_NAME, {
+                        required: true,
+                      })}
+                    >
+                      {ackLabel}
+                    </Checkbox>
+                  </FormControl>
+                ) : null}
+                <Button
+                  rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
+                  type="submit"
+                  isFullWidth
+                  hidden={!isSecretKeyUploaded}
+                  isDisabled={!isSecretKeyFormCompleted}
+                  isLoading={isLoading}
+                >
+                  {submitButtonText}
+                </Button>
+              </form>
+            </Container>
+          </ModalBody>
+        </XMotionBox>
       </ModalContent>
     </Modal>
   )

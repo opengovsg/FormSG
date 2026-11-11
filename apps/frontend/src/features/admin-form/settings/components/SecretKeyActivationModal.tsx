@@ -88,6 +88,10 @@ export const SecretKeyActivationModal = ({
       header={
         hasAnsweredOrigin ? <OpenFormProgress currActiveIdx={1} /> : undefined
       }
+      // Replaces the question modal: the frame appears at once, so the
+      // settings page doesn't show through, and the content slides in like
+      // the next step when creating a form.
+      slideIn={hasAnsweredOrigin}
     />
   )
 }
