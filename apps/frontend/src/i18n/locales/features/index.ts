@@ -10,6 +10,7 @@ export {
   type Modals,
   type Navbar,
   type NavLabels,
+  type Preview,
   type ResponsesCharts,
   type ResponsesComponents,
   type ResponsesIndividualResponse,

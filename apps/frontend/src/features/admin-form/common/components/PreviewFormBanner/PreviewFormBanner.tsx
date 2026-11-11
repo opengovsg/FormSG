@@ -21,6 +21,8 @@ import {
   VisuallyHidden,
 } from '@chakra-ui/react'
 
+import { BasicField } from 'formsg-shared/types/field'
+import { FormAuthType } from 'formsg-shared/types/form'
 import { FormId } from 'formsg-shared/types/form/form'
 
 import { FORMSG_UAT } from '~constants/links'
@@ -37,6 +39,7 @@ import {
   USE_TEMPLATE_TOUR_TARGET_ID,
 } from '~features/admin-form/template/UseTemplateNudges/UseTemplateTour.constants'
 import { useEnv } from '~features/env/queries'
+import { isMyInfo } from '~features/myinfo/utils'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 // Explicit import to avoid circular dependency warnings by rollup
 import { DuplicateFormModal } from '~features/workspace/components/DuplicateFormModal/DuplicateFormModal'
@@ -112,6 +115,31 @@ const PreviewStepSelect = ({
   )
 }
 
+/**
+ * On a Singpass Myinfo step, preview shows Myinfo fields as a Singaporean sees
+ * them. Only Singaporeans for now.
+ */
+const PreviewViewingAs = (): JSX.Element | null => {
+  const { t } = useTranslation()
+  const { form } = usePublicFormContext()
+  const hasMyInfoView =
+    form?.authType === FormAuthType.MyInfo &&
+    form.form_fields.some(
+      (field) => isMyInfo(field) && field.fieldType !== BasicField.Children,
+    )
+  if (!hasMyInfoView) return null
+  return (
+    <Flex align="center" gap="0.5rem" color="secondary.500">
+      <Icon aria-hidden as={BiShow} fontSize="1.25rem" />
+      <Text textStyle="body-2">
+        {t('features.adminForm.preview.viewingAs', {
+          respondentType: t('features.adminForm.preview.respondentType.SG'),
+        })}
+      </Text>
+    </Flex>
+  )
+}
+
 export const PreviewFormBanner = ({
   isTemplate,
   isSticky,
@@ -172,6 +200,7 @@ export const PreviewFormBanner = ({
               </Text>
             </Flex>
             {isTemplate ? null : <PreviewStepSelect isSticky={isSticky} />}
+            <PreviewViewingAs />
           </Flex>
           {isTemplate ? (
             <>
