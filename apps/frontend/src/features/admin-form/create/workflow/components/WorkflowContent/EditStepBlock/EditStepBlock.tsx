@@ -472,23 +472,9 @@ export const EditStepBlock = ({
       transitionProperty="common"
       transitionDuration="normal"
     >
-      {useProposedTabs ? (
-        <Stack spacing="1.5rem" pt="1.5rem">
-          {sections
-            .slice(0, -1)
-            .flatMap((section, index) =>
-              index === 0
-                ? [section]
-                : [<Divider key={`intro-divider-${index}`} />, section],
-            )}
-          {tabbedSections}
-          <Divider />
-        </Stack>
-      ) : (
-        <SpotlightGroup activeIndex={reveal.activeIndex} isEnabled={isGuided}>
-          {sections.slice(0, visibleCount)}
-        </SpotlightGroup>
-      )}
+      <SpotlightGroup activeIndex={reveal.activeIndex} isEnabled={isGuided}>
+        {sections.slice(0, visibleCount)}
+      </SpotlightGroup>
       {saveError && isLoginShown ? (
         <Box px="2rem" pt="1rem">
           <InlineMessage variant="error">{saveError}</InlineMessage>
