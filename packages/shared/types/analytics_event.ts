@@ -22,6 +22,8 @@ export type ResultsDownloadContent = {
   savedViewId?: string
   isSavedViewModified?: boolean
   responsesCount?: number
+  hasDateRange?: boolean
+  hasColumnFilters?: boolean
 }
 
 export type ResultsSavedViewContent = {

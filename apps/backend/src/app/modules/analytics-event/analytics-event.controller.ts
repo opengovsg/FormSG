@@ -45,6 +45,8 @@ const joiAnalyticsEventBody = Joi.alternatives().try(
       savedViewId: objectId.optional(),
       isSavedViewModified: Joi.boolean().optional(),
       responsesCount: Joi.number().integer().min(0).optional(),
+      hasDateRange: Joi.boolean().optional(),
+      hasColumnFilters: Joi.boolean().optional(),
     }),
   ),
   joiEvent(

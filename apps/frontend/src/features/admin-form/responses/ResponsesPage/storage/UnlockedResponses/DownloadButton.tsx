@@ -343,6 +343,10 @@ export const DownloadButton = ({
         dashboardVersion: isDelightfulDashboard ? 'v2' : 'v1',
         formats: toDownloadFormats(downloadOptions),
         scope: 'bulk',
+        hasDateRange: currentViewState.dateRange.length === 2,
+        ...(isDelightfulDashboard
+          ? { hasColumnFilters: currentViewState.columnFilters.length > 0 }
+          : {}),
         ...(selectedSavedView
           ? {
               savedViewId: selectedSavedView._id,

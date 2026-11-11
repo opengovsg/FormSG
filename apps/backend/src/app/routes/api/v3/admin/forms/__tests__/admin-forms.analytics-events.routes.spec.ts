@@ -65,6 +65,8 @@ describe('admin-forms.analytics-events.routes', () => {
         savedViewId: new Types.ObjectId().toHexString(),
         isSavedViewModified: true,
         responsesCount: 42,
+        hasDateRange: true,
+        hasColumnFilters: false,
       }
 
       const response = await post(form._id, {
