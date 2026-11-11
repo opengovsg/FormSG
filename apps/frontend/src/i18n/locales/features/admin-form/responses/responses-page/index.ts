@@ -51,6 +51,11 @@ export interface ResponsesResponsesPage {
         completeScreen: {
           downloadComplete: string
           backToResponses: string
+          allResponsesSomeFilesFailed: string
+          someResponsesSomeFilesFailed: string
+          failedFilesTitle: string
+          failedFileItem: string
+          otherFailedFiles: string
         }
         content: {
           title: string

@@ -64,6 +64,15 @@ export const enSG: ResponsesResponsesPage = {
         completeScreen: {
           downloadComplete: 'Download complete',
           backToResponses: 'Back to responses',
+          allResponsesSomeFilesFailed:
+            'All responses have been downloaded. Some files could not be downloaded and are marked in the zip.',
+          someResponsesSomeFilesFailed:
+            '**{count, number}** {count, plural, =1 {response has} other {responses have}} been downloaded. Files that could not be downloaded are marked in the zip.',
+          failedFilesTitle:
+            '{count, plural, =1 {# file} other {# files}} could not be downloaded:',
+          failedFileItem: 'RefNo {refNo} · {name}',
+          otherFailedFiles:
+            'and {count, plural, =1 {# other file} other {# other files}}',
         },
         content: {
           title: 'Downloading...',

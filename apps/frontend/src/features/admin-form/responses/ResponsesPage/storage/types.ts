@@ -26,13 +26,24 @@ export type DecryptedAttachmentFile = {
   content: Uint8Array<ArrayBuffer>
 }
 
-/**
- * A response's decrypted attachments: one zip per response, or under
- * Attachments v2 the files themselves, for the download zip.
- */
+export type FailedAttachmentFile = {
+  filename: string
+  reason: 'download' | 'decrypt'
+}
+
 export type DecryptedAttachments =
   | { kind: 'zip'; blob: Blob }
-  | { kind: 'files'; files: DecryptedAttachmentFile[] }
+  | {
+      kind: 'files'
+      files: DecryptedAttachmentFile[]
+      failed: FailedAttachmentFile[]
+    }
+
+export type FailedDownload = {
+  refNo: string
+  name: string
+  reason: FailedAttachmentFile['reason'] | 'pdf' | 'response'
+}
 
 export type DecryptionCtx = {
   formsgSdk: ReturnType<typeof formsgPackage>
@@ -101,6 +112,7 @@ export type DownloadResult = {
   successCount: number
   errorCount: number
   unverifiedCount?: number
+  failedDownloads?: FailedDownload[]
 }
 
 export type CanceledResult = {

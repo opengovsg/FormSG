@@ -290,13 +290,21 @@ export const DownloadButton = ({
       onMutate: () => {
         resetDownloadMetadataAndProgress()
       },
-      onSuccess: ({ successCount, expectedCount, errorCount }) => {
+      onSuccess: ({
+        successCount,
+        expectedCount,
+        errorCount,
+        failedDownloads,
+      }) => {
         if (downloadParams?.responsesCount === 0) {
           toast({
             description: 'No responses to download',
           })
           return
         }
+        const completionScreenListsFailures =
+          !!failedDownloads?.length && errorCount === 0
+        if (completionScreenListsFailures) return
         if (errorCount > 0) {
           toast({
             status: 'warning',
