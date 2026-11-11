@@ -54,7 +54,7 @@ const renderPrintableResponse = (
   }
 }
 
-const getPdfTitle = ({ submissionId }: { submissionId: string }) => {
+export const getPdfTitle = ({ submissionId }: { submissionId: string }) => {
   return `RefNo ${submissionId}.pdf`
 }
 
