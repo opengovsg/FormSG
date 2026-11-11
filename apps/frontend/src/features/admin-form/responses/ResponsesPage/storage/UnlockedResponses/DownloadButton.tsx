@@ -289,13 +289,21 @@ export const DownloadButton = ({
       onMutate: () => {
         resetDownloadMetadataAndProgress()
       },
-      onSuccess: ({ successCount, expectedCount, errorCount }) => {
+      onSuccess: ({
+        successCount,
+        expectedCount,
+        errorCount,
+        failedDownloads,
+      }) => {
         if (downloadParams?.responsesCount === 0) {
           toast({
             description: 'No responses to download',
           })
           return
         }
+        // The completion screen says what the zip left out, so a success
+        // toast would only contradict it
+        if (failedDownloads?.length && errorCount === 0) return
         if (errorCount > 0) {
           toast({
             status: 'warning',
