@@ -8,11 +8,10 @@ import {
   useBreakpointValue,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
-
-import { featureFlags } from 'formsg-shared/constants'
 
 import { XMotionBox } from '~templates/MotionBox'
+
+import { useIsOneZipDownload } from '~features/admin-form/responses/hooks'
 
 import {
   CanceledResult,
@@ -68,7 +67,7 @@ export const DownloadWithAttachmentModal = ({
   isResponsesCountHidden,
   initialState = INITIAL_STEP_STATE,
 }: DownloadWithAttachmentModalProps): JSX.Element => {
-  const isAttachmentsV2Enabled = useFeatureIsOn(featureFlags.attachmentsV2)
+  const isOneZip = useIsOneZipDownload()
   const [startedOptions, setStartedOptions] = useState(downloadOptions)
   const isCsvOnly = isCsvOnlyDownload(startedOptions)
   const modalSize = useBreakpointValue({
@@ -134,7 +133,7 @@ export const DownloadWithAttachmentModal = ({
                       'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.progressModalContent',
                     )
                   : t(
-                      isAttachmentsV2Enabled
+                      isOneZip
                         ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.modal.zipProgressMessage'
                         : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.modal.progressMessage',
                       {

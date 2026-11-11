@@ -27,6 +27,7 @@ export interface ResponsesResponsesPage {
           andText: string
           attachmentsDescription: string
           pdfsDescription: string
+          downloadVersionLabel: string
           zipDescription: string
           numberOfResponses: string
           estimatedTime: string
