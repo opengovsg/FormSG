@@ -46,7 +46,7 @@ export const StaticRespondentOption = ({
           },
         }}
       >
-        <Text>{'Specific emails'}</Text>
+        <Text>Specific emails</Text>
         {selectedWorkflowType === WorkflowType.Static ? (
           <FormControl
             pt="0.5rem"

@@ -287,7 +287,7 @@ export const Step2FixedEmailDefault = {
     )
     await waitFor(
       async () => {
-        await userEvent.click(await canvas.getByText('Specific email(s)'))
+        await userEvent.click(await canvas.getByText('Specific emails'))
       },
       {
         timeout: 5000,
@@ -314,7 +314,7 @@ export const Step2FixedEmailEmpty = {
     )
     await waitFor(
       async () => {
-        await userEvent.click(await canvas.getByText('Specific email(s)'))
+        await userEvent.click(await canvas.getByText('Specific emails'))
       },
       {
         timeout: 5000,
@@ -637,7 +637,7 @@ export const Step4ApprovalFieldNotInEditErrorMessage = {
 
     await expect(
       await canvas.findByText(
-        /the selected yes\/no field has not been assigned to this respondent/i,
+        /the selected yes\/no field has not been assigned to this person/i,
         undefined,
         { timeout: 5000 },
       ),
