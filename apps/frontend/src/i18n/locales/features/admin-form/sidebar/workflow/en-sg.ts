@@ -223,8 +223,6 @@ export const enSG: Workflow = {
     historicalResponsesKept: 'Historical responses will not be deleted.',
     publishErrors: {
       title: 'Finish authentication setup before publishing',
-      description:
-        'Configure matching authentication for these fields, or delete the unused fields.',
     },
     settings: {
       description: 'Manage authentication for each step in your workflow.',

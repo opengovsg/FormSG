@@ -23,7 +23,7 @@ export interface AuthenticationDraftNoticeProps {
 
 /**
  * The one place that says why a form can't be opened yet. A lone activation
- * requirement shows on its own, and field errors add the list below it.
+ * requirement shows on its own. With field errors, it leads the list.
  */
 export const AuthenticationDraftNotice = ({
   activationRequirement,
@@ -32,6 +32,9 @@ export const AuthenticationDraftNotice = ({
   const { t } = useTranslation()
   const errors = useAuthenticationPublishErrors()
   if (!errors.length && !activationRequirement) return null
+  const items = activationRequirement
+    ? [activationRequirement, ...errors]
+    : errors
   return (
     <InlineMessage
       id={AUTHENTICATION_DRAFT_NOTICE_ID}
@@ -40,14 +43,10 @@ export const AuthenticationDraftNotice = ({
     >
       {errors.length ? (
         <Box minW={0}>
-          <Text textStyle="subhead-2">{t(`${COPY_KEY}.title`)}</Text>
-          {activationRequirement ? (
-            <Text textStyle="body-2">{activationRequirement}</Text>
-          ) : null}
-          <Text textStyle="body-2">{t(`${COPY_KEY}.description`)}</Text>
+          <Text textStyle="subhead-1">{t(`${COPY_KEY}.title`)}</Text>
           <UnorderedList mt="0.5rem" spacing="0.25rem">
-            {errors.map((error) => (
-              <ListItem key={error}>{error}</ListItem>
+            {items.map((item) => (
+              <ListItem key={item}>{item}</ListItem>
             ))}
           </UnorderedList>
         </Box>
