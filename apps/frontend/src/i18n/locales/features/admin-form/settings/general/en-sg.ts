@@ -5,8 +5,6 @@ export const enSG = {
       'Add a valid Corppass e-service ID in the Singpass section before opening your form.',
     supplyStepEServiceIds:
       'Add a valid e-service ID to every Corppass step before opening your form.',
-    noEmailsInMRF:
-      'Email confirmation is not supported in multi-respondent forms. Please remove email confirmations from email fields before activating your form.',
     description: {
       prefix: 'Your form is ',
       suffix: ' to new responses',
