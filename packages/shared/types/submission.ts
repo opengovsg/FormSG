@@ -1,5 +1,5 @@
 import type { Opaque, RequireAtLeastOne } from 'type-fest'
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 import { ErrorDto } from './core'
 import { FormFieldDto, MyInfoAttribute, PaymentFieldsDto } from './field'
@@ -320,7 +320,7 @@ export const StorageModeSubmissionStreamDto = StorageModeSubmissionBase.pick({
   verifiedContent: true,
   version: true,
 }).extend({
-  attachmentMetadata: z.record(z.string()),
+  attachmentMetadata: z.record(z.string(), z.string()),
   payment: z.optional(SubmissionPaymentDto),
   _id: SubmissionId,
   created: DateString,
@@ -341,7 +341,7 @@ export const MultirespondentSubmissionStreamDto =
     version: true,
     mrfVersion: true,
   }).extend({
-    attachmentMetadata: z.record(z.string()),
+    attachmentMetadata: z.record(z.string(), z.string()),
     payment: z.optional(SubmissionPaymentDto),
     _id: SubmissionId,
     created: DateString,
