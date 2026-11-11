@@ -1,5 +1,5 @@
 import type { Opaque } from 'type-fest'
-import { z } from 'zod'
+import { z } from 'zod/v4'
 import { DateString } from './generic'
 
 export type AgencyId = Opaque<string, 'AgencyId'>
@@ -8,7 +8,7 @@ export const AgencyId = z.string() as unknown as z.Schema<AgencyId>
 // Base used for being referenced by schema/model in the backend.
 // Note the lack of typing of _id.
 export const AgencyBase = z.object({
-  _id: z.unknown(),
+  _id: z.unknown().optional(),
   emailDomain: z.array(z.string()),
   fullName: z.string(),
   shortName: z.string(),
