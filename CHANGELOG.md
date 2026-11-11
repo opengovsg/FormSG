@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.70.1](https://github.com/opengovsg/formsg/compare/v9.70.0...v9.70.1) (2026-11-11)
+
+
+### CI
+
+* **deploy:** let a new ECS deploy take over an in-progress one (#10567) ([#10567](https://github.com/opengovsg/formsg/commit/e509a27b5ec39f4026599f30a0be3652804c99d5))
+* **synthetics:** accept the redesigned workflow intro in the MRF journey (#10551) ([#10551](https://github.com/opengovsg/formsg/commit/2a65be198b5a53d4b586f2c5af66f439f0cc6b25))
+
+
+### Refactors
+
+* **workflow:** remove the workflow-builder-redesign flag (#10566) ([#10566](https://github.com/opengovsg/formsg/commit/6725c7afc4d439acb228ab2cd8020d1a51c932ff))
+
 ## [9.70.0](https://github.com/opengovsg/formsg/compare/v9.69.0...v9.70.0) (2026-11-11)
 
 
