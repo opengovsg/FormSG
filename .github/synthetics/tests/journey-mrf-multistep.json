@@ -575,7 +575,7 @@
     },
     {
       "type": "click",
-      "name": "Create workflow (empty state, if shown)",
+      "name": "Start workflow setup from the empty state, if shown (Create workflow, or Set up manually under workflow-builder-redesign)",
       "timeout": 30,
       "allowFailure": true,
       "isCritical": false,
@@ -586,7 +586,7 @@
             "values": [
               {
                 "type": "xpath",
-                "value": "//button[contains(., 'Create workflow')]"
+                "value": "//button[contains(., 'Create workflow') or contains(., 'Set up manually')]"
               }
             ]
           }
