@@ -162,6 +162,10 @@
       "require": "./dist/utils/myinfo-prefix.js",
       "default": "./utils/myinfo-prefix.ts"
     },
+    "./utils/myinfo-verified": {
+      "require": "./dist/utils/myinfo-verified.js",
+      "default": "./utils/myinfo-verified.ts"
+    },
     "./utils/nric-validation": {
       "require": "./dist/utils/nric-validation.js",
       "default": "./utils/nric-validation.ts"
