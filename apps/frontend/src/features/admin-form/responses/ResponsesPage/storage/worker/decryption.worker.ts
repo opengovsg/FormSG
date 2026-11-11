@@ -21,7 +21,7 @@ import {
 } from '../types'
 import { CsvRecord } from '../utils/CsvRecord.class'
 import {
-  downloadAndDecryptAttachments,
+  downloadAndDecryptAttachmentFiles,
   downloadAndDecryptAttachmentsAsZip,
 } from '../utils/downloadAndDecryptAttachment'
 import {
@@ -280,11 +280,11 @@ async function _downloadAndDecryptSubmissionAttachments(
       isOneZipDownload
         ? {
             kind: 'files',
-            files: await downloadAndDecryptAttachments(
+            ...(await downloadAndDecryptAttachmentFiles(
               ctx,
               attachmentDownloadUrls,
               attachmentDecryptionKey,
-            ),
+            )),
           }
         : {
             kind: 'zip',
@@ -333,6 +333,7 @@ type LineData = {
   hostOrigin: string
   isWorkflowActionsOn: boolean
   isDownloadAttachmentsSuccessful: boolean
+  hasFailedAttachments?: boolean
 } & DecryptionResult
 
 /**
@@ -352,6 +353,7 @@ async function getMaterializedCsvRecord(
     hostOrigin,
     isWorkflowActionsOn,
     isDownloadAttachmentsSuccessful,
+    hasFailedAttachments,
   } = lineData
 
   if (!isParseSuccessful) {
@@ -425,7 +427,9 @@ async function getMaterializedCsvRecord(
     }
     csvRecord.setStatus(
       CsvRecordStatus.Ok,
-      'Success (with Downloaded Attachment)',
+      hasFailedAttachments
+        ? 'Success (attachment failed to download)'
+        : 'Success (with Downloaded Attachment)',
     )
   }
   csvRecord.materializeSubmissionData()
@@ -553,6 +557,8 @@ async function getDecryptedData(
       isWorkflowActionsOn: !!isWorkflowActionsOn,
       isDownloadAttachmentsSuccessful:
         isDownloadAndDecryptSubmissionAttachmentsSuccessful,
+      hasFailedAttachments:
+        attachments?.kind === 'files' && attachments.failed.length > 0,
       ...decryptedSubmissionResult,
     })
   }
