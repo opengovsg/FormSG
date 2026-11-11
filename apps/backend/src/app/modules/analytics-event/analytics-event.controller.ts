@@ -1,4 +1,5 @@
-import { celebrate, Joi, Segments } from 'celebrate'
+import JoiDate from '@joi/date'
+import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import {
   AnalyticsEventInput,
@@ -18,12 +19,14 @@ import * as UserService from '../user/user.service'
 import * as AnalyticsEventService from './analytics-event.service'
 
 const logger = createLoggerWithLabel(module)
+const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
 
 const dashboardVersion = Joi.string().valid('v1', 'v2')
 const objectId = Joi.string().hex().length(24)
 const columnId = Joi.string().max(100)
+const isoDay = Joi.date().format('YYYY-MM-DD').raw()
 
-const joiEvent = (types: AnalyticsEventType[], content: Joi.ObjectSchema) =>
+const joiEvent = (types: AnalyticsEventType[], content: BaseJoi.ObjectSchema) =>
   Joi.object({
     type: Joi.string()
       .valid(...types)
@@ -45,8 +48,19 @@ const joiAnalyticsEventBody = Joi.alternatives().try(
       savedViewId: objectId.optional(),
       isSavedViewModified: Joi.boolean().optional(),
       responsesCount: Joi.number().integer().min(0).optional(),
-      hasDateRange: Joi.boolean().optional(),
-      hasColumnFilters: Joi.boolean().optional(),
+      dateRange: Joi.object({
+        startDate: isoDay.required(),
+        endDate: isoDay.required(),
+      }).optional(),
+      columnFilters: Joi.array()
+        .items(
+          Joi.object({
+            columnId: columnId.required(),
+            type: Joi.string().valid('text', 'values').required(),
+          }),
+        )
+        .max(100)
+        .optional(),
     }),
   ),
   joiEvent(

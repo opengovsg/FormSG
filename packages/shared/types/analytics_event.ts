@@ -15,6 +15,11 @@ export type ResultsDownloadFormat = 'csv' | 'attachments' | 'pdf'
 
 export type ResultsDownloadScope = 'bulk' | 'single'
 
+export type ResultsDownloadColumnFilter = {
+  columnId: string
+  type: 'text' | 'values'
+}
+
 export type ResultsDownloadContent = {
   dashboardVersion: ResultsDashboardVersion
   formats: ResultsDownloadFormat[]
@@ -22,8 +27,8 @@ export type ResultsDownloadContent = {
   savedViewId?: string
   isSavedViewModified?: boolean
   responsesCount?: number
-  hasDateRange?: boolean
-  hasColumnFilters?: boolean
+  dateRange?: { startDate: string; endDate: string }
+  columnFilters?: ResultsDownloadColumnFilter[]
 }
 
 export type ResultsSavedViewContent = {

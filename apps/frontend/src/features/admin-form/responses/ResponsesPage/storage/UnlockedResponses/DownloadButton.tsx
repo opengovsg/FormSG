@@ -343,9 +343,21 @@ export const DownloadButton = ({
         dashboardVersion: isDelightfulDashboard ? 'v2' : 'v1',
         formats: toDownloadFormats(downloadOptions),
         scope: 'bulk',
-        hasDateRange: currentViewState.dateRange.length === 2,
+        ...(currentViewState.dateRange.length === 2
+          ? {
+              dateRange: {
+                startDate: currentViewState.dateRange[0],
+                endDate: currentViewState.dateRange[1],
+              },
+            }
+          : {}),
         ...(isDelightfulDashboard
-          ? { hasColumnFilters: currentViewState.columnFilters.length > 0 }
+          ? {
+              columnFilters: currentViewState.columnFilters.map((filter) => ({
+                columnId: filter.columnId,
+                type: 'text' in filter ? 'text' : 'values',
+              })),
+            }
           : {}),
         ...(selectedSavedView
           ? {

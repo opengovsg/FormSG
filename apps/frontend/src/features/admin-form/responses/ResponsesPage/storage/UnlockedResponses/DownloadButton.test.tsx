@@ -160,7 +160,6 @@ describe('DownloadButton analytics events', () => {
         dashboardVersion: 'v1',
         formats: ['csv'],
         scope: 'bulk',
-        hasDateRange: false,
         responsesCount: 12,
       },
     })
@@ -178,8 +177,7 @@ describe('DownloadButton analytics events', () => {
         dashboardVersion: 'v2',
         formats: ['pdf'],
         scope: 'bulk',
-        hasDateRange: false,
-        hasColumnFilters: true,
+        columnFilters: [{ columnId: 'a', type: 'text' }],
         savedViewId: VIEW._id,
         isSavedViewModified: false,
         responsesCount: 12,
@@ -221,12 +219,15 @@ describe('DownloadButton analytics events', () => {
     )
   })
 
-  it('logs whether a v2 download had a date range or column filters', async () => {
+  it('logs the date range and column filters of a v2 download', async () => {
     renderButton({
       currentViewState: {
         ...VIEW_STATE,
         dateRange: ['2026-01-01', '2026-01-31'] as DateString[],
-        columnFilters: [],
+        columnFilters: [
+          { columnId: 'a', text: 'pending' },
+          { columnId: 'b', values: ['Yes', 'No'] },
+        ],
       },
     })
 
@@ -236,8 +237,11 @@ describe('DownloadButton analytics events', () => {
       FORM_ID,
       expect.objectContaining({
         content: expect.objectContaining({
-          hasDateRange: true,
-          hasColumnFilters: false,
+          dateRange: { startDate: '2026-01-01', endDate: '2026-01-31' },
+          columnFilters: [
+            { columnId: 'a', type: 'text' },
+            { columnId: 'b', type: 'values' },
+          ],
         }),
       }),
     )
