@@ -1,7 +1,5 @@
-import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { featureFlags } from 'formsg-shared/constants'
 import {
   AdminFormDto,
   BasicField,
@@ -40,21 +38,10 @@ const buildMswRoutes = ({
   getAdminFormSubmissions(),
 ]
 
-const scheduledClosureOn = new GrowthBook({
-  features: { [featureFlags.scheduledFormClosure]: { defaultValue: true } },
-})
-
 export default {
   title: 'Pages/AdminFormPage/Settings/General',
   component: SettingsGeneralPage,
-  decorators: [
-    StoryRouter({ initialEntries: ['/12345'], path: '/:formId' }),
-    (Story) => (
-      <GrowthBookProvider growthbook={scheduledClosureOn}>
-        <Story />
-      </GrowthBookProvider>
-    ),
-  ],
+  decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
   parameters: {
     msw: {
       handlers: {

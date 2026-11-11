@@ -1,10 +1,8 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, FormControl, Skeleton, Stack } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { addDays, endOfDay, format, isBefore, isValid, set } from 'date-fns'
 
-import { featureFlags } from 'formsg-shared/constants'
 import { DateString } from 'formsg-shared/types'
 
 import { DatePicker } from '~components/DatePicker'
@@ -158,14 +156,10 @@ const FormExpiryBlock = ({
   )
 }
 
-export const FormExpiryToggle = (): JSX.Element | null => {
+export const FormExpiryToggle = (): JSX.Element => {
   const { t } = useTranslation()
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
-
-  // TODO(FRM-2376): Remove this check once scheduled closure is stable.
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
-  const isEnabled = useFeatureIsOn(featureFlags.scheduledFormClosure) || isTest
 
   const { mutateFormCloseAt } = useMutateFormSettings()
 
@@ -186,12 +180,11 @@ export const FormExpiryToggle = (): JSX.Element | null => {
     )
   }, [isLoadingSettings, mutateFormCloseAt, settings])
 
-  return isEnabled ? (
+  return (
     <Skeleton isLoaded={!isLoadingSettings && !!settings} mt="2rem">
       <Toggle
         isLoading={mutateFormCloseAt.isLoading}
         isChecked={isScheduled}
-        betaBadge
         label={t('features.adminForm.settings.general.expiry.label')}
         onChange={() => handleToggleExpiry()}
       />
@@ -199,5 +192,5 @@ export const FormExpiryToggle = (): JSX.Element | null => {
         <FormExpiryBlock initialCloseAt={settings.closeAt} />
       )}
     </Skeleton>
-  ) : null
+  )
 }
