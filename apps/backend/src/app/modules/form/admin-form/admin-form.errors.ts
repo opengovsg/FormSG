@@ -103,12 +103,6 @@ export class ModelGetClientFailureError extends ApplicationError {
   }
 }
 
-export class WorkflowDeletionDisabledError extends ApplicationError {
-  constructor(message = 'Not found') {
-    super(message, undefined, ErrorCodes.ADMIN_FORM_WORKFLOW_DELETION_DISABLED)
-  }
-}
-
 export class DeleteFirstWorkflowStepError extends ApplicationError {
   constructor(
     message = 'Deleting the first step means deleting the workflow; use DELETE /workflow',

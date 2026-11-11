@@ -98,7 +98,6 @@ import {
   DeleteFirstWorkflowStepError,
   EditFieldError,
   GoGovServerError,
-  WorkflowDeletionDisabledError,
 } from './admin-form.errors'
 import {
   createWorkflowStepValidator,
@@ -1842,17 +1841,6 @@ export const handleUpdateWorkflowStep = [
   _handleUpdateWorkflowStep,
 ] as ControllerHandler[]
 
-const isWorkflowDeletionEnabledFor = (
-  growthbook: GrowthBook | undefined,
-  adminEmail: string,
-): boolean => {
-  void growthbook?.setAttributes({
-    ...growthbook.getAttributes(),
-    adminEmail,
-  })
-  return growthbook?.isOn(featureFlags.workflowBuilderRedesign) ?? false
-}
-
 /**
  * Handler for DELETE /:formId/workflow
  *
@@ -1887,13 +1875,11 @@ export const _handleDeleteWorkflow: ControllerHandler<
         user,
         formId,
       )
-      return isWorkflowDeletionEnabledFor(req.growthbook, user.email)
-        ? AuthService.getFormAfterPermissionChecks({
-            user,
-            formId,
-            level: PermissionLevel.Write,
-          })
-        : errAsync(new WorkflowDeletionDisabledError())
+      return AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      })
     })
     .andThen((retrievedForm) => {
       hasUsedGuidedMode = guidedModeOf(retrievedForm)
@@ -1960,8 +1946,7 @@ export const _handleDeleteWorkflowStep: ControllerHandler<
         user,
         formId,
       )
-      return isWorkflowDeletionEnabledFor(req.growthbook, user.email) &&
-        Number(stepNumber) === 0
+      return Number(stepNumber) === 0
         ? errAsync(new DeleteFirstWorkflowStepError())
         : AuthService.getFormAfterPermissionChecks({
             user,

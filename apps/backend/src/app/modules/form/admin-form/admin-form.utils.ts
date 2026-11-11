@@ -65,7 +65,6 @@ import {
   PaymentChannelNotFoundError,
   SavedViewLimitError,
   SavedViewNotFoundError,
-  WorkflowDeletionDisabledError,
 } from './admin-form.errors'
 import {
   AssertFormFn,
@@ -104,7 +103,6 @@ export const mapRouteError = (
     case FieldNotFoundError:
     case LogicNotFoundError:
     case SavedViewNotFoundError:
-    case WorkflowDeletionDisabledError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
         errorMessage: error.message,
