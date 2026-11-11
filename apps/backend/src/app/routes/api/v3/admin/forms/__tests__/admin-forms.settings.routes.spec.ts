@@ -595,4 +595,51 @@ describe('admin-form.settings.routes', () => {
       expect(response.body).toEqual(expectedResponse)
     })
   })
+
+  describe('PUT /admin/forms/:formId/form-origins', () => {
+    it('saves the origin on a form that has none', async () => {
+      const { form, user } = await dbHandler.insertEncryptForm()
+      const session = await createAuthedSession(user.email, request)
+
+      const response = await session
+        .put(`/admin/forms/${form._id}/form-origins`)
+        .send({ formOrigins: { value: ['paper'] } })
+
+      expect(response.status).toEqual(200)
+      const saved = await session.get(`/admin/forms/${form._id}`)
+      expect(saved.body.form.metadata.formOrigins).toEqual({
+        value: ['paper'],
+      })
+    })
+
+    it('rejects an answer that is not a form origin', async () => {
+      const { form, user } = await dbHandler.insertEncryptForm()
+      const session = await createAuthedSession(user.email, request)
+
+      const response = await session
+        .put(`/admin/forms/${form._id}/form-origins`)
+        .send({ formOrigins: { value: ['notAnOrigin'] } })
+
+      expect(response.status).toEqual(400)
+      const saved = await session.get(`/admin/forms/${form._id}`)
+      expect(saved.body.form.metadata?.formOrigins).toBeUndefined()
+    })
+
+    it("keeps the form's other metadata when saving the origin", async () => {
+      const { form, user } = await dbHandler.insertEncryptForm({
+        formOptions: { metadata: { mfb_vision_prompt_count: 2 } },
+      })
+      const session = await createAuthedSession(user.email, request)
+
+      await session
+        .put(`/admin/forms/${form._id}/form-origins`)
+        .send({ formOrigins: { value: ['digitalExisting'] } })
+
+      const saved = await session.get(`/admin/forms/${form._id}`)
+      expect(saved.body.form.metadata).toEqual({
+        mfb_vision_prompt_count: 2,
+        formOrigins: { value: ['digitalExisting'] },
+      })
+    })
+  })
 })

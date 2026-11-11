@@ -30,6 +30,7 @@ import {
   FormFeedbackMetaDto,
   FormFieldDto,
   FormLogoState,
+  FormMetadata,
   FormOrigin,
   FormResponseMode,
   FormSavedView,
@@ -1535,6 +1536,70 @@ export const _handleUpdateSettings: ControllerHandler<
 export const handleUpdateSettings = [
   updateSettingsValidator,
   _handleUpdateSettings,
+] as ControllerHandler[]
+
+type FormOriginsDto = Pick<FormMetadata, 'formOrigins'>
+
+export const _handleUpdateFormOrigins: ControllerHandler<
+  { formId: string },
+  FormOriginsDto | ErrorDto,
+  FormOriginsDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((form) =>
+      AdminFormService.updateFormMetadata(form, {
+        formOrigins: req.body.formOrigins,
+      }),
+    )
+    .map((metadata) =>
+      res.status(StatusCodes.OK).json({ formOrigins: metadata?.formOrigins }),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating form origins',
+        meta: {
+          action: 'handleUpdateFormOrigins',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for PUT /forms/:formId/form-origins.
+ * Saves the answer to the form origin question on an existing form, e.g.
+ * when an admin opens a form that was never asked.
+ * @security session
+ *
+ * @returns 200 with the saved form origins
+ * @returns 400 when body is malformed
+ * @returns 403 when current user does not have write permission
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 500 when database error occurs
+ */
+export const handleUpdateFormOrigins = [
+  celebrate({
+    [Segments.BODY]: clientMetadataValidator.fork(['formOrigins'], (schema) =>
+      schema.required(),
+    ),
+  }),
+  _handleUpdateFormOrigins,
 ] as ControllerHandler[]
 
 const LOGIN_IDENTITY_FIELDS_DISABLED =
