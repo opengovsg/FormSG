@@ -9,14 +9,15 @@ import {
 } from 'formsg-shared/types/form/form'
 import { hasLaterCorppassStepWithoutEsrvcId } from 'formsg-shared/utils/step-login'
 
-import InlineMessage from '~components/InlineMessage'
 import { Switch } from '~components/Toggle/Switch'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { AuthenticationDraftNotice } from '~features/admin-form/create/common/AuthenticationDraftNotice'
+import {
+  AUTHENTICATION_DRAFT_NOTICE_ID,
+  AuthenticationDraftNotice,
+} from '~features/admin-form/create/common/AuthenticationDraftNotice'
 import { useAuthenticationPublishErrors } from '~features/admin-form/create/common/useAuthenticationPublishErrors'
 import { useIncompleteWorkflowStepLabels } from '~features/admin-form/create/workflow/hooks/useIncompleteWorkflowStepLabels'
-import { useUsesStepLoginRules } from '~features/admin-form/create/workflow/hooks/useUsesStepLoginRules'
 
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
@@ -103,9 +104,6 @@ export const FormStatusToggle = (): JSX.Element => {
   const { onOpen: onOpenIncompleteWorkflowModal } = incompleteWorkflowModalProps
   const incompleteStepLabels = useIncompleteWorkflowStepLabels()
   const authenticationPublishErrors = useAuthenticationPublishErrors()
-  // With step logins, the activation requirement sits under the status line
-  // so the field notice below can list what publishing still needs.
-  const isStepLoginEnabled = useUsesStepLoginRules()
 
   const onFormToggleStatusClick = useCallback(() => {
     if (!isFormPublic && authenticationPublishErrors.length > 0) return
@@ -126,13 +124,6 @@ export const FormStatusToggle = (): JSX.Element => {
     onOpenIncompleteWorkflowModal,
   ])
 
-  const statusLine = (
-    <Text textStyle="subhead-1" id="form-status">
-      {t('features.adminForm.settings.general.status.description.prefix')}
-      <b>{statusText}</b>
-      {t('features.adminForm.settings.general.status.description.suffix')}
-    </Text>
-  )
   return (
     <Skeleton isLoaded={!isLoadingFormSettings && !isLoadingForm && !!status}>
       <Stack>
@@ -162,24 +153,12 @@ export const FormStatusToggle = (): JSX.Element => {
           py="1rem"
           px="1.125rem"
           justify="space-between"
-          align={isStepLoginEnabled ? 'flex-start' : undefined}
         >
-          {isStepLoginEnabled ? (
-            <Stack spacing="0.25rem" flex="1" pr="1rem">
-              {statusLine}
-              {preventActivationMessage ? (
-                <Text
-                  textStyle="body-2"
-                  color="secondary.500"
-                  id="form-activation-requirement"
-                >
-                  {preventActivationMessage}
-                </Text>
-              ) : null}
-            </Stack>
-          ) : (
-            statusLine
-          )}
+          <Text textStyle="subhead-1" id="form-status">
+            {t('features.adminForm.settings.general.status.description.prefix')}
+            <b>{statusText}</b>
+            {t('features.adminForm.settings.general.status.description.suffix')}
+          </Text>
           <Switch
             isDisabled={
               !!preventActivationMessage ||
@@ -190,11 +169,8 @@ export const FormStatusToggle = (): JSX.Element => {
             )}
             aria-describedby={[
               'form-status',
-              isStepLoginEnabled && preventActivationMessage
-                ? 'form-activation-requirement'
-                : '',
-              authenticationPublishErrors.length > 0
-                ? 'authentication-publish-errors'
+              preventActivationMessage || authenticationPublishErrors.length > 0
+                ? AUTHENTICATION_DRAFT_NOTICE_ID
                 : '',
             ]
               .filter(Boolean)
@@ -204,12 +180,11 @@ export const FormStatusToggle = (): JSX.Element => {
             onChange={onFormToggleStatusClick}
           />
         </Flex>
-        {!isStepLoginEnabled && preventActivationMessage ? (
-          <InlineMessage variant="warning">
-            {preventActivationMessage}
-          </InlineMessage>
-        ) : null}
-        <AuthenticationDraftNotice />
+        {/* Every reason the form can't be opened yet sits in this one notice. */}
+        <AuthenticationDraftNotice
+          activationRequirement={preventActivationMessage}
+          mb={0}
+        />
       </Stack>
     </Skeleton>
   )
