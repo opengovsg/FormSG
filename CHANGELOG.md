@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.71.1](https://github.com/opengovsg/formsg/compare/v9.71.0...v9.71.1) (2026-11-12)
+
+
+### Dependencies
+
+* **deps:** bump node to 22.23.5 for Nov 2026 security release (#10574) ([#10574](https://github.com/opengovsg/formsg/commit/4216d23cb28d5b9b1f57c7f5ee946a5f9ffc8668))
+
 ## [9.71.0](https://github.com/opengovsg/formsg/compare/v9.70.1...v9.71.0) (2026-11-12)
 
 
