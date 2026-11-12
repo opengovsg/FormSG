@@ -310,7 +310,7 @@
             "values": [
               {
                 "type": "xpath",
-                "value": "//label[.//input[@value='new']]"
+                "value": "//label[.//input[@value='digitalNew']]"
               }
             ]
           }
