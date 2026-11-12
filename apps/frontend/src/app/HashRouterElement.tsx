@@ -1,5 +1,5 @@
 import { useLayoutEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router'
 
 import { ADMINFORM_USETEMPLATE_ROUTE, DASHBOARD_ROUTE } from '~constants/routes'
 

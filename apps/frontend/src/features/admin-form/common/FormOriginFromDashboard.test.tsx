@@ -5,7 +5,7 @@ import {
   Route,
   Routes,
   useLocation,
-} from 'react-router-dom'
+} from 'react-router'
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { composeStory } from '@storybook/react-vite'
 import { act, render, screen, waitFor } from '@testing-library/react'

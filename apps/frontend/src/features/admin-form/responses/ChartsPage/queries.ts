@@ -1,5 +1,5 @@
 import { useQuery, UseQueryResult } from 'react-query'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 import { DecryptedContent } from '@opengovsg/formsg-sdk'
 

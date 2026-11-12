@@ -2,7 +2,7 @@
 import { SyntheticEvent, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { UseQueryResult } from 'react-query'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import {
   Modal,
   ModalContent,

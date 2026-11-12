@@ -7,7 +7,7 @@ import {
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from 'react-query'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 import { useDebounce } from 'react-use'
 import {
   Box,

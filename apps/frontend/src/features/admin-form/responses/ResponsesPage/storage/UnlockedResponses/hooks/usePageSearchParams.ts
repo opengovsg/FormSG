@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router'
 
 const PAGE_KEY = 'page'
 const SUBMISSION_ID_KEY = 'submissionId'
