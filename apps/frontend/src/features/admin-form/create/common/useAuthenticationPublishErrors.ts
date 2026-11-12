@@ -7,8 +7,8 @@ import { useUsesStepLoginRules } from '../workflow/hooks/useUsesStepLoginRules'
 
 /**
  * Draft warnings use the same field rules that the server checks on publish.
- * The missing step e-service ID is left out: the form status toggle already
- * describes it. Without step login rules there are none, as before.
+ * The missing step e-service ID is left out: the form status toggle passes it
+ * to the notice itself. Without step login rules there are none, as before.
  */
 export const useAuthenticationPublishErrors = (): string[] => {
   const { data: form } = useAdminForm()

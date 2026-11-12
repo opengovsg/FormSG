@@ -206,9 +206,7 @@ export const enSG: Workflow = {
     tabs: { fields: 'Fields to fill', approvals: 'Approvals', login: 'Login' },
     historicalResponsesKept: 'Historical responses will not be deleted.',
     publishErrors: {
-      title: 'Finish authentication setup before publishing',
-      description:
-        'Configure matching authentication for these fields, or delete the unused fields.',
+      title: 'Finish authentication setup before opening your form',
     },
     settings: {
       description: 'Manage authentication for each step in your workflow.',

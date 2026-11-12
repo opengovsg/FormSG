@@ -173,7 +173,7 @@ export interface Workflow {
     inactiveLabel: string
     tabs: { fields: string; approvals: string; login: string }
     historicalResponsesKept: string
-    publishErrors: { title: string; description: string }
+    publishErrors: { title: string }
     settings: {
       description: string
       editWorkflow: string

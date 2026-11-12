@@ -168,7 +168,7 @@ describe('authentication publication gate', () => {
       { status: FormStatus.Public },
     )
     expect(result._unsafeUnwrapErr().message).toContain(
-      'Add an e-service ID to every Corppass step',
+      'Add a valid e-service ID to every Corppass step',
     )
     expect(write).not.toHaveBeenCalled()
   })
