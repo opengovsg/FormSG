@@ -1,5 +1,3 @@
-import bcrypt from 'bcrypt'
-
 import { compareMyInfoValue, hashMyInfoValue } from '../myinfo.hash'
 
 describe('myinfo.hash', () => {
@@ -55,19 +53,13 @@ describe('myinfo.hash', () => {
       ).resolves.toBe(false)
     })
 
-    it('should match a legacy bcrypt hash of the same value', async () => {
-      const hash = await bcrypt.hash('TAN AH KOW', 4)
-
+    it('should reject a hash that is not an HMAC hash', async () => {
       await expect(
-        compareMyInfoValue('name', 'TAN AH KOW', hash),
-      ).resolves.toBe(true)
-    })
-
-    it('should reject a legacy bcrypt hash of a different value', async () => {
-      const hash = await bcrypt.hash('TAN AH KOW', 4)
-
-      await expect(
-        compareMyInfoValue('name', 'LIM AH KOW', hash),
+        compareMyInfoValue(
+          'name',
+          'TAN AH KOW',
+          '$2b$04$abcdefghijklmnopqrstuuJ8fN0b1g2h3i4j5k6l7m8n9o0p1q2r3',
+        ),
       ).resolves.toBe(false)
     })
   })
