@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.71.0](https://github.com/opengovsg/formsg/compare/v9.70.1...v9.71.0) (2026-11-12)
+
+
+### Features
+
+* **myinfo:** stop accepting bcrypt MyInfo field hashes (#10526) ([#10526](https://github.com/opengovsg/formsg/commit/f5dea3e84ca09521ded2d165f6dab8e9a414253b))
+* **paper-forms-tracking:** v4 ask one origin question when creating or opening a form (#10557) ([#10557](https://github.com/opengovsg/formsg/commit/021b8202d9f91f7f9f7b7b34732a917720579eff))
+
 ## [9.70.1](https://github.com/opengovsg/formsg/compare/v9.70.0...v9.70.1) (2026-11-11)
 
 
