@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQueryClient } from 'react-query'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 import type { FormField } from '@opengovsg/formsg-sdk/dist/types'
 
 import { SubmissionMetadata } from 'formsg-shared/types'

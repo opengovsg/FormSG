@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from 'react-query'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 
 import {
   makeTextPrompt,

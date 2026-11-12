@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 
 import { MONGODB_ID_REGEX } from '~constants/routes'
 

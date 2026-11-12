@@ -1,4 +1,4 @@
-import { createMemoryRouter, Link, RouterProvider } from 'react-router-dom'
+import { createMemoryRouter, Link, RouterProvider } from 'react-router'
 import { ChakraProvider } from '@chakra-ui/react'
 import { act, render, screen, waitFor } from '@testing-library/react'
 

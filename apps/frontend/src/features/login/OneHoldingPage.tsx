@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router'
 import { useLocalStorage } from 'react-use'
 import { Stack } from '@chakra-ui/react'
 import { StatusCodes } from 'http-status-codes'

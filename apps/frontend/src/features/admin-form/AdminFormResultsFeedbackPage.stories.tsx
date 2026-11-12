@@ -1,5 +1,4 @@
-import { MemoryRouter, Route } from 'react-router'
-import { Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {

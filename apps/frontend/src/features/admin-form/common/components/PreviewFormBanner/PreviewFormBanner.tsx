@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiArrowBack, BiDotsHorizontalRounded, BiShow } from 'react-icons/bi'
-import { Link as ReactLink } from 'react-router-dom'
+import { Link as ReactLink } from 'react-router'
 import { Waypoint } from 'react-waypoint'
 import {
   Divider,

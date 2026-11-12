@@ -1,4 +1,4 @@
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { fireEvent, screen, within } from '@testing-library/react'
 
 import { render } from '~/test-utils'

@@ -14,7 +14,7 @@ import {
   useDecryptNewResponses,
 } from './useDecryptNewResponses'
 
-vi.mock('react-router-dom', () => ({
+vi.mock('react-router', () => ({
   useParams: () => ({ formId: 'form-id' }),
 }))
 

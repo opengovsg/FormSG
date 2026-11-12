@@ -1,7 +1,7 @@
 import { Fragment, useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiPencil } from 'react-icons/bi'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router'
 import {
   Accordion,
   AccordionButton,
