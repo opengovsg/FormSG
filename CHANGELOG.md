@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.71.3](https://github.com/opengovsg/formsg/compare/v9.71.2...v9.71.3) (2026-11-12)
+
+
+### Bug Fixes
+
+* **synthetics:** pick the form-origin option by its real value (#10577) ([#10577](https://github.com/opengovsg/formsg/commit/a110a118ead4523a0fa33b919f20f67c5c782f0b))
+
+
+### Chores
+
+* **ci:** merge PRs through a Mergify queue (#10576) ([#10576](https://github.com/opengovsg/formsg/commit/11ef5debcdf3e65ae8b8fd7079cf3fc3cf632e62))
+
 ## [9.71.2](https://github.com/opengovsg/formsg/compare/v9.71.1...v9.71.2) (2026-11-12)
 
 
