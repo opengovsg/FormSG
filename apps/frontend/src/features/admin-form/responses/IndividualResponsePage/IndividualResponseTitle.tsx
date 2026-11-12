@@ -41,6 +41,7 @@ export const IndividualResponseTitle = ({
   const { user } = useUser()
 
   const isAdminPrintPdfEnabled = useFeatureIsOn(featureFlags.adminPrintPdf)
+  const isAttachmentsV2Enabled = useFeatureIsOn(featureFlags.attachmentsV2)
 
   return (
     <Skeleton isLoaded={!isLoading} minW={0}>
@@ -75,7 +76,11 @@ export const IndividualResponseTitle = ({
                   },
                 )
                 if (submission && form) {
-                  await downloadResponsePdf({ form, submission })
+                  await downloadResponsePdf({
+                    form,
+                    submission,
+                    isAttachmentsV2Enabled,
+                  })
                 }
               }}
               variant="clear"

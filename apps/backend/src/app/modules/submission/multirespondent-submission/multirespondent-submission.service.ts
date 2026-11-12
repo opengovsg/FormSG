@@ -92,6 +92,7 @@ import { AttachmentMetadata } from '../submission.types'
 import {
   getMrfSubmissionWorkflowStatus,
   isAdminEmailPdfEnabled,
+  isAttachmentsV2Enabled,
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
@@ -307,6 +308,7 @@ interface sendNextStepEmailProps {
   formId: string
   submissionId: string
   responses: FieldResponsesV4
+  growthbook?: GrowthBook
 }
 
 const sendNextStepEmail = ({
@@ -317,6 +319,7 @@ const sendNextStepEmail = ({
   formId,
   submissionId,
   responses,
+  growthbook,
 }: sendNextStepEmailProps): ResultAsync<
   true,
   InvalidWorkflowTypeError | MailSendError
@@ -336,6 +339,7 @@ const sendNextStepEmail = ({
   const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
     formFields: form.form_fields,
     responses,
+    isAttachmentsV2Enabled: isAttachmentsV2Enabled(growthbook),
   })
 
   return (
@@ -708,6 +712,7 @@ const sendMrfOutcomeEmails = ({
         const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
           formFields: form.form_fields,
           responses,
+          isAttachmentsV2Enabled: isAttachmentsV2Enabled(growthbook),
         })
 
         // TODO (formid-json): remove when Form ID in response JSON is GA
@@ -721,6 +726,7 @@ const sendMrfOutcomeEmails = ({
           responseId: submissionId,
           timestamp: latestSubmissionTimestamp,
           delimiter: getFormDelimiter(form.metadata),
+          isAttachmentsV2Enabled: isAttachmentsV2Enabled(growthbook),
         })
 
         const emailAttachments = []
@@ -800,6 +806,7 @@ const sendMrfRespondentCopyEmails = ({
   formFields,
   currentStepActiveFields,
   pdfResult,
+  growthbook,
 }: {
   form: Pick<
     IPopulatedMultirespondentForm | SnapshottedFormDef,
@@ -816,6 +823,7 @@ const sendMrfRespondentCopyEmails = ({
     Mail.Attachment | undefined,
     AutoreplyPdfGenerationError
   >
+  growthbook?: GrowthBook
 }): ResultAsync<
   true,
   InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError
@@ -844,6 +852,7 @@ const sendMrfRespondentCopyEmails = ({
   const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
     formFields: form.form_fields,
     responses,
+    isAttachmentsV2Enabled: isAttachmentsV2Enabled(growthbook),
   })
 
   return pdfResult
@@ -1472,6 +1481,7 @@ const generatePdfAttachmentIfRequired = ({
   const responsesData = getResponsesDataFromMrfResponses({
     formFields: form.form_fields,
     responses,
+    isAttachmentsV2Enabled: isAttachmentsV2Enabled(growthbook),
   })
 
   const autoReplyData = {
@@ -1781,6 +1791,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     formFields: form.form_fields,
     currentStepActiveFields,
     pdfResult: sendMrfRespondentCopyEmailsPdfResult,
+    growthbook,
   }).mapErr((error) => {
     logger.error({
       message: 'Send multirespondent respondent copy email error',
@@ -1815,6 +1826,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     formId: form._id,
     submissionId,
     responses,
+    growthbook,
   })
     .mapErr((error) => {
       logger.error({
@@ -2315,6 +2327,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     currentStepActiveFields:
       snapshottedFormDef.workflow[currentStepNumber]?.edit ?? [],
     pdfResult: sendMrfRespondentCopyEmailsPdfResult,
+    growthbook,
   }).mapErr((error) => {
     logger.error({
       message: 'Send multirespondent respondent copy email error',
@@ -2378,6 +2391,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
         formId: snapshottedFormDef._id,
         submissionId,
         responses,
+        growthbook,
       }).mapErr((error) => {
         logger.error({
           message: 'Send multirespondent workflow email error',

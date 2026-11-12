@@ -148,6 +148,7 @@ Default.args = {
   decryptedResponses: mockResponses,
   responseId: '68e4a1b6aa7e70297d82e8e2',
   submissionTime: 'Mon, 6 Oct 2025, 02:00:31 PM',
+  isAttachmentsV2Enabled: false,
 }
 
 export const MinimalForm = Template.bind({})
