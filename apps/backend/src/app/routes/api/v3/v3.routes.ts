@@ -33,3 +33,6 @@ V3Router.use('/feature-flags', FeatureFlagsRouter)
 V3Router.use('/intranet', IntranetRouter)
 V3Router.use('/status', StatusTrackerRouter)
 V3Router.use('/cron', CronRouter)
+V3Router.get('/canary-test/500', (_req, res) =>
+  res.status(500).json({ message: 'Canary rollback test' }),
+)
