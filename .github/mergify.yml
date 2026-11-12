@@ -1,4 +1,31 @@
+queue_rules:
+  - name: default
+    # Merge via a queue so each PR is brought up to date with develop and its
+    # CI re-runs against the merged result before it lands. This catches
+    # semantic conflicts between two PRs that each passed on their own base.
+    merge_method: squash
+    queue_conditions:
+      - "#approved-reviews-by >= 1"
+      - label = ready-to-merge
+    merge_conditions:
+      # TODO(team): confirm this is the full set of required checks.
+      - check-success = build
+      - check-success = backend_lint
+      - check-success = frontend_lint
+      - check-success = shared_lint
+      - check-success = backend_test_shards
+      - check-success = frontend_test
+      - check-success = shared_test
+      - check-success = sdk_test
+
 pull_request_rules:
+  - name: Queue PRs labelled ready-to-merge
+    conditions:
+      - label = ready-to-merge
+      - "#approved-reviews-by >= 1"
+    actions:
+      queue:
+        name: default
   - name: Approve and merge non-major dependabot dependency upgrades
     conditions:
       - author=dependabot[bot]
