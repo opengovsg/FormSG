@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.71.2](https://github.com/opengovsg/formsg/compare/v9.71.1...v9.71.2) (2026-11-12)
+
+
+### Bug Fixes
+
+* **frontend:** repair SettingsGeneralPage stories imports and flag (#10575) ([#10575](https://github.com/opengovsg/formsg/commit/914a653e32a08889cb4be1dadc36ac8ec6c8df10))
+
 ## [9.71.1](https://github.com/opengovsg/formsg/compare/v9.71.0...v9.71.1) (2026-11-12)
 
 
