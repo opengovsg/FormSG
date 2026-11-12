@@ -7,6 +7,7 @@ import {
   DateString,
   FormAuthType,
   FormFieldDto,
+  FormOrigin,
   FormStatus,
   FormWorkflowStepDto,
   WorkflowType,
@@ -19,6 +20,7 @@ import {
   getAdminFormSubmissions,
   getAdminFormView,
   patchAdminFormSettings,
+  putAdminFormOrigins,
 } from '~/mocks/msw/handlers/admin-form'
 
 import { StoryRouter, viewportModes } from '~utils/storybook'
@@ -28,14 +30,19 @@ import { SettingsGeneralPage } from './SettingsGeneralPage'
 const buildMswRoutes = ({
   overrides,
   delay,
+  mode,
+  metadata,
 }: {
   overrides?: Partial<FormSettings>
   delay?: number | 'infinite'
+  mode?: FormResponseMode
+  metadata?: AdminFormDto['metadata']
 } = {}) => [
-  getAdminFormSettings({ overrides, delay }),
-  patchAdminFormSettings({ overrides }),
-  getAdminFormView(),
+  getAdminFormSettings({ overrides, delay, mode }),
+  patchAdminFormSettings({ overrides, mode }),
+  getAdminFormView({ mode, overrides: metadata && { metadata } }),
   getAdminFormSubmissions(),
+  putAdminFormOrigins(),
 ]
 
 export default {
@@ -180,3 +187,45 @@ MissingCorppassServiceId.parameters = authenticationDraftParameters(
   true,
   '',
 )
+
+const paperTrackingOn = new GrowthBook({
+  features: {
+    [featureFlags.scheduledFormClosure]: { defaultValue: true },
+    [featureFlags.enablePaperTrackingSetUpPage]: { defaultValue: true },
+  },
+})
+
+const closedStorageForm = {
+  mode: FormResponseMode.Encrypt,
+  overrides: { status: FormStatus.Private },
+}
+
+/**
+ * A closed storage form that was never asked the origin question. Turning
+ * it on asks "Before FormSG, how did you collect this?" before the key.
+ */
+export const OpeningFormWithoutOrigin = Template.bind({})
+OpeningFormWithoutOrigin.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={paperTrackingOn}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+OpeningFormWithoutOrigin.parameters = {
+  msw: { handlers: { default: buildMswRoutes(closedStorageForm) } },
+}
+
+/** A closed storage form that already has an origin opens with the key only. */
+export const OpeningFormWithOrigin = Template.bind({})
+OpeningFormWithOrigin.decorators = OpeningFormWithoutOrigin.decorators
+OpeningFormWithOrigin.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...closedStorageForm,
+        metadata: { formOrigins: { value: [FormOrigin.Paper] } },
+      }),
+    },
+  },
+}

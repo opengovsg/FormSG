@@ -81,16 +81,14 @@ export const useUseTemplateWizardContext = (
     title,
     responseMode,
     emails,
-    formOriginProcess,
-    formOrigins,
+    formOrigin,
   }: CreateFormWizardInputProps) => {
     if (!formId) return
 
     const metadata = buildFormClientMetadata({
       isPaperTrackingSetUpPageEnabled,
       isMrfCutoverEnabled,
-      formOriginProcess,
-      formOrigins,
+      formOrigin,
       formResponseMode: responseMode,
     })
 

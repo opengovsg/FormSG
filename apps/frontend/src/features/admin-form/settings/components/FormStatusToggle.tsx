@@ -1,7 +1,9 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Flex, Skeleton, Stack, Text, useDisclosure } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import {
   EmailFormDto,
   FormResponseMode,
@@ -37,6 +39,12 @@ export const FormStatusToggle = (): JSX.Element => {
     useAdminFormSettings()
 
   const { status, responseMode, authType, esrvcId } = formSettings ?? {}
+
+  // Forms never asked at creation (made before the question existed, or
+  // through the MRF cutover escape hatch) are asked when opened.
+  const askFormOrigin =
+    useFeatureIsOn(featureFlags.enablePaperTrackingSetUpPage) &&
+    !adminForm?.metadata?.formOrigins?.value.length
 
   const secretKeyActivationModalProps = useDisclosure()
   const { onOpen: onOpenActivationModal } = secretKeyActivationModalProps
@@ -155,6 +163,7 @@ export const FormStatusToggle = (): JSX.Element => {
           <SecretKeyActivationModal
             {...secretKeyActivationModalProps}
             publicKey={formSettings.publicKey}
+            askFormOrigin={askFormOrigin}
           />
         )}
         <Flex

@@ -2,6 +2,8 @@ import Stripe from 'stripe'
 
 import {
   EmailFormSettings,
+  FormMetadata,
+  FormOrigin,
   FormSettings,
   MultirespondentFormSettings,
   SettingsUpdateDto,
@@ -61,6 +63,20 @@ export const getFormEncryptedWhitelistedSubmitterIds = async (
   }>(`${ADMIN_FORM_ENDPOINT}/${formId}/settings/whitelist`, {
     responseType: 'json',
   }).then(({ data }) => data)
+}
+
+/**
+ * Saves the answer to the origin question on an existing form, for forms
+ * that were never asked at creation.
+ */
+export const updateFormOrigins = async (
+  formId: string,
+  formOrigin: FormOrigin,
+): Promise<Pick<FormMetadata, 'formOrigins'>> => {
+  return ApiService.put<Pick<FormMetadata, 'formOrigins'>>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/form-origins`,
+    { formOrigins: { value: [formOrigin] } },
+  ).then(({ data }) => data)
 }
 
 export const updateFormStatus: UpdateFormFn<'status'> = async (

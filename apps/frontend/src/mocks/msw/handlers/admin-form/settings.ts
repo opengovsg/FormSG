@@ -10,6 +10,7 @@ import {
   AdminFormDto,
   AdminFormViewDto,
   FormId,
+  FormMetadata,
   FormResponseMode,
   FormSettings,
 } from 'formsg-shared/types/form/form'
@@ -39,6 +40,20 @@ export const getAdminFormView = ({
       )
     },
   )
+}
+
+export const putAdminFormOrigins = ({
+  delay = 0,
+}: { delay?: number | 'infinite' } = {}) => {
+  return http.put<
+    { formId: string },
+    Pick<FormMetadata, 'formOrigins'>,
+    Pick<FormMetadata, 'formOrigins'>
+  >('/api/v3/admin/forms/:formId/form-origins', async ({ request }) => {
+    const { formOrigins } = await request.json()
+    await MswDelay(delay ?? 0)
+    return HttpResponse.json({ formOrigins }, { status: 200 })
+  })
 }
 
 export const getAdminFormSettings = ({

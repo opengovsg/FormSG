@@ -63,31 +63,14 @@ export interface CreateFormModal {
     suffix: string
   }
   origin: {
-    topicSentence: string
-    q1: {
-      label: string
-      options: {
-        new: string
-        existing: string
-      }
+    question: string
+    options: {
+      digitalNew: string
+      digitalExisting: string
+      paper: string
     }
-    q2: {
-      label: string
-      options: {
-        digitalFormbuilder: string
-        digitalEmail: string
-        digitalDocument: string
-        digitalSpreadsheet: string
-        paper: string
-        others: string
-      }
-    }
-    otherInputLabel: string
     errors: {
-      q1Required: string
-      atLeastOne: string
-      otherRequired: string
-      otherMaxLength: string
+      required: string
     }
     cta: {
       next: string

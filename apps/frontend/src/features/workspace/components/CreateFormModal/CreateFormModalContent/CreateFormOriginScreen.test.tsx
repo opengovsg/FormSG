@@ -4,10 +4,6 @@ import { ChakraProvider, Modal, ModalContent, theme } from '@chakra-ui/react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import {
-  CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
-  FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH,
-} from 'formsg-shared/constants'
 import { FormOrigin, FormResponseMode } from 'formsg-shared/types/form/form'
 
 import {
@@ -20,39 +16,16 @@ import { CreateFormOriginScreen } from './CreateFormOriginScreen'
 vi.mock('react-i18next', () => {
   const P = 'features.workspace.modals.forms.create.origin'
   const translations: Record<string, string> = {
-    [`${P}.topicSentence`]: 'Tell us about your process',
-    [`${P}.q1.label`]: 'Is this form based on a new or existing process?',
-    [`${P}.q1.options.new`]: 'New',
-    [`${P}.q1.options.existing`]: 'Existing',
-    [`${P}.q2.label`]: 'How is this data being collected today?',
-    [`${P}.q2.options.paper`]: 'Paper form',
-    [`${P}.q2.options.digitalEmail`]: 'Emails',
-    [`${P}.q2.options.digitalDocument`]: 'Documents (e.g. PDF, Word)',
-    [`${P}.q2.options.digitalSpreadsheet`]: 'Spreadsheets (e.g. Excel, Sheets)',
-    [`${P}.q2.options.digitalFormbuilder`]:
-      'Online form builders (e.g. FormSG)',
-    [`${P}.q2.options.others`]: 'Other',
-    [`${P}.otherInputLabel`]: 'Other source',
-    [`${P}.errors.q1Required`]: 'Please select an option.',
-    [`${P}.errors.atLeastOne`]: 'Please select at least 1 option.',
-    [`${P}.errors.otherRequired`]:
-      'Please specify a value for the "others" option',
-    [`${P}.errors.otherMaxLength`]:
-      'Please use {maxLength} characters or fewer.',
+    [`${P}.question`]: 'Before FormSG, how did you collect this?',
+    [`${P}.options.digitalNew`]: 'Not collected',
+    [`${P}.options.digitalExisting`]: 'Digitally',
+    [`${P}.options.paper`]: 'On paper',
+    [`${P}.errors.required`]: 'Please select an option.',
     [`${P}.cta.next`]: 'Next step',
     [`${P}.cta.back`]: 'Back',
   }
-  const interpolate = (s: string, opts?: Record<string, unknown>) =>
-    opts
-      ? s.replace(/\{(\w+)\}/g, (_, key) =>
-          key in opts ? String(opts[key]) : `{${key}}`,
-        )
-      : s
   return {
-    useTranslation: () => ({
-      t: (k: string, opts?: Record<string, unknown>) =>
-        interpolate(translations[k] ?? k, opts),
-    }),
+    useTranslation: () => ({ t: (k: string) => translations[k] ?? k }),
     Trans: ({ children }: PropsWithChildren) => children,
   }
 })
@@ -96,32 +69,21 @@ const clickNext = async (user: ReturnType<typeof userEvent.setup>) => {
   await user.click(screen.getByRole('button', { name: /next step/i }))
 }
 
-const selectExisting = async (user: ReturnType<typeof userEvent.setup>) => {
-  await user.click(screen.getByRole('radio', { name: 'Existing' }))
-}
-
 describe('CreateFormOriginScreen', () => {
-  it('renders the topic sentence as the header and Q1 as a radio with New/Existing, with Q2 absent', () => {
+  it('asks "Before FormSG, how did you collect this?" with the three answers in order', () => {
     renderOriginScreen()
 
-    expect(screen.getByText('Tell us about your process')).toBeInTheDocument()
-    expect(screen.getByRole('radio', { name: 'New' })).toBeInTheDocument()
-    expect(screen.getByRole('radio', { name: 'Existing' })).toBeInTheDocument()
-    expect(screen.queryByLabelText('Paper form')).not.toBeInTheDocument()
+    expect(
+      screen.getByText('Before FormSG, how did you collect this?'),
+    ).toBeInTheDocument()
+    const radios = screen.getAllByRole('radio')
+    expect(radios).toHaveLength(3)
+    expect(radios[0]).toHaveAccessibleName('Not collected')
+    expect(radios[1]).toHaveAccessibleName('Digitally')
+    expect(radios[2]).toHaveAccessibleName('On paper')
   })
 
-  it('keeps Q2 hidden when Q1 = New is actively selected, and shows it when Q1 = Existing is selected', async () => {
-    const user = userEvent.setup()
-    renderOriginScreen()
-
-    await user.click(screen.getByRole('radio', { name: 'New' }))
-    expect(screen.queryByLabelText('Paper form')).not.toBeInTheDocument()
-
-    await selectExisting(user)
-    expect(screen.getByLabelText('Paper form')).toBeInTheDocument()
-  })
-
-  it('blocks submission and shows an error when no origin is selected', async () => {
+  it('blocks submission and shows an error when no answer is chosen', async () => {
     const user = userEvent.setup()
     const { onCreate } = renderOriginScreen()
 
@@ -133,158 +95,26 @@ describe('CreateFormOriginScreen', () => {
     expect(onCreate).not.toHaveBeenCalled()
   })
 
-  it("shows only Q2's error (not Q1's) when Q1 = Existing but Q2 is left empty", async () => {
-    const user = userEvent.setup()
-    const { onCreate } = renderOriginScreen()
+  it.each([
+    ['Not collected', FormOrigin.DigitalNew],
+    ['Digitally', FormOrigin.DigitalExisting],
+    ['On paper', FormOrigin.Paper],
+  ])(
+    'creates the form with "%s" as the origin, without a follow-up question',
+    async (label, expected) => {
+      const user = userEvent.setup()
+      const { onCreate } = renderOriginScreen()
 
-    await selectExisting(user)
-    await clickNext(user)
+      await user.click(screen.getByRole('radio', { name: label }))
+      expect(screen.queryAllByRole('checkbox')).toHaveLength(0)
+      await clickNext(user)
 
-    const errors = await screen.findAllByText(
-      'Please select at least 1 option.',
-    )
-    expect(errors).toHaveLength(1)
-    expect(onCreate).not.toHaveBeenCalled()
-  })
-
-  it('creates the form with the selected origins when at least one is chosen', async () => {
-    const user = userEvent.setup()
-    const { onCreate } = renderOriginScreen()
-
-    await selectExisting(user)
-    await user.click(screen.getByLabelText('Paper form'))
-    await user.click(screen.getByLabelText('Spreadsheets (e.g. Excel, Sheets)'))
-    await clickNext(user)
-
-    await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
-    expect(onCreate.mock.calls[0][0]).toEqual(
-      expect.objectContaining({
-        formOrigins: expect.objectContaining({
-          value: expect.arrayContaining([
-            FormOrigin.Paper,
-            FormOrigin.DigitalSpreadsheet,
-          ]),
-        }),
-      }),
-    )
-  })
-
-  it('offers "Online form builders (e.g. FormSG)" as a medium option', async () => {
-    const user = userEvent.setup()
-    const { onCreate } = renderOriginScreen()
-
-    await selectExisting(user)
-    expect(
-      screen.getByLabelText('Online form builders (e.g. FormSG)'),
-    ).toBeInTheDocument()
-
-    await user.click(
-      screen.getByLabelText('Online form builders (e.g. FormSG)'),
-    )
-    await clickNext(user)
-
-    await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
-    expect(onCreate.mock.calls[0][0]).toEqual(
-      expect.objectContaining({
-        formOrigins: expect.objectContaining({
-          value: [FormOrigin.DigitalFormBuilder],
-        }),
-      }),
-    )
-  })
-
-  it('creates the form when Q1 = New is selected, without requiring an answer to Q2', async () => {
-    const user = userEvent.setup()
-    const { onCreate } = renderOriginScreen()
-
-    await user.click(screen.getByRole('radio', { name: 'New' }))
-    await clickNext(user)
-
-    await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
-    expect(onCreate.mock.calls[0][0]).toEqual(
-      expect.objectContaining({ formOriginProcess: 'new' }),
-    )
-  })
-
-  it('restores previously ticked Q2 options after switching to New and back to Existing', async () => {
-    const user = userEvent.setup()
-    renderOriginScreen()
-
-    await selectExisting(user)
-    await user.click(screen.getByLabelText('Paper form'))
-
-    await user.click(screen.getByRole('radio', { name: 'New' }))
-    expect(screen.queryByLabelText('Paper form')).not.toBeInTheDocument()
-
-    await selectExisting(user)
-    expect(screen.getByLabelText('Paper form')).toBeChecked()
-  })
-
-  it('requires the free-text detail when "Other" is selected', async () => {
-    const user = userEvent.setup()
-    const { onCreate } = renderOriginScreen()
-
-    await selectExisting(user)
-    await user.click(screen.getByLabelText('Other'))
-    await clickNext(user)
-
-    expect(
-      await screen.findByText('Please specify a value for the "others" option'),
-    ).toBeInTheDocument()
-    expect(onCreate).not.toHaveBeenCalled()
-  })
-
-  it('shows a character count helper for the "Other" detail', async () => {
-    const user = userEvent.setup()
-    renderOriginScreen()
-
-    await selectExisting(user)
-    await user.click(screen.getByLabelText('Other'))
-    await user.type(screen.getByLabelText('Other source'), 'Carrier pigeon')
-
-    expect(
-      screen.getByText(`(14/${FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH})`),
-    ).toBeInTheDocument()
-  })
-
-  it(`blocks submission when the "Other" detail exceeds ${FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH} characters`, async () => {
-    const user = userEvent.setup()
-    const { onCreate } = renderOriginScreen()
-
-    await selectExisting(user)
-    await user.click(screen.getByLabelText('Other'))
-    const input = screen.getByLabelText('Other source')
-    await user.click(input)
-    await user.paste('a'.repeat(FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH + 1))
-    await clickNext(user)
-
-    expect(
-      await screen.findByText(
-        new RegExp(`${FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH} characters`, 'i'),
-      ),
-    ).toBeInTheDocument()
-    expect(onCreate).not.toHaveBeenCalled()
-  })
-
-  it('marks "Other" with the checkbox sentinel and carries the typed detail', async () => {
-    const user = userEvent.setup()
-    const { onCreate } = renderOriginScreen()
-
-    await selectExisting(user)
-    await user.click(screen.getByLabelText('Other'))
-    await user.type(screen.getByLabelText('Other source'), 'Carrier pigeon')
-    await clickNext(user)
-
-    await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
-    expect(onCreate.mock.calls[0][0]).toEqual(
-      expect.objectContaining({
-        formOrigins: {
-          value: [CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
-          othersInput: 'Carrier pigeon',
-        },
-      }),
-    )
-  })
+      await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
+      expect(onCreate.mock.calls[0][0]).toEqual(
+        expect.objectContaining({ formOrigin: expected }),
+      )
+    },
+  )
 
   it('returns to the title step when Back is pressed', async () => {
     const user = userEvent.setup()

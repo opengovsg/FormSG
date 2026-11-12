@@ -72,31 +72,14 @@ export const enSG: CreateFormModal = {
     suffix: '.',
   },
   origin: {
-    topicSentence: 'Tell us about your process',
-    q1: {
-      label: 'Is this form based on a new or existing process?',
-      options: {
-        new: 'New',
-        existing: 'Existing',
-      },
+    question: 'Before FormSG, how did you collect this?',
+    options: {
+      digitalNew: 'Not collected',
+      digitalExisting: 'Digitally',
+      paper: 'On paper',
     },
-    q2: {
-      label: 'How is this data being collected today?',
-      options: {
-        digitalFormbuilder: 'Online form builders (e.g. FormSG)',
-        digitalEmail: 'Emails',
-        digitalDocument: 'Documents (e.g. PDF, Word)',
-        digitalSpreadsheet: 'Spreadsheets (e.g. Excel, Sheets)',
-        paper: 'Paper form',
-        others: 'Other',
-      },
-    },
-    otherInputLabel: 'Other source',
     errors: {
-      q1Required: 'Please select an option.',
-      atLeastOne: 'Please select at least 1 option.',
-      otherRequired: 'Please specify a value for the "others" option',
-      otherMaxLength: 'Please use {maxLength} characters or fewer.',
+      required: 'Please select an option.',
     },
     cta: {
       next: 'Next step',
