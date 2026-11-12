@@ -5,19 +5,17 @@
   "description": "Lambda that waits for the GuardDuty malware scan verdict on a quarantined form attachment and copies clean files to the clean bucket",
   "scripts": {
     "env": "ENV=${ENV:-'development'} node scripts/envLoader.mjs",
-    "build": "tsc",
+    "build": "esbuild src/index.ts --bundle --minify --sourcemap --platform=node --target=node22 --outfile=dist/index.js",
     "tsc": "tsc",
-    "bundle": "esbuild src/index.ts --bundle --minify --sourcemap --platform=node --target=node22 --outfile=dist/index.js",
-    "dev": "pnpm run env && docker-compose -f docker-compose.dev.yml up --build",
-    "deploy": "pnpm run env && pnpm run bundle && sls deploy --stage ${ENV:-'staging'} --param=\"provisionedConcurrency=${CONCURRENCY}\" --conceal",
-    "package": "pnpm run env && pnpm run bundle && sls package --stage ${ENV:-'staging'} --param=\"provisionedConcurrency=${CONCURRENCY}\""
+    "dev": "pnpm run env && pnpm run build && docker-compose -f docker-compose.dev.yml up --build",
+    "deploy": "pnpm run env && pnpm run build && sls deploy --stage ${ENV:-'staging'} --param=\"provisionedConcurrency=${CONCURRENCY}\" --conceal",
+    "package": "pnpm run env && pnpm run build && sls package --stage ${ENV:-'staging'} --param=\"provisionedConcurrency=${CONCURRENCY}\""
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.529.1",
     "@aws-sdk/client-ssm": "^3.363.0",
-    "aws-lambda-ric": "^4.0.2",
     "convict": "^6.2.4",
     "http-status-codes": "^2.2.0",
     "lodash": "^4.17.23",
