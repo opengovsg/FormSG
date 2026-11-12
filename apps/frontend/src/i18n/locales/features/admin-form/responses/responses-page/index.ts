@@ -27,6 +27,8 @@ export interface ResponsesResponsesPage {
           andText: string
           attachmentsDescription: string
           pdfsDescription: string
+          downloadVersionLabel: string
+          zipDescription: string
           numberOfResponses: string
           estimatedTime: string
           estimatedTimeReference: string
@@ -42,6 +44,7 @@ export interface ResponsesResponsesPage {
         }
         modal: {
           progressMessage: string
+          zipProgressMessage: string
         }
       }
       progressModal: {

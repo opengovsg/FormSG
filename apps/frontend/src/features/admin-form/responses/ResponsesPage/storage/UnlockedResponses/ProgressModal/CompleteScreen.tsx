@@ -3,11 +3,13 @@ import { useTranslation } from 'react-i18next'
 import {
   Badge,
   Icon,
+  ListItem,
   ModalBody,
   ModalFooter,
   ModalHeader,
   Stack,
   Text,
+  UnorderedList,
   Wrap,
 } from '@chakra-ui/react'
 import simplur from 'simplur'
@@ -16,10 +18,12 @@ import { BxsCheckCircle, BxsXCircle } from '~assets/icons'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
+import InlineMessage from '~components/InlineMessage'
 import { MarkdownText } from '~components/MarkdownText'
 import { ModalCloseButton } from '~components/Modal'
 
 import { DownloadResult } from '../../types'
+import { getFailedDownloadsSummary } from '../../utils/failedDownloads'
 
 interface CompleteScreenProps {
   isWithAttachments: boolean
@@ -40,8 +44,8 @@ export const CompleteScreen = ({
 
   const completionMessage = useMemo(() => {
     if (!downloadMetadata) return ''
-    const { successCount, expectedCount } = downloadMetadata
-    if (successCount >= expectedCount) {
+    const { successCount, expectedCount, failedDownloads } = downloadMetadata
+    if (successCount >= expectedCount && !failedDownloads?.length) {
       return `All responses${
         isWithAttachments ? ' and attachments' : ''
       } have been downloaded successfully.`
@@ -59,6 +63,15 @@ export const CompleteScreen = ({
       successCount,
     ]}response[|s] ha[s|ve] been downloaded successfully, refer to the downloaded CSV file for more details.`
   }, [downloadMetadata, isWithAttachments])
+
+  // What the one zip left out, marked by placeholders in the zip
+  const failedDownloadsSummary = useMemo(
+    () =>
+      downloadMetadata?.failedDownloads?.length
+        ? getFailedDownloadsSummary(downloadMetadata.failedDownloads)
+        : undefined,
+    [downloadMetadata?.failedDownloads],
+  )
 
   const attachmentErrorMessage = useMemo(() => {
     if (!downloadMetadata?.errorCount) return ''
@@ -107,6 +120,20 @@ export const CompleteScreen = ({
               {completionMessage}
             </MarkdownText>
           </Stack>
+          {failedDownloadsSummary ? (
+            <InlineMessage variant="warning">
+              <Stack spacing="0.5rem" minW={0}>
+                <Text>{failedDownloadsSummary.message}</Text>
+                <UnorderedList styleType="disc" ms="1.25rem" spacing="0.25rem">
+                  {failedDownloadsSummary.items.map((item, index) => (
+                    <ListItem key={index} wordBreak="break-word">
+                      {item}
+                    </ListItem>
+                  ))}
+                </UnorderedList>
+              </Stack>
+            </InlineMessage>
+          ) : null}
           {attachmentErrorMessage && (
             <Stack direction="row" spacing="0.5rem">
               <Icon

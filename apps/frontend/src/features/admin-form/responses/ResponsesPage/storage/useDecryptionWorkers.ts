@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation, UseMutationOptions } from 'react-query'
 import { datadogLogs } from '@datadog/browser-logs'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
+import { transfer } from 'comlink'
 import saveAs from 'file-saver'
 import JSZip from 'jszip'
 
@@ -12,6 +13,7 @@ import { env } from '~/env'
 import { waitForMs } from '~utils/waitForMs'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { useIsOneZipDownload } from '~features/admin-form/responses/hooks'
 import {
   trackDownloadNetworkFailure,
   trackDownloadResponseFailure,
@@ -25,11 +27,29 @@ import {
   killWorkers,
   makeWorkerApiAndCleanup,
 } from '../../common/utils/decryptionWorker'
-import { generateResponsePdfBlob } from '../../IndividualResponsePage/utils/generateResponsePdf'
+import {
+  generateResponsePdfBlob,
+  getPdfTitle,
+} from '../../IndividualResponsePage/utils/generateResponsePdf'
 
 import { CsvExportView } from './utils/csvExportView'
 import { downloadResponseAttachment } from './utils/downloadCsv'
 import { EncryptedResponseCsvGenerator } from './utils/EncryptedResponseCsvGenerator'
+import {
+  FAILED_RESPONSE_NAME,
+  getTombstoneContent,
+  getTombstoneName,
+} from './utils/failedDownloads'
+import {
+  getResponseFolderName,
+  removeInvalidFileNameCharacters,
+} from './utils/responseFolderName'
+import { clearStagedZips } from './utils/zipStaging'
+import { ZipEntry } from './utils/ZipStreamWriter'
+import {
+  CleanableZipWorkerApi,
+  makeZipWorkerApiAndCleanup,
+} from './utils/zipWorker'
 import {
   EncryptedResponsesStreamParams,
   getEncryptedResponsesStream,
@@ -40,6 +60,7 @@ import {
   DecryptedData,
   DecryptedSubmissionData,
   DownloadResult,
+  FailedDownload,
 } from './types'
 
 const NUM_OF_METADATA_ROWS = 5
@@ -49,6 +70,28 @@ const NUM_OF_METADATA_ROWS = 5
 // which could cause it to block downloads.
 const ATTACHMENT_DOWNLOAD_CONVOY_SIZE = 5
 const ATTACHMENT_DOWNLOAD_CONVOY_MINIMUM_SEPARATION_TIME = 1000
+
+// At most this many responses are decrypted but not yet
+// in the zip, so memory stays bounded however big the download is.
+const MAX_PENDING_ZIP_RESPONSES = 4
+
+/**
+ * A response on its way to the one zip. `failedRefNo` marks one that failed to
+ * download or decrypt as a whole.
+ */
+type ZipResponse = DecryptedData & { failedRefNo?: string }
+
+/** The ref no of a streamed response, if it can be read. */
+const getStreamedRefNo = (submissionStreamDtoString: string): string => {
+  try {
+    return (
+      (JSON.parse(submissionStreamDtoString) as { _id?: string })._id ??
+      'unknown'
+    )
+  } catch {
+    return 'unknown'
+  }
+}
 
 export type DownloadEncryptedParams = EncryptedResponsesStreamParams & {
   // The key to decrypt the submission responses.
@@ -79,11 +122,14 @@ const useDecryptionWorkers = ({
 }: UseDecryptionWorkersProps) => {
   const [workers, setWorkers] = useState<CleanableDecryptionWorkerApi[]>([])
   const abortControllerRef = useRef(new AbortController())
+  // Builds the current download's one zip
+  const zipWorkerRef = useRef<CleanableZipWorkerApi>()
 
   const { data: adminForm } = useAdminForm()
   const { user } = useUser()
   const isWorkflowActionsOn = useFeatureIsOn(featureFlags.workflowActions)
   const isAttachmentsV2Enabled = useFeatureIsOn(featureFlags.attachmentsV2)
+  const isOneZipDownload = useIsOneZipDownload()
 
   useEffect(() => {
     return () => killWorkers(workers)
@@ -93,8 +139,14 @@ const useDecryptionWorkers = ({
     const abortController = abortControllerRef.current
     return () => {
       abortController.abort()
+      zipWorkerRef.current?.abort()
     }
   }, [])
+
+  // Frees the disk space of zips from earlier downloads
+  useEffect(() => {
+    if (isAttachmentsV2Enabled) void clearStagedZips()
+  }, [isAttachmentsV2Enabled])
 
   const downloadEncryptedResponses = useCallback(
     async ({
@@ -144,6 +196,21 @@ const useDecryptionWorkers = ({
       const expectedResponsesCount =
         visibleSubmissionIds?.length ?? responsesCount
 
+      // For the one zip download, everything ticked goes into one zip that is
+      // saved once at the end. A CSV on its own stays a plain CSV.
+      zipWorkerRef.current?.abort()
+      const zipWorker =
+        isOneZipDownload && (downloadAttachments || isDownloadPdf)
+          ? makeZipWorkerApiAndCleanup()
+          : undefined
+      zipWorkerRef.current = zipWorker
+      let zipSinkMeta = {}
+      if (zipWorker) {
+        await clearStagedZips()
+        const { sink, fallbackReason } = await zipWorker.workerApi.open()
+        zipSinkMeta = { zipSink: sink, zipFallbackReason: fallbackReason }
+      }
+
       const logMeta = {
         action: 'downloadEncryptedReponses',
         formId: adminForm._id,
@@ -152,6 +219,8 @@ const useDecryptionWorkers = ({
         num_workers: numWorkers,
         expectedNumSubmissions: expectedResponsesCount,
         adminId: user?._id,
+        isOneZipDownload,
+        ...zipSinkMeta,
       }
       // Trigger analytics here before starting decryption worker
       trackDownloadResponseStart(adminForm, numWorkers, NUM_OF_METADATA_ROWS)
@@ -177,6 +246,190 @@ const useDecryptionWorkers = ({
             { isAttachmentsV2Enabled },
           )
         : undefined
+
+      // Serialises PDF generation and zip writes on the main thread
+      let zipQueue: Promise<void> = Promise.resolve()
+      // A download that errored never saves its zip
+      let hasDownloadFailed = false
+      // Responses sent for decryption but not yet written to the zip
+      let pendingZipCount = 0
+      // Wakes the stream reader once a pending response reaches the zip
+      let onZipSlotFree: (() => void) | undefined
+      // Cancelling kills the workers, so their pending responses never settle
+      freshAbortController.signal.addEventListener('abort', () =>
+        onZipSlotFree?.(),
+      )
+      const csvFilename = `${adminForm.title}-${adminForm._id}.csv`
+
+      // What the one zip leaves out, each marked by a placeholder in its place
+      const failedDownloads: FailedDownload[] = []
+
+      /**
+       * Writes a response's attachments and PDF into the download zip, in its
+       * response folder when attachments are downloaded. A folder exists only
+       * when something goes in it, so a response that failed to decrypt, or
+       * has no attachments and no PDF, gets none. Anything that failed gets a
+       * placeholder file in its place instead.
+       */
+      const addToZip = (
+        { workerApi }: CleanableZipWorkerApi,
+        decryptResult: ZipResponse,
+      ): Promise<DecryptedData> => {
+        zipQueue = zipQueue.then(async () => {
+          if (freshAbortController.signal.aborted) return
+          const {
+            status,
+            parsedSubmission,
+            decryptedResponses,
+            attachments,
+            failedRefNo,
+          } = decryptResult
+          const getFolderPath = (refNo: string) =>
+            downloadAttachments ? `${getResponseFolderName({ refNo })}/` : ''
+          // No folder entry: unzipping creates the folder from its files' paths
+          const entries: ZipEntry[] = []
+          const addPlaceholder = (failure: FailedDownload, path: string) => {
+            failedDownloads.push(failure)
+            entries.push({ name: path, content: getTombstoneContent(failure) })
+          }
+          const files = attachments?.kind === 'files' ? attachments.files : []
+          if (failedRefNo !== undefined) {
+            // With folders the response gets one of its own, otherwise its
+            // PDF is what's missing
+            addPlaceholder(
+              {
+                refNo: failedRefNo,
+                name: FAILED_RESPONSE_NAME,
+                reason: 'response',
+              },
+              getFolderPath(failedRefNo) +
+                getTombstoneName(
+                  downloadAttachments
+                    ? FAILED_RESPONSE_NAME
+                    : getPdfTitle({ submissionId: failedRefNo }),
+                ),
+            )
+          } else if (
+            status.isDecryptionSuccessful &&
+            parsedSubmission &&
+            decryptedResponses
+          ) {
+            const refNo = parsedSubmission._id
+            const folderPath = getFolderPath(refNo)
+            for (const { filename, content } of files) {
+              entries.push({ name: `${folderPath}${filename}`, content })
+            }
+            if (attachments?.kind === 'files') {
+              for (const { filename, reason } of attachments.failed) {
+                addPlaceholder(
+                  { refNo, name: filename, reason },
+                  `${folderPath}${getTombstoneName(filename)}`,
+                )
+              }
+            }
+            if (isDownloadPdf) {
+              // A PDF that fails is marked, so the other responses carry on
+              try {
+                const { pdfBlob, pdfTitle } = await generateResponsePdfBlob({
+                  form: adminForm,
+                  submission: {
+                    refNo,
+                    submissionTime: parsedSubmission.created,
+                    responses: decryptedResponses,
+                  },
+                  isAttachmentsV2Enabled,
+                })
+                entries.push({
+                  name: `${folderPath}${pdfTitle}`,
+                  content: pdfBlob,
+                })
+              } catch (error) {
+                datadogLogs.logger.error('Response PDF generation failed', {
+                  meta: {
+                    ...logMeta,
+                    submissionId: refNo,
+                    error:
+                      error instanceof Error
+                        ? { message: error.message, stack: error.stack }
+                        : String(error),
+                  },
+                })
+                const pdfTitle = getPdfTitle({ submissionId: refNo })
+                addPlaceholder(
+                  { refNo, name: pdfTitle, reason: 'pdf' },
+                  `${folderPath}${getTombstoneName(pdfTitle)}`,
+                )
+              }
+            }
+          }
+          if (entries.length) {
+            // Move the file bytes to the zip worker instead of copying them
+            await workerApi.add(
+              transfer(entries, [
+                ...new Set(files.map(({ content }) => content.buffer)),
+              ]),
+            )
+          }
+          if (isDownloadPdf) {
+            onPdfGenerationProgress(
+              (prevPdfGenerationProgress) => prevPdfGenerationProgress + 1,
+            )
+          }
+        })
+        // Keep only what the counts need, so the zip alone holds the files
+        return zipQueue.then(() => ({ status: decryptResult.status }))
+      }
+
+      /**
+       * Stands in for a response that failed as a whole, so the download
+       * carries on without it and marks it in the zip.
+       */
+      const toFailedZipResponse = (
+        error: unknown,
+        submissionStreamDtoString: string,
+      ): ZipResponse => {
+        const refNo = getStreamedRefNo(submissionStreamDtoString)
+        datadogLogs.logger.error('Response download failed', {
+          meta: {
+            ...logMeta,
+            submissionId: refNo,
+            error:
+              error instanceof Error
+                ? { message: error.message, stack: error.stack }
+                : String(error),
+          },
+        })
+        // Step 2 counts it as a decryption failure, but it has no CSV record
+        // to count, and the CSV waits until every response is counted
+        if (isDownloadCsv) csvOutcomeCounts.errorCount++
+        return {
+          status: {
+            isDecryptionSuccessful: false,
+            isDownloadAndDecryptSubmissionAttachmentsSuccessful: false,
+          },
+          failedRefNo: refNo,
+        }
+      }
+
+      /** Finishes the zip and saves it. Resolves with its size for the logs. */
+      const saveZip = async (
+        { workerApi }: CleanableZipWorkerApi,
+        csvBlob?: Blob,
+      ) => {
+        if (csvBlob) {
+          await workerApi.add([
+            {
+              name: removeInvalidFileNameCharacters(csvFilename),
+              content: csvBlob,
+            },
+          ])
+        }
+        const { zip, bytesWritten, fileCount } = await workerApi.finish()
+        // Cancelling saves nothing
+        if (freshAbortController.signal.aborted) return
+        saveAs(zip, `${adminForm.title}-${adminForm._id}.zip`)
+        return { zipBytes: bytesWritten, zipFileCount: fileCount }
+      }
 
       const stream = await getEncryptedResponsesStream(
         adminForm._id,
@@ -224,9 +477,15 @@ const useDecryptionWorkers = ({
                 formId: adminForm._id,
                 hostOrigin: window.location.origin,
                 isWorkflowActionsOn,
+                isOneZipDownload,
                 // Resolved here (on the main thread) so the worker doesn't
                 // need to import env.ts (which references window).
                 formsgSdkMode: env.formsgSdkMode,
+              })
+              // A response that fails as a whole doesn't stop the one zip
+              .catch((error) => {
+                if (!zipWorker) throw error
+                return toFailedZipResponse(error, result.value)
               })
               // Step 2: Update the Csv record status based on the decryption result.
               .then(async (decryptResult) => {
@@ -286,15 +545,16 @@ const useDecryptionWorkers = ({
               // Step 3: Save the downloaded and decrypted attachment blobs for each submission (if required).
               // This step is done with delays in between groups of files to space out downloads to avoid browser blocking downloads.
               .then(async (decryptResult) => {
+                if (zipWorker) {
+                  return addToZip(zipWorker, decryptResult)
+                }
                 if (!downloadAttachments) {
                   return decryptResult
                 }
                 // Chain onto the queue so saves run one at a time
                 saveQueue = saveQueue.then(async () => {
-                  if (
-                    !decryptResult.attachmentDownloadBlob ||
-                    !decryptResult.parsedSubmission?._id
-                  ) {
+                  const { attachments, parsedSubmission } = decryptResult
+                  if (attachments?.kind !== 'zip' || !parsedSubmission?._id) {
                     return
                   }
                   attachmentsToSaveCount += 1
@@ -319,20 +579,41 @@ const useDecryptionWorkers = ({
                     timeSinceLastXAttachmentDownload = now
                   }
                   await downloadResponseAttachment(
-                    decryptResult.attachmentDownloadBlob,
-                    decryptResult.parsedSubmission._id,
+                    attachments.blob,
+                    parsedSubmission._id,
                   )
                 })
                 return saveQueue.then(() => decryptResult)
+              })
+              // Lets the stream reader stop early. The error still reaches
+              // Promise.all below.
+              .catch((error) => {
+                hasDownloadFailed = true
+                throw error
               })
               // Step 4: Update the progress bar only once the attachments for the decrypted submission have been downloaded (if needed).
               .finally(() => {
                 onDecryptionProgress(
                   (prevDecryptionProgress) => prevDecryptionProgress + 1,
                 )
+                if (zipWorker) {
+                  pendingZipCount -= 1
+                  onZipSlotFree?.()
+                  onZipSlotFree = undefined
+                }
               }),
           )
           currentSubmissionIndex += 1 // used to assign the next submission to the next worker
+          if (zipWorker) {
+            pendingZipCount += 1
+            // Hold back the stream while the zip is behind
+            if (pendingZipCount >= MAX_PENDING_ZIP_RESPONSES) {
+              await new Promise<void>((resolve) => (onZipSlotFree = resolve))
+            }
+            // A failed response fails the download, so stop sending more. On
+            // cancel, the next read rejects as the stream is aborted.
+            if (hasDownloadFailed) return
+          }
           return reader.read().then(read)
         }),
       )
@@ -342,6 +623,10 @@ const useDecryptionWorkers = ({
         Promise.all(submissionDecryptPromises)
           // Step 2: Save the PDFs for each submission into a zip file.
           .then(async (decryptResults) => {
+            if (zipWorker) {
+              await zipQueue
+              return
+            }
             if (isDownloadPdf) {
               const pdfZip = new JSZip()
               for (const decryptResult of decryptResults) {
@@ -422,7 +707,9 @@ const useDecryptionWorkers = ({
               'Failed to download data, is there a network issue?',
               err,
             )
+            hasDownloadFailed = true
             killWorkers(workerPool)
+            zipWorker?.abort()
             reject(err)
           })
           // Step 2: Generate the actual CSV file from the csv object.
@@ -430,10 +717,50 @@ const useDecryptionWorkers = ({
             if (freshAbortController.signal.aborted) {
               return
             }
+            // Saves the zip, if any, before reporting the result
+            const complete = (result: DownloadResult, csvBlob?: Blob) => {
+              if (!zipWorker || hasDownloadFailed) return resolve(result)
+              saveZip(zipWorker, csvBlob).then(
+                (zipMeta) => {
+                  zipWorker.cleanup()
+                  // Downloads without a CSV log their success here too
+                  if (zipMeta) {
+                    datadogLogs.logger.info('Download response success', {
+                      meta: {
+                        ...logMeta,
+                        ...zipMeta,
+                        failedDownloadCount: failedDownloads.length,
+                        duration: performance.now() - downloadStartTime,
+                      },
+                    })
+                  }
+                  resolve(
+                    failedDownloads.length
+                      ? { ...result, failedDownloads }
+                      : result,
+                  )
+                },
+                (err) => {
+                  datadogLogs.logger.info('Download response failure', {
+                    meta: {
+                      ...logMeta,
+                      duration: performance.now() - downloadStartTime,
+                      error: {
+                        message: err.message,
+                        name: err.name,
+                        stack: err.stack,
+                      },
+                    },
+                  })
+                  zipWorker.abort()
+                  reject(err)
+                },
+              )
+            }
             const checkComplete = () => {
               if (!isDownloadCsv || !csvGenerator) {
                 killWorkers(workerPool)
-                resolve({
+                complete({
                   expectedCount: expectedResponsesCount,
                   successCount: decryptionOutcomeCounts.decryptionSuccessCount,
                   errorCount: decryptionOutcomeCounts.decryptionFailureCount,
@@ -471,7 +798,7 @@ const useDecryptionWorkers = ({
                 )
 
                 killWorkers(workerPool)
-                resolve({
+                complete({
                   expectedCount: expectedResponsesCount,
                   successCount: csvGenerator.length(),
                   errorCount: csvOutcomeCounts.errorCount,
@@ -496,19 +823,24 @@ const useDecryptionWorkers = ({
                   csvOutcomeCounts.errorCount,
                   csvOutcomeCounts.unverifiedCount,
                 )
-                csvGenerator.downloadCsv(
-                  `${adminForm.title}-${adminForm._id}.csv`,
-                )
+                // The CSV goes into the zip when there is one
+                const csvBlob = zipWorker
+                  ? csvGenerator.getCsvBlob()
+                  : undefined
+                if (!zipWorker) csvGenerator.downloadCsv(csvFilename)
 
                 const downloadEndTime = performance.now()
                 const timeDifference = downloadEndTime - downloadStartTime
 
-                datadogLogs.logger.info('Download response success', {
-                  meta: {
-                    ...logMeta,
-                    duration: timeDifference,
-                  },
-                })
+                // A zip logs its success once it is saved
+                if (!zipWorker) {
+                  datadogLogs.logger.info('Download response success', {
+                    meta: {
+                      ...logMeta,
+                      duration: timeDifference,
+                    },
+                  })
+                }
 
                 trackDownloadResponseSuccess(
                   adminForm,
@@ -517,12 +849,15 @@ const useDecryptionWorkers = ({
                   timeDifference,
                 )
 
-                resolve({
-                  expectedCount: expectedResponsesCount,
-                  successCount: csvGenerator.length(),
-                  errorCount: csvOutcomeCounts.errorCount,
-                  unverifiedCount: csvOutcomeCounts.unverifiedCount,
-                })
+                complete(
+                  {
+                    expectedCount: expectedResponsesCount,
+                    successCount: csvGenerator.length(),
+                    errorCount: csvOutcomeCounts.errorCount,
+                    unverifiedCount: csvOutcomeCounts.unverifiedCount,
+                  },
+                  csvBlob,
+                )
               } else {
                 setTimeout(checkComplete, 100)
               }
@@ -534,6 +869,7 @@ const useDecryptionWorkers = ({
     [
       adminForm,
       isAttachmentsV2Enabled,
+      isOneZipDownload,
       isWorkflowActionsOn,
       onDecryptionProgress,
       onPdfGenerationProgress,
@@ -551,6 +887,8 @@ const useDecryptionWorkers = ({
     abortControllerRef.current.abort()
     handleBulkDownloadMutation.reset()
     killWorkers(workers)
+    zipWorkerRef.current?.abort()
+    zipWorkerRef.current = undefined
   }, [handleBulkDownloadMutation, workers])
 
   return { handleBulkDownloadMutation, abortDecryption }

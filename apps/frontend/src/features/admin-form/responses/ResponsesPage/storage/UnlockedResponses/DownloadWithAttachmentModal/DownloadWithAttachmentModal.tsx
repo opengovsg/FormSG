@@ -11,6 +11,8 @@ import {
 
 import { XMotionBox } from '~templates/MotionBox'
 
+import { useIsOneZipDownload } from '~features/admin-form/responses/hooks'
+
 import {
   CanceledResult,
   DownloadOptions,
@@ -65,6 +67,7 @@ export const DownloadWithAttachmentModal = ({
   isResponsesCountHidden,
   initialState = INITIAL_STEP_STATE,
 }: DownloadWithAttachmentModalProps): JSX.Element => {
+  const isOneZip = useIsOneZipDownload()
   const [startedOptions, setStartedOptions] = useState(downloadOptions)
   const isCsvOnly = isCsvOnlyDownload(startedOptions)
   const modalSize = useBreakpointValue({
@@ -130,7 +133,9 @@ export const DownloadWithAttachmentModal = ({
                       'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.progressModalContent',
                     )
                   : t(
-                      'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.modal.progressMessage',
+                      isOneZip
+                        ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.modal.zipProgressMessage'
+                        : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.modal.progressMessage',
                       {
                         responsesCount: (
                           <b>{responsesCount.toLocaleString()}</b>

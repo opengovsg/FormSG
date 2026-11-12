@@ -1,7 +1,7 @@
 import { datadogLogs } from '@datadog/browser-logs'
 import formsgPackage from '@opengovsg/formsg-sdk'
 import { FormField, PackageMode } from '@opengovsg/formsg-sdk/dist/types'
-import { expose } from 'comlink'
+import { expose, transfer } from 'comlink'
 import { formatInTimeZone } from 'date-fns-tz'
 import PQueue from 'p-queue'
 
@@ -12,6 +12,7 @@ import {
   AttachmentsDownloadMap,
   CsvRecordData,
   CsvRecordStatus,
+  DecryptedAttachments,
   DecryptedData,
   DecryptionCtx,
   DownloadOptions,
@@ -19,7 +20,10 @@ import {
   SubmissionDataForDecryption,
 } from '../types'
 import { CsvRecord } from '../utils/CsvRecord.class'
-import { downloadAndDecryptAttachmentsAsZip } from '../utils/downloadAndDecryptAttachment'
+import {
+  downloadAndDecryptAttachmentFiles,
+  downloadAndDecryptAttachmentsAsZip,
+} from '../utils/downloadAndDecryptAttachment'
 import {
   buildFormFieldMetaMap,
   processDecryptedContent,
@@ -236,6 +240,8 @@ type _DownloadAndDecryptSubmissionAttachmentsParams = {
   attachmentDecryptionKey: string
   attachmentMetadata: Record<string, string>
   decryptedResponses: FormField[]
+  // Return the files for the one zip download instead of one zip per response
+  isOneZipDownload: boolean
 }
 async function _downloadAndDecryptSubmissionAttachments(
   ctx: WorkerCtx,
@@ -243,11 +249,12 @@ async function _downloadAndDecryptSubmissionAttachments(
     attachmentDecryptionKey,
     attachmentMetadata,
     decryptedResponses,
+    isOneZipDownload,
   }: _DownloadAndDecryptSubmissionAttachmentsParams,
 ): Promise<
   | {
-      downloadedAttachmentsBlob: Blob
-      isDownloadSuccessful: boolean
+      attachments: DecryptedAttachments
+      isDownloadSuccessful: true
     }
   | {
       isDownloadSuccessful: false
@@ -255,10 +262,6 @@ async function _downloadAndDecryptSubmissionAttachments(
 > {
   const attachmentDownloadUrls: AttachmentsDownloadMap = new Map()
   let questionCount = 0
-  const extraAttachments: {
-    filename: string
-    blob: Blob
-  }[] = []
 
   decryptedResponses.forEach((field) => {
     // Populate question number
@@ -274,15 +277,28 @@ async function _downloadAndDecryptSubmissionAttachments(
     }
   })
   try {
-    const downloadedAttachmentsBlob = await queue.add(() =>
-      downloadAndDecryptAttachmentsAsZip(
-        ctx,
-        attachmentDownloadUrls,
-        attachmentDecryptionKey,
-        extraAttachments,
-      ),
+    const attachments: DecryptedAttachments = await queue.add(async () =>
+      isOneZipDownload
+        ? {
+            kind: 'files',
+            // A file that fails is marked in the zip, so the response still
+            // counts as downloaded
+            ...(await downloadAndDecryptAttachmentFiles(
+              ctx,
+              attachmentDownloadUrls,
+              attachmentDecryptionKey,
+            )),
+          }
+        : {
+            kind: 'zip',
+            blob: await downloadAndDecryptAttachmentsAsZip(
+              ctx,
+              attachmentDownloadUrls,
+              attachmentDecryptionKey,
+            ),
+          },
     )
-    return { downloadedAttachmentsBlob, isDownloadSuccessful: true }
+    return { attachments, isDownloadSuccessful: true }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (err) {
     return {
@@ -295,7 +311,7 @@ async function downloadAndDecryptSubmissionAttachments(
   ctx: WorkerCtx,
   downloadAndDecryptSubmissionAttachmentsParams: Pick<
     _DownloadAndDecryptSubmissionAttachmentsParams,
-    'attachmentMetadata' | 'decryptedResponses'
+    'attachmentMetadata' | 'decryptedResponses' | 'isOneZipDownload'
   > &
     GetAttachmentDecryptionKeyParams,
 ) {
@@ -309,6 +325,8 @@ async function downloadAndDecryptSubmissionAttachments(
       downloadAndDecryptSubmissionAttachmentsParams.attachmentMetadata,
     decryptedResponses:
       downloadAndDecryptSubmissionAttachmentsParams.decryptedResponses,
+    isOneZipDownload:
+      downloadAndDecryptSubmissionAttachmentsParams.isOneZipDownload,
   })
 }
 
@@ -318,6 +336,8 @@ type LineData = {
   hostOrigin: string
   isWorkflowActionsOn: boolean
   isDownloadAttachmentsSuccessful: boolean
+  // Some files became placeholders in the one zip download
+  hasFailedAttachments?: boolean
 } & DecryptionResult
 
 /**
@@ -337,6 +357,7 @@ async function getMaterializedCsvRecord(
     hostOrigin,
     isWorkflowActionsOn,
     isDownloadAttachmentsSuccessful,
+    hasFailedAttachments,
   } = lineData
 
   if (!isParseSuccessful) {
@@ -408,9 +429,12 @@ async function getMaterializedCsvRecord(
       csvRecord.materializeSubmissionData()
       return csvRecord as MaterializedCsvRecord
     }
+    // The row stays, as the zip marks the files that failed
     csvRecord.setStatus(
       CsvRecordStatus.Ok,
-      'Success (with Downloaded Attachment)',
+      hasFailedAttachments
+        ? 'Success (attachment failed to download)'
+        : 'Success (with Downloaded Attachment)',
     )
   }
   csvRecord.materializeSubmissionData()
@@ -493,7 +517,7 @@ async function getDecryptedData(
   const ctx = createWorkerCtx(getDecryptedDataParams)
 
   let materializedCsvRecord: MaterializedCsvRecord | undefined
-  let attachmentDownloadBlob: Blob | undefined
+  let attachments: DecryptedAttachments | undefined
   let isDownloadAndDecryptSubmissionAttachmentsSuccessful = false
 
   const { secretKey } = getDecryptedDataParams
@@ -519,14 +543,12 @@ async function getDecryptedData(
           submission: parsedSubmission,
           secretKey,
           mrfSubmissionSecretKey,
+          isOneZipDownload: getDecryptedDataParams.isOneZipDownload,
         })
-      const { isDownloadSuccessful } =
-        downloadAndDecryptSubmissionAttachmentsResult
-      isDownloadAndDecryptSubmissionAttachmentsSuccessful = isDownloadSuccessful
-
-      if (isDownloadSuccessful) {
-        attachmentDownloadBlob =
-          downloadAndDecryptSubmissionAttachmentsResult.downloadedAttachmentsBlob
+      isDownloadAndDecryptSubmissionAttachmentsSuccessful =
+        downloadAndDecryptSubmissionAttachmentsResult.isDownloadSuccessful
+      if (downloadAndDecryptSubmissionAttachmentsResult.isDownloadSuccessful) {
+        attachments = downloadAndDecryptSubmissionAttachmentsResult.attachments
       }
     }
   }
@@ -540,13 +562,15 @@ async function getDecryptedData(
       isWorkflowActionsOn: !!isWorkflowActionsOn,
       isDownloadAttachmentsSuccessful:
         isDownloadAndDecryptSubmissionAttachmentsSuccessful,
+      hasFailedAttachments:
+        attachments?.kind === 'files' && attachments.failed.length > 0,
       ...decryptedSubmissionResult,
     })
   }
 
-  return {
+  const decryptedData: DecryptedData = {
     materializedCsvRecord,
-    attachmentDownloadBlob,
+    attachments,
     parsedSubmission: isParseSuccessful
       ? decryptedSubmissionResult.parsedSubmission
       : undefined,
@@ -558,6 +582,12 @@ async function getDecryptedData(
       isDownloadAndDecryptSubmissionAttachmentsSuccessful,
     },
   }
+  // Move the file bytes to the main thread instead of copying them
+  return attachments?.kind === 'files'
+    ? transfer(decryptedData, [
+        ...new Set(attachments.files.map(({ content }) => content.buffer)),
+      ])
+    : decryptedData
 }
 
 const exports = {
