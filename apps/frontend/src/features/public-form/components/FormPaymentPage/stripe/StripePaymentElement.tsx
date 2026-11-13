@@ -1,15 +1,7 @@
-import { Suspense, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
-import {
-  Box,
-  Center,
-  Container,
-  Flex,
-  Skeleton,
-  Stack,
-  Text,
-} from '@chakra-ui/react'
-import { Elements, useStripe } from '@stripe/react-stripe-js'
+import { Box, Center, Container, Flex, Stack, Text } from '@chakra-ui/react'
+import { Elements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 
 import {
@@ -33,7 +25,6 @@ import { PaymentHeader } from '../components/PaymentHeader'
 import { useGetPaymentInfo } from '../queries'
 
 import { GenericMessageBlock, StripePaymentBlock } from './components'
-import { useGetPaymentStatusFromStripe } from './queries'
 import { StripeReceiptContainer } from './StripeReceiptContainer'
 import { getPaymentViewStates, PaymentViewStates } from './utils'
 
@@ -54,7 +45,7 @@ const PaymentFormWrapper = ({ children }: { children: React.ReactNode }) => {
 }
 
 const StripePaymentElement = ({ paymentId }: { paymentId: string }) => {
-  const { data: paymentInfoData } = useGetPaymentInfo(paymentId)
+  const { data: paymentInfoData, refetch } = useGetPaymentInfo(paymentId)
 
   if (!paymentInfoData) {
     throw new Error('useGetPaymentInfo not ready')
@@ -68,9 +59,12 @@ const StripePaymentElement = ({ paymentId }: { paymentId: string }) => {
       stripe={stripePromise}
       options={{ clientSecret: paymentInfoData.client_secret }}
     >
-      <Suspense fallback={<Skeleton w={'100%'} h={'350px'} />}>
-        <StripePaymentContainer paymentInfoData={paymentInfoData} />
-      </Suspense>
+      <StripePaymentContainer
+        paymentInfoData={paymentInfoData}
+        triggerPaymentStatusRefetch={() => {
+          refetch()
+        }}
+      />
     </Elements>
   )
 }
@@ -82,24 +76,16 @@ const StripePaymentElement = ({ paymentId }: { paymentId: string }) => {
  */
 const StripePaymentContainer = ({
   paymentInfoData,
+  triggerPaymentStatusRefetch,
 }: {
   paymentInfoData: GetPaymentInfoDto
+  triggerPaymentStatusRefetch: () => void
 }) => {
   const { formId, paymentId } = useParams()
   if (!formId) throw new Error('No formId provided')
   if (!paymentId) throw new Error('No paymentId provided')
 
   const { data: { secretEnv } = {} } = useEnv()
-
-  const stripe = useStripe()
-  if (!stripe) throw Promise.reject('Stripe is not ready')
-
-  const [refetchKey, setRefetchKey] = useState<number>(0)
-  const { data: stripePaymentStatusResponse } = useGetPaymentStatusFromStripe({
-    clientSecret: paymentInfoData.client_secret,
-    stripe,
-    refetchKey,
-  })
 
   const productsProductsType = paymentInfoData.products?.map((product) => {
     return {
@@ -123,9 +109,7 @@ const StripePaymentContainer = ({
       ? productsVariableType
       : productsProductsType
 
-  const viewStates = getPaymentViewStates(
-    stripePaymentStatusResponse?.paymentIntent?.status,
-  )
+  const viewStates = getPaymentViewStates(paymentInfoData.status)
 
   const renderViewState = () => {
     switch (viewStates) {
@@ -159,7 +143,7 @@ const StripePaymentContainer = ({
         )
       case PaymentViewStates.PendingPayment: {
         // The item name is passed over to Stripe as PaymentIntent.description
-        const itemName = stripePaymentStatusResponse?.paymentIntent?.description
+        const itemName = paymentInfoData.description
         return (
           <>
             <PaymentHeader />
@@ -187,10 +171,8 @@ const StripePaymentContainer = ({
               <PaymentStack>
                 <StripePaymentBlock
                   paymentInfoData={paymentInfoData}
-                  triggerPaymentStatusRefetch={() => setRefetchKey(Date.now())}
-                  paymentAmount={
-                    stripePaymentStatusResponse?.paymentIntent?.amount ?? 0
-                  }
+                  triggerPaymentStatusRefetch={triggerPaymentStatusRefetch}
+                  paymentAmount={paymentInfoData.amount}
                   paymentItemName={itemName}
                 />
               </PaymentStack>

@@ -1,4 +1,4 @@
-import { PaymentIntent } from '@stripe/stripe-js'
+import { GetPaymentInfoDto } from 'formsg-shared/types'
 
 export enum PaymentViewStates {
   Invalid,
@@ -8,7 +8,7 @@ export enum PaymentViewStates {
   Processing, // can lead to decline/failure or succeeded
 }
 export const getPaymentViewStates = (
-  status: PaymentIntent.Status | undefined,
+  status: GetPaymentInfoDto['status'] | undefined,
 ): PaymentViewStates => {
   if (!status) return PaymentViewStates.Invalid
   if (['succeeded'].includes(status)) return PaymentViewStates.Succeeded

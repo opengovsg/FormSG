@@ -211,6 +211,8 @@ export const getPaymentInfo: ControllerHandler<
           ).map((paymentIntent) => {
             return res.status(StatusCodes.OK).json({
               client_secret: paymentIntent.client_secret || '',
+              status: paymentIntent.status,
+              description: paymentIntent.description,
               publishableKey: form.payments_channel.publishable_key,
               payment_intent_id: payment.paymentIntentId,
               submissionId: payment.pendingSubmissionId,
