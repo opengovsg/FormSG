@@ -1,5 +1,5 @@
 import { useQuery } from 'react-query'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 
 import { FormResponseMode } from 'formsg-shared/types'
 

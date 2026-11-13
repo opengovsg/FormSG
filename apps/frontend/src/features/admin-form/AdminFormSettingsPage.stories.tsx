@@ -1,5 +1,4 @@
-import { MemoryRouter, Route } from 'react-router'
-import { Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router'
 import { Box } from '@chakra-ui/react'
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
@@ -32,7 +31,7 @@ export default {
   component: SettingsPage,
   decorators: [
     (storyFn, { parameters }) => {
-      // MemoryRouter is used so react-router-dom#Link components can work
+      // MemoryRouter is used so react-router#Link components can work
       // (and also to force the initial tab the page renders to be the settings tab).
       const page = (
         <MemoryRouter

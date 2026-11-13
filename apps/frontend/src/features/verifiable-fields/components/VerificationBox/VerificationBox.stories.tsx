@@ -1,4 +1,4 @@
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { BasicField } from 'formsg-shared/types/field'

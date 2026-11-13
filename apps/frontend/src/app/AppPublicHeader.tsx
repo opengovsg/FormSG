@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { FORM_GUIDE } from '~constants/links'

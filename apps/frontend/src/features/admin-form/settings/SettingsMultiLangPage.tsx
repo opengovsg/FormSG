@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router'
 import _ from 'lodash'
 
 import { TRANSLATION_INPUT, UNICODE_LOCALE } from '~constants/routes'

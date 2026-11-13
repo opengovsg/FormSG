@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 import {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 import { Box, Divider, Stack, Text } from '@chakra-ui/react'
 
 import { KB } from 'formsg-shared/constants'

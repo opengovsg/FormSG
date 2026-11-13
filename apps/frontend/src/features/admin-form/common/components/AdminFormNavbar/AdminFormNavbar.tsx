@@ -7,7 +7,7 @@ import {
   BiUserPlus,
 } from 'react-icons/bi'
 import { GoDotFill } from 'react-icons/go'
-import { Link as ReactLink, useLocation } from 'react-router-dom'
+import { Link as ReactLink, useLocation } from 'react-router'
 import {
   Box,
   ButtonGroup,

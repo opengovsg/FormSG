@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Outlet, useParams } from 'react-router-dom'
+import { Outlet, useParams } from 'react-router'
 import { Flex } from '@chakra-ui/react'
 import { useFeatureIsOn, useFeatureValue } from '@growthbook/growthbook-react'
 import { get } from 'lodash'

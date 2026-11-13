@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link as ReactLink, useParams, useSearchParams } from 'react-router-dom'
+import { Link as ReactLink, useParams, useSearchParams } from 'react-router'
 import {
   As,
   Box,

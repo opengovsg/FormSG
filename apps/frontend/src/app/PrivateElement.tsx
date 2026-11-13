@@ -1,4 +1,4 @@
-import { Navigate, NavigateProps, useLocation } from 'react-router-dom'
+import { Navigate, NavigateProps, useLocation } from 'react-router'
 
 import { useAuth } from '~contexts/AuthContext'
 import { LOGIN_ROUTE } from '~constants/routes'

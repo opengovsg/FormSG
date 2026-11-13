@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { QueryClient, useQuery, UseQueryResult } from 'react-query'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 
 import { FormSettings } from 'formsg-shared/types/form/form'
 import { EncryptedStringsMessageContent } from 'formsg-shared/utils/crypto'

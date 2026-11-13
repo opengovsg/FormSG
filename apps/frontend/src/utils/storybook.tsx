@@ -5,7 +5,7 @@ import {
   createRoutesFromElements,
   Route,
   RouterProvider,
-} from 'react-router-dom'
+} from 'react-router'
 import { Box, BoxProps, Center, useDisclosure } from '@chakra-ui/react'
 import { Decorator } from '@storybook/react-vite'
 import dayjs from 'dayjs'

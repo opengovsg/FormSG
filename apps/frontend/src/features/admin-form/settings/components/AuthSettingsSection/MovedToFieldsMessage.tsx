@@ -1,6 +1,6 @@
 import { RefObject } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link as ReactLink, useParams } from 'react-router-dom'
+import { Link as ReactLink, useParams } from 'react-router'
 import { Stack, Text } from '@chakra-ui/react'
 
 import { FormAuthType } from 'formsg-shared/types/form'

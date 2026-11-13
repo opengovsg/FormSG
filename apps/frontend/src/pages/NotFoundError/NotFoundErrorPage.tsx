@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async'
 import { useTranslation } from 'react-i18next'
-import { Link as ReactLink, useNavigate } from 'react-router-dom'
+import { Link as ReactLink, useNavigate } from 'react-router'
 import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 
 import { AppFooter } from '~/app/AppFooter'

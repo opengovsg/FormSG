@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
-import { Link as RouterLink, useParams } from 'react-router-dom'
+import { Link as RouterLink, useParams } from 'react-router'
 import { Stack, Text, useDisclosure } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 

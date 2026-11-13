@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router'
 import cuid from 'cuid'
 import { isEmpty } from 'lodash'
 

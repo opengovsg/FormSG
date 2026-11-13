@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 
 import { FormFieldDto } from 'formsg-shared/types/field'
 import { AdminFormDto } from 'formsg-shared/types/form'

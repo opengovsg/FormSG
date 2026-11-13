@@ -1,4 +1,4 @@
-import { Navigate, useParams } from 'react-router-dom'
+import { Navigate, useParams } from 'react-router'
 
 import { ADMINFORM_ROUTE, ADMINFORM_USETEMPLATE_ROUTE } from '~constants/routes'
 
