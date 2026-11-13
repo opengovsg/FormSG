@@ -58,6 +58,54 @@ const Template: (children: React.ReactElement) => StoryFn =
     </PublicFormProvider>
   )
 
+const FullPageTemplate: StoryFn = () => <FormPaymentPage />
+
+export const SucceededPaymentPage = FullPageTemplate.bind({})
+SucceededPaymentPage.parameters = {
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getPublicFormResponse(),
+        getPaymentInfoResponse({
+          overrides: { status: 'succeeded', client_secret: undefined },
+        }),
+        getPaymentReceiptStatusResponse(),
+      ],
+    },
+  },
+}
+
+export const ProcessingPaymentPage = FullPageTemplate.bind({})
+ProcessingPaymentPage.parameters = {
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getPublicFormResponse(),
+        getPaymentInfoResponse({
+          overrides: { status: 'processing', client_secret: undefined },
+        }),
+      ],
+    },
+  },
+}
+
+export const CanceledPaymentPage = FullPageTemplate.bind({})
+CanceledPaymentPage.parameters = {
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getPublicFormResponse(),
+        getPaymentInfoResponse({
+          overrides: { status: 'canceled', client_secret: undefined },
+        }),
+      ],
+    },
+  },
+}
+
 export const PendingPaymentDetails = Template(
   <FixedPaymentItemDetailsBlock
     paymentItemName="Mock event registration"
