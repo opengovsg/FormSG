@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.72.0](https://github.com/opengovsg/formsg/compare/v9.71.4...v9.72.0) (2026-11-13)
+
+
+### Features
+
+* **bounce:** add flag to stop bounced-submission SMSes and update copy (#10581) ([#10581](https://github.com/opengovsg/formsg/commit/80bc9efa654c302ef911b1721205aa389c8768f0))
+
 ## [9.71.4](https://github.com/opengovsg/formsg/compare/v9.71.3...v9.71.4) (2026-11-13)
 
 
