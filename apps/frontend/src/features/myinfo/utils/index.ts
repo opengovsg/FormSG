@@ -1,3 +1,4 @@
+export * from './applyMyInfoVerifiedView'
 export * from './augmentWithMyInfo'
 export * from './augmentWithMyInfoDisplayValue'
 export * from './extractPreviewValue'

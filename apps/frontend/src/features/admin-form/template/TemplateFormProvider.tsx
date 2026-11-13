@@ -23,6 +23,7 @@ import { HttpError } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
+import { applyMyInfoVerifiedView } from '~features/myinfo/utils'
 
 interface PreviewFormProviderProps {
   formId: string
@@ -115,12 +116,19 @@ export const TemplateFormProvider = ({
     () => (formFields ? getFieldPrefillMap(formFields, searchParams) : {}),
     [formFields, searchParams],
   )
+  // A Singpass Myinfo login shows Myinfo fields as a Singaporean sees them.
+  const isMyInfoStep = form?.authType === FormAuthType.MyInfo
   const augmentedFormFields = useMemo(
     () =>
       formFields
-        ? augmentFormFields(formFields, currentStepNumberWorkflowStep)
+        ? augmentFormFields(
+            isMyInfoStep
+              ? formFields.map(applyMyInfoVerifiedView('SG'))
+              : formFields,
+            currentStepNumberWorkflowStep,
+          )
         : [],
-    [formFields, currentStepNumberWorkflowStep],
+    [formFields, isMyInfoStep, currentStepNumberWorkflowStep],
   )
 
   const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
