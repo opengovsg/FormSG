@@ -89,6 +89,7 @@ export type GetPaymentInfoDto = {
   client_secret?: string
   status: Stripe.PaymentIntent.Status
   description: string | null
+  use_server_confirmation: boolean
   publishableKey: string
   submissionId: string
   products: Payment['products']

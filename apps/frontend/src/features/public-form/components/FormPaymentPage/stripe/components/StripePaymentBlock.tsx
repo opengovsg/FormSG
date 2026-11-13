@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useParams } from 'react-router'
 import {
   Box,
   Flex,
@@ -19,6 +20,7 @@ import Button from '~components/Button'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { PaymentSummary } from '../../components'
+import { confirmPayment } from '../../FormPaymentService'
 
 interface PaymentPageBlockProps {
   paymentInfoData: GetPaymentInfoDto
@@ -31,24 +33,28 @@ interface PaymentPageBlockProps {
 }
 
 interface StripeCheckoutFormProps {
+  paymentInfoData: GetPaymentInfoDto
   isRetry?: boolean
   colorTheme: FormColorTheme
   triggerPaymentStatusRefetch: () => void
 }
 
 const StripeCheckoutForm = ({
+  paymentInfoData,
   colorTheme,
   isRetry,
   triggerPaymentStatusRefetch,
 }: StripeCheckoutFormProps) => {
   const { formId } = usePublicFormContext()
+  const { paymentId } = useParams()
   const stripe = useStripe()
   const elements = useElements()
 
   const [stripeMessage, setStripeMessage] = useState('')
   const [isStripeProcessing, setIsStripeProcessing] = useState(false)
   const [, , clearPaymentMemory] = useBrowserStm(formId)
-  const [isPaynow, setIsPayNow] = useState(false)
+  const [paymentMethodType, setPaymentMethodType] = useState('')
+  const isPaynow = paymentMethodType === 'paynow'
 
   useEffect(() => {
     if (isRetry) {
@@ -56,18 +62,47 @@ const StripeCheckoutForm = ({
     }
   }, [isRetry])
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    // We don't want to let default form submission happen here,
-    // which would refresh the page.
-    event.preventDefault()
-    setIsStripeProcessing(true)
-    setStripeMessage('')
+  const confirmOnServer = async () => {
+    if (!stripe || !elements || !paymentId) return
 
-    if (!stripe || !elements) {
-      return null
-      // Stripe.js has not yet loaded.
-      // Make sure to disable form submission until Stripe.js has loaded.
+    const submitResult = await elements.submit()
+    if (submitResult.error) {
+      setStripeMessage(submitResult.error.message ?? '')
+      return
     }
+
+    const paymentMethodResult = await stripe.createPaymentMethod({ elements })
+    if (paymentMethodResult.error) {
+      setStripeMessage(paymentMethodResult.error.message ?? '')
+      return
+    }
+
+    try {
+      const confirmResult = await confirmPayment(
+        paymentId,
+        paymentMethodResult.paymentMethod.id,
+      )
+      if (
+        confirmResult.status === 'requires_action' &&
+        confirmResult.client_secret
+      ) {
+        const nextActionResult = await stripe.handleNextAction({
+          clientSecret: confirmResult.client_secret,
+        })
+        if (nextActionResult.error) {
+          setStripeMessage(nextActionResult.error.message ?? '')
+          return
+        }
+      }
+      triggerPaymentStatusRefetch()
+      clearPaymentMemory()
+    } catch (error) {
+      setStripeMessage(error instanceof Error ? error.message : String(error))
+    }
+  }
+
+  const confirmOnClient = async () => {
+    if (!stripe || !elements) return
 
     const result = await stripe.confirmPayment({
       //`Elements` instance that was used to create the Payment Element
@@ -95,6 +130,31 @@ const StripeCheckoutForm = ({
       triggerPaymentStatusRefetch()
       clearPaymentMemory()
     }
+  }
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    // We don't want to let default form submission happen here,
+    // which would refresh the page.
+    event.preventDefault()
+
+    if (!stripe || !elements) {
+      return null
+      // Stripe.js has not yet loaded.
+      // Make sure to disable form submission until Stripe.js has loaded.
+    }
+
+    setIsStripeProcessing(true)
+    setStripeMessage('')
+
+    if (
+      paymentInfoData.use_server_confirmation &&
+      paymentMethodType === 'card' &&
+      paymentId
+    ) {
+      await confirmOnServer()
+    } else {
+      await confirmOnClient()
+    }
     setIsStripeProcessing(false)
   }
 
@@ -103,11 +163,7 @@ const StripeCheckoutForm = ({
       <FormControl isInvalid={stripeMessage !== ''}>
         <PaymentElement
           onChange={(e) => {
-            if (e.value.type === 'paynow') {
-              setIsPayNow(true)
-            } else {
-              setIsPayNow(false)
-            }
+            setPaymentMethodType(e.value.type)
           }}
         />
         {stripeMessage !== '' ? (
@@ -184,6 +240,7 @@ export const StripePaymentBlock = ({
           />
         </Box>
         <StripeCheckoutForm
+          paymentInfoData={paymentInfoData}
           colorTheme={colorTheme}
           isRetry={isRetry}
           triggerPaymentStatusRefetch={triggerPaymentStatusRefetch}

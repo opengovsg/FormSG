@@ -221,6 +221,11 @@ export const getPaymentInfo: ControllerHandler<
                 featureFlags.paymentInfoFormat,
                 true,
               ) ?? true
+            const cardOptionsByAccount =
+              req.growthbook?.getFeatureValue<PaymentServerConfirmationFeatureValue>(
+                featureFlags.paymentServerConfirmation,
+                {},
+              ) ?? {}
             return res.status(StatusCodes.OK).json({
               ...((paymentIsActionable || fullInfoFormat) &&
               paymentIntent.client_secret
@@ -228,6 +233,9 @@ export const getPaymentInfo: ControllerHandler<
                 : {}),
               status: paymentIntent.status,
               description: paymentIntent.description,
+              use_server_confirmation: Boolean(
+                cardOptionsByAccount[stripeAccount],
+              ),
               publishableKey: form.payments_channel.publishable_key,
               submissionId: payment.pendingSubmissionId,
               products: payment.products,
