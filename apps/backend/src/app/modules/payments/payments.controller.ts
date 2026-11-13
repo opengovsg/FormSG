@@ -43,7 +43,6 @@ export const handleGetPreviousPaymentId: ControllerHandler<
 
   const logMeta = {
     action: 'handleGetPreviousPayment',
-    email,
     formId,
   }
 
