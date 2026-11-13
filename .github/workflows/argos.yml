@@ -31,7 +31,7 @@ jobs:
       frontend: ${{ steps.filter.outputs.frontend }}
       emailpreview: ${{ steps.filter.outputs.emailpreview }}
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         id: filter
         with:
@@ -71,7 +71,7 @@ jobs:
     env:
       STORYBOOK_DISABLE_TELEMETRY: '1'
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           # Build the PR head, not GitHub's merge commit with develop, so the
@@ -186,7 +186,7 @@ jobs:
     env:
       STORYBOOK_DISABLE_TELEMETRY: '1'
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Install pnpm

@@ -19,7 +19,7 @@ jobs:
       (github.event.action == 'reopened' || github.event.label.name == 'render-preview')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/require-write-access
         with:
           user: ${{ github.event.sender.login }}
@@ -47,7 +47,7 @@ jobs:
       contains(github.event.pull_request.labels.*.name, 'render-preview')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/require-write-access
         with:
           user: ${{ github.event.sender.login }}
@@ -87,7 +87,7 @@ jobs:
       github.event.label.name == 'preview-smoke'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Wait for preview deploy of head SHA
         id: await
         env:
@@ -110,7 +110,7 @@ jobs:
        (github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'render-preview')))
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           PR: ${{ github.event.pull_request.number }}
