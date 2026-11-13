@@ -9,7 +9,7 @@ export const renderFormDeactivatedSms = (formTitle: string): string => dedent`
 `
 
 export const renderBouncedSubmissionSms = (formTitle: string): string => dedent`
-  A response to your form "${formTitle}" has bounced from all recipient inboxes. Bounced responses cannot be recovered. To prevent more bounces, please ensure recipient email addresses are correct, and clear any full inboxes.
+  Responses to your form "${formTitle}" have bounced from some email inboxes. Form responses can still be downloaded from FormSG. Ensure recipient email addresses are correct, and clear any full inboxes.
 `
 
 export const renderVerificationSms = (
