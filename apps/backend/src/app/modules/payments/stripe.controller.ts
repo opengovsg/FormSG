@@ -4,6 +4,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import {
   DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT,
   ERROR_QUERY_PARAM_KEY,
+  featureFlags,
 } from 'formsg-shared/constants'
 import {
   ErrorDto,
@@ -209,12 +210,22 @@ export const getPaymentInfo: ControllerHandler<
               return new StripeFetchError(String(error))
             },
           ).map((paymentIntent) => {
+            const paymentIsActionable = !['succeeded', 'canceled'].includes(
+              paymentIntent.status,
+            )
+            const fullInfoFormat =
+              req.growthbook?.getFeatureValue<boolean>(
+                featureFlags.paymentInfoFormat,
+                true,
+              ) ?? true
             return res.status(StatusCodes.OK).json({
-              client_secret: paymentIntent.client_secret || '',
+              ...((paymentIsActionable || fullInfoFormat) &&
+              paymentIntent.client_secret
+                ? { client_secret: paymentIntent.client_secret }
+                : {}),
               status: paymentIntent.status,
               description: paymentIntent.description,
               publishableKey: form.payments_channel.publishable_key,
-              payment_intent_id: payment.paymentIntentId,
               submissionId: payment.pendingSubmissionId,
               products: payment.products,
               amount: payment.amount,

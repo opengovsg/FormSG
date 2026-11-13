@@ -29,6 +29,7 @@ export const featureFlags = {
   escapeHatch: 'mrf-cutover-escape-hatch' as const,
   disableBouncedSubmissionSms: 'disable-bounced-submission-sms' as const,
   keepV4AttachmentPrefix: 'keep-v4-attachment-prefix' as const,
+  paymentInfoFormat: 'payment-info-format' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {

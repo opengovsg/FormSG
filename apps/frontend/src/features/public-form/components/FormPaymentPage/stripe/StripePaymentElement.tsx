@@ -50,22 +50,13 @@ const StripePaymentElement = ({ paymentId }: { paymentId: string }) => {
   if (!paymentInfoData) {
     throw new Error('useGetPaymentInfo not ready')
   }
-  const stripePromise = useMemo(
-    () => loadStripe(paymentInfoData.publishableKey),
-    [paymentInfoData],
-  )
   return (
-    <Elements
-      stripe={stripePromise}
-      options={{ clientSecret: paymentInfoData.client_secret }}
-    >
-      <StripePaymentContainer
-        paymentInfoData={paymentInfoData}
-        triggerPaymentStatusRefetch={() => {
-          refetch()
-        }}
-      />
-    </Elements>
+    <StripePaymentContainer
+      paymentInfoData={paymentInfoData}
+      triggerPaymentStatusRefetch={() => {
+        refetch()
+      }}
+    />
   )
 }
 
@@ -111,6 +102,14 @@ const StripePaymentContainer = ({
 
   const viewStates = getPaymentViewStates(paymentInfoData.status)
 
+  const stripePromise = useMemo(
+    () =>
+      viewStates === PaymentViewStates.PendingPayment
+        ? loadStripe(paymentInfoData.publishableKey)
+        : null,
+    [viewStates, paymentInfoData.publishableKey],
+  )
+
   const renderViewState = () => {
     switch (viewStates) {
       case PaymentViewStates.Invalid:
@@ -144,6 +143,20 @@ const StripePaymentContainer = ({
       case PaymentViewStates.PendingPayment: {
         // The item name is passed over to Stripe as PaymentIntent.description
         const itemName = paymentInfoData.description
+        if (!paymentInfoData.client_secret) {
+          return (
+            <>
+              <PaymentHeader />
+              <PaymentFormWrapper>
+                <PaymentStack>
+                  <CreatePaymentIntentFailureBlock
+                    submissionId={paymentInfoData.submissionId}
+                  />
+                </PaymentStack>
+              </PaymentFormWrapper>
+            </>
+          )
+        }
         return (
           <>
             <PaymentHeader />
@@ -169,12 +182,17 @@ const StripePaymentContainer = ({
                 </InlineMessage>
               )}
               <PaymentStack>
-                <StripePaymentBlock
-                  paymentInfoData={paymentInfoData}
-                  triggerPaymentStatusRefetch={triggerPaymentStatusRefetch}
-                  paymentAmount={paymentInfoData.amount}
-                  paymentItemName={itemName}
-                />
+                <Elements
+                  stripe={stripePromise}
+                  options={{ clientSecret: paymentInfoData.client_secret }}
+                >
+                  <StripePaymentBlock
+                    paymentInfoData={paymentInfoData}
+                    triggerPaymentStatusRefetch={triggerPaymentStatusRefetch}
+                    paymentAmount={paymentInfoData.amount}
+                    paymentItemName={itemName}
+                  />
+                </Elements>
               </PaymentStack>
             </PaymentFormWrapper>
           </>
