@@ -1,6 +1,7 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson'
+import { featureFlags } from 'formsg-shared/constants'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
 
@@ -198,6 +199,46 @@ describe('handleSns', () => {
       hasDeactivated: true,
     })
     expect(MockBounceService.saveBounceDoc).toHaveBeenCalledWith(mockBounceDoc)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(200)
+  })
+
+  it('should not send bounce SMSes when disableBouncedSubmissionSms flag is on', async () => {
+    const isOn = jest
+      .fn()
+      .mockImplementation(
+        (flag: string) => flag === featureFlags.disableBouncedSubmissionSms,
+      )
+    const mockReq = expressHandler.mockRequest({
+      body: MOCK_REQ.body,
+      others: { growthbook: { isOn } },
+    })
+
+    await handleSns(mockReq, MOCK_RES, jest.fn())
+
+    expect(isOn).toHaveBeenCalledWith(featureFlags.disableBouncedSubmissionSms)
+    expect(MockBounceService.sendEmailBounceNotification).toHaveBeenCalledWith(
+      mockBounceDoc,
+      mockForm,
+    )
+    expect(MockBounceService.sendSmsBounceNotification).not.toHaveBeenCalled()
+    expect(mockBounceDoc.setNotificationState).toHaveBeenCalledWith(
+      MOCK_EMAIL_RECIPIENTS,
+      [],
+    )
+    expect(MockFormService.deactivateForm).toHaveBeenCalledWith(
+      mockBounceDoc.formId,
+    )
+    expect(MockBounceService.notifyAdminsOfDeactivation).toHaveBeenCalledWith(
+      mockForm,
+      MOCK_CONTACTS,
+    )
+    expect(MockBounceService.logCriticalBounce).toHaveBeenCalledWith({
+      bounceDoc: mockBounceDoc,
+      notification: MOCK_NOTIFICATION,
+      autoEmailRecipients: MOCK_EMAIL_RECIPIENTS,
+      autoSmsRecipients: [],
+      hasDeactivated: true,
+    })
     expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(200)
   })
 
