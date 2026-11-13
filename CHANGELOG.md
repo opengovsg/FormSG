@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.71.4](https://github.com/opengovsg/formsg/compare/v9.71.3...v9.71.4) (2026-11-13)
+
+
+### Bug Fixes
+
+* **step-login:** show activation blockers below the status banner (#10562) ([#10562](https://github.com/opengovsg/formsg/commit/c8f079c20e9dd78858272a6107c731fc48146a8f))
+
 ## [9.71.3](https://github.com/opengovsg/formsg/compare/v9.71.2...v9.71.3) (2026-11-12)
 
 
