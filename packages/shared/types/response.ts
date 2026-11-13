@@ -1,5 +1,5 @@
 import type { Opaque } from 'type-fest'
-import { z } from 'zod'
+import { z } from 'zod/v4'
 import { BasicField, MyInfoAttribute } from './field'
 
 const ResponseBase = z.object({
