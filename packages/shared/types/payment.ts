@@ -96,6 +96,21 @@ export type GetPaymentInfoDto = {
   payment_fields_snapshot: Payment['payment_fields_snapshot']
 }
 
+/**
+ * Shape of the payment-server-confirmation feature value: card payment method
+ * options to apply at confirmation, keyed by target account id, then by card
+ * brand.
+ */
+export type PaymentServerConfirmationFeatureValue = Record<
+  string,
+  Record<string, string>
+>
+
+export type ConfirmPaymentDto = {
+  status: Stripe.PaymentIntent.Status
+  client_secret?: string
+}
+
 export type IncompletePaymentsDto = {
   stripeAccount: string
   paymentId: string
