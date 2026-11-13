@@ -7,9 +7,11 @@ import {
   featureFlags,
 } from 'formsg-shared/constants'
 import {
+  ConfirmPaymentDto,
   ErrorDto,
   GetPaymentInfoDto,
   IncompletePaymentsDto,
+  PaymentServerConfirmationFeatureValue,
   ReconciliationEventsReportLine,
   ReconciliationReport,
 } from 'formsg-shared/types'
@@ -32,6 +34,7 @@ import { getPaymentLogMeta } from './payment.service.utils'
 import { PaymentAccountInformationError } from './payments.errors'
 import * as PaymentService from './payments.service'
 import {
+  PaymentServerConfirmationUnavailableError,
   StripeFetchError,
   StripeMetadataIncorrectEnvError,
   StripeMetadataInvalidError,
@@ -235,6 +238,104 @@ export const getPaymentInfo: ControllerHandler<
             })
           })
         })
+    })
+    .mapErr((error) => {
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const validateConfirmPaymentParams = celebrate({
+  [Segments.BODY]: Joi.object().keys({
+    paymentMethodId: Joi.string()
+      .required()
+      .pattern(/^pm_[a-zA-Z0-9]+$/),
+  }),
+})
+
+/**
+ * Handler for POST /payments/:paymentId/confirm
+ * Confirms the payment intent for this payment on the server, applying card
+ * payment method options configured for the form's target account.
+ *
+ * @returns 200 with the resulting payment intent status
+ * @returns 400 if the payment method was declined or invalid
+ * @returns 404 if the payment does not exist or server confirmation is not enabled for its account
+ * @returns 409 if the payment intent can no longer be confirmed
+ * @returns 500 if an unexpected error occurs
+ */
+export const handleConfirmPayment: ControllerHandler<
+  { paymentId: string },
+  ConfirmPaymentDto | ErrorDto,
+  { paymentMethodId: string }
+> = (req, res) => {
+  const { paymentId } = req.params
+  const { paymentMethodId } = req.body
+
+  const logMeta = {
+    action: 'handleConfirmPayment',
+    paymentId,
+  }
+
+  logger.info({
+    message: 'handleConfirmPayment endpoint called',
+    meta: logMeta,
+  })
+
+  return PaymentService.findPaymentById(paymentId)
+    .andThen((payment) =>
+      PendingSubmissionModel.findPendingSubmissionById(
+        payment.pendingSubmissionId,
+      )
+        .andThen((submission) =>
+          FormService.retrieveFullFormById(submission.form),
+        )
+        .andThen(checkFormIsEncryptModeOrMultirespondent)
+        .andThen((form) => {
+          const stripeAccount = payment.targetAccountId
+          if (stripeAccount !== form.payments_channel.target_account_id) {
+            logger.error({
+              message:
+                'Target stripe account for this form has changed, unable to confirm payment',
+              meta: logMeta,
+            })
+            return errAsync(new PaymentAccountInformationError())
+          }
+
+          const cardOptionsByAccount =
+            req.growthbook?.getFeatureValue<PaymentServerConfirmationFeatureValue>(
+              featureFlags.paymentServerConfirmation,
+              {},
+            ) ?? {}
+          const mccByCardBrand = cardOptionsByAccount[stripeAccount]
+          if (!mccByCardBrand) {
+            logger.warn({
+              message:
+                'Server-side confirmation requested for an account without configuration',
+              meta: logMeta,
+            })
+            return errAsync(new PaymentServerConfirmationUnavailableError())
+          }
+
+          return StripeService.confirmPaymentIntentWithPaymentMethod({
+            paymentIntentId: payment.paymentIntentId,
+            paymentMethodId,
+            stripeAccount,
+            mccByCardBrand,
+            returnUrl: `${config.app.appUrl}/${form._id}/payment/${paymentId}`,
+          })
+        }),
+    )
+    .map((paymentIntent) => {
+      const paymentIsActionable = !['succeeded', 'canceled'].includes(
+        paymentIntent.status,
+      )
+      return res.status(StatusCodes.OK).json({
+        status: paymentIntent.status,
+        ...(paymentIsActionable && paymentIntent.client_secret
+          ? { client_secret: paymentIntent.client_secret }
+          : {}),
+      })
     })
     .mapErr((error) => {
       const { errorMessage, statusCode } = mapRouteError(error)

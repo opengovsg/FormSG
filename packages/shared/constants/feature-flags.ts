@@ -26,6 +26,7 @@ export const featureFlags = {
   keepV4ResponseFormat: 'keep-v4-response-format' as const,
   paymentInfoFormat: 'payment-info-format' as const,
   paymentEmailLookup: 'payment-email-lookup' as const,
+  paymentServerConfirmation: 'payment-server-confirmation' as const,
   settingsIntegrations: 'settings-integrations' as const,
   settingsIntegrationsJson: 'settings-integrations-json' as const,
   attachmentsMultiUploadAndOneZip:
