@@ -10,7 +10,7 @@ import {
 } from 'formsg-shared/types'
 import { omit } from 'lodash'
 import { errAsync, ResultAsync } from 'neverthrow'
-import { z } from 'zod/v4'
+import { z } from 'zod'
 
 import { FormFieldSchema, IPopulatedForm } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'

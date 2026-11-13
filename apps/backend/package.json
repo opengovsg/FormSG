@@ -110,7 +110,7 @@
     "validator": "^13.15.23",
     "winston": "^3.19.0",
     "winston-cloudwatch": "^6.3.0",
-    "zod": "^3.24.3"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@opengovsg/mockpass": "^4.7.1",
