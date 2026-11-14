@@ -18,6 +18,7 @@ import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedb
 
 import { useAdminFormWorkflow } from './hooks/useAdminFormWorkflow'
 import { useUsesStepLoginRules } from './hooks/useUsesStepLoginRules'
+import { isWorkflowEmailValidationError } from './utils/isWorkflowEmailValidationError'
 import {
   createWorkflowStep,
   deleteWorkflow,
@@ -90,7 +91,9 @@ export const useWorkflowMutations = () => {
           useAdminFeedbackStore.getState().setEligible('workflow', formId)
         }
       },
-      onError: handleError,
+      onError: (error: Error) => {
+        if (!isWorkflowEmailValidationError(error)) handleError(error)
+      },
     },
   )
 
@@ -169,7 +172,9 @@ export const useWorkflowMutations = () => {
           useAdminFeedbackStore.getState().setEligible('workflow', formId)
         }
       },
-      onError: handleError,
+      onError: (error: Error) => {
+        if (!isWorkflowEmailValidationError(error)) handleError(error)
+      },
     },
   )
 

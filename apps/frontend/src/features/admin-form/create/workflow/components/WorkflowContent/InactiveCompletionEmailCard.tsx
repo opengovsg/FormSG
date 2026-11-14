@@ -36,6 +36,9 @@ export const InactiveCompletionEmailCard = ({
   const { t } = useTranslation()
   const {
     cardRadius,
+    cardHoverBorderColor,
+    cardHoverBg,
+    iconHoverColor,
     sectionLabelTextStyle,
     iconRestColor,
     iconTransitionDuration,
@@ -78,7 +81,7 @@ export const InactiveCompletionEmailCard = ({
         transitionProperty="common"
         transitionDuration="normal"
         cursor="pointer"
-        _groupHover={{ borderColor: 'primary.500', bg: 'primary.100' }}
+        _groupHover={{ borderColor: cardHoverBorderColor, bg: cardHoverBg }}
         onClick={onClick}
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
@@ -127,7 +130,7 @@ export const InactiveCompletionEmailCard = ({
         color={iconRestColor}
         transitionProperty="common"
         transitionDuration={iconTransitionDuration}
-        _groupHover={{ color: 'primary.500' }}
+        _groupHover={{ color: iconHoverColor }}
       />
     </Box>
   )

@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event'
 
 import { render } from '~/test-utils'
 
+import { SettingsLink } from '../create/builder-and-design/BuilderAndDesignDrawer/FieldListDrawer/field-panels/LoginIdentityFieldSection'
+
 import { SettingsPage } from './SettingsPage'
 
 const state = vi.hoisted(() => ({
@@ -50,7 +52,7 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: () => ({
       general: { title: 'General' },
-      singpass: { title: 'Singpass' },
+      singpass: { title: 'Login' },
       emailNotifications: { title: 'Email notifications' },
       webhooks: { title: 'Webhooks' },
       payments: { title: 'Payments' },
@@ -134,7 +136,7 @@ describe('Settings labelled navigation', () => {
     expect(
       screen.getByText('/admin/form/test/settings/general'),
     ).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: 'Singpass' })).toHaveFocus()
+    expect(screen.getByRole('tab', { name: 'Login' })).toHaveFocus()
     await userEvent.keyboard('{Enter}')
     expect(
       screen.getByText('/admin/form/test/settings/singpass'),
@@ -157,4 +159,31 @@ describe('Settings labelled navigation', () => {
       screen.queryByRole('button', { name: 'Collapse sidebar' }),
     ).not.toBeInTheDocument()
   })
+})
+
+// Mirror AppRouter's nested Settings route instead of flattening its params.
+it('opens Singpass settings from the Create palette Settings link', async () => {
+  state.labels = true
+  render(
+    <MemoryRouter initialEntries={['/admin/form/test']}>
+      <Location />
+      <Routes>
+        <Route path="/admin/form/:formId">
+          <Route index element={<SettingsLink>Settings</SettingsLink>} />
+          <Route path="settings" element={<SettingsPage />}>
+            <Route path=":settingsTab" element={<SettingsPage />} />
+          </Route>
+        </Route>
+      </Routes>
+    </MemoryRouter>,
+  )
+  await userEvent.click(screen.getByRole('link', { name: 'Settings' }))
+  expect(
+    screen.getByText('/admin/form/test/settings/singpass'),
+  ).toBeInTheDocument()
+  expect(screen.getByRole('tab', { name: 'Login' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  )
+  expect(screen.getByText('Singpass content')).toBeInTheDocument()
 })

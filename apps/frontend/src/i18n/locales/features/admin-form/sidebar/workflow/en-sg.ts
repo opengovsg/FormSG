@@ -193,16 +193,21 @@ export const enSG: Workflow = {
   },
   stepLogin: {
     title: 'Login',
-    enable: 'Enable Singpass authentication',
-    enableDescription:
-      'Respondents must log in with Singpass before filling in this step',
     singpass: 'Singpass',
     corppass: 'Corppass',
-    esrvcIdLabel: 'e-service ID',
+    esrvcIdLabel: 'Enter your organisation’s Corppass e-service ID',
+    stepQuestion: 'Does this step require a login?',
+    formQuestion: 'Select form login method',
+    noLogin: 'No login required',
+    singpassDescription:
+      'Log in using Singpass and use Singpass Myinfo fields.',
+    legacySingpassDescription: 'Log in using Singpass',
+    corppassDescription:
+      'Log in using Corppass and use Corppass Myinfo fields.',
     esrvcIdPlaceholder: 'Enter Corppass e-service ID',
     esrvcIdWhitespace: 'e-service ID must not contain whitespace',
     closeFormToEdit: 'To change the login, close your form to new responses.',
-    inactiveLabel: 'Singpass authentication',
+    inactiveLabel: 'Login',
     tabs: { fields: 'Fields to fill', approvals: 'Approvals', login: 'Login' },
     historicalResponsesKept: 'Historical responses will not be deleted.',
     publishErrors: {
@@ -213,7 +218,8 @@ export const enSG: Workflow = {
     settings: {
       description: 'Manage authentication for each step in your workflow.',
       editWorkflow: 'Edit your full workflow ↗',
-      notEnabled: 'Singpass authentication not enabled',
+      addStep: 'Go to workflows to add a new step',
+      notEnabled: 'No login enabled',
       closeFormToEdit: 'Close your form to change authentication settings.',
       saved: 'Authentication settings saved.',
       saveFailed: 'Unable to save settings.',

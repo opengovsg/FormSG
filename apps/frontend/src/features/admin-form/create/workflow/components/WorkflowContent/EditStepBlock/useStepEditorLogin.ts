@@ -6,7 +6,6 @@ import {
   AdminMultirespondentFormDto,
   FirstStepLoginInput,
   FormAuthType,
-  StepLoginAuthType,
 } from 'formsg-shared/types'
 import { getAuthEsrvcId } from 'formsg-shared/utils/step-login'
 
@@ -57,7 +56,7 @@ export const useStepEditorLogin = ({
       }
   const esrvcId = 'esrvc_id' in login ? login.esrvc_id : undefined
 
-  const writeLogin = (authType: StepLoginAuthType, nextEsrvcId = esrvcId) => {
+  const writeLogin = (authType: FormAuthType, nextEsrvcId = esrvcId) => {
     const corppassId =
       authType === FormAuthType.CP && nextEsrvcId !== undefined
         ? { esrvc_id: nextEsrvcId }
@@ -65,7 +64,9 @@ export const useStepEditorLogin = ({
     if (isFirstStep) {
       setValue(
         'first_step_login',
-        { auth_type: authType, ...corppassId },
+        authType === FormAuthType.SP
+          ? undefined
+          : { auth_type: authType, ...corppassId },
         { shouldDirty: true },
       )
       return
