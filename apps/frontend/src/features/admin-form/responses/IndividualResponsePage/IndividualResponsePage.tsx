@@ -58,6 +58,8 @@ import {
   WorkflowActionsSection,
   WorkflowActivityLog,
 } from '../workflowActions'
+import { WorkflowActionLayout } from '../workflowActions/WorkflowActionLayout'
+import { WorkflowCurrentState } from '../workflowActions/WorkflowCurrentState'
 
 import { DecryptedRow } from './DecryptedRow'
 import { getResponseScrollContainer } from './getResponseScrollContainer'
@@ -399,6 +401,41 @@ const IndividualResponseContent = ({
       )}
     </>
   )
+  const renderResponseContent = (currentState?: ReactNode) =>
+    hasWorkflow && isWorkflowActionsOn ? (
+      <Tabs
+        index={tab}
+        onChange={setTab}
+        variant="line-light"
+        isLazy
+        lazyBehavior="keepMounted"
+        mt="1.5rem"
+      >
+        <TabList>
+          <Tab>
+            {t('features.adminForm.responses.individualResponse.responsesTab')}
+          </Tab>
+          <Tab>
+            {t('features.adminForm.responses.individualResponse.activityTab')}
+          </Tab>
+        </TabList>
+        <TabPanels pt="1.5rem">
+          <TabPanel>{responses}</TabPanel>
+          <TabPanel>
+            {isLoading || isError ? (
+              <LoadingDecryption />
+            ) : (
+              <WorkflowActivityLog
+                history={data?.workflowHistory}
+                currentState={currentState}
+              />
+            )}
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
+    ) : (
+      <Box mt="1.5rem">{responses}</Box>
+    )
   return (
     <Box
       ref={pageRef}
@@ -407,49 +444,43 @@ const IndividualResponseContent = ({
     >
       {hasWorkflow ? (
         <WorkflowActionsSection
-          overview={overview}
           submissionId={submissionId}
           mrf={data?.mrf}
           history={data?.workflowHistory}
           submissionSecretKey={data?.submissionSecretKey}
           stepToken={data?.stepToken}
           isLoading={isLoading || isError}
-        />
-      ) : (
-        <ResponseOverview>{overview}</ResponseOverview>
-      )}
-      {hasWorkflow && isWorkflowActionsOn ? (
-        <Tabs
-          index={tab}
-          onChange={setTab}
-          variant="line-light"
-          isLazy
-          lazyBehavior="keepMounted"
-          mt="1.5rem"
         >
-          <TabList>
-            <Tab>
-              {t(
-                'features.adminForm.responses.individualResponse.responsesTab',
-              )}
-            </Tab>
-            <Tab>
-              {t('features.adminForm.responses.individualResponse.activityTab')}
-            </Tab>
-          </TabList>
-          <TabPanels pt="1.5rem">
-            <TabPanel>{responses}</TabPanel>
-            <TabPanel>
-              {isLoading || isError ? (
-                <LoadingDecryption />
-              ) : (
-                <WorkflowActivityLog history={data?.workflowHistory} />
-              )}
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
+          {({ actions }) => (
+            <WorkflowActionLayout
+              key={submissionId}
+              overview={overview}
+              actions={actions}
+            >
+              {(currentActions, actionRowRef, showActions) =>
+                renderResponseContent(
+                  <WorkflowCurrentState
+                    mrf={data?.mrf}
+                    history={
+                      data?.workflowHistory ?? {
+                        submittedSteps: [],
+                        workflow: [],
+                      }
+                    }
+                    actions={currentActions}
+                    actionRowRef={actionRowRef}
+                    showActions={showActions}
+                  />,
+                )
+              }
+            </WorkflowActionLayout>
+          )}
+        </WorkflowActionsSection>
       ) : (
-        <Box mt="1.5rem">{responses}</Box>
+        <>
+          <ResponseOverview>{overview}</ResponseOverview>
+          {renderResponseContent()}
+        </>
       )}
     </Box>
   )

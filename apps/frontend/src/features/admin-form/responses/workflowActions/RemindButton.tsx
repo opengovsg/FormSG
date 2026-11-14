@@ -15,7 +15,7 @@ import { WorkflowActionModal } from './WorkflowActionModal'
 
 const I18N_PREFIX = `${WORKFLOW_ACTIONS_I18N}.reminderModal` as const
 
-interface RemindButtonProps {
+export interface RemindButtonProps {
   formId: string
   submissionId: string
   submissionSecretKey?: string
@@ -23,13 +23,13 @@ interface RemindButtonProps {
   recipients: string[]
 }
 
-export const RemindButton = ({
+export const useWorkflowReminder = ({
   formId,
   submissionId,
   submissionSecretKey,
   stepToken,
   recipients,
-}: RemindButtonProps): JSX.Element => {
+}: RemindButtonProps) => {
   const { t } = useTranslation()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { sendReminderForResponseMutation } = useFormRemindersMutations()
@@ -52,28 +52,11 @@ export const RemindButton = ({
     )
   }
 
-  return (
-    <>
-      <Button
-        size="sm"
-        variant="outline"
-        colorScheme="secondary"
-        leftIcon={
-          isSent ? (
-            <BiCheck fontSize="1.25rem" />
-          ) : (
-            <BiBell fontSize="1.25rem" />
-          )
-        }
-        isDisabled={isSent || !submissionSecretKey}
-        onClick={onOpen}
-      >
-        {isSent
-          ? t(
-              'features.adminForm.responses.responsesPage.storage.unlockedResponses.responsesTable.sendReminderButton.reminderSent',
-            )
-          : t(`${WORKFLOW_ACTIONS_I18N}.remindButton`)}
-      </Button>
+  return {
+    isSent,
+    onOpen,
+    isLoading: sendReminderForResponseMutation.isLoading,
+    modal: (
       <WorkflowActionModal
         isOpen={isOpen}
         onClose={onClose}
@@ -84,6 +67,36 @@ export const RemindButton = ({
         isConfirmLoading={sendReminderForResponseMutation.isLoading}
         onConfirm={handleConfirm}
       />
+    ),
+  }
+}
+
+export const RemindButton = (props: RemindButtonProps): JSX.Element => {
+  const { t } = useTranslation()
+  const reminder = useWorkflowReminder(props)
+  return (
+    <>
+      <Button
+        size="sm"
+        variant="outline"
+        colorScheme="secondary"
+        leftIcon={
+          reminder.isSent ? (
+            <BiCheck fontSize="1.25rem" />
+          ) : (
+            <BiBell fontSize="1.25rem" />
+          )
+        }
+        isDisabled={reminder.isSent || !props.submissionSecretKey}
+        onClick={reminder.onOpen}
+      >
+        {reminder.isSent
+          ? t(
+              'features.adminForm.responses.responsesPage.storage.unlockedResponses.responsesTable.sendReminderButton.reminderSent',
+            )
+          : t(`${WORKFLOW_ACTIONS_I18N}.remindButton`)}
+      </Button>
+      {reminder.modal}
     </>
   )
 }

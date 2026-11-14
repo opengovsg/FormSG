@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { ReactNode, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Badge,
@@ -24,6 +24,7 @@ import { ModalCloseButton } from '~components/Modal'
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 
 import { WORKFLOW_ACTIONS_I18N } from './i18n'
+import { WorkflowActionFocusContext } from './WorkflowActionFocusContext'
 
 export interface WorkflowActionModalProps {
   isOpen: boolean
@@ -54,6 +55,7 @@ export const WorkflowActionModal = ({
   isConfirmLoading,
   onConfirm,
 }: WorkflowActionModalProps): JSX.Element => {
+  const restoreActionFocus = useContext(WorkflowActionFocusContext)
   const { t } = useTranslation()
   const modalSize = useBreakpointValue({
     base: 'mobile',
@@ -62,7 +64,13 @@ export const WorkflowActionModal = ({
   })
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size={modalSize}
+      returnFocusOnClose={!restoreActionFocus}
+      onCloseComplete={restoreActionFocus}
+    >
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
@@ -84,12 +92,14 @@ export const WorkflowActionModal = ({
         <ModalBody>
           <DropdownMenuLayerProvider value="popover">
             <Stack spacing="1.5rem">
-              <Text textStyle="body-2" color="secondary.500">
-                {description}
-              </Text>
+              {description ? (
+                <Text textStyle="body-2" color="secondary.500">
+                  {description}
+                </Text>
+              ) : null}
               {children ? (
                 <>
-                  <Divider />
+                  {description ? <Divider /> : null}
                   {children}
                 </>
               ) : null}

@@ -62,35 +62,49 @@ vi.mock('./SendBackModal', () => ({
   SendBackModal: ({
     isOpen,
     onConfirm,
-    modal,
   }: {
     isOpen: boolean
-    onConfirm: (params: {
-      targetStepNumber: number
-      remarks?: string
-      clearResponses: boolean
-    }) => void
-    modal?: string
+    onConfirm: (
+      params: {
+        targetStepNumber: number
+        remarks: string
+        clearResponses: boolean
+      },
+      mode: 'sendBack' | 'fixStep',
+    ) => void
   }) =>
     isOpen ? (
-      <button
-        onClick={() =>
-          onConfirm({
-            targetStepNumber: 2,
-            remarks: 'Fix it',
-            clearResponses: true,
-          })
-        }
-      >
-        {modal === 'fixStepModal' ? 'confirm fix step' : 'confirm send back'}
-      </button>
+      <>
+        <button
+          onClick={() =>
+            onConfirm(
+              { targetStepNumber: 2, remarks: 'Fix it', clearResponses: true },
+              'sendBack',
+            )
+          }
+        >
+          confirm send back
+        </button>
+        <button
+          onClick={() =>
+            onConfirm(
+              { targetStepNumber: 2, remarks: 'Fix it', clearResponses: false },
+              'fixStep',
+            )
+          }
+        >
+          confirm fix step
+        </button>
+      </>
     ) : null,
 }))
-
 vi.mock('./RemindButton', () => ({
-  RemindButton: ({ recipients }: { recipients: string[] }) => (
-    <button>remind {recipients.join(',')}</button>
-  ),
+  useWorkflowReminder: () => ({
+    isSent: false,
+    isLoading: false,
+    onOpen: vi.fn(),
+    modal: null,
+  }),
 }))
 
 vi.mock('./AddAssigneeModal', () => ({
@@ -292,7 +306,7 @@ describe('WorkflowActionsSection', () => {
   it("offers Remind to the pending step's people", () => {
     renderSection()
     expect(
-      screen.getByRole('button', { name: 'remind lead@agency.gov.sg' }),
+      screen.getByRole('button', { name: /remindButton/ }),
     ).toBeInTheDocument()
   })
 
@@ -307,7 +321,7 @@ describe('WorkflowActionsSection', () => {
     mockIsGateOn = false
     renderSection()
     expect(
-      screen.getByRole('button', { name: 'remind lead@agency.gov.sg' }),
+      screen.getByRole('button', { name: /remindButton/ }),
     ).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: STOP })).not.toBeInTheDocument()
   })
@@ -316,7 +330,7 @@ describe('WorkflowActionsSection', () => {
     mockHasEditAccess = false
     renderSection()
     expect(
-      screen.getByRole('button', { name: 'remind lead@agency.gov.sg' }),
+      screen.getByRole('button', { name: /remindButton/ }),
     ).toBeInTheDocument()
   })
 
@@ -445,7 +459,7 @@ describe('WorkflowActionsSection', () => {
   describe('Fix step', () => {
     const I18N =
       'features.adminForm.responses.individualResponse.workflowActions'
-    const FIX_STEP = `${I18N}.fixStepButton`
+    const FIX_STEP = `${I18N}.sendBackButton`
 
     beforeEach(() => {
       mockIsSendBackOn = true
@@ -484,7 +498,6 @@ describe('WorkflowActionsSection', () => {
         3,
       )
 
-      expect(screen.getByText(`${I18N}.fixingStep`)).toBeVisible()
       expect(screen.getByRole('button', { name: STOP })).toBeVisible()
       for (const name of [FIX_STEP, `${I18N}.sendBackButton`, REASSIGN]) {
         expect(screen.queryByRole('button', { name })).not.toBeInTheDocument()

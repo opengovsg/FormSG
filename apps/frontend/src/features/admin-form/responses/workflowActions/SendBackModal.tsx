@@ -6,6 +6,12 @@ import {
   FormControl,
   FormErrorMessage,
   Stack,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Text,
 } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
@@ -25,15 +31,20 @@ import { WorkflowActionModal } from './WorkflowActionModal'
 const KEEP_FILLED = 'keep'
 const CLEAR_FIELDS = 'clear'
 
+export type SendBackMode = 'sendBack' | 'fixStep'
+
 export interface SendBackModalProps {
   isOpen: boolean
   onClose: () => void
-  onConfirm: (params: {
-    targetStepNumber: number
-    remarks?: string
-    stepOneRecipientEmail?: string
-    clearResponses: boolean
-  }) => void
+  onConfirm: (
+    params: {
+      targetStepNumber: number
+      remarks?: string
+      stepOneRecipientEmail?: string
+      clearResponses: boolean
+    },
+    mode: SendBackMode,
+  ) => void
   isLoading?: boolean
   history: WorkflowHistory
   canSendBackToStepOne?: boolean
@@ -49,7 +60,11 @@ export const SendBackModal = ({
   canSendBackToStepOne = false,
   modal = 'sendBackModal',
 }: SendBackModalProps): JSX.Element => {
-  const I18N_PREFIX = `${WORKFLOW_ACTIONS_I18N}.${modal}` as const
+  const [mode, setMode] = useState<SendBackMode>(
+    modal === 'fixStepModal' ? 'fixStep' : 'sendBack',
+  )
+  const I18N_PREFIX =
+    `${WORKFLOW_ACTIONS_I18N}.${mode === 'fixStep' ? 'fixStepModal' : 'sendBackModal'}` as const
   const { t } = useTranslation()
   const { submittedSteps, workflow, workflowEvents } = history
   const pendingStepNumber = submittedSteps.length + 1
@@ -62,6 +77,7 @@ export const SendBackModal = ({
 
   useEffect(() => {
     if (!isOpen) return
+    setMode('sendBack')
     setStep(defaultStep)
     setRemarks('')
     setStepOneEmail('')
@@ -119,8 +135,8 @@ export const SendBackModal = ({
     <WorkflowActionModal
       isOpen={isOpen}
       onClose={onClose}
-      title={t(`${I18N_PREFIX}.title`)}
-      description={t(`${I18N_PREFIX}.description`)}
+      title={t(`${WORKFLOW_ACTIONS_I18N}.sendBackModal.title`)}
+      description=""
       isBeta
       confirmLabel={t(`${I18N_PREFIX}.confirm`)}
       isConfirmDisabled={
@@ -128,16 +144,40 @@ export const SendBackModal = ({
       }
       isConfirmLoading={isLoading}
       onConfirm={() =>
-        onConfirm({
-          targetStepNumber,
-          remarks: remarks.trim() || undefined,
-          clearResponses: keepFilled === CLEAR_FIELDS,
-          ...(isToStepOne
-            ? { stepOneRecipientEmail: trimmedStepOneEmail }
-            : {}),
-        })
+        onConfirm(
+          {
+            targetStepNumber,
+            remarks: remarks.trim() || undefined,
+            clearResponses: mode === 'sendBack' && keepFilled === CLEAR_FIELDS,
+            ...(isToStepOne
+              ? { stepOneRecipientEmail: trimmedStepOneEmail }
+              : {}),
+          },
+          mode,
+        )
       }
     >
+      <Tabs
+        index={mode === 'sendBack' ? 0 : 1}
+        onChange={(index) => setMode(index === 0 ? 'sendBack' : 'fixStep')}
+      >
+        <TabList>
+          <Tab>{t(`${WORKFLOW_ACTIONS_I18N}.requireFullReview`)}</Tab>
+          <Tab>{t(`${WORKFLOW_ACTIONS_I18N}.reviewNotNeeded`)}</Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel px={0}>
+            <Text textStyle="body-2">
+              {t(`${WORKFLOW_ACTIONS_I18N}.sendBackModal.description`)}
+            </Text>
+          </TabPanel>
+          <TabPanel px={0}>
+            <Text textStyle="body-2">
+              {t(`${WORKFLOW_ACTIONS_I18N}.fixStepModal.description`)}
+            </Text>
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
       <Stack spacing="1.5rem">
         <FormControl isRequired>
           <FormLabel>{t(`${I18N_PREFIX}.stepLabel`)}</FormLabel>
@@ -198,7 +238,7 @@ export const SendBackModal = ({
           />
           <FormErrorMessage>{remarksError}</FormErrorMessage>
         </FormControl>
-        {modal === 'sendBackModal' ? (
+        {mode === 'sendBack' ? (
           <FormControl isRequired>
             <FormLabel>
               {t(`${WORKFLOW_ACTIONS_I18N}.sendBackModal.keepFilledLabel`)}
