@@ -1,5 +1,5 @@
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
-import { Meta, StoryFn } from '@storybook/react-vite'
+import { Meta, StoryFn, StoryObj } from '@storybook/react-vite'
 import { http, HttpResponse } from 'msw'
 
 import { featureFlags } from 'formsg-shared/constants'
@@ -442,4 +442,18 @@ PublicMrfStepLoginAccordion.parameters = {
 export const Loading = Template.bind({})
 Loading.parameters = {
   msw: { handlers: { default: [getAdminFormSettings({ delay: 'infinite' })] } },
+}
+
+/** Existing login-only forms retain SP instead of becoming Myinfo-backed. */
+export const LegacySingpassLoginOnly: StoryObj<typeof SettingsAuthPage> = {
+  parameters: {
+    msw: {
+      handlers: {
+        default: buildEmailModeMswRoutes({
+          status: FormStatus.Private,
+          authType: FormAuthType.SP,
+        }),
+      },
+    },
+  },
 }

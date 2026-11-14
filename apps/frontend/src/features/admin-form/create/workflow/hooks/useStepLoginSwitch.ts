@@ -1,10 +1,6 @@
 import { useState } from 'react'
 
-import {
-  AdminMultirespondentFormDto,
-  FormAuthType,
-  StepLoginAuthType,
-} from 'formsg-shared/types'
+import { AdminMultirespondentFormDto, FormAuthType } from 'formsg-shared/types'
 
 import type { AuthSwitchConfirmationProps } from '~features/admin-form/settings/components/AuthSettingsSection/AuthSwitchConfirmation'
 
@@ -14,7 +10,7 @@ import {
 } from '../utils/authFieldRemoval'
 
 export type StepLoginSwitch = {
-  authType: StepLoginAuthType
+  authType: FormAuthType
   // Fields on the step the new login cannot fill
   unassignedIds: string[]
   // Fields no step's login can fill any more, confirmed for deletion
@@ -23,7 +19,7 @@ export type StepLoginSwitch = {
   assignedId?: string
 }
 
-type PendingSwitch = { authType: StepLoginAuthType; assignedId?: string }
+type PendingSwitch = { authType: FormAuthType; assignedId?: string }
 
 const NO_CONSEQUENCES: ReturnType<typeof getAuthSwitchConsequences> = {
   deletedFields: [],
@@ -53,9 +49,14 @@ export const useStepLoginSwitch = ({
 }) => {
   const [pending, setPending] = useState<PendingSwitch>()
 
-  const consequencesOf = (next: StepLoginAuthType | undefined) =>
+  const consequencesOf = (next: FormAuthType | undefined) =>
     form && next !== undefined
-      ? getAuthSwitchConsequences(form, stepNumber, next, assignedIds)
+      ? getAuthSwitchConsequences(
+          form,
+          stepNumber,
+          next === FormAuthType.SP ? FormAuthType.NIL : next,
+          assignedIds,
+        )
       : NO_CONSEQUENCES
 
   const apply = ({ authType: next, assignedId }: PendingSwitch) => {
@@ -69,8 +70,14 @@ export const useStepLoginSwitch = ({
   }
 
   /** Switches at once, or asks first when fields move or a field is added. */
-  const requestSwitch = (next: StepLoginAuthType, assignedId?: string) => {
+  const requestSwitch = (next: FormAuthType, assignedId?: string) => {
     if (!form || isDisabled || next === authType) return
+    // Legacy SP can only restore the first step's saved form-level login.
+    if (
+      next === FormAuthType.SP &&
+      (stepNumber !== 0 || form.authType !== FormAuthType.SP)
+    )
+      return
     const { deletedFields, unassignedFields } = consequencesOf(next)
     if (assignedId || deletedFields.length || unassignedFields.length) {
       setPending({ authType: next, assignedId })

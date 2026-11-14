@@ -162,10 +162,14 @@ export interface Workflow {
   }
   stepLogin: {
     title: string
-    enable: string
-    enableDescription: string
     singpass: string
     corppass: string
+    stepQuestion: string
+    formQuestion: string
+    noLogin: string
+    singpassDescription: string
+    legacySingpassDescription: string
+    corppassDescription: string
     esrvcIdLabel: string
     esrvcIdPlaceholder: string
     esrvcIdWhitespace: string
@@ -177,6 +181,7 @@ export interface Workflow {
     settings: {
       description: string
       editWorkflow: string
+      addStep: string
       notEnabled: string
       closeFormToEdit: string
       saved: string

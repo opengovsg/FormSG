@@ -10,6 +10,7 @@ import {
   FormStatus,
   MultirespondentFormSettings,
 } from 'formsg-shared/types'
+import { getStepAuthType } from 'formsg-shared/utils/step-login'
 
 import { textStyles } from '~theme/textStyles'
 
@@ -94,6 +95,7 @@ const StepLogin = ({
         isTitleToggle={!isGuidedSection}
         idPrefix={`step-${stepNumber}-login`}
         authType={login.auth_type}
+        savedAuthType={getStepAuthType(form, form.workflow, stepNumber)}
         esrvcId={esrvcId ?? ''}
         onAuthTypeChange={(next) => requestSwitch(next)}
         // The e-service ID field only shows while Corppass is picked.
