@@ -10,11 +10,7 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import {
-  FormAuthType,
-  FormFieldDto,
-  StepLoginAuthType,
-} from 'formsg-shared/types'
+import { FormAuthType, FormFieldDto } from 'formsg-shared/types'
 
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
@@ -25,7 +21,7 @@ import { augmentFieldWithQuestionNo } from '~features/form/utils'
 
 export interface AuthSwitchConfirmationProps {
   currentAuthType: FormAuthType
-  nextAuthType: StepLoginAuthType | undefined
+  nextAuthType: FormAuthType | undefined
   // The picked field that needs the new login; it joins the step on confirm
   assignedField?: { _id: string; title: string }
   fields: readonly { _id: string; title: string }[]

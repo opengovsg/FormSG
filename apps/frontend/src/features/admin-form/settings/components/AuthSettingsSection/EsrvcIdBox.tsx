@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import {
   Flex,
   FormControl,
@@ -7,7 +8,6 @@ import {
   InputGroup,
   InputRightElement,
   Stack,
-  VisuallyHidden,
 } from '@chakra-ui/react'
 
 import { FormAuthType, FormSettings } from 'formsg-shared/types/form'
@@ -30,6 +30,7 @@ export const EsrvcIdBox = ({
   settings,
   isDisabled,
 }: EsrvcIdBoxProps): JSX.Element => {
+  const { t } = useTranslation()
   const initialEsrvcId = useMemo(() => settings.esrvcId ?? '', [settings])
 
   const { mutateFormEsrvcId } = useMutateFormSettings()
@@ -71,11 +72,11 @@ export const EsrvcIdBox = ({
   )
   return (
     <form onSubmit={onSubmit} onBlur={handleBlur}>
-      <Stack ml="2.75rem" mb="1.25rem">
+      <Stack ml="2.75rem" mt="0.75rem" mb="1.25rem">
+        <FormLabel htmlFor="esrvcId" mb={0}>
+          {t('features.adminForm.sidebar.workflow.stepLogin.esrvcIdLabel')}
+        </FormLabel>
         <EsrvcHelperText authType={settings.authType} />
-        <VisuallyHidden>
-          <FormLabel htmlFor="esrvcId">e-service ID:</FormLabel>
-        </VisuallyHidden>
         <Flex maxW="20rem" w="100%">
           <FormControl id="esrvcId" isInvalid={!!errors.esrvcId}>
             <InputGroup>

@@ -242,6 +242,7 @@ export const StepAuthSettingsEditor = ({
           isTitleToggle
           idPrefix={`settings-step-${stepIndex}-login`}
           authType={authType}
+          savedAuthType={getStepAuthType(settings, form.workflow, stepIndex)}
           esrvcId={esrvcId}
           onAuthTypeChange={(next) => loginSwitch.requestSwitch(next)}
           onEsrvcIdChange={(value) => {
