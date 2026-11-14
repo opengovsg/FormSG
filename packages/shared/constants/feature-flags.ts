@@ -45,6 +45,7 @@ export const featureFlags = {
   suiteLauncher: 'suite-launcher' as const,
   escapeHatch: 'mrf-cutover-escape-hatch' as const,
   disableBouncedSubmissionSms: 'disable-bounced-submission-sms' as const,
+  keepV4AttachmentPrefix: 'keep-v4-attachment-prefix' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {
