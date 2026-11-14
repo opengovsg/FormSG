@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useId, useRef } from 'react'
+import { ReactNode, useCallback, useEffect, useId, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
@@ -67,7 +67,8 @@ export const WorkflowActionsSection = ({
     element: null,
     action: '',
   })
-  const restoreFocus = () => {
+  const restoredFocusRef = useRef<HTMLElement | null>(null)
+  const restoreFocus = useCallback(() => {
     if (ownerRef.current)
       restoreWorkflowActionFocus(
         ownerRef.current,
@@ -75,7 +76,11 @@ export const WorkflowActionsSection = ({
         triggerRef.current.action,
         ownerId,
       )
-  }
+    restoredFocusRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null
+  }, [ownerId])
   const { t } = useTranslation()
   const { formId = '' } = useParams()
   const isWorkflowActionsOn = useWorkflowActionsGate()
@@ -137,6 +142,17 @@ export const WorkflowActionsSection = ({
     pendingStepNumber >= (canSendBackToStepOne ? 2 : 3) &&
     mrf?.workflowCurrentStepNumber === history.submittedSteps.length
   const canSendBack = isPending && isSendBackOn && canRewind
+
+  useEffect(() => {
+    // A refetch can remove the restored trigger after the dialog has finished closing.
+    // Recover only lost focus, never override a user's next focused control.
+    if (
+      restoredFocusRef.current &&
+      !restoredFocusRef.current.isConnected &&
+      document.activeElement === document.body
+    )
+      restoreFocus()
+  }, [canActOnWorkflow, canRemind, canSendBack, isFixing, restoreFocus])
 
   const closeStop = stopModal.onClose
   const closeAddAssignee = addAssigneeModal.onClose
