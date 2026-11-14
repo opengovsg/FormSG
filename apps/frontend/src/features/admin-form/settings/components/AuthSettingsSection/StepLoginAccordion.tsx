@@ -1,6 +1,7 @@
 import { Fragment, useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiPencil } from 'react-icons/bi'
+import { FiArrowUpRight } from 'react-icons/fi'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   Accordion,
@@ -24,6 +25,7 @@ import {
 } from 'formsg-shared/utils/step-login'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
+import Button from '~components/Button'
 import Link from '~components/Link'
 
 import {
@@ -55,7 +57,15 @@ export const StepLoginAccordion = ({
   const { t } = useTranslation()
   const { formId } = useParams()
   const navigate = useNavigate()
-  const { cardRadius, activeCardBg } = useWorkflowSurfaces()
+  const {
+    cardRadius,
+    activeCardBg,
+    cardHoverBorderColor,
+    cardHoverBg,
+    iconRestColor,
+    iconHoverColor,
+    iconTransitionDuration,
+  } = useWorkflowSurfaces()
   const [openIndex, setOpenIndex] = useState(-1)
   const [isDirty, setIsDirty] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -94,98 +104,124 @@ export const StepLoginAccordion = ({
           </Link>
         </Text>
       </Box>
-      <Accordion
-        allowToggle
-        reduceMotion
-        index={openIndex}
-        onChange={(index) => requestChange(index as number)}
-      >
-        {form.workflow.map((step, stepIndex) => {
-          const authType = getStepAuthType(settings, form.workflow, stepIndex)
-          const label = isWorkflowStepAuthType(authType)
-            ? t(STEP_LOGIN_LABEL_KEYS[authType])
-            : undefined
-          return (
-            <Fragment key={step._id}>
-              {stepIndex > 0 ? (
-                <WorkflowStepBlockDivider testId="settings-step-connector" />
-              ) : null}
-              <AccordionItem
-                border="1px solid"
-                borderColor={
-                  openIndex === stepIndex ? 'primary.500' : 'neutral.300'
-                }
-                borderRadius={cardRadius}
-                bg={openIndex === stepIndex ? activeCardBg : 'white'}
-                overflow="hidden"
-              >
-                {({ isExpanded }) => (
-                  <>
-                    <AccordionButton
-                      p="2rem"
-                      position="relative"
-                      textAlign="left"
-                      disabled={isSaving}
-                      // An open card's header would tint down over its
-                      // editor, so only a closed card shows the hover.
-                      cursor={isExpanded ? 'default' : 'pointer'}
-                      _hover={{ bg: isExpanded ? 'transparent' : 'primary.50' }}
-                    >
-                      <Stack
-                        flex="1"
-                        spacing="0.5rem"
-                        pr={isExpanded ? 0 : '2.5rem'}
+      <Box>
+        <Accordion
+          allowToggle
+          reduceMotion
+          index={openIndex}
+          onChange={(index) => requestChange(index as number)}
+        >
+          {form.workflow.map((step, stepIndex) => {
+            const authType = getStepAuthType(settings, form.workflow, stepIndex)
+            const label = isWorkflowStepAuthType(authType)
+              ? t(STEP_LOGIN_LABEL_KEYS[authType])
+              : undefined
+            return (
+              <Fragment key={step._id}>
+                {stepIndex > 0 ? (
+                  <WorkflowStepBlockDivider testId="settings-step-connector" />
+                ) : null}
+                <AccordionItem
+                  border="1px solid"
+                  borderColor={
+                    openIndex === stepIndex ? 'primary.500' : 'neutral.300'
+                  }
+                  borderRadius={cardRadius}
+                  bg={openIndex === stepIndex ? activeCardBg : 'white'}
+                  overflow="hidden"
+                  role="group"
+                  transitionProperty="common"
+                  transitionDuration="normal"
+                  _hover={
+                    openIndex === stepIndex || isSaving
+                      ? undefined
+                      : { borderColor: cardHoverBorderColor, bg: cardHoverBg }
+                  }
+                >
+                  {({ isExpanded }) => (
+                    <>
+                      <AccordionButton
+                        p="2rem"
+                        position="relative"
+                        textAlign="left"
+                        disabled={isSaving}
+                        // The card owns the hover background; keep its header transparent.
+                        cursor={isExpanded ? 'default' : 'pointer'}
+                        _hover={{
+                          bg: 'transparent',
+                        }}
                       >
-                        <StepLabel
-                          stepNumber={stepIndex}
-                          stepName={step.step_name}
-                        />
-                        {!isExpanded ? (
-                          <Box pl="4.25rem">
-                            {label ? (
-                              <LogicBadge>{label}</LogicBadge>
-                            ) : (
-                              <Text textStyle="body-2" color="secondary.400">
-                                {t(`${COPY_KEY}.notEnabled`)}
-                              </Text>
-                            )}
-                          </Box>
+                        <Stack
+                          flex="1"
+                          spacing="0.5rem"
+                          pr={isExpanded ? 0 : '2.5rem'}
+                        >
+                          <StepLabel
+                            stepNumber={stepIndex}
+                            stepName={step.step_name}
+                          />
+                          {!isExpanded ? (
+                            <Box pl="4.25rem">
+                              {label ? (
+                                <LogicBadge>{label}</LogicBadge>
+                              ) : (
+                                <Text textStyle="body-2" color="secondary.400">
+                                  {t(`${COPY_KEY}.notEnabled`)}
+                                </Text>
+                              )}
+                            </Box>
+                          ) : null}
+                        </Stack>
+                        {!isExpanded && (
+                          <Icon
+                            as={BiPencil}
+                            aria-hidden
+                            pointerEvents="none"
+                            position="absolute"
+                            top="2rem"
+                            right="2rem"
+                            color={iconRestColor}
+                            transitionProperty="common"
+                            transitionDuration={iconTransitionDuration}
+                            _groupHover={
+                              isSaving ? undefined : { color: iconHoverColor }
+                            }
+                            boxSize="1.5rem"
+                          />
+                        )}
+                      </AccordionButton>
+                      <AccordionPanel p="0">
+                        {isExpanded ? (
+                          <StepAuthSettingsEditor
+                            form={form}
+                            settings={settings as MultirespondentFormSettings}
+                            step={step}
+                            stepIndex={stepIndex}
+                            onClose={() => setOpenIndex(-1)}
+                            onDirtyChange={setIsDirty}
+                            onSavingChange={setIsSaving}
+                            onSaveReady={registerSave}
+                          />
                         ) : null}
-                      </Stack>
-                      {!isExpanded && (
-                        <Icon
-                          as={BiPencil}
-                          aria-hidden
-                          pointerEvents="none"
-                          position="absolute"
-                          top="2rem"
-                          right="2rem"
-                          color="secondary.300"
-                          boxSize="1.5rem"
-                        />
-                      )}
-                    </AccordionButton>
-                    <AccordionPanel p="0">
-                      {isExpanded ? (
-                        <StepAuthSettingsEditor
-                          form={form}
-                          settings={settings as MultirespondentFormSettings}
-                          step={step}
-                          stepIndex={stepIndex}
-                          onClose={() => setOpenIndex(-1)}
-                          onDirtyChange={setIsDirty}
-                          onSavingChange={setIsSaving}
-                          onSaveReady={registerSave}
-                        />
-                      ) : null}
-                    </AccordionPanel>
-                  </>
-                )}
-              </AccordionItem>
-            </Fragment>
-          )
-        })}
-      </Accordion>
+                      </AccordionPanel>
+                    </>
+                  )}
+                </AccordionItem>
+              </Fragment>
+            )
+          })}
+        </Accordion>
+        <WorkflowStepBlockDivider testId="settings-add-step-connector" />
+        <Button
+          w="100%"
+          variant="outline"
+          rightIcon={<FiArrowUpRight aria-hidden />}
+          isDisabled={isSaving}
+          onClick={() => requestChange(-2)}
+        >
+          {t(`${COPY_KEY}.addStep`)}
+        </Button>
+      </Box>
     </Stack>
   )
 }
