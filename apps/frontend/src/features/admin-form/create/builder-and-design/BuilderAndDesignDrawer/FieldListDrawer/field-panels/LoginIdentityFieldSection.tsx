@@ -23,7 +23,7 @@ import { useLoginFieldLimit } from './useLoginFieldLimit'
 import { useOfferedLoginIdentityAttrs } from './useOfferedLoginIdentityAttrs'
 
 // Trans fills in the link text from the translation.
-const SettingsLink = ({ children }: { children?: ReactNode }) => (
+export const SettingsLink = ({ children }: { children?: ReactNode }) => (
   <Link as={ReactLink} to={ADMINFORM_SETTINGS_SINGPASS_SUBROUTE}>
     {children}
   </Link>
