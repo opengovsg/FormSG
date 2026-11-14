@@ -2,8 +2,10 @@ import { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiDownload } from 'react-icons/bi'
 import { Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { FieldType } from '@opengovsg/formsg-sdk/dist/types'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { BasicField } from 'formsg-shared/types'
 import { handleAddressResponseDisplay } from 'formsg-shared/utils/address'
 
@@ -12,6 +14,7 @@ import FormLabel from '~components/FormControl/FormLabel'
 import Spinner from '~components/Spinner'
 
 import { getVerifiedQuestionLabel } from '../common/utils/questionLabel'
+import { getAttachmentQuestionLabel } from '../ResponsesPage/storage/utils/attachmentQuestionLabel'
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 
 import { useMutateDownloadAttachments } from './mutations'
@@ -26,10 +29,17 @@ type DecryptedRowProps = DecryptedRowBaseProps & {
 
 function DecryptedQuestionLabel({ row }: DecryptedRowBaseProps) {
   const { t } = useTranslation()
+  const keepV4AttachmentPrefix = useFeatureIsOn(
+    featureFlags.keepV4AttachmentPrefix,
+  )
   return (
     <FormLabel questionNumber={`${row.questionNumber}.`} isRequired>
       {getVerifiedQuestionLabel(
-        row.question,
+        getAttachmentQuestionLabel({
+          question: row.question,
+          fieldType: row.fieldType,
+          keepV4AttachmentPrefix,
+        }),
         !!row.signature,
         t('features.common.verified'),
       )}
@@ -77,6 +87,9 @@ const DecryptedAttachmentRow = ({
   attachmentDecryptionKey,
 }: DecryptedRowProps) => {
   const { t } = useTranslation()
+  const keepV4AttachmentPrefix = useFeatureIsOn(
+    featureFlags.keepV4AttachmentPrefix,
+  )
 
   const { downloadAttachmentMutation } = useMutateDownloadAttachments()
 
@@ -93,7 +106,7 @@ const DecryptedAttachmentRow = ({
     <Stack>
       <DecryptedQuestionLabel row={row} />
       <Text textStyle="body-1">
-        {t('features.common.filename')}:{' '}
+        {keepV4AttachmentPrefix ? `${t('features.common.filename')}: ` : null}
         {row.answer && (
           <Button
             variant="link"
