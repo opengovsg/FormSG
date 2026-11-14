@@ -7,8 +7,12 @@ import * as pageStories from '../../../CreatePageWorkflowTab.stories'
 import { AdminEditWorkflowState } from '../../../types'
 import { SPOTLIGHT_TEST_ID } from '../../Spotlight'
 
-const { NoWorkflow, WithWorkflow, NewStepOnPrivateForm } =
-  composeStories(pageStories)
+const {
+  NoWorkflow,
+  WithWorkflow,
+  NewStepOnPrivateForm,
+  StepLoginMixedProviders,
+} = composeStories(pageStories)
 
 const STEP_NAME_LABEL = /step name/i
 const PEOPLE_LABEL = /who should fill in this step/i
@@ -228,5 +232,67 @@ describe('a guided step card that has not reached its last section', () => {
       state: AdminEditWorkflowState.CreatingStep,
     })
     expect(await findOpenCard()).toBeInTheDocument()
+  })
+})
+
+describe('step login tabs', () => {
+  beforeAll(() => {
+    Element.prototype.scrollIntoView = vi.fn()
+  })
+  afterAll(() => {
+    delete (Element.prototype as Partial<Pick<Element, 'scrollIntoView'>>)
+      .scrollIntoView
+  })
+  afterEach(() => useAdminWorkflowStore.getState().reset())
+  it('shows only Login and Fields to fill for the first step', async () => {
+    await act(async () => {
+      render(<StepLoginMixedProviders />)
+    })
+    await act(async () => {
+      useAdminWorkflowStore.getState().setToEditing(0)
+    })
+    await findOpenCard()
+    expect(
+      (await screen.findAllByRole('tab')).map((tab) => tab.textContent),
+    ).toEqual(['Login', 'Fields to fill'])
+    expect(screen.getByRole('tab', { name: 'Login' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+    await userEvent.click(screen.getByRole('tab', { name: 'Fields to fill' }))
+    expect(
+      screen.getByRole('tabpanel', { name: 'Fields to fill' }),
+    ).toBeVisible()
+  })
+  it('opens on Login and preserves the saved provider when editing a later step', async () => {
+    await act(async () => {
+      render(<StepLoginMixedProviders />)
+    })
+    await act(async () => {
+      useAdminWorkflowStore.getState().setToEditing(1)
+    })
+    await findOpenCard()
+    const tabs = await screen.findAllByRole('tab')
+    expect(tabs[0]).toHaveTextContent('Login')
+    expect(tabs[0]).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('radio', { name: /^Corppass/ })).toBeChecked()
+    await userEvent.click(screen.getByRole('tab', { name: 'Approvals' }))
+    expect(
+      screen.getByRole('checkbox', { name: /make this person approve/i }),
+    ).toBeChecked()
+    await userEvent.click(screen.getByRole('tab', { name: 'Login' }))
+    await userEvent.type(
+      screen.getByRole('textbox', { name: /Corppass e-service ID/i }),
+      'invalid id',
+    )
+    await userEvent.click(screen.getByRole('tab', { name: 'Fields to fill' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Save step' }))
+    expect(screen.getByRole('tab', { name: 'Login' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+    expect(
+      screen.getByRole('textbox', { name: /Corppass e-service ID/i }),
+    ).toHaveValue('invalid id')
   })
 })

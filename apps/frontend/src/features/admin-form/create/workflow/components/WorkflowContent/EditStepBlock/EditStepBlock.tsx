@@ -84,6 +84,8 @@ const WRAPPING_TAB_PROPS = { _notFirst: { ml: 0 }, _notLast: { mr: 0 } }
 const SAVE_ERRORS_KEY =
   'features.adminForm.sidebar.workflow.stepLogin.saveErrors'
 
+type StepTab = 'login' | 'fields' | 'approvals'
+
 type WriteStep = FormWorkflowStepWriteDto & { _id: string }
 
 export const buildWorkflowStep = (
@@ -244,8 +246,13 @@ export const EditStepBlock = ({
 
   const { isDirty } = formMethods.formState
 
-  const [activeTab, setActiveTab] = useState(0)
-  useEffect(() => setActiveTab(0), [stepNumber])
+  const tabOrder: StepTab[] = [
+    'login',
+    'fields',
+    ...(!isFirstStep ? (['approvals'] as const) : []),
+  ]
+  const [activeTab, setActiveTab] = useState<StepTab>('login')
+  useEffect(() => setActiveTab('login'), [stepNumber])
 
   const saveSucceeded = useRef(false)
   const pendingNavigationSave = useRef<Promise<boolean> | null>(null)
@@ -303,11 +310,10 @@ export const EditStepBlock = ({
       }
     },
     (errors) => {
-      if (errors.approval_field || errors.is_approval_enabled) setActiveTab(1)
-      // Step 1 has no Approvals tab, so its Login tab comes second.
-      else if (errors.auth || errors.first_step_login)
-        setActiveTab(isFirstStep ? 1 : 2)
-      else setActiveTab(0)
+      if (!isFirstStep && (errors.approval_field || errors.is_approval_enabled))
+        setActiveTab('approvals')
+      else if (errors.auth || errors.first_step_login) setActiveTab('login')
+      else setActiveTab('fields')
       cancelPendingSwitch()
     },
   )
@@ -359,9 +365,19 @@ export const EditStepBlock = ({
     />
   )
 
+  const tabSections: Record<StepTab, JSX.Element | null> = {
+    login: loginSection,
+    fields: questionsSection,
+    approvals: approvalsSection,
+  }
+
   const useProposedTabs = isLoginShown && !isGuided
   const tabbedSections = (
-    <Tabs key="step-settings" index={activeTab} onChange={setActiveTab}>
+    <Tabs
+      key="step-settings"
+      index={tabOrder.indexOf(activeTab)}
+      onChange={(index) => setActiveTab(tabOrder[index])}
+    >
       <Box px={{ base: '1.5rem', md: '2rem' }}>
         <TabList
           mx="-0.25rem"
@@ -371,26 +387,20 @@ export const EditStepBlock = ({
           columnGap="1.5rem"
           rowGap="0.25rem"
         >
-          <Tab {...WRAPPING_TAB_PROPS}>{t(`${STEP_TABS_KEY}.fields`)}</Tab>
-          {!isFirstStep && (
-            <Tab {...WRAPPING_TAB_PROPS}>{t(`${STEP_TABS_KEY}.approvals`)}</Tab>
-          )}
-          <Tab {...WRAPPING_TAB_PROPS}>{t(`${STEP_TABS_KEY}.login`)}</Tab>
+          {tabOrder.map((tab) => (
+            <Tab key={tab} {...WRAPPING_TAB_PROPS}>
+              {t(`${STEP_TABS_KEY}.${tab}`)}
+            </Tab>
+          ))}
         </TabList>
         <Divider w="auto" mx={{ base: '-1.5rem', md: '-2rem' }} />
       </Box>
       <TabPanels>
-        <TabPanel px="0" pt="1.5rem">
-          {questionsSection}
-        </TabPanel>
-        {!isFirstStep && (
-          <TabPanel px="0" pt="1.5rem">
-            {approvalsSection}
+        {tabOrder.map((tab) => (
+          <TabPanel key={tab} px="0" pt="1.5rem">
+            {tabSections[tab]}
           </TabPanel>
-        )}
-        <TabPanel px="0" pt="1.5rem">
-          {loginSection}
-        </TabPanel>
+        ))}
       </TabPanels>
     </Tabs>
   )
