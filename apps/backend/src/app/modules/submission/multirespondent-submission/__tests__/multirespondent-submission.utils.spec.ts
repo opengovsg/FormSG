@@ -1184,6 +1184,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        keepV4AttachmentPrefix: false,
       })
 
       expect(result).toEqual([
@@ -1201,7 +1202,7 @@ describe('multirespondent-submission.utils', () => {
       ])
     })
 
-    it('should handle attachment fields correctly', () => {
+    it('should label attachments [attachment] by default', () => {
       const formFields: FormFieldSchema[] = [
         {
           _id: '1',
@@ -1221,12 +1222,45 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        keepV4AttachmentPrefix: false,
+      })
+
+      expect(result).toEqual([
+        {
+          question: '[attachment] File Upload',
+          answer: 'file.pdf',
+          fieldType: BasicField.Attachment,
+        },
+      ])
+    })
+
+    it('should keep the [Attachment] label when keep-v4-attachment-prefix is on', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'File Upload',
+          fieldType: BasicField.Attachment,
+        } as IAttachmentFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.Attachment,
+          answer: { value: 'a.pdf', hasBeenScanned: true },
+          question: 'File Upload',
+          provenance: {},
+        },
+      } as any
+
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+        keepV4AttachmentPrefix: true,
       })
 
       expect(result).toEqual([
         {
           question: '[Attachment] File Upload',
-          answer: 'file.pdf',
+          answer: 'a.pdf',
           fieldType: BasicField.Attachment,
         },
       ])
@@ -1252,6 +1286,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        keepV4AttachmentPrefix: false,
       })
 
       expect(result).toEqual([
@@ -1284,6 +1319,7 @@ describe('multirespondent-submission.utils', () => {
         formFields,
         responses,
         includeVerifiedPrefix: false,
+        keepV4AttachmentPrefix: false,
       })
 
       expect(result).toEqual([
@@ -1332,6 +1368,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        keepV4AttachmentPrefix: false,
       })
 
       // Question naming matches getAnswersForChild, used by email/storage
@@ -1385,6 +1422,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        keepV4AttachmentPrefix: false,
       })
 
       expect(result.map((pair) => pair.question)).toEqual([
@@ -1425,6 +1463,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        keepV4AttachmentPrefix: false,
       })
 
       expect(result).toEqual([
@@ -1486,6 +1525,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        keepV4AttachmentPrefix: false,
       })
 
       expect(result).toEqual([
@@ -1535,6 +1575,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        keepV4AttachmentPrefix: false,
       })
 
       expect(result).toEqual([
@@ -1573,6 +1614,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        keepV4AttachmentPrefix: false,
       })
 
       expect(result).toEqual([
@@ -1614,6 +1656,7 @@ describe('multirespondent-submission.utils', () => {
         formFields,
         responses,
         includeSignatureDataPngDataUri: true,
+        keepV4AttachmentPrefix: false,
       })
 
       const expectedSignatureDataPngDataUri =
@@ -1653,6 +1696,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        keepV4AttachmentPrefix: false,
       })
 
       expect(result).toEqual([
@@ -1679,6 +1723,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        keepV4AttachmentPrefix: false,
       })
 
       expect(result).toEqual([
@@ -1937,6 +1982,7 @@ describe('multirespondent-submission.utils', () => {
     const result = getQuestionAnswerPairsForMultipleFields({
       formFields,
       responses,
+      keepV4AttachmentPrefix: false,
     })
 
     expect(result).toEqual([])
@@ -1954,12 +2000,14 @@ describe('multirespondent-submission.utils', () => {
     const undefinedResult = getQuestionAnswerPairsForMultipleFields({
       formFields,
       responses: undefined as unknown as FieldResponsesV3,
+      keepV4AttachmentPrefix: false,
     })
     expect(undefinedResult).toEqual([])
 
     const nullResult = getQuestionAnswerPairsForMultipleFields({
       formFields,
       responses: null as unknown as FieldResponsesV3,
+      keepV4AttachmentPrefix: false,
     })
     expect(nullResult).toEqual([])
   })
@@ -1969,6 +2017,7 @@ describe('multirespondent-submission.utils', () => {
       formId: 'form123',
       responseId: 'abc123',
       timestamp: '1 Jan 2025',
+      keepV4AttachmentPrefix: false,
     }
 
     it('should emit one entry per child attribute for children responses', () => {

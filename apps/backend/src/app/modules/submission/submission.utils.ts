@@ -1081,6 +1081,14 @@ export const buildMrfMetadata = ({
   }
 }
 
+/**
+ * Ops fallback: when on, MRF outputs keep the old `[Attachment] ` label and
+ * admin views drop the `[attachment] ` label. Off by default.
+ */
+// TODO (keep-v4-attachment-prefix): remove once no admin relies on the old label
+export const isKeepV4AttachmentPrefixOn = (growthbook?: GrowthBook): boolean =>
+  growthbook?.isOn(featureFlags.keepV4AttachmentPrefix) ?? false
+
 export const isAdminEmailPdfEnabled = ({
   growthbook,
   formFields,
