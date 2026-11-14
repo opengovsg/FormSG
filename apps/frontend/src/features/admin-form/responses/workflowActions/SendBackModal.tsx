@@ -63,8 +63,7 @@ export const SendBackModal = ({
   const [mode, setMode] = useState<SendBackMode>(
     modal === 'fixStepModal' ? 'fixStep' : 'sendBack',
   )
-  const I18N_PREFIX =
-    `${WORKFLOW_ACTIONS_I18N}.${mode === 'fixStep' ? 'fixStepModal' : 'sendBackModal'}` as const
+  const I18N_PREFIX = `${WORKFLOW_ACTIONS_I18N}.sendBackModal` as const
   const { t } = useTranslation()
   const { submittedSteps, workflow, workflowEvents } = history
   const pendingStepNumber = submittedSteps.length + 1
@@ -148,7 +147,7 @@ export const SendBackModal = ({
           {
             targetStepNumber,
             remarks: remarks.trim() || undefined,
-            clearResponses: mode === 'sendBack' && keepFilled === CLEAR_FIELDS,
+            clearResponses: keepFilled === CLEAR_FIELDS,
             ...(isToStepOne
               ? { stepOneRecipientEmail: trimmedStepOneEmail }
               : {}),
@@ -158,6 +157,7 @@ export const SendBackModal = ({
       }
     >
       <Tabs
+        isFitted
         index={mode === 'sendBack' ? 0 : 1}
         onChange={(index) => setMode(index === 0 ? 'sendBack' : 'fixStep')}
       >
@@ -165,7 +165,7 @@ export const SendBackModal = ({
           <Tab>{t(`${WORKFLOW_ACTIONS_I18N}.requireFullReview`)}</Tab>
           <Tab>{t(`${WORKFLOW_ACTIONS_I18N}.reviewNotNeeded`)}</Tab>
         </TabList>
-        <TabPanels>
+        <TabPanels pt="1rem">
           <TabPanel px={0}>
             <Text textStyle="body-2">
               {t(`${WORKFLOW_ACTIONS_I18N}.sendBackModal.description`)}
@@ -173,7 +173,9 @@ export const SendBackModal = ({
           </TabPanel>
           <TabPanel px={0}>
             <Text textStyle="body-2">
-              {t(`${WORKFLOW_ACTIONS_I18N}.fixStepModal.description`)}
+              {t(`${WORKFLOW_ACTIONS_I18N}.fixStepModal.description`, {
+                currentStep: `${t(`${WORKFLOW_ACTIONS_I18N}.activityLog.stepNumber`, { stepNumber: pendingStepNumber })}${workflow[pendingStepNumber - 1]?.step_name?.trim() ? t(`${WORKFLOW_ACTIONS_I18N}.activityLog.stepNameLabel`, { name: workflow[pendingStepNumber - 1].step_name?.trim() }) : ''}`,
+              })}
             </Text>
           </TabPanel>
         </TabPanels>
@@ -238,33 +240,29 @@ export const SendBackModal = ({
           />
           <FormErrorMessage>{remarksError}</FormErrorMessage>
         </FormControl>
-        {mode === 'sendBack' ? (
-          <FormControl isRequired>
-            <FormLabel>
-              {t(`${WORKFLOW_ACTIONS_I18N}.sendBackModal.keepFilledLabel`)}
-            </FormLabel>
-            <SingleSelect
-              name="sendBackKeepFilled"
-              items={[
-                {
-                  value: KEEP_FILLED,
-                  label: t(
-                    `${WORKFLOW_ACTIONS_I18N}.sendBackModal.keepFilledYes`,
-                  ),
-                },
-                {
-                  value: CLEAR_FIELDS,
-                  label: t(
-                    `${WORKFLOW_ACTIONS_I18N}.sendBackModal.keepFilledNo`,
-                  ),
-                },
-              ]}
-              value={keepFilled}
-              isClearable={false}
-              onChange={setKeepFilled}
-            />
-          </FormControl>
-        ) : null}
+        <FormControl isRequired>
+          <FormLabel>
+            {t(`${WORKFLOW_ACTIONS_I18N}.sendBackModal.keepFilledLabel`)}
+          </FormLabel>
+          <SingleSelect
+            name="sendBackKeepFilled"
+            items={[
+              {
+                value: KEEP_FILLED,
+                label: t(
+                  `${WORKFLOW_ACTIONS_I18N}.sendBackModal.keepFilledYes`,
+                ),
+              },
+              {
+                value: CLEAR_FIELDS,
+                label: t(`${WORKFLOW_ACTIONS_I18N}.sendBackModal.keepFilledNo`),
+              },
+            ]}
+            value={keepFilled}
+            isClearable={false}
+            onChange={setKeepFilled}
+          />
+        </FormControl>
       </Stack>
     </WorkflowActionModal>
   )

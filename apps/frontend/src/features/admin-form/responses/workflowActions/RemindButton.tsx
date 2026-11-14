@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiBell, BiCheck } from 'react-icons/bi'
 import { useQueryClient } from 'react-query'
@@ -20,6 +20,8 @@ export interface RemindButtonProps {
   submissionId: string
   submissionSecretKey?: string
   stepToken?: string
+  enabled?: boolean
+  targetStep?: number
   recipients: string[]
 }
 
@@ -29,21 +31,32 @@ export const useWorkflowReminder = ({
   submissionSecretKey,
   stepToken,
   recipients,
+  enabled = true,
+  targetStep,
 }: RemindButtonProps) => {
   const { t } = useTranslation()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { sendReminderForResponseMutation } = useFormRemindersMutations()
   const [isSent, setIsSent] = useState(false)
   const queryClient = useQueryClient()
+  const generation = useRef(0)
+  useEffect(() => {
+    generation.current += 1
+    setIsSent(false)
+    onClose()
+  }, [enabled, formId, submissionId, stepToken, targetStep, onClose])
 
   const handleConfirm = () => {
-    if (!submissionSecretKey) return
+    if (!submissionSecretKey || !enabled) return
+    const requestGeneration = generation.current
     sendReminderForResponseMutation.mutate(
       { formId, submissionId, submissionSecretKey, stepToken },
       {
         onSuccess: () => {
-          setIsSent(true)
-          onClose()
+          if (requestGeneration === generation.current) {
+            setIsSent(true)
+            onClose()
+          }
           void queryClient.invalidateQueries(
             adminFormResponsesKeys.individual(formId, submissionId),
           )
@@ -58,7 +71,7 @@ export const useWorkflowReminder = ({
     isLoading: sendReminderForResponseMutation.isLoading,
     modal: (
       <WorkflowActionModal
-        isOpen={isOpen}
+        isOpen={enabled && isOpen}
         onClose={onClose}
         title={t(`${I18N_PREFIX}.title`)}
         description={t(`${I18N_PREFIX}.description`)}

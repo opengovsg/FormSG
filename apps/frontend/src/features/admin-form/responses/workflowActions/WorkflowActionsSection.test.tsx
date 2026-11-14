@@ -88,7 +88,7 @@ vi.mock('./SendBackModal', () => ({
         <button
           onClick={() =>
             onConfirm(
-              { targetStepNumber: 2, remarks: 'Fix it', clearResponses: false },
+              { targetStepNumber: 2, remarks: 'Fix it', clearResponses: true },
               'fixStep',
             )
           }
@@ -334,10 +334,12 @@ describe('WorkflowActionsSection', () => {
     ).toBeInTheDocument()
   })
 
-  it('does not mount the Stop modal for view-only collaborators', () => {
+  it('does not open the Stop modal for view-only collaborators', () => {
     mockHasEditAccess = false
     renderSection()
-    expect(screen.queryByTestId('stop-modal')).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'confirm stop' }),
+    ).not.toBeInTheDocument()
   })
 
   it('mounts the Stop modal for collaborators with edit access', () => {
@@ -485,6 +487,7 @@ describe('WorkflowActionsSection', () => {
           expectedStepNumber: 3,
           submissionSecretKey: 'mock-secret-key',
           remarks: 'Fix it',
+          clearResponses: true,
         },
         expect.anything(),
       )

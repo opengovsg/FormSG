@@ -5,7 +5,7 @@ import { Box, Flex, Text } from '@chakra-ui/react'
 
 import { SubmissionMrfMetadata, WorkflowStatus } from 'formsg-shared/types'
 
-import { Tag } from '~components/Tag'
+import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 
 import { getCurrentStepRecipients } from './getCurrentStepRecipients'
 import { WorkflowHistory } from './getStopNotifiedEmails'
@@ -97,7 +97,9 @@ export const WorkflowCurrentState = ({
         )}
         {!terminal && (recipients.length > 0 || hasActions) && (
           <Box
-            bg="secondary.100"
+            bg="transparent"
+            border="1px solid"
+            borderColor="neutral.300"
             borderRadius="8px"
             mt="0.75rem"
             overflow="hidden"
@@ -109,14 +111,9 @@ export const WorkflowCurrentState = ({
                 </Text>
                 <Flex gap="0.5rem" flexWrap="wrap">
                   {recipients.map((email) => (
-                    <Tag
-                      key={email}
-                      maxW="100%"
-                      whiteSpace="normal"
-                      overflowWrap="anywhere"
-                    >
+                    <LogicBadge key={email} overflowWrap="anywhere">
                       {email}
-                    </Tag>
+                    </LogicBadge>
                   ))}
                 </Flex>
               </Box>

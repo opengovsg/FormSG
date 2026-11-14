@@ -1,4 +1,4 @@
-import { ReactNode, useId, useRef } from 'react'
+import { ReactNode, useEffect, useId, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
@@ -112,13 +112,6 @@ export const WorkflowActionsSection = ({
     events,
     stepNumber: pendingStepNumber,
   })
-  const reminder = useWorkflowReminder({
-    formId,
-    submissionId,
-    submissionSecretKey,
-    stepToken,
-    recipients: pendingStepAssignees,
-  })
   const isPending =
     !mrf?.stoppedAt && mrf?.workflowStatus === WorkflowStatus.PENDING
   const isFixing =
@@ -128,6 +121,15 @@ export const WorkflowActionsSection = ({
     isDelightfulDashboard &&
     !isFixing &&
     pendingStepAssignees.length > 0
+  const reminder = useWorkflowReminder({
+    formId,
+    submissionId,
+    submissionSecretKey,
+    stepToken,
+    recipients: pendingStepAssignees,
+    enabled: canRemind,
+    targetStep: pendingStepNumber,
+  })
   const canActOnWorkflow = isPending && isWorkflowActionsOn && hasEditAccess
   const canSendBackToStepOne = form?.authType === FormAuthType.NIL
   const canRewind =
@@ -135,6 +137,22 @@ export const WorkflowActionsSection = ({
     pendingStepNumber >= (canSendBackToStepOne ? 2 : 3) &&
     mrf?.workflowCurrentStepNumber === history.submittedSteps.length
   const canSendBack = isPending && isSendBackOn && canRewind
+
+  const closeStop = stopModal.onClose
+  const closeAddAssignee = addAssigneeModal.onClose
+  const closeSendBack = sendBackModal.onClose
+  useEffect(() => {
+    if (!canActOnWorkflow) closeStop()
+    if (!canActOnWorkflow || isFixing) closeAddAssignee()
+    if (!canSendBack) closeSendBack()
+  }, [
+    canActOnWorkflow,
+    canSendBack,
+    isFixing,
+    closeStop,
+    closeAddAssignee,
+    closeSendBack,
+  ])
 
   const handleAddAssignees = (emails: string[]) => {
     if (!submissionSecretKey) return
@@ -179,9 +197,11 @@ export const WorkflowActionsSection = ({
   const handleFixStep = ({
     targetStepNumber,
     remarks,
+    clearResponses,
     stepOneRecipientEmail,
   }: {
     targetStepNumber: number
+    clearResponses: boolean
     remarks?: string
     stepOneRecipientEmail?: string
   }) => {
@@ -193,6 +213,7 @@ export const WorkflowActionsSection = ({
         expectedStepNumber: pendingStepNumber,
         submissionSecretKey,
         remarks,
+        clearResponses,
         stepOneRecipientEmail,
       },
       { onSuccess: sendBackModal.onClose },
@@ -281,9 +302,9 @@ export const WorkflowActionsSection = ({
         ) : (
           actions
         )}
-        {canRemind ? reminder.modal : null}
+        {reminder.modal}
         <AddAssigneeModal
-          isOpen={addAssigneeModal.isOpen}
+          isOpen={canActOnWorkflow && !isFixing && addAssigneeModal.isOpen}
           onClose={addAssigneeModal.onClose}
           onConfirm={handleAddAssignees}
           isLoading={addAssigneesMutation.isLoading}
@@ -291,7 +312,7 @@ export const WorkflowActionsSection = ({
           stepName={pendingStepLabel}
         />
         <SendBackModal
-          isOpen={sendBackModal.isOpen}
+          isOpen={canSendBack && sendBackModal.isOpen}
           onClose={sendBackModal.onClose}
           onConfirm={(params, mode) =>
             mode === 'fixStep' ? handleFixStep(params) : handleSendBack(params)
@@ -300,14 +321,12 @@ export const WorkflowActionsSection = ({
           history={history}
           canSendBackToStepOne={canSendBackToStepOne}
         />
-        {canActOnWorkflow && (
-          <StopWorkflowModal
-            isOpen={stopModal.isOpen}
-            onClose={stopModal.onClose}
-            onConfirm={handleStop}
-            isLoading={stopMutation.isLoading}
-          />
-        )}
+        <StopWorkflowModal
+          isOpen={canActOnWorkflow && stopModal.isOpen}
+          onClose={stopModal.onClose}
+          onConfirm={handleStop}
+          isLoading={stopMutation.isLoading}
+        />
       </div>
     </WorkflowActionFocusContext.Provider>
   )

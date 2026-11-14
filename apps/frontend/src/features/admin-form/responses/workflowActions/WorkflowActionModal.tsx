@@ -1,4 +1,4 @@
-import { ReactNode, useContext } from 'react'
+import { ReactNode, useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Badge,
@@ -56,6 +56,13 @@ export const WorkflowActionModal = ({
   onConfirm,
 }: WorkflowActionModalProps): JSX.Element => {
   const restoreActionFocus = useContext(WorkflowActionFocusContext)
+  const finalFocusRef = useMemo(
+    () =>
+      restoreActionFocus
+        ? { current: { focus: restoreActionFocus } }
+        : undefined,
+    [restoreActionFocus],
+  )
   const { t } = useTranslation()
   const modalSize = useBreakpointValue({
     base: 'mobile',
@@ -68,7 +75,8 @@ export const WorkflowActionModal = ({
       isOpen={isOpen}
       onClose={onClose}
       size={modalSize}
-      returnFocusOnClose={!restoreActionFocus}
+      returnFocusOnClose
+      finalFocusRef={finalFocusRef}
       onCloseComplete={restoreActionFocus}
     >
       <ModalOverlay />

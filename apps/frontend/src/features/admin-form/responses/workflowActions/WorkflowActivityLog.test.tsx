@@ -400,7 +400,7 @@ describe('WorkflowActivityLog', () => {
       'Step 1 submitted',
       'Step 2 (Team lead) approved',
       'Step 3 submitted',
-      'Sent back (require full review)',
+      'Sent back (redo later steps)',
       'Step 2 (Team lead) approved',
     ])
     const sendBackItem = screen.getAllByRole('listitem')[3]
@@ -432,7 +432,7 @@ describe('grouped activity details', () => {
     expect(items).toHaveLength(1)
     expect(
       within(items[0]).getByRole('heading', { level: 3 }),
-    ).toHaveTextContent('Sent back (review not needed)')
+    ).toHaveTextContent('Sent back (return straight back)')
     expect(
       within(items[0]).getByText(
         'Sent back to Step 2 (Team lead) · Assigned to',

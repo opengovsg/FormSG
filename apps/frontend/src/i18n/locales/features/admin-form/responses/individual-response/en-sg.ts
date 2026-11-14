@@ -17,8 +17,8 @@ export const enSG: ResponsesIndividualResponse = {
     whoIsNotifiedLabel: 'Who will be notified',
     whoIsNotifiedNone: 'No one will be notified.',
     stopButton: 'Void',
-    requireFullReview: 'Require full review',
-    reviewNotNeeded: 'Review not needed',
+    requireFullReview: 'Redo later steps',
+    reviewNotNeeded: 'Return straight back',
     tooltips: {
       remind: 'Remind the current assignees to respond.',
       addAssignee: 'Add someone who can complete this step.',
@@ -51,8 +51,8 @@ export const enSG: ResponsesIndividualResponse = {
       reminderTriggered: 'Reminder requested for {step}{stepName}',
       stopped: 'Response voided',
       notificationRecipients: 'Notification recipients',
-      sentBack: 'Sent back (require full review)',
-      fixStep: 'Sent back (review not needed)',
+      sentBack: 'Sent back (redo later steps)',
+      fixStep: 'Sent back (return straight back)',
       nextStepRecipients: 'Next step: {step}{stepName} · Assigned to',
       sentBackRecipients: 'Sent back to {step}{stepName} · Assigned to',
       sentBackTarget: 'Sent back to {step}{stepName}',
@@ -92,7 +92,7 @@ export const enSG: ResponsesIndividualResponse = {
     fixStepModal: {
       title: 'Fix an earlier step',
       description:
-        'Fix the selected step, then return to the current step. Keep existing approvals.',
+        'After the correction, the response comes back to {currentStep}. Earlier approvals are kept.',
       stepLabel: 'Step to fix',
       recipientsLabel: 'People in {stepName}',
       stepOneEmailLabel: 'Email address of who fills in Step 1',
@@ -107,7 +107,8 @@ export const enSG: ResponsesIndividualResponse = {
     },
     sendBackModal: {
       title: 'Send back to an earlier step',
-      description: 'Complete the selected step and all steps after it again.',
+      description:
+        'The selected step and every step after it are completed again.',
       stepLabel: 'Send back to',
       recipientsLabel: 'People in {stepName}',
       stepOneEmailLabel: 'Email address of who fills in Step 1',
@@ -116,7 +117,7 @@ export const enSG: ResponsesIndividualResponse = {
       remarksLabel: 'Remarks',
       remarksDescription: 'Tell them what they need to fix.',
       remarksTooLong: 'Remarks must be {max} characters or fewer',
-      keepFilledLabel: 'Should keep existing form fields filled?',
+      keepFilledLabel: 'Keep existing form fields filled?',
       keepFilledYes: 'Yes, keep filled',
       keepFilledNo: 'No, clear form fields',
       confirm: 'Send back',

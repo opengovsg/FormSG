@@ -26,6 +26,7 @@ import {
   startFixingStep,
   updateMultiRespondentFormSubmission,
 } from '../multirespondent-submission.service'
+import { createPublicMultirespondentSubmissionDto } from '../multirespondent-submission.utils'
 import * as StepToken from '../step-token'
 
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
@@ -64,7 +65,11 @@ const createSubmission = (overrides: Record<string, unknown> = {}) =>
     ...overrides,
   })
 
-const fixStep = (submissionId: unknown, targetStepNumber: number) =>
+const fixStep = (
+  submissionId: unknown,
+  targetStepNumber: number,
+  clearResponses = false,
+) =>
   startFixingStep({
     formId: String(formId),
     formPublicKey,
@@ -73,6 +78,7 @@ const fixStep = (submissionId: unknown, targetStepNumber: number) =>
     expectedStepNumber: 4,
     remarks: 'Wrong date',
     canFixStepOne: true,
+    clearResponses,
     actor,
   })
 
@@ -84,6 +90,32 @@ describe('fix step', () => {
   afterAll(() => dbHandler.closeDatabase())
 
   describe('startFixingStep', () => {
+    it('clears only target-step prefills and preserves stored answers, attachments, and approvals', async () => {
+      const fieldIds = [1, 2, 3, 4].map(() => String(new ObjectId()))
+      const submission = await createSubmission({
+        workflow: WORKFLOW.map((step, index) => ({
+          ...step,
+          edit: [fieldIds[index]],
+        })),
+        attachmentMetadata: { [fieldIds[1]]: 'attachment-key' },
+      })
+      const result = await fixStep(submission._id, 2, true)
+      expect(result.isOk()).toBe(true)
+      const stored = await MultirespondentSubmission.findById(submission._id)
+      expect(stored?.correctionClearFieldIds).toEqual([fieldIds[1]])
+      expect(
+        createPublicMultirespondentSubmissionDto(stored!, {})
+          .correctionClearFieldIds,
+      ).toEqual([fieldIds[1]])
+      expect(stored?.encryptedContent).toBe('content')
+      expect(stored?.attachmentMetadata?.get(fieldIds[1])).toBe(
+        'attachment-key',
+      )
+      expect(JSON.stringify(stored?.submittedSteps)).toEqual(
+        JSON.stringify(submission.submittedSteps),
+      )
+    })
+
     it('reopens the step without undoing the steps after it', async () => {
       const submission = await createSubmission()
 
@@ -164,7 +196,7 @@ describe('fix step', () => {
 
     it('saves the answers and returns to the pending step', async () => {
       const submission = await createSubmission()
-      await fixStep(submission._id, 2)
+      await fixStep(submission._id, 2, true)
       const fixing = await MultirespondentSubmission.findById(submission._id)
 
       const result = await updateMultiRespondentFormSubmission({
@@ -182,6 +214,7 @@ describe('fix step', () => {
       const stored = await MultirespondentSubmission.findById(submission._id)
       expect(stored?.encryptedContent).toBe('fixed-content')
       expect(stored?.workflowStep).toBe(2)
+      expect(stored?.correctionClearFieldIds).toBeUndefined()
       expect(stored?.submittedSteps).toHaveLength(3)
       expect(isFixingStep(stored!)).toBe(false)
       expect(StepToken.verify('return-token', stored!.stepTokenHash!)).toBe(

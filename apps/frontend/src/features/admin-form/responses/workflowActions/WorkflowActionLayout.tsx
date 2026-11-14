@@ -36,6 +36,7 @@ export const WorkflowActionLayout = ({
     if (actions.length === 0) setFocusedLocation(null)
   }, [actions.length])
   const root = getResponseScrollContainer(topRow)
+  const portalHost = root?.closest<HTMLElement>('[role="dialog"]') ?? null
   const placement = useWorkflowActionPlacement({
     root,
     topRow,
@@ -45,9 +46,12 @@ export const WorkflowActionLayout = ({
   useEffect(() => {
     const update = () => {
       const rect = topRow?.getBoundingClientRect()
+      const hostRect = portalHost?.getBoundingClientRect()
       setBounds({
-        top: Math.max(root?.getBoundingClientRect().top ?? 0, 0),
-        left: rect?.left ?? 0,
+        top:
+          Math.max(root?.getBoundingClientRect().top ?? 0, 0) -
+          (hostRect?.top ?? 0),
+        left: (rect?.left ?? 0) - (hostRect?.left ?? 0),
         width: rect?.width ?? 0,
       })
     }
@@ -58,7 +62,7 @@ export const WorkflowActionLayout = ({
       window.removeEventListener('resize', update)
       window.removeEventListener('scroll', update, true)
     }
-  }, [topRow, root])
+  }, [topRow, root, portalHost])
   const focusProps = (location: ActionLocation) => ({
     onFocusCapture: () => setFocusedLocation(location),
     onBlurCapture: (event: React.FocusEvent<HTMLDivElement>) => {
@@ -91,13 +95,15 @@ export const WorkflowActionLayout = ({
       {actions.length > 0 &&
         placement.showStickyActions &&
         bounds.width > 0 && (
-          <Portal>
+          <Portal
+            containerRef={portalHost ? { current: portalHost } : undefined}
+          >
             <Box
-              position="fixed"
+              position={portalHost ? 'absolute' : 'fixed'}
               top={`${bounds.top}px`}
               left={`${bounds.left}px`}
               width={`${bounds.width}px`}
-              zIndex={1401}
+              zIndex={portalHost ? 1 : 'sticky'}
               bg="primary.100"
               px="1.5rem"
               py="1rem"

@@ -99,6 +99,17 @@ afterEach(() => {
 })
 
 describe('WorkflowActionLayout scrolling integration', () => {
+  it('keeps sticky controls inside the drawer focus and stacking boundary', () => {
+    topBounds = rect(-100, -50)
+    const drawer = document.createElement('section')
+    drawer.setAttribute('role', 'dialog')
+    drawer.appendChild(scrollRoot)
+    document.body.appendChild(drawer)
+    render(<Fixture />)
+    expect(drawer.contains(sticky())).toBe(true)
+    drawer.remove()
+  })
+
   it('moves from top actions to sticky to current actions with one shared handler', () => {
     render(<Fixture />)
     expect(sticky()).toBeNull()

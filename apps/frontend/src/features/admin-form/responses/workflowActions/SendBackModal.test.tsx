@@ -112,11 +112,19 @@ describe('SendBackModal', () => {
     )
     expect(screen.getByRole('textbox')).toHaveValue('Fix dates')
     expect(
-      screen.queryByRole('combobox', { name: 'sendBackKeepFilled' }),
-    ).not.toBeInTheDocument()
+      screen.getByRole('combobox', { name: 'sendBackKeepFilled' }),
+    ).toBeInTheDocument()
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'sendBackKeepFilled' }),
+      'clear',
+    )
     await userEvent.click(screen.getByRole('button', { name: 'confirm' }))
     expect(onConfirm).toHaveBeenCalledWith(
-      expect.objectContaining({ targetStepNumber: 2, remarks: 'Fix dates' }),
+      expect.objectContaining({
+        targetStepNumber: 2,
+        remarks: 'Fix dates',
+        clearResponses: true,
+      }),
       'fixStep',
     )
   })

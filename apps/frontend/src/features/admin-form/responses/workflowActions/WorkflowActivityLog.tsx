@@ -23,7 +23,7 @@ import {
 
 import type { ResponsesIndividualResponse } from '~/i18n/locales/features/admin-form/responses/individual-response'
 
-import { Tag } from '~components/Tag'
+import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 
 import { WorkflowHistory } from './getStopNotifiedEmails'
 import { WORKFLOW_ACTIONS_I18N } from './i18n'
@@ -67,14 +67,9 @@ const isAdminWorkflowEvent = (
 const EmailTags = ({ emails }: { emails: string[] }) => (
   <Flex gap="0.5rem" flexWrap="wrap" minW={0} maxW="100%">
     {emails.map((email, index) => (
-      <Tag
-        key={`${email}-${index}`}
-        maxW="100%"
-        overflowWrap="anywhere"
-        whiteSpace="normal"
-      >
+      <LogicBadge key={`${email}-${index}`} overflowWrap="anywhere">
         {email}
-      </Tag>
+      </LogicBadge>
     ))}
   </Flex>
 )
@@ -281,7 +276,7 @@ export const WorkflowActivityLog = ({
                   left="15px"
                   top="1rem"
                   bottom="-1rem"
-                  w="2px"
+                  w="1px"
                   bg="neutral.300"
                   aria-hidden
                 />
@@ -342,7 +337,9 @@ export const WorkflowActivityLog = ({
                 {details.map(({ heading, emails, body }, detailIndex) => (
                   <Box
                     key={detailIndex}
-                    bg="secondary.100"
+                    bg="transparent"
+                    border="1px solid"
+                    borderColor="neutral.300"
                     p="1rem"
                     borderRadius="8px"
                   >

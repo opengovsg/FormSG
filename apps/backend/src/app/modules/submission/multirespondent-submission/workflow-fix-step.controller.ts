@@ -38,6 +38,7 @@ const validateFixStepBody = celebrate({
         otherwise: Joi.forbidden(),
       }),
     submissionSecretKey: Joi.string().required(),
+    clearResponses: Joi.boolean().default(false),
     remarks: Joi.string()
       .trim()
       .allow('')
@@ -53,6 +54,7 @@ const fixStepOfPendingMrfSubmission: ControllerHandler<
     targetStepNumber: number
     expectedStepNumber: number
     submissionSecretKey: string
+    clearResponses: boolean
     remarks?: string
     stepOneRecipientEmail?: string
   }
@@ -63,6 +65,7 @@ const fixStepOfPendingMrfSubmission: ControllerHandler<
     expectedStepNumber,
     submissionSecretKey,
     remarks,
+    clearResponses,
     stepOneRecipientEmail,
   } = req.body
   const authedUserId = (req.session as AuthedSessionData).user._id
@@ -89,6 +92,7 @@ const fixStepOfPendingMrfSubmission: ControllerHandler<
         targetStepNumber,
         expectedStepNumber,
         remarks: remarks || undefined,
+        clearResponses,
         stepOneRecipientEmail,
         canFixStepOne: form.authType === FormAuthType.NIL,
         actor: user,
