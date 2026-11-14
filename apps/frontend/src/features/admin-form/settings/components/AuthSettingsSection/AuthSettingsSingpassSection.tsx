@@ -1,6 +1,10 @@
 import { Divider } from '@chakra-ui/react'
 
-import { FormResponseMode, FormSettings } from 'formsg-shared/types/form'
+import {
+  FormAuthType,
+  FormResponseMode,
+  FormSettings,
+} from 'formsg-shared/types/form'
 
 import { FormSingleSubmissionToggle } from './FormSingleSubmissionToggle'
 import { FormWhitelistAttachmentField } from './FormWhitelistAttachmentField'
@@ -35,27 +39,31 @@ export const AuthSettingsSingpassSection = ({
         settings={settings}
         isDisabled={isSinglepassAuthOptionsDisabled}
       />
-      <SubmitterIdCollectionSection
-        settings={settings}
-        isFormPublic={isFormPublic}
-        hasIdentityFields={hasIdentityFields}
-        nextQuestionNumber={nextQuestionNumber}
-        divider={<Divider my="2.5rem" />}
-      />
-      <Divider my="2.5rem" />
-      <FormSingleSubmissionToggle
-        settings={settings}
-        isDisabled={isSingpassSettingsDisabled}
-      />
-      {isEncryptOrMultirespondentMode ? (
+      {settings.authType !== FormAuthType.NIL && (
         <>
+          <SubmitterIdCollectionSection
+            settings={settings}
+            isFormPublic={isFormPublic}
+            hasIdentityFields={hasIdentityFields}
+            nextQuestionNumber={nextQuestionNumber}
+            divider={<Divider my="2.5rem" />}
+          />
           <Divider my="2.5rem" />
-          <FormWhitelistAttachmentField
+          <FormSingleSubmissionToggle
             settings={settings}
             isDisabled={isSingpassSettingsDisabled}
           />
+          {isEncryptOrMultirespondentMode ? (
+            <>
+              <Divider my="2.5rem" />
+              <FormWhitelistAttachmentField
+                settings={settings}
+                isDisabled={isSingpassSettingsDisabled}
+              />
+            </>
+          ) : null}
         </>
-      ) : null}
+      )}
     </>
   )
 }

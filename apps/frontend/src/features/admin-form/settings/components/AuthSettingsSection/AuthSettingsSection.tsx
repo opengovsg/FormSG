@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { Box } from '@chakra-ui/react'
 
 import {
-  FormAuthType,
   FormResponseMode,
   FormSettings,
   FormStatus,
@@ -19,7 +18,6 @@ import { isMyInfo } from '~features/myinfo/utils'
 import { AuthSettingsDescriptionText } from './AuthSettingsDescriptionText'
 import { AuthSettingsDisabledExplanationText } from './AuthSettingsDisabledExplanationText'
 import { AuthSettingsSingpassSection } from './AuthSettingsSingpassSection'
-import { FormSingpassAuthToggle } from './FormSingpassAuthToggle'
 import { StepLoginAccordion } from './StepLoginAccordion'
 
 interface AuthSettingsSectionProps {
@@ -61,21 +59,13 @@ export const AuthSettingsSection = ({
 
   // Step 1's login and restrictions, saved to the form-level settings.
   const stepOneSettings = (
-    <>
-      <FormSingpassAuthToggle
-        settings={settings}
-        isDisabled={isFormPublic || hasLoginFields}
-      />
-      {settings.authType !== FormAuthType.NIL ? (
-        <AuthSettingsSingpassSection
-          settings={settings}
-          isFormPublic={isFormPublic}
-          nextQuestionNumber={getNextQuestionNumber(form?.form_fields ?? [])}
-          hasLoginFields={hasLoginFields}
-          hasIdentityFields={containsLoginIdentityFields}
-        />
-      ) : null}
-    </>
+    <AuthSettingsSingpassSection
+      settings={settings}
+      isFormPublic={isFormPublic}
+      nextQuestionNumber={getNextQuestionNumber(form?.form_fields ?? [])}
+      hasLoginFields={hasLoginFields}
+      hasIdentityFields={containsLoginIdentityFields}
+    />
   )
 
   return (
