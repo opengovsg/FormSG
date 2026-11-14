@@ -47,6 +47,7 @@ import { useIsStepLoginShown } from '../../../hooks/useIsStepLoginShown'
 import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
 import { EditStepInputs } from '../../../types'
 import { getGuidedSecondaryAction } from '../../../utils/guidedStepPolicy'
+import { isWorkflowEmailValidationError } from '../../../utils/isWorkflowEmailValidationError'
 import {
   normaliseFirstStepLogin,
   normaliseStepAuth,
@@ -294,6 +295,20 @@ export const EditStepBlock = ({
         saveSucceeded.current = true
       } catch (error) {
         cancelPendingSwitch()
+        if (!didSaveStep && isWorkflowEmailValidationError(error)) {
+          formMethods.setError(
+            'emails',
+            {
+              type: 'server',
+              message: t(
+                'features.adminForm.sidebar.workflow.staticRespondent.invalidEmails',
+              ),
+            },
+            { shouldFocus: true },
+          )
+          setSaveError('')
+          return
+        }
         setSaveError(
           didSaveStep
             ? t(`${SAVE_ERRORS_KEY}.restrictionsFailed`)
