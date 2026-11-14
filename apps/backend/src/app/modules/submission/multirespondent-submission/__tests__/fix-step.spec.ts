@@ -2,6 +2,7 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import {
   BasicField,
+  FormResponseMode,
   LogicConditionState,
   LogicType,
   SubmissionType,
@@ -19,6 +20,7 @@ import {
   MrfFixChangesWorkflowPathError,
   MrfWorkflowNotPendingError,
 } from '../../submission.errors'
+import { getEncryptedSubmissionData } from '../../submission.service'
 import { checkFixKeepsWorkflowPath, isFixingStep } from '../fix-step'
 import {
   addAssigneesToPendingStep,
@@ -105,6 +107,19 @@ describe('fix step', () => {
       expect(stored?.correctionClearFieldIds).toEqual([fieldIds[1]])
       expect(
         createPublicMultirespondentSubmissionDto(stored!, {})
+          .correctionClearFieldIds,
+      ).toEqual([fieldIds[1]])
+      const publicData = (
+        await getEncryptedSubmissionData(
+          FormResponseMode.Multirespondent,
+          String(formId),
+          String(submission._id),
+        )
+      )._unsafeUnwrap()
+      if (publicData.submissionType !== SubmissionType.Multirespondent)
+        throw new Error('Expected multirespondent fixture')
+      expect(
+        createPublicMultirespondentSubmissionDto(publicData, {})
           .correctionClearFieldIds,
       ).toEqual([fieldIds[1]])
       expect(stored?.encryptedContent).toBe('content')
