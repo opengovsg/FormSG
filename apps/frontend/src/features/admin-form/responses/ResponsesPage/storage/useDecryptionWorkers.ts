@@ -83,6 +83,9 @@ const useDecryptionWorkers = ({
   const { data: adminForm } = useAdminForm()
   const { user } = useUser()
   const isWorkflowActionsOn = useFeatureIsOn(featureFlags.workflowActions)
+  const keepV4AttachmentPrefix = useFeatureIsOn(
+    featureFlags.keepV4AttachmentPrefix,
+  )
 
   useEffect(() => {
     return () => killWorkers(workers)
@@ -173,6 +176,7 @@ const useDecryptionWorkers = ({
             expectedResponsesCount,
             NUM_OF_METADATA_ROWS,
             csvView,
+            { keepV4AttachmentPrefix },
           )
         : undefined
 
@@ -360,6 +364,7 @@ const useDecryptionWorkers = ({
                       submissionTime,
                       responses: decryptedResponses,
                     },
+                    keepV4AttachmentPrefix,
                   })
                   pdfZip.file(pdfTitle, pdfBlob)
                 }
@@ -530,6 +535,7 @@ const useDecryptionWorkers = ({
     },
     [
       adminForm,
+      keepV4AttachmentPrefix,
       isWorkflowActionsOn,
       onDecryptionProgress,
       onPdfGenerationProgress,

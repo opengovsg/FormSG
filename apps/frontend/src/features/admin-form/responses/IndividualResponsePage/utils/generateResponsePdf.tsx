@@ -16,17 +16,24 @@ const A4_PDF_OPTIONS = {
   },
 } as const
 
-const renderPrintableResponse = (
+type GenerateResponsePdfParams = {
   form: {
     title: string
     _id: string
-  },
+  }
   submission: {
     refNo: string
     submissionTime: string
     responses: AugmentedDecryptedResponse[]
-  },
-) => {
+  }
+  keepV4AttachmentPrefix: boolean
+}
+
+const renderPrintableResponse = ({
+  form,
+  submission,
+  keepV4AttachmentPrefix,
+}: GenerateResponsePdfParams) => {
   const tempDiv = document.createElement('div')
   tempDiv.style.width = A4_WIDTH
   const root = createRoot(tempDiv)
@@ -40,6 +47,7 @@ const renderPrintableResponse = (
         decryptedResponses={submission.responses}
         responseId={submission.refNo}
         submissionTime={submission.submissionTime}
+        keepV4AttachmentPrefix={keepV4AttachmentPrefix}
       />,
     )
   })
@@ -58,25 +66,14 @@ const getPdfTitle = ({ submissionId }: { submissionId: string }) => {
   return `RefNo ${submissionId}.pdf`
 }
 
-export const generateResponsePdfBlob = async ({
-  form,
-  submission,
-}: {
-  form: {
-    title: string
-    _id: string
-  }
-  submission: {
-    refNo: string
-    submissionTime: string
-    responses: AugmentedDecryptedResponse[]
-  }
-}) => {
+export const generateResponsePdfBlob = async (
+  params: GenerateResponsePdfParams,
+) => {
   const pdfTitle = getPdfTitle({
-    submissionId: submission.refNo,
+    submissionId: params.submission.refNo,
   })
 
-  const { divToRender, cleanup } = renderPrintableResponse(form, submission)
+  const { divToRender, cleanup } = renderPrintableResponse(params)
 
   const pdfBlob = await html2pdf()
     .set(A4_PDF_OPTIONS)
@@ -90,25 +87,14 @@ export const generateResponsePdfBlob = async ({
   }
 }
 
-export const downloadResponsePdf = async ({
-  form,
-  submission,
-}: {
-  form: {
-    title: string
-    _id: string
-  }
-  submission: {
-    refNo: string
-    submissionTime: string
-    responses: AugmentedDecryptedResponse[]
-  }
-}) => {
+export const downloadResponsePdf = async (
+  params: GenerateResponsePdfParams,
+) => {
   const pdfTitle = getPdfTitle({
-    submissionId: submission.refNo,
+    submissionId: params.submission.refNo,
   })
 
-  const { divToRender, cleanup } = renderPrintableResponse(form, submission)
+  const { divToRender, cleanup } = renderPrintableResponse(params)
 
   await html2pdf()
     .set(A4_PDF_OPTIONS)

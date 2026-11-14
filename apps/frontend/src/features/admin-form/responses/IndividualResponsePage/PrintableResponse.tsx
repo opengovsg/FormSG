@@ -6,6 +6,7 @@ import { handleAddressResponseDisplay } from 'formsg-shared/utils/address'
 
 import { convertToSignatureSvgString } from '~utils/convertSignatureOutput'
 
+import { getAttachmentQuestionLabel } from '../ResponsesPage/storage/utils/attachmentQuestionLabel'
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 
 const SIGNATURE_PDF_FIXED_WIDTH = 300 // Same as the backend template's signature width
@@ -71,10 +72,23 @@ const StandardPrintableRow = ({
 
 const PrintableDecryptedRow = ({
   row,
+  keepV4AttachmentPrefix,
 }: {
   row: AugmentedDecryptedResponse
+  keepV4AttachmentPrefix: boolean
 }) => {
   switch (row.fieldType as FieldType) {
+    case BasicField.Attachment:
+      return (
+        <StandardPrintableRow
+          question={getAttachmentQuestionLabel({
+            question: row.question,
+            fieldType: row.fieldType,
+            keepV4AttachmentPrefix,
+          })}
+          answer={row.answer ?? ''}
+        />
+      )
     case BasicField.Section:
       return (
         <TableRow>
@@ -158,10 +172,12 @@ const PrintableResponseRows = ({
   decryptedResponses,
   responseId,
   submissionTime,
+  keepV4AttachmentPrefix,
 }: {
   decryptedResponses: AugmentedDecryptedResponse[]
   responseId: string
   submissionTime: string
+  keepV4AttachmentPrefix: boolean
 }) => {
   return (
     <table
@@ -178,7 +194,11 @@ const PrintableResponseRows = ({
           />
         ))}
         {decryptedResponses.map((r, idx) => (
-          <PrintableDecryptedRow row={r} key={idx} />
+          <PrintableDecryptedRow
+            row={r}
+            key={idx}
+            keepV4AttachmentPrefix={keepV4AttachmentPrefix}
+          />
         ))}
       </tbody>
     </table>
@@ -194,12 +214,14 @@ export const PrintableResponse = ({
   decryptedResponses,
   responseId,
   submissionTime,
+  keepV4AttachmentPrefix,
 }: {
   formTitle: string
   formId: string
   decryptedResponses: AugmentedDecryptedResponse[]
   responseId: string
   submissionTime: string
+  keepV4AttachmentPrefix: boolean
 }) => {
   return (
     <Box py="16px" fontFamily="sans-serif" data-dd-privacy="mask">
@@ -229,6 +251,7 @@ export const PrintableResponse = ({
           decryptedResponses={decryptedResponses}
           responseId={responseId}
           submissionTime={submissionTime}
+          keepV4AttachmentPrefix={keepV4AttachmentPrefix}
         />
       </Box>
     </Box>

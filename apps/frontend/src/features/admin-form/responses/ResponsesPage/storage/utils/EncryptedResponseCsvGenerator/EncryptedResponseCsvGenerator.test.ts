@@ -1175,6 +1175,64 @@ describe('EncryptedResponseCsvGenerator', () => {
           expectedSubmissionRow,
         ])
       })
+
+      it('should label attachment headers [attachment] by default', () => {
+        // Arrange
+        generator = new EncryptedResponseCsvGenerator(
+          mockExpectedNumberOfRecords,
+          mockNumOfMetaDataRows,
+        )
+        const mockRecord = {
+          record: [generateRecord(1, 'a.pdf', 'attachment')],
+          created: mockCreatedEarly,
+          submissionId: 'mockSubmissionId',
+        }
+        generator.addRecord(mockRecord)
+
+        // Act
+        generator.process()
+
+        // Assert
+        expect(generator.records).toEqual([
+          UTF8_BYTE_ORDER_MARK,
+          stringify(['Response ID', 'Timestamp', '[attachment] mockQuestion1']),
+          stringify([
+            mockRecord.submissionId,
+            getFormattedDate(mockRecord.created),
+            'a.pdf',
+          ]),
+        ])
+      })
+
+      it('should leave attachment headers unlabelled when keep-v4-attachment-prefix is on', () => {
+        // Arrange
+        generator = new EncryptedResponseCsvGenerator(
+          mockExpectedNumberOfRecords,
+          mockNumOfMetaDataRows,
+          {},
+          { keepV4AttachmentPrefix: true },
+        )
+        const mockRecord = {
+          record: [generateRecord(1, 'a.pdf', 'attachment')],
+          created: mockCreatedEarly,
+          submissionId: 'mockSubmissionId',
+        }
+        generator.addRecord(mockRecord)
+
+        // Act
+        generator.process()
+
+        // Assert
+        expect(generator.records).toEqual([
+          UTF8_BYTE_ORDER_MARK,
+          stringify(['Response ID', 'Timestamp', 'mockQuestion1']),
+          stringify([
+            mockRecord.submissionId,
+            getFormattedDate(mockRecord.created),
+            'a.pdf',
+          ]),
+        ])
+      })
     })
   })
 })
