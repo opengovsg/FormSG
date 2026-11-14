@@ -77,7 +77,7 @@ const titles = () =>
   screen.getAllByRole('heading', { level: 3 }).map((el) => el.textContent)
 
 describe('WorkflowActivityLog', () => {
-  it('keeps action and sending entries adjacent, oldest first, including timestamp ties', () => {
+  it('groups each action and its recipients, oldest first, including timestamp ties', () => {
     render(
       <WorkflowActivityLog
         history={{
@@ -100,13 +100,22 @@ describe('WorkflowActivityLog', () => {
     )
     expect(titles()).toEqual([
       'Step 1 submitted',
-      'Step 2 · Team lead sent to lead@agency.gov.sg',
-      'new@agency.gov.sg and other@agency.gov.sg added to Step 2 · Team lead by admin@agency.gov.sg',
-      'Reminder triggered for Step 2 · Team lead by admin@agency.gov.sg',
-      'Reminder for Step 2 · Team lead sent to lead@agency.gov.sg and new@agency.gov.sg',
-      'Workflow stopped by admin@agency.gov.sg',
+      'Assignee added to Step 2 (Team lead)',
+      'Reminder requested for Step 2 (Team lead)',
+      'Response voided',
     ])
     const items = screen.getAllByRole('listitem')
+    expect(items).toHaveLength(4)
+    expect(within(items[0]).getByText('lead@agency.gov.sg')).toBeInTheDocument()
+    expect(within(items[0]).queryByText('(Form admin)')).not.toBeInTheDocument()
+    expect(
+      within(items[2]).getByText('Reminder recipients'),
+    ).toBeInTheDocument()
+    expect(within(items[2]).getByText('new@agency.gov.sg')).toBeInTheDocument()
+    expect(within(items[2]).getByText('(Form admin)')).toBeInTheDocument()
+    expect(
+      within(items[2]).getByText('admin@agency.gov.sg'),
+    ).toBeInTheDocument()
     expect(
       within(items[0]).getByText('Thu, 8 Oct 2026, 09:00:00 AM'),
     ).toBeInTheDocument()
@@ -114,10 +123,10 @@ describe('WorkflowActivityLog', () => {
       within(items[1]).getByText('Thu, 8 Oct 2026, 09:00:00 AM'),
     ).toBeInTheDocument()
     expect(
-      within(items[5]).getByText('Notification recipients'),
+      within(items[3]).getByText('Notification recipients'),
     ).toBeInTheDocument()
     expect(
-      within(items[5]).getByText('notify@agency.gov.sg'),
+      within(items[3]).getByText('notify@agency.gov.sg'),
     ).toBeInTheDocument()
   })
   it('names approval decisions without inventing actors or sending after rejection', () => {
@@ -139,8 +148,7 @@ describe('WorkflowActivityLog', () => {
     )
     expect(titles()).toEqual([
       'Step 1 submitted',
-      'Step 2 · Team lead sent to lead@agency.gov.sg',
-      'Step 2 · Team lead rejected',
+      'Step 2 (Team lead) rejected',
     ])
     expect(screen.queryByText(/unused@/)).not.toBeInTheDocument()
   })
@@ -160,10 +168,7 @@ describe('WorkflowActivityLog', () => {
         }}
       />,
     )
-    expect(titles()).toEqual([
-      'Step 1 · Applicant approved',
-      'Step 2 · Team lead sent to lead@agency.gov.sg',
-    ])
+    expect(titles()).toEqual(['Step 1 (Applicant) approved'])
   })
   it('does not invent recipients, notification details, actors or a workflow-completed event', () => {
     render(
@@ -187,9 +192,9 @@ describe('WorkflowActivityLog', () => {
     )
     expect(titles()).toEqual([
       'Step 1 submitted',
-      'Step 2 · Team lead submitted',
+      'Step 2 (Team lead) submitted',
       'Step 3 submitted',
-      'Workflow stopped',
+      'Response voided',
     ])
     expect(
       screen.queryByText('Notification recipients'),
@@ -205,9 +210,7 @@ describe('WorkflowActivityLog', () => {
         }}
       />,
     )
-    expect(titles()).toEqual([
-      'Reminder triggered for Step 2 · Team lead by admin@agency.gov.sg',
-    ])
+    expect(titles()).toEqual(['Reminder requested for Step 2 (Team lead)'])
   })
   it('has no invented submission for empty history', () => {
     render(<WorkflowActivityLog />)
@@ -235,9 +238,7 @@ describe('WorkflowActivityLog', () => {
       )
       expect(titles()).toEqual([
         'Step 1 submitted',
-        'Step 2 · Team lead sent to lead@agency.gov.sg',
-        'Step 2 · Team lead approved',
-        'Step 3 sent to hr@agency.gov.sg',
+        'Step 2 (Team lead) approved',
       ])
     })
 
@@ -266,11 +267,8 @@ describe('WorkflowActivityLog', () => {
       )
       expect(titles()).toEqual([
         'Step 1 submitted',
-        'Step 2 · Team lead sent to lead@agency.gov.sg',
-        'Reminder triggered for Step 2 · Team lead by admin@agency.gov.sg',
-        'Reminder for Step 2 · Team lead sent to lead@agency.gov.sg',
-        'Step 2 · Team lead approved',
-        'Step 3 sent to hr@agency.gov.sg',
+        'Reminder requested for Step 2 (Team lead)',
+        'Step 2 (Team lead) approved',
       ])
     })
 
@@ -293,9 +291,7 @@ describe('WorkflowActivityLog', () => {
       )
       expect(titles()).toEqual([
         'Step 1 submitted',
-        'Step 2 · Team lead sent to lead@agency.gov.sg',
-        'Step 2 · Team lead approved',
-        'Step 3 sent to hr@agency.gov.sg',
+        'Step 2 (Team lead) approved',
       ])
     })
 
@@ -315,8 +311,7 @@ describe('WorkflowActivityLog', () => {
       )
       expect(titles()).toEqual([
         'Step 1 submitted',
-        'Step 2 · Team lead sent to lead@agency.gov.sg',
-        'new@agency.gov.sg added to Step 2 · Team lead by admin@agency.gov.sg',
+        'Assignee added to Step 2 (Team lead)',
       ])
     })
 
@@ -340,8 +335,7 @@ describe('WorkflowActivityLog', () => {
       )
       expect(titles()).toEqual([
         'Step 1 submitted',
-        'Step 2 · Team lead sent to lead@agency.gov.sg',
-        'Step 2 · Team lead rejected',
+        'Step 2 (Team lead) rejected',
       ])
     })
   })
@@ -360,10 +354,7 @@ describe('WorkflowActivityLog', () => {
         }}
       />,
     )
-    expect(titles()).toEqual([
-      'Step 1 submitted',
-      'Step 2 · Team lead sent to lead@agency.gov.sg',
-    ])
+    expect(titles()).toEqual(['Step 1 submitted'])
   })
 
   it('lists a send back between the undone steps and their resubmission', () => {
@@ -407,19 +398,101 @@ describe('WorkflowActivityLog', () => {
     )
     expect(titles()).toEqual([
       'Step 1 submitted',
-      'Step 2 · Team lead sent to lead@agency.gov.sg',
-      'Step 2 · Team lead approved',
-      'Step 3 sent to hr@agency.gov.sg',
+      'Step 2 (Team lead) approved',
       'Step 3 submitted',
-      'Sent back from Step 4 to Step 2 · Team lead by admin@agency.gov.sg',
-      'Step 2 · Team lead sent to lead@agency.gov.sg',
-      'Step 2 · Team lead approved',
-      'Step 3 sent to hr@agency.gov.sg',
+      'Sent back (redo later steps)',
+      'Step 2 (Team lead) approved',
     ])
-    const sendBackItem = screen.getAllByRole('listitem')[5]
+    const sendBackItem = screen.getAllByRole('listitem')[3]
     expect(within(sendBackItem).getByText('Remarks')).toBeInTheDocument()
     expect(
       within(sendBackItem).getByText('Fix the <b>dates</b>'),
     ).toBeInTheDocument()
+  })
+})
+
+describe('grouped activity details', () => {
+  it('shows fix recipients and remarks in the same entry without explanations', () => {
+    render(
+      <WorkflowActivityLog
+        history={{
+          ...history,
+          submittedSteps: [],
+          workflowEvents: [
+            {
+              ...event(WorkflowEventType.FixStep, at, ['lead@agency.gov.sg']),
+              fromStepNumber: 4,
+              remarks: 'Please check\nthe amount.',
+            },
+          ],
+        }}
+      />,
+    )
+    const items = screen.getAllByRole('listitem')
+    expect(items).toHaveLength(1)
+    expect(
+      within(items[0]).getByRole('heading', { level: 3 }),
+    ).toHaveTextContent('Sent back (return straight back)')
+    expect(
+      within(items[0]).getByText(
+        'Sent back to Step 2 (Team lead) · Assigned to',
+      ),
+    ).toBeInTheDocument()
+    expect(within(items[0]).getByText('lead@agency.gov.sg')).toBeInTheDocument()
+    expect(within(items[0]).getByText('Remarks')).toBeInTheDocument()
+    expect(within(items[0]).getByText(/Please check/)).toHaveTextContent(
+      'Please check the amount.',
+    )
+    expect(screen.queryByText(/Returns to|Later steps/)).not.toBeInTheDocument()
+  })
+  it('keeps distinct repeated submissions with identical timestamps', () => {
+    render(
+      <WorkflowActivityLog
+        history={{
+          ...history,
+          submittedSteps: [],
+          workflowEvents: [
+            stepSubmitted(1, at, ['one@agency.gov.sg']),
+            stepSubmitted(1, at, ['two@agency.gov.sg']),
+          ],
+        }}
+      />,
+    )
+    const items = screen.getAllByRole('listitem')
+    expect(items).toHaveLength(2)
+    expect(within(items[0]).getByText('one@agency.gov.sg')).toBeInTheDocument()
+    expect(within(items[1]).getByText('two@agency.gov.sg')).toBeInTheDocument()
+  })
+  it('renders the current state after historical entries', () => {
+    render(
+      <WorkflowActivityLog
+        history={history}
+        currentState={<li>Current step: Step 2</li>}
+      />,
+    )
+    expect(screen.getAllByRole('listitem').at(-1)).toHaveTextContent(
+      'Current step: Step 2',
+    )
+  })
+  it('omits unavailable metadata, separators, and empty recipient boxes', () => {
+    render(
+      <WorkflowActivityLog
+        history={{
+          ...history,
+          submittedSteps: [],
+          workflowEvents: [
+            {
+              ...event(WorkflowEventType.ReminderSent, at, []),
+              actorEmail: '',
+            },
+          ],
+        }}
+      />,
+    )
+    expect(screen.getAllByRole('listitem')).toHaveLength(1)
+    expect(screen.queryByText('(Form admin)')).not.toBeInTheDocument()
+    expect(screen.queryByText('·')).not.toBeInTheDocument()
+    expect(screen.queryByText('Reminder recipients')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Singpass|Corppass/)).not.toBeInTheDocument()
   })
 })

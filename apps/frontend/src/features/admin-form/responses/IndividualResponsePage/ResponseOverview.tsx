@@ -7,16 +7,19 @@ import { getResponseScrollContainer } from './getResponseScrollContainer'
 export const ResponseOverview = ({
   children,
   actions,
+  disableSticky = false,
 }: {
   children: ReactNode
   actions?: ReactNode
+  disableSticky?: boolean
 }): JSX.Element => {
   const markerRef = useRef<HTMLDivElement>(null)
   const [pinned, setPinned] = useState(false)
   const hasActions = !!actions
   useEffect(() => {
     const marker = markerRef.current
-    if (!marker || typeof IntersectionObserver === 'undefined') return
+    if (disableSticky || !marker || typeof IntersectionObserver === 'undefined')
+      return
     const observer = new IntersectionObserver(
       ([entry]) => {
         setPinned(
@@ -32,7 +35,7 @@ export const ResponseOverview = ({
     )
     observer.observe(marker)
     return () => observer.disconnect()
-  }, [hasActions])
+  }, [hasActions, disableSticky])
   return (
     <>
       <Box
@@ -49,7 +52,9 @@ export const ResponseOverview = ({
         <>
           <Box ref={markerRef} h="1px" mb="-1px" aria-hidden />
           <Box
-            position={{ base: 'static', md: 'sticky' }}
+            position={
+              disableSticky ? 'static' : { base: 'static', md: 'sticky' }
+            }
             top="-0.75rem"
             zIndex={1}
             bg="primary.100"

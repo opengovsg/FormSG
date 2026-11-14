@@ -15,6 +15,22 @@ export interface ResponsesIndividualResponse {
   workflowActions: {
     whoIsNotifiedLabel: string
     whoIsNotifiedNone: string
+    requireFullReview: string
+    reviewNotNeeded: string
+    tooltips: {
+      remind: string
+      addAssignee: string
+      sendBack: string
+      void: string
+    }
+    currentState: {
+      currentStep: string
+      pending: string
+      assignees: string
+      completed: string
+      rejected: string
+      voided: string
+    }
     stopButton: string
     remindButton: string
     reminderModal: {
@@ -30,15 +46,18 @@ export interface ResponsesIndividualResponse {
       stepSubmitted: string
       stepApproved: string
       stepRejected: string
-      stepSent: string
-      actorClause: string
       assigneeAdded: string
       reminderTriggered: string
-      reminderSent: string
       stopped: string
       notificationRecipients: string
       sentBack: string
       fixStep: string
+      nextStepRecipients: string
+      sentBackRecipients: string
+      sentBackTarget: string
+      addedAssignees: string
+      reminderRecipients: string
+      formAdmin: string
       remarks: string
     }
     reassignButton: string

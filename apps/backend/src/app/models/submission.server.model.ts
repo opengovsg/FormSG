@@ -295,6 +295,7 @@ SubmissionSchema.statics.findEncryptedOrMultirespondentSubmissionById =
         ...buildAdminSubmittedStepsMongoProjection(),
         stepTokenHash: 1,
         encryptedStepToken: 1,
+        correctionClearFieldIds: 1,
         workflowEvents: 1,
         stoppedAt: 1,
       })
@@ -957,6 +958,7 @@ export const MultirespondentSubmissionSchema = new Schema<
   mrfVersion: {
     type: Number,
   },
+  correctionClearFieldIds: { type: [String], default: undefined },
   submittedSteps: {
     type: [submittedStepSchema],
     default: [],
@@ -1340,6 +1342,7 @@ MultirespondentSubmissionSchema.statics.findEncryptedSubmissionById = function (
       mrfVersion: 1,
       ...buildAdminSubmittedStepsMongoProjection(),
       encryptedStepToken: 1,
+      correctionClearFieldIds: 1,
       workflowEvents: 1,
       stoppedAt: 1,
     })

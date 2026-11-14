@@ -59,9 +59,13 @@ let mockIsWorkflowActionsOn = false
 
 vi.mock('../workflowActions', () => ({
   useWorkflowActionsGate: () => mockIsWorkflowActionsOn,
-  WorkflowActionsSection: ({ overview }: { overview?: ReactNode }) => (
-    <>{overview}</>
-  ),
+  WorkflowActionsSection: ({
+    overview,
+    children,
+  }: {
+    overview?: ReactNode
+    children?: (args: { actions: never[] }) => ReactNode
+  }) => <>{children ? children({ actions: [] }) : overview}</>,
   WorkflowActivityLog: () => <div>Workflow history content</div>,
 }))
 

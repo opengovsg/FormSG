@@ -2750,6 +2750,7 @@ const saveFixedStep = <T extends IMultirespondentSubmissionSchema>({
   submission.encryptedContent = encryptedPayload.encryptedContent
   submission.verifiedContent = encryptedPayload.verifiedContent
   submission.version = encryptedPayload.version
+  submission.correctionClearFieldIds = undefined
   submission.workflowStep = submittedSteps.length - 1
   submission.attachmentMetadata = attachmentMetadata
   submission.mrfVersion = encryptedPayload.mrfVersion
@@ -2828,6 +2829,7 @@ export const startFixingStep = ({
   targetStepNumber,
   expectedStepNumber,
   remarks,
+  clearResponses = false,
   stepOneRecipientEmail,
   canFixStepOne,
   actor,
@@ -2837,6 +2839,7 @@ export const startFixingStep = ({
   submissionId: string
   targetStepNumber: number
   expectedStepNumber: number
+  clearResponses?: boolean
   remarks?: string
   stepOneRecipientEmail?: string
   canFixStepOne: boolean
@@ -2908,6 +2911,11 @@ export const startFixingStep = ({
           },
           {
             $set: {
+              correctionClearFieldIds: clearResponses
+                ? (submission.workflow[targetStepNumber - 1]?.edit ?? []).map(
+                    String,
+                  )
+                : [],
               workflowStep: targetStepNumber - 2,
               stepTokenHash: stepToken.hash(newStepToken),
               encryptedStepToken: stepToken.wrap(newStepToken, formPublicKey),
