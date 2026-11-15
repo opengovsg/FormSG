@@ -271,6 +271,28 @@ describe('email-submission.util', () => {
       expect(emailData.formData).toEqual(expectedFormData)
     })
 
+    it("should show a multi-file answer's files, not its zip's name", () => {
+      const response = {
+        ...generateNewAttachmentResponse(),
+        answer: 'Question 1.zip',
+        answerArray: ['a.pdf', 'b.jpg'],
+      }
+
+      const emailData = new SubmissionEmailObj(
+        [response],
+        new Set(),
+        FormAuthType.NIL,
+      )
+
+      expect(emailData.formData[0]).toMatchObject({
+        answer: 'a.pdf;b.jpg',
+        answerTemplate: ['a.pdf;b.jpg'],
+      })
+      expect(emailData.dataCollationData[0]).toMatchObject({
+        answer: 'a.pdf;b.jpg',
+      })
+    })
+
     it('should split single answer fields by newline', () => {
       const answer = 'first line\nsecond line'
       const response = generateNewSingleAnswerResponse(BasicField.ShortText, {

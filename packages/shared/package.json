@@ -98,6 +98,10 @@
       "require": "./dist/utils/field.js",
       "default": "./utils/field.ts"
     },
+    "./utils/multi-attachment": {
+      "require": "./dist/utils/multi-attachment.js",
+      "default": "./utils/multi-attachment.ts"
+    },
     "./utils/address-validation": {
       "require": "./dist/utils/address-validation.js",
       "default": "./utils/address-validation.ts"
