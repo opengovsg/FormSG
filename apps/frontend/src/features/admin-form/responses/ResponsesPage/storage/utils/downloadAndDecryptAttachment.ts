@@ -11,6 +11,8 @@ import {
   FailedAttachmentFile,
 } from '../types'
 
+import { unzipMultiAttachment } from './multiAttachment'
+
 type EncryptedFile = Parameters<
   DecryptionCtx['formsgSdk']['crypto']['decryptFile']
 >[1]
@@ -62,11 +64,27 @@ export const downloadAndDecryptAttachment = async (
 
 const toNamedAttachments = (attachmentDownloadUrls: AttachmentsDownloadMap) =>
   Array.from(attachmentDownloadUrls).map(
-    ([questionNum, { url, filename }]) => ({
-      url,
-      filename: `Question ${questionNum} - ${filename}`,
-    }),
+    ([questionNum, { url, filename, isMultiple }]) => {
+      const prefix = `Question ${questionNum} - `
+      return isMultiple
+        ? { url, filename: filename ?? '', unzipPrefix: prefix }
+        : { url, filename: `${prefix}${filename}` }
+    },
   )
+
+const toFiles = async ({
+  filename,
+  content,
+  unzipPrefix,
+}: DecryptedAttachmentFile & {
+  unzipPrefix?: string
+}): Promise<DecryptedAttachmentFile[]> =>
+  unzipPrefix === undefined
+    ? [{ filename, content }]
+    : (await unzipMultiAttachment(content)).map((file) => ({
+        ...file,
+        filename: `${unzipPrefix}${file.filename}`,
+      }))
 
 const downloadAndDecryptAttachments = async (
   ctx: DecryptionCtx,
@@ -75,14 +93,12 @@ const downloadAndDecryptAttachments = async (
 ): Promise<DecryptedAttachmentFile[]> => {
   const files = toNamedAttachments(attachmentDownloadUrls)
   const decryptedFiles = await Promise.all(
-    files.map(async ({ url, filename }) => ({
-      filename,
-      content: await downloadAndDecryptAttachment(ctx, url, secretKey),
-    })),
+    files.map(async ({ url, ...named }) => {
+      const content = await downloadAndDecryptAttachment(ctx, url, secretKey)
+      return content ? toFiles({ ...named, content }) : []
+    }),
   )
-  return decryptedFiles.flatMap(({ filename, content }) =>
-    content ? [{ filename, content }] : [],
-  )
+  return decryptedFiles.flat()
 }
 
 export const downloadAndDecryptAttachmentFiles = async (
@@ -108,29 +124,33 @@ export const downloadAndDecryptAttachmentFiles = async (
     toNamedAttachments(attachmentDownloadUrls).map(
       async ({
         url,
-        filename,
-      }): Promise<DecryptedAttachmentFile | FailedAttachmentFile> => {
+        ...named
+      }): Promise<DecryptedAttachmentFile[] | FailedAttachmentFile> => {
+        const { filename } = named
         let encryptedFile: EncryptedFile
         try {
           encryptedFile = await downloadWithRetries(url)
         } catch {
           return { filename, reason: 'download' }
         }
+        // A multi-file answer's zip that won't unzip is reported as a decrypt failure
         const content = await decryptAttachment(
           ctx,
           encryptedFile,
           secretKey,
         ).catch(() => null)
-        return content ? { filename, content } : { filename, reason: 'decrypt' }
+        if (!content) return { filename, reason: 'decrypt' }
+        return toFiles({ ...named, content }).catch(() => ({
+          filename,
+          reason: 'decrypt' as const,
+        }))
       },
     ),
   )
   return {
-    files: results.filter(
-      (result): result is DecryptedAttachmentFile => 'content' in result,
-    ),
+    files: results.flatMap((result) => (Array.isArray(result) ? result : [])),
     failed: results.filter(
-      (result): result is FailedAttachmentFile => 'reason' in result,
+      (result): result is FailedAttachmentFile => !Array.isArray(result),
     ),
   }
 }

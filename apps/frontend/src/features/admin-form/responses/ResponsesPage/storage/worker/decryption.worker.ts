@@ -272,6 +272,7 @@ async function _downloadAndDecryptSubmissionAttachments(
       attachmentDownloadUrls.set(questionCount, {
         url: attachmentMetadata[field._id],
         filename: field.answer,
+        isMultiple: !!field.answerArray,
       })
     }
   })

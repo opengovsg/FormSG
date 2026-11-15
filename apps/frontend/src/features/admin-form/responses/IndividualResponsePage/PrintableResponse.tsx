@@ -3,6 +3,7 @@ import { FieldType } from '@opengovsg/formsg-sdk/dist/types'
 
 import { BasicField } from 'formsg-shared/types/field'
 import { handleAddressResponseDisplay } from 'formsg-shared/utils/address'
+import { formatAttachmentAnswer } from 'formsg-shared/utils/multi-attachment'
 
 import { convertToSignatureSvgString } from '~utils/convertSignatureOutput'
 
@@ -127,6 +128,13 @@ const PrintableDecryptedRow = ({
       }
       return <StandardPrintableRow question={row.question} answer="" />
     }
+    case BasicField.Attachment:
+      return (
+        <StandardPrintableRow
+          question={row.question}
+          answer={formatAttachmentAnswer(row)}
+        />
+      )
     default:
       return (
         <StandardPrintableRow

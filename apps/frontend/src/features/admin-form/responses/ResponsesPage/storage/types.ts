@@ -18,7 +18,8 @@ export enum CsvRecordStatus {
 
 export type AttachmentsDownloadMap = Map<
   number,
-  { url: string; filename?: string }
+  // A multi-file answer's filename is its zip's, unzipped once downloaded
+  { url: string; filename?: string; isMultiple?: boolean }
 >
 
 export type DecryptedAttachmentFile = {
