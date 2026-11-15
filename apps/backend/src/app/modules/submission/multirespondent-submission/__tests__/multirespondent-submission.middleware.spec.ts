@@ -1,9 +1,11 @@
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import {
   adaptV3ToV4,
   adaptV4ToV3,
   isFieldResponsesV4,
 } from '@opengovsg/formsg-sdk/adapters'
 import { ObjectId } from 'bson'
+import crypto from 'crypto'
 import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
@@ -14,6 +16,7 @@ import {
   MyInfoChildAttributes,
 } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
+import JSZip from 'jszip'
 import { errAsync, ok, okAsync } from 'neverthrow'
 import nacl from 'tweetnacl'
 import { decodeBase64, encodeBase64, encodeUTF8 } from 'tweetnacl-util'
@@ -123,7 +126,7 @@ describe('Multirespondent Submission Middleware', () => {
         get: jest.fn(),
         headers: {},
         body: { responses: { [fieldId]: scanned } },
-        formsg: { formDef: { _id: new ObjectId() } },
+        formsg: { formDef: { _id: new ObjectId(), form_fields: [] } },
       }
       const next = jest.fn()
 
@@ -137,6 +140,106 @@ describe('Multirespondent Submission Middleware', () => {
         md5Hash: '5d41402abc4b2a76b9719d911017c592',
       })
       expect(next).toHaveBeenCalledWith()
+    })
+
+    describe('a later step', () => {
+      const fieldId = new ObjectId().toHexString()
+      const attachmentField = (allowMultiple: boolean) => ({
+        _id: fieldId,
+        fieldType: BasicField.Attachment,
+        allowMultiple,
+      })
+      const md5 = (content: Buffer) =>
+        crypto.createHash('md5').update(content).digest('hex')
+
+      const runLaterStep = async (
+        { allowMultipleThen, allowMultipleNow }: Record<string, boolean>,
+        answer: Record<string, unknown>,
+      ) => {
+        const response = {
+          fieldType: BasicField.Attachment,
+          answer,
+          provenance: {},
+        }
+        jest
+          .spyOn(
+            SubmissionService,
+            'triggerGuardDutyScanThenDownloadCleanFileChainV4',
+          )
+          .mockReturnValueOnce(okAsync(response as any))
+        const req = {
+          get: jest.fn(),
+          headers: {},
+          body: { responses: { [fieldId]: response } },
+          formsg: {
+            formDef: {
+              _id: new ObjectId(),
+              form_fields: [attachmentField(allowMultipleNow)],
+            },
+            snapshottedFormDef: {
+              form_fields: [attachmentField(allowMultipleThen)],
+            },
+          },
+        }
+        const res = expressHandler.mockResponse()
+        const next = jest.fn()
+
+        await scanAndRetrieveAttachments(req as any, res, next)
+
+        expect(res.status).not.toHaveBeenCalled()
+        expect(next).toHaveBeenCalledWith()
+        return req.body.responses[fieldId].answer
+      }
+
+      it('keeps one file sent before the field took several files', async () => {
+        const content = Buffer.from('%PDF-1.7')
+
+        const answer = await runLaterStep(
+          { allowMultipleThen: false, allowMultipleNow: true },
+          { value: 'report.pdf', content, hasBeenScanned: true },
+        )
+
+        expect(answer).toEqual({
+          value: 'report.pdf',
+          content,
+          hasBeenScanned: true,
+          md5Hash: md5(content),
+        })
+      })
+
+      it('keeps the files of a zip sent before the field took one file', async () => {
+        const zip = new JSZip()
+        zip.file('a.pdf', 'a')
+        zip.file('b.pdf', 'b')
+        const content = await zip.generateAsync({ type: 'nodebuffer' })
+
+        const answer = await runLaterStep(
+          { allowMultipleThen: true, allowMultipleNow: false },
+          { value: 'Question 1.zip', content, hasBeenScanned: true },
+        )
+
+        expect(answer).toMatchObject({
+          value: 'Question 1.zip',
+          filenames: ['a.pdf', 'b.pdf'],
+        })
+      })
+
+      it('stores an ordinary attachment sent again unchanged as before', async () => {
+        const content = Buffer.from('%PDF-1.7')
+        const stepOneAnswer = {
+          value: 'report.pdf',
+          content,
+          hasBeenScanned: true,
+          md5Hash: md5(content),
+        }
+
+        const answer = await runLaterStep(
+          { allowMultipleThen: false, allowMultipleNow: false },
+          { ...stepOneAnswer },
+        )
+
+        expect(answer).toEqual(stepOneAnswer)
+      })
     })
   })
 

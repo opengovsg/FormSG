@@ -282,6 +282,41 @@ describe('Children fields explode like encrypt mode stores them', () => {
   })
 })
 
+describe('a multi-file attachment answer', () => {
+  it('emits its zip name as the answer and the files in it as answerArray, like Storage mode', () => {
+    expect(
+      flattenV4ToFormFields({
+        formLogics: [],
+        v4Responses: {
+          [FIELD_ID]: {
+            fieldType: BasicField.Attachment,
+            answer: {
+              value: 'Question 1.zip',
+              hasBeenScanned: true,
+              filenames: ['a.pdf', 'b.jpg'],
+            },
+          },
+        } as unknown as FieldResponsesV4Input,
+        formFields: [
+          shortTextField({
+            fieldType: BasicField.Attachment,
+            allowMultiple: true,
+          }),
+        ],
+      }),
+    ).toEqual([
+      {
+        _id: FIELD_ID,
+        question: 'the question in the form definition',
+        answer: 'Question 1.zip',
+        answerArray: ['a.pdf', 'b.jpg'],
+        fieldType: BasicField.Attachment,
+        isVisible: true,
+      },
+    ])
+  })
+})
+
 describe('entries come from the form definition and nowhere else', () => {
   it('drops a V4 response with no matching form field', () => {
     // Verified SPCP/sgID content is keyed by its title, never by a form field

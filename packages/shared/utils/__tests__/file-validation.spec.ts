@@ -6,6 +6,7 @@ import path from 'path'
 import {
   getFileExtension,
   getInvalidFileExtensionsInZip,
+  inspectZip,
   isInvalidFileExtension,
   MAX_ZIP_ENTRY_COUNT,
   MAX_ZIP_NESTING_DEPTH,
@@ -150,6 +151,53 @@ describe('File validation utils', () => {
 
       process.off('unhandledRejection', unhandled)
       expect(unhandled).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('inspectZip', () => {
+    it('lists entries in order with their count, and the invalid extensions on request, nested zips included', async () => {
+      const nested = new JSZip()
+      nested.file('run.exe', 'x')
+      const zip = new JSZip()
+      zip.file('b.pdf', 'x')
+      zip.folder('docs')
+      zip.file('inner.zip', await nested.generateAsync({ type: 'nodebuffer' }))
+
+      const { getInvalidExtensions, ...result } = await inspectZip(
+        await zip.generateAsync({ type: 'nodebuffer' }),
+      )
+
+      expect(result).toEqual({
+        entryNames: ['b.pdf', 'docs/', 'inner.zip'],
+        entryCount: 3,
+        isUncompressed: true,
+        hasExtraBytes: false,
+      })
+      await expect(getInvalidExtensions()).resolves.toEqual(['.exe'])
+    })
+
+    it('reports a zip with a compressed entry as not stored', async () => {
+      const zip = new JSZip()
+      zip.file('a.pdf', 'x'.repeat(100))
+      zip.file('b.pdf', 'x'.repeat(100), { compression: 'DEFLATE' })
+
+      const { isUncompressed } = await inspectZip(
+        await zip.generateAsync({ type: 'nodebuffer' }),
+      )
+
+      expect(isUncompressed).toBe(false)
+    })
+
+    it('reports a zip with bytes added before it', async () => {
+      const zip = new JSZip()
+      zip.file('a.pdf', 'x')
+      const file = await zip.generateAsync({ type: 'nodebuffer' })
+
+      const { hasExtraBytes } = await inspectZip(
+        Buffer.concat([Buffer.alloc(10), file]),
+      )
+
+      expect(hasExtraBytes).toBe(true)
     })
   })
 })

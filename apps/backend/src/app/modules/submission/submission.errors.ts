@@ -167,6 +167,12 @@ export class AttachmentTooLargeError extends ApplicationError {
   }
 }
 
+export class InvalidMultiAttachmentError extends ApplicationError {
+  constructor(message = 'Invalid multi-file attachment') {
+    super(message, undefined, ErrorCodes.SUBMISSION_INVALID_MULTI_ATTACHMENT)
+  }
+}
+
 /**
  * Generic error for errors thrown while receiving multipart form data
  */
