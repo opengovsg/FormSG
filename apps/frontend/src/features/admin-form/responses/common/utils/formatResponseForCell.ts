@@ -2,6 +2,7 @@ import { FormField } from '@opengovsg/formsg-sdk/dist/types'
 
 import { BasicField } from 'formsg-shared/types'
 import { handleAddressResponseDisplay } from 'formsg-shared/utils/address'
+import { formatAttachmentAnswer } from 'formsg-shared/utils/multi-attachment'
 
 import { SIGNATURE_ADDED_TEXT } from '~features/admin-form/responses/constants'
 
@@ -35,6 +36,10 @@ export const formatResponseForCell = (response?: FormField): string => {
     DESCRIBED_ANSWER_TEXT[response.fieldType as unknown as BasicField]
   if (describedText) {
     return hasAnswer(response) ? describedText : ''
+  }
+
+  if (response.fieldType === BasicField.Attachment) {
+    return formatAttachmentAnswer(response)
   }
 
   if (response.fieldType === BasicField.Address && response.answerArray) {
