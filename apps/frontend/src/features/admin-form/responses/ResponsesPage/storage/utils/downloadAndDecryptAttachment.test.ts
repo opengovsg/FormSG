@@ -1,3 +1,4 @@
+import JSZip from 'jszip'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { AttachmentsDownloadMap, DecryptionCtx } from '../types'
@@ -99,5 +100,57 @@ describe('downloadAndDecryptAttachmentFiles', () => {
     expect(result.failed).toEqual([
       { filename: 'Question 1 - a.pdf', reason: 'decrypt' },
     ])
+  })
+
+  describe('a multi-file answer', () => {
+    const multiAttachment = (): AttachmentsDownloadMap =>
+      new Map([
+        [
+          3,
+          {
+            url: 'zip',
+            filename: 'Question 3.zip',
+            isZipOfFiles: true,
+          },
+        ],
+      ])
+
+    it('unzips into one file per file in the zip', async () => {
+      const zip = new JSZip()
+      zip.file('a.pdf', 'pdf')
+      zip.file('b.jpg', 'jpg')
+      fetchMock.mockResolvedValueOnce(okResponse())
+      const { ctx } = makeCtx(await zip.generateAsync({ type: 'uint8array' }))
+
+      const result = await downloadAndDecryptAttachmentFiles(
+        ctx,
+        multiAttachment(),
+        'key',
+        NO_WAIT,
+      )
+
+      expect(result.files.map(({ filename }) => filename)).toEqual([
+        'Question 3 - a.pdf',
+        'Question 3 - b.jpg',
+      ])
+      expect(result.failed).toEqual([])
+    })
+
+    it('marks the whole field by its zip when the zip will not unzip', async () => {
+      fetchMock.mockResolvedValueOnce(okResponse())
+      const { ctx } = makeCtx(new Uint8Array([1, 2, 3]))
+
+      const result = await downloadAndDecryptAttachmentFiles(
+        ctx,
+        multiAttachment(),
+        'key',
+        NO_WAIT,
+      )
+
+      expect(result.files).toEqual([])
+      expect(result.failed).toEqual([
+        { filename: 'Question 3.zip', reason: 'decrypt' },
+      ])
+    })
   })
 })

@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useMutation } from 'react-query'
 import FileSaver from 'file-saver'
+import type JSZip from 'jszip'
 
 import { useToast } from '~hooks/useToast'
 import formsgSdk from '~utils/formSdk'
@@ -10,6 +11,16 @@ import {
   downloadAndDecryptAttachment,
   downloadAndDecryptAttachmentsAsZip,
 } from '../ResponsesPage/storage/utils/downloadAndDecryptAttachment'
+
+export const downloadAndDecryptOrThrow = async (
+  url: string | undefined,
+  secretKey: string,
+): Promise<Uint8Array<ArrayBuffer>> => {
+  const content =
+    url && (await downloadAndDecryptAttachment({ formsgSdk }, url, secretKey))
+  if (!content) throw new Error('Invalid file')
+  return content
+}
 
 export const useMutateDownloadAttachments = () => {
   const toast = useToast({ status: 'success', isClosable: true })
@@ -25,6 +36,14 @@ export const useMutateDownloadAttachments = () => {
     [toast],
   )
 
+  const fileDownloadOptions = {
+    onSuccess: (fileName: string) => {
+      toast.closeAll()
+      toast({ description: `Sucessfully downloaded attachment ${fileName}` })
+    },
+    onError: handleError,
+  }
+
   const downloadAttachmentMutation = useMutation(
     async ({
       url,
@@ -35,22 +54,27 @@ export const useMutateDownloadAttachments = () => {
       secretKey: string
       fileName: string
     }) => {
-      const byteArray = await downloadAndDecryptAttachment(
-        { formsgSdk },
-        url,
-        secretKey,
-      )
-      if (!byteArray) throw new Error('Invalid file')
+      const byteArray = await downloadAndDecryptOrThrow(url, secretKey)
       FileSaver.saveAs(new Blob([byteArray]), fileName)
       return fileName
     },
-    {
-      onSuccess: (fileName) => {
-        toast.closeAll()
-        toast({ description: `Sucessfully downloaded attachment ${fileName}` })
-      },
-      onError: handleError,
+    fileDownloadOptions,
+  )
+
+  const downloadMultiAttachmentFileMutation = useMutation(
+    async ({
+      getZip,
+      fileName,
+    }: {
+      getZip: () => Promise<JSZip>
+      fileName: string
+    }) => {
+      const file = (await getZip()).file(fileName)
+      if (!file) throw new Error('Invalid file')
+      FileSaver.saveAs(await file.async('blob'), fileName)
+      return fileName
     },
+    fileDownloadOptions,
   )
 
   const downloadAttachmentsAsZipMutation = useMutation(
@@ -83,5 +107,9 @@ export const useMutateDownloadAttachments = () => {
     },
   )
 
-  return { downloadAttachmentMutation, downloadAttachmentsAsZipMutation }
+  return {
+    downloadAttachmentMutation,
+    downloadMultiAttachmentFileMutation,
+    downloadAttachmentsAsZipMutation,
+  }
 }
