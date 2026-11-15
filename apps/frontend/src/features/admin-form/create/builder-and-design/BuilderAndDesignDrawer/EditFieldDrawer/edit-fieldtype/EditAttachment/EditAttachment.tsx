@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { FormControl, Skeleton } from '@chakra-ui/react'
+import { Box, FormControl, Skeleton } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { extend, pick } from 'lodash'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types'
 import {
   AttachmentFieldBase,
@@ -11,6 +13,12 @@ import {
   BasicField,
   FormFieldDto,
 } from 'formsg-shared/types/field'
+import {
+  allowsEveryFileType,
+  isInvalidFileExtension,
+  normaliseFileType,
+  VALID_EXTENSIONS,
+} from 'formsg-shared/utils/file-validation'
 
 import {
   ACCEPTED_FILETYPES_SPREADSHEET,
@@ -30,6 +38,7 @@ import { useCreateTabForm } from '~features/admin-form/create/builder-and-design
 import { getAttachmentSizeLimit } from '~features/admin-form/create/builder-and-design/utils/getAttachmentSizeLimit'
 
 import { CreatePageDrawerContentContainer } from '../../../../../common'
+import { SPLIT_TEXTAREA_TRANSFORM } from '../common/constants'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
@@ -47,19 +56,41 @@ const EDIT_ATTACHMENT_FIELD_KEYS = [
 
 type EditAttachmentKeys = (typeof EDIT_ATTACHMENT_FIELD_KEYS)[number]
 
-type EditAttachmentInputs = Pick<AttachmentFieldBase, EditAttachmentKeys>
+type EditAttachmentInputs = Pick<AttachmentFieldBase, EditAttachmentKeys> & {
+  hasAllowedFileTypes: boolean
+  allowedFileTypes: string
+}
+
+const tidyFileTypes = (fileTypes: string): string[] =>
+  SPLIT_TEXTAREA_TRANSFORM.output(fileTypes).map(normaliseFileType)
 
 const transformAttachmentFieldToEditForm = (
   field: AttachmentFieldBase,
 ): EditAttachmentInputs => {
-  return pick(field, EDIT_ATTACHMENT_FIELD_KEYS)
+  const hasAllowedFileTypes = !allowsEveryFileType(field.allowedFileTypes)
+  return {
+    ...pick(field, EDIT_ATTACHMENT_FIELD_KEYS),
+    hasAllowedFileTypes,
+    allowedFileTypes: SPLIT_TEXTAREA_TRANSFORM.input(
+      hasAllowedFileTypes && field.allowedFileTypes
+        ? field.allowedFileTypes
+        : VALID_EXTENSIONS,
+    ),
+  }
 }
 
 const transformAttachmentEditFormToField = (
   inputs: EditAttachmentInputs,
   originalField: AttachmentFieldBase,
 ): AttachmentFieldBase => {
-  return extend({}, originalField, inputs)
+  const { hasAllowedFileTypes, allowedFileTypes, ...rest } = inputs
+  const field: AttachmentFieldBase = extend({}, originalField, rest)
+  if (hasAllowedFileTypes) {
+    field.allowedFileTypes = tidyFileTypes(allowedFileTypes)
+  } else if (field.allowedFileTypes) {
+    field.allowedFileTypes = []
+  }
+  return field
 }
 
 export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
@@ -75,6 +106,7 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
     isLoading,
     handleCancel,
     trigger,
+    watch,
   } = useEditFieldForm<EditAttachmentInputs, AttachmentFieldBase>({
     field,
     transform: {
@@ -83,12 +115,60 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
     },
   })
 
+  const isRestrictFileTypesEnabled = useFeatureIsOn(
+    featureFlags.attachmentsRestrictFileTypes,
+  )
+  const savedField = form?.form_fields.find((ff) => ff._id === field._id)
+  const wasSavedRestricted =
+    savedField?.fieldType === BasicField.Attachment &&
+    !!savedField.allowedFileTypes?.length
+  const canRestrictFileTypes =
+    (isRestrictFileTypesEnabled &&
+      !!form &&
+      form.responseMode !== FormResponseMode.Email) ||
+    wasSavedRestricted
+  const hasAllowedFileTypes = watch('hasAllowedFileTypes')
+
   const requiredValidationRule = useMemo(
     () =>
       createBaseValidationRules<EditAttachmentInputs, 'title'>({
         required: true,
       }),
     [],
+  )
+
+  const allowedFileTypesValidationRule = useMemo(
+    (): RegisterOptions<EditAttachmentInputs, 'allowedFileTypes'> => ({
+      validate: {
+        noEmpty: (value) =>
+          tidyFileTypes(value).length > 0 ||
+          t(
+            'features.adminForm.sidebar.fields.attachment.restrictFileTypes.error.empty',
+          ),
+        validFileTypes: (value) => {
+          const invalidFileTypes = tidyFileTypes(value).filter(
+            isInvalidFileExtension,
+          )
+          return (
+            invalidFileTypes.length === 0 ||
+            t(
+              'features.adminForm.sidebar.fields.attachment.restrictFileTypes.error.invalid',
+              { fileTypes: invalidFileTypes.join(', ') },
+            )
+          )
+        },
+        noDuplicate: (value) => {
+          const fileTypes = tidyFileTypes(value)
+          return (
+            new Set(fileTypes).size === fileTypes.length ||
+            t(
+              'features.adminForm.sidebar.fields.attachment.restrictFileTypes.error.duplicate',
+            )
+          )
+        },
+      },
+    }),
+    [t],
   )
 
   const otherAttachmentsSize = useMemo(() => {
@@ -175,6 +255,45 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
       <FormControl isReadOnly={isLoading}>
         <Toggle {...register('required')} label="Required" />
       </FormControl>
+      {canRestrictFileTypes ? (
+        <Box>
+          <FormControl isReadOnly={isLoading}>
+            <Toggle
+              {...register('hasAllowedFileTypes')}
+              label={t(
+                'features.adminForm.sidebar.fields.attachment.restrictFileTypes.title',
+              )}
+            />
+          </FormControl>
+          {hasAllowedFileTypes ? (
+            <FormControl
+              isReadOnly={isLoading}
+              isRequired
+              isInvalid={!!errors.allowedFileTypes}
+              mt="1.5rem"
+            >
+              <FormLabel>
+                {t(
+                  'features.adminForm.sidebar.fields.attachment.restrictFileTypes.inputLabel',
+                )}
+              </FormLabel>
+              <Textarea
+                autoFocus
+                {...register(
+                  'allowedFileTypes',
+                  allowedFileTypesValidationRule,
+                )}
+                placeholder={t(
+                  'features.adminForm.sidebar.fields.attachment.restrictFileTypes.placeholder',
+                )}
+              />
+              <FormErrorMessage>
+                {errors?.allowedFileTypes?.message}
+              </FormErrorMessage>
+            </FormControl>
+          ) : null}
+        </Box>
+      ) : null}
       <FormControl
         id="attachmentSize"
         isReadOnly={isLoading}
