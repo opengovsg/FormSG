@@ -245,6 +245,17 @@ export const enSG: Fields = {
     allowMultiple: 'Allow respondent to add multiple attachments',
     webhookWarning:
       'This form sends responses to a webhook. Files for this question will be sent as one .zip file. Check with your developer before you turn this on.',
+    restrictFileTypes: {
+      title: 'Restrict file types',
+      inputLabel: 'File types allowed',
+      placeholder: '.pdf\n.docx\n.jpg',
+      error: {
+        duplicate: 'Please remove duplicate file types',
+        empty: 'Please enter at least one file type',
+        invalid:
+          "Please enter only valid file types. These aren't accepted file types: {fileTypes}",
+      },
+    },
     error: {
       exceedSize:
         "You have exceeded your form's attachment size limit of {maxTotalSizeMb} MB",
