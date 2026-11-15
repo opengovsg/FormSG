@@ -46,6 +46,11 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
    */
   accept?: DropzoneProps['accept']
   /**
+   * If exists, the only file types to accept in place of `accept`, named in
+   * the error when a file of another type is picked.
+   */
+  allowedFileTypes?: string[]
+  /**
    * Text to state miscellaneous uploaded file constraints.
    */
   fileConstraintsText?: string
@@ -115,6 +120,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       fileConstraintsText,
       showFileSize,
       accept,
+      allowedFileTypes,
       value,
       name,
       colorScheme,
@@ -142,7 +148,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       getRejectionErrorMessage,
       prepareFile,
       fileValidator,
-    } = useAttachmentFileChecks({ accept, maxSize })
+    } = useAttachmentFileChecks({ allowedFileTypes, maxSize })
 
     const showMaxSize = useMemo(
       () => !value && showFileSize && readableMaxSize,
@@ -164,7 +170,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
 
     const { getRootProps, getInputProps, isDragActive, rootRef } = useDropzone({
       multiple: false,
-      accept,
+      accept: allowedFileTypes ?? accept,
       disabled: inputProps.disabled,
       validator: fileValidator,
       noClick: inputProps.readOnly,
