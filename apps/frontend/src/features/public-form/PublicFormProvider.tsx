@@ -100,6 +100,7 @@ import {
   getPendingStepAuthType,
   mergeStepLoginSession,
 } from './utils/stepLogin'
+import { zipMultiAttachmentInputs } from './utils/zipMultiAttachmentInputs'
 import {
   MrfStepAuthTarget,
   usePublicAuthMutations,
@@ -1110,10 +1111,13 @@ export const PublicFormProvider = ({
         }
       }
 
-      const transformedFormInputs = flow([
-        transformFormInputCountryRegionToUpperCase(form.form_fields),
-        transformFormInputTrimTextInputs(form.form_fields),
-      ])(formInputs) as typeof formInputs
+      const transformedFormInputs = await zipMultiAttachmentInputs(
+        form.form_fields,
+        flow([
+          transformFormInputCountryRegionToUpperCase(form.form_fields),
+          transformFormInputTrimTextInputs(form.form_fields),
+        ])(formInputs) as typeof formInputs,
+      )
 
       const formData = {
         formFields: form.form_fields,

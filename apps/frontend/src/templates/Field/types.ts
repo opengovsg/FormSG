@@ -69,7 +69,7 @@ export type FormFieldValues = Record<
 }
 
 export type AddressCompoundFieldInput = FieldInput<AddressCompoundFieldValues>
-export type AttachmentFieldInput = FieldInput<File | null>
+export type AttachmentFieldInput = FieldInput<File | File[] | null>
 export type CheckboxFieldInputs = FieldInput<CheckboxFieldValues>
 export type RadioFieldInputs = FieldInput<RadioFieldValues>
 export type TableFieldInputs = FieldInput<TableFieldValues>
@@ -96,7 +96,7 @@ export type FormFieldValue<F extends BasicField = BasicField> = F extends
   : F extends BasicField.YesNo
     ? YesNoFieldValue
     : F extends BasicField.Attachment
-      ? File
+      ? File | File[]
       : F extends BasicField.Email | BasicField.Mobile
         ? VerifiableFieldValues
         : F extends BasicField.Table

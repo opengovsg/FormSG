@@ -266,10 +266,11 @@ export const useAttachmentValidationRules: ValidationRuleFn<
     keyPrefix: I18N_KEY_PREFIX,
   })
   return {
-    validate: (value?: File) => {
+    validate: (value?: File | File[] | null) => {
       if (disableRequiredValidation || !schema.required) return true
       const errorMessage = t ? t('required') : REQUIRED_ERROR
-      return !!value || errorMessage
+      const hasFile = Array.isArray(value) ? value.length > 0 : !!value
+      return hasFile || errorMessage
     },
   }
 }
