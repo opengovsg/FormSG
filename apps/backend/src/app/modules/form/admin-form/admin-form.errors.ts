@@ -62,10 +62,16 @@ export class InvalidCollaboratorError extends ApplicationError {
 }
 
 export class PaymentChannelNotFoundError extends ApplicationError {
-  constructor(
-    message = 'Please ensure that you have connected your Stripe account in settings to save this field',
-  ) {
-    super(message, undefined, ErrorCodes.ADMIN_FORM_PAYMENT_CHANNEL_NOT_FOUND)
+  constructor(message?: string) {
+    super(
+      message ??
+        'Please ensure that you have connected your Stripe account in settings to save this field',
+      undefined,
+      ErrorCodes.ADMIN_FORM_PAYMENT_CHANNEL_NOT_FOUND,
+    )
+    if (message === undefined) {
+      this.messageKey = adminFormErrorKey('payments.channelNotFound')
+    }
   }
 }
 

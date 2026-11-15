@@ -270,6 +270,7 @@ const _mapRouteError = (
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: 'Something went wrong. Please try again.',
+        errorMessageKey: adminFormErrorKey('unknown'),
       }
   }
 }

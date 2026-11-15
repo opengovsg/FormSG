@@ -257,13 +257,21 @@ const copyTemplateFormValidator = celebrate({
   }).unknown(true),
 })
 
+const collaboratorEmailValidator = attachErrorI18nByCode(
+  Joi.string()
+    .required()
+    .email()
+    .message('Please enter a valid email')
+    .lowercase(),
+  (code) =>
+    code === 'string.email'
+      ? { messageKey: adminFormErrorKey('collaborators.invalidEmail') }
+      : undefined,
+)
+
 const transferFormOwnershipValidator = celebrate({
   [Segments.BODY]: {
-    email: Joi.string()
-      .required()
-      .email()
-      .message('Please enter a valid email')
-      .lowercase(),
+    email: collaboratorEmailValidator,
   },
 })
 
@@ -3529,11 +3537,7 @@ export const handleUpdateCollaborators = [
   celebrate({
     [Segments.BODY]: Joi.array().items(
       Joi.object({
-        email: Joi.string()
-          .required()
-          .email()
-          .message('Please enter a valid email')
-          .lowercase(),
+        email: collaboratorEmailValidator,
         write: Joi.bool().optional(),
         _id: Joi.string().optional(),
       }),

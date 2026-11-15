@@ -24,6 +24,7 @@ import {
   FieldNotFoundError,
   InvalidFileTypeError,
   ModelResponseFailureError,
+  PaymentChannelNotFoundError,
 } from '../admin-form.errors'
 import { OverrideProps } from '../admin-form.types'
 import {
@@ -633,13 +634,24 @@ describe('admin-form.utils', () => {
       )
     })
 
-    it('should drop the error own i18n when the case replaces its message', () => {
+    it('should replace the error own i18n when the case replaces its message', () => {
       // Subclasses miss their parent's case and fall through to the default
       class SubclassedFieldNotFoundError extends FieldNotFoundError {}
 
       expect(mapRouteError(new SubclassedFieldNotFoundError())).toEqual({
         statusCode: 500,
         errorMessage: 'Something went wrong. Please try again.',
+        errorMessageKey: 'features.adminForm.backendErrors.unknown',
+      })
+    })
+
+    it('should forward the payment channel i18n key', () => {
+      expect(mapRouteError(new PaymentChannelNotFoundError())).toEqual({
+        statusCode: 403,
+        errorMessage:
+          'Please ensure that you have connected your Stripe account in settings to save this field',
+        errorMessageKey:
+          'features.adminForm.backendErrors.payments.channelNotFound',
       })
     })
   })

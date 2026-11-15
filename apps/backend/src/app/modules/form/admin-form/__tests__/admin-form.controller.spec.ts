@@ -4413,6 +4413,48 @@ describe('admin-form.controller', () => {
     })
   })
 
+  describe('collaborator email validator i18n', () => {
+    const [transferValidator] = AdminFormController.handleTransferFormOwnership
+    const [collaboratorsValidator] =
+      AdminFormController.handleUpdateCollaborators
+    const app = express()
+      .use(express.json())
+      .post('/transfer', transferValidator, (_req, res) => res.sendStatus(200))
+      .put('/collaborators', collaboratorsValidator, (_req, res) =>
+        res.sendStatus(200),
+      )
+      .use(errorHandlerMiddlewares())
+
+    it('should return the i18n key when transferring to an invalid email', async () => {
+      const response = await supertest(app)
+        .post('/transfer')
+        .send({ email: 'not-an-email' })
+
+      expect(response.status).toEqual(StatusCodes.BAD_REQUEST)
+      expect(response.body.messageKey).toEqual(
+        'features.adminForm.backendErrors.collaborators.invalidEmail',
+      )
+    })
+
+    it('should return the i18n key when adding a collaborator with an invalid email', async () => {
+      const response = await supertest(app)
+        .put('/collaborators')
+        .send([{ email: 'not-an-email', write: true }])
+
+      expect(response.status).toEqual(StatusCodes.BAD_REQUEST)
+      expect(response.body.messageKey).toEqual(
+        'features.adminForm.backendErrors.collaborators.invalidEmail',
+      )
+    })
+
+    it('should not attach the invalid email key when the email is missing', async () => {
+      const response = await supertest(app).post('/transfer').send({})
+
+      expect(response.status).toEqual(StatusCodes.BAD_REQUEST)
+      expect(response.body.messageKey).toBeUndefined()
+    })
+  })
+
   describe('transferFormOwnership', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()

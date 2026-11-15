@@ -16,6 +16,10 @@ import { enSG as toasts } from './toasts'
 
 export const enSG = {
   backendErrors: {
+    unknown: 'Something went wrong. Please try again.',
+    collaborators: {
+      invalidEmail: 'Please enter a valid email',
+    },
     exports: {
       databaseRetrieval:
         'There was a problem retrieving the export data. Please try again.',
@@ -43,6 +47,8 @@ export const enSG = {
       mustBePublic: 'Form must be public to be copied',
     },
     payments: {
+      channelNotFound:
+        'Please ensure that you have connected your Stripe account in settings to save this field',
       invalidAmount: 'Invalid payment amount',
       productAmountLimitExceeded:
         'Item and Quantity exceeded limit. Either lower your quantity or lower payment amount.',
