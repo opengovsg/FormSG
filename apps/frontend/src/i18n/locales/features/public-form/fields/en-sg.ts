@@ -29,6 +29,8 @@ export const enSG: Fields = {
         'You have exceeded the file size limit, please upload a file below {readableMaxSize}',
       fileInvalidType:
         "Your file's extension ending in *{fileExt} is not allowed",
+      fileTypeNotAllowed:
+        "Your file's extension ending in *{fileExt} is not allowed. Only these file types are accepted: {allowedFileTypes}",
       tooManyFiles: 'You can only upload a single file in this input',
       tooManyAttachments: 'You can attach up to {maxFiles} files',
       duplicateFilename:

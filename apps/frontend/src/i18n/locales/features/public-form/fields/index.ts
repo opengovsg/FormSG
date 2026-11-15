@@ -30,6 +30,7 @@ export interface Fields {
       fileEmpty: string
       fileTooLarge: string
       fileInvalidType: string
+      fileTypeNotAllowed: string
       tooManyFiles: string
       tooManyAttachments: string
       duplicateFilename: string
