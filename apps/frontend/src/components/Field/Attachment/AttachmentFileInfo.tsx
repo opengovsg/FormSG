@@ -16,7 +16,7 @@ export interface AttachmentFileInfoProps {
   isRemoveDisabled?: boolean
   handleRemoveFile: () => void
   handleDownloadFile: () => void
-  handleReplaceFile: () => void
+  handleReplaceFile?: () => void
 }
 
 export const AttachmentFileInfo = ({
