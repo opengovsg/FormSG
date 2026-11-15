@@ -27,10 +27,12 @@ import {
   WorkflowType,
 } from 'formsg-shared/types'
 import { handleAddressResponseDisplay } from 'formsg-shared/utils/address'
+import { formatAttachmentAnswer } from 'formsg-shared/utils/multi-attachment'
 import { applyMyInfoPrefixToFormFields } from 'formsg-shared/utils/myinfo-prefix'
 import { SIGNATURE_CAPTURED_STRING } from 'formsg-shared/utils/signature'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
+import type { AttachmentAnswerV4 } from 'formsg-shared/utils/v4-answer'
 import jwt from 'jsonwebtoken'
 import { get } from 'lodash'
 import moment from 'moment'
@@ -648,18 +650,17 @@ const getQuestionAnswerPairsForOneField = ({
   const fieldType = response.fieldType as BasicField
   switch (response.fieldType) {
     case BasicField.Attachment: {
-      const attachmentAnswer = response.answer as {
-        value: string
-        hasBeenScanned: boolean
-        md5Hash?: string
-      }
+      const { value, filenames } = response.answer as AttachmentAnswerV4
       const prefix = keepV4AttachmentPrefix
         ? LEGACY_ATTACHMENT_QUESTION_PREFIX
         : ATTACHMENT_QUESTION_PREFIX
       return [
         {
           question: `${prefix}${questionTitle}`,
-          answer: attachmentAnswer.value,
+          answer: formatAttachmentAnswer({
+            answer: value,
+            answerArray: filenames,
+          }),
           fieldType,
         },
       ]

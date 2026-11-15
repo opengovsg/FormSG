@@ -165,3 +165,72 @@ export const getInvalidFileExtensionsInZip = (
   }
   return checkZipForInvalidFiles(file, 0)
 }
+
+/** `getInvalidExtensions` decompresses nested zips, so callers check the rest first. */
+export const inspectZip = async (
+  file: Buffer,
+): Promise<{
+  entryNames: string[]
+  entryCount: number
+  isUncompressed: boolean
+  hasExtraBytes: boolean
+  getInvalidExtensions: () => Promise<string[]>
+}> => {
+  const zip = await JSZip.loadAsync(file)
+  const getInvalidExtensions = async () => {
+    const invalidExtensions = await Promise.all(
+      zip
+        .filter((_relativePath, entry) => !entry.dir)
+        .map(async (entry) => {
+          const fileExt = getFileExtension(entry.name)
+          if (isInvalidFileExtension(fileExt)) return [fileExt]
+          if (fileExt !== '.zip') return []
+          return getInvalidFileExtensionsInZip(
+            'nodebuffer',
+            await entry.async('nodebuffer'),
+          )
+        }),
+    )
+    return uniq(flattenDeep(invalidExtensions))
+  }
+  return {
+    entryNames: Object.keys(zip.files),
+    ...readCentralDirectory(file),
+    getInvalidExtensions,
+  }
+}
+
+/**
+ * Counts the entries JSZip read from a zip, as JSZip keys entries by name and
+ * so shows one of several entries sharing a name. JSZip reads central
+ * directory records from the offset in the end of central directory record
+ * for as long as they follow one another, whatever count that record declares.
+ */
+const readCentralDirectory = (
+  file: Buffer,
+): { entryCount: number; isUncompressed: boolean; hasExtraBytes: boolean } => {
+  const CENTRAL_DIRECTORY_RECORD = 0x02014b50
+  const STORED = 0
+  const endOfCentralDirectory = file.lastIndexOf('PK\x05\x06', -1, 'latin1')
+  let offset = file.readUInt32LE(endOfCentralDirectory + 16)
+  // JSZip shifts its offsets past bytes added to a zip, so these records would
+  // no longer be the ones it reads
+  const hasExtraBytes =
+    offset + file.readUInt32LE(endOfCentralDirectory + 12) !==
+    endOfCentralDirectory
+  let entryCount = 0
+  let isUncompressed = true
+  while (
+    offset + 46 <= file.length &&
+    file.readUInt32LE(offset) === CENTRAL_DIRECTORY_RECORD
+  ) {
+    entryCount += 1
+    isUncompressed &&= file.readUInt16LE(offset + 10) === STORED
+    offset +=
+      46 +
+      file.readUInt16LE(offset + 28) +
+      file.readUInt16LE(offset + 30) +
+      file.readUInt16LE(offset + 32)
+  }
+  return { entryCount, isUncompressed, hasExtraBytes }
+}

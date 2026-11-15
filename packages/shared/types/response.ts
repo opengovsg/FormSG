@@ -100,6 +100,9 @@ export type RadioResponse = z.infer<typeof RadioResponse>
 
 export const AttachmentResponse = SingleAnswerResponse.extend({
   fieldType: z.literal(BasicField.Attachment),
+  // A multi-file answer's `answer` names its zip, and this lists the files
+  // in it. The server reads them from the zip.
+  answerArray: z.array(z.string()).optional(),
 })
 export type AttachmentResponse = z.infer<typeof AttachmentResponse>
 

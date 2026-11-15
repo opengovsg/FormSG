@@ -105,11 +105,21 @@ export const computeVerifiableAnswerValue = (
   signature: input?.signature,
 })
 
-/** The filename, never the file contents. */
+export type AttachmentAnswerValueOutput = {
+  answer: string
+  answerArray?: string[]
+}
+
+/**
+ * The filename, never the file contents. A multi-file answer's filename is
+ * its zip's, and the files in it follow as `answerArray`.
+ */
 export const computeAttachmentAnswerValue = (
   filename?: string,
-): SingleAnswerValueOutput => ({
+  filenames?: string[],
+): AttachmentAnswerValueOutput => ({
   answer: filename ?? '',
+  ...(filenames && { answerArray: filenames }),
 })
 
 export const computeSectionAnswerValue = (): SectionAnswerValueOutput => ({
