@@ -6523,6 +6523,7 @@ describe('admin-form.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(404)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expect.any(String),
+        messageKey: 'features.publicForm.errors.notFound',
       })
     })
 
@@ -6572,6 +6573,7 @@ describe('admin-form.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(410)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expect.any(String),
+        messageKey: 'features.publicForm.errors.deleted',
       })
     })
 
