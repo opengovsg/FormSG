@@ -66,9 +66,14 @@ const makeAttachmentSizeValidator: AttachmentValidatorConstructor =
 
 const makeAttachmentFileTypeValidator: AttachmentValidatorConstructor =
   (attachmentField) => (response) => {
-    return isAllowedFileType(
-      response.filename,
-      attachmentField.allowedFileTypes,
+    const { allowMultiple, allowedFileTypes } = attachmentField
+    const filenames =
+      allowMultiple && response.answerArray
+        ? response.answerArray
+        : [response.filename]
+
+    return filenames.every((filename) =>
+      isAllowedFileType(filename, allowedFileTypes),
     )
       ? right(response)
       : left(`AttachmentValidator:\t File type not allowed`)
@@ -145,9 +150,10 @@ const makeAttachmentFileTypeValidatorV4: ResponseValidatorConstructor<
   OmitUnusedValidatorProps<IAttachmentFieldSchema>,
   ParsedClearAttachmentFieldResponseV4
 > = (attachmentField) => (response) => {
-  return isAllowedFileType(
-    response.answer.filename,
-    attachmentField.allowedFileTypes,
+  const { filename, filenames } = response.answer
+
+  return (filenames ?? [filename]).every((name) =>
+    isAllowedFileType(name, attachmentField.allowedFileTypes),
   )
     ? right(response)
     : left(`AttachmentValidatorV4:\t File type not allowed`)

@@ -105,11 +105,18 @@ export const computeVerifiableAnswerValue = (
   signature: input?.signature,
 })
 
+export type AttachmentAnswerValueOutput = {
+  answer: string
+  answerArray?: string[]
+}
+
 /** The filename, never the file contents. */
 export const computeAttachmentAnswerValue = (
   filename?: string,
-): SingleAnswerValueOutput => ({
+  filenames?: string[],
+): AttachmentAnswerValueOutput => ({
   answer: filename ?? '',
+  ...(filenames && { answerArray: filenames }),
 })
 
 export const computeSectionAnswerValue = (): SectionAnswerValueOutput => ({

@@ -34,6 +34,10 @@ import {
   getLoginIdentityValuesFromCookies,
   prefixLoginIdentityQuestions,
 } from '../login-identity-answers'
+import {
+  nameMultiAttachmentResponses,
+  readMultiAttachmentResponses,
+} from '../multi-attachment'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { sharedSubmissionParams } from '../submission.constants'
 import * as SubmissionService from '../submission.service'
@@ -356,10 +360,14 @@ export const validateStorageSubmission = async (
   }
 
   // Validate submission
-  return await SubmissionService.validateAttachments(
-    req.body.responses,
-    formDef.responseMode,
-  )
+  return await readMultiAttachmentResponses(formDef, req.body.responses)
+    .andThen((responses) => {
+      req.body.responses = responses
+      return SubmissionService.validateAttachments(
+        responses,
+        formDef.responseMode,
+      )
+    })
     .andThen(() =>
       ParsedResponsesObject.parseResponses(formDef, req.body.responses),
     )
@@ -458,7 +466,10 @@ export const validateStorageSubmission = async (
         parsedResponses.getAllResponses(),
         hashedFields,
       )
-      req.body.responses = storageFormData
+      req.body.responses = nameMultiAttachmentResponses(
+        formDef,
+        storageFormData,
+      )
       return next()
     })
     .mapErr((error) => {

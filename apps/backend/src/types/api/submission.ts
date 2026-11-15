@@ -58,6 +58,7 @@ type AttachmentResponseV4 = Extract<
 export type ParsedClearAttachmentAnswerV4 = AttachmentAnswerV4 & {
   filename: string
   content: Buffer
+  filenames?: string[]
 }
 
 export type ParsedClearAttachmentFieldResponseV4 = Omit<

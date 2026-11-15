@@ -189,3 +189,85 @@ export const getInvalidFileExtensionsInZip = (
   }
   return checkZipForInvalidFiles(file, 0)
 }
+
+export const inspectZip = async (
+  file: Buffer,
+): Promise<{
+  entryNames: string[]
+  isUncompressed: boolean
+  hasExtraBytes: boolean
+  hasMismatchedNames: boolean
+  decompressAndFindInvalidExtensions: () => Promise<string[]>
+}> => {
+  const zip = await JSZip.loadAsync(file)
+  const decompressAndFindInvalidExtensions = async () => {
+    const invalidExtensions = await Promise.all(
+      zip
+        .filter((_relativePath, entry) => !entry.dir)
+        .map(async (entry) => {
+          const fileExt = getFileExtension(entry.name)
+          if (isInvalidFileExtension(fileExt)) return [fileExt]
+          if (fileExt !== '.zip') return []
+          return getInvalidFileExtensionsInZip(
+            'nodebuffer',
+            await entry.async('nodebuffer'),
+          )
+        }),
+    )
+    return uniq(flattenDeep(invalidExtensions))
+  }
+  const entryNames = Object.keys(zip.files)
+  const { centralNames, ...centralDirectory } = readCentralDirectory(file)
+  const entryNameSet = new Set(entryNames)
+  return {
+    entryNames,
+    ...centralDirectory,
+    hasMismatchedNames:
+      centralNames.length !== entryNames.length ||
+      centralNames.some((name) => !entryNameSet.has(name)),
+    decompressAndFindInvalidExtensions,
+  }
+}
+
+/**
+ * Lists the names other unzip tools read from a zip's central directory.
+ * JSZip names entries from their local headers instead, and keys them by name
+ * so shows one of several entries sharing a name. JSZip reads central
+ * directory records from the offset in the end of central directory record
+ * for as long as they follow one another, whatever count that record declares.
+ */
+const readCentralDirectory = (
+  file: Buffer,
+): {
+  centralNames: string[]
+  isUncompressed: boolean
+  hasExtraBytes: boolean
+} => {
+  const CENTRAL_DIRECTORY_RECORD = 0x02014b50
+  const STORED = 0
+  const endOfCentralDirectory = file.lastIndexOf('PK\x05\x06', -1, 'latin1')
+  let offset = file.readUInt32LE(endOfCentralDirectory + 16)
+  // JSZip shifts its offsets past bytes added to a zip, so these records would
+  // no longer be the ones it reads
+  const hasExtraBytes =
+    offset + file.readUInt32LE(endOfCentralDirectory + 12) !==
+    endOfCentralDirectory
+  const centralNames: string[] = []
+  let isUncompressed = true
+  while (
+    offset + 46 <= file.length &&
+    file.readUInt32LE(offset) === CENTRAL_DIRECTORY_RECORD
+  ) {
+    isUncompressed &&= file.readUInt16LE(offset + 10) === STORED
+    const nameLength = file.readUInt16LE(offset + 28)
+    centralNames.push(
+      file.toString('utf8', offset + 46, offset + 46 + nameLength),
+    )
+    offset +=
+      46 +
+      file.readUInt16LE(offset + 28) +
+      file.readUInt16LE(offset + 30) +
+      file.readUInt16LE(offset + 32)
+  }
+  return { centralNames, isUncompressed, hasExtraBytes }
+}
