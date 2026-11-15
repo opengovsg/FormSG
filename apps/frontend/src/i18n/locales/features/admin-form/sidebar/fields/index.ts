@@ -228,6 +228,9 @@ export interface Fields {
   attachment: {
     info: string
     maximumSize: string
+    maximumSizeMultiple: string
+    allowMultiple: string
+    webhookWarning: string
     error: {
       exceedSize: string
     }
