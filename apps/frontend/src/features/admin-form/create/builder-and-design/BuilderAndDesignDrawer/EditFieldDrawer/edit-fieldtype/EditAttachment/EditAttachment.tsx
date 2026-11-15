@@ -52,6 +52,7 @@ const EDIT_ATTACHMENT_FIELD_KEYS = [
   'description',
   'required',
   'attachmentSize',
+  'allowMultiple',
 ] as const
 
 type EditAttachmentKeys = (typeof EDIT_ATTACHMENT_FIELD_KEYS)[number]
@@ -115,6 +116,14 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
     },
   })
 
+  const isMultiUploadEnabled = useFeatureIsOn(
+    featureFlags.attachmentsMultiUploadAndOneZip,
+  )
+  const canTurnOnMultiple =
+    isMultiUploadEnabled &&
+    !!form &&
+    form.responseMode !== FormResponseMode.Email
+  const allowMultiple = watch('allowMultiple')
   const isRestrictFileTypesEnabled = useFeatureIsOn(
     featureFlags.attachmentsRestrictFileTypes,
   )
@@ -128,6 +137,12 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
       form.responseMode !== FormResponseMode.Email) ||
     wasSavedRestricted
   const hasAllowedFileTypes = watch('hasAllowedFileTypes')
+  const wasSavedMultiple =
+    savedField?.fieldType === BasicField.Attachment &&
+    !!savedField.allowMultiple
+  const canAllowMultiple = canTurnOnMultiple || wasSavedMultiple
+  const isTurningOnMultipleWithWebhook =
+    allowMultiple && !wasSavedMultiple && !!form?.webhook.url
 
   const requiredValidationRule = useMemo(
     () =>
@@ -255,6 +270,21 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
       <FormControl isReadOnly={isLoading}>
         <Toggle {...register('required')} label="Required" />
       </FormControl>
+      {canAllowMultiple ? (
+        <FormControl isReadOnly={isLoading}>
+          <Toggle
+            {...register('allowMultiple')}
+            label={t(
+              'features.adminForm.sidebar.fields.attachment.allowMultiple',
+            )}
+          />
+        </FormControl>
+      ) : null}
+      {isTurningOnMultipleWithWebhook ? (
+        <InlineMessage variant="warning">
+          {t('features.adminForm.sidebar.fields.attachment.webhookWarning')}
+        </InlineMessage>
+      ) : null}
       {canRestrictFileTypes ? (
         <Box>
           <FormControl isReadOnly={isLoading}>
@@ -300,7 +330,11 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
         isInvalid={!!errors.attachmentSize}
       >
         <FormLabel isRequired>
-          {t('features.adminForm.sidebar.fields.attachment.maximumSize')}
+          {allowMultiple
+            ? t(
+                'features.adminForm.sidebar.fields.attachment.maximumSizeMultiple',
+              )
+            : t('features.adminForm.sidebar.fields.attachment.maximumSize')}
         </FormLabel>
         <Skeleton isLoaded={!!form}>
           <Controller
