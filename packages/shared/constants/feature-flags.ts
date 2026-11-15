@@ -30,6 +30,7 @@ export const featureFlags = {
   disableBouncedSubmissionSms: 'disable-bounced-submission-sms' as const,
   keepV4AttachmentPrefix: 'keep-v4-attachment-prefix' as const,
   attachmentsV2: 'attachments-v2' as const,
+  attachmentsRestrictFileTypes: 'attachments-restrict-file-types' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {
