@@ -6,9 +6,12 @@ import path from 'path'
 import {
   getFileExtension,
   getInvalidFileExtensionsInZip,
+  isAllowedFileType,
   isInvalidFileExtension,
   MAX_ZIP_ENTRY_COUNT,
   MAX_ZIP_NESTING_DEPTH,
+  normaliseFileType,
+  validateAllowedFileTypes,
 } from '../file-validation'
 
 const RESOURCES = path.join(__dirname, '../../../../__tests__/resources')
@@ -55,6 +58,40 @@ describe('File validation utils', () => {
     it('should return true when given invalid extension that is mixed case', () => {
       const actual = isInvalidFileExtension('.sPoNgEbOb')
       expect(actual).toEqual(true)
+    })
+  })
+
+  describe('normaliseFileType', () => {
+    it('should lower-case and add a leading dot', () => {
+      expect(normaliseFileType(' PDF ')).toEqual('.pdf')
+      expect(normaliseFileType('.Docx')).toEqual('.docx')
+    })
+  })
+
+  describe('validateAllowedFileTypes', () => {
+    it('should allow an empty list and a list of valid extensions', () => {
+      expect(validateAllowedFileTypes([])).toEqual(true)
+      expect(validateAllowedFileTypes(['.pdf', '.docx'])).toEqual(true)
+    })
+
+    it('should reject invalid, untidied or repeated extensions', () => {
+      expect(validateAllowedFileTypes(['.pfd'])).toEqual(false)
+      expect(validateAllowedFileTypes(['.PDF'])).toEqual(false)
+      expect(validateAllowedFileTypes(['.pdf', '.pdf'])).toEqual(false)
+    })
+  })
+
+  describe('isAllowedFileType', () => {
+    it('should allow every file when no file types are given', () => {
+      expect(isAllowedFileType('photo.jpg')).toEqual(true)
+      expect(isAllowedFileType('photo.jpg', [])).toEqual(true)
+    })
+
+    it('should allow only the given file types, in any case', () => {
+      expect(isAllowedFileType('Report.PDF', ['.pdf'])).toEqual(true)
+      expect(isAllowedFileType('photo.jpg', ['.pdf'])).toEqual(false)
+      expect(isAllowedFileType('no-extension', ['.pdf'])).toEqual(false)
+      expect(isAllowedFileType('evil.exe\u0000.pdf', ['.pdf'])).toEqual(false)
     })
   })
 

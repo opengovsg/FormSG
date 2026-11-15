@@ -30,6 +30,7 @@ export const featureFlags = {
   settingsIntegrationsJson: 'settings-integrations-json' as const,
   attachmentsMultiUploadAndOneZip:
     'attachments-multi-upload-and-one-zip' as const,
+  attachmentsRestrictFileTypes: 'attachments-restrict-file-types' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {

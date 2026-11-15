@@ -113,6 +113,30 @@ export const getFileExtension = (filename: string): string => {
 export const isInvalidFileExtension = (ext: string): boolean =>
   !VALID_EXTENSIONS.includes(ext.toLowerCase())
 
+export const normaliseFileType = (fileType: string): string => {
+  const lowerCased = fileType.trim().toLowerCase()
+  return lowerCased.startsWith('.') ? lowerCased : `.${lowerCased}`
+}
+
+export const allowsEveryFileType = (allowedFileTypes: string[] = []) =>
+  allowedFileTypes.length === 0
+
+export const validateAllowedFileTypes = (fileTypes: string[]): boolean =>
+  new Set(fileTypes).size === fileTypes.length &&
+  fileTypes.every((fileType) => VALID_EXTENSIONS.includes(fileType))
+
+// Unzip tools and file systems end a name at NUL, so `run.exe\0.pdf` is saved as `run.exe`
+export const hasControlCharacters = (name: string): boolean =>
+  /\p{Cc}/u.test(name)
+
+export const isAllowedFileType = (
+  filename: string,
+  allowedFileTypes: string[] = [],
+): boolean =>
+  allowsEveryFileType(allowedFileTypes) ||
+  (!hasControlCharacters(filename) &&
+    allowedFileTypes.includes(getFileExtension(filename).toLowerCase()))
+
 /**
  * Dives into a zip file and recursively checks if it contains
  * any invalid files. A file is deemed invalid if its file extension
