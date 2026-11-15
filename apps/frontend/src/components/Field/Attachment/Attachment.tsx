@@ -15,6 +15,7 @@ import imageCompression from 'browser-image-compression'
 import omit from 'lodash/omit'
 
 import { MB } from 'formsg-shared/constants/file'
+import { VALID_EXTENSIONS } from 'formsg-shared/utils/file-validation'
 
 import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
 import { ThemeColorScheme } from '~theme/foundations/colours'
@@ -57,6 +58,11 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
    * describing file types to allow
    */
   accept?: DropzoneProps['accept']
+  /**
+   * If exists, the only file types to accept in place of `accept`, named in
+   * the error when a file of another type is picked.
+   */
+  allowedFileTypes?: string[]
   /**
    * Text to state miscellaneous uploaded file constraints.
    */
@@ -127,6 +133,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       fileConstraintsText,
       showFileSize,
       accept,
+      allowedFileTypes,
       value,
       name,
       colorScheme,
@@ -168,10 +175,18 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           switch (firstError.code) {
             case 'file-invalid-type': {
               const fileExt = getFileExtension(rejectedFiles[0].file.name)
-              errorMessage = t(
-                `features.publicForm.components.fields.attachment.error.fileInvalidType`,
-                { fileExt },
-              )
+              errorMessage = allowedFileTypes
+                ? t(
+                    'features.publicForm.components.fields.attachment.error.fileTypeNotAllowed',
+                    {
+                      fileExt,
+                      allowedFileTypes: allowedFileTypes.join(', '),
+                    },
+                  )
+                : t(
+                    `features.publicForm.components.fields.attachment.error.fileInvalidType`,
+                    { fileExt },
+                  )
               break
             }
             case 'too-many-files': {
@@ -191,7 +206,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           try {
             const invalidFilesInZip = await getInvalidFileExtensionsInZip(
               acceptedFile,
-              accept,
+              VALID_EXTENSIONS,
             )
             const numInvalidFiles = invalidFilesInZip.length
             // There are invalid files, return error.
@@ -249,7 +264,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
         }
         onChange(acceptedFile)
       },
-      [accept, publicFormId, maxSize, onChange, onError, t],
+      [allowedFileTypes, publicFormId, maxSize, onChange, onError, t],
     )
 
     const fileValidator = useCallback<NonNullable<DropzoneProps['validator']>>(
@@ -280,7 +295,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
 
     const { getRootProps, getInputProps, isDragActive, rootRef } = useDropzone({
       multiple: false,
-      accept,
+      accept: allowedFileTypes ?? accept,
       disabled: inputProps.disabled,
       validator: fileValidator,
       noClick: inputProps.readOnly,
