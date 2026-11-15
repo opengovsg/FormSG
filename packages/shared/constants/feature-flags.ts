@@ -31,6 +31,7 @@ export const featureFlags = {
   keepV4AttachmentPrefix: 'keep-v4-attachment-prefix' as const,
   attachmentsMultiUploadAndOneZip:
     'attachments-multi-upload-and-one-zip' as const,
+  attachmentsRestrictFileTypes: 'attachments-restrict-file-types' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {
