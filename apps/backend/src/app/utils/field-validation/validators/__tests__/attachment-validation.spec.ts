@@ -157,6 +157,34 @@ describe('Attachment validation', () => {
     })
   })
 
+  describe('Validation of file types', () => {
+    it('should allow a file of a type the field allows, in any case', () => {
+      const formField = generateDefaultField(BasicField.Attachment, {
+        attachmentSize: AttachmentSize.OneMb,
+        allowedFileTypes: ['.pdf'],
+      })
+      const response = generateNewAttachmentResponse({
+        filename: 'Report.PDF',
+      })
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+    })
+
+    it('should disallow a file of a type the field does not allow', () => {
+      const formField = generateDefaultField(BasicField.Attachment, {
+        attachmentSize: AttachmentSize.OneMb,
+        allowedFileTypes: ['.pdf'],
+      })
+      const response = generateNewAttachmentResponse({
+        filename: 'photo.jpg',
+      })
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
+    })
+  })
+
   describe('check for responses on hidden fields', () => {
     it('should disallow responses submitted for hidden fields when response contains file content', () => {
       const formField = generateDefaultField(BasicField.Attachment, {
@@ -447,6 +475,33 @@ describe('Attachment field validation V4', () => {
       })
       expect(validateResult.isOk()).toBe(true)
       expect(validateResult._unsafeUnwrap()).toEqual(true)
+    })
+  })
+
+  describe('Validation of file types', () => {
+    const validate = (answer: { value: string; filename: string }) =>
+      validateFieldV4({
+        formId,
+        formField: generateDefaultFieldV4(BasicField.Attachment, {
+          attachmentSize: AttachmentSize.OneMb,
+          allowedFileTypes: ['.pdf'],
+        }),
+        response: makeAttachmentResponseV4({
+          ...answer,
+          content: Buffer.alloc(1),
+          hasBeenScanned: false,
+        }),
+        isVisible: true,
+      })
+
+    it('should disallow a file of a type the field does not allow', () => {
+      expect(validate({ value: 'a.pdf', filename: 'a.pdf' }).isOk()).toBe(true)
+      expect(
+        validate({
+          value: 'photo.jpg',
+          filename: 'photo.jpg',
+        })._unsafeUnwrapErr(),
+      ).toEqual(new ValidateFieldErrorV4('Invalid answer submitted'))
     })
   })
 
