@@ -37,7 +37,7 @@ const injectGrowthBookAttributes = (
 }
 
 export const GrowthBookProvider = ({ children }: { children: ReactNode }) => {
-  const { data: { growthbookClientKey } = {} } = useEnv()
+  const { data: { growthbookClientKey, growthbookApiHost } = {} } = useEnv()
   const { isAuthenticated } = useAuth()
 
   const { user } = useUser({ enabled: !!isAuthenticated })
@@ -45,9 +45,9 @@ export const GrowthBookProvider = ({ children }: { children: ReactNode }) => {
   const growthbook = useMemo(
     () =>
       growthbookClientKey
-        ? createGrowthbookInstance(growthbookClientKey)
+        ? createGrowthbookInstance(growthbookClientKey, growthbookApiHost)
         : undefined,
-    [growthbookClientKey],
+    [growthbookClientKey, growthbookApiHost],
   )
 
   useEffect(() => {

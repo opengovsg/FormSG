@@ -83,6 +83,7 @@ export const getClientEnvVars = (): ClientEnvVars => {
     adminFeedbackDisplayFrequency: config.adminFeedbackDisplayFrequency,
 
     growthbookClientKey: growthbookConfig.growthbookClientKey,
+    growthbookApiHost: growthbookConfig.growthbookApiHost,
 
     uenHiddenEntityTypes: uenConfig.hiddenEntityTypes,
   }

@@ -5,11 +5,14 @@ import { GROWTHBOOK_API_HOST_PATH } from 'formsg-shared/constants/routes'
 
 import { env } from '~/env'
 
-export const createGrowthbookInstance = (clientKey: string) => {
+export const createGrowthbookInstance = (
+  clientKey: string,
+  apiHostOverride?: string,
+) => {
   const isDev = import.meta.env.MODE === 'development'
 
   const apiHost = `${
-    isDev ? GROWTHBOOK_DEV_PROXY : env.appUrl
+    isDev ? GROWTHBOOK_DEV_PROXY : apiHostOverride || env.appUrl
   }${GROWTHBOOK_API_HOST_PATH}`
 
   return new GrowthBook({
