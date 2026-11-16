@@ -17,7 +17,6 @@ export const featureFlags = {
   adminEmailPdf: 'admin-email-pdf' as const,
   ogpHeader: 'enable-ogp-header' as const,
   ogpAwareness: 'ogp-awareness' as const,
-  ogpSpinner: 'ogp-spinner' as const,
   wogadLogin: 'wogad-login' as const,
   mrfResponseLimit: 'mrf-response-limit' as const,
   useTemplateFrame: 'use-template-frame' as const,
