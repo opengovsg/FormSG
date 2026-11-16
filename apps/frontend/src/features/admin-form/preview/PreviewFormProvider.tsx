@@ -409,7 +409,10 @@ export const PreviewFormProvider = ({
     [formFields, searchParams],
   )
   // A Singpass Myinfo step shows Myinfo fields as a Singaporean sees them.
-  const isMyInfoStep = stepData?.form.authType === FormAuthType.MyInfo
+  // Email mode never fills in Myinfo sample values, so it keeps the old view.
+  const isMyInfoStep =
+    stepData?.form.authType === FormAuthType.MyInfo &&
+    stepData.form.responseMode !== FormResponseMode.Email
   const augmentedFormFields = useMemo(
     () =>
       formFields

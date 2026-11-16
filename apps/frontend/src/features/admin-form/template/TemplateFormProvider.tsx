@@ -117,7 +117,10 @@ export const TemplateFormProvider = ({
     [formFields, searchParams],
   )
   // A Singpass Myinfo login shows Myinfo fields as a Singaporean sees them.
-  const isMyInfoStep = form?.authType === FormAuthType.MyInfo
+  // Email mode never fills in Myinfo sample values, so it keeps the old view.
+  const isMyInfoStep =
+    form?.authType === FormAuthType.MyInfo &&
+    form.responseMode !== FormResponseMode.Email
   const augmentedFormFields = useMemo(
     () =>
       formFields
