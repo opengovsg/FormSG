@@ -31,6 +31,12 @@ export const SingpassAuthOptionsRadio = ({
   const { t } = useTranslation()
   const { mutateFormAuthType } = useMutateFormSettings()
   const [focusedValue, setFocusedValue] = useState<FormAuthType>()
+  const [opensAsLegacySingpass] = useState(
+    settings.authType === FormAuthType.SP,
+  )
+  const loginOptions = getLoginOptionsKeepingLegacySingpass(
+    opensAsLegacySingpass ? FormAuthType.SP : settings.authType,
+  )
 
   const isFormPublic = settings.status === FormStatus.Public
 
@@ -86,27 +92,25 @@ export const SingpassAuthOptionsRadio = ({
         onKeyDown={handleEnterKeyDown}
         onChange={(e: FormAuthType) => setFocusedValue(e)}
       >
-        {getLoginOptionsKeepingLegacySingpass(settings.authType).map(
-          (authType) => (
-            <Fragment key={authType}>
-              <Box onClick={handleOptionClick(authType)}>
-                <Radio
-                  value={authType}
-                  allowDeselect={false}
-                  isDisabled={checkIsDisabled()}
-                >
-                  <LoginOptionLabel authType={authType} />
-                </Radio>
-              </Box>
-              {isEsrvcidRequired(authType) && authType === settings.authType ? (
-                <EsrvcIdBox
-                  settings={settings}
-                  isDisabled={isEsrvcIdBoxDisabled}
-                />
-              ) : null}
-            </Fragment>
-          ),
-        )}
+        {loginOptions.map((authType) => (
+          <Fragment key={authType}>
+            <Box onClick={handleOptionClick(authType)}>
+              <Radio
+                value={authType}
+                allowDeselect={false}
+                isDisabled={checkIsDisabled()}
+              >
+                <LoginOptionLabel authType={authType} />
+              </Radio>
+            </Box>
+            {isEsrvcidRequired(authType) && authType === settings.authType ? (
+              <EsrvcIdBox
+                settings={settings}
+                isDisabled={isEsrvcIdBoxDisabled}
+              />
+            ) : null}
+          </Fragment>
+        ))}
       </Radio.RadioGroup>
     </>
   )
