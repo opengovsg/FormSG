@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.73.0](https://github.com/opengovsg/formsg/compare/v9.72.0...v9.73.0) (2026-11-16)
+
+
+### Features
+
+* **attachments:** accept the same file types as Highway (#9829) ([#9829](https://github.com/opengovsg/formsg/commit/ef4e3eb9b8f15071d1e04a8d7a4f59d5adb86b32))
+* **responses:** label attachments [attachment] in every output (#10508) ([#10508](https://github.com/opengovsg/formsg/commit/b4fe34d1158349d6ccf99345d6ba9f9b3181f242))
+
 ## [9.72.0](https://github.com/opengovsg/formsg/compare/v9.71.4...v9.72.0) (2026-11-13)
 
 
