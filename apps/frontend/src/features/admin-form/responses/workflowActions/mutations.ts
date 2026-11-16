@@ -121,6 +121,7 @@ export const useFixStepMutation = (formId: string) => {
       targetStepNumber: number
       expectedStepNumber: number
       submissionSecretKey: string
+      clearResponses: boolean
       remarks?: string
       stepOneRecipientEmail?: string
     }) => fixWorkflowStep({ formId, ...params }),

@@ -1,5 +1,6 @@
 import { Box } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react-vite'
+import { expect, userEvent, within } from 'storybook/test'
 
 import { DateString, WorkflowEventType } from 'formsg-shared/types'
 
@@ -87,4 +88,16 @@ NoRecipients.args = {
     ],
     workflowEvents: [],
   },
+}
+
+export const ReviewNotNeeded = Template.bind({})
+ReviewNotNeeded.play = async ({ canvasElement }) => {
+  const page = within(canvasElement.ownerDocument.body)
+  await userEvent.click(await page.findByRole('radio', { name: /^No / }))
+  await expect(
+    page.getByText('Return to Step 3 (Finance). Keep earlier approvals.'),
+  ).toBeVisible()
+  await expect(
+    page.getByText('Keep existing form fields filled?'),
+  ).toBeVisible()
 }
