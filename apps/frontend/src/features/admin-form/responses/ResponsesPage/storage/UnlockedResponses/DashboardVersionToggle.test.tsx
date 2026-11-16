@@ -25,12 +25,8 @@ vi.mock('@growthbook/growthbook-react', () => ({
   useFeatureIsOn: () => true,
 }))
 
-vi.mock('../../hooks/useIsDelightfulDashboard', () => ({
+vi.mock('../../../hooks/useIsDelightfulDashboard', () => ({
   useResultsDashboardVersion: () => [mockVersion, mockSetVersion],
-}))
-
-vi.mock('../../ResponsesPage/storage', () => ({
-  useStorageResponsesContext: () => ({ secretKey: 'key' }),
 }))
 
 const renderToggle = (version: 'v1' | 'v2') => {

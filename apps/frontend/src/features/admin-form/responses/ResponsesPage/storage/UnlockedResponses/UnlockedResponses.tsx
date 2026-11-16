@@ -10,12 +10,10 @@ import Pagination from '~components/Pagination'
 
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 
-import {
-  DashboardVersionToggle,
-  useResultsNavLayout,
-} from '../../../components/FormResultsNavbar'
+import { useResultsNavLayout } from '../../../components/FormResultsNavbar'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 
+import { DashboardVersionToggle } from './DashboardVersionToggle'
 import { DeleteViewModal } from './DeleteViewModal'
 import { DownloadButton } from './DownloadButton'
 import { TABLE_RESPONSE_LIMIT } from './responseLimit'
