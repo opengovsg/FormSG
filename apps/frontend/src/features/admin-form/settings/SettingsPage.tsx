@@ -20,6 +20,7 @@ import { LanguageTranslation } from '~assets/icons/LanguageTranslation'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 
+import { useUsesStepLoginRules } from '~features/admin-form/create/workflow/hooks/useUsesStepLoginRules'
 import { useUser } from '~features/user/queries'
 
 import {
@@ -51,13 +52,14 @@ interface TabEntry {
 export const SettingsPage = (): JSX.Element => {
   const { formId, settingsTab } = useParams()
   const showNavLabels = useFeatureIsOn(featureFlags.sidebarNavLabels)
+  const usesStepLoginRules = useUsesStepLoginRules()
   const { isCollapsed, isMobile, toggle } = useSideNavCollapse()
   const { isLoading: isFormSettingLoading } = useAdminFormSettings()
   const { user, isLoading: isUserLoading } = useUser()
   const { t } = useTranslation()
   const {
     general: { title: generalTitle },
-    singpass: { title: singpassTitle },
+    singpass: { title: singpassTitle, loginTitle },
     emailNotifications: { title: emailNotificationsTitle },
     webhooks: { title: webhooksTitle },
     payments: { title: paymentsTitle },
@@ -97,7 +99,7 @@ export const SettingsPage = (): JSX.Element => {
       path: 'general',
     },
     {
-      label: singpassTitle,
+      label: usesStepLoginRules ? loginTitle : singpassTitle,
       icon: BiKey,
       component: SettingsAuthPage,
       path: 'singpass',

@@ -8,6 +8,7 @@ import {
   InputGroup,
   InputRightElement,
   Stack,
+  VisuallyHidden,
 } from '@chakra-ui/react'
 
 import { FormAuthType, FormSettings } from 'formsg-shared/types/form'
@@ -15,6 +16,8 @@ import { FormAuthType, FormSettings } from 'formsg-shared/types/form'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
 import Spinner from '~components/Spinner'
+
+import { useUsesStepLoginRules } from '~features/admin-form/create/workflow/hooks/useUsesStepLoginRules'
 
 import { useMutateFormSettings } from '../../mutations'
 import { isValidEsrvcId } from '../../utils'
@@ -31,6 +34,7 @@ export const EsrvcIdBox = ({
   isDisabled,
 }: EsrvcIdBoxProps): JSX.Element => {
   const { t } = useTranslation()
+  const usesStepLoginRules = useUsesStepLoginRules()
   const initialEsrvcId = useMemo(() => settings.esrvcId ?? '', [settings])
 
   const { mutateFormEsrvcId } = useMutateFormSettings()
@@ -72,11 +76,22 @@ export const EsrvcIdBox = ({
   )
   return (
     <form onSubmit={onSubmit} onBlur={handleBlur}>
-      <Stack ml="2.75rem" mt="0.75rem" mb="1.25rem">
-        <FormLabel htmlFor="esrvcId" mb={0}>
-          {t('features.adminForm.sidebar.workflow.stepLogin.esrvcIdLabel')}
-        </FormLabel>
+      <Stack
+        ml="2.75rem"
+        mt={usesStepLoginRules ? '0.75rem' : undefined}
+        mb="1.25rem"
+      >
+        {usesStepLoginRules ? (
+          <FormLabel htmlFor="esrvcId" mb={0}>
+            {t('features.adminForm.sidebar.workflow.stepLogin.esrvcIdLabel')}
+          </FormLabel>
+        ) : null}
         <EsrvcHelperText authType={settings.authType} />
+        {usesStepLoginRules ? null : (
+          <VisuallyHidden>
+            <FormLabel htmlFor="esrvcId">e-service ID:</FormLabel>
+          </VisuallyHidden>
+        )}
         <Flex maxW="20rem" w="100%">
           <FormControl id="esrvcId" isInvalid={!!errors.esrvcId}>
             <InputGroup>

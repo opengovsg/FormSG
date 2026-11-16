@@ -12,10 +12,16 @@ import { FormAuthType, FormSettings, FormStatus } from 'formsg-shared/types'
 
 import Radio from '~components/Radio'
 
+import { useUsesStepLoginRules } from '~features/admin-form/create/workflow/hooks/useUsesStepLoginRules'
+
 import { useMutateFormSettings } from '../../mutations'
 import { isEsrvcidRequired } from '../utils'
 
-import { getLoginOptionsKeepingLegacySingpass } from './constants'
+import {
+  getLoginOptionsKeepingLegacySingpass,
+  LOGIN_OPTION_COPY,
+  LOGIN_PROVIDERS,
+} from './constants'
 import { EsrvcIdBox } from './EsrvcIdBox'
 import { LoginOptionLabel } from './LoginOptionLabel'
 
@@ -29,14 +35,17 @@ export const SingpassAuthOptionsRadio = ({
   isDisabled,
 }: SingpassAuthOptionsRadioProps): JSX.Element => {
   const { t } = useTranslation()
+  const usesStepLoginRules = useUsesStepLoginRules()
   const { mutateFormAuthType } = useMutateFormSettings()
   const [focusedValue, setFocusedValue] = useState<FormAuthType>()
   const [opensAsLegacySingpass] = useState(
     settings.authType === FormAuthType.SP,
   )
-  const loginOptions = getLoginOptionsKeepingLegacySingpass(
-    opensAsLegacySingpass ? FormAuthType.SP : settings.authType,
-  )
+  const loginOptions = usesStepLoginRules
+    ? getLoginOptionsKeepingLegacySingpass(
+        opensAsLegacySingpass ? FormAuthType.SP : settings.authType,
+      )
+    : LOGIN_PROVIDERS
 
   const isFormPublic = settings.status === FormStatus.Public
 
@@ -82,11 +91,13 @@ export const SingpassAuthOptionsRadio = ({
 
   return (
     <>
-      <FormLabel id="form-login-label" mb="1rem">
-        {t('features.adminForm.sidebar.workflow.stepLogin.formQuestion')}
-      </FormLabel>
+      {usesStepLoginRules ? (
+        <FormLabel id="form-login-label" mb="1rem">
+          {t('features.adminForm.sidebar.workflow.stepLogin.formQuestion')}
+        </FormLabel>
+      ) : null}
       <Radio.RadioGroup
-        aria-labelledby="form-login-label"
+        aria-labelledby={usesStepLoginRules ? 'form-login-label' : undefined}
         style={{ opacity: isDisabled ? 0.8 : 1 }}
         value={settings.authType}
         onKeyDown={handleEnterKeyDown}
@@ -97,10 +108,14 @@ export const SingpassAuthOptionsRadio = ({
             <Box onClick={handleOptionClick(authType)}>
               <Radio
                 value={authType}
-                allowDeselect={false}
+                allowDeselect={!usesStepLoginRules}
                 isDisabled={checkIsDisabled()}
               >
-                <LoginOptionLabel authType={authType} />
+                {usesStepLoginRules ? (
+                  <LoginOptionLabel authType={authType} />
+                ) : (
+                  t(LOGIN_OPTION_COPY[authType].labelKey)
+                )}
               </Radio>
             </Box>
             {isEsrvcidRequired(authType) && authType === settings.authType ? (

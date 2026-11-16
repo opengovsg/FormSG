@@ -26,6 +26,7 @@ vi.mock('~features/user/queries', () => ({
 }))
 vi.mock('../common/queries', () => ({
   useAdminFormCollaborators: () => ({ hasEditAccess: true, isLoading: false }),
+  useAdminForm: () => ({ data: undefined }),
 }))
 vi.mock('./queries', () => ({
   useAdminFormSettings: () => ({ isLoading: false }),
@@ -52,7 +53,7 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: () => ({
       general: { title: 'General' },
-      singpass: { title: 'Login' },
+      singpass: { title: 'Singpass', loginTitle: 'Login' },
       emailNotifications: { title: 'Email notifications' },
       webhooks: { title: 'Webhooks' },
       payments: { title: 'Payments' },

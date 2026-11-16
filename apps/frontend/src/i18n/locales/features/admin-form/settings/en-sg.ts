@@ -7,9 +7,11 @@ import { enSG as webhooks } from './webhooks'
 export const enSG = {
   general,
   singpass: {
-    title: 'Login',
+    title: 'Singpass',
+    loginTitle: 'Login',
     submitterIdCollection: {
       toggleLabel: 'Collect NRIC/FIN/UENs with form submissions',
+      addNricField: 'Add an NRIC/FIN Field',
       convert: 'Switch to using fields',
       learnMore: 'Learn more',
       stopCollecting: 'Stop collecting',
@@ -34,7 +36,7 @@ export const enSG = {
       // Singpass converts to one field and Corppass to two, so each login has
       // its own sentences.
       singpass: {
-        goToFields: 'Add an NRIC/FIN Field',
+        goToFields: 'Go to Singpass fields',
         switchHint: 'Switch to collecting NRIC/FIN using form fields.',
         stopTitle: 'Stop collecting NRIC/FIN',
         collectLaterDescription:
@@ -49,7 +51,7 @@ export const enSG = {
           'This field will be added to the end of your form and prefilled from Myinfo.',
       },
       corppass: {
-        goToFields: 'Add an NRIC/FIN Field',
+        goToFields: 'Go to Corppass fields',
         switchHint: 'Switch to collecting NRIC/FIN and UEN using form fields.',
         stopTitle: 'Stop collecting NRIC/FIN and UEN',
         collectLaterDescription:

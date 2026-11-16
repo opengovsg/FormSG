@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Box } from '@chakra-ui/react'
 
 import {
+  FormAuthType,
   FormResponseMode,
   FormSettings,
   FormStatus,
@@ -11,6 +12,7 @@ import { getStepFields } from 'formsg-shared/utils/step-login'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { useIsMrfStepLoginEnabled } from '~features/admin-form/create/workflow/hooks/useIsMrfStepLoginEnabled'
+import { useUsesStepLoginRules } from '~features/admin-form/create/workflow/hooks/useUsesStepLoginRules'
 import { isLaterStepLoginAvailable } from '~features/admin-form/create/workflow/utils/stepLoginAvailability'
 import { getNextQuestionNumber } from '~features/form/utils'
 import { isMyInfo } from '~features/myinfo/utils'
@@ -18,6 +20,7 @@ import { isMyInfo } from '~features/myinfo/utils'
 import { AuthSettingsDescriptionText } from './AuthSettingsDescriptionText'
 import { AuthSettingsDisabledExplanationText } from './AuthSettingsDisabledExplanationText'
 import { AuthSettingsSingpassSection } from './AuthSettingsSingpassSection'
+import { FormSingpassAuthToggle } from './FormSingpassAuthToggle'
 import { StepLoginAccordion } from './StepLoginAccordion'
 
 interface AuthSettingsSectionProps {
@@ -29,6 +32,7 @@ export const AuthSettingsSection = ({
 }: AuthSettingsSectionProps): JSX.Element => {
   const { data: form } = useAdminForm()
   const isStepLoginFlagOn = useIsMrfStepLoginEnabled()
+  const usesStepLoginRules = useUsesStepLoginRules()
 
   const isFormPublic = settings.status === FormStatus.Public
   const isMrf = form?.responseMode === FormResponseMode.Multirespondent
@@ -59,13 +63,23 @@ export const AuthSettingsSection = ({
 
   // Step 1's login and restrictions, saved to the form-level settings.
   const stepOneSettings = (
-    <AuthSettingsSingpassSection
-      settings={settings}
-      isFormPublic={isFormPublic}
-      nextQuestionNumber={getNextQuestionNumber(form?.form_fields ?? [])}
-      hasLoginFields={hasLoginFields}
-      hasIdentityFields={containsLoginIdentityFields}
-    />
+    <>
+      {usesStepLoginRules ? null : (
+        <FormSingpassAuthToggle
+          settings={settings}
+          isDisabled={isFormPublic || hasLoginFields}
+        />
+      )}
+      {usesStepLoginRules || settings.authType !== FormAuthType.NIL ? (
+        <AuthSettingsSingpassSection
+          settings={settings}
+          isFormPublic={isFormPublic}
+          nextQuestionNumber={getNextQuestionNumber(form?.form_fields ?? [])}
+          hasLoginFields={hasLoginFields}
+          hasIdentityFields={containsLoginIdentityFields}
+        />
+      ) : null}
+    </>
   )
 
   return (

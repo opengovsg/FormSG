@@ -26,6 +26,8 @@ export const LOGIN_OPTION_COPY = {
   { labelKey: string; descriptionKey?: string }
 >
 
+export const LOGIN_PROVIDERS = [FormAuthType.MyInfo, FormAuthType.CP]
+
 export const getLoginOptionsKeepingLegacySingpass = (
   savedAuthType: FormAuthType,
 ) => [
