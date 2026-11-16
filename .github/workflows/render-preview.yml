@@ -26,6 +26,7 @@ jobs:
       - id: render
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_GROWTHBOOK_CLIENT_KEY: ${{ secrets.RENDER_GROWTHBOOK_CLIENT_KEY }}
           BRANCH: ${{ github.event.pull_request.head.ref }}
           PR: ${{ github.event.pull_request.number }}
         run: .github/scripts/render-preview.sh up "formsg-pr-$PR" "$BRANCH"
