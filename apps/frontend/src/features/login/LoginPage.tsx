@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { Stack, Text } from '@chakra-ui/react'
-import { useFeatureIsOn, useFeatureValue } from '@growthbook/growthbook-react'
+import { useFeatureValue } from '@growthbook/growthbook-react'
 import { StatusCodes } from 'http-status-codes'
 
 import { featureFlags, WogadLoginFeatureValue } from 'formsg-shared/constants'
@@ -52,17 +52,15 @@ const isWogadLoginEnabled = ({
 const LoginOptionButtons = ({
   shouldShowWogadLogin,
   shouldShowOneLogin,
-  shouldShowSgidLogin,
 }: {
   shouldShowWogadLogin: boolean
   shouldShowOneLogin: boolean
-  shouldShowSgidLogin: boolean
 }) => {
   return (
     <Stack spacing="1rem">
       {shouldShowWogadLogin && <WogadLoginButton />}
       {shouldShowOneLogin && <OneLoginButton />}
-      {shouldShowSgidLogin && <SgidLoginButton />}
+      <SgidLoginButton />
     </Stack>
   )
 }
@@ -86,10 +84,6 @@ export const LoginPage = (): JSX.Element => {
     isIntranetIp,
     isRbiIp,
   })
-  const enableIntranetSgidLogin = useFeatureIsOn(
-    featureFlags.enableIntranetSgidLogin,
-  )
-  const shouldShowSgidLogin = !isIntranetIp || enableIntranetSgidLogin
 
   const isMobile = useIsMobile()
 
@@ -199,7 +193,6 @@ export const LoginPage = (): JSX.Element => {
                   key="buttons"
                   shouldShowWogadLogin={shouldShowWogadLogin}
                   shouldShowOneLogin={shouldShowOneLogin}
-                  shouldShowSgidLogin={shouldShowSgidLogin}
                 />,
                 <LoginForm key="form" onSubmit={handleSendOtp} />,
               ]
@@ -209,7 +202,6 @@ export const LoginPage = (): JSX.Element => {
                   key="buttons"
                   shouldShowWogadLogin={shouldShowWogadLogin}
                   shouldShowOneLogin={shouldShowOneLogin}
-                  shouldShowSgidLogin={shouldShowSgidLogin}
                 />,
               ]}
         </Stack>
