@@ -39,6 +39,7 @@ interface LoginBlockProps {
   formMethods: UseFormReturn<EditStepInputs>
   stepNumber: number
   isLoading: boolean
+  isInTab?: boolean
 }
 
 /**
@@ -50,6 +51,7 @@ export const LoginBlock = ({
   formMethods,
   stepNumber,
   isLoading,
+  isInTab,
 }: LoginBlockProps): JSX.Element | null => {
   const { data: form } = useAdminForm()
   // The workflow tab is shown only on multi-respondent forms.
@@ -61,6 +63,7 @@ export const LoginBlock = ({
       formMethods={formMethods}
       stepNumber={stepNumber}
       isLoading={isLoading}
+      isInTab={isInTab}
     />
   )
 }
@@ -70,6 +73,7 @@ const StepLogin = ({
   formMethods,
   stepNumber,
   isLoading,
+  isInTab,
 }: LoginBlockProps & { form: AdminMultirespondentFormDto }) => {
   const { t } = useTranslation()
   const isGuidedSection = useIsSpotlightActiveSection()
@@ -88,7 +92,7 @@ const StepLogin = ({
   return (
     <EditStepBlockContainer>
       <AuthSwitchConfirmation {...confirmationProps} />
-      {isGuidedSection ? (
+      {isGuidedSection && !isInTab ? (
         <Text style={textStyles.h4}>{t(`${COPY_KEY}.title`)}</Text>
       ) : null}
       <StepLoginControls
