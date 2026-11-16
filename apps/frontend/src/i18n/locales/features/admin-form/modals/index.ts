@@ -26,4 +26,7 @@ export interface Modals {
     promptMaxLengthError: string
     promptRequiredError: string
   }
+  formOrigin: {
+    description: string
+  }
 }

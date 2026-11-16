@@ -30,6 +30,7 @@ import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 import Menu from '~components/Menu'
 
+import { OPENED_FROM_DASHBOARD_STATE } from '~features/admin-form/common/openedFromDashboard'
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 import { RowActionsProps } from './RowActions'
@@ -136,6 +137,7 @@ export const RowActionsDropdown = ({
             <Button
               as={ReactLink}
               to={adminFormLink}
+              state={OPENED_FROM_DASHBOARD_STATE}
               px="1.5rem"
               mr="-1px"
               borderEndRadius={0}

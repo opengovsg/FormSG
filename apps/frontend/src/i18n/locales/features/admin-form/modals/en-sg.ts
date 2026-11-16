@@ -29,4 +29,7 @@ export const enSG = {
       'Your description cannot be longer than {maxLength} characters. ({currentLength}/{maxLength})',
     promptRequiredError: 'Please enter a description.',
   },
+  formOrigin: {
+    description: 'Help us measure how many paper forms have moved to FormSG.',
+  },
 }
