@@ -1,8 +1,5 @@
 import { useParams } from 'react-router-dom'
 import { Flex, useDisclosure } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
-
-import { featureFlags } from 'formsg-shared/constants/feature-flags'
 
 import { fillHeightCss } from '~utils/fillHeightCss'
 import GovtMasthead from '~components/GovtMasthead'
@@ -29,8 +26,6 @@ export const TemplateFormPage = (): JSX.Element => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const isWallSubmitOn = useFeatureIsOn(featureFlags.useTemplateWallSubmit)
-
   const {
     isOpen: isWallOpen,
     onOpen: onWallOpen,
@@ -41,7 +36,7 @@ export const TemplateFormPage = (): JSX.Element => {
     <Flex flexDir="column" css={fillHeightCss} pos="relative">
       <TemplateFormProvider
         formId={formId}
-        onTemplatePreviewSubmitClick={isWallSubmitOn ? onWallOpen : undefined}
+        onTemplatePreviewSubmitClick={onWallOpen}
       >
         <GovtMasthead />
         <PreviewFormBannerContainer isTemplate />
