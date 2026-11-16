@@ -229,6 +229,7 @@ export const SendBackModal = ({
               <Radio value="fixStep" allowDeselect={false}>
                 <Text>
                   {t(`${WORKFLOW_ACTIONS_I18N}.fixStepModal.description`, {
+                    targetStep: targetStep?.label ?? '',
                     currentStep: `${t(`${WORKFLOW_ACTIONS_I18N}.activityLog.stepNumber`, { stepNumber: pendingStepNumber })}${workflow[pendingStepNumber - 1]?.step_name?.trim() ? t(`${WORKFLOW_ACTIONS_I18N}.activityLog.stepNameLabel`, { name: workflow[pendingStepNumber - 1].step_name?.trim() }) : ''}`,
                   })}
                 </Text>
