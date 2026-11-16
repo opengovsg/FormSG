@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Flex, Skeleton, Text } from '@chakra-ui/react'
+import { Box, Flex, Text } from '@chakra-ui/react'
 
 import {
   DateRangePicker,
@@ -26,6 +26,7 @@ import { ShowMoreRowsButton } from './ShowMoreRowsButton'
 import { SubmissionSearchbar } from './SubmissionSearchbar'
 import {
   ALL_RESPONSES_VIEW_ID,
+  type ResponseCountState,
   useUnlockedResponses,
 } from './UnlockedResponsesProvider'
 import { useDeleteSavedViewMutation } from './useSavedViewMutation'
@@ -134,7 +135,6 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
 
 const LegacyUnlockedResponses = (): JSX.Element => {
   const { contentPr } = useResultsNavLayout('1rem')
-  const { t } = useTranslation()
 
   const {
     currentPage,
@@ -152,38 +152,21 @@ const LegacyUnlockedResponses = (): JSX.Element => {
     [submissionId, filteredCount, count],
   )
 
+  const countState: ResponseCountState =
+    isAnyFetching || countToUse === undefined
+      ? { status: 'loading' }
+      : { status: 'ready', count: countToUse }
+
   const { dateRange, setDateRange } = useStorageResponsesContext()
 
   return (
     <Flex flexDir="column" pr={contentPr} w="100%" maxW="100%" minW={0}>
-      <Flex
-        direction="column"
-        mb="1rem"
-        color="secondary.500"
-        w="100%"
-        maxW="100%"
-        flexShrink={0}
-      >
-        <Skeleton isLoaded={!isAnyFetching} w={{ base: '100%', md: 'auto' }}>
-          <Text
-            textStyle="h4"
-            mb={{ base: '0.25rem', md: '0.5rem' }}
-            noOfLines={{ base: 2, md: 1 }}
-          >
-            <Text as="span" color="primary.500">
-              {countToUse?.toLocaleString()}
-            </Text>{' '}
-            {t(
-              submissionId
-                ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.resultsFound'
-                : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.responsesToDate',
-              { count: countToUse ?? 0 },
-            )}
-          </Text>
-        </Skeleton>
+      <Flex align="center" gap="1rem" mb="1rem">
+        <Box flex={1} minW={0}>
+          <ResponseViewTabs countState={countState} />
+        </Box>
+        <DashboardVersionToggle />
       </Flex>
-
-      <ResponseViewTabs />
 
       <Flex
         direction={{ base: 'column', lg: 'row' }}

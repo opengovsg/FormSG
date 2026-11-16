@@ -131,9 +131,6 @@ export const enSG: ResponsesResponsesPage = {
         },
       },
       unlockedResponses: {
-        resultsFound: '{count, plural, =1 {result} other {results}} found',
-        responsesToDate:
-          '{count, plural, =1 {response} other {responses}} to date',
         noMatchingResponses: 'No responses match your search or filters.',
         recentOnly: 'Only showing the most recent {limit} responses',
         recentOnlyWithView:
