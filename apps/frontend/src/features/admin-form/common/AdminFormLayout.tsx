@@ -20,6 +20,7 @@ import AdminFeedbackContainer from '~features/workspace/components/AdminFeedback
 import { StorageResponsesProvider } from '../responses/ResponsesPage/storage/StorageResponsesProvider'
 
 import AdminFormNavbar from './components/AdminFormNavbar'
+import { FormOriginOnEntryModal } from './components/FormOriginOnEntryModal'
 import { useAdminForm } from './queries'
 
 /**
@@ -84,6 +85,7 @@ export const AdminFormLayout = (): JSX.Element => {
       <StorageResponsesProvider>
         <Outlet />
       </StorageResponsesProvider>
+      <FormOriginOnEntryModal />
       {user && isFiveStarEnabled && (
         <AdminFeedbackContainer userId={user._id} />
       )}
