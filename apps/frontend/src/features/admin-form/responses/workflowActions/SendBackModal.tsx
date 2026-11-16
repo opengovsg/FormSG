@@ -6,11 +6,6 @@ import {
   FormControl,
   FormErrorMessage,
   Stack,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
   Text,
 } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
@@ -20,6 +15,7 @@ import { MAX_SEND_BACK_REMARKS_LENGTH } from 'formsg-shared/constants'
 import { SingleSelect } from '~components/Dropdown'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
+import Radio from '~components/Radio'
 import Textarea from '~components/Textarea'
 
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
@@ -156,30 +152,6 @@ export const SendBackModal = ({
         )
       }
     >
-      <Tabs
-        isFitted
-        index={mode === 'sendBack' ? 0 : 1}
-        onChange={(index) => setMode(index === 0 ? 'sendBack' : 'fixStep')}
-      >
-        <TabList>
-          <Tab>{t(`${WORKFLOW_ACTIONS_I18N}.requireFullReview`)}</Tab>
-          <Tab>{t(`${WORKFLOW_ACTIONS_I18N}.reviewNotNeeded`)}</Tab>
-        </TabList>
-        <TabPanels pt="1rem">
-          <TabPanel px={0}>
-            <Text textStyle="body-2">
-              {t(`${WORKFLOW_ACTIONS_I18N}.sendBackModal.description`)}
-            </Text>
-          </TabPanel>
-          <TabPanel px={0}>
-            <Text textStyle="body-2">
-              {t(`${WORKFLOW_ACTIONS_I18N}.fixStepModal.description`, {
-                currentStep: `${t(`${WORKFLOW_ACTIONS_I18N}.activityLog.stepNumber`, { stepNumber: pendingStepNumber })}${workflow[pendingStepNumber - 1]?.step_name?.trim() ? t(`${WORKFLOW_ACTIONS_I18N}.activityLog.stepNameLabel`, { name: workflow[pendingStepNumber - 1].step_name?.trim() }) : ''}`,
-              })}
-            </Text>
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
       <Stack spacing="1.5rem">
         <FormControl isRequired>
           <FormLabel>{t(`${I18N_PREFIX}.stepLabel`)}</FormLabel>
@@ -190,29 +162,24 @@ export const SendBackModal = ({
             isClearable={false}
             onChange={setStep}
           />
+          {isValidStep && !isToStepOne ? (
+            <Box mt="0.5rem">
+              {recipients.length > 0 ? (
+                <Flex flexWrap="wrap" gap="0.5rem">
+                  {recipients.map((email) => (
+                    <LogicBadge key={email} overflowWrap="anywhere">
+                      {email}
+                    </LogicBadge>
+                  ))}
+                </Flex>
+              ) : (
+                <FormLabel.Description>
+                  {t(`${WORKFLOW_ACTIONS_I18N}.whoIsNotifiedNone`)}
+                </FormLabel.Description>
+              )}
+            </Box>
+          ) : null}
         </FormControl>
-        {isValidStep && !isToStepOne ? (
-          <Box>
-            <FormLabel.Label as="div">
-              {t(`${I18N_PREFIX}.recipientsLabel`, {
-                stepName: targetStep?.label,
-              })}
-            </FormLabel.Label>
-            {recipients.length > 0 ? (
-              <Flex flexWrap="wrap" gap="0.5rem">
-                {recipients.map((email) => (
-                  <LogicBadge key={email} overflowWrap="anywhere">
-                    {email}
-                  </LogicBadge>
-                ))}
-              </Flex>
-            ) : (
-              <FormLabel.Description>
-                {t(`${WORKFLOW_ACTIONS_I18N}.whoIsNotifiedNone`)}
-              </FormLabel.Description>
-            )}
-          </Box>
-        ) : null}
         {isToStepOne ? (
           <FormControl isRequired isInvalid={!!stepOneEmailError}>
             <FormLabel
@@ -235,33 +202,74 @@ export const SendBackModal = ({
             {t(`${I18N_PREFIX}.remarksLabel`)}
           </FormLabel>
           <Textarea
+            minAutosizeRows={2}
             value={remarks}
             onChange={(event) => setRemarks(event.target.value)}
           />
           <FormErrorMessage>{remarksError}</FormErrorMessage>
         </FormControl>
         <FormControl isRequired>
-          <FormLabel>
-            {t(`${WORKFLOW_ACTIONS_I18N}.sendBackModal.keepFilledLabel`)}
+          <FormLabel id="send-back-route-label">
+            {t(`${I18N_PREFIX}.routeLabel`)}
           </FormLabel>
-          <SingleSelect
+          <Radio.RadioGroup
+            aria-labelledby="send-back-route-label"
+            name="sendBackMode"
+            value={mode}
+            onChange={(value: SendBackMode) => setMode(value)}
+          >
+            <Stack spacing="0.75rem">
+              <Radio value="sendBack" allowDeselect={false}>
+                <Text>
+                  {t('features.publicForm.components.fields.yesNo.yes')}
+                </Text>
+                <Text textStyle="body-2" color="secondary.500">
+                  {t(`${I18N_PREFIX}.redoConsequence`, {
+                    stepNumber: targetStepNumber,
+                  })}
+                </Text>
+              </Radio>
+              <Radio value="fixStep" allowDeselect={false}>
+                <Text>
+                  {t('features.publicForm.components.fields.yesNo.no')}
+                </Text>
+                <Text textStyle="body-2" color="secondary.500">
+                  {t(`${WORKFLOW_ACTIONS_I18N}.fixStepModal.description`, {
+                    currentStep: `${t(`${WORKFLOW_ACTIONS_I18N}.activityLog.stepNumber`, { stepNumber: pendingStepNumber })}${workflow[pendingStepNumber - 1]?.step_name?.trim() ? t(`${WORKFLOW_ACTIONS_I18N}.activityLog.stepNameLabel`, { name: workflow[pendingStepNumber - 1].step_name?.trim() }) : ''}`,
+                  })}
+                </Text>
+              </Radio>
+            </Stack>
+          </Radio.RadioGroup>
+        </FormControl>
+        <FormControl isRequired>
+          <FormLabel id="send-back-keep-filled-label">
+            {t(`${I18N_PREFIX}.keepFilledLabel`)}
+          </FormLabel>
+          <Radio.RadioGroup
+            aria-labelledby="send-back-keep-filled-label"
             name="sendBackKeepFilled"
-            items={[
-              {
-                value: KEEP_FILLED,
-                label: t(
-                  `${WORKFLOW_ACTIONS_I18N}.sendBackModal.keepFilledYes`,
-                ),
-              },
-              {
-                value: CLEAR_FIELDS,
-                label: t(`${WORKFLOW_ACTIONS_I18N}.sendBackModal.keepFilledNo`),
-              },
-            ]}
             value={keepFilled}
-            isClearable={false}
             onChange={setKeepFilled}
-          />
+          >
+            <Stack spacing="0.75rem">
+              <Radio value={KEEP_FILLED} allowDeselect={false}>
+                <Text>{t(`${I18N_PREFIX}.keepFilledYes`)}</Text>
+                <Text textStyle="body-2" color="secondary.500">
+                  {t(`${I18N_PREFIX}.keepConsequence`)}
+                </Text>
+              </Radio>
+              <Radio value={CLEAR_FIELDS} allowDeselect={false}>
+                <Text>{t(`${I18N_PREFIX}.keepFilledNo`)}</Text>
+                <Text textStyle="body-2" color="secondary.500">
+                  {t(
+                    `${I18N_PREFIX}.${mode === 'sendBack' ? 'clearConsequence' : 'clearCorrectionConsequence'}`,
+                    { stepNumber: targetStepNumber },
+                  )}
+                </Text>
+              </Radio>
+            </Stack>
+          </Radio.RadioGroup>
         </FormControl>
       </Stack>
     </WorkflowActionModal>

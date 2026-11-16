@@ -91,8 +91,7 @@ export const enSG: ResponsesIndividualResponse = {
     },
     fixStepModal: {
       title: 'Fix an earlier step',
-      description:
-        'After the correction, the response comes back to {currentStep}. Earlier approvals are kept.',
+      description: 'Return to {currentStep}. Keep earlier approvals.',
       stepLabel: 'Step to fix',
       recipientsLabel: 'People in {stepName}',
       stepOneEmailLabel: 'Email address of who fills in Step 1',
@@ -117,6 +116,13 @@ export const enSG: ResponsesIndividualResponse = {
       remarksLabel: 'Remarks',
       remarksDescription: 'Tell them what they need to fix.',
       remarksTooLong: 'Remarks must be {max} characters or fewer',
+      routeLabel: 'Should later steps be completed again?',
+      redoConsequence: 'Redo every step after Step {stepNumber}.',
+      keepConsequence: 'Keep all existing answers.',
+      clearConsequence:
+        'Clear answers from Step {stepNumber} onward, except fields shared with earlier steps.',
+      clearCorrectionConsequence:
+        'Clear only Step {stepNumber}’s fields. Keep all other answers.',
       keepFilledLabel: 'Keep existing form fields filled?',
       keepFilledYes: 'Yes, keep filled',
       keepFilledNo: 'No, clear form fields',

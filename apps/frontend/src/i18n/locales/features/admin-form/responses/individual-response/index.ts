@@ -106,6 +106,11 @@ export interface ResponsesIndividualResponse {
       remarksLabel: string
       remarksDescription: string
       remarksTooLong: string
+      routeLabel: string
+      redoConsequence: string
+      keepConsequence: string
+      clearConsequence: string
+      clearCorrectionConsequence: string
       keepFilledLabel: string
       keepFilledYes: string
       keepFilledNo: string

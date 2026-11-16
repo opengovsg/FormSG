@@ -93,13 +93,9 @@ NoRecipients.args = {
 export const ReviewNotNeeded = Template.bind({})
 ReviewNotNeeded.play = async ({ canvasElement }) => {
   const page = within(canvasElement.ownerDocument.body)
-  await userEvent.click(
-    await page.findByRole('tab', { name: 'Return straight back' }),
-  )
+  await userEvent.click(await page.findByRole('radio', { name: /^No / }))
   await expect(
-    page.getByText(
-      'After the correction, the response comes back to Step 3 (Finance). Earlier approvals are kept.',
-    ),
+    page.getByText('Return to Step 3 (Finance). Keep earlier approvals.'),
   ).toBeVisible()
   await expect(
     page.getByText('Keep existing form fields filled?'),
