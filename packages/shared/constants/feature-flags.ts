@@ -10,7 +10,6 @@ export const featureFlags = {
   mrfWebhooksV4: 'mrf-webhooks-v4' as const,
   enableMrfWebhooks: 'enable-mrf-webhooks' as const,
   spcpOidcStateNonce: 'spcp-oidc-state-nonce' as const,
-  lambdaPdfGeneration: 'lambda-pdf-generation' as const,
   adminEmailPdf: 'admin-email-pdf' as const,
   ogpAwareness: 'ogp-awareness' as const,
   wogadLogin: 'wogad-login' as const,
