@@ -10,6 +10,7 @@ export enum GrowthbookFeature {
 
 export interface IGrowthbook {
   growthbookClientKey: string
+  growthbookApiHost: string
 }
 
 const growthbookSchema: Schema<IGrowthbook> = {
@@ -18,6 +19,12 @@ const growthbookSchema: Schema<IGrowthbook> = {
     format: String,
     default: '',
     env: 'GROWTHBOOK_CLIENT_KEY',
+  },
+  growthbookApiHost: {
+    doc: 'Origin serving the Growthbook proxy path. Defaults to APP_URL when empty.',
+    format: String,
+    default: '',
+    env: 'GROWTHBOOK_API_HOST',
   },
 }
 
