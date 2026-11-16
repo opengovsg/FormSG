@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { useAdminWorkflowStore } from '../../../adminWorkflowStore'
 import * as pageStories from '../../../CreatePageWorkflowTab.stories'
 
-const { WithWorkflow } = composeStories(pageStories)
+const { WithWorkflow, NewStepOnPrivateForm } = composeStories(pageStories)
 
 const STEP_NAME_HINT = /name this step, or keep it as/i
 const RESPONDENT_HINT = /choose who formsg sends the form to in this step/i
@@ -26,7 +26,7 @@ describe('guided section hints', () => {
   afterEach(() => useAdminWorkflowStore.getState().reset())
 
   const openGuidedStep = async () => {
-    render(<WithWorkflow />)
+    render(<NewStepOnPrivateForm />)
     await screen.findByRole('button', { name: /add step/i }, { timeout: 10000 })
     await act(async () => {
       useAdminWorkflowStore.getState().setToCreating()
