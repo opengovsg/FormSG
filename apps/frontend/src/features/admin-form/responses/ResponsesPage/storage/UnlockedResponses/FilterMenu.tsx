@@ -119,8 +119,9 @@ export const FilterMenu = ({
             display="flex"
             flexDirection="column"
             maxH="28rem"
-            minW="20rem"
-            maxW="20rem"
+            // RATIONALE: fits the date range picker's ~18.75rem minimum width.
+            minW="21rem"
+            maxW="21rem"
             pb={0}
           >
             <Box flex={1} minH={0} overflowY="auto">
