@@ -29,9 +29,7 @@ export const TemplateFormPage = (): JSX.Element => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const isWallScrollOn = useFeatureIsOn(featureFlags.useTemplateWallScroll)
   const isWallSubmitOn = useFeatureIsOn(featureFlags.useTemplateWallSubmit)
-  const isWallOn = isWallScrollOn || isWallSubmitOn
 
   const {
     isOpen: isWallOpen,
@@ -57,19 +55,15 @@ export const TemplateFormPage = (): JSX.Element => {
             <FormEndPage />
             <FormFooter />
           </PublicFormWrapper>
-          {isWallScrollOn && (
-            <UseTemplateWallScrollTrigger
-              formId={formId}
-              onTrigger={onWallOpen}
-            />
-          )}
-          {isWallOn && (
-            <UseTemplateWall
-              formId={formId}
-              isOpen={isWallOpen}
-              onClose={onWallClose}
-            />
-          )}
+          <UseTemplateWallScrollTrigger
+            formId={formId}
+            onTrigger={onWallOpen}
+          />
+          <UseTemplateWall
+            formId={formId}
+            isOpen={isWallOpen}
+            onClose={onWallClose}
+          />
         </FormSectionsProvider>
       </TemplateFormProvider>
     </Flex>
