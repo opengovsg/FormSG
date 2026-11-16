@@ -41,6 +41,7 @@ export const ResponseOverview = ({
       <Box
         bg="primary.100"
         p="1.5rem"
+        pb={hasActions ? '1rem' : '1.5rem'}
         border="1px solid"
         borderColor="neutral.300"
         borderBottomWidth={hasActions ? 0 : '1px'}
