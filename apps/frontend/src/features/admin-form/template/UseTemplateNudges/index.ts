@@ -1,4 +1,2 @@
-export { UseTemplateTour } from './UseTemplateTour'
-export { USE_TEMPLATE_TOUR_TARGET_ID } from './UseTemplateTour.constants'
 export { UseTemplateWall } from './UseTemplateWall'
 export { UseTemplateWallScrollTrigger } from './UseTemplateWallScrollTrigger'

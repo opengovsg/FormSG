@@ -21,7 +21,6 @@ import { PreviewFormBannerContainer } from '../common/components/PreviewFormBann
 
 import { TemplateFormProvider } from './TemplateFormProvider'
 import {
-  UseTemplateTour,
   UseTemplateWall,
   UseTemplateWallScrollTrigger,
 } from './UseTemplateNudges'
@@ -30,7 +29,6 @@ export const TemplateFormPage = (): JSX.Element => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const isTourOn = useFeatureIsOn(featureFlags.useTemplateTour)
   const isWallScrollOn = useFeatureIsOn(featureFlags.useTemplateWallScroll)
   const isWallSubmitOn = useFeatureIsOn(featureFlags.useTemplateWallSubmit)
   const isWallOn = isWallScrollOn || isWallSubmitOn
@@ -73,7 +71,6 @@ export const TemplateFormPage = (): JSX.Element => {
             />
           )}
         </FormSectionsProvider>
-        {isTourOn && <UseTemplateTour />}
       </TemplateFormProvider>
     </Flex>
   )
