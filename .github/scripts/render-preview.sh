@@ -37,7 +37,7 @@ preview_env() {
   set_env "$1" TURNSTILE_CAPTCHA 1x00000000000000000000AA
   set_env "$1" TURNSTILE_CAPTCHA_PRIVATE 1x0000000000000000000000000000000AA
   set_env "$1" GROWTHBOOK_API_HOST https://uat.form.gov.sg
-  set_env "$1" GROWTHBOOK_CLIENT_KEY "${RENDER_GROWTHBOOK_CLIENT_KEY:?}"
+  set_env "$1" GROWTHBOOK_CLIENT_KEY "$RENDER_GROWTHBOOK_CLIENT_KEY"
 }
 
 output() {
@@ -46,6 +46,7 @@ output() {
 }
 
 up() {
+  : "${RENDER_GROWTHBOOK_CLIENT_KEY:?}"
   local name=$1 branch=$2 existing id url suspended created
   existing=$(find_service "$name")
   if [ -n "$existing" ]; then
