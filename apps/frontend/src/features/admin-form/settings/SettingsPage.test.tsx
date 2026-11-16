@@ -161,7 +161,6 @@ describe('Settings labelled navigation', () => {
   })
 })
 
-// Mirror AppRouter's nested Settings route instead of flattening its params.
 it('opens Singpass settings from the Create palette Settings link', async () => {
   state.labels = true
   render(

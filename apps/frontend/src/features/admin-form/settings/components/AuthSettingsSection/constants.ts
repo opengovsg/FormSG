@@ -4,7 +4,6 @@ import { STEP_LOGIN_LABEL_KEYS } from '~features/admin-form/create/workflow/util
 
 const COPY_KEY = 'features.adminForm.sidebar.workflow.stepLogin'
 
-/** i18n keys for each login's name, and its radio description if any. */
 export const LOGIN_OPTION_COPY = {
   [FormAuthType.NIL]: {
     labelKey: `${COPY_KEY}.noLogin`,
@@ -27,8 +26,9 @@ export const LOGIN_OPTION_COPY = {
   { labelKey: string; descriptionKey?: string }
 >
 
-// Keep the saved legacy login available while the admin edits a draft.
-export const getLoginOptions = (savedAuthType: FormAuthType) => [
+export const getLoginOptionsKeepingLegacySingpass = (
+  savedAuthType: FormAuthType,
+) => [
   FormAuthType.NIL,
   savedAuthType === FormAuthType.SP ? FormAuthType.SP : FormAuthType.MyInfo,
   FormAuthType.CP,

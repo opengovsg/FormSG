@@ -15,7 +15,7 @@ import Radio from '~components/Radio'
 import { useMutateFormSettings } from '../../mutations'
 import { isEsrvcidRequired } from '../utils'
 
-import { getLoginOptions } from './constants'
+import { getLoginOptionsKeepingLegacySingpass } from './constants'
 import { EsrvcIdBox } from './EsrvcIdBox'
 import { LoginOptionLabel } from './LoginOptionLabel'
 
@@ -86,25 +86,27 @@ export const SingpassAuthOptionsRadio = ({
         onKeyDown={handleEnterKeyDown}
         onChange={(e: FormAuthType) => setFocusedValue(e)}
       >
-        {getLoginOptions(settings.authType).map((authType) => (
-          <Fragment key={authType}>
-            <Box onClick={handleOptionClick(authType)}>
-              <Radio
-                value={authType}
-                allowDeselect={false}
-                isDisabled={checkIsDisabled()}
-              >
-                <LoginOptionLabel authType={authType} />
-              </Radio>
-            </Box>
-            {isEsrvcidRequired(authType) && authType === settings.authType ? (
-              <EsrvcIdBox
-                settings={settings}
-                isDisabled={isEsrvcIdBoxDisabled}
-              />
-            ) : null}
-          </Fragment>
-        ))}
+        {getLoginOptionsKeepingLegacySingpass(settings.authType).map(
+          (authType) => (
+            <Fragment key={authType}>
+              <Box onClick={handleOptionClick(authType)}>
+                <Radio
+                  value={authType}
+                  allowDeselect={false}
+                  isDisabled={checkIsDisabled()}
+                >
+                  <LoginOptionLabel authType={authType} />
+                </Radio>
+              </Box>
+              {isEsrvcidRequired(authType) && authType === settings.authType ? (
+                <EsrvcIdBox
+                  settings={settings}
+                  isDisabled={isEsrvcIdBoxDisabled}
+                />
+              ) : null}
+            </Fragment>
+          ),
+        )}
       </Radio.RadioGroup>
     </>
   )

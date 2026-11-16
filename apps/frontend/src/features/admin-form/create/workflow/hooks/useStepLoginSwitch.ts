@@ -72,12 +72,6 @@ export const useStepLoginSwitch = ({
   /** Switches at once, or asks first when fields move or a field is added. */
   const requestSwitch = (next: FormAuthType, assignedId?: string) => {
     if (!form || isDisabled || next === authType) return
-    // Legacy SP can only restore the first step's saved form-level login.
-    if (
-      next === FormAuthType.SP &&
-      (stepNumber !== 0 || form.authType !== FormAuthType.SP)
-    )
-      return
     const { deletedFields, unassignedFields } = consequencesOf(next)
     if (assignedId || deletedFields.length || unassignedFields.length) {
       setPending({ authType: next, assignedId })
