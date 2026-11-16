@@ -388,16 +388,6 @@ StorageFormResponseDrawer.parameters = {
     },
   },
 }
-const responseDrawerGrowthBook = new GrowthBook({
-  features: { [featureFlags.adminPrintPdf]: { defaultValue: true } },
-})
-StorageFormResponseDrawer.decorators = [
-  (Story) => (
-    <GrowthBookProvider growthbook={responseDrawerGrowthBook}>
-      <Story />
-    </GrowthBookProvider>
-  ),
-]
 StorageFormResponseDrawer.play = async ({ canvasElement }) => {
   await unlockResponses(canvasElement)
   const drawer = await screen.findByRole('dialog')

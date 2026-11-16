@@ -4,9 +4,7 @@ import { FaRegFilePdf } from 'react-icons/fa6'
 import { useLocation, useParams } from 'react-router-dom'
 import { Box, Skeleton, Stack, Text, TextProps } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
-import { featureFlags } from 'formsg-shared/constants'
 import { AnalyticsEventType } from 'formsg-shared/types'
 
 import IconButton from '~components/IconButton'
@@ -40,8 +38,6 @@ export const IndividualResponseTitle = ({
 
   const { user } = useUser()
 
-  const isAdminPrintPdfEnabled = useFeatureIsOn(featureFlags.adminPrintPdf)
-
   return (
     <Skeleton isLoaded={!isLoading} minW={0}>
       <Stack direction="row" justify="center" align="center">
@@ -49,39 +45,37 @@ export const IndividualResponseTitle = ({
           {t('features.common.response')}
           {currentResponseNumber ? ` #${currentResponseNumber}` : ''}
         </Text>
-        {isAdminPrintPdfEnabled && (
-          <Box flexShrink={0}>
-            <IconButton
-              aria-label="Print"
-              icon={<FaRegFilePdf />}
-              isLoading={isLoading}
-              onClick={async () => {
-                logAnalyticsEvent(formId, {
-                  type: AnalyticsEventType.ResultsDownload,
-                  content: {
-                    dashboardVersion: isDelightfulDashboard ? 'v2' : 'v1',
-                    formats: ['pdf'],
-                    scope: 'single',
+        <Box flexShrink={0}>
+          <IconButton
+            aria-label="Print"
+            icon={<FaRegFilePdf />}
+            isLoading={isLoading}
+            onClick={async () => {
+              logAnalyticsEvent(formId, {
+                type: AnalyticsEventType.ResultsDownload,
+                content: {
+                  dashboardVersion: isDelightfulDashboard ? 'v2' : 'v1',
+                  formats: ['pdf'],
+                  scope: 'single',
+                },
+              })
+              datadogLogs.logger.info(
+                `IndividualResponseNavbar: admin printing pdf`,
+                {
+                  meta: {
+                    action: 'adminPrintPdf',
+                    userId: user?._id,
+                    submissionId: submissionId,
                   },
-                })
-                datadogLogs.logger.info(
-                  `IndividualResponseNavbar: admin printing pdf`,
-                  {
-                    meta: {
-                      action: 'adminPrintPdf',
-                      userId: user?._id,
-                      submissionId: submissionId,
-                    },
-                  },
-                )
-                if (submission && form) {
-                  await downloadResponsePdf({ form, submission })
-                }
-              }}
-              variant="clear"
-            />
-          </Box>
-        )}
+                },
+              )
+              if (submission && form) {
+                await downloadResponsePdf({ form, submission })
+              }
+            }}
+            variant="clear"
+          />
+        </Box>
       </Stack>
     </Skeleton>
   )
