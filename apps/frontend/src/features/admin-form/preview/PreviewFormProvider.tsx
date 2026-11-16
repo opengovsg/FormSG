@@ -408,10 +408,12 @@ export const PreviewFormProvider = ({
     () => (formFields ? getFieldPrefillMap(formFields, searchParams) : {}),
     [formFields, searchParams],
   )
-  const seedsMyInfoValues =
-    stepData?.form.responseMode !== FormResponseMode.Email
+  const seedsMyInfoValues = form?.responseMode !== FormResponseMode.Email
   const showsMyInfoVerifiedView =
-    stepData?.form.authType === FormAuthType.MyInfo && seedsMyInfoValues
+    !!form &&
+    getStepAuthType(form, formWorkflow, currentWorkflowStepNumber) ===
+      FormAuthType.MyInfo &&
+    seedsMyInfoValues
   const augmentedFormFields = useMemo(
     () =>
       formFields
