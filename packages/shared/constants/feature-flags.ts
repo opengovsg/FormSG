@@ -15,7 +15,6 @@ export const featureFlags = {
   spcpOidcStateNonce: 'spcp-oidc-state-nonce' as const,
   lambdaPdfGeneration: 'lambda-pdf-generation' as const,
   adminEmailPdf: 'admin-email-pdf' as const,
-  ogpHeader: 'enable-ogp-header' as const,
   ogpAwareness: 'ogp-awareness' as const,
   wogadLogin: 'wogad-login' as const,
   mrfResponseLimit: 'mrf-response-limit' as const,
