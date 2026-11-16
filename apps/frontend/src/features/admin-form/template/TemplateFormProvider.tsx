@@ -116,22 +116,20 @@ export const TemplateFormProvider = ({
     () => (formFields ? getFieldPrefillMap(formFields, searchParams) : {}),
     [formFields, searchParams],
   )
-  // A Singpass Myinfo login shows Myinfo fields as a Singaporean sees them.
-  // Email mode never fills in Myinfo sample values, so it keeps the old view.
-  const isMyInfoStep =
-    form?.authType === FormAuthType.MyInfo &&
-    form.responseMode !== FormResponseMode.Email
+  const seedsMyInfoValues = form?.responseMode !== FormResponseMode.Email
+  const showsMyInfoVerifiedView =
+    form?.authType === FormAuthType.MyInfo && seedsMyInfoValues
   const augmentedFormFields = useMemo(
     () =>
       formFields
         ? augmentFormFields(
-            isMyInfoStep
+            showsMyInfoVerifiedView
               ? formFields.map(applyMyInfoVerifiedView('SG'))
               : formFields,
             currentStepNumberWorkflowStep,
           )
         : [],
-    [formFields, isMyInfoStep, currentStepNumberWorkflowStep],
+    [formFields, showsMyInfoVerifiedView, currentStepNumberWorkflowStep],
   )
 
   const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)

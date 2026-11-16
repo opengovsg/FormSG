@@ -408,22 +408,21 @@ export const PreviewFormProvider = ({
     () => (formFields ? getFieldPrefillMap(formFields, searchParams) : {}),
     [formFields, searchParams],
   )
-  // A Singpass Myinfo step shows Myinfo fields as a Singaporean sees them.
-  // Email mode never fills in Myinfo sample values, so it keeps the old view.
-  const isMyInfoStep =
-    stepData?.form.authType === FormAuthType.MyInfo &&
-    stepData.form.responseMode !== FormResponseMode.Email
+  const seedsMyInfoValues =
+    stepData?.form.responseMode !== FormResponseMode.Email
+  const showsMyInfoVerifiedView =
+    stepData?.form.authType === FormAuthType.MyInfo && seedsMyInfoValues
   const augmentedFormFields = useMemo(
     () =>
       formFields
         ? augmentFormFields(
-            isMyInfoStep
+            showsMyInfoVerifiedView
               ? formFields.map(applyMyInfoVerifiedView('SG'))
               : formFields,
             currentStepNumberWorkflowStep,
           )
         : [],
-    [formFields, isMyInfoStep, currentStepNumberWorkflowStep],
+    [formFields, showsMyInfoVerifiedView, currentStepNumberWorkflowStep],
   )
 
   const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
