@@ -8,7 +8,6 @@ import { enSG as feedback } from './feedback'
 import { enSG as meta } from './meta'
 import { enSG as modals } from './modals'
 import { enSG as navbar } from './navbar'
-import { enSG as preview } from './preview'
 import { enSG as settings } from './settings'
 import { enSG as share } from './share'
 import { enSG as sidebar } from './sidebar'
@@ -33,5 +32,4 @@ export const enSG = {
   featureTour,
   collaborator,
   template,
-  preview,
 }

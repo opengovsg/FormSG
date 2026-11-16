@@ -21,7 +21,6 @@ import {
   Navbar,
   NavLabels,
   NotFoundError,
-  Preview,
   PublicForm,
   ResponsesCharts,
   ResponsesComponents,
@@ -61,7 +60,6 @@ interface Translation {
         featureTour?: FeatureTour
         collaborator?: Collaborator
         template?: Template
-        preview?: Preview
         responses?: {
           charts?: ResponsesCharts
           components?: ResponsesComponents
