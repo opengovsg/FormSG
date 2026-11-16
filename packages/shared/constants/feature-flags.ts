@@ -20,7 +20,6 @@ export const featureFlags = {
   mrfCutover: 'mrf-cutover' as const,
   enablePaperTrackingSetUpPage: 'enable-paper-tracking-set-up-page' as const,
   sidebarNavLabels: 'enable-sidebar-nav-labels' as const,
-  fiveStarAdminRating: '5star-admin-rating' as const,
   formIdJson: 'formid-json' as const,
   mrfPayments: 'mrf-payments' as const,
   workflowActions: 'workflow-actions' as const,
