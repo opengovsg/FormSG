@@ -22,7 +22,7 @@ vi.mock('react-i18next', () => ({
         assignees: 'Current assignees',
         completed: 'Completed',
         rejected: 'Rejected',
-        voided: 'Voided',
+        voided: 'Stopped',
       }
       return (copy[key.split('.').pop()!] ?? key).replace(
         /\{(\w+)\}/g,
@@ -110,21 +110,21 @@ describe('WorkflowCurrentState', () => {
       <WorkflowCurrentState
         mrf={{ ...mrf, workflowStatus: status }}
         history={history}
-        actions={<button>Void</button>}
+        actions={<button>Stop</button>}
       />,
     )
     expect(screen.getByText(label)).toBeInTheDocument()
     expect(screen.queryByText('Current assignees')).not.toBeInTheDocument()
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
   })
-  it('prioritises voided state', () => {
+  it('prioritises stopped state', () => {
     render(
       <WorkflowCurrentState
         mrf={{ ...mrf, stoppedAt: '2026-11-14T04:00:00Z' }}
         history={history}
       />,
     )
-    expect(screen.getByText('Voided')).toBeInTheDocument()
+    expect(screen.getByText('Stopped')).toBeInTheDocument()
     expect(screen.queryByText('Pending')).not.toBeInTheDocument()
   })
   it('hides actions but keeps assignees', () => {

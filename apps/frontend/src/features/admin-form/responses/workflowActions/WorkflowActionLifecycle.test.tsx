@@ -109,7 +109,7 @@ it('resets reminder status for a new token or target step', async () => {
   rerender(<ReminderFixture token="second" targetStep={3} />)
   expect(screen.getByText('Ready')).toBeVisible()
 })
-it('restores heading focus when terminal refresh arrives while Void is open', async () => {
+it('restores heading focus when terminal refresh arrives while Stop is open', async () => {
   const pending: SubmissionMrfMetadata = {
     workflowStatus: WorkflowStatus.PENDING,
     workflowCurrentStepNumber: 1,
@@ -144,7 +144,7 @@ it('restores heading focus when terminal refresh arrives while Void is open', as
 })
 
 it.each([false, true])(
-  'handles terminal refresh after Void closes without stealing deliberate focus (moved=%s)',
+  'handles terminal refresh after Stop closes without stealing deliberate focus (moved=%s)',
   async (moved) => {
     const rect = vi
       .spyOn(HTMLElement.prototype, 'getBoundingClientRect')

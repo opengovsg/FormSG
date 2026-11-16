@@ -16,7 +16,7 @@ export const enSG: ResponsesIndividualResponse = {
   workflowActions: {
     whoIsNotifiedLabel: 'Who will be notified',
     whoIsNotifiedNone: 'No one will be notified.',
-    stopButton: 'Void',
+    stopButton: 'Stop',
     requireFullReview: 'Redo later steps',
     reviewNotNeeded: 'Return straight back',
     tooltips: {
@@ -31,7 +31,7 @@ export const enSG: ResponsesIndividualResponse = {
       assignees: 'Current assignees',
       completed: 'Completed',
       rejected: 'Rejected',
-      voided: 'Voided',
+      voided: 'Stopped',
     },
     remindButton: 'Remind',
     reminderModal: {
@@ -49,7 +49,7 @@ export const enSG: ResponsesIndividualResponse = {
       stepRejected: '{step}{stepName} rejected',
       assigneeAdded: 'Assignee added to {step}{stepName}',
       reminderTriggered: 'Reminder requested for {step}{stepName}',
-      stopped: 'Response voided',
+      stopped: 'Response stopped',
       notificationRecipients: 'Notification recipients',
       sentBack: 'Sent back (redo later steps)',
       fixStep: 'Sent back (return straight back)',
@@ -82,12 +82,12 @@ export const enSG: ResponsesIndividualResponse = {
         '{count, plural, one {The new person can} other {The new people can}} now respond to this step.',
     },
     stopModal: {
-      title: 'Void this response',
+      title: 'Stop this response',
       description:
         'No one will be able to respond to any more steps. You can still view and download responses already submitted.',
       label: 'Email addresses of who to notify',
-      confirm: 'Void response',
-      toastSuccess: 'The response was voided.',
+      confirm: 'Stop response',
+      toastSuccess: 'The response was stopped.',
     },
     fixStepModal: {
       title: 'Fix an earlier step',

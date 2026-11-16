@@ -76,7 +76,7 @@ export const CorrectingStepOne: Story = {
     },
     actions: (
       <Button size="sm" variant="outline" colorScheme="danger">
-        Void
+        Stop
       </Button>
     ),
   },
@@ -87,6 +87,6 @@ export const Completed: Story = {
 export const Rejected: Story = {
   args: { mrf: { ...meta.args.mrf, workflowStatus: WorkflowStatus.REJECTED } },
 }
-export const Voided: Story = {
+export const Stopped: Story = {
   args: { mrf: { ...meta.args.mrf, stoppedAt: '2026-11-14T03:00:00Z' } },
 }

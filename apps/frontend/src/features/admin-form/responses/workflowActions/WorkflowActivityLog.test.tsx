@@ -102,7 +102,7 @@ describe('WorkflowActivityLog', () => {
       'Step 1 submitted',
       'Assignee added to Step 2 (Team lead)',
       'Reminder requested for Step 2 (Team lead)',
-      'Response voided',
+      'Response stopped',
     ])
     const items = screen.getAllByRole('listitem')
     expect(items).toHaveLength(4)
@@ -194,7 +194,7 @@ describe('WorkflowActivityLog', () => {
       'Step 1 submitted',
       'Step 2 (Team lead) submitted',
       'Step 3 submitted',
-      'Response voided',
+      'Response stopped',
     ])
     expect(
       screen.queryByText('Notification recipients'),
