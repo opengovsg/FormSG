@@ -45,7 +45,6 @@ export const CreatePageSidebar = (): JSX.Element | null => {
   const { t } = useTranslation()
   const { isMobile, isCollapsed, toggle } = useSideNavCollapse()
   const showNavLabels = useFeatureIsOn(featureFlags.sidebarNavLabels)
-  const showIntegrationTab = useFeatureIsOn(featureFlags.suiteLauncher)
 
   const { data } = useAdminForm()
   const { user, isLoading: isUserLoading } = useUser()
@@ -252,20 +251,18 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           isActive={activeTab === DrawerTabs.EndPage}
           id={FEATURE_TOUR_IDS[3].id}
         />
-        {showIntegrationTab && (
-          <DrawerTabIcon
-            label={t('features.adminForm.sidebar.integration.title')}
-            navLabel={
-              showNavLabels
-                ? t('features.adminForm.sidebar.integration.title')
-                : undefined
-            }
-            trackingLabel="create_builder.drawer_tab.integration"
-            icon={<BiExtension fontSize="1.5rem" />}
-            onClick={handleDrawerIntegrationClick}
-            isActive={activeTab === DrawerTabs.Integration}
-          />
-        )}
+        <DrawerTabIcon
+          label={t('features.adminForm.sidebar.integration.title')}
+          navLabel={
+            showNavLabels
+              ? t('features.adminForm.sidebar.integration.title')
+              : undefined
+          }
+          trackingLabel="create_builder.drawer_tab.integration"
+          icon={<BiExtension fontSize="1.5rem" />}
+          onClick={handleDrawerIntegrationClick}
+          isActive={activeTab === DrawerTabs.Integration}
+        />
         {/* Control keeps production's layout: Workflow at the bottom, below a divider. */}
         {!showNavLabels && isMrf && (
           <>

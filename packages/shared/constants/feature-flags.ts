@@ -29,7 +29,6 @@ export const featureFlags = {
   mrfStepLogin: 'mrf-singpass-all-steps' as const,
   mrfStepLoginKillSwitch: 'mrf-step-login-kill-switch' as const,
   delightfulDashboard: 'delightful-dashboard' as const,
-  suiteLauncher: 'suite-launcher' as const,
   escapeHatch: 'mrf-cutover-escape-hatch' as const,
   disableBouncedSubmissionSms: 'disable-bounced-submission-sms' as const,
   keepV4AttachmentPrefix: 'keep-v4-attachment-prefix' as const,
