@@ -34,6 +34,7 @@ import { BxCheck } from '~assets/icons'
 import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
 
+import { OPENED_FROM_DASHBOARD_STATE } from '~features/admin-form/common/openedFromDashboard'
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 import { RowActionsProps } from './RowActions'
@@ -110,6 +111,7 @@ export const RowActionsDrawer = ({
                   <Button
                     as={ReactLink}
                     to={adminFormLink}
+                    state={OPENED_FROM_DASHBOARD_STATE}
                     {...buttonProps}
                     leftIcon={<BiEditAlt fontSize="1.25rem" />}
                   >

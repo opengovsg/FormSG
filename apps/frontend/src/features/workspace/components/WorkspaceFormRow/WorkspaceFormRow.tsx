@@ -12,6 +12,7 @@ import {
 import { ADMINFORM_ROUTE } from '~constants/routes'
 import Badge from '~components/Badge'
 
+import { OPENED_FROM_DASHBOARD_STATE } from '~features/admin-form/common/openedFromDashboard'
 import { useResponseModeBadgeLabel } from '~features/admin-form/common/useResponseModeBadgeLabel'
 
 import { FormStatusLabel } from './FormStatusLabel'
@@ -44,6 +45,7 @@ export const WorkspaceFormRow = ({
         transitionProperty="common"
         transitionDuration="normal"
         to={`${ADMINFORM_ROUTE}/${formMeta._id}`}
+        state={OPENED_FROM_DASHBOARD_STATE}
         w="100%"
         py="1.5rem"
         display="grid"
