@@ -372,6 +372,7 @@ export const fixWorkflowStep = ({
   expectedStepNumber,
   submissionSecretKey,
   remarks,
+  clearResponses,
   stepOneRecipientEmail,
 }: {
   formId: string
@@ -379,6 +380,7 @@ export const fixWorkflowStep = ({
   targetStepNumber: number
   expectedStepNumber: number
   submissionSecretKey: string
+  clearResponses: boolean
   remarks?: string
   stepOneRecipientEmail?: string
 }): Promise<{ stepNumber: number; emails: string[] }> =>
@@ -389,6 +391,7 @@ export const fixWorkflowStep = ({
       expectedStepNumber,
       submissionSecretKey,
       remarks,
+      clearResponses,
       stepOneRecipientEmail,
     },
   ).then(({ data }) => data)

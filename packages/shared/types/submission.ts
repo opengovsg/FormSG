@@ -300,6 +300,7 @@ export type PublicMultirespondentSubmissionDto = Omit<
   | 'submittedSteps'
   | 'workflowEvents'
 > & {
+  correctionClearFieldIds?: string[]
   form_fields: StrippedFormFieldDto[]
   workflow: StrippedFormWorkflowDto
   encryptedStepToken: undefined

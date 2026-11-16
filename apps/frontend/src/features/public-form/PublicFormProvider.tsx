@@ -301,38 +301,33 @@ export const getInitialFormValues = ({
   const defaultFormValues = augmentedFormFields.reduce<FormFieldValues>(
     (acc, field) => {
       if (formResponseMode === FormResponseMode.Multirespondent) {
-        const previousResponse = previousSubmission?.responses[field._id]
-        const previousAttachmentFieldResponseFileBuffer =
-          previousAttachments?.[field._id]
-        const value = extractMrfPreviousStepResponseValue(
+        const isEditable = isFieldEnabledByMrfWorkflow(
+          currentStepNumberWorkflowStep,
           field,
-          previousResponse,
-          previousAttachmentFieldResponseFileBuffer,
         )
-        if (value) {
-          acc[field._id] = value
+        // Clear only correction prefills. Stored answers remain the backend's approval baseline.
+        const clearPrefill =
+          isEditable &&
+          previousSubmission?.correctionClearFieldIds?.includes(field._id)
+        if (!clearPrefill) {
+          const value = extractMrfPreviousStepResponseValue(
+            field,
+            previousSubmission?.responses[field._id],
+            previousAttachments?.[field._id],
+          )
+          if (value) acc[field._id] = value
+          if (isEditable) {
+            if (isSaveDraftEnabled && draftResponsesToRestore?.[field._id]) {
+              acc[field._id] = draftResponsesToRestore[field._id]
+            }
+            if (fieldPrefillMap[field._id]) {
+              acc[field._id] = fieldPrefillMap[field._id].prefillValue
+            }
+          }
         }
-
-        // Only allow overriding of previous submission values if the field can be edited in this step.
-        if (isFieldEnabledByMrfWorkflow(currentStepNumberWorkflowStep, field)) {
-          // Reinstate save draft values
-          if (
-            isSaveDraftEnabled &&
-            draftResponsesToRestore &&
-            draftResponsesToRestore[field._id]
-          ) {
-            acc[field._id] = draftResponsesToRestore[field._id]
-          }
-          // Use prefill value if exists
-          if (fieldPrefillMap[field._id]) {
-            acc[field._id] = fieldPrefillMap[field._id].prefillValue
-          }
-
-          // Use myinfo server default value if it exists.
-          // Myinfo overrides existing values since myinfo is seen as source of truth.
-          if (hasExistingFieldValue(field)) {
-            acc[field._id] = extractPreviewValue(field)
-          }
+        // MyInfo remains authoritative, including when ordinary prefills are cleared.
+        if (isEditable && hasExistingFieldValue(field)) {
+          acc[field._id] = extractPreviewValue(field)
         }
       } else if (formResponseMode === FormResponseMode.Encrypt) {
         // Reinstate save draft values
