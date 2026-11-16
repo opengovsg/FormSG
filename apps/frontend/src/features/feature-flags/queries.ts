@@ -1,15 +1,9 @@
-import { useQuery, UseQueryResult } from 'react-query'
+import { useQuery } from 'react-query'
 
 import { getEnabledFeatureFlags } from '~features/feature-flags/FeatureFlagService'
 
 export const featureFlagsKeys = {
   base: ['feature-flags'] as const,
-}
-
-// TODO: Add local caching system with interval based refresh
-// Refer to https://github.com/opengovsg/FormSG/pull/6286#discussion_r1190529370
-export const useFeatureFlags = (): UseQueryResult<Set<string>> => {
-  return useQuery(featureFlagsKeys.base, () => getEnabledFeatureFlags())
 }
 
 // Retrieves a feature flag and returns the default value
