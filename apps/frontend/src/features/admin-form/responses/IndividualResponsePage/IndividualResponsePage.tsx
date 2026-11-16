@@ -59,7 +59,6 @@ import {
   WorkflowActivityLog,
 } from '../workflowActions'
 import { WorkflowActionLayout } from '../workflowActions/WorkflowActionLayout'
-import { WorkflowCurrentState } from '../workflowActions/WorkflowCurrentState'
 
 import { DecryptedRow } from './DecryptedRow'
 import { getResponseScrollContainer } from './getResponseScrollContainer'
@@ -263,6 +262,26 @@ const IndividualResponseContent = ({
   const workflowCurrentStepNumber = data?.mrf?.workflowCurrentStepNumber
   const workflowNumTotalSteps = data?.mrf?.workflowNumTotalSteps
 
+  const pendingResponse = (
+    <StackRow
+      label={MRF_PENDING_RESPONSE_AT_LABEL}
+      value={
+        isStopped ||
+        workflowStatus === undefined ||
+        workflowCurrentStepNumber === undefined ||
+        workflowNumTotalSteps === undefined
+          ? '-'
+          : getPendingResponseAtString({
+              workflowStatus,
+              workflowCurrentStepNumber,
+              workflowNumTotalSteps,
+            })
+      }
+      isLoading={isLoading}
+      isError={isError}
+    />
+  )
+
   const overview = (
     <Stack spacing="1rem" textStyle="body-1">
       <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
@@ -283,6 +302,7 @@ const IndividualResponseContent = ({
       </SimpleGrid>
       {hasWorkflow ? (
         <>
+          <Box mx="-1.5rem" borderTop="1px solid" borderColor="neutral.300" />
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
             <StackRow
               label={MRF_WORKFLOW_STATUS_LABEL}
@@ -295,37 +315,21 @@ const IndividualResponseContent = ({
               ) : null}
             </StackRow>
             <StackRow
-              label={MRF_PENDING_RESPONSE_AT_LABEL}
-              value={
-                isStopped ||
-                workflowStatus === undefined ||
-                workflowCurrentStepNumber === undefined ||
-                workflowNumTotalSteps === undefined
-                  ? '-'
-                  : getPendingResponseAtString({
-                      workflowStatus,
-                      workflowCurrentStepNumber,
-                      workflowNumTotalSteps,
-                    })
+              label={MRF_STATUS_TRACKING_LABEL}
+              value={''}
+              statusTrackerUrl={`${window.location.origin}/${getStatusTrackerPath(formId, submissionId)}`}
+              linkLabel={
+                isWorkflowActionsOn
+                  ? t(
+                      'features.adminForm.responses.individualResponse.statusTrackingLinkLabel',
+                    )
+                  : undefined
               }
               isLoading={isLoading}
               isError={isError}
             />
           </SimpleGrid>
-          <StackRow
-            label={MRF_STATUS_TRACKING_LABEL}
-            value={''}
-            statusTrackerUrl={`${window.location.origin}/${getStatusTrackerPath(formId, submissionId)}`}
-            linkLabel={
-              isWorkflowActionsOn
-                ? t(
-                    'features.adminForm.responses.individualResponse.statusTrackingLinkLabel',
-                  )
-                : undefined
-            }
-            isLoading={isLoading}
-            isError={isError}
-          />
+          {pendingResponse}
         </>
       ) : null}
       {attachmentDownloadUrls.size > 0 && (
@@ -401,7 +405,7 @@ const IndividualResponseContent = ({
       )}
     </>
   )
-  const renderResponseContent = (currentState?: ReactNode) =>
+  const renderResponseContent = () =>
     hasWorkflow && isWorkflowActionsOn ? (
       <Tabs
         index={tab}
@@ -425,10 +429,7 @@ const IndividualResponseContent = ({
             {isLoading || isError ? (
               <LoadingDecryption />
             ) : (
-              <WorkflowActivityLog
-                history={data?.workflowHistory}
-                currentState={currentState}
-              />
+              <WorkflowActivityLog history={data?.workflowHistory} />
             )}
           </TabPanel>
         </TabPanels>
@@ -457,22 +458,7 @@ const IndividualResponseContent = ({
               overview={overview}
               actions={actions}
             >
-              {(currentActions, actionRowRef, showActions) =>
-                renderResponseContent(
-                  <WorkflowCurrentState
-                    mrf={data?.mrf}
-                    history={
-                      data?.workflowHistory ?? {
-                        submittedSteps: [],
-                        workflow: [],
-                      }
-                    }
-                    actions={currentActions}
-                    actionRowRef={actionRowRef}
-                    showActions={showActions}
-                  />,
-                )
-              }
+              {() => renderResponseContent()}
             </WorkflowActionLayout>
           )}
         </WorkflowActionsSection>

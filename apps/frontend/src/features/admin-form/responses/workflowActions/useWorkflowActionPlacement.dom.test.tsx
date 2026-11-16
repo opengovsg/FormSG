@@ -27,6 +27,39 @@ afterEach(() => {
 })
 
 describe('useWorkflowActionPlacement DOM measurements', () => {
+  it('remeasures when a drawer slides into view without scrolling or resizing', () => {
+    let notifyVisibility: () => void = () => {}
+    const disconnect = vi.fn()
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(callback: () => void) {
+          notifyVisibility = callback
+        }
+        observe = vi.fn()
+        disconnect = disconnect
+      },
+    )
+    const root = document.createElement('div')
+    const topRow = document.createElement('div')
+    let bounds = rect(100, 150, 1100, 1600)
+    vi.spyOn(root, 'getBoundingClientRect').mockReturnValue(rect(80, 600))
+    vi.spyOn(topRow, 'getBoundingClientRect').mockImplementation(() => bounds)
+    const { result, unmount } = renderHook(() =>
+      useWorkflowActionPlacement({
+        root,
+        topRow,
+        currentRow: null,
+        focusedLocation: null,
+      }),
+    )
+    expect(result.current.showStickyActions).toBe(true)
+    bounds = rect(100, 150)
+    act(() => notifyVisibility())
+    expect(result.current.showStickyActions).toBe(false)
+    unmount()
+    expect(disconnect).toHaveBeenCalled()
+  })
   it('accounts for the real scroll root and header inset when measuring the full row', () => {
     const root = document.createElement('div')
     const topRow = document.createElement('div')

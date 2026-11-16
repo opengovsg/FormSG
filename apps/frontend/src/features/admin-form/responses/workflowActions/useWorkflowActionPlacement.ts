@@ -89,6 +89,13 @@ export const useWorkflowActionPlacement = ({
       typeof ResizeObserver !== 'undefined'
         ? new ResizeObserver(schedule)
         : null
+    // Drawer transforms change visibility without triggering scroll or resize.
+    const visibilityObserver =
+      typeof IntersectionObserver !== 'undefined'
+        ? new IntersectionObserver(schedule, { threshold: [0, 1] })
+        : null
+    visibilityObserver?.observe(topRow)
+    if (currentRow) visibilityObserver?.observe(currentRow)
     observer?.observe(topRow)
     if (currentRow) observer?.observe(currentRow)
     if (root) observer?.observe(root)
@@ -98,6 +105,7 @@ export const useWorkflowActionPlacement = ({
       window.removeEventListener('scroll', schedule)
       window.removeEventListener('resize', schedule)
       observer?.disconnect()
+      visibilityObserver?.disconnect()
     }
   }, [root, headerInset, topRow, currentRow, focusedLocation])
   return placement

@@ -12,7 +12,7 @@ export const enSG: ResponsesIndividualResponse = {
   nextResponse: 'Next response',
   statusTrackingLinkLabel: 'View',
   responsesTab: 'Responses',
-  activityTab: 'Activity',
+  activityTab: 'Activity log',
   workflowActions: {
     whoIsNotifiedLabel: 'Who will be notified',
     whoIsNotifiedNone: 'No one will be notified.',
@@ -61,13 +61,13 @@ export const enSG: ResponsesIndividualResponse = {
       formAdmin: '(Form admin)',
       remarks: 'Remarks',
     },
-    reassignButton: 'Add assignee',
+    reassignButton: 'Reassign',
     sendBackButton: 'Send back',
     fixStepButton: 'Fix step',
     fixingStep:
       'Step {stepNumber} is being fixed. The response returns to Step {returnStepNumber} once it is submitted.',
     addAssigneeModal: {
-      title: 'Add assignee',
+      title: 'Reassign',
       description:
         'We’ll email them a link to complete this step. People already assigned to this step can still respond.',
       label: 'Email addresses of new people',
@@ -77,7 +77,7 @@ export const enSG: ResponsesIndividualResponse = {
       invalidEmail: 'Enter a valid email',
       alreadyAssigned:
         '{emails} {count, plural, one {is} other {are}} already assigned to this step.',
-      confirm: 'Add assignee',
+      confirm: 'Reassign',
       toastSuccess:
         '{count, plural, one {The new person can} other {The new people can}} now respond to this step.',
     },
@@ -91,7 +91,7 @@ export const enSG: ResponsesIndividualResponse = {
     },
     fixStepModal: {
       title: 'Fix an earlier step',
-      description: 'Return to {currentStep}. Keep earlier approvals.',
+      description: 'No, return to {currentStep} and keep earlier approvals.',
       stepLabel: 'Step to fix',
       recipientsLabel: 'People in {stepName}',
       stepOneEmailLabel: 'Email address of who fills in Step 1',
@@ -117,12 +117,10 @@ export const enSG: ResponsesIndividualResponse = {
       remarksDescription: 'Tell them what they need to fix.',
       remarksTooLong: 'Remarks must be {max} characters or fewer',
       routeLabel: 'Should later steps be completed again?',
-      redoConsequence: 'Redo every step after Step {stepNumber}.',
-      keepConsequence: 'Keep all existing answers.',
-      clearConsequence:
-        'Clear answers from Step {stepNumber} onward, except fields shared with earlier steps.',
-      clearCorrectionConsequence:
-        'Clear only Step {stepNumber}’s fields. Keep all other answers.',
+      redoConsequence: 'Yes, redo every step after {stepName}.',
+      keepConsequence: 'Yes, keep all existing answers.',
+      clearConsequence: 'No, clear answers from {stepName} onward.',
+      clearCorrectionConsequence: 'No, clear only {stepName}’s fields.',
       keepFilledLabel: 'Keep existing form fields filled?',
       keepFilledYes: 'Yes, keep filled',
       keepFilledNo: 'No, clear form fields',

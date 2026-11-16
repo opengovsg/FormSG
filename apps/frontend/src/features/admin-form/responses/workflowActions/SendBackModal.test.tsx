@@ -102,13 +102,17 @@ describe('SendBackModal', () => {
   it('updates the clearing explanation when the route changes', async () => {
     showModal()
     expect(screen.getByText('keepConsequence')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('radio', { name: /^keepFilledNo / }))
+    await userEvent.click(
+      screen.getByRole('radio', {
+        name: /^clear(Consequence|CorrectionConsequence)$/,
+      }),
+    )
     expect(screen.getByText('clearConsequence')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('radio', { name: /^no / }))
+    await userEvent.click(screen.getByRole('radio', { name: 'description' }))
     expect(screen.getByText('clearCorrectionConsequence')).toBeInTheDocument()
     expect(screen.queryByText('clearConsequence')).not.toBeInTheDocument()
     await userEvent.click(
-      screen.getByRole('radio', { name: /^keepFilledYes / }),
+      screen.getByRole('radio', { name: 'keepConsequence' }),
     )
     expect(screen.getByText('keepConsequence')).toBeInTheDocument()
   })
@@ -120,15 +124,19 @@ describe('SendBackModal', () => {
       '2',
     )
     await userEvent.type(screen.getByRole('textbox'), 'Fix dates')
-    await userEvent.click(screen.getByRole('radio', { name: /^no / }))
+    await userEvent.click(screen.getByRole('radio', { name: 'description' }))
     expect(screen.getByRole('combobox', { name: 'sendBackStep' })).toHaveValue(
       '2',
     )
     expect(screen.getByRole('textbox')).toHaveValue('Fix dates')
     expect(
-      screen.getByRole('radio', { name: /^keepFilledYes / }),
+      screen.getByRole('radio', { name: 'keepConsequence' }),
     ).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('radio', { name: /^keepFilledNo / }))
+    await userEvent.click(
+      screen.getByRole('radio', {
+        name: /^clear(Consequence|CorrectionConsequence)$/,
+      }),
+    )
     await userEvent.click(screen.getByRole('button', { name: 'confirm' }))
     expect(onConfirm).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -236,8 +244,12 @@ describe('SendBackModal', () => {
   it('keeps form fields filled unless told to clear them', async () => {
     const onConfirm = showModal()
 
-    expect(screen.getByRole('radio', { name: /^keepFilledYes / })).toBeChecked()
-    await userEvent.click(screen.getByRole('radio', { name: /^keepFilledNo / }))
+    expect(screen.getByRole('radio', { name: 'keepConsequence' })).toBeChecked()
+    await userEvent.click(
+      screen.getByRole('radio', {
+        name: /^clear(Consequence|CorrectionConsequence)$/,
+      }),
+    )
     await userEvent.click(screen.getByRole('button', { name: 'confirm' }))
 
     expect(onConfirm).toHaveBeenCalledWith(
@@ -357,10 +369,12 @@ describe('SendBackModal reset', () => {
     const props = { onClose: vi.fn(), onConfirm: vi.fn(), history }
     const { rerender } = render(<SendBackModal {...props} isOpen />)
     await userEvent.type(screen.getByRole('textbox'), 'Temporary note')
-    await userEvent.click(screen.getByRole('radio', { name: /^no / }))
+    await userEvent.click(screen.getByRole('radio', { name: 'description' }))
     rerender(<SendBackModal {...props} isOpen={false} />)
     rerender(<SendBackModal {...props} isOpen />)
-    expect(screen.getByRole('radio', { name: /^yes / })).toBeInTheDocument()
+    expect(
+      screen.getByRole('radio', { name: 'redoConsequence' }),
+    ).toBeInTheDocument()
     expect(screen.getByRole('textbox')).toHaveValue('')
   })
 })

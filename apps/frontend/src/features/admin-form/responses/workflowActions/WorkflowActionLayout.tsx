@@ -1,4 +1,4 @@
-import { ReactNode, Ref, useEffect, useState } from 'react'
+import { ReactNode, Ref, useEffect, useRef, useState } from 'react'
 import { Box, Portal } from '@chakra-ui/react'
 
 import { getResponseScrollContainer } from '../IndividualResponsePage/getResponseScrollContainer'
@@ -26,6 +26,7 @@ export const WorkflowActionLayout = ({
     showActions: boolean,
   ) => ReactNode
 }) => {
+  const layoutRef = useRef<HTMLDivElement>(null)
   const [topRow, setTopRow] = useState<HTMLDivElement | null>(null)
   const [currentRow, setCurrentRow] = useState<HTMLDivElement | null>(null)
   const [focusedLocation, setFocusedLocation] = useState<ActionLocation | null>(
@@ -45,12 +46,13 @@ export const WorkflowActionLayout = ({
   })
   useEffect(() => {
     const update = () => {
-      const rect = topRow?.getBoundingClientRect()
+      const rect = layoutRef.current?.getBoundingClientRect()
       const hostRect = portalHost?.getBoundingClientRect()
       setBounds({
         top:
           Math.max(root?.getBoundingClientRect().top ?? 0, 0) -
-          (hostRect?.top ?? 0),
+          (hostRect?.top ?? 0) +
+          8,
         left: (rect?.left ?? 0) - (hostRect?.left ?? 0),
         width: rect?.width ?? 0,
       })
@@ -76,7 +78,7 @@ export const WorkflowActionLayout = ({
     </Box>
   )
   return (
-    <Box data-workflow-layout>
+    <Box ref={layoutRef} data-workflow-layout>
       <ResponseOverview
         actions={
           actions.length ? (

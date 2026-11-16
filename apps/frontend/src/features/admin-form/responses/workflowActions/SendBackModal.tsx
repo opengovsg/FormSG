@@ -221,19 +221,13 @@ export const SendBackModal = ({
             <Stack spacing="0.75rem">
               <Radio value="sendBack" allowDeselect={false}>
                 <Text>
-                  {t('features.publicForm.components.fields.yesNo.yes')}
-                </Text>
-                <Text textStyle="body-2" color="secondary.500">
                   {t(`${I18N_PREFIX}.redoConsequence`, {
-                    stepNumber: targetStepNumber,
+                    stepName: targetStep?.label ?? '',
                   })}
                 </Text>
               </Radio>
               <Radio value="fixStep" allowDeselect={false}>
                 <Text>
-                  {t('features.publicForm.components.fields.yesNo.no')}
-                </Text>
-                <Text textStyle="body-2" color="secondary.500">
                   {t(`${WORKFLOW_ACTIONS_I18N}.fixStepModal.description`, {
                     currentStep: `${t(`${WORKFLOW_ACTIONS_I18N}.activityLog.stepNumber`, { stepNumber: pendingStepNumber })}${workflow[pendingStepNumber - 1]?.step_name?.trim() ? t(`${WORKFLOW_ACTIONS_I18N}.activityLog.stepNameLabel`, { name: workflow[pendingStepNumber - 1].step_name?.trim() }) : ''}`,
                   })}
@@ -254,17 +248,13 @@ export const SendBackModal = ({
           >
             <Stack spacing="0.75rem">
               <Radio value={KEEP_FILLED} allowDeselect={false}>
-                <Text>{t(`${I18N_PREFIX}.keepFilledYes`)}</Text>
-                <Text textStyle="body-2" color="secondary.500">
-                  {t(`${I18N_PREFIX}.keepConsequence`)}
-                </Text>
+                <Text>{t(`${I18N_PREFIX}.keepConsequence`)}</Text>
               </Radio>
               <Radio value={CLEAR_FIELDS} allowDeselect={false}>
-                <Text>{t(`${I18N_PREFIX}.keepFilledNo`)}</Text>
-                <Text textStyle="body-2" color="secondary.500">
+                <Text>
                   {t(
                     `${I18N_PREFIX}.${mode === 'sendBack' ? 'clearConsequence' : 'clearCorrectionConsequence'}`,
-                    { stepNumber: targetStepNumber },
+                    { stepName: targetStep?.label ?? '' },
                   )}
                 </Text>
               </Radio>
