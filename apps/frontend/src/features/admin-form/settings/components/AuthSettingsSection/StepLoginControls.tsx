@@ -28,7 +28,7 @@ export interface StepLoginControlsProps {
   // Why the controls are disabled, if any.
   notice?: string
   // Heading styling used by the workflow editor.
-  isTitleToggle?: boolean
+  isHeading?: boolean
   idPrefix: string
 }
 
@@ -41,7 +41,7 @@ export const StepLoginControls = ({
   isDisabled,
   isLoading = false,
   notice,
-  isTitleToggle = false,
+  isHeading = false,
   idPrefix,
 }: StepLoginControlsProps): JSX.Element => {
   const { t } = useTranslation()
@@ -54,7 +54,7 @@ export const StepLoginControls = ({
       <FormLabel
         id={`${idPrefix}-login-label`}
         mb="1rem"
-        {...(isTitleToggle ? textStyles.h4 : {})}
+        {...(isHeading ? textStyles.h4 : {})}
       >
         {t(`${COPY_KEY}.stepQuestion`)}
       </FormLabel>

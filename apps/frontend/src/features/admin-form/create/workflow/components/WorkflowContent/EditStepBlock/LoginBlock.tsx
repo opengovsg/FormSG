@@ -92,7 +92,7 @@ const StepLogin = ({
         <Text style={textStyles.h4}>{t(`${COPY_KEY}.title`)}</Text>
       ) : null}
       <StepLoginControls
-        isTitleToggle={!isGuidedSection}
+        isHeading={!isGuidedSection}
         idPrefix={`step-${stepNumber}-login`}
         authType={login.auth_type}
         savedAuthType={getStepAuthType(form, form.workflow, stepNumber)}

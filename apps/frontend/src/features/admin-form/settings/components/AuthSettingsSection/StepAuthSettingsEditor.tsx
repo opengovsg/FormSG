@@ -239,7 +239,7 @@ export const StepAuthSettingsEditor = ({
       <AuthSwitchConfirmation {...loginSwitch.confirmationProps} />
       <Stack spacing="1.5rem" px="2rem">
         <StepLoginControls
-          isTitleToggle
+          isHeading
           idPrefix={`settings-step-${stepIndex}-login`}
           authType={authType}
           savedAuthType={getStepAuthType(settings, form.workflow, stepIndex)}

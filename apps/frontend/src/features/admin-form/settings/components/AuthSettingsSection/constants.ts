@@ -1,29 +1,31 @@
 import { FormAuthType } from 'formsg-shared/types/form'
 
-export const LOGIN_OPTION_COPY: Record<
-  FormAuthType,
-  {
-    labelKey: 'noLogin' | 'singpass' | 'corppass'
-    descriptionKey?:
-      | 'legacySingpassDescription'
-      | 'singpassDescription'
-      | 'corppassDescription'
-  }
-> = {
-  [FormAuthType.NIL]: { labelKey: 'noLogin' },
+import { STEP_LOGIN_LABEL_KEYS } from '~features/admin-form/create/workflow/utils/stepLoginAvailability'
+
+const COPY_KEY = 'features.adminForm.sidebar.workflow.stepLogin'
+
+/** i18n keys for each login's name, and its radio description if any. */
+export const LOGIN_OPTION_COPY = {
+  [FormAuthType.NIL]: {
+    labelKey: `${COPY_KEY}.noLogin`,
+    descriptionKey: undefined,
+  },
   [FormAuthType.SP]: {
-    labelKey: 'singpass',
-    descriptionKey: 'legacySingpassDescription',
+    labelKey: STEP_LOGIN_LABEL_KEYS[FormAuthType.MyInfo],
+    descriptionKey: `${COPY_KEY}.legacySingpassDescription`,
   },
   [FormAuthType.MyInfo]: {
-    labelKey: 'singpass',
-    descriptionKey: 'singpassDescription',
+    labelKey: STEP_LOGIN_LABEL_KEYS[FormAuthType.MyInfo],
+    descriptionKey: `${COPY_KEY}.singpassDescription`,
   },
   [FormAuthType.CP]: {
-    labelKey: 'corppass',
-    descriptionKey: 'corppassDescription',
+    labelKey: STEP_LOGIN_LABEL_KEYS[FormAuthType.CP],
+    descriptionKey: `${COPY_KEY}.corppassDescription`,
   },
-}
+} as const satisfies Record<
+  FormAuthType,
+  { labelKey: string; descriptionKey?: string }
+>
 
 // Keep the saved legacy login available while the admin edits a draft.
 export const getLoginOptions = (savedAuthType: FormAuthType) => [

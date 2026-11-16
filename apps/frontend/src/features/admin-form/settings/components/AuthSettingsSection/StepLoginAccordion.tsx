@@ -16,13 +16,11 @@ import {
 
 import {
   AdminMultirespondentFormDto,
+  FormAuthType,
   FormSettings,
   MultirespondentFormSettings,
 } from 'formsg-shared/types'
-import {
-  getStepAuthType,
-  isWorkflowStepAuthType,
-} from 'formsg-shared/utils/step-login'
+import { getStepAuthType } from 'formsg-shared/utils/step-login'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
 import Button from '~components/Button'
@@ -38,8 +36,8 @@ import { LogicBadge } from '~features/admin-form/create/logic/components/LogicCo
 import { StepLabel } from '~features/admin-form/create/workflow/components/WorkflowContent/StepLabel'
 import { WorkflowStepBlockDivider } from '~features/admin-form/create/workflow/components/WorkflowContent/WorkflowStepBlockDivider'
 import { useWorkflowSurfaces } from '~features/admin-form/create/workflow/hooks/useWorkflowSurfaces'
-import { STEP_LOGIN_LABEL_KEYS } from '~features/admin-form/create/workflow/utils/stepLoginAvailability'
 
+import { LOGIN_OPTION_COPY } from './constants'
 import { StepAuthSettingsEditor } from './StepAuthSettingsEditor'
 
 interface StepLoginAccordionProps {
@@ -113,9 +111,10 @@ export const StepLoginAccordion = ({
         >
           {form.workflow.map((step, stepIndex) => {
             const authType = getStepAuthType(settings, form.workflow, stepIndex)
-            const label = isWorkflowStepAuthType(authType)
-              ? t(STEP_LOGIN_LABEL_KEYS[authType])
-              : undefined
+            const label =
+              authType !== FormAuthType.NIL
+                ? t(LOGIN_OPTION_COPY[authType].labelKey)
+                : undefined
             return (
               <Fragment key={step._id}>
                 {stepIndex > 0 ? (
@@ -145,11 +144,9 @@ export const StepLoginAccordion = ({
                         position="relative"
                         textAlign="left"
                         disabled={isSaving}
-                        // The card owns the hover background; keep its header transparent.
                         cursor={isExpanded ? 'default' : 'pointer'}
-                        _hover={{
-                          bg: 'transparent',
-                        }}
+                        // The card owns the hover background.
+                        _hover={{ bg: 'transparent' }}
                       >
                         <Stack
                           flex="1"

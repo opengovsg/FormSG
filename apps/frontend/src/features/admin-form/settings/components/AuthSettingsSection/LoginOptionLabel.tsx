@@ -5,18 +5,15 @@ import { FormAuthType } from 'formsg-shared/types'
 
 import { LOGIN_OPTION_COPY } from './constants'
 
-const COPY_KEY = 'features.adminForm.sidebar.workflow.stepLogin'
-
 export const LoginOptionLabel = ({ authType }: { authType: FormAuthType }) => {
   const { t } = useTranslation()
-  const copy = LOGIN_OPTION_COPY[authType]
-  if (!copy) return null
+  const { labelKey, descriptionKey } = LOGIN_OPTION_COPY[authType]
   return (
     <Stack spacing="0.25rem">
-      <Text>{t(`${COPY_KEY}.${copy.labelKey}`)}</Text>
-      {copy.descriptionKey && (
+      <Text>{t(labelKey)}</Text>
+      {descriptionKey && (
         <Text textStyle="body-2" color="secondary.400">
-          {t(`${COPY_KEY}.${copy.descriptionKey}`)}
+          {t(descriptionKey)}
         </Text>
       )}
     </Stack>
