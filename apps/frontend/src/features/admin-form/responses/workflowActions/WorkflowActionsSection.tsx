@@ -1,16 +1,13 @@
-import { ReactNode } from 'react'
+import { ReactNode, useCallback, useEffect, useId, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BiStopCircle, BiUndo, BiUser, BiWrench } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
-import { Flex, Text, useDisclosure } from '@chakra-ui/react'
+import { useDisclosure } from '@chakra-ui/react'
 
 import {
   FormAuthType,
   SubmissionMrfMetadata,
   WorkflowStatus,
 } from 'formsg-shared/types'
-
-import Button from '~components/Button'
 
 import {
   useAdminForm,
@@ -29,15 +26,22 @@ import {
   useSendBackWorkflowMutation,
   useStopWorkflowMutation,
 } from './mutations'
-import { RemindButton } from './RemindButton'
+import { useWorkflowReminder } from './RemindButton'
+import { restoreWorkflowActionFocus } from './restoreWorkflowActionFocus'
 import { SendBackModal } from './SendBackModal'
 import { StopWorkflowModal } from './StopWorkflowModal'
 import {
   useWorkflowActionsGate,
   useWorkflowActionsSendBackGate,
 } from './useWorkflowActionsGate'
+import {
+  WorkflowActionButtons,
+  WorkflowActionDescriptor,
+} from './WorkflowActionButtons'
+import { WorkflowActionFocusContext } from './WorkflowActionFocusContext'
 
 interface WorkflowActionsSectionProps {
+  children?: (args: { actions: WorkflowActionDescriptor[] }) => ReactNode
   overview?: ReactNode
   submissionId: string
   mrf: SubmissionMrfMetadata
@@ -49,6 +53,7 @@ interface WorkflowActionsSectionProps {
 
 export const WorkflowActionsSection = ({
   overview,
+  children,
   submissionId,
   mrf,
   history = { submittedSteps: [], workflow: [] },
@@ -56,6 +61,26 @@ export const WorkflowActionsSection = ({
   stepToken,
   isLoading,
 }: WorkflowActionsSectionProps): JSX.Element | null => {
+  const ownerId = useId()
+  const ownerRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<{ element: HTMLElement | null; action: string }>({
+    element: null,
+    action: '',
+  })
+  const restoredFocusRef = useRef<HTMLElement | null>(null)
+  const restoreFocus = useCallback(() => {
+    if (ownerRef.current)
+      restoreWorkflowActionFocus(
+        ownerRef.current,
+        triggerRef.current.element,
+        triggerRef.current.action,
+        ownerId,
+      )
+    restoredFocusRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null
+  }, [ownerId])
   const { t } = useTranslation()
   const { formId = '' } = useParams()
   const isWorkflowActionsOn = useWorkflowActionsGate()
@@ -66,7 +91,6 @@ export const WorkflowActionsSection = ({
   const stopModal = useDisclosure()
   const addAssigneeModal = useDisclosure()
   const sendBackModal = useDisclosure()
-  const fixStepModal = useDisclosure()
   const stopMutation = useStopWorkflowMutation(formId)
   const addAssigneesMutation = useAddAssigneesMutation(formId)
   const sendBackMutation = useSendBackWorkflowMutation(formId)
@@ -88,28 +112,63 @@ export const WorkflowActionsSection = ({
       : ''
   }`
 
-  if (mrf?.stoppedAt || mrf?.workflowStatus !== WorkflowStatus.PENDING) {
-    return overview ? <ResponseOverview>{overview}</ResponseOverview> : null
-  }
-
   const pendingStepAssignees = getStepRecipients({
     submittedSteps: history.submittedSteps,
     events,
     stepNumber: pendingStepNumber,
   })
-  const isFixing = mrf.workflowCurrentStepNumber < history.submittedSteps.length
+  const isPending =
+    !mrf?.stoppedAt && mrf?.workflowStatus === WorkflowStatus.PENDING
+  const isFixing =
+    !!mrf && mrf.workflowCurrentStepNumber < history.submittedSteps.length
   const canRemind =
-    isDelightfulDashboard && !isFixing && pendingStepAssignees.length > 0
-  const canActOnWorkflow = isWorkflowActionsOn && hasEditAccess
+    isPending &&
+    isDelightfulDashboard &&
+    !isFixing &&
+    pendingStepAssignees.length > 0
+  const reminder = useWorkflowReminder({
+    formId,
+    submissionId,
+    submissionSecretKey,
+    stepToken,
+    recipients: pendingStepAssignees,
+    enabled: canRemind,
+    targetStep: pendingStepNumber,
+  })
+  const canActOnWorkflow = isPending && isWorkflowActionsOn && hasEditAccess
   const canSendBackToStepOne = form?.authType === FormAuthType.NIL
   const canRewind =
     hasEditAccess &&
     pendingStepNumber >= (canSendBackToStepOne ? 2 : 3) &&
-    mrf.workflowCurrentStepNumber === history.submittedSteps.length
-  const canSendBack = isSendBackOn && canRewind
+    mrf?.workflowCurrentStepNumber === history.submittedSteps.length
+  const canSendBack = isPending && isSendBackOn && canRewind
 
-  if (!canRemind && !canActOnWorkflow && !canSendBack)
-    return overview ? <ResponseOverview>{overview}</ResponseOverview> : null
+  useEffect(() => {
+    // A refetch can remove the restored trigger after the dialog has finished closing.
+    // Recover only lost focus, never override a user's next focused control.
+    if (
+      restoredFocusRef.current &&
+      !restoredFocusRef.current.isConnected &&
+      document.activeElement === document.body
+    )
+      restoreFocus()
+  }, [canActOnWorkflow, canRemind, canSendBack, isFixing, restoreFocus])
+
+  const closeStop = stopModal.onClose
+  const closeAddAssignee = addAssigneeModal.onClose
+  const closeSendBack = sendBackModal.onClose
+  useEffect(() => {
+    if (!canActOnWorkflow) closeStop()
+    if (!canActOnWorkflow || isFixing) closeAddAssignee()
+    if (!canSendBack) closeSendBack()
+  }, [
+    canActOnWorkflow,
+    canSendBack,
+    isFixing,
+    closeStop,
+    closeAddAssignee,
+    closeSendBack,
+  ])
 
   const handleAddAssignees = (emails: string[]) => {
     if (!submissionSecretKey) return
@@ -154,9 +213,11 @@ export const WorkflowActionsSection = ({
   const handleFixStep = ({
     targetStepNumber,
     remarks,
+    clearResponses,
     stepOneRecipientEmail,
   }: {
     targetStepNumber: number
+    clearResponses: boolean
     remarks?: string
     stepOneRecipientEmail?: string
   }) => {
@@ -168,9 +229,10 @@ export const WorkflowActionsSection = ({
         expectedStepNumber: pendingStepNumber,
         submissionSecretKey,
         remarks,
+        clearResponses,
         stepOneRecipientEmail,
       },
-      { onSuccess: fixStepModal.onClose },
+      { onSuccess: sendBackModal.onClose },
     )
   }
 
@@ -180,116 +242,108 @@ export const WorkflowActionsSection = ({
       { onSettled: stopModal.onClose },
     )
 
-  const actions = (
-    <Flex gap="0.5rem" wrap="wrap">
-      {canRemind ? (
-        <RemindButton
-          formId={formId}
-          submissionId={submissionId}
-          submissionSecretKey={submissionSecretKey}
-          stepToken={stepToken}
-          recipients={pendingStepAssignees}
-        />
-      ) : null}
-      {isFixing ? (
-        <Text textStyle="body-2" color="secondary.500" w="100%">
-          {t(`${WORKFLOW_ACTIONS_I18N}.fixingStep`, {
-            stepNumber: mrf.workflowCurrentStepNumber + 1,
-            returnStepNumber: pendingStepNumber,
-          })}
-        </Text>
-      ) : null}
-      {canActOnWorkflow && !isFixing ? (
-        <Button
-          size="sm"
-          variant="outline"
-          colorScheme="secondary"
-          leftIcon={<BiUser fontSize="1.25rem" />}
-          isDisabled={isLoading || !submissionSecretKey}
-          onClick={addAssigneeModal.onOpen}
-        >
-          {t(`${WORKFLOW_ACTIONS_I18N}.reassignButton`)}
-        </Button>
-      ) : null}
-      {canSendBack ? (
-        <Button
-          size="sm"
-          variant="outline"
-          colorScheme="secondary"
-          leftIcon={<BiUndo fontSize="1.25rem" />}
-          isDisabled={isLoading || !submissionSecretKey}
-          onClick={sendBackModal.onOpen}
-        >
-          {t(`${WORKFLOW_ACTIONS_I18N}.sendBackButton`)}
-        </Button>
-      ) : null}
-      {canSendBack ? (
-        <Button
-          size="sm"
-          variant="outline"
-          colorScheme="secondary"
-          leftIcon={<BiWrench fontSize="1.25rem" />}
-          isDisabled={isLoading || !submissionSecretKey}
-          onClick={fixStepModal.onOpen}
-        >
-          {t(`${WORKFLOW_ACTIONS_I18N}.fixStepButton`)}
-        </Button>
-      ) : null}
-      {canActOnWorkflow ? (
-        <Button
-          size="sm"
-          variant="outline"
-          colorScheme="danger"
-          leftIcon={<BiStopCircle fontSize="1.25rem" />}
-          isDisabled={isLoading}
-          onClick={stopModal.onOpen}
-        >
-          {t(`${WORKFLOW_ACTIONS_I18N}.stopButton`)}
-        </Button>
-      ) : null}
-    </Flex>
-  )
+  const descriptors: WorkflowActionDescriptor[] = []
+  const addAction = (
+    id: WorkflowActionDescriptor['id'],
+    label: string,
+    disabled: boolean,
+    loading: boolean,
+    onClick: () => void,
+  ) =>
+    descriptors.push({
+      id,
+      ownerId,
+      label,
+      tooltip: t(`${WORKFLOW_ACTIONS_I18N}.tooltips.${id}`),
+      disabled,
+      loading,
+      onClick: () => {
+        triggerRef.current = {
+          element:
+            document.activeElement instanceof HTMLElement
+              ? document.activeElement
+              : null,
+          action: id,
+        }
+        onClick()
+      },
+    })
+  if (canRemind)
+    addAction(
+      'remind',
+      reminder.isSent
+        ? t(
+            'features.adminForm.responses.responsesPage.storage.unlockedResponses.responsesTable.sendReminderButton.reminderSent',
+          )
+        : t(`${WORKFLOW_ACTIONS_I18N}.remindButton`),
+      reminder.isSent || !submissionSecretKey,
+      reminder.isLoading,
+      reminder.onOpen,
+    )
+  if (canActOnWorkflow && !isFixing)
+    addAction(
+      'addAssignee',
+      t(`${WORKFLOW_ACTIONS_I18N}.reassignButton`),
+      isLoading || !submissionSecretKey,
+      addAssigneesMutation.isLoading,
+      addAssigneeModal.onOpen,
+    )
+  if (canSendBack)
+    addAction(
+      'sendBack',
+      t(`${WORKFLOW_ACTIONS_I18N}.sendBackButton`),
+      isLoading || !submissionSecretKey,
+      sendBackMutation.isLoading || fixStepMutation.isLoading,
+      sendBackModal.onOpen,
+    )
+  if (canActOnWorkflow)
+    addAction(
+      'void',
+      t(`${WORKFLOW_ACTIONS_I18N}.stopButton`),
+      isLoading,
+      stopMutation.isLoading,
+      stopModal.onOpen,
+    )
+  const actions = descriptors.length ? (
+    <WorkflowActionButtons actions={descriptors} />
+  ) : undefined
 
   return (
-    <>
-      {overview ? (
-        <ResponseOverview actions={actions}>{overview}</ResponseOverview>
-      ) : (
-        actions
-      )}
-      <AddAssigneeModal
-        isOpen={addAssigneeModal.isOpen}
-        onClose={addAssigneeModal.onClose}
-        onConfirm={handleAddAssignees}
-        isLoading={addAssigneesMutation.isLoading}
-        currentAssignees={pendingStepAssignees}
-        stepName={pendingStepLabel}
-      />
-      <SendBackModal
-        isOpen={sendBackModal.isOpen}
-        onClose={sendBackModal.onClose}
-        onConfirm={handleSendBack}
-        isLoading={sendBackMutation.isLoading}
-        history={history}
-        canSendBackToStepOne={canSendBackToStepOne}
-      />
-      <SendBackModal
-        isOpen={fixStepModal.isOpen}
-        onClose={fixStepModal.onClose}
-        onConfirm={handleFixStep}
-        isLoading={fixStepMutation.isLoading}
-        history={history}
-        canSendBackToStepOne={canSendBackToStepOne}
-        modal="fixStepModal"
-      />
-      {canActOnWorkflow && (
+    <WorkflowActionFocusContext.Provider value={restoreFocus}>
+      <div ref={ownerRef} style={{ display: 'contents' }}>
+        {children ? (
+          children({ actions: descriptors })
+        ) : overview ? (
+          <ResponseOverview actions={actions}>{overview}</ResponseOverview>
+        ) : (
+          actions
+        )}
+        {reminder.modal}
+        <AddAssigneeModal
+          isOpen={canActOnWorkflow && !isFixing && addAssigneeModal.isOpen}
+          onClose={addAssigneeModal.onClose}
+          onConfirm={handleAddAssignees}
+          isLoading={addAssigneesMutation.isLoading}
+          currentAssignees={pendingStepAssignees}
+          stepName={pendingStepLabel}
+        />
+        <SendBackModal
+          isOpen={canSendBack && sendBackModal.isOpen}
+          onClose={sendBackModal.onClose}
+          onConfirm={(params, mode) =>
+            mode === 'fixStep' ? handleFixStep(params) : handleSendBack(params)
+          }
+          isLoading={sendBackMutation.isLoading || fixStepMutation.isLoading}
+          history={history}
+          canSendBackToStepOne={canSendBackToStepOne}
+        />
         <StopWorkflowModal
-          isOpen={stopModal.isOpen}
+          isOpen={canActOnWorkflow && stopModal.isOpen}
           onClose={stopModal.onClose}
           onConfirm={handleStop}
           isLoading={stopMutation.isLoading}
         />
-      )}
-    </>
+      </div>
+    </WorkflowActionFocusContext.Provider>
   )
 }

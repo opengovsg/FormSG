@@ -99,6 +99,55 @@ const showModal = (onConfirm = vi.fn()) => {
 }
 
 describe('SendBackModal', () => {
+  it('updates the clearing explanation when the route changes', async () => {
+    showModal()
+    expect(screen.getByText('keepConsequence')).toBeInTheDocument()
+    await userEvent.click(
+      screen.getByRole('radio', {
+        name: /^clear(Consequence|CorrectionConsequence)$/,
+      }),
+    )
+    expect(screen.getByText('clearConsequence')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('radio', { name: 'description' }))
+    expect(screen.getByText('clearCorrectionConsequence')).toBeInTheDocument()
+    expect(screen.queryByText('clearConsequence')).not.toBeInTheDocument()
+    await userEvent.click(
+      screen.getByRole('radio', { name: 'keepConsequence' }),
+    )
+    expect(screen.getByText('keepConsequence')).toBeInTheDocument()
+  })
+
+  it('keeps the step and remarks when switching modes and sends the selected mode', async () => {
+    const onConfirm = showModal()
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'sendBackStep' }),
+      '2',
+    )
+    await userEvent.type(screen.getByRole('textbox'), 'Fix dates')
+    await userEvent.click(screen.getByRole('radio', { name: 'description' }))
+    expect(screen.getByRole('combobox', { name: 'sendBackStep' })).toHaveValue(
+      '2',
+    )
+    expect(screen.getByRole('textbox')).toHaveValue('Fix dates')
+    expect(
+      screen.getByRole('radio', { name: 'keepConsequence' }),
+    ).toBeInTheDocument()
+    await userEvent.click(
+      screen.getByRole('radio', {
+        name: /^clear(Consequence|CorrectionConsequence)$/,
+      }),
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'confirm' }))
+    expect(onConfirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        targetStepNumber: 2,
+        remarks: 'Fix dates',
+        clearResponses: true,
+      }),
+      'fixStep',
+    )
+  })
+
   it('offers steps 2 to the one before the pending step, defaulting to the latest', () => {
     showModal()
 
@@ -110,7 +159,7 @@ describe('SendBackModal', () => {
     expect(screen.getByRole('combobox', { name: 'sendBackStep' })).toHaveValue(
       '3',
     )
-    expect(screen.getByText('People in Step 3')).toBeInTheDocument()
+    expect(screen.queryByText(/^People in /)).not.toBeInTheDocument()
   })
 
   it("shows the chosen step's people, including those added to it", async () => {
@@ -121,7 +170,7 @@ describe('SendBackModal', () => {
       '2',
     )
 
-    expect(screen.getByText('People in Step 2 · Team lead')).toBeInTheDocument()
+    expect(screen.queryByText(/^People in /)).not.toBeInTheDocument()
     const lead = screen.getByText('lead@agency.gov.sg')
     const deputy = screen.getByText('deputy@agency.gov.sg')
     expect(
@@ -152,7 +201,7 @@ describe('SendBackModal', () => {
       />,
     )
 
-    expect(screen.getByText('People in Step 3')).toBeInTheDocument()
+    expect(screen.queryByText(/^People in /)).not.toBeInTheDocument()
     expect(screen.getByText('whoIsNotifiedNone')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'confirm' })).toBeEnabled()
   })
@@ -167,11 +216,14 @@ describe('SendBackModal', () => {
     await userEvent.type(screen.getByRole('textbox'), '  Fix the dates  ')
     await userEvent.click(screen.getByRole('button', { name: 'confirm' }))
 
-    expect(onConfirm).toHaveBeenCalledWith({
-      targetStepNumber: 2,
-      remarks: 'Fix the dates',
-      clearResponses: false,
-    })
+    expect(onConfirm).toHaveBeenCalledWith(
+      {
+        targetStepNumber: 2,
+        remarks: 'Fix the dates',
+        clearResponses: false,
+      },
+      'sendBack',
+    )
   })
 
   it('sends no remarks when the field is blank', async () => {
@@ -179,27 +231,30 @@ describe('SendBackModal', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'confirm' }))
 
-    expect(onConfirm).toHaveBeenCalledWith({
-      targetStepNumber: 3,
-      remarks: undefined,
-      clearResponses: false,
-    })
+    expect(onConfirm).toHaveBeenCalledWith(
+      {
+        targetStepNumber: 3,
+        remarks: undefined,
+        clearResponses: false,
+      },
+      'sendBack',
+    )
   })
 
   it('keeps form fields filled unless told to clear them', async () => {
     const onConfirm = showModal()
 
-    expect(
-      screen.getByRole('combobox', { name: 'sendBackKeepFilled' }),
-    ).toHaveDisplayValue('keepFilledYes')
-    await userEvent.selectOptions(
-      screen.getByRole('combobox', { name: 'sendBackKeepFilled' }),
-      'clear',
+    expect(screen.getByRole('radio', { name: 'keepConsequence' })).toBeChecked()
+    await userEvent.click(
+      screen.getByRole('radio', {
+        name: /^clear(Consequence|CorrectionConsequence)$/,
+      }),
     )
     await userEvent.click(screen.getByRole('button', { name: 'confirm' }))
 
     expect(onConfirm).toHaveBeenCalledWith(
       expect.objectContaining({ clearResponses: true }),
+      'sendBack',
     )
   })
 
@@ -257,12 +312,15 @@ describe('SendBackModal', () => {
       ).not.toBeInTheDocument()
       expect(screen.getByText('stepOneEmailDescription')).toBeInTheDocument()
       await userEvent.click(screen.getByRole('button', { name: 'confirm' }))
-      expect(onConfirm).toHaveBeenCalledWith({
-        targetStepNumber: 1,
-        remarks: undefined,
-        clearResponses: false,
-        stepOneRecipientEmail: 'applicant@agency.gov.sg',
-      })
+      expect(onConfirm).toHaveBeenCalledWith(
+        {
+          targetStepNumber: 1,
+          remarks: undefined,
+          clearResponses: false,
+          stepOneRecipientEmail: 'applicant@agency.gov.sg',
+        },
+        'sendBack',
+      )
     })
 
     it('shows invalid-email feedback after first blur then updates while editing', async () => {
@@ -303,5 +361,20 @@ describe('SendBackModal', () => {
       expect(confirm).toBeEnabled()
       expect(onConfirm).not.toHaveBeenCalled()
     })
+  })
+})
+
+describe('SendBackModal reset', () => {
+  it('resets mode and input after closing and reopening', async () => {
+    const props = { onClose: vi.fn(), onConfirm: vi.fn(), history }
+    const { rerender } = render(<SendBackModal {...props} isOpen />)
+    await userEvent.type(screen.getByRole('textbox'), 'Temporary note')
+    await userEvent.click(screen.getByRole('radio', { name: 'description' }))
+    rerender(<SendBackModal {...props} isOpen={false} />)
+    rerender(<SendBackModal {...props} isOpen />)
+    expect(
+      screen.getByRole('radio', { name: 'redoConsequence' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('textbox')).toHaveValue('')
   })
 })

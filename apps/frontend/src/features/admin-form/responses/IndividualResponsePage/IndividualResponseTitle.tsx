@@ -45,7 +45,13 @@ export const IndividualResponseTitle = ({
   return (
     <Skeleton isLoaded={!isLoading} minW={0}>
       <Stack direction="row" justify="center" align="center">
-        <Text textStyle={textStyle} as="h2" overflowWrap="anywhere">
+        <Text
+          textStyle={textStyle}
+          as="h2"
+          overflowWrap="anywhere"
+          tabIndex={-1}
+          data-workflow-response-heading
+        >
           {t('features.common.response')}
           {currentResponseNumber ? ` #${currentResponseNumber}` : ''}
         </Text>
