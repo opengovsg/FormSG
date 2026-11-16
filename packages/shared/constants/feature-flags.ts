@@ -18,7 +18,6 @@ export const featureFlags = {
   ogpAwareness: 'ogp-awareness' as const,
   wogadLogin: 'wogad-login' as const,
   mrfResponseLimit: 'mrf-response-limit' as const,
-  useTemplateFrame: 'use-template-frame' as const,
   useTemplateTour: 'use-template-tour' as const,
   useTemplateWallScroll: 'use-template-wall-scroll' as const,
   useTemplateWallSubmit: 'use-template-wall-submit' as const,
