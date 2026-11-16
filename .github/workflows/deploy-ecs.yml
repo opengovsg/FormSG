@@ -88,6 +88,11 @@ on:
         required: false
         default: ''
         type: string
+      aws-role-duration-seconds:
+        description: 'How long the runner AWS credentials last. Must outlast the CodeDeploy deployment, including its termination wait.'
+        required: false
+        default: 3600
+        type: number
 
     secrets:
       cicd-role:
@@ -165,6 +170,7 @@ jobs:
         with:
           role-to-assume: ${{ secrets.cicd-role }}
           aws-region: ${{ inputs.aws-region }}
+          role-duration-seconds: ${{ inputs.aws-role-duration-seconds }}
 
       - name: Login to Amazon ECR
         id: login-ecr
