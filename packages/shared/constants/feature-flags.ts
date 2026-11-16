@@ -5,7 +5,6 @@ export const featureFlags = {
   validateStripeEmailDomain: 'validateStripeEmailDomain' as const,
   chartsMaxResponseCount: 'charts-max-response-count' as const,
   postmanSms: 'postmanSms' as const,
-  designDrawerFormTitle: 'design-drawer-form-title' as const,
   adminPrintPdf: 'admin-print-pdf' as const,
   ogpSuiteSso: 'ogp-suite-sso' as const,
   enableIntranetSgidLogin: 'enable-intranet-sgid-login' as const,
