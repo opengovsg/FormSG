@@ -76,8 +76,7 @@ export const LoginPage = (): JSX.Element => {
   // RATIONALE: one.gov.sg is the suite rebuild of sso.gov.sg, so it inherits
   // sso's gate as-is. The IP check is a rollout knob, not a security control —
   // the backend already whitelists domains and one.gov.sg verifies officers.
-  const showOgpSuiteSso = useFeatureIsOn(featureFlags.ogpSuiteSso)
-  const shouldShowOneLogin = (isOgpIp && showOgpSuiteSso) || isDev
+  const shouldShowOneLogin = isOgpIp || isDev
   const wogadLoginFeatureValue = useFeatureValue(
     featureFlags.wogadLogin,
     WogadLoginFeatureValue.OFF,

@@ -4,7 +4,6 @@ export const featureFlags = {
   validateStripeEmailDomain: 'validateStripeEmailDomain' as const,
   chartsMaxResponseCount: 'charts-max-response-count' as const,
   postmanSms: 'postmanSms' as const,
-  ogpSuiteSso: 'ogp-suite-sso' as const,
   enableIntranetSgidLogin: 'enable-intranet-sgid-login' as const,
   mrfWebhooksV4: 'mrf-webhooks-v4' as const,
   enableMrfWebhooks: 'enable-mrf-webhooks' as const,
