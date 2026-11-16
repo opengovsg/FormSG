@@ -102,7 +102,9 @@ const StepLogin = ({
         onEsrvcIdChange={(next) => writeLogin(FormAuthType.CP, next)}
         isDisabled={isFormPublic}
         isLoading={isLoading}
-        notice={isFormPublic ? t(`${COPY_KEY}.closeFormToEdit`) : undefined}
+        disabledReason={
+          isFormPublic ? t(`${COPY_KEY}.closeFormToEdit`) : undefined
+        }
       />
       {hasUnassignedFields ? (
         <Text textStyle="body-2" color="secondary.400">

@@ -1,10 +1,10 @@
 import { FormAuthType } from 'formsg-shared/types/form'
 
-import { getLoginOptions } from './constants'
+import { getLoginOptionsKeepingLegacySingpass } from './constants'
 
-describe('getLoginOptions', () => {
+describe('getLoginOptionsKeepingLegacySingpass', () => {
   it('offers Singpass with Myinfo by default', () => {
-    expect(getLoginOptions(FormAuthType.NIL)).toEqual([
+    expect(getLoginOptionsKeepingLegacySingpass(FormAuthType.NIL)).toEqual([
       FormAuthType.NIL,
       FormAuthType.MyInfo,
       FormAuthType.CP,
@@ -12,7 +12,7 @@ describe('getLoginOptions', () => {
   })
 
   it('keeps a saved legacy Singpass login in place of Myinfo', () => {
-    expect(getLoginOptions(FormAuthType.SP)).toEqual([
+    expect(getLoginOptionsKeepingLegacySingpass(FormAuthType.SP)).toEqual([
       FormAuthType.NIL,
       FormAuthType.SP,
       FormAuthType.CP,

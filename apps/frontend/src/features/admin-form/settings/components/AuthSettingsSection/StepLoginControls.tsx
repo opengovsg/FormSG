@@ -11,7 +11,7 @@ import Radio from '~components/Radio'
 
 import { isValidEsrvcId } from '../../utils'
 
-import { getLoginOptions } from './constants'
+import { getLoginOptionsKeepingLegacySingpass } from './constants'
 import { EsrvcHelperText } from './EsrvcHelperText'
 import { LoginOptionLabel } from './LoginOptionLabel'
 
@@ -25,9 +25,7 @@ export interface StepLoginControlsProps {
   onEsrvcIdChange: (esrvcId: string) => void
   isDisabled: boolean
   isLoading?: boolean
-  // Why the controls are disabled, if any.
-  notice?: string
-  // Heading styling used by the workflow editor.
+  disabledReason?: string
   isHeading?: boolean
   idPrefix: string
 }
@@ -40,7 +38,7 @@ export const StepLoginControls = ({
   onEsrvcIdChange,
   isDisabled,
   isLoading = false,
-  notice,
+  disabledReason,
   isHeading = false,
   idPrefix,
 }: StepLoginControlsProps): JSX.Element => {
@@ -50,7 +48,9 @@ export const StepLoginControls = ({
 
   return (
     <Box>
-      {notice ? <InlineMessage mb="1rem">{notice}</InlineMessage> : null}
+      {disabledReason ? (
+        <InlineMessage mb="1rem">{disabledReason}</InlineMessage>
+      ) : null}
       <FormLabel
         id={`${idPrefix}-login-label`}
         mb="1rem"
@@ -64,7 +64,7 @@ export const StepLoginControls = ({
         value={authType}
         onChange={(next: FormAuthType) => onAuthTypeChange(next)}
       >
-        {getLoginOptions(savedAuthType).map((option) => (
+        {getLoginOptionsKeepingLegacySingpass(savedAuthType).map((option) => (
           <Box key={option}>
             <Radio
               value={option}

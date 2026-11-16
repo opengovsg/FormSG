@@ -69,8 +69,7 @@ export const useWorkflowMutations = () => {
     [toast],
   )
 
-  // The step editor shows these beside the emails input instead.
-  const handleStepSaveError = useCallback(
+  const toastUnlessEmailValidationError = useCallback(
     (error: Error) => {
       if (!isWorkflowEmailValidationError(error)) handleError(error)
     },
@@ -99,7 +98,7 @@ export const useWorkflowMutations = () => {
           useAdminFeedbackStore.getState().setEligible('workflow', formId)
         }
       },
-      onError: handleStepSaveError,
+      onError: toastUnlessEmailValidationError,
     },
   )
 
@@ -178,7 +177,7 @@ export const useWorkflowMutations = () => {
           useAdminFeedbackStore.getState().setEligible('workflow', formId)
         }
       },
-      onError: handleStepSaveError,
+      onError: toastUnlessEmailValidationError,
     },
   )
 

@@ -444,7 +444,6 @@ Loading.parameters = {
   msw: { handlers: { default: [getAdminFormSettings({ delay: 'infinite' })] } },
 }
 
-/** Existing login-only forms retain SP instead of becoming Myinfo-backed. */
 export const LegacySingpassLoginOnly: StoryObj<typeof SettingsAuthPage> = {
   parameters: {
     msw: {

@@ -145,7 +145,6 @@ export const StepLoginAccordion = ({
                         textAlign="left"
                         disabled={isSaving}
                         cursor={isExpanded ? 'default' : 'pointer'}
-                        // The card owns the hover background.
                         _hover={{ bg: 'transparent' }}
                       >
                         <Stack

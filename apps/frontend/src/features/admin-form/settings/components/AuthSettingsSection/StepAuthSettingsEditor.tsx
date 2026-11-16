@@ -252,7 +252,9 @@ export const StepAuthSettingsEditor = ({
           }}
           isDisabled={isPublic || isLoading || loginSaved}
           isLoading={isLoading}
-          notice={isPublic ? t(`${COPY_KEY}.closeFormToEdit`) : undefined}
+          disabledReason={
+            isPublic ? t(`${COPY_KEY}.closeFormToEdit`) : undefined
+          }
         />
         {stepIndex === 0 && authType !== FormAuthType.NIL ? (
           <StepOneLoginRestrictions
