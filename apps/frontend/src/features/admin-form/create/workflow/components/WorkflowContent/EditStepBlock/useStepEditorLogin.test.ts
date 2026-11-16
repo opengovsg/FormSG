@@ -9,7 +9,7 @@ import {
 
 import { EditStepInputs } from '../../../types'
 
-import { buildWorkflowStep } from './EditStepBlock'
+import { buildWorkflowStep } from './buildWorkflowStep'
 import { useStepEditorLogin } from './useStepEditorLogin'
 
 it.each([FormAuthType.NIL, FormAuthType.CP])(

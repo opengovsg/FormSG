@@ -1,6 +1,6 @@
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
-import { screen, userEvent } from 'storybook/test'
+import { expect, screen, userEvent, within } from 'storybook/test'
 
 import { featureFlags } from 'formsg-shared/constants'
 import {
@@ -32,6 +32,7 @@ import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { CreatePageSidebarProvider } from '~features/admin-form/create/common'
 
+import { useAdminWorkflowStore } from './adminWorkflowStore'
 import { CreatePageWorkflowTab } from './CreatePageWorkflowTab'
 
 const withCreatePageSidebar = (Story: StoryFn) => (
@@ -652,6 +653,7 @@ StepLoginMixedProviders.parameters = {
           ...FORM_WITH_WORKFLOW,
           status: FormStatus.Private,
           authType: FormAuthType.MyInfo,
+          hasUsedGuidedMode: true,
           form_fields: stepLoginFields,
           workflow: [
             {
@@ -695,4 +697,34 @@ StepLoginMixedProviders.parameters = {
       ],
     },
   },
+}
+
+export const GuidedLoginAccordion = Template.bind({})
+GuidedLoginAccordion.decorators = StepLoginMixedProviders.decorators
+GuidedLoginAccordion.parameters = StepLoginMixedProviders.parameters
+GuidedLoginAccordion.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement)
+  await canvas.findByRole('button', { name: /add step/i })
+  useAdminWorkflowStore.getState().setGuidedSetup(true)
+  useAdminWorkflowStore.getState().setToCreating()
+  await canvas.findByRole('textbox', { name: /step name/i })
+  await userEvent.click(canvas.getByRole('button', { name: /^continue$/i }))
+  await userEvent.click(canvas.getByRole('button', { name: /^continue$/i }))
+  await expect(canvas.getByRole('tab', { name: 'Login' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  )
+  await userEvent.click(canvas.getByRole('radio', { name: /^Corppass/ }))
+}
+
+export const GuidedFieldsAccordion = Template.bind({})
+GuidedFieldsAccordion.decorators = GuidedLoginAccordion.decorators
+GuidedFieldsAccordion.parameters = GuidedLoginAccordion.parameters
+GuidedFieldsAccordion.play = async (context) => {
+  await GuidedLoginAccordion.play?.(context)
+  const canvas = within(context.canvasElement)
+  await userEvent.click(canvas.getByRole('button', { name: /^continue$/i }))
+  await expect(
+    canvas.getByRole('tab', { name: 'Fields to fill' }),
+  ).toHaveAttribute('aria-selected', 'true')
 }

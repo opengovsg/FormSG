@@ -14,7 +14,10 @@ import {
   WorkflowType,
 } from 'formsg-shared/types'
 
-import { getAdminFormView } from '~/mocks/msw/handlers/admin-form'
+import {
+  getAdminFormSettings,
+  getAdminFormView,
+} from '~/mocks/msw/handlers/admin-form'
 
 import { StoryRouter } from '~utils/storybook'
 
@@ -22,7 +25,7 @@ import { CreatePageSidebarProvider } from '~features/admin-form/create/common'
 
 import { useAdminWorkflowStore } from '../../../adminWorkflowStore'
 
-import { EditStepBlock } from './EditStepBlock'
+import { EditLogicBlockProps, EditStepBlock } from './EditStepBlock'
 
 const form_field_1: FormFieldDto = {
   title: 'Approve time off?',
@@ -208,6 +211,7 @@ const GuidedCreation = ({ children }: { children: ReactNode }): JSX.Element => {
   const [isCreating, setIsCreating] = useState(false)
 
   useLayoutEffect(() => {
+    useAdminWorkflowStore.getState().setGuidedSetup(true)
     useAdminWorkflowStore.getState().setToCreating()
     setIsCreating(true)
     return () => useAdminWorkflowStore.getState().reset()
@@ -248,16 +252,22 @@ export const GuidedStep1Fields = {
   play: revealSections(2),
 }
 
-export const GuidedStep2WhatTheyDo = {
-  args: { stepNumber: 1, submitButtonLabel: 'Add step' },
-  decorators: [withGuidedCreation],
-  play: revealSections(2),
-}
-
 export const GuidedStep2Fields = {
-  args: { stepNumber: 1, submitButtonLabel: 'Add step' },
+  args: {
+    stepNumber: 1,
+    submitButtonLabel: 'Add step',
+    defaultValues: {
+      workflow_type: WorkflowType.Static,
+      emails: ['reviewer@example.gov.sg'],
+    },
+  },
   decorators: [withGuidedCreation],
   play: revealSections(3),
+}
+
+export const GuidedStep2WhatTheyDo = {
+  ...GuidedStep2Fields,
+  play: revealSections(2),
 }
 
 export const Step1Empty = {
@@ -821,4 +831,46 @@ export const Step3LoginCorppass = {
   },
   decorators: [withStepLoginOn],
   parameters: { msw: { handlers: mrfSingpassFormView } },
+}
+
+export const GuidedFirstStepLogin = {
+  ...Step1Login,
+  args: {
+    ...Step1Login.args,
+    onSubmit: (() => Promise.resolve()) as EditLogicBlockProps['onSubmit'],
+  },
+  decorators: [withStepLoginOn, withGuidedCreation],
+  parameters: {
+    msw: {
+      handlers: {
+        default: [
+          ...mrfSingpassFormView,
+          getAdminFormSettings({
+            mode: FormResponseMode.Multirespondent,
+            overrides: {
+              status: FormStatus.Private,
+              authType: FormAuthType.MyInfo,
+              isSingleSubmission: false,
+            },
+          }),
+        ],
+      },
+    },
+  },
+  play: revealSections(2),
+}
+
+export const GuidedFirstStepFields = {
+  ...GuidedFirstStepLogin,
+  play: revealSections(3),
+}
+
+export const GuidedLaterStepLogin = {
+  ...Step2LoginSingpass,
+  args: {
+    ...Step2LoginSingpass.args,
+    onSubmit: (() => Promise.resolve()) as EditLogicBlockProps['onSubmit'],
+  },
+  decorators: [withStepLoginOn, withGuidedCreation],
+  play: revealSections(2),
 }
