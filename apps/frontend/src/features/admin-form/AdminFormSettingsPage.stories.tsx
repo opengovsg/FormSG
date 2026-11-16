@@ -1,7 +1,6 @@
 import { MemoryRouter, Route } from 'react-router'
 import { Routes } from 'react-router-dom'
 import { Box } from '@chakra-ui/react'
-import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
@@ -152,20 +151,7 @@ SaveDraftEnabled.parameters = {
   },
 }
 
-const labelledNavGrowthbook = new GrowthBook({
-  features: {
-    charts: { defaultValue: true },
-  },
-})
 export const LabelledNavigation = Template.bind({})
-
-LabelledNavigation.decorators = [
-  (Story) => (
-    <GrowthBookProvider growthbook={labelledNavGrowthbook}>
-      <Story />
-    </GrowthBookProvider>
-  ),
-]
 
 LabelledNavigation.parameters = {
   ...Desktop.parameters,

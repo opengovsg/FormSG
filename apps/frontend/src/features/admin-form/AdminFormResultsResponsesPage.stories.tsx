@@ -422,7 +422,6 @@ Loading.parameters = {
 const labelledNavGrowthbook = new GrowthBook({
   features: {
     [featureFlags.delightfulDashboard]: { defaultValue: true },
-    charts: { defaultValue: true },
   },
 })
 export const LabelledNavigation = Template.bind({})

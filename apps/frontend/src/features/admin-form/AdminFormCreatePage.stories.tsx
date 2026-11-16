@@ -1,5 +1,4 @@
 import { Box } from '@chakra-ui/react'
-import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
 
@@ -390,21 +389,9 @@ AdminFormBuilderWithAdditionalRowsTableField.play = async ({
   })
 }
 
-const labelledNavGrowthbook = new GrowthBook({
-  features: {
-    charts: { defaultValue: true },
-  },
-})
 export const LabelledNavigation = Template.bind({})
 LabelledNavigation.parameters = {
   ...DesktopEmpty.parameters,
   sideNavViewport: true,
   argos: { modes: viewportModes('tablet', 'mobile') },
 }
-LabelledNavigation.decorators = [
-  (Story) => (
-    <GrowthBookProvider growthbook={labelledNavGrowthbook}>
-      <Story />
-    </GrowthBookProvider>
-  ),
-]
