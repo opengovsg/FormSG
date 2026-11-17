@@ -48,14 +48,33 @@ describe('zipMultiAttachmentInputs', () => {
     expect(downloadZip).not.toHaveBeenCalled()
   })
 
-  it("keeps an earlier MRF step's zip as it is", async () => {
-    const earlierZip = new File(['zip'], 'Question 1.zip')
+  it("sends an earlier MRF step's zip back unchanged, as a read-only step's answer must match it", async () => {
+    const files = [new File(['a'], 'a.pdf'), new File(['b'], 'b.jpg')]
+    const zip = new Uint8Array([1, 2, 3])
 
-    const inputs = await zipMultiAttachmentInputs(formFields, {
-      [MULTI_ID]: earlierZip,
-    })
+    const inputs: Record<string, unknown> = await zipMultiAttachmentInputs(
+      formFields,
+      { [MULTI_ID]: [...files] },
+      { [MULTI_ID]: { zip, files } },
+    )
 
-    expect(inputs[MULTI_ID]).toBe(earlierZip)
     expect(downloadZip).not.toHaveBeenCalled()
+    expect(inputs[MULTI_ID]).toMatchObject({
+      name: 'attachments.zip',
+      size: zip.length,
+    })
+  })
+
+  it("zips again once an earlier MRF step's files change", async () => {
+    const files = [new File(['a'], 'a.pdf')]
+    const added = new File(['c'], 'c.txt')
+
+    await zipMultiAttachmentInputs(
+      formFields,
+      { [MULTI_ID]: [...files, added] },
+      { [MULTI_ID]: { zip: new Uint8Array([1]), files } },
+    )
+
+    expect(downloadZip).toHaveBeenCalledWith([...files, added])
   })
 })
