@@ -2,16 +2,29 @@ import { downloadZip } from 'client-zip'
 
 import { BasicField, FormFieldDto } from 'formsg-shared/types'
 
-/**
- * Zips each multi-file attachment's files into one file, so it is uploaded,
- * scanned and stored like a single attachment. The server reads the files
- * from the zip and names it.
- */
+export type PreviousMultiAttachments = Record<
+  string,
+  { zip: Uint8Array<ArrayBuffer>; files: File[] }
+>
+
+const toZipFile = (zip: Blob | Uint8Array<ArrayBuffer>) =>
+  new File([zip], 'attachments.zip', { type: 'application/zip' })
+
+const storedZipIfFilesUnchanged = (
+  previous: PreviousMultiAttachments[string] | undefined,
+  files: File[],
+) =>
+  previous?.files.length === files.length &&
+  previous.files.every((file, i) => file === files[i])
+    ? toZipFile(previous.zip)
+    : undefined
+
 export const zipMultiAttachmentInputs = async <
   T extends Record<string, unknown>,
 >(
   formFields: FormFieldDto[],
   formInputs: T,
+  previousMultiAttachments: PreviousMultiAttachments = {},
 ): Promise<T> => {
   const zippedInputs: Record<string, unknown> = { ...formInputs }
   for (const field of formFields) {
@@ -19,16 +32,16 @@ export const zipMultiAttachmentInputs = async <
       continue
     }
     const files = formInputs[field._id]
-    // An earlier MRF step's answer is already its zip
     if (!Array.isArray(files)) continue
     if (!files.length) {
       zippedInputs[field._id] = undefined
       continue
     }
-    const zip = await downloadZip(files as File[]).blob()
-    zippedInputs[field._id] = new File([zip], 'attachments.zip', {
-      type: 'application/zip',
-    })
+    zippedInputs[field._id] =
+      storedZipIfFilesUnchanged(
+        previousMultiAttachments[field._id],
+        files as File[],
+      ) ?? toZipFile(await downloadZip(files as File[]).blob())
   }
   return zippedInputs as T
 }

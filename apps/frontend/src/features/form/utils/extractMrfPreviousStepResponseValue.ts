@@ -33,13 +33,12 @@ import {
  * this is the inverse of createResponsesV4's input → V4 answer mapping.
  * @param field The field to extract the value for
  * @param previousFieldResponse The previous field response (V4)
- * @param previousAttachmentFieldResponseFileBuffer The previous attachment field response file buffer (will only exist if the field is an attachment field)
  * @returns The filled value for the field
  */
 export const extractMrfPreviousStepResponseValue = (
   field: FormFieldDto,
   previousFieldResponse?: Pick<FieldResponseV4, 'fieldType' | 'answer'>,
-  previousAttachmentFieldResponseFileBuffer?: Uint8Array<ArrayBuffer>,
+  previousAttachment?: Uint8Array<ArrayBuffer> | File[],
 ): FormFieldValue | undefined => {
   if (!previousFieldResponse) return
 
@@ -74,9 +73,9 @@ export const extractMrfPreviousStepResponseValue = (
     }
     case BasicField.Attachment: {
       const answer = previousFieldResponse.answer as AttachmentAnswerV4
-      const fileData = previousAttachmentFieldResponseFileBuffer
-      if (fileData) {
-        return bufferToFile(fileData, answer.value)
+      if (Array.isArray(previousAttachment)) return previousAttachment
+      if (previousAttachment) {
+        return bufferToFile(previousAttachment, answer.value)
       }
       return
     }

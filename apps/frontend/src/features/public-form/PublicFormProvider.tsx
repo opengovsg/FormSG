@@ -44,6 +44,7 @@ import { useBrowserStm } from '~hooks/payments'
 import { useIndexedDb } from '~hooks/useIndexedDb'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
+import bufferToFile from '~utils/bufferToFile'
 import { isKeypairValid } from '~utils/secretKeyValidation'
 import {
   HttpError,
@@ -53,6 +54,7 @@ import { FormFieldValues, TableFieldValues } from '~templates/Field'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
+import { unzipMultiAttachment } from '~features/admin-form/responses/ResponsesPage/storage/utils/multiAttachment'
 import {
   trackReCaptchaOnError,
   trackSubmitForm,
@@ -100,7 +102,10 @@ import {
   getPendingStepAuthType,
   mergeStepLoginSession,
 } from './utils/stepLogin'
-import { zipMultiAttachmentInputs } from './utils/zipMultiAttachmentInputs'
+import {
+  PreviousMultiAttachments,
+  zipMultiAttachmentInputs,
+} from './utils/zipMultiAttachmentInputs'
 import {
   MrfStepAuthTarget,
   usePublicAuthMutations,
@@ -282,6 +287,7 @@ export const getInitialFormValues = ({
   formResponseMode,
   previousSubmission,
   previousAttachments,
+  previousMultiAttachments,
   currentStepNumberWorkflowStep,
   augmentedFormFields,
   fieldPrefillMap,
@@ -292,6 +298,7 @@ export const getInitialFormValues = ({
   formResponseMode: FormResponseMode
   previousSubmission?: ReturnType<typeof decryptSubmission>
   previousAttachments?: Record<string, Uint8Array<ArrayBuffer>>
+  previousMultiAttachments?: PreviousMultiAttachments
   currentStepNumberWorkflowStep?: StrippedFormWorkflowStepDto
   augmentedFormFields: FormFieldDto[]
   fieldPrefillMap: PrefillMap
@@ -303,12 +310,13 @@ export const getInitialFormValues = ({
     (acc, field) => {
       if (formResponseMode === FormResponseMode.Multirespondent) {
         const previousResponse = previousSubmission?.responses[field._id]
-        const previousAttachmentFieldResponseFileBuffer =
+        const previousAttachment =
+          previousMultiAttachments?.[field._id]?.files ??
           previousAttachments?.[field._id]
         const value = extractMrfPreviousStepResponseValue(
           field,
           previousResponse,
-          previousAttachmentFieldResponseFileBuffer,
+          previousAttachment,
         )
         if (value) {
           acc[field._id] = value
@@ -635,6 +643,8 @@ export const PublicFormProvider = ({
   const [previousAttachments, setPreviousAttachments] = useState<
     Record<string, Uint8Array<ArrayBuffer>>
   >({})
+  const [previousMultiAttachments, setPreviousMultiAttachments] =
+    useState<PreviousMultiAttachments>({})
 
   useEffect(() => {
     // Function to decrypt attachments retrieved from S3 using the submission secret key
@@ -646,6 +656,15 @@ export const PublicFormProvider = ({
         submissionSecretKey,
       )
       if (!isValid) return
+      const multiAttachmentFieldIds = new Set(
+        encryptedPreviousSubmission.form_fields
+          .filter(
+            (field) =>
+              field.fieldType === BasicField.Attachment && field.allowMultiple,
+          )
+          .map((field) => field._id),
+      )
+      const multiAttachments: PreviousMultiAttachments = {}
 
       const decryptionTasks = Object.keys(
         encryptedPreviousSubmission.encryptedAttachments,
@@ -657,6 +676,15 @@ export const PublicFormProvider = ({
             attachment,
             submissionSecretKey,
           )
+          if (decryptedContent && multiAttachmentFieldIds.has(id)) {
+            const files = await unzipMultiAttachment(decryptedContent)
+            multiAttachments[id] = {
+              zip: decryptedContent,
+              files: files.map(({ filename, content }) =>
+                bufferToFile(content, filename),
+              ),
+            }
+          }
         } catch (e) {
           console.error(e, 'failed to decrypt attachment', id)
           setHasPreviousSubmissionDecryptionError(true)
@@ -667,6 +695,7 @@ export const PublicFormProvider = ({
       })
       await Promise.all(decryptionTasks)
       setPreviousAttachments(decryptedAttachments)
+      setPreviousMultiAttachments(multiAttachments)
     }
 
     if (encryptedPreviousSubmission?.mrfVersion != null) {
@@ -1015,6 +1044,7 @@ export const PublicFormProvider = ({
       formResponseMode: form?.responseMode,
       previousSubmission,
       previousAttachments,
+      previousMultiAttachments,
       augmentedFormFields,
       currentStepNumberWorkflowStep,
       fieldPrefillMap,
@@ -1026,6 +1056,7 @@ export const PublicFormProvider = ({
     form?.responseMode,
     previousSubmission,
     previousAttachments,
+    previousMultiAttachments,
     augmentedFormFields,
     currentStepNumberWorkflowStep,
     fieldPrefillMap,
@@ -1122,6 +1153,7 @@ export const PublicFormProvider = ({
           transformFormInputCountryRegionToUpperCase(form.form_fields),
           transformFormInputTrimTextInputs(form.form_fields),
         ])(formInputs) as typeof formInputs,
+        previousMultiAttachments,
       )
 
       const formData = {
@@ -1507,6 +1539,7 @@ export const PublicFormProvider = ({
       clearRespondentAccessErrors,
       selectedLanguage,
       clearDraftSubmission,
+      previousMultiAttachments,
     ],
   )
 
