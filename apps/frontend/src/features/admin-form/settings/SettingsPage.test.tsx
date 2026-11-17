@@ -9,13 +9,12 @@ import { SettingsLink } from '../create/builder-and-design/BuilderAndDesignDrawe
 import { SettingsPage } from './SettingsPage'
 
 const state = vi.hoisted(() => ({
-  labels: true,
   mobile: true,
   multiLang: true,
   emailNavLabel: 'Emails',
 }))
 vi.mock('@growthbook/growthbook-react', () => ({
-  useFeatureIsOn: () => state.labels,
+  useFeatureIsOn: () => true,
 }))
 vi.mock('~hooks/useIsMobile', () => ({ useIsMobile: () => state.mobile }))
 vi.mock('~features/user/queries', () => ({
@@ -82,7 +81,6 @@ const setup = () =>
 
 describe('Settings labelled navigation', () => {
   beforeEach(() => {
-    state.labels = true
     state.mobile = true
     state.multiLang = true
     state.emailNavLabel = 'Emails'
@@ -151,19 +149,9 @@ describe('Settings labelled navigation', () => {
     ).not.toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Emails' })).toBeInTheDocument()
   })
-  it('preserves the control labels and mobile navigation when the flag is off', () => {
-    state.labels = false
-    setup()
-    expect(screen.getByText('Email notifications')).toBeInTheDocument()
-    expect(screen.getByText('Multi-language')).toBeInTheDocument()
-    expect(
-      screen.queryByRole('button', { name: 'Collapse sidebar' }),
-    ).not.toBeInTheDocument()
-  })
 })
 
 it('opens Singpass settings from the Create palette Settings link', async () => {
-  state.labels = true
   render(
     <MemoryRouter initialEntries={['/admin/form/test']}>
       <Location />

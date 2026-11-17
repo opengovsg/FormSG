@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { BiBarChartAlt2, BiCommentDetail, BiTable } from 'react-icons/bi'
 import { IconType } from 'react-icons/lib'
-import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { FormResponseMode } from 'formsg-shared/types'
 
@@ -24,11 +23,9 @@ export const useResultsTabs = (): ResultsTabEntry[] => {
   const { t } = useTranslation()
   const { data: form } = useAdminForm()
 
-  const isChartsEnabled = useFeatureValue('charts', false)
-  const isFormEncryptModeOrMultirespondent =
+  const shouldShowCharts =
     form?.responseMode === FormResponseMode.Encrypt ||
     form?.responseMode === FormResponseMode.Multirespondent
-  const shouldShowCharts = isFormEncryptModeOrMultirespondent && isChartsEnabled
 
   return [
     {

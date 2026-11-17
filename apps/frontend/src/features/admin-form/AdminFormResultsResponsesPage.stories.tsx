@@ -388,16 +388,6 @@ StorageFormResponseDrawer.parameters = {
     },
   },
 }
-const responseDrawerGrowthBook = new GrowthBook({
-  features: { [featureFlags.adminPrintPdf]: { defaultValue: true } },
-})
-StorageFormResponseDrawer.decorators = [
-  (Story) => (
-    <GrowthBookProvider growthbook={responseDrawerGrowthBook}>
-      <Story />
-    </GrowthBookProvider>
-  ),
-]
 StorageFormResponseDrawer.play = async ({ canvasElement }) => {
   await unlockResponses(canvasElement)
   const drawer = await screen.findByRole('dialog')
@@ -429,15 +419,9 @@ Loading.parameters = {
   },
 }
 
-const legacyNavGrowthbook = new GrowthBook({
-  features: { [featureFlags.sidebarNavLabels]: { defaultValue: false } },
-})
-
 const labelledNavGrowthbook = new GrowthBook({
   features: {
-    [featureFlags.sidebarNavLabels]: { defaultValue: true },
     [featureFlags.delightfulDashboard]: { defaultValue: true },
-    charts: { defaultValue: true },
   },
 })
 export const LabelledNavigation = Template.bind({})
@@ -448,17 +432,6 @@ LabelledNavigation.parameters = {
 LabelledNavigation.decorators = [
   (Story) => (
     <GrowthBookProvider growthbook={labelledNavGrowthbook}>
-      <Box h="100vh">
-        <Story />
-      </Box>
-    </GrowthBookProvider>
-  ),
-]
-export const LegacyNavigation = Template.bind({})
-LegacyNavigation.parameters = StorageForm.parameters
-LegacyNavigation.decorators = [
-  (Story) => (
-    <GrowthBookProvider growthbook={legacyNavGrowthbook}>
       <Box h="100vh">
         <Story />
       </Box>

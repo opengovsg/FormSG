@@ -39,7 +39,7 @@ export const UnlockedResponses = (): JSX.Element => {
 }
 
 const DelightfulUnlockedResponses = (): JSX.Element => {
-  const { contentPr } = useResultsNavLayout('1rem')
+  const { contentPr } = useResultsNavLayout()
   const { t } = useTranslation()
 
   const {
@@ -133,7 +133,7 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
 }
 
 const LegacyUnlockedResponses = (): JSX.Element => {
-  const { contentPr } = useResultsNavLayout('1rem')
+  const { contentPr } = useResultsNavLayout()
   const { t } = useTranslation()
 
   const {

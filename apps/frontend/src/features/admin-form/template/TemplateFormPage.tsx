@@ -1,8 +1,5 @@
 import { useParams } from 'react-router-dom'
 import { Flex, useDisclosure } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
-
-import { featureFlags } from 'formsg-shared/constants/feature-flags'
 
 import { fillHeightCss } from '~utils/fillHeightCss'
 import GovtMasthead from '~components/GovtMasthead'
@@ -29,10 +26,6 @@ export const TemplateFormPage = (): JSX.Element => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const isWallScrollOn = useFeatureIsOn(featureFlags.useTemplateWallScroll)
-  const isWallSubmitOn = useFeatureIsOn(featureFlags.useTemplateWallSubmit)
-  const isWallOn = isWallScrollOn || isWallSubmitOn
-
   const {
     isOpen: isWallOpen,
     onOpen: onWallOpen,
@@ -43,7 +36,7 @@ export const TemplateFormPage = (): JSX.Element => {
     <Flex flexDir="column" css={fillHeightCss} pos="relative">
       <TemplateFormProvider
         formId={formId}
-        onTemplatePreviewSubmitClick={isWallSubmitOn ? onWallOpen : undefined}
+        onTemplatePreviewSubmitClick={onWallOpen}
       >
         <GovtMasthead />
         <PreviewFormBannerContainer isTemplate />
@@ -57,19 +50,15 @@ export const TemplateFormPage = (): JSX.Element => {
             <FormEndPage />
             <FormFooter />
           </PublicFormWrapper>
-          {isWallScrollOn && (
-            <UseTemplateWallScrollTrigger
-              formId={formId}
-              onTrigger={onWallOpen}
-            />
-          )}
-          {isWallOn && (
-            <UseTemplateWall
-              formId={formId}
-              isOpen={isWallOpen}
-              onClose={onWallClose}
-            />
-          )}
+          <UseTemplateWallScrollTrigger
+            formId={formId}
+            onTrigger={onWallOpen}
+          />
+          <UseTemplateWall
+            formId={formId}
+            isOpen={isWallOpen}
+            onClose={onWallClose}
+          />
         </FormSectionsProvider>
       </TemplateFormProvider>
     </Flex>
