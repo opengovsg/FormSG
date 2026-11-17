@@ -225,19 +225,16 @@ export const InactiveStepBlock = ({
     ))
   }, [idToFieldMap, step.edit])
 
-  const fieldsSection =
-    step.edit.length === 0 && isLoginShown ? null : (
-      <Stack>
-        <Text textStyle={sectionLabelTextStyle}>
-          {t(
-            'features.adminForm.sidebar.workflow.respondentBlock.fieldsToFill',
-          )}
-        </Text>
-        <Stack direction="column" spacing="0.25rem">
-          {questionBadges}
-        </Stack>
+  const fieldsSection = (
+    <Stack>
+      <Text textStyle={sectionLabelTextStyle}>
+        {t('features.adminForm.sidebar.workflow.respondentBlock.fieldsToFill')}
+      </Text>
+      <Stack direction="column" spacing="0.25rem">
+        {questionBadges}
       </Stack>
-    )
+    </Stack>
+  )
   const stepAuthType = form
     ? getStepAuthType(form, formWorkflow, stepNumber)
     : FormAuthType.NIL
