@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 import { useDisclosure } from '@chakra-ui/react'
 
 import { FormStatus } from 'formsg-shared/types'

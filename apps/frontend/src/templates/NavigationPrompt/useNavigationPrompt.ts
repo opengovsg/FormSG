@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { BlockerFunction, useBlocker } from 'react-router-dom'
+import { BlockerFunction, useBlocker } from 'react-router'
 
 export const useNavigationPrompt = (when?: boolean) => {
   const [isPromptShown, setIsPromptShown] = useState(false)

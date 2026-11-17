@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router'
 
 import { BasicField } from 'formsg-shared/types/field'
 import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'

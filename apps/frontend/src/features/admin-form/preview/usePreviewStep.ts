@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router'
 
 export const PREVIEW_STEP_PARAM = 'step'
 

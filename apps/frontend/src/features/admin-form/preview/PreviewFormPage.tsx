@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 import { Flex } from '@chakra-ui/react'
 
 import { useGrowthBookFormId } from '~contexts/GrowthbookContext'

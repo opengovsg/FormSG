@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiDownload } from 'react-icons/bi'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 import { useThrottle } from 'react-use'
 import {
   Box,

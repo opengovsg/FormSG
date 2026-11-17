@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 import { Box, Stack, Text } from '@chakra-ui/react'
 
 import {

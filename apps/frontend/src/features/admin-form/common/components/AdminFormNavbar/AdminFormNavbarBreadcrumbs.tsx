@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { BiHomeAlt } from 'react-icons/bi'
-import { Link as ReactLink } from 'react-router-dom'
+import { Link as ReactLink } from 'react-router'
 import { Icon, Skeleton, Stack, Text } from '@chakra-ui/react'
 
 import { DASHBOARD_ROUTE } from '~constants/routes'

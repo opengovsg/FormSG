@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate, useParams } from 'react-router'
 import { Box, Tabs } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 

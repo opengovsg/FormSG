@@ -1,4 +1,4 @@
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { useDisclosure } from '@chakra-ui/react'
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'

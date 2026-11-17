@@ -1,5 +1,5 @@
 import { BiCog } from 'react-icons/bi'
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 

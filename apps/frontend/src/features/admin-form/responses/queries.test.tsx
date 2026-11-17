@@ -6,7 +6,7 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 import { getAllDecryptedSubmission } from './AdminSubmissionsService'
 import { useDecryptedResponsesBySubmissionId } from './queries'
 
-vi.mock('react-router-dom', () => ({
+vi.mock('react-router', () => ({
   useParams: () => ({ formId: 'form-id' }),
 }))
 vi.mock('./ResponsesPage/storage/StorageResponsesContext', () => ({

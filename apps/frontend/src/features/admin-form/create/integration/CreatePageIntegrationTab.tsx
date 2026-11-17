@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiRightArrowAlt } from 'react-icons/bi'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 import {
   Badge,
   Box,

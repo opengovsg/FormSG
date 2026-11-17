@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router'
 import { Stack, Text } from '@chakra-ui/react'
 import { useFeatureIsOn, useFeatureValue } from '@growthbook/growthbook-react'
 import { StatusCodes } from 'http-status-codes'

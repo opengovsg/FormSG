@@ -6,7 +6,7 @@ import { useAddFieldPicker } from './useAddFieldPicker'
 
 const mockToast = vi.fn()
 
-vi.mock('react-router-dom', () => ({
+vi.mock('react-router', () => ({
   useParams: () => ({ formId: 'form-id' }),
 }))
 vi.mock('react-query', () => ({

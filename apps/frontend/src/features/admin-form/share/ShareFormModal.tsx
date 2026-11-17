@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { BiLinkExternal } from 'react-icons/bi'
 import { RemoveScroll } from 'react-remove-scroll'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import {
   Box,
   Divider,

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FaRegFilePdf } from 'react-icons/fa6'
-import { useLocation, useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router'
 import { Box, Skeleton, Stack, Text, TextProps } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
