@@ -33,6 +33,7 @@ import { FormFieldValues } from '~templates/Field'
 import NotFoundErrorPage from '~pages/NotFoundError'
 import { useIsMrfStepLoginEnabled } from '~features/admin-form/create/workflow/hooks/useIsMrfStepLoginEnabled'
 import { isFormPaymentsEnabled } from '~features/form/utils/isFormPaymentsEnabled'
+import { applyMyInfoVerifiedView } from '~features/myinfo/utils'
 import { SubmitEmailFormArgs } from '~features/public-form/PublicFormService'
 
 import { useEnv } from '../../env/queries'
@@ -407,12 +408,23 @@ export const PreviewFormProvider = ({
     () => (formFields ? getFieldPrefillMap(formFields, searchParams) : {}),
     [formFields, searchParams],
   )
+  const seedsMyInfoValues = form?.responseMode !== FormResponseMode.Email
+  const showsMyInfoVerifiedView =
+    !!form &&
+    getStepAuthType(form, formWorkflow, currentWorkflowStepNumber) ===
+      FormAuthType.MyInfo &&
+    seedsMyInfoValues
   const augmentedFormFields = useMemo(
     () =>
       formFields
-        ? augmentFormFields(formFields, currentStepNumberWorkflowStep)
+        ? augmentFormFields(
+            showsMyInfoVerifiedView
+              ? formFields.map(applyMyInfoVerifiedView('SG'))
+              : formFields,
+            currentStepNumberWorkflowStep,
+          )
         : [],
-    [formFields, currentStepNumberWorkflowStep],
+    [formFields, showsMyInfoVerifiedView, currentStepNumberWorkflowStep],
   )
 
   const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
