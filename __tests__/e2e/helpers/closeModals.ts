@@ -25,4 +25,13 @@ export const closeModals = async (page: Page) => {
     pressEscape,
     { noWaitAfter: true },
   )
+
+  // The admin feedback box is not a dialog, so Escape does not close it. It
+  // floats over the bottom of the page and covers the field drawer's buttons.
+  await page.addLocatorHandler(
+    page.getByRole('button', { name: 'close feedback box' }),
+    async (closeButton) => {
+      await closeButton.click()
+    },
+  )
 }
