@@ -31,11 +31,6 @@ import Link from '~components/Link'
 
 import { getPreviewStepLabel } from '~features/admin-form/preview/usePreviewStep'
 import { UseTemplateModal } from '~features/admin-form/template/UseTemplateModal'
-// Explicit deep import to avoid circular dependency warnings by rollup.
-import {
-  USE_TEMPLATE_TOUR_STICKY_TARGET_ID,
-  USE_TEMPLATE_TOUR_TARGET_ID,
-} from '~features/admin-form/template/UseTemplateNudges/UseTemplateTour.constants'
 import { useEnv } from '~features/env/queries'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 // Explicit import to avoid circular dependency warnings by rollup
@@ -189,11 +184,6 @@ export const PreviewFormBanner = ({
                   {t('features.adminForm.template.backToFormsg')}
                 </Link>
                 <Button
-                  id={
-                    isSticky
-                      ? USE_TEMPLATE_TOUR_STICKY_TARGET_ID
-                      : USE_TEMPLATE_TOUR_TARGET_ID
-                  }
                   aria-label={t(
                     'features.adminForm.template.useTemplateAriaLabel',
                   )}
