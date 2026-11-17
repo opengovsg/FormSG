@@ -1,6 +1,5 @@
-import { Flex, TabList } from '@chakra-ui/react'
+import { TabList } from '@chakra-ui/react'
 
-import { useDraggable } from '~hooks/useDraggable'
 import { noPrintCss } from '~utils/noPrintCss'
 
 import {
@@ -9,97 +8,50 @@ import {
   SideNavCollapseControl,
 } from '../../../common/AdminFormSideNav/AdminFormSideNav'
 
-import { RESULTS_NAV_WIDTH } from './constants'
-import { ResultsTab } from './ResultsTab'
 import { ResultsTabEntry } from './useResultsTabs'
 
 export const FormResultsNavbar = ({
   tabs,
-  showNavLabels = false,
   isCollapsed = false,
   isMobile = false,
   onToggle = () => undefined,
 }: {
   tabs: ResultsTabEntry[]
-  showNavLabels?: boolean
   isCollapsed?: boolean
   isMobile?: boolean
   onToggle?: () => void
 }): JSX.Element => {
-  const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
-
-  if (showNavLabels) {
-    if (isCollapsed)
-      return (
-        <SideNavCollapseControl
-          isCollapsed
-          onClick={onToggle}
-          trackingLabel="results.sidebar.toggle_collapse"
-        />
-      )
+  if (isCollapsed)
     return (
-      <AdminFormSideNav
-        sx={noPrintCss}
-        footer={
-          isMobile ? (
-            <SideNavCollapseControl
-              isCollapsed={false}
-              onClick={onToggle}
-              trackingLabel="results.sidebar.toggle_collapse"
-            />
-          ) : undefined
-        }
-      >
-        <TabList border={0} m={0} p={0} overflow="visible" gap="1rem">
-          {tabs.map((tab) => (
-            <AdminFormSideNavTab
-              key={tab.path}
-              label={tab.label}
-              icon={<tab.icon fontSize="1.5rem" />}
-              badgeText={tab.badgeText}
-            />
-          ))}
-        </TabList>
-      </AdminFormSideNav>
+      <SideNavCollapseControl
+        isCollapsed
+        onClick={onToggle}
+        trackingLabel="results.sidebar.toggle_collapse"
+      />
     )
-  }
-
   return (
-    <Flex
+    <AdminFormSideNav
       sx={noPrintCss}
-      h="max-content"
-      flex="0 0 auto"
-      ref={ref}
-      onMouseDown={onMouseDown}
-      position="sticky"
-      zIndex={0}
-      top={{ base: '2.5rem', lg: '3.125rem' }}
-      borderTopColor="neutral.300"
-      w={RESULTS_NAV_WIDTH}
-      __css={{
-        scrollbarWidth: 0,
-        '&::-webkit-scrollbar': {
-          width: 0,
-          height: 0,
-        },
-      }}
+      footer={
+        isMobile ? (
+          <SideNavCollapseControl
+            isCollapsed={false}
+            onClick={onToggle}
+            trackingLabel="results.sidebar.toggle_collapse"
+          />
+        ) : undefined
+      }
     >
-      <TabList
-        overflowX="initial"
-        display="inline-flex"
-        w={{ base: 'auto', lg: '13rem' }}
-        mr={{ base: '1.5rem', md: '4rem', lg: '2rem' }}
-        mb="calc(0.5rem - 2px)"
-      >
+      <TabList border={0} m={0} p={0} overflow="visible" gap="1rem">
         {tabs.map((tab) => (
-          <ResultsTab
+          <AdminFormSideNavTab
             key={tab.path}
             label={tab.label}
-            icon={tab.icon}
+            icon={<tab.icon fontSize="1.5rem" />}
             badgeText={tab.badgeText}
           />
         ))}
       </TabList>
-    </Flex>
+    </AdminFormSideNav>
   )
 }

@@ -4,7 +4,6 @@ import { Box } from '@chakra-ui/react'
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { featureFlags } from 'formsg-shared/constants'
 import {
   FormAuthType,
   FormResponseMode,
@@ -153,13 +152,8 @@ SaveDraftEnabled.parameters = {
   },
 }
 
-const legacyNavGrowthbook = new GrowthBook({
-  features: { [featureFlags.sidebarNavLabels]: { defaultValue: false } },
-})
-
 const labelledNavGrowthbook = new GrowthBook({
   features: {
-    [featureFlags.sidebarNavLabels]: { defaultValue: true },
     charts: { defaultValue: true },
   },
 })
@@ -168,15 +162,6 @@ export const LabelledNavigation = Template.bind({})
 LabelledNavigation.decorators = [
   (Story) => (
     <GrowthBookProvider growthbook={labelledNavGrowthbook}>
-      <Story />
-    </GrowthBookProvider>
-  ),
-]
-export const LegacyNavigation = Template.bind({})
-LegacyNavigation.parameters = { ...Desktop.parameters, sideNavViewport: true }
-LegacyNavigation.decorators = [
-  (Story) => (
-    <GrowthBookProvider growthbook={legacyNavGrowthbook}>
       <Story />
     </GrowthBookProvider>
   ),

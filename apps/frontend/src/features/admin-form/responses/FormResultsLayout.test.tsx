@@ -7,9 +7,9 @@ import { render } from '~/test-utils'
 
 import { FormResultsLayout } from './FormResultsLayout'
 
-const state = vi.hoisted(() => ({ labels: true, mobile: true, charts: true }))
+const state = vi.hoisted(() => ({ mobile: true, charts: true }))
 vi.mock('@growthbook/growthbook-react', () => ({
-  useFeatureIsOn: () => state.labels,
+  useFeatureIsOn: () => true,
 }))
 vi.mock('~hooks/useIsMobile', () => ({ useIsMobile: () => state.mobile }))
 vi.mock('./components/FormResultsNavbar/DashboardVersionToggle', () => ({
@@ -45,7 +45,6 @@ const setup = () =>
 
 describe('Results labelled navigation', () => {
   beforeEach(() => {
-    state.labels = true
     state.mobile = true
     state.charts = true
   })
@@ -100,13 +99,5 @@ describe('Results labelled navigation', () => {
     setup()
     expect(screen.queryByText('Charts')).not.toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Feedback' })).toBeInTheDocument()
-  })
-  it('has no mobile collapse controls in the control variant', () => {
-    state.labels = false
-    setup()
-    expect(
-      screen.queryByRole('button', { name: 'Collapse sidebar' }),
-    ).not.toBeInTheDocument()
-    expect(screen.getByText('Beta')).toBeInTheDocument()
   })
 })

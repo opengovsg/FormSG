@@ -3,7 +3,6 @@ import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
 
-import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
   PaymentChannel,
@@ -391,13 +390,8 @@ AdminFormBuilderWithAdditionalRowsTableField.play = async ({
   })
 }
 
-const legacyNavGrowthbook = new GrowthBook({
-  features: { [featureFlags.sidebarNavLabels]: { defaultValue: false } },
-})
-
 const labelledNavGrowthbook = new GrowthBook({
   features: {
-    [featureFlags.sidebarNavLabels]: { defaultValue: true },
     charts: { defaultValue: true },
   },
 })
@@ -410,18 +404,6 @@ LabelledNavigation.parameters = {
 LabelledNavigation.decorators = [
   (Story) => (
     <GrowthBookProvider growthbook={labelledNavGrowthbook}>
-      <Story />
-    </GrowthBookProvider>
-  ),
-]
-export const LegacyNavigation = Template.bind({})
-LegacyNavigation.parameters = {
-  ...DesktopEmpty.parameters,
-  sideNavViewport: true,
-}
-LegacyNavigation.decorators = [
-  (Story) => (
-    <GrowthBookProvider growthbook={legacyNavGrowthbook}>
       <Story />
     </GrowthBookProvider>
   ),

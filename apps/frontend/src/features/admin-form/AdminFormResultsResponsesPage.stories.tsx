@@ -419,13 +419,8 @@ Loading.parameters = {
   },
 }
 
-const legacyNavGrowthbook = new GrowthBook({
-  features: { [featureFlags.sidebarNavLabels]: { defaultValue: false } },
-})
-
 const labelledNavGrowthbook = new GrowthBook({
   features: {
-    [featureFlags.sidebarNavLabels]: { defaultValue: true },
     [featureFlags.delightfulDashboard]: { defaultValue: true },
     charts: { defaultValue: true },
   },
@@ -438,17 +433,6 @@ LabelledNavigation.parameters = {
 LabelledNavigation.decorators = [
   (Story) => (
     <GrowthBookProvider growthbook={labelledNavGrowthbook}>
-      <Box h="100vh">
-        <Story />
-      </Box>
-    </GrowthBookProvider>
-  ),
-]
-export const LegacyNavigation = Template.bind({})
-LegacyNavigation.parameters = StorageForm.parameters
-LegacyNavigation.decorators = [
-  (Story) => (
-    <GrowthBookProvider growthbook={legacyNavGrowthbook}>
       <Box h="100vh">
         <Story />
       </Box>

@@ -7,14 +7,9 @@ import { render } from '~/test-utils'
 
 import { CreatePageSidebar } from './CreatePageSidebar'
 
-const mockUseFeatureIsOn = vi.fn()
 const mockReportSidebarWidth = vi.fn()
 const mockResponseMode = { current: FormResponseMode.Multirespondent }
 const mockIsMobile = { current: false }
-
-vi.mock('@growthbook/growthbook-react', () => ({
-  useFeatureIsOn: (key: string) => mockUseFeatureIsOn(key),
-}))
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
@@ -85,33 +80,7 @@ describe('CreatePageSidebar', () => {
     mockIsMobile.current = false
   })
 
-  it('renders MRF tabs in the order Fields, Header, Logic, Thank you, Integration, Workflow when the flag is off (control = production)', () => {
-    mockUseFeatureIsOn.mockReturnValue(false)
-    mockResponseMode.current = FormResponseMode.Multirespondent
-
-    render(<CreatePageSidebar />)
-
-    expect(navTrackingOrder()).toEqual([
-      'create_builder.drawer_tab.add_fields',
-      'create_builder.drawer_tab.edit_header',
-      'create_builder.drawer_tab.add_logic',
-      'create_builder.drawer_tab.edit_thank_you_page',
-      'create_builder.drawer_tab.integration',
-      'create_builder.drawer_tab.add_workflow',
-    ])
-  })
-
-  it('keeps the production divider above the MRF workflow tab in the control arm', () => {
-    mockUseFeatureIsOn.mockReturnValue(false)
-    mockResponseMode.current = FormResponseMode.Multirespondent
-
-    render(<CreatePageSidebar />)
-
-    expect(screen.getByRole('separator')).toBeInTheDocument()
-  })
-
-  it('shows nav labels, drops the divider, and moves the workflow tab into the middle (after Header) in the treatment arm', () => {
-    mockUseFeatureIsOn.mockReturnValue(true)
+  it('shows nav labels and places the workflow tab after Header for MRF forms', () => {
     mockResponseMode.current = FormResponseMode.Multirespondent
 
     render(<CreatePageSidebar />)
@@ -130,35 +99,7 @@ describe('CreatePageSidebar', () => {
     ])
   })
 
-  it('observes the replacement rail when the feature flag resolves after mount', () => {
-    const originalObserver = globalThis.ResizeObserver
-    const observed: Element[] = []
-    const disconnect = vi.fn()
-    vi.stubGlobal(
-      'ResizeObserver',
-      class {
-        observe(element: Element) {
-          observed.push(element)
-        }
-        disconnect = disconnect
-      },
-    )
-    try {
-      mockUseFeatureIsOn.mockReturnValue(false)
-      const { rerender } = render(<CreatePageSidebar />)
-      const originalRail = observed[0]
-      mockUseFeatureIsOn.mockReturnValue(true)
-      rerender(<CreatePageSidebar />)
-      expect(observed).toHaveLength(2)
-      expect(observed[1]).not.toBe(originalRail)
-      expect(disconnect).toHaveBeenCalledTimes(1)
-    } finally {
-      vi.stubGlobal('ResizeObserver', originalObserver)
-    }
-  })
-
   it('offers no collapse toggle on desktop', () => {
-    mockUseFeatureIsOn.mockReturnValue(false)
     mockResponseMode.current = FormResponseMode.Multirespondent
     mockIsMobile.current = false
 
@@ -170,7 +111,6 @@ describe('CreatePageSidebar', () => {
   })
 
   it('collapses the rail to a single toggle on mobile, and expands it again', async () => {
-    mockUseFeatureIsOn.mockReturnValue(false)
     mockResponseMode.current = FormResponseMode.Multirespondent
     mockIsMobile.current = true
 
@@ -212,8 +152,7 @@ describe('CreatePageSidebar', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('omits the workflow tab and divider for non-MRF forms', () => {
-    mockUseFeatureIsOn.mockReturnValue(false)
+  it('omits the workflow tab for non-MRF forms', () => {
     mockResponseMode.current = FormResponseMode.Encrypt
 
     render(<CreatePageSidebar />)
