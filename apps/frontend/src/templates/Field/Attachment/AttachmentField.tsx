@@ -159,9 +159,7 @@ export const AttachmentField = ({
       <Controller
         control={control}
         render={({ field: { onChange, value, ...rest } }) =>
-          // An earlier MRF step's answer arrives as its zip, a single file,
-          // and is kept as it is
-          schema.allowMultiple && !(value instanceof File) ? (
+          schema.allowMultiple ? (
             <MultiAttachment
               {...rest}
               value={Array.isArray(value) ? value : []}
@@ -185,11 +183,7 @@ export const AttachmentField = ({
               accept={VALID_EXTENSIONS}
               allowedFileTypes={allowedFileTypes}
               showFileSize
-              onChange={
-                schema.allowMultiple
-                  ? (file) => handleFilesChange(onChange)(file ? [file] : [])
-                  : handleFileChange(onChange)
-              }
+              onChange={handleFileChange(onChange)}
               onError={setErrorMessage}
               title={`${schema.questionNumber}. ${schema.title}`}
               showDownload={showDownload}
