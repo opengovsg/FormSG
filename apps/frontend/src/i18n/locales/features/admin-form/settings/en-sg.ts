@@ -8,8 +8,10 @@ export const enSG = {
   general,
   singpass: {
     title: 'Singpass',
+    loginTitle: 'Login',
     submitterIdCollection: {
       toggleLabel: 'Collect NRIC/FIN/UENs with form submissions',
+      addNricField: 'Add an NRIC/FIN Field',
       convert: 'Switch to using fields',
       learnMore: 'Learn more',
       stopCollecting: 'Stop collecting',

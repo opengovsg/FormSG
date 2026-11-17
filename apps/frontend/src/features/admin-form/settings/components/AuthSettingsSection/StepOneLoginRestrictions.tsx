@@ -177,7 +177,7 @@ export const StepOneLoginRestrictions = ({
   )
 
   return (
-    <Stack spacing="2rem" mt="2rem">
+    <Stack spacing="2rem" mt="0.75rem">
       {authType ? (
         <SubmitterIdCollectionSection
           settings={settings}

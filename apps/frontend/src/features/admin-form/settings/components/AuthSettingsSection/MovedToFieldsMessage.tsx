@@ -13,6 +13,7 @@ import {
   FieldListTabIndex,
   openFieldListTabState,
 } from '~features/admin-form/create/builder-and-design/constants'
+import { useUsesStepLoginRules } from '~features/admin-form/create/workflow/hooks/useUsesStepLoginRules'
 
 /**
  * Tells admins looking for the "Collect NRIC/FIN/UENs" toggle that it is now
@@ -32,9 +33,13 @@ export const MovedToFieldsMessage = ({
     keyPrefix: 'features.adminForm.settings.singpass.submitterIdCollection',
   })
   const { formId } = useParams()
+  const usesStepLoginRules = useUsesStepLoginRules()
   const isCorppass = authType === FormAuthType.CP
   const login = isCorppass ? 'corppass' : 'singpass'
   const tab = isCorppass ? FieldListTabIndex.Corppass : FieldListTabIndex.MyInfo
+  const goToFieldsLabel = usesStepLoginRules
+    ? t('addNricField')
+    : t(`${login}.goToFields`)
 
   return (
     <InlineMessage>
@@ -43,7 +48,7 @@ export const MovedToFieldsMessage = ({
         <Text>{t('otherFormsAutoConvertNotice')}</Text>
         {onGoToFields ? (
           <Button variant="outline" onClick={() => onGoToFields(tab)}>
-            {t(`${login}.goToFields`)}
+            {goToFieldsLabel}
           </Button>
         ) : (
           <Button
@@ -53,7 +58,7 @@ export const MovedToFieldsMessage = ({
             to={`${ADMINFORM_ROUTE}/${formId}`}
             state={openFieldListTabState(tab)}
           >
-            {t(`${login}.goToFields`)}
+            {goToFieldsLabel}
           </Button>
         )}
       </Stack>

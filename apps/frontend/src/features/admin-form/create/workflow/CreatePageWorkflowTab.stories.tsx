@@ -606,51 +606,53 @@ StepLoginMixedProviders.decorators = [
 ]
 StepLoginMixedProviders.parameters = {
   msw: {
-    handlers: [
-      ...buildMswRoutes({
-        ...FORM_WITH_WORKFLOW,
-        status: FormStatus.Private,
-        authType: FormAuthType.MyInfo,
-        form_fields: stepLoginFields,
-        workflow: [
-          {
-            _id: '61e6857c9c794b0012f1c6f8',
-            workflow_type: WorkflowType.Static,
-            emails: [],
-            step_name: 'Requester',
-            edit: [form_field_5._id, '620115cf3bc125001349f901'],
-          },
-          {
-            _id: '61e6857c9c794b0012f1c6f9',
-            workflow_type: WorkflowType.Static,
-            emails: ['approver@agency.gov.sg'],
-            step_name: 'Approving officer',
-            edit: [form_field_1._id, MOCK_CORPPASS_UEN_FIELD._id],
-            approval_field: form_field_1._id,
-            is_approval_enabled: true,
-            auth: { auth_type: FormAuthType.CP },
-          },
-          {
-            _id: '61e6857c9c794b0012f1c6fa',
-            workflow_type: WorkflowType.Dynamic,
-            field: form_field_6._id,
-            step_name: 'Processing officer',
-            edit: [form_field_6._id],
-          },
-        ],
-      }),
-      getAdminFormSettings({
-        mode: FormResponseMode.Multirespondent,
-        overrides: {
+    handlers: {
+      default: [
+        ...buildMswRoutes({
+          ...FORM_WITH_WORKFLOW,
           status: FormStatus.Private,
           authType: FormAuthType.MyInfo,
-          isSingleSubmission: false,
-          emails: ['admin@agency.gov.sg'],
-          stepsToNotify: [],
-          stepOneEmailNotificationFieldId: form_field_5._id,
-        } satisfies Partial<MultirespondentFormSettings>,
-      }),
-      patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
-    ],
+          form_fields: stepLoginFields,
+          workflow: [
+            {
+              _id: '61e6857c9c794b0012f1c6f8',
+              workflow_type: WorkflowType.Static,
+              emails: [],
+              step_name: 'Requester',
+              edit: [form_field_5._id, '620115cf3bc125001349f901'],
+            },
+            {
+              _id: '61e6857c9c794b0012f1c6f9',
+              workflow_type: WorkflowType.Static,
+              emails: ['approver@agency.gov.sg'],
+              step_name: 'Approving officer',
+              edit: [form_field_1._id, MOCK_CORPPASS_UEN_FIELD._id],
+              approval_field: form_field_1._id,
+              is_approval_enabled: true,
+              auth: { auth_type: FormAuthType.CP },
+            },
+            {
+              _id: '61e6857c9c794b0012f1c6fa',
+              workflow_type: WorkflowType.Dynamic,
+              field: form_field_6._id,
+              step_name: 'Processing officer',
+              edit: [form_field_6._id],
+            },
+          ],
+        }),
+        getAdminFormSettings({
+          mode: FormResponseMode.Multirespondent,
+          overrides: {
+            status: FormStatus.Private,
+            authType: FormAuthType.MyInfo,
+            isSingleSubmission: false,
+            emails: ['admin@agency.gov.sg'],
+            stepsToNotify: [],
+            stepOneEmailNotificationFieldId: form_field_5._id,
+          } satisfies Partial<MultirespondentFormSettings>,
+        }),
+        patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+      ],
+    },
   },
 }

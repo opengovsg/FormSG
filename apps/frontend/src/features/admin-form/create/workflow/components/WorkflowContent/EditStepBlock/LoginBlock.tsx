@@ -10,6 +10,7 @@ import {
   FormStatus,
   MultirespondentFormSettings,
 } from 'formsg-shared/types'
+import { getStepAuthType } from 'formsg-shared/utils/step-login'
 
 import { textStyles } from '~theme/textStyles'
 
@@ -91,16 +92,19 @@ const StepLogin = ({
         <Text style={textStyles.h4}>{t(`${COPY_KEY}.title`)}</Text>
       ) : null}
       <StepLoginControls
-        isTitleToggle={!isGuidedSection}
+        isHeading={!isGuidedSection}
         idPrefix={`step-${stepNumber}-login`}
         authType={login.auth_type}
+        savedAuthType={getStepAuthType(form, form.workflow, stepNumber)}
         esrvcId={esrvcId ?? ''}
         onAuthTypeChange={(next) => requestSwitch(next)}
         // The e-service ID field only shows while Corppass is picked.
         onEsrvcIdChange={(next) => writeLogin(FormAuthType.CP, next)}
         isDisabled={isFormPublic}
         isLoading={isLoading}
-        notice={isFormPublic ? t(`${COPY_KEY}.closeFormToEdit`) : undefined}
+        disabledReason={
+          isFormPublic ? t(`${COPY_KEY}.closeFormToEdit`) : undefined
+        }
       />
       {hasUnassignedFields ? (
         <Text textStyle="body-2" color="secondary.400">
