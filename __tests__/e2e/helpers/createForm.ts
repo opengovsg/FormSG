@@ -390,7 +390,7 @@ const addAdminEmails = async (
   page: Page,
   formSettings: E2eSettingsOptions,
 ): Promise<void> => {
-  await page.getByRole('tab', { name: 'Email notifications' }).click()
+  await page.getByRole('tab', { name: 'Emails' }).click()
 
   // Ensure that we are on the email notifications page
   await expect(
