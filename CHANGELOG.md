@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.74.1](https://github.com/opengovsg/formsg/compare/v9.74.0...v9.74.1) (2026-11-17)
+
+
+### Bug Fixes
+
+* **workflow:** show Fields to fill on a step card with no fields (#10596) ([#10596](https://github.com/opengovsg/formsg/commit/785474406e4e8533baba1f650e93164923ce7333))
+
+
+### Chores
+
+* **flags:** remove four never-launched feature flags (#10587) ([#10587](https://github.com/opengovsg/formsg/commit/7d2af386feaa18889a022352cf8ec3e2fc9b4441))
+
 ## [9.74.0](https://github.com/opengovsg/formsg/compare/v9.73.0...v9.74.0) (2026-11-17)
 
 
