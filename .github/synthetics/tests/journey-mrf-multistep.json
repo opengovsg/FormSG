@@ -595,6 +595,26 @@
     },
     {
       "type": "click",
+      "name": "Open step 1 'Fields to fill' tab (absent when step login is hidden)",
+      "timeout": 30,
+      "allowFailure": true,
+      "isCritical": false,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[@role='tab' and contains(., 'Fields to fill')]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "click",
       "name": "Open step 1 field dropdown",
       "timeout": 60,
       "params": {
@@ -716,6 +736,26 @@
       "timeout": 60,
       "params": {
         "value": "Enter"
+      }
+    },
+    {
+      "type": "click",
+      "name": "Open step 2 'Fields to fill' tab (absent when step login is hidden)",
+      "timeout": 30,
+      "allowFailure": true,
+      "isCritical": false,
+      "params": {
+        "element": {
+          "userLocator": {
+            "failTestOnCannotLocate": true,
+            "values": [
+              {
+                "type": "xpath",
+                "value": "//button[@role='tab' and contains(., 'Fields to fill')]"
+              }
+            ]
+          }
+        }
       }
     },
     {
