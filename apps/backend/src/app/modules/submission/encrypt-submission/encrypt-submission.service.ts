@@ -244,10 +244,11 @@ export const performEncryptPostSubmissionActions = ({
       ).andThen(() => okAsync(form))
     })
     .andThen((form) => {
-      // Add formId to growthbook attributes to allow for targeting in growthbook feature flags
+      // Add formId and adminEmail to growthbook attributes to allow for targeting in growthbook feature flags
       void growthbook?.setAttributes({
         ...growthbook?.getAttributes(),
         formId: form._id.toString(),
+        adminEmail: form.admin.email,
       })
       const respondentCopyEmailData: AutoReplyMailData[] = respondentEmails
         ? respondentEmails?.map((val) => {
@@ -263,8 +264,9 @@ export const performEncryptPostSubmissionActions = ({
         new Set(), // the MyInfo prefixes are already inserted in middleware
         form.authType,
       )
-      // Since we insert the [MyInfo] prefix in `encrypt-submission.middleware.ts`:L434
-      // we want to remove it for the dataCollationData
+      // Since we insert the [Myinfo] prefix in
+      // `encrypt-submission.middleware.ts`, we want to remove it for the
+      // dataCollationData
       const formattedDataCollationData = dataCollationData.map((item) => ({
         question: item.question.startsWith(MYINFO_PREFIX)
           ? item.question.slice(MYINFO_PREFIX.length)
@@ -297,6 +299,10 @@ export const performEncryptPostSubmissionActions = ({
           false,
         ) ?? false
 
+      // TODO (formid-json): remove when Form ID in response JSON is GA
+      const includeFormIdInResponseJson: boolean =
+        growthbook?.getFeatureValue(featureFlags.formIdJson, false) ?? false
+
       return pdfAttachmentResult.andThen((pdfAttachment) => {
         return ResultAsync.combine([
           MailService.sendSubmissionToAdmin({
@@ -318,6 +324,7 @@ export const performEncryptPostSubmissionActions = ({
               ? pdfAttachment
               : undefined,
             useStandardisedEmailTemplate,
+            includeFormIdInResponseJson,
           }).mapErr((error) => {
             logger.error({
               message:

@@ -6,17 +6,18 @@ import {
   pick,
   union,
 } from 'lodash'
+import nacl from 'tweetnacl'
 
 import {
   BasicField,
   FormFieldDto,
   StrippedFormWorkflowStepDto,
 } from 'formsg-shared/types'
+import { isLoginField } from 'formsg-shared/utils/login-identity'
 
 import { FormFieldValues, VerifiableFieldValues } from '~templates/Field'
 
 import { isFieldEnabledByMrfWorkflow } from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
-import { isMyInfo } from '~features/myinfo/utils'
 
 import { DraftSubmission } from '../PublicFormContext'
 
@@ -57,8 +58,8 @@ export const getDraftToSave = ({
       )
       .map((field) => field._id),
   ]
-  const myInfoFieldIds = formFields
-    .filter((field) => isMyInfo(field))
+  const authenticatedFieldIds = formFields
+    .filter((field) => isLoginField(field))
     .map((field) => field._id)
 
   const verifiableFieldIds = formFields
@@ -88,7 +89,7 @@ export const getDraftToSave = ({
   }
   const fieldIdsToInclude = difference(
     currentlyExistingFieldIds,
-    myInfoFieldIds,
+    authenticatedFieldIds,
   )
 
   const updatedDraftResponses = pick(allFieldValuesToSave, fieldIdsToInclude)
@@ -173,4 +174,39 @@ export const getRestoreDraftFormValues = ({
     changedFieldIds,
     unchangedFieldIds,
   }
+}
+
+const hashStepToken = (stepToken: string): string =>
+  Array.from(
+    nacl.hash(new Uint8Array(new TextEncoder().encode(stepToken))).slice(0, 8),
+  )
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('')
+
+export const getSaveDraftKey = ({
+  formId,
+  formSubmissionId,
+  isMrf,
+  currentMrfWorkflowStepNumber,
+  stepToken,
+}: {
+  formId: string
+  formSubmissionId?: string
+  isMrf: boolean
+  /**
+   * @note currentMrfWorkflowStepNumber is 0-indexed.
+   */
+  currentMrfWorkflowStepNumber: number
+  stepToken?: string
+}) => {
+  const FORMSG_SAVE_DRAFT_PREFIX = 'formsg-save-draft'
+  return [
+    FORMSG_SAVE_DRAFT_PREFIX,
+    formId,
+    formSubmissionId,
+    isMrf ? 'step' + currentMrfWorkflowStepNumber : undefined,
+    isMrf && stepToken ? 'link' + hashStepToken(stepToken) : undefined,
+  ]
+    .filter(Boolean)
+    .join('-')
 }

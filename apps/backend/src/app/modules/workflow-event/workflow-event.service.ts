@@ -1,0 +1,213 @@
+import {
+  AdminWorkflowEventType,
+  DateString,
+  SubmittedStep,
+  WorkflowEventDto,
+  WorkflowEventType,
+  WorkflowStatus,
+} from 'formsg-shared/types'
+import mongoose from 'mongoose'
+import { ResultAsync } from 'neverthrow'
+
+import {
+  IAdminWorkflowEvent,
+  IStepSubmittedEvent,
+  IWorkflowEvent,
+} from '../../../types'
+import { createLoggerWithLabel } from '../../config/logger'
+import { getMultirespondentSubmissionModel } from '../../models/submission.server.model'
+import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
+import { DatabaseError } from '../core/core.errors'
+
+const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
+const logger = createLoggerWithLabel(module)
+
+/**
+ * Builds an event to $push onto a submission's `workflowEvents`, for callers
+ * that write it together with the action in one conditional update.
+ */
+export const buildWorkflowEvent = ({
+  type,
+  actor,
+  stepNumber,
+  emails,
+  fromStepNumber,
+  remarks,
+}: {
+  type: AdminWorkflowEventType
+  actor: { _id?: unknown; email: string }
+  stepNumber: number
+  emails: string[]
+  fromStepNumber?: number
+  remarks?: string
+}): IAdminWorkflowEvent => ({
+  type,
+  actorId: actor._id,
+  actorEmail: actor.email,
+  stepNumber,
+  emails,
+  ...(fromStepNumber === undefined ? {} : { fromStepNumber }),
+  ...(remarks ? { remarks } : {}),
+  created: new Date(),
+})
+
+/**
+ * Appends a workflow action to the submission's `workflowEvents`.
+ * @returns ok(event) when recorded
+ * @returns err(DatabaseError) if the write fails
+ */
+export const recordWorkflowEvent = ({
+  submission,
+  ...eventParams
+}: {
+  submission: { _id?: unknown }
+  type: AdminWorkflowEventType
+  actor: { _id?: unknown; email: string }
+  stepNumber: number
+  emails: string[]
+}): ResultAsync<IAdminWorkflowEvent, DatabaseError> => {
+  const event = buildWorkflowEvent(eventParams)
+  return ResultAsync.fromPromise(
+    MultirespondentSubmission.updateOne(
+      { _id: submission._id },
+      { $push: { workflowEvents: event } },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error recording workflow event',
+        meta: {
+          action: 'recordWorkflowEvent',
+          submissionId: String(submission._id),
+          type: event.type,
+        },
+        error,
+      })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  ).map(() => event)
+}
+
+export const buildStepSubmittedEvent = ({
+  stepNumber,
+  step,
+  snapshotKey,
+}: {
+  stepNumber: number
+  step: SubmittedStep
+  snapshotKey?: string
+}): IStepSubmittedEvent => ({
+  type: WorkflowEventType.StepSubmitted,
+  stepNumber,
+  outcome:
+    step.isApproval && step.status ? step.status : WorkflowStatus.COMPLETED,
+  emails:
+    step.isApproval && step.status === WorkflowStatus.REJECTED
+      ? []
+      : (step.nextStepRecipientEmails ?? []),
+  created: new Date(step.submittedAt),
+  ...(snapshotKey ? { snapshotKey } : {}),
+})
+
+/**
+ * @returns events for submitted steps that have none yet, without snapshot keys
+ */
+export const buildMissingStepSubmittedEvents = (
+  submittedSteps: SubmittedStep[] = [],
+  events: IWorkflowEvent[] = [],
+): IStepSubmittedEvent[] => {
+  const recordedStepNumbers = new Set(
+    events
+      .filter(({ type }) => type === WorkflowEventType.StepSubmitted)
+      .map(({ stepNumber }) => stepNumber),
+  )
+  return submittedSteps
+    .map((step, index) => ({ step, stepNumber: index + 1 }))
+    .filter(({ stepNumber }) => !recordedStepNumbers.has(stepNumber))
+    .map(buildStepSubmittedEvent)
+}
+
+export const isAdminWorkflowEvent = (
+  event: IWorkflowEvent,
+): event is IAdminWorkflowEvent =>
+  event.type !== WorkflowEventType.StepSubmitted
+
+const toWorkflowEventDto = (event: IWorkflowEvent): WorkflowEventDto => {
+  const created = new Date(event.created).toISOString() as DateString
+  if (isAdminWorkflowEvent(event)) {
+    return {
+      type: event.type,
+      actorEmail: event.actorEmail,
+      stepNumber: event.stepNumber,
+      emails: event.emails,
+      ...(event.type === WorkflowEventType.SentBack
+        ? { fromStepNumber: event.fromStepNumber, remarks: event.remarks }
+        : {}),
+      created,
+    }
+  }
+  return {
+    type: event.type,
+    stepNumber: event.stepNumber,
+    outcome: event.outcome,
+    emails: event.emails,
+    created,
+  }
+}
+
+/**
+ * @returns the events as sent to admins, oldest first, without snapshot keys
+ */
+export const toWorkflowEventDtos = (
+  events: IWorkflowEvent[] = [],
+): WorkflowEventDto[] =>
+  events
+    .map(toWorkflowEventDto)
+    .sort((a, b) => a.created.localeCompare(b.created))
+
+/**
+ * @returns the emails added to the step through Reassign, lowercased and deduped
+ */
+export const getAddedAssignees = (
+  events: IWorkflowEvent[] = [],
+  stepNumber: number,
+): string[] =>
+  Array.from(
+    new Set(
+      events
+        .filter(
+          (event) =>
+            event.type === WorkflowEventType.AssigneesAdded &&
+            event.stepNumber === stepNumber,
+        )
+        .flatMap(({ emails }) => emails.map((email) => email.toLowerCase())),
+    ),
+  )
+
+/**
+ * @returns the events after the latest send back, so counts kept per step
+ * start afresh when a step is reached again
+ */
+export const getEventsSinceLastSendBack = (
+  events: IWorkflowEvent[] = [],
+): IWorkflowEvent[] => {
+  const lastSendBack = events.reduce(
+    (latest, event, index) =>
+      event.type === WorkflowEventType.SentBack ? index : latest,
+    -1,
+  )
+  return events.slice(lastSendBack + 1)
+}
+
+/**
+ * @returns who the workflow was last sent back to at step 1, which has no
+ * earlier step to route it
+ */
+export const getStepOneSendBackRecipients = (
+  events: IWorkflowEvent[] = [],
+): string[] =>
+  events
+    .filter(
+      (event) =>
+        event.type === WorkflowEventType.SentBack && event.stepNumber === 1,
+    )
+    .slice(-1)[0]?.emails ?? []

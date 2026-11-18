@@ -4,10 +4,6 @@ import { ChakraProvider, Modal, ModalContent, theme } from '@chakra-ui/react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import {
-  CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
-  FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH,
-} from 'formsg-shared/constants'
 import { FormOrigin, FormResponseMode } from 'formsg-shared/types/form/form'
 
 import {
@@ -20,34 +16,16 @@ import { CreateFormOriginScreen } from './CreateFormOriginScreen'
 vi.mock('react-i18next', () => {
   const P = 'features.workspace.modals.forms.create.origin'
   const translations: Record<string, string> = {
-    [`${P}.question`]: 'How is this data being collected today?',
-    [`${P}.options.paper`]: 'Paper form',
-    [`${P}.options.digitalNew`]: "This data isn't collected",
-    [`${P}.options.digitalEmail`]: 'Emails',
-    [`${P}.options.digitalDocument`]: 'Documents (e.g. PDF, Word)',
-    [`${P}.options.digitalSpreadsheet`]: 'Spreadsheets (e.g. Excel, Sheets)',
-    [`${P}.options.digitalFormbuilder`]: 'Other form builders',
-    [`${P}.options.others`]: 'Other',
-    [`${P}.otherInputLabel`]: 'Other source',
-    [`${P}.errors.atLeastOne`]: 'Please select at least 1 option.',
-    [`${P}.errors.otherRequired`]:
-      'Please specify a value for the "others" option',
-    [`${P}.errors.otherMaxLength`]:
-      'Please use {maxLength} characters or fewer.',
+    [`${P}.question`]: 'Before FormSG, how did you collect this?',
+    [`${P}.options.digitalNew`]: 'Not collected',
+    [`${P}.options.digitalExisting`]: 'Digitally',
+    [`${P}.options.paper`]: 'On paper',
+    [`${P}.errors.required`]: 'Please select an option.',
     [`${P}.cta.next`]: 'Next step',
     [`${P}.cta.back`]: 'Back',
   }
-  const interpolate = (s: string, opts?: Record<string, unknown>) =>
-    opts
-      ? s.replace(/\{(\w+)\}/g, (_, key) =>
-          key in opts ? String(opts[key]) : `{${key}}`,
-        )
-      : s
   return {
-    useTranslation: () => ({
-      t: (k: string, opts?: Record<string, unknown>) =>
-        interpolate(translations[k] ?? k, opts),
-    }),
+    useTranslation: () => ({ t: (k: string) => translations[k] ?? k }),
     Trans: ({ children }: PropsWithChildren) => children,
   }
 })
@@ -92,100 +70,51 @@ const clickNext = async (user: ReturnType<typeof userEvent.setup>) => {
 }
 
 describe('CreateFormOriginScreen', () => {
-  it('blocks submission and shows an error when no origin is selected', async () => {
-    const user = userEvent.setup()
-    const { onCreate } = renderOriginScreen()
-
-    await clickNext(user)
-
-    expect(
-      await screen.findByText('Please select at least 1 option.'),
-    ).toBeInTheDocument()
-    expect(onCreate).not.toHaveBeenCalled()
-  })
-
-  it('creates the form with the selected origins when at least one is chosen', async () => {
-    const user = userEvent.setup()
-    const { onCreate } = renderOriginScreen()
-
-    await user.click(screen.getByLabelText('Paper form'))
-    await user.click(screen.getByLabelText('Spreadsheets (e.g. Excel, Sheets)'))
-    await clickNext(user)
-
-    await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
-    expect(onCreate.mock.calls[0][0]).toEqual(
-      expect.objectContaining({
-        formOrigins: expect.objectContaining({
-          value: expect.arrayContaining([
-            FormOrigin.Paper,
-            FormOrigin.DigitalSpreadsheet,
-          ]),
-        }),
-      }),
-    )
-  })
-
-  it('requires the free-text detail when "Other" is selected', async () => {
-    const user = userEvent.setup()
-    const { onCreate } = renderOriginScreen()
-
-    await user.click(screen.getByLabelText('Other'))
-    await clickNext(user)
-
-    expect(
-      await screen.findByText('Please specify a value for the "others" option'),
-    ).toBeInTheDocument()
-    expect(onCreate).not.toHaveBeenCalled()
-  })
-
-  it('shows a character count helper for the "Other" detail', async () => {
-    const user = userEvent.setup()
+  it('asks "Before FormSG, how did you collect this?" with the three answers in order', () => {
     renderOriginScreen()
 
-    await user.click(screen.getByLabelText('Other'))
-    await user.type(screen.getByLabelText('Other source'), 'Carrier pigeon')
-
     expect(
-      screen.getByText(`(14/${FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH})`),
+      screen.getByText('Before FormSG, how did you collect this?'),
     ).toBeInTheDocument()
+    const radios = screen.getAllByRole('radio')
+    expect(radios).toHaveLength(3)
+    expect(radios[0]).toHaveAccessibleName('Not collected')
+    expect(radios[1]).toHaveAccessibleName('Digitally')
+    expect(radios[2]).toHaveAccessibleName('On paper')
   })
 
-  it(`blocks submission when the "Other" detail exceeds ${FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH} characters`, async () => {
+  it('blocks submission and shows an error when no answer is chosen', async () => {
     const user = userEvent.setup()
     const { onCreate } = renderOriginScreen()
 
-    await user.click(screen.getByLabelText('Other'))
-    const input = screen.getByLabelText('Other source')
-    await user.click(input)
-    await user.paste('a'.repeat(FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH + 1))
     await clickNext(user)
 
     expect(
-      await screen.findByText(
-        new RegExp(`${FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH} characters`, 'i'),
-      ),
+      await screen.findByText('Please select an option.'),
     ).toBeInTheDocument()
     expect(onCreate).not.toHaveBeenCalled()
   })
 
-  it('marks "Other" with the checkbox sentinel and carries the typed detail', async () => {
-    const user = userEvent.setup()
-    const { onCreate } = renderOriginScreen()
+  it.each([
+    ['Not collected', FormOrigin.DigitalNew],
+    ['Digitally', FormOrigin.DigitalExisting],
+    ['On paper', FormOrigin.Paper],
+  ])(
+    'creates the form with "%s" as the origin, without a follow-up question',
+    async (label, expected) => {
+      const user = userEvent.setup()
+      const { onCreate } = renderOriginScreen()
 
-    await user.click(screen.getByLabelText('Other'))
-    await user.type(screen.getByLabelText('Other source'), 'Carrier pigeon')
-    await clickNext(user)
+      await user.click(screen.getByRole('radio', { name: label }))
+      expect(screen.queryAllByRole('checkbox')).toHaveLength(0)
+      await clickNext(user)
 
-    await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
-    expect(onCreate.mock.calls[0][0]).toEqual(
-      expect.objectContaining({
-        formOrigins: {
-          value: [CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
-          othersInput: 'Carrier pigeon',
-        },
-      }),
-    )
-  })
+      await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
+      expect(onCreate.mock.calls[0][0]).toEqual(
+        expect.objectContaining({ formOrigin: expected }),
+      )
+    },
+  )
 
   it('returns to the title step when Back is pressed', async () => {
     const user = userEvent.setup()

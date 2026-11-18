@@ -1,12 +1,10 @@
-import { featureFlags } from 'formsg-shared/constants'
 import { StatusCodes } from 'http-status-codes'
 import { ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
-import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
-import * as UserService from '../user/user.service'
+import { checkFormIsEncryptModeOrMultirespondent } from '../submission/submission.utils'
 
 import { getPaymentLogMeta } from './payment.service.utils'
 import * as PaymentProofService from './payment-proof.service'
@@ -39,39 +37,11 @@ export const downloadPaymentInvoice: ControllerHandler<{
 
   return ResultAsync.combine([
     PaymentService.findPaymentById(paymentId),
-    FormService.retrieveFullFormById(formId).andThen(checkFormIsEncryptMode),
+    FormService.retrieveFullFormById(formId).andThen(
+      checkFormIsEncryptModeOrMultirespondent,
+    ),
   ])
-    .map(async ([payment, populatedForm]) => {
-      // TODO [PDF-LAMBDA-GENERATION]: Remove setting of Growthbook targetting once pdf generation rollout is complete
-      await UserService.getPopulatedUserById(populatedForm.admin).map(
-        async (admin) => {
-          await req.growthbook?.setAttributes({
-            ...req.growthbook?.getAttributes(),
-            formId,
-            adminEmail: admin.email,
-            adminAgency: admin.agency.shortName,
-            isPaymentInvoice: true,
-          })
-        },
-      )
-      logger.info({
-        message: 'Growthbook flag for lambda pdf generation',
-        meta: {
-          ...logMeta,
-          growthbookAttributes: req.growthbook?.getAttributes(),
-          lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(
-            featureFlags.lambdaPdfGeneration,
-            undefined,
-          ),
-        },
-      })
-
-      return {
-        payment,
-        populatedForm,
-      }
-    })
-    .andThen(({ payment, populatedForm }) => {
+    .andThen(([payment, populatedForm]) => {
       logger.info({
         message: 'Found paymentId in payment document',
         meta: {

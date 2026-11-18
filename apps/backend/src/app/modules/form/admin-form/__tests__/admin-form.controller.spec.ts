@@ -4,11 +4,14 @@ import {
   generateUnprocessedSingleAnswerResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
-import { PresignedPost } from 'aws-sdk/clients/s3'
+import { PresignedPost } from '@aws-sdk/s3-presigned-post'
+import { GrowthBook } from '@growthbook/growthbook'
 import { ObjectId } from 'bson'
+import { featureFlags } from 'formsg-shared/constants'
 import {
   AdminDashboardFormMetaDto,
   BasicField,
+  CorppassAttribute,
   CreateFormBodyDto,
   DuplicateFormBodyDto,
   FieldCreateDto,
@@ -19,9 +22,13 @@ import {
   FormSettings,
   FormStatus,
   LogicDto,
-  SubmissionType,
+  MyInfoAttribute,
 } from 'formsg-shared/types'
 import * as CryptoUtil from 'formsg-shared/utils/crypto'
+import {
+  createLoginIdentityField,
+  LoginIdentityAttribute,
+} from 'formsg-shared/utils/login-identity'
 import { StatusCodes } from 'http-status-codes'
 import { assignIn, cloneDeep, merge, pick } from 'lodash'
 import { err, errAsync, ok, okAsync, Result } from 'neverthrow'
@@ -1850,21 +1857,21 @@ describe('admin-form.controller', () => {
         MockSubmissionService.getFormSubmissionsCount,
       ).toHaveBeenNthCalledWith(1, {
         formId: String(MOCK_FORM._id),
-        submissionType: SubmissionType.Encrypt,
+        formResponseMode: FormResponseMode.Encrypt,
         dateRange: {},
       })
       expect(
         MockSubmissionService.getFormSubmissionsCount,
       ).toHaveBeenNthCalledWith(2, {
         formId: String(MOCK_FORM._id),
-        submissionType: SubmissionType.Email,
+        formResponseMode: FormResponseMode.Email,
         dateRange: {},
       })
       expect(
         MockSubmissionService.getFormSubmissionsCount,
       ).toHaveBeenNthCalledWith(3, {
         formId: String(MOCK_FORM._id),
-        submissionType: SubmissionType.Multirespondent,
+        formResponseMode: FormResponseMode.Multirespondent,
         dateRange: {},
       })
     })
@@ -5426,7 +5433,7 @@ describe('admin-form.controller', () => {
       },
     })
 
-    it('should return 200 ok with encrypted whitelist settings if admin has read permissions for the form', async () => {
+    it('should return 200 ok with encrypted whitelist settings if admin has write permissions for the form', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       // Mock various services to return expected results.
@@ -5485,7 +5492,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockAuthService.checkFormForPermissions).toHaveBeenCalledWith(
-        PermissionLevel.Read,
+        PermissionLevel.Write,
       )
       expect(adminCheck).toHaveBeenCalledWith({
         user: MOCK_USER,
@@ -5535,7 +5542,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockAuthService.checkFormForPermissions).toHaveBeenCalledWith(
-        PermissionLevel.Read,
+        PermissionLevel.Write,
       )
       expect(adminCheck).toHaveBeenCalledWith({
         user: MOCK_USER,
@@ -5622,6 +5629,9 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.updateFormSettings).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_REQ.body,
+        false,
+        // mrf-singpass-all-steps is off
+        false,
       )
     })
 
@@ -5731,6 +5741,9 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.updateFormSettings).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_REQ.body,
+        false,
+        // mrf-singpass-all-steps is off
+        false,
       )
     })
 
@@ -5807,6 +5820,9 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.updateFormSettings).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_REQ.body,
+        false,
+        // mrf-singpass-all-steps is off
+        false,
       )
     })
 
@@ -5848,6 +5864,9 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.updateFormSettings).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_REQ.body,
+        false,
+        // mrf-singpass-all-steps is off
+        false,
       )
     })
 
@@ -5916,6 +5935,9 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.updateFormSettings).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_REQ.body,
+        false,
+        // mrf-singpass-all-steps is off
+        false,
       )
     })
   })
@@ -5989,7 +6011,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockAuthService.checkFormForPermissions).toHaveBeenCalledWith(
-        PermissionLevel.Read,
+        PermissionLevel.Write,
       )
       expect(adminCheck).toHaveBeenCalledWith({
         user: MOCK_USER,
@@ -6029,7 +6051,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockAuthService.checkFormForPermissions).toHaveBeenCalledWith(
-        PermissionLevel.Read,
+        PermissionLevel.Write,
       )
       expect(adminCheck).toHaveBeenCalledWith({
         user: MOCK_USER,
@@ -6068,7 +6090,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockAuthService.checkFormForPermissions).toHaveBeenCalledWith(
-        PermissionLevel.Read,
+        PermissionLevel.Write,
       )
       expect(adminCheck).not.toHaveBeenCalled()
     })
@@ -6100,7 +6122,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockAuthService.checkFormForPermissions).toHaveBeenCalledWith(
-        PermissionLevel.Read,
+        PermissionLevel.Write,
       )
       expect(adminCheck).not.toHaveBeenCalled()
     })
@@ -6132,7 +6154,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockAuthService.checkFormForPermissions).toHaveBeenCalledWith(
-        PermissionLevel.Read,
+        PermissionLevel.Write,
       )
       expect(adminCheck).not.toHaveBeenCalled()
     })
@@ -6164,7 +6186,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockAuthService.checkFormForPermissions).toHaveBeenCalledWith(
-        PermissionLevel.Read,
+        PermissionLevel.Write,
       )
       expect(adminCheck).not.toHaveBeenCalled()
     })
@@ -6929,6 +6951,120 @@ describe('admin-form.controller', () => {
         MOCK_REQ.body,
       )
     })
+  })
+
+  describe('NRIC field release flag', () => {
+    const formId = new ObjectId().toHexString()
+    const user = {
+      _id: new ObjectId(),
+      email: 'collaborator@example.com',
+      agency: { shortName: 'test' },
+    } as IPopulatedUser
+    const form = { _id: new ObjectId(formId) } as IPopulatedForm
+    const createRequest = (body: FieldCreateDto, enabled?: boolean) =>
+      expressHandler.mockRequest({
+        session: { user: { _id: user._id } },
+        params: { formId },
+        body,
+        others: {
+          growthbook:
+            enabled === undefined
+              ? undefined
+              : new GrowthBook({
+                  features: {
+                    [featureFlags.isNricFieldEnabled]: {
+                      defaultValue: false,
+                      rules: [
+                        {
+                          condition: {
+                            adminEmail: user.email,
+                            adminAgency: 'test',
+                            formId,
+                          },
+                          force: enabled,
+                        },
+                      ],
+                    },
+                  },
+                }),
+        },
+      })
+
+    beforeEach(() => {
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(user))
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(form),
+      )
+      MockAdminFormService.createFormField.mockReturnValue(
+        okAsync(generateDefaultField(BasicField.Nric)),
+      )
+      MockAdminFormService.convertSubmitterIdCollection.mockReturnValue(
+        okAsync({ isSubmitterIdCollectionEnabled: false } as FormSettings),
+      )
+    })
+
+    describe.each<LoginIdentityAttribute>([
+      MyInfoAttribute.UinFin,
+      CorppassAttribute.Uen,
+      CorppassAttribute.Uid,
+    ])('%s creation', (attr) => {
+      it.each([false, true])(
+        'allows creation only when enabled, flag=%s',
+        async (enabled) => {
+          const body = createLoginIdentityField(attr)
+          const req = createRequest(body, enabled)
+          const res = expressHandler.mockResponse()
+          await AdminFormController._handleCreateFormField(req, res, jest.fn())
+          expect(res.status).toHaveBeenCalledWith(enabled ? 200 : 403)
+          expect(MockAdminFormService.createFormField.mock.calls).toEqual(
+            enabled ? [[form, body, undefined]] : [],
+          )
+        },
+      )
+    })
+
+    it('rejects identity creation if GrowthBook is unavailable', async () => {
+      const req = createRequest(
+        createLoginIdentityField(MyInfoAttribute.UinFin),
+      )
+      const res = expressHandler.mockResponse()
+      await AdminFormController._handleCreateFormField(req, res, jest.fn())
+      expect(res.status).toHaveBeenCalledWith(403)
+      expect(MockAdminFormService.createFormField).not.toHaveBeenCalled()
+    })
+
+    it('still creates ordinary typed NRIC fields with the flag off', async () => {
+      const body = generateDefaultField(BasicField.Nric)
+      const req = createRequest(body, false)
+      const res = expressHandler.mockResponse()
+      await AdminFormController._handleCreateFormField(req, res, jest.fn())
+      expect(res.status).toHaveBeenCalledWith(200)
+      expect(MockAdminFormService.createFormField).toHaveBeenCalledWith(
+        form,
+        body,
+        undefined,
+      )
+    })
+
+    it.each([undefined, false, true])(
+      'gates the conversion endpoint, flag=%s',
+      async (enabled) => {
+        const req = createRequest(
+          createLoginIdentityField(MyInfoAttribute.UinFin),
+          enabled,
+        )
+        const res = expressHandler.mockResponse()
+        await AdminFormController.handleConvertSubmitterIdCollection(
+          req,
+          res,
+          jest.fn(),
+        )
+        expect(res.status).toHaveBeenCalledWith(enabled ? 200 : 403)
+        expect(
+          MockAdminFormService.convertSubmitterIdCollection.mock.calls,
+        ).toEqual(enabled ? [[form]] : [])
+      },
+    )
   })
 
   describe('_handleCreateFormField', () => {

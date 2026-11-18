@@ -1,5 +1,6 @@
 // Use 'stripe-event-types' for better type discrimination.
 /// <reference types="stripe-event-types" />
+import { GrowthBook } from '@growthbook/growthbook'
 import cuid from 'cuid'
 import { featureFlags } from 'formsg-shared/constants'
 import {
@@ -17,6 +18,7 @@ import {
   IEncryptedFormSchema,
   IPaymentSchema,
   IPopulatedEncryptedForm,
+  IPopulatedMultirespondentForm,
 } from '../../../types'
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
@@ -453,6 +455,7 @@ type HandleStripeEventResultError =
  */
 export const handleStripeEvent = (
   event: Stripe.DiscriminatedEvent,
+  growthbook?: GrowthBook,
 ): ResultAsync<void, HandleStripeEventResultError> => {
   const logMeta = {
     action: 'handleStripeEvent',
@@ -499,6 +502,7 @@ export const handleStripeEvent = (
 
             return PaymentsService.performPaymentPostSubmissionActions(
               paymentId,
+              growthbook,
             )
               .andThen(() => okAsync(undefined))
               .orElse((e) => {
@@ -644,7 +648,9 @@ export const handleStripeEvent = (
   return result
 }
 
-export const getStripeOauthUrl = (form: IPopulatedEncryptedForm) => {
+export const getStripeOauthUrl = (
+  form: IPopulatedEncryptedForm | IPopulatedMultirespondentForm,
+) => {
   const state = `${form._id}.${cuid()}`
 
   return ok({
@@ -694,7 +700,7 @@ export const exchangeCodeForAccessToken = (
 }
 
 export const linkStripeAccountToForm = (
-  form: IPopulatedEncryptedForm,
+  form: IPopulatedEncryptedForm | IPopulatedMultirespondentForm,
   {
     accountId,
     publishableKey,
@@ -785,7 +791,7 @@ export const linkStripeAccountToForm = (
 }
 
 export const unlinkStripeAccountFromForm = (
-  form: IPopulatedEncryptedForm,
+  form: IPopulatedEncryptedForm | IPopulatedMultirespondentForm,
 ): ResultAsync<IEncryptedFormSchema, DatabaseError> =>
   ResultAsync.fromPromise(form.removePaymentAccount(), (error) => {
     const errMsg = 'Failed to remove payment account from form'

@@ -20,7 +20,6 @@ import MockDate from 'mockdate'
 import mongoose, { Types } from 'mongoose'
 import supertest, { Session } from 'supertest-session'
 
-import { aws } from 'src/app/config/config'
 import {
   getEmailFormModel,
   getEncryptedFormModel,
@@ -32,6 +31,7 @@ import getSubmissionModel, {
 import getUserModel from 'src/app/models/user.server.model'
 import { saveSubmissionMetadata } from 'src/app/modules/submission/email-submission/email-submission.service'
 import { SubmissionHash } from 'src/app/modules/submission/email-submission/email-submission.types'
+import { s3Operations } from 'src/app/utils/aws-s3'
 import {
   IFormDocument,
   IPopulatedEmailForm,
@@ -1145,7 +1145,7 @@ describe('admin-form.submissions.routes', () => {
     it('should return 500 when database error occurs whilst retrieving submission', async () => {
       // Arrange
       jest
-        .spyOn(EncryptSubmissionModel, 'findEncryptedSubmissionById')
+        .spyOn(SubmissionModel, 'findEncryptedOrMultirespondentSubmissionById')
         .mockRejectedValueOnce(new Error('ohno'))
       const submission = await createEncryptSubmission({
         form: defaultForm,
@@ -1173,7 +1173,7 @@ describe('admin-form.submissions.routes', () => {
       // Arrange
       // Mock error.
       jest
-        .spyOn(aws.s3, 'getSignedUrlPromise')
+        .spyOn(s3Operations, 'getSignedUrl')
         .mockRejectedValueOnce(new Error('something went wrong'))
 
       const submission = await createEncryptSubmission({
@@ -1338,6 +1338,60 @@ describe('admin-form.submissions.routes', () => {
         count: 1,
         metadata: [],
       })
+    })
+
+    it('should return 200 with metadata within range when query.startDate and query.endDate are the same day', async () => {
+      // Arrange
+      await createEncryptSubmission({
+        form: defaultForm,
+        encryptedContent: 'any encrypted content outside range',
+        verifiedContent: 'any verified content outside range',
+      })
+      const expectedDate = '2021-04-04'
+      MockDate.set(expectedDate)
+      const submissionInRange = await createEncryptSubmission({
+        form: defaultForm,
+        encryptedContent: 'any encrypted content in range',
+        verifiedContent: 'any verified content in range',
+      })
+      MockDate.reset()
+
+      // Act
+      const response = await request
+        .get(`/admin/forms/${defaultForm._id}/submissions/metadata`)
+        .query({
+          page: 1,
+          startDate: expectedDate,
+          endDate: expectedDate,
+        })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({
+        count: 1,
+        metadata: [
+          {
+            number: 1,
+            payments: null,
+            refNo: String(submissionInRange._id),
+            submissionTime: expect.any(String),
+          },
+        ],
+      })
+    })
+
+    it('should return 400 when query.endDate is before query.startDate', async () => {
+      // Act
+      const response = await request
+        .get(`/admin/forms/${defaultForm._id}/submissions/metadata`)
+        .query({
+          page: 1,
+          startDate: '2021-04-05',
+          endDate: '2021-04-04',
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
     })
 
     it('should return 200 with metadata of single submissionId when query.submissionId is provided for submissions with payments', async () => {
@@ -1531,7 +1585,10 @@ describe('admin-form.submissions.routes', () => {
     it('should return 500 when database error occurs whilst retrieving submission metadata list', async () => {
       // Arrange
       jest
-        .spyOn(EncryptSubmissionModel, 'findAllMetadataByFormId')
+        .spyOn(
+          SubmissionModel,
+          'findAllEncryptedOrMultirespondentMetadataByFormId',
+        )
         .mockRejectedValueOnce(new Error('ohno'))
 
       // Act
@@ -1551,7 +1608,7 @@ describe('admin-form.submissions.routes', () => {
     it('should return 500 when database error occurs whilst retrieving single submission metadata', async () => {
       // Arrange
       jest
-        .spyOn(EncryptSubmissionModel, 'findSingleMetadata')
+        .spyOn(SubmissionModel, 'findEncryptedOrMultirespondentSingleMetadata')
         .mockRejectedValueOnce(new Error('ohno'))
 
       // Act

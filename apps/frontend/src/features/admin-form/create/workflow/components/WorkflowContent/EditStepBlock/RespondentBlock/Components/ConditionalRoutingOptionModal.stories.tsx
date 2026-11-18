@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form'
-import { expect, screen, userEvent, waitFor } from '@storybook/test'
+import { expect, screen, userEvent, waitFor } from 'storybook/test'
 
 import { StoryRouter } from '~utils/storybook'
 
@@ -62,6 +62,11 @@ export default {
   title:
     'Features/AdminForm/create/workflow/components/WorkflowContent/EditStepBlock/ConditionalRoutingOptionModal',
   args: defaultArgs,
+  parameters: {
+    // The modal renders in a portal, so there is nothing in the story root for
+    // fit-to-content to measure; capture the viewport.
+    argos: { fitToContent: false },
+  },
   decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
 }
 

@@ -1,5 +1,5 @@
 import { MemoryRouter } from 'react-router-dom'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { FormLogoState } from 'formsg-shared/types/form/form_logo'
 
@@ -31,9 +31,9 @@ export default {
     ),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
 } as Meta
 
@@ -41,45 +41,57 @@ const Template: StoryFn = () => <PublicFormLogo />
 
 export const Loading = Template.bind({})
 Loading.parameters = {
-  msw: [
-    getPublicFormResponse({
-      delay: 'infinite',
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          delay: 'infinite',
+        }),
+      ],
+    },
+  },
 }
 
 export const NoLogo = Template.bind({})
 NoLogo.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook test title',
-        },
-      },
-      delay: 0,
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title: 'storybook test title',
+            },
+          },
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }
 
 export const CustomLogo = Template.bind({})
 CustomLogo.parameters = {
-  msw: [
-    ...envHandlers,
-    getCustomLogoResponse(),
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook test title',
-          startPage: {
-            logo: {
-              state: FormLogoState.Custom,
-              fileId: 'mockFormLogo',
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getCustomLogoResponse(),
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title: 'storybook test title',
+              startPage: {
+                logo: {
+                  state: FormLogoState.Custom,
+                  fileId: 'mockFormLogo',
+                },
+              },
             },
           },
-        },
-      },
-      delay: 0,
-    }),
-  ],
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }

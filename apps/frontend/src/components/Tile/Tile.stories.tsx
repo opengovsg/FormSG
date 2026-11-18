@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { BiLockAlt, BiMailSend } from 'react-icons/bi'
 import { Stack, UnorderedList } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { values } from 'lodash'
 
 import Badge from '~components/Badge'
@@ -106,6 +106,7 @@ export const Playground: StoryFn = () => {
     </Stack>
   )
 }
+Playground.tags = ['playground']
 
 interface StoryTileProps {
   onClick: () => void

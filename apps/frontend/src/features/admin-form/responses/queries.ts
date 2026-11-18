@@ -1,6 +1,14 @@
 import { useMemo } from 'react'
-import { useQuery, UseQueryResult } from 'react-query'
+import {
+  QueryClient,
+  useInfiniteQuery,
+  UseInfiniteQueryResult,
+  useQuery,
+  useQueryClient,
+  UseQueryResult,
+} from 'react-query'
 import { useParams } from 'react-router-dom'
+import { FormField } from '@opengovsg/formsg-sdk/dist/types'
 
 import { FormFeedbackMetaDto, FormIssueMetaDto } from 'formsg-shared/types'
 import {
@@ -14,10 +22,17 @@ import { adminFormKeys } from '../common/queries'
 import { getFormIssues } from './FeedbackPage/issue/IssueService'
 import { getFormFeedback } from './FeedbackPage/review/ReviewService'
 import { useStorageResponsesContext } from './ResponsesPage/storage/StorageResponsesContext'
+import { TABLE_RESPONSE_LIMIT } from './ResponsesPage/storage/UnlockedResponses/responseLimit'
 import {
   countFormSubmissions,
+  getAllDecryptedSubmission,
   getFormSubmissionsMetadata,
 } from './AdminSubmissionsService'
+import { TABLE_DECRYPTION_PUBLISH_INTERVAL_MS } from './constants'
+import { logProgress, perSecond, secondsSince } from './progressLog'
+
+/** The publish tick is 250ms, so this logs about once a second. */
+const PROGRESS_LOG_EVERY_N_PUBLISHES = 4
 
 export const adminFormResponsesKeys = {
   base: [...adminFormKeys.base, 'responses'] as const,
@@ -34,9 +49,40 @@ export const adminFormResponsesKeys = {
       ...builtParams,
     ] as const
   },
+  allMetadata: (id: string, dates: string[]) =>
+    [...adminFormResponsesKeys.id(id), 'metadata', 'all', ...dates] as const,
+  decryptedResponses: (id: string, dates: string[]) =>
+    [
+      ...adminFormResponsesKeys.id(id),
+      'decrypted-responses',
+      ...dates,
+    ] as const,
+  infiniteMetadata: (id: string) =>
+    [...adminFormResponsesKeys.id(id), 'metadata', 'infinite'] as const,
   individual: (id: string, submissionId: string) =>
     [...adminFormResponsesKeys.id(id), 'individual', submissionId] as const,
   secretKey: (id: string) => [...adminFormResponsesKeys.id(id), 'secretKey'],
+}
+
+/** Update decrypted answers without completing a concurrent bulk fetch. */
+export const updateDecryptedResponsesCache = (
+  queryClient: QueryClient,
+  queryKey: ReturnType<typeof adminFormResponsesKeys.decryptedResponses>,
+  update: (
+    current: Map<string, FormField[]> | undefined,
+  ) => Map<string, FormField[]>,
+): void => {
+  const query = queryClient
+    .getQueryCache()
+    .find<Map<string, FormField[]>>(queryKey)
+  if (!query) return
+  // react-query 3 setQueryData dispatches success and clears isFetching.
+  // These partial/individual answers must preserve the bulk query lifecycle.
+  query.setState({
+    ...query.state,
+    data: update(query.state.data),
+    dataUpdatedAt: Date.now(),
+  })
 }
 
 export const adminFormFeedbackKeys = {
@@ -76,9 +122,11 @@ export const useFormResponsesCount = (
 export const useFormResponses = ({
   page = 1,
   submissionId,
+  enabled = true,
 }: {
   page?: number
   submissionId?: string
+  enabled?: boolean
 } = {}): UseQueryResult<SubmissionMetadataList> => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
@@ -98,7 +146,157 @@ export const useFormResponses = ({
     {
       staleTime: 0,
       keepPreviousData: !submissionId,
-      enabled: !!secretKey && (page > 0 || !!submissionId),
+      enabled: enabled && !!secretKey && (page > 0 || !!submissionId),
+    },
+  )
+}
+
+/**
+ * Fetches the most recent TABLE_RESPONSE_LIMIT submissions in one request.
+ * @precondition Must be wrapped in a Router as `useParam` is used.
+ */
+export const useAllFormResponses = ({
+  enabled = true,
+}: {
+  enabled?: boolean
+} = {}): UseQueryResult<SubmissionMetadataList> => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
+  const { secretKey, dateRange } = useStorageResponsesContext()
+  const [startDate, endDate] = dateRange
+
+  return useQuery(
+    adminFormResponsesKeys.allMetadata(formId, dateRange),
+    async () => {
+      const startedAt = performance.now()
+      logProgress('metadata fetch start', { pageSize: TABLE_RESPONSE_LIMIT })
+
+      const result = await getFormSubmissionsMetadata(formId, {
+        page: 1,
+        pageSize: TABLE_RESPONSE_LIMIT,
+        ...(startDate && endDate ? { startDate, endDate } : {}),
+      })
+
+      logProgress('metadata fetch done', {
+        rows: result.metadata.length,
+        totalOnForm: result.count,
+        seconds: secondsSince(startedAt),
+      })
+      return result
+    },
+    {
+      staleTime: 0,
+      enabled: enabled && !!secretKey,
+    },
+  )
+}
+
+/**
+ * @precondition Must be wrapped in a Router as `useParam` is used.
+ */
+export const useInfiniteFormResponses = ({
+  enabled = true,
+}: {
+  enabled?: boolean
+} = {}): UseInfiniteQueryResult<SubmissionMetadataList> => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
+  const { secretKey } = useStorageResponsesContext()
+
+  return useInfiniteQuery(
+    adminFormResponsesKeys.infiniteMetadata(formId),
+    ({ pageParam = 1 }) =>
+      getFormSubmissionsMetadata(formId, { page: pageParam }),
+    {
+      staleTime: 0,
+      enabled: enabled && !!secretKey,
+      getNextPageParam: (lastPage, allPages) => {
+        const loaded = allPages.reduce(
+          (total, page) => total + page.metadata.length,
+          0,
+        )
+        if (loaded === 0 || loaded >= lastPage.count) return undefined
+        return allPages.length + 1
+      },
+    },
+  )
+}
+
+/**
+ * @precondition Must be wrapped in a Router as `useParam` is used.
+ */
+export const useDecryptedResponsesBySubmissionId = ({
+  enabled = true,
+}: {
+  enabled?: boolean
+} = {}): UseQueryResult<Map<string, FormField[]>> => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
+  const { secretKey, dateRange } = useStorageResponsesContext()
+  const [startDate, endDate] = dateRange
+  const queryClient = useQueryClient()
+  const queryKey = adminFormResponsesKeys.decryptedResponses(formId, dateRange)
+
+  return useQuery(
+    queryKey,
+    async () => {
+      const decrypted = new Map<string, FormField[]>()
+      let lastPublishedAt = 0
+      let publishCount = 0
+      const startedAt = performance.now()
+
+      logProgress('decrypt start', { limit: TABLE_RESPONSE_LIMIT })
+
+      const publish = () => {
+        updateDecryptedResponsesCache(
+          queryClient,
+          queryKey,
+          () => new Map(decrypted),
+        )
+      }
+
+      await getAllDecryptedSubmission({
+        formId,
+        secretKey: secretKey as string,
+        startDate: startDate ?? '',
+        endDate: endDate ?? '',
+        downloadAttachments: false,
+        isSortByLatest: true,
+        limit: TABLE_RESPONSE_LIMIT,
+        onSubmissionDecrypted: ({ submissionId, responses }) => {
+          decrypted.set(submissionId, responses)
+          const now = performance.now()
+          if (now - lastPublishedAt < TABLE_DECRYPTION_PUBLISH_INTERVAL_MS) {
+            return
+          }
+          lastPublishedAt = now
+          publish()
+
+          publishCount += 1
+          if (publishCount % PROGRESS_LOG_EVERY_N_PUBLISHES === 0) {
+            logProgress('decrypting', {
+              done: decrypted.size,
+              of: TABLE_RESPONSE_LIMIT,
+              perSecond: perSecond(decrypted.size, startedAt),
+              seconds: secondsSince(startedAt),
+            })
+          }
+        },
+      })
+
+      logProgress('decrypt done', {
+        done: decrypted.size,
+        seconds: secondsSince(startedAt),
+      })
+
+      return decrypted
+    },
+    {
+      staleTime: Infinity,
+      enabled: enabled && !!secretKey,
     },
   )
 }

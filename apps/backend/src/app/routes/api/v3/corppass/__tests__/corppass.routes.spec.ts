@@ -123,9 +123,38 @@ describe('corppass.oidc.router', () => {
       // Assert
 
       expect(response.status).toBe(302)
-      expect(response.headers['set-cookie']).toEqual([
-        expect.stringContaining(`jwtCp=${MOCK_JWT}`),
-      ])
+      expect(response.headers['set-cookie']).toEqual(
+        expect.arrayContaining([expect.stringContaining(`jwtCp=${MOCK_JWT}`)]),
+      )
+      expect(response.headers['location']).toEqual(MOCK_DESTINATION)
+    })
+
+    it('should succeed when NDI appends an iss param to the callback (RFC 9207)', async () => {
+      // Arrange
+      // Regression test for inc-1274: NDI began appending an `iss` query param
+      // to the OIDC callback, which previously failed strict validation with
+      // `"iss" is not allowed` and returned 400.
+      mockClient.exchangeAuthCodeAndDecodeVerifyToken.mockResolvedValueOnce(
+        'token' as unknown as JWTVerifyResult,
+      )
+      mockClient.extractNricOrForeignIdFromIdToken.mockReturnValueOnce(
+        MOCK_NRIC,
+      )
+      mockClient.extractCPEntityIdFromIdToken.mockReturnValueOnce(MOCK_UEN)
+      mockClient.createJWT.mockResolvedValue(MOCK_JWT)
+
+      // Act
+      const response = await request.get(LOGIN_ROUTE).query({
+        state: MOCK_OIDC_STATE,
+        code: MOCK_CP_OIDC_AUTHORISATION_CODE,
+        iss: 'https://stg-id.singpass.gov.sg',
+      })
+
+      // Assert
+      expect(response.status).toBe(302)
+      expect(response.headers['set-cookie']).toEqual(
+        expect.arrayContaining([expect.stringContaining(`jwtCp=${MOCK_JWT}`)]),
+      )
       expect(response.headers['location']).toEqual(MOCK_DESTINATION)
     })
 
@@ -146,13 +175,7 @@ describe('corppass.oidc.router', () => {
       expect(response.status).toBe(400)
     })
 
-    it('should return 400 when state is invalid', async () => {
-      // Arrange
-
-      mockClient.exchangeAuthCodeAndDecodeVerifyToken.mockRejectedValueOnce(
-        new Error(),
-      )
-
+    it('should return 400 when state is invalid, without exchanging the auth code', async () => {
       // Act
       const response = await request.get(LOGIN_ROUTE).query({
         state: 'invalid state',
@@ -161,6 +184,9 @@ describe('corppass.oidc.router', () => {
 
       // Assert
       expect(response.status).toBe(400)
+      expect(
+        mockClient.exchangeAuthCodeAndDecodeVerifyToken,
+      ).not.toHaveBeenCalled()
     })
 
     it('should return 404 when destination form ID is not found', async () => {
@@ -204,9 +230,9 @@ describe('corppass.oidc.router', () => {
       })
 
       expect(response.status).toBe(302)
-      expect(response.headers['set-cookie']).toEqual([
-        expect.stringContaining(`isLoginError=true`),
-      ])
+      expect(response.headers['set-cookie']).toEqual(
+        expect.arrayContaining([expect.stringContaining(`isLoginError=true`)]),
+      )
       expect(response.headers['location']).toEqual(MOCK_DESTINATION)
     })
 
@@ -230,9 +256,9 @@ describe('corppass.oidc.router', () => {
       })
 
       expect(response.status).toBe(302)
-      expect(response.headers['set-cookie']).toEqual([
-        expect.stringContaining(`isLoginError=true`),
-      ])
+      expect(response.headers['set-cookie']).toEqual(
+        expect.arrayContaining([expect.stringContaining(`isLoginError=true`)]),
+      )
       expect(response.headers['location']).toEqual(MOCK_DESTINATION)
     })
   })

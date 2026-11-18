@@ -1,5 +1,6 @@
-import { ModalCloseButton } from '@chakra-ui/react'
+import { Box, Container, ModalCloseButton } from '@chakra-ui/react'
 
+import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
 import { XMotionBox } from '~templates/MotionBox'
 
 import {
@@ -9,6 +10,7 @@ import {
 
 import { CreateFormDetailsScreen } from './CreateFormDetailsScreen'
 import { CreateFormOriginScreen } from './CreateFormOriginScreen'
+import { getCreateFormProgress } from './createFormProgress'
 import { CreateFormStorageModeScreen } from './CreateFormStorageModeScreen'
 import {
   EmailModeCreationScreen,
@@ -21,11 +23,37 @@ import { SaveSecretKeyScreen } from './SaveSecretKeyScreen'
  * Display screen content depending on the current step (with animation).
  */
 export const CreateFormModalContent = () => {
-  const { direction, currentStep } = useCreateFormWizard()
+  const {
+    direction,
+    currentStep,
+    isPaperTrackingSetUpPageEnabled,
+    isLegacySetup,
+  } = useCreateFormWizard()
+
+  const {
+    show: showProgressIndicator,
+    numIndicators,
+    currActiveIdx,
+  } = getCreateFormProgress({
+    currentStep,
+    isLegacySetup,
+    isPaperTrackingSetUpPageEnabled,
+  })
 
   return (
     <>
       {currentStep !== CreateFormFlowStates.Landing && <ModalCloseButton />}
+      {showProgressIndicator && (
+        <Box px="1.5rem" pt="1.5rem">
+          <Container maxW="45rem" p={0}>
+            <ProgressIndicator
+              numIndicators={numIndicators}
+              currActiveIdx={currActiveIdx}
+              onClick={undefined}
+            />
+          </Container>
+        </Box>
+      )}
       <XMotionBox keyProp={currentStep} custom={direction}>
         {currentStep === CreateFormFlowStates.Details && (
           <CreateFormDetailsScreen />

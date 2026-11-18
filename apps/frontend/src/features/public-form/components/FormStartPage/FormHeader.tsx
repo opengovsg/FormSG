@@ -12,9 +12,6 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
-import { useGrowthBook } from '@growthbook/growthbook-react'
-
-import { featureFlags } from 'formsg-shared/constants/feature-flags'
 
 import { BxMenuAltLeft } from '~assets/icons/BxMenuAltLeft'
 import { BxsTimeFive } from '~assets/icons/BxsTimeFive'
@@ -35,7 +32,7 @@ export type MiniHeaderProps = Pick<
   | 'miniHeaderRef'
   | 'onMobileDrawerOpen'
   | 'colorScheme'
-> & { isOpen: boolean; isTemplate?: boolean }
+> & { isOpen: boolean; hasStickyPreviewBanner?: boolean }
 
 export const MiniHeader = ({
   title,
@@ -46,7 +43,7 @@ export const MiniHeader = ({
   onMobileDrawerOpen,
   colorScheme,
   isOpen,
-  isTemplate,
+  hasStickyPreviewBanner,
 }: MiniHeaderProps): JSX.Element => {
   const {
     isSaveDraftEnabled,
@@ -55,11 +52,6 @@ export const MiniHeader = ({
     formId,
   } = usePublicFormContext()
   const { t } = useTranslation()
-
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
-  const gb = useGrowthBook()
-  const enableFormHeaderSaveDraftButton =
-    gb?.isOn(featureFlags.enableSaveDraftButtonHeader) || isTest
 
   return (
     <Slide
@@ -72,7 +64,7 @@ export const MiniHeader = ({
     >
       <Box
         bg={titleBg}
-        mt={isTemplate ? '4.75rem' : '0'}
+        mt={hasStickyPreviewBanner ? '4.75rem' : '0'}
         px={{ base: '1.5rem', md: '2rem' }}
         py={{ base: '0.5rem', md: '1rem' }}
         sx={noPrintCss}
@@ -102,7 +94,7 @@ export const MiniHeader = ({
                   t('features.publicForm.components.loadingTitle.title')}
               </Text>
             </Flex>
-            {isSaveDraftEnabled && enableFormHeaderSaveDraftButton && (
+            {isSaveDraftEnabled && (
               <FormHeaderSaveDraftButton
                 onSaveDraft={() => {
                   datadogLogs.logger.log(
@@ -143,6 +135,7 @@ export const MiniHeader = ({
 interface FormHeaderProps {
   title?: string
   estTimeString: string
+  closeAtString?: string
   titleBg: string
   titleColor: string
   colorScheme?: ThemeColorScheme
@@ -150,7 +143,7 @@ interface FormHeaderProps {
   loggedInId?: string
   showMiniHeader?: boolean
   activeSectionId?: string
-  isTemplate?: boolean
+  hasStickyPreviewBanner?: boolean
   miniHeaderRef?: RefObject<HTMLDivElement>
   onMobileDrawerOpen?: () => void
   handleLogout?: () => void
@@ -159,6 +152,7 @@ interface FormHeaderProps {
 export const FormHeader = ({
   title,
   estTimeString,
+  closeAtString,
   titleBg,
   titleColor,
   colorScheme,
@@ -167,7 +161,7 @@ export const FormHeader = ({
   showMiniHeader,
   activeSectionId,
   miniHeaderRef,
-  isTemplate,
+  hasStickyPreviewBanner,
   onMobileDrawerOpen,
   handleLogout,
 }: FormHeaderProps): JSX.Element | null => {
@@ -201,7 +195,7 @@ export const FormHeader = ({
           miniHeaderRef={miniHeaderRef}
           onMobileDrawerOpen={onMobileDrawerOpen}
           isOpen={isOpen}
-          isTemplate={isTemplate}
+          hasStickyPreviewBanner={hasStickyPreviewBanner}
         />
       ) : null}
       <Flex
@@ -246,6 +240,25 @@ export const FormHeader = ({
               </Text>
             </Flex>
           )}
+          {closeAtString &&
+            (estTimeString ? (
+              // Sits under the estimated time, indented past its icon.
+              <Text textStyle="body-2" mt="0.5rem" ml="2rem">
+                {closeAtString}
+              </Text>
+            ) : (
+              <Flex align="flex-start" justify="center" mt="0.875rem">
+                <Icon
+                  as={BxsTimeFive}
+                  fontSize="1.5rem"
+                  mr="0.5rem"
+                  aria-hidden
+                />
+                <Text textStyle="body-2" mt="0.125rem">
+                  {closeAtString}
+                </Text>
+              </Flex>
+            ))}
           {loggedInId ? (
             <Button
               mt="2.25rem"

@@ -1,14 +1,18 @@
 import { GrowthBook } from '@growthbook/growthbook'
+import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
+import { featureFlags } from 'formsg-shared/constants/feature-flags'
 import {
   BasicField,
-  FieldResponsesV3,
   FormAuthType,
   FormFieldDto,
   FormResponseMode,
+  FormWebhook,
   FormWorkflowStepDto,
+  LogicDto,
   SubmittedApprovalStep,
   SubmittedNonApprovalStep,
   SubmittedStep,
+  WorkflowEventType,
   WorkflowStatus,
 } from 'formsg-shared/types'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
@@ -24,6 +28,8 @@ import {
   IMultirespondentSubmissionSchema,
   IPopulatedForm,
   IPopulatedMultirespondentForm,
+  IWorkflowEvent,
+  WebhookView,
 } from '../../../../types'
 import {
   MultirespondentSubmissionDto,
@@ -34,7 +40,9 @@ import {
   createLoggerWithLabel,
   CustomLoggerParams,
 } from '../../../config/logger'
+import { getMultirespondentPendingSubmissionModel } from '../../../models/pending_submission.server.model'
 import { getMultirespondentSubmissionModel } from '../../../models/submission.server.model'
+import { EmailType } from '../../../services/mail/mail.constants'
 import {
   AutoreplyPdfGenerationError,
   MailSendError,
@@ -42,18 +50,39 @@ import {
 import MailService from '../../../services/mail/mail.service'
 import { generateAutoreplyPdf } from '../../../services/mail/mail.utils'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
-import { DatabaseError } from '../../core/core.errors'
-import { FormRespondentSingleSubmissionValidationError } from '../../form/form.errors'
+import { DatabaseError, PossibleDatabaseError } from '../../core/core.errors'
+import {
+  FormNotFoundError,
+  FormRespondentSingleSubmissionValidationError,
+} from '../../form/form.errors'
+import * as FormService from '../../form/form.service'
 import { isFormMultirespondent } from '../../form/form.utils'
+import { WebhookPushToQueueError } from '../../webhook/webhook.errors'
 import { WebhookFactory } from '../../webhook/webhook.factory'
+import { getWebhookType, toConsumerType } from '../../webhook/webhook.service'
+import { SnapshotRef } from '../../webhook/webhook.types'
+import {
+  buildMissingStepSubmittedEvents,
+  buildStepSubmittedEvent,
+  buildWorkflowEvent,
+  getAddedAssignees,
+  getEventsSinceLastSendBack,
+  getStepOneSendBackRecipients,
+} from '../../workflow-event/workflow-event.service'
 import {
   AttachmentUploadError,
   ExpectedResponseNotFoundError,
   InvalidApprovalFieldTypeError,
   InvalidWorkflowTypeError,
   MissingSubmitterIdError,
+  MrfAssigneeAlreadyAssignedError,
   MrfReminderInvalidWorkflowStepError,
+  MrfReminderLimitReachedError,
   MrfReminderRecipientEmailsEmptyError,
+  MrfSendBackInvalidStepError,
+  MrfSubmissionStaleError,
+  MrfWorkflowNotPendingError,
+  MrfWorkflowStoppedError,
   ResponseModeError,
   SubmissionNotFoundError,
   SubmissionSaveError,
@@ -63,9 +92,49 @@ import { AttachmentMetadata } from '../submission.types'
 import {
   getMrfSubmissionWorkflowStatus,
   isAdminEmailPdfEnabled,
+  isKeepV4AttachmentPrefixOn,
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
+import {
+  SnapshotWriteError,
+  V1ContentMappingError,
+  V1SnapshotRequiredError,
+} from './webhook/submission-snapshot.errors'
+import {
+  buildV1Snapshot,
+  buildV4Snapshot,
+} from './webhook/submission-snapshot.producer'
+import {
+  SubmissionSnapshot,
+  SubmissionSnapshotV4,
+} from './webhook/submission-snapshot.schema'
+import { writeSnapshot } from './webhook/submission-snapshot.store'
+import { encryptAndUploadAttachmentInV1 } from './webhook/v1-attachment.producer'
+import {
+  buildV1EncryptedContent,
+  buildV1VerifiedContent,
+} from './webhook/v1-content.producer'
+import { assertStorageShapedKeySet } from './webhook/v1-payload'
+import { buildWebhookFormFields } from './webhook/webhook-form-fields'
+import {
+  getWebhookPayloadPolicy,
+  mrfVersionToContentFormat,
+  resolveWebhookContentFormat,
+} from './webhook/webhook-payload-policy'
+import {
+  reconstructMrfWebhookData,
+  reconstructV1WebhookData,
+} from './webhook/webhook-reconstruction'
+import {
+  resolveSnapshotWebhookView,
+  SnapshotViewError,
+} from './webhook/webhook-retry-view'
+import {
+  holdsV1FirstStepInvariant,
+  shouldSendMrfWebhook,
+  shouldWriteMrfSnapshot,
+} from './webhook/webhook-send-eligibility'
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
 import {
   buildMrfResponseJson,
@@ -78,13 +147,93 @@ import {
   getResponsesDataFromMrfResponses,
   retrieveWorkflowStepEmailAddresses,
 } from './multirespondent-submission.utils'
+import * as stepToken from './step-token'
 
 const logger = createLoggerWithLabel(module)
+
+const writeStepSubmittedSnapshot = (
+  deliveryV4SnapshotKey: string | undefined,
+  buildSnapshot: () => SubmissionSnapshotV4,
+): ResultAsync<string, SnapshotWriteError> =>
+  deliveryV4SnapshotKey
+    ? okAsync(deliveryV4SnapshotKey)
+    : writeSnapshot(buildSnapshot()).map(({ key }) => key)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
+const MultirespondentPendingSubmission =
+  getMultirespondentPendingSubmissionModel(mongoose)
 const appUrl =
   process.env.NODE_ENV === Environment.Dev
     ? config.app.feAppUrl
     : config.app.appUrl
+
+const toPlainFormFields = (
+  formFields: IPopulatedMultirespondentForm['form_fields'],
+): FormFieldDto[] => JSON.parse(JSON.stringify(formFields)) as FormFieldDto[]
+
+const toPlainFormLogics = (
+  formLogics: IPopulatedMultirespondentForm['form_logics'],
+): LogicDto[] => JSON.parse(JSON.stringify(formLogics)) as LogicDto[]
+
+export type SavedMultirespondentSubmission = {
+  submission: IMultirespondentSubmissionSchema & {
+    _id: mongoose.Types.ObjectId
+  }
+  snapshot?: SubmissionSnapshot
+}
+
+/**
+ * Builds the first step's V1 snapshot, uploading its V1 attachments to the V1 attachments bucket.
+ * Callers decide whether to store this snapshot to the V1 snapshots bucket.
+ */
+const buildFirstStepV1Snapshot = ({
+  form,
+  encryptedPayload,
+  verifiedContentPlaintext,
+  snapshotBase,
+  logMeta,
+}: {
+  form: IPopulatedMultirespondentForm
+  encryptedPayload: MultirespondentSubmissionDto
+  verifiedContentPlaintext?: Record<string, string>
+  snapshotBase: Pick<
+    SubmissionSnapshot,
+    'formId' | 'submissionId' | 'submissionIndex' | 'workflowStep' | 'createdAt'
+  >
+  logMeta: CustomLoggerParams['meta']
+}) => {
+  const content = buildV1EncryptedContent({
+    v4Responses: encryptedPayload.responses,
+    formFields: toPlainFormFields(form.form_fields),
+    formLogics: toPlainFormLogics(form.form_logics),
+    formPublicKey: form.publicKey,
+    myInfoReadOnlyFieldIds: encryptedPayload.myInfoReadOnlyFields ?? [],
+    logMeta,
+  })
+  if (content.isErr()) return errAsync(content.error)
+  const verified = buildV1VerifiedContent({
+    verifiedContent: verifiedContentPlaintext,
+    formPublicKey: form.publicKey,
+    logMeta: {
+      ...logMeta,
+      formId: snapshotBase.formId,
+      submissionId: snapshotBase.submissionId,
+    },
+  })
+  if (verified.isErr()) return errAsync(verified.error)
+  return encryptAndUploadAttachmentInV1({
+    formId: String(form._id),
+    responses: encryptedPayload.responses,
+    formPublicKey: form.publicKey,
+    logMeta,
+  }).map((attachments) =>
+    buildV1Snapshot({
+      ...snapshotBase,
+      encryptedContent: content.value,
+      verifiedContent: verified.value,
+      attachmentMetadata: Object.fromEntries(attachments),
+    }),
+  )
+}
 
 export const checkFormIsMultirespondent = (
   form: IPopulatedForm,
@@ -122,7 +271,7 @@ const checkIsStepRejected = ({
 }: {
   zeroIndexedStepNumber: number
   form: Pick<IPopulatedMultirespondentForm, 'workflow'>
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
 }): Result<
   boolean,
   ExpectedResponseNotFoundError | InvalidApprovalFieldTypeError
@@ -146,7 +295,7 @@ const checkIsStepRejected = ({
     return err(new InvalidApprovalFieldTypeError())
   }
 
-  return ok(approvalFieldResponse.answer === 'No')
+  return ok((approvalFieldResponse.answer as { value: string }).value === 'No')
 }
 
 interface sendNextStepEmailProps {
@@ -158,7 +307,8 @@ interface sendNextStepEmailProps {
   responseUrl: string
   formId: string
   submissionId: string
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
+  growthbook?: GrowthBook
 }
 
 const sendNextStepEmail = ({
@@ -169,6 +319,7 @@ const sendNextStepEmail = ({
   formId,
   submissionId,
   responses,
+  growthbook,
 }: sendNextStepEmailProps): ResultAsync<
   true,
   InvalidWorkflowTypeError | MailSendError
@@ -188,6 +339,7 @@ const sendNextStepEmail = ({
   const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
     formFields: form.form_fields,
     responses,
+    keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
   })
 
   return (
@@ -229,6 +381,10 @@ const sendNextStepEmail = ({
   )
 }
 
+// RATIONALE: each reminder is logged on the submission, so this bounds how
+// large a single submission's workflowEvents can grow.
+export const MAX_REMINDERS_PER_STEP = 50
+
 export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
   submissionId,
 }: {
@@ -238,10 +394,13 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
   | DatabaseError
   | SubmissionNotFoundError
   | MrfReminderInvalidWorkflowStepError
+  | MrfReminderLimitReachedError
   | MrfReminderRecipientEmailsEmptyError
 > => {
   return getMultirespondentSubmission(submissionId).andThen(
-    ({ workflow, submittedSteps }) => {
+    ({ workflow, workflowStep, submittedSteps, stoppedAt, workflowEvents }) => {
+      if (stoppedAt) return errAsync(new MrfWorkflowStoppedError())
+
       const logMeta = {
         action: 'getPendingStepRecipientEmailsFromSubmittedStepsMeta',
         submissionId,
@@ -249,18 +408,14 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
       }
 
       const isPending =
-        submittedSteps &&
-        submittedSteps.length > 0 &&
+        !!submittedSteps &&
         getMrfSubmissionWorkflowStatus(
           submittedSteps as SubmittedStep[],
           workflow.length,
+          workflowStep,
         ) === WorkflowStatus.PENDING
 
-      const pendingStep = isPending
-        ? submittedSteps[submittedSteps.length - 1]
-        : null
-
-      if (!pendingStep || !submittedSteps) {
+      if (!isPending || !submittedSteps) {
         logger.error({
           message:
             'Failed to find details for pending step to send mrf next step submission reminder email',
@@ -269,9 +424,29 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
         return errAsync(new MrfReminderInvalidWorkflowStepError())
       }
 
-      const recipientEmails = pendingStep.nextStepRecipientEmails
+      const reminderStepNumber = submittedSteps.length + 1
+      const remindersSent = getEventsSinceLastSendBack(workflowEvents).filter(
+        (event) =>
+          event.type === WorkflowEventType.ReminderSent &&
+          event.stepNumber === reminderStepNumber,
+      ).length
+      if (remindersSent >= MAX_REMINDERS_PER_STEP) {
+        return errAsync(
+          new MrfReminderLimitReachedError(MAX_REMINDERS_PER_STEP),
+        )
+      }
 
-      if (!recipientEmails) {
+      const recipientEmails = Array.from(
+        new Set([
+          ...(submittedSteps.length > 0
+            ? (submittedSteps[submittedSteps.length - 1]
+                .nextStepRecipientEmails ?? [])
+            : getStepOneSendBackRecipients(workflowEvents)),
+          ...getAddedAssignees(workflowEvents, reminderStepNumber),
+        ]),
+      )
+
+      if (recipientEmails.length === 0) {
         logger.error({
           message:
             'No recipient emails found to send mrf next step submission reminder email',
@@ -279,8 +454,6 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
         })
         return errAsync(new MrfReminderRecipientEmailsEmptyError())
       }
-
-      const reminderStepNumber = submittedSteps.length + 1
 
       return okAsync({ recipientEmails, reminderStepNumber })
     },
@@ -342,6 +515,7 @@ const getEmailsToNotifyAboutMrfOutcome = ({
   responses,
   currentStepNumber,
   submissionId,
+  workflowEvents,
 }: {
   form: Pick<
     IPopulatedMultirespondentForm,
@@ -353,9 +527,10 @@ const getEmailsToNotifyAboutMrfOutcome = ({
   > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   currentStepNumber: number
   submissionId: string
+  workflowEvents?: IWorkflowEvent[]
 }): Result<string[], InvalidWorkflowTypeError> => {
   const logMeta = {
     action: 'getMrfOutcomeEmailsToNotify',
@@ -410,11 +585,26 @@ const getEmailsToNotifyAboutMrfOutcome = ({
 
   const otherRespondentsInYourWorkflowEmailsToNotify =
     otherRespondentsInYourWorkflowEmailsToNotifyResult.value
-  return ok([
+  const emailsToNotify = [
     ...othersEmailsToNotify,
     ...respondentInStepOneEmailToNotify,
     ...otherRespondentsInYourWorkflowEmailsToNotify,
-  ])
+  ]
+
+  // Emails added to a notified step through Reassign
+  const alreadyNotified = new Set(
+    emailsToNotify.map((email) => email.toLowerCase()),
+  )
+  const reassignedEmailsToNotify = validWorkflowStepsToNotify
+    .flatMap((workflowStep) =>
+      getAddedAssignees(
+        workflowEvents,
+        form.workflow.indexOf(workflowStep) + 1,
+      ),
+    )
+    .filter((email) => !alreadyNotified.has(email))
+
+  return ok([...emailsToNotify, ...new Set(reassignedEmailsToNotify)])
 }
 
 const checkIsWorkflowCompleted = ({
@@ -442,6 +632,8 @@ const sendMrfOutcomeEmails = ({
   isRejected = false,
   attachments,
   pdfResult,
+  growthbook,
+  workflowEvents,
 }: {
   currentStepNumber: number
   form: Pick<
@@ -456,7 +648,7 @@ const sendMrfOutcomeEmails = ({
   > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   latestSubmissionTimestamp: string
   submissionId: string
   isApproval?: boolean
@@ -466,6 +658,8 @@ const sendMrfOutcomeEmails = ({
     Mail.Attachment | undefined,
     AutoreplyPdfGenerationError
   >
+  growthbook?: GrowthBook
+  workflowEvents?: IWorkflowEvent[]
 }): ResultAsync<
   true,
   InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError
@@ -483,6 +677,7 @@ const sendMrfOutcomeEmails = ({
       responses,
       currentStepNumber,
       submissionId,
+      workflowEvents,
     })
       .asyncAndThen((destinationEmails) => {
         return pdfResult
@@ -517,14 +712,21 @@ const sendMrfOutcomeEmails = ({
         const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
           formFields: form.form_fields,
           responses,
+          keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
         })
+
+        // TODO (formid-json): remove when Form ID in response JSON is GA
+        const includeFormIdInResponseJson: boolean =
+          growthbook?.getFeatureValue(featureFlags.formIdJson, false) ?? false
 
         const responseJson = buildMrfResponseJson({
           formFields: form.form_fields,
           responses,
+          formId: includeFormIdInResponseJson ? String(form._id) : undefined,
           responseId: submissionId,
           timestamp: latestSubmissionTimestamp,
           delimiter: getFormDelimiter(form.metadata),
+          keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
         })
 
         const emailAttachments = []
@@ -564,6 +766,12 @@ const sendMrfOutcomeEmails = ({
 
         return MailService.sendMrfWorkflowCompletionEmail({
           emails: destinationEmails,
+          // With no steps this is the form's admin notification, and the bounce
+          // handler only acts on that type, so the form still closes when every
+          // recipient bounces, as a storage form would.
+          emailType: form.workflow.length
+            ? EmailType.WorkflowCompletion
+            : EmailType.AdminResponse,
           formId: String(form._id),
           formTitle: form.title,
           responseId: submissionId,
@@ -598,6 +806,7 @@ const sendMrfRespondentCopyEmails = ({
   formFields,
   currentStepActiveFields,
   pdfResult,
+  growthbook,
 }: {
   form: Pick<
     IPopulatedMultirespondentForm | SnapshottedFormDef,
@@ -605,7 +814,7 @@ const sendMrfRespondentCopyEmails = ({
   > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   submission: IMultirespondentSubmissionSchema
   attachments?: IAttachmentInfo[]
   formFields: FormFieldSchema[] | FormFieldDto[]
@@ -614,6 +823,7 @@ const sendMrfRespondentCopyEmails = ({
     Mail.Attachment | undefined,
     AutoreplyPdfGenerationError
   >
+  growthbook?: GrowthBook
 }): ResultAsync<
   true,
   InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError
@@ -642,6 +852,7 @@ const sendMrfRespondentCopyEmails = ({
   const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
     formFields: form.form_fields,
     responses,
+    keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
   })
 
   return pdfResult
@@ -703,14 +914,21 @@ const saveAttachmentsToDbIfExists = ({
 export const createMultiRespondentFormSubmission = ({
   form,
   encryptedPayload,
+  verifiedContentPlaintext,
   logMeta,
+  growthbook,
 }: {
   form: IPopulatedMultirespondentForm
   encryptedPayload: MultirespondentSubmissionDto
+  verifiedContentPlaintext?: Record<string, string>
   logMeta: CustomLoggerParams['meta']
+  growthbook?: GrowthBook
 }): ResultAsync<
-  IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId },
-  AttachmentUploadError | SubmissionSaveError
+  SavedMultirespondentSubmission,
+  | AttachmentUploadError
+  | SubmissionSaveError
+  | SnapshotWriteError
+  | V1ContentMappingError
 > => {
   logMeta = {
     ...logMeta,
@@ -732,6 +950,8 @@ export const createMultiRespondentFormSubmission = ({
         version,
         mrfVersion,
         hashedSubmitterId,
+        stepTokenHash,
+        encryptedStepToken,
       } = encryptedPayload
 
       const nextStepNumber = 1 // since current step is 0
@@ -769,10 +989,18 @@ export const createMultiRespondentFormSubmission = ({
         submitterId: hashedSubmitterId,
       }
 
-      const submissionContent: MultirespondentSubmissionContent = {
+      // RATIONALE: Generate the submissionId up front so the S3 snapshot key can be built
+      // BEFORE the row is persisted (Snapshot saves to S3 first ordering).
+      const submissionObjectId = new mongoose.Types.ObjectId()
+
+      const submissionContent: MultirespondentSubmissionContent & {
+        _id: mongoose.Types.ObjectId
+      } = {
+        _id: submissionObjectId,
         form: form._id,
         authType: form.authType,
         myInfoFields: form.getUniqueMyInfoAttrs(),
+        myInfoReadOnlyFields: encryptedPayload.myInfoReadOnlyFields,
         form_fields: form.form_fields,
         form_logics: form.form_logics,
         workflow: form.workflow,
@@ -785,7 +1013,35 @@ export const createMultiRespondentFormSubmission = ({
         workflowStep: 0,
         mrfVersion,
         submittedSteps: [submittedStepMeta],
+        stepTokenHash,
+        encryptedStepToken,
       }
+
+      const webhook = form.webhook
+      const webhookConsumerType = webhook?.url
+        ? toConsumerType(getWebhookType(webhook.url))
+        : 'generic'
+      const webhookContentFormat = resolveWebhookContentFormat({
+        webhookType: webhookConsumerType,
+        webhookFormat: webhook?.webhookFormat,
+      })
+      const shouldSend =
+        !!webhook?.url &&
+        shouldSendMrfWebhook({
+          webhookConsumerType,
+          contentFormat: webhookContentFormat,
+          isMrfWebhooksEnabled:
+            growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
+          workflowStepCount: form.workflow?.length ?? 0,
+        })
+      const shouldWriteSnapshot = shouldWriteMrfSnapshot({
+        mrfVersion,
+        shouldSend,
+        isRetryEnabled: webhook?.isRetryEnabled,
+        contentFormat: webhookContentFormat,
+        submissionIndex: 0,
+        logMeta,
+      })
 
       const saveSubmission = async () => {
         if (form.isSingleSubmission && form.authType !== FormAuthType.NIL) {
@@ -822,25 +1078,103 @@ export const createMultiRespondentFormSubmission = ({
         return submission.save()
       }
 
-      return ResultAsync.fromPromise(
-        saveSubmission().then((submission) => ({
-          submission,
-          responseMetadata,
-        })),
-        (error) => {
-          if (error instanceof FormRespondentSingleSubmissionValidationError) {
-            return error
-          }
-          logger.error({
-            message: 'Multirespondent submission save error',
-            meta: logMeta,
-            error,
+      const snapshotBase = {
+        formId: String(form._id),
+        submissionId: String(submissionObjectId),
+        submissionIndex: 0,
+        workflowStep: 0,
+        createdAt: submittedStepMeta.submittedAt,
+      }
+
+      const v4OnlyContent = {
+        verifiedContent,
+        attachmentMetadata: Object.fromEntries(attachmentMetadata ?? new Map()),
+      }
+
+      const isV1Snapshot =
+        mrfVersion === 2 && shouldSend && webhookContentFormat === 'v1'
+
+      const buildSnapshotForDelivery = (): ResultAsync<
+        SubmissionSnapshot | undefined,
+        V1ContentMappingError | AttachmentUploadError
+      > => {
+        if (isV1Snapshot) {
+          return buildFirstStepV1Snapshot({
+            form,
+            encryptedPayload,
+            verifiedContentPlaintext,
+            logMeta,
+            snapshotBase,
           })
-          return new SubmissionSaveError()
-        },
-      )
+        }
+        if (webhookContentFormat === 'v4' && shouldWriteSnapshot) {
+          return okAsync(buildFirstStepV4Snapshot())
+        }
+        return okAsync(undefined)
+      }
+
+      const buildFirstStepV4Snapshot = () =>
+        buildV4Snapshot({
+          ...snapshotBase,
+          ...v4OnlyContent,
+          formFields: buildWebhookFormFields(
+            form.form_fields,
+            encryptedPayload.myInfoReadOnlyFields ?? [],
+          ),
+          encryptedContent,
+          encryptedSubmissionSecretKey,
+        })
+
+      return buildSnapshotForDelivery().andThen((snapshot) => {
+        const snapshotToWrite = shouldWriteSnapshot ? snapshot : undefined
+        const writeSnapshotIfNeeded: ResultAsync<
+          string | undefined,
+          SnapshotWriteError
+        > = snapshotToWrite
+          ? writeSnapshot(snapshotToWrite).map(({ token, key }) => {
+              submittedStepMeta.snapshotTokens = {
+                [snapshotToWrite.contentFormat]: token,
+              }
+              return snapshotToWrite.contentFormat === 'v4' ? key : undefined
+            })
+          : okAsync(undefined)
+
+        return writeSnapshotIfNeeded
+          .andThen((deliveryV4Key) =>
+            writeStepSubmittedSnapshot(deliveryV4Key, buildFirstStepV4Snapshot),
+          )
+          .andThen((snapshotKey) => {
+            submissionContent.workflowEvents = [
+              buildStepSubmittedEvent({
+                stepNumber: 1,
+                step: submittedStepMeta,
+                snapshotKey,
+              }),
+            ]
+            return ResultAsync.fromPromise(
+              saveSubmission().then((submission) => ({
+                submission,
+                responseMetadata,
+                snapshot,
+              })),
+              (error) => {
+                if (
+                  error instanceof FormRespondentSingleSubmissionValidationError
+                ) {
+                  return error
+                }
+                logger.error({
+                  message: 'Multirespondent submission save error',
+                  meta: logMeta,
+                  error,
+                })
+                return new SubmissionSaveError()
+              },
+            )
+          })
+      })
     })
-    .map(({ submission, responseMetadata }) => {
+    .map(({ submission, responseMetadata, snapshot }) => {
       const submissionId = submission.id
       logger.info({
         message: 'Saved submission to MongoDB',
@@ -855,12 +1189,166 @@ export const createMultiRespondentFormSubmission = ({
         })
       }
 
-      return submission
+      return { submission, snapshot }
     })
 }
 
+/**
+ * Saves an incoming payment-form submission as a *pending* submission: it is
+ * only promoted to a real submission when the Stripe webhook confirms the
+ * payment. Payment-enabled multirespondent forms are necessarily zero-step
+ * (no next-step recipients) and cannot enforce single submission, so this is
+ * a simpler variant of createMultiRespondentFormSubmission.
+ */
+export const createMultiRespondentFormPendingSubmission = ({
+  form,
+  encryptedPayload,
+  verifiedContentPlaintext,
+  paymentId,
+  logMeta,
+}: {
+  form: IPopulatedMultirespondentForm
+  encryptedPayload: MultirespondentSubmissionDto
+  verifiedContentPlaintext?: Record<string, string>
+  paymentId: string
+  logMeta: CustomLoggerParams['meta']
+}): ResultAsync<
+  IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId },
+  | AttachmentUploadError
+  | SubmissionSaveError
+  | SnapshotWriteError
+  | V1ContentMappingError
+> => {
+  logMeta = {
+    ...logMeta,
+    action: 'createMultiRespondentFormPendingSubmission',
+  }
+
+  return saveAttachmentsToDbIfExists({
+    formId: form._id,
+    attachments: encryptedPayload.attachments,
+  }).andThen((attachmentMetadata) => {
+    const {
+      submissionPublicKey,
+      encryptedSubmissionSecretKey,
+      encryptedContent,
+      verifiedContent,
+      responseMetadata,
+      version,
+      mrfVersion,
+      hashedSubmitterId,
+      stepTokenHash,
+      encryptedStepToken,
+    } = encryptedPayload
+
+    const submittedStepMeta: SubmittedNonApprovalStep = {
+      isApproval: false, // first step cannot be approval step
+      submittedAt: new Date().toISOString(),
+      submitterId: hashedSubmitterId,
+    }
+
+    const submissionContent: MultirespondentSubmissionContent = {
+      form: form._id,
+      authType: form.authType,
+      myInfoFields: form.getUniqueMyInfoAttrs(),
+      myInfoReadOnlyFields: encryptedPayload.myInfoReadOnlyFields,
+      form_fields: form.form_fields,
+      form_logics: form.form_logics,
+      workflow: form.workflow,
+      submissionPublicKey,
+      encryptedSubmissionSecretKey,
+      encryptedContent,
+      verifiedContent,
+      attachmentMetadata,
+      version,
+      workflowStep: 0,
+      mrfVersion,
+      submittedSteps: [submittedStepMeta],
+      stepTokenHash,
+      encryptedStepToken,
+      paymentId,
+    }
+
+    const pendingSubmission = new MultirespondentPendingSubmission(
+      submissionContent,
+    )
+
+    const snapshotBase = {
+      formId: String(form._id),
+      submissionId: String(pendingSubmission._id),
+      submissionIndex: 0,
+      workflowStep: 0,
+      createdAt: submittedStepMeta.submittedAt,
+    }
+
+    return buildFirstStepV1Snapshot({
+      form,
+      encryptedPayload,
+      verifiedContentPlaintext,
+      logMeta,
+      snapshotBase,
+    })
+      .andThen(writeSnapshot)
+      .andThen(({ token }) =>
+        writeStepSubmittedSnapshot(undefined, () =>
+          buildV4Snapshot({
+            ...snapshotBase,
+            formFields: buildWebhookFormFields(
+              form.form_fields,
+              encryptedPayload.myInfoReadOnlyFields ?? [],
+            ),
+            encryptedContent,
+            encryptedSubmissionSecretKey,
+            verifiedContent,
+            attachmentMetadata: Object.fromEntries(
+              attachmentMetadata ?? new Map(),
+            ),
+          }),
+        ).map((snapshotKey) => ({ token, snapshotKey })),
+      )
+      .andThen(({ token, snapshotKey }) => {
+        pendingSubmission.submittedSteps = [
+          { ...submittedStepMeta, snapshotTokens: { v1: token } },
+        ]
+        pendingSubmission.workflowEvents = [
+          buildStepSubmittedEvent({
+            stepNumber: 1,
+            step: submittedStepMeta,
+            snapshotKey,
+          }),
+        ]
+        return ResultAsync.fromPromise(pendingSubmission.save(), (error) => {
+          logger.error({
+            message: 'Multirespondent pending submission save error',
+            meta: logMeta,
+            error,
+          })
+          return new SubmissionSaveError()
+        }).map((pendingSubmission) => {
+          logger.info({
+            message: 'Saved pending submission to MongoDB',
+            meta: {
+              ...logMeta,
+              pendingSubmissionId: pendingSubmission.id,
+              responseMetadata,
+            },
+          })
+
+          if (responseMetadata) {
+            reportSubmissionResponseTime(responseMetadata, {
+              mode: 'multirespodent',
+              payment: 'true',
+            })
+          }
+
+          return pendingSubmission
+        })
+      })
+  })
+}
+
 interface CheckIfRespondentFormSummaryIsRequiredArgs {
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   formFields: FormFieldSchema[] | FormFieldDto[]
   currentStepActiveFields: string[]
 }
@@ -893,10 +1381,11 @@ interface CheckIsWorkflowCompletionEmailPdfRequiredArgs {
   > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   isRejected: boolean
   submissionId: string
   growthbook?: GrowthBook
+  workflowEvents?: IWorkflowEvent[]
 }
 
 const checkIsWorkflowCompletionEmailPdfRequired = ({
@@ -906,6 +1395,7 @@ const checkIsWorkflowCompletionEmailPdfRequired = ({
   isRejected,
   submissionId,
   growthbook,
+  workflowEvents,
 }: CheckIsWorkflowCompletionEmailPdfRequiredArgs) => {
   const isGbFlagEnabled =
     isAdminEmailPdfEnabled({
@@ -928,6 +1418,7 @@ const checkIsWorkflowCompletionEmailPdfRequired = ({
       responses,
       currentStepNumber,
       submissionId,
+      workflowEvents,
     })
 
   return (
@@ -980,6 +1471,7 @@ const generatePdfAttachmentIfRequired = ({
       isRejected,
       submissionId,
       growthbook,
+      workflowEvents: submission.workflowEvents,
     })
 
   if (!isRespondentCopyPdfRequired && !isWorkflowCompletionEmailPdfRequired) {
@@ -989,6 +1481,7 @@ const generatePdfAttachmentIfRequired = ({
   const responsesData = getResponsesDataFromMrfResponses({
     formFields: form.form_fields,
     responses,
+    keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
   })
 
   const autoReplyData = {
@@ -1024,8 +1517,202 @@ const generatePdfAttachmentIfRequired = ({
   return pdfResult
 }
 
+const resolveInitialV1View = ({
+  submission,
+  liveView,
+  snapshot,
+  snapshotRef,
+  pendingSubmissionId,
+  logMeta,
+}: {
+  submission: IMultirespondentSubmissionSchema
+  liveView: WebhookView
+  snapshot?: SubmissionSnapshot
+  snapshotRef: SnapshotRef
+  pendingSubmissionId?: string
+  logMeta: CustomLoggerParams['meta']
+}): ResultAsync<WebhookView, SnapshotViewError | V1SnapshotRequiredError> => {
+  // Payment confirmation runs after the submit request has ended. Read the
+  // required V1 snapshot using the token carried over from pending.
+  if (submission.paymentId) {
+    return resolveSnapshotWebhookView({
+      liveView,
+      submissionId: String(submission._id),
+      pendingSubmissionId,
+      snapshotRef,
+      submittedStepSnapshotTokens: submission.submittedSteps?.map(
+        (step) => step.snapshotTokens,
+      ),
+    })
+  }
+  if (snapshot?.contentFormat === 'v1') {
+    return okAsync({
+      data: reconstructV1WebhookData({ liveData: liveView.data, snapshot }),
+    })
+  }
+  return errAsync(
+    new V1SnapshotRequiredError(undefined, {
+      ...logMeta,
+      submissionIndex: snapshotRef.submissionIndex,
+      snapshotContentFormat: snapshot?.contentFormat,
+    }),
+  )
+}
+
+const sendMrfInitialWebhookIfEligible = ({
+  submission,
+  snapshot,
+  pendingSubmissionId,
+  webhookUrl,
+  webhookFormat,
+  workflowStepCount,
+  isRetryEnabled,
+  growthbook,
+  logMeta,
+  errorMessage = 'Multirespondent submission webhook error',
+}: {
+  submission: IMultirespondentSubmissionSchema
+  snapshot?: SubmissionSnapshot
+  /** Id the first step's snapshot is stored under for payment submissions. */
+  pendingSubmissionId?: string
+  webhookUrl: string
+  webhookFormat: FormWebhook['webhookFormat']
+  workflowStepCount: number
+  isRetryEnabled: boolean
+  growthbook?: GrowthBook
+  logMeta: CustomLoggerParams['meta']
+  errorMessage?: string
+}): void => {
+  const webhookConsumerType = toConsumerType(getWebhookType(webhookUrl))
+
+  const shouldSend = shouldSendMrfWebhook({
+    webhookConsumerType,
+    contentFormat: resolveWebhookContentFormat({
+      webhookType: webhookConsumerType,
+      webhookFormat,
+    }),
+    isMrfWebhooksEnabled:
+      growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
+    workflowStepCount,
+  })
+  if (!shouldSend) {
+    return
+  }
+
+  logger.info({
+    message: 'Sending initial webhook for multirespondent submission',
+    meta: { ...logMeta, webhookConsumerType },
+  })
+
+  const submissionIndex = (submission.submittedSteps?.length ?? 1) - 1
+
+  // For V3 legacy, we load from the live row without a reconstructing from snapshot.
+  if (mrfVersionToContentFormat(submission.mrfVersion) === 'v3') {
+    WebhookFactory.sendInitialWebhook(
+      submission,
+      webhookUrl,
+      isRetryEnabled,
+    ).mapErr((error) => {
+      logger.error({
+        message: errorMessage,
+        meta: logMeta,
+        error,
+      })
+    })
+    return
+  }
+
+  ResultAsync.fromPromise(
+    submission.getWebhookView(),
+    () => new DatabaseError(),
+  )
+    .andThen((liveView) => {
+      const policy = getWebhookPayloadPolicy({
+        webhookType: webhookConsumerType,
+        webhookFormat,
+        logMeta,
+      })
+
+      const send = (
+        data: WebhookView['data'],
+        snapshotRef?: SnapshotRef,
+      ): ResultAsync<undefined, WebhookPushToQueueError> =>
+        WebhookFactory.sendInitialWebhook(
+          submission,
+          webhookUrl,
+          isRetryEnabled,
+          { data },
+          snapshotRef,
+        ).map(() => undefined)
+
+      if (policy.contentFormat === 'v1') {
+        if (!holdsV1FirstStepInvariant({ submissionIndex, logMeta })) {
+          return errAsync(
+            new V1SnapshotRequiredError(
+              'V1 delivery declined: the submission is past its first step',
+              { ...logMeta, submissionIndex },
+            ),
+          )
+        }
+        const snapshotRef: SnapshotRef = {
+          submissionIndex,
+          contentFormat: 'v1',
+          token:
+            submission.submittedSteps?.[submissionIndex]?.snapshotTokens?.v1,
+        }
+        return resolveInitialV1View({
+          submission,
+          liveView,
+          snapshot,
+          snapshotRef,
+          pendingSubmissionId,
+          logMeta,
+        })
+          .andThen(({ data }) => assertStorageShapedKeySet(data, logMeta))
+          .andThen((data) => send(data, snapshotRef))
+      }
+
+      const snapshotDetails =
+        snapshot?.contentFormat === 'v4'
+          ? {
+              snapshot,
+              submissionIndex,
+            }
+          : {
+              snapshot: undefined,
+              submissionIndex: undefined,
+            }
+      return reconstructMrfWebhookData({
+        liveData: liveView.data,
+        policy,
+        ...snapshotDetails,
+      }).asyncAndThen((data) =>
+        send(
+          data,
+          snapshotDetails.snapshot
+            ? {
+                submissionIndex,
+                contentFormat: 'v4',
+                token:
+                  submission.submittedSteps?.[submissionIndex]?.snapshotTokens
+                    ?.v4,
+              }
+            : undefined,
+        ),
+      )
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: errorMessage,
+        meta: logMeta,
+        error,
+      })
+    })
+}
+
 export const performMultiRespondentPostSubmissionCreateActions = ({
   submission,
+  snapshot,
   submissionId,
   form,
   encryptedPayload,
@@ -1034,6 +1721,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   growthbook,
 }: {
   submission: IMultirespondentSubmissionSchema
+  snapshot?: SubmissionSnapshot
   submissionId: string
   form: IPopulatedMultirespondentForm
   encryptedPayload: MultirespondentSubmissionDto
@@ -1041,7 +1729,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   attachments?: IAttachmentInfo[]
   growthbook?: GrowthBook
 }): ResultAsync<boolean, InvalidWorkflowTypeError | MailSendError> => {
-  const { submissionSecretKey, responses } = encryptedPayload
+  const { submissionSecretKey, responses, stepToken } = encryptedPayload
   const currentStepNumber = 0
 
   // if there is no workflow, every field is an active field
@@ -1090,6 +1778,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
       isRejected: false,
       submissionId,
       growthbook,
+      workflowEvents: submission.workflowEvents,
     })
       ? pdfResult
       : okAsync(undefined)
@@ -1102,6 +1791,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     formFields: form.form_fields,
     currentStepActiveFields,
     pdfResult: sendMrfRespondentCopyEmailsPdfResult,
+    growthbook,
   }).mapErr((error) => {
     logger.error({
       message: 'Send multirespondent respondent copy email error',
@@ -1112,24 +1802,16 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
 
   const webhookUrl = form.webhook?.url
   if (webhookUrl) {
-    logger.info({
-      message: 'Sending initial webhook for multirespondent submission',
-      meta: logMeta,
-    })
-
-    WebhookFactory.sendInitialWebhook(
+    sendMrfInitialWebhookIfEligible({
       submission,
+      snapshot,
       webhookUrl,
-      !!form.webhook?.isRetryEnabled,
-    )
-      .andThen(() => okAsync(form))
-      .mapErr((error) => {
-        logger.error({
-          message: 'Multirespondent submission webhook error',
-          meta: logMeta,
-          error,
-        })
-      })
+      webhookFormat: form.webhook?.webhookFormat,
+      workflowStepCount: submission.workflow?.length ?? 0,
+      isRetryEnabled: !!form.webhook?.isRetryEnabled,
+      growthbook,
+      logMeta,
+    })
   }
 
   return sendNextStepEmail({
@@ -1139,11 +1821,12 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
       form._id,
       submissionId,
-      { key: submissionSecretKey },
+      { key: submissionSecretKey, stepToken },
     )}`,
     formId: form._id,
     submissionId,
     responses,
+    growthbook,
   })
     .mapErr((error) => {
       logger.error({
@@ -1162,6 +1845,8 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
         submissionId,
         attachments,
         pdfResult: sendMrfOutcomeEmailsPdfResult,
+        growthbook,
+        workflowEvents: submission.workflowEvents,
       })
     })
     .mapErr((error) => {
@@ -1174,19 +1859,81 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     })
 }
 
+/**
+ * Performs post-submission actions for a multirespondent submission promoted
+ * from a pending submission on payment confirmation. A payment-enabled MRF
+ * sends no form-configured emails, so the only action mirrored from
+ * submission creation is the initial webhook — routed through the same
+ * eligibility gate and payload policy as non-payment submissions; the
+ * payer's receipt email is sent by the payments machinery.
+ * @param submission the promoted multirespondent submission
+ * @param growthbook growthbook instance of the triggering request, used to
+ * evaluate the MRF webhook rollout flags (absent means flags-off, so only
+ * plumber webhooks fire)
+ */
+export const performMultirespondentPaymentPostSubmissionActions = (
+  submission: IMultirespondentSubmissionSchema,
+  pendingSubmissionId: string,
+  growthbook?: GrowthBook,
+): ResultAsync<true, FormNotFoundError | PossibleDatabaseError> => {
+  const logMeta = {
+    action: 'performMultirespondentPaymentPostSubmissionActions',
+    submissionId: submission.id,
+    pendingSubmissionId,
+    formId: String(submission.form),
+  }
+
+  return FormService.retrieveFullFormById(submission.form).map((form) => {
+    const webhookUrl = form.webhook?.url
+    if (!webhookUrl) return true as const
+
+    // Mirror the submission paths: target the rollout flags by form and
+    // admin before evaluating webhook eligibility.
+    void growthbook?.setAttributes({
+      ...growthbook.getAttributes(),
+      formId: String(form._id),
+      adminEmail: form.admin.email,
+    })
+
+    sendMrfInitialWebhookIfEligible({
+      submission,
+      pendingSubmissionId,
+      webhookUrl,
+      webhookFormat: form.webhook?.webhookFormat,
+      workflowStepCount: submission.workflow?.length ?? 0,
+      isRetryEnabled: !!form.webhook?.isRetryEnabled,
+      growthbook,
+      logMeta,
+      errorMessage: 'Multirespondent payment submission webhook error',
+    })
+    return true as const
+  })
+}
+
 export const updateMultiRespondentFormSubmission = ({
   submissionId,
   snapshottedFormDef,
   encryptedPayload,
+  expectedPrevious,
   logMeta,
+  growthbook,
 }: {
   submissionId: string
   snapshottedFormDef: SnapshottedFormDef
   encryptedPayload: MultirespondentSubmissionDto
+  // Stored step state the request was checked against. The update only
+  // applies while the submission is still at that step.
+  expectedPrevious?: { workflowStep: number; stepTokenHash?: string }
   logMeta: CustomLoggerParams['meta']
+  growthbook?: GrowthBook
 }): ResultAsync<
-  IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId },
-  AttachmentUploadError | SubmissionSaveError | SubmissionNotFoundError
+  SavedMultirespondentSubmission,
+  | AttachmentUploadError
+  | SubmissionSaveError
+  | SubmissionNotFoundError
+  | MrfSubmissionStaleError
+  | PossibleDatabaseError
+  | SnapshotWriteError
 > => {
   logMeta = {
     ...logMeta,
@@ -1209,6 +1956,20 @@ export const updateMultiRespondentFormSubmission = ({
         })
         return errAsync(new SubmissionNotFoundError())
       }
+      if (submission.stoppedAt) {
+        return errAsync(new MrfWorkflowStoppedError())
+      }
+      if (
+        expectedPrevious &&
+        (submission.workflowStep !== expectedPrevious.workflowStep ||
+          submission.stepTokenHash !== expectedPrevious.stepTokenHash)
+      ) {
+        logger.warn({
+          message: 'Submission advanced since the request was checked',
+          meta: { ...logMeta, submissionId },
+        })
+        return errAsync(new MrfSubmissionStaleError())
+      }
       return okAsync({ submission, attachmentMetadata })
     })
     .andThen(({ submission, attachmentMetadata }) => {
@@ -1221,6 +1982,8 @@ export const updateMultiRespondentFormSubmission = ({
         version,
         workflowStep,
         mrfVersion,
+        stepTokenHash,
+        encryptedStepToken,
       } = encryptedPayload
 
       const nextStepNumber = workflowStep + 1
@@ -1287,10 +2050,8 @@ export const updateMultiRespondentFormSubmission = ({
             isApproval: false,
           } as SubmittedNonApprovalStep)
 
-      submission.submittedSteps = [
-        ...(submission.submittedSteps ?? []),
-        submittedStepMeta,
-      ]
+      const submissionIndex = submission.submittedSteps?.length ?? 0
+
       submission.responseMetadata = responseMetadata
       submission.submissionPublicKey = submissionPublicKey
       submission.encryptedSubmissionSecretKey = encryptedSubmissionSecretKey
@@ -1300,31 +2061,151 @@ export const updateMultiRespondentFormSubmission = ({
       submission.workflowStep = workflowStep
       submission.attachmentMetadata = attachmentMetadata
       submission.mrfVersion = mrfVersion
+      submission.stepTokenHash = stepTokenHash
+      submission.encryptedStepToken = encryptedStepToken
+      // Omitted when this step verified no login answers; keeps the stored list.
+      if (encryptedPayload.myInfoReadOnlyFields) {
+        submission.myInfoReadOnlyFields = encryptedPayload.myInfoReadOnlyFields
+      }
 
-      return ResultAsync.fromPromise(
-        submission.save().then(() => ({ submission, responseMetadata })),
-        (error) => {
-          logger.error({
-            message: 'Multirespondent submission save error',
-            meta: logMeta,
-            error,
+      const webhook = snapshottedFormDef.webhook
+      const webhookConsumerType = webhook?.url
+        ? toConsumerType(getWebhookType(webhook.url))
+        : 'generic'
+      const webhookContentFormat = resolveWebhookContentFormat({
+        webhookType: webhookConsumerType,
+        webhookFormat: webhook?.webhookFormat,
+      })
+      const shouldSend =
+        !!webhook?.url &&
+        shouldSendMrfWebhook({
+          webhookConsumerType,
+          contentFormat: webhookContentFormat,
+          isMrfWebhooksEnabled:
+            growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
+          workflowStepCount: snapshottedFormDef.workflow?.length ?? 0,
+        })
+      const shouldWriteSnapshot = shouldWriteMrfSnapshot({
+        mrfVersion,
+        shouldSend,
+        isRetryEnabled: webhook?.isRetryEnabled,
+        contentFormat: webhookContentFormat,
+        submissionIndex,
+        logMeta: { ...logMeta, submissionId },
+      })
+
+      const buildStepV4Snapshot = () =>
+        buildV4Snapshot({
+          formId: String(snapshottedFormDef._id),
+          submissionId: String(submission._id),
+          submissionIndex,
+          workflowStep,
+          encryptedContent,
+          encryptedSubmissionSecretKey,
+          formFields: buildWebhookFormFields(
+            snapshottedFormDef.form_fields,
+            submission.myInfoReadOnlyFields ?? [],
+          ),
+          verifiedContent,
+          attachmentMetadata: Object.fromEntries(
+            attachmentMetadata ?? new Map(),
+          ),
+          createdAt: submittedStepMeta.submittedAt,
+        })
+
+      const snapshot =
+        webhookContentFormat === 'v4' && shouldWriteSnapshot
+          ? buildStepV4Snapshot()
+          : undefined
+
+      const writeSnapshotIfNeeded: ResultAsync<
+        string | undefined,
+        SnapshotWriteError
+      > = snapshot
+        ? writeSnapshot(snapshot).map(({ token, key }) => {
+            submittedStepMeta.snapshotTokens = {
+              [snapshot.contentFormat]: token,
+            }
+            return key
           })
-          return new SubmissionSaveError()
-        },
-      )
+        : okAsync(undefined)
+
+      return writeSnapshotIfNeeded
+        .andThen((deliveryV4Key) =>
+          writeStepSubmittedSnapshot(deliveryV4Key, buildStepV4Snapshot),
+        )
+        .andThen((snapshotKey) => {
+          const previousSteps = submission.submittedSteps ?? []
+          const stepSubmittedEvents = [
+            ...buildMissingStepSubmittedEvents(
+              previousSteps,
+              submission.workflowEvents,
+            ),
+            buildStepSubmittedEvent({
+              stepNumber: submissionIndex + 1,
+              step: submittedStepMeta,
+              snapshotKey,
+            }),
+          ]
+
+          // NOTE: Append AFTER the token is recorded so the value survives mongoose's
+          // subdocument cast (which copies the plain object into the array).
+          submission.submittedSteps = [...previousSteps, submittedStepMeta]
+          submission.workflowEvents.push(...stepSubmittedEvents)
+
+          // Saves only if no concurrent request has advanced the submission.
+          if (expectedPrevious) {
+            submission.$where = {
+              workflowStep: expectedPrevious.workflowStep,
+              stepTokenHash: expectedPrevious.stepTokenHash ?? {
+                $exists: false,
+              },
+            }
+          }
+          return ResultAsync.fromPromise(
+            submission
+              .save()
+              .then(() => ({ submission, responseMetadata, snapshot })),
+            (error) => {
+              // The array edits version the save, so mongoose reports a
+              // $where miss as a VersionError rather than DocumentNotFound.
+              if (
+                expectedPrevious &&
+                (error instanceof mongoose.Error.DocumentNotFoundError ||
+                  error instanceof mongoose.Error.VersionError)
+              ) {
+                logger.warn({
+                  message: 'Submission advanced by a concurrent request',
+                  meta: { ...logMeta, submissionId },
+                })
+                return new MrfSubmissionStaleError()
+              }
+              if (error instanceof mongoose.Error.VersionError) {
+                return transformMongoError(error)
+              }
+              logger.error({
+                message: 'Multirespondent submission save error',
+                meta: logMeta,
+                error,
+              })
+              return new SubmissionSaveError()
+            },
+          )
+        })
     })
-    .map(({ submission, responseMetadata }) => {
+    .map(({ submission, responseMetadata, snapshot }) => {
       logger.info({
         message: 'Saved submission to MongoDB',
         meta: { ...logMeta, submissionId: submission.id, responseMetadata },
       })
 
-      return submission
+      return { submission, snapshot }
     })
 }
 
 export const performMultiRespondentPostSubmissionUpdateActions = ({
   submission,
+  snapshot,
   submissionId,
   snapshottedFormDef,
   currentStepNumber,
@@ -1334,6 +2215,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   growthbook,
 }: {
   submission: IMultirespondentSubmissionSchema
+  snapshot?: SubmissionSnapshot
   submissionId: string
   snapshottedFormDef: SnapshottedFormDef
   currentStepNumber: number
@@ -1348,7 +2230,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   | ExpectedResponseNotFoundError
   | InvalidApprovalFieldTypeError
 > => {
-  const { responses, submissionSecretKey } = encryptedPayload
+  const { responses, submissionSecretKey, stepToken } = encryptedPayload
 
   logMeta = {
     ...logMeta,
@@ -1384,24 +2266,16 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
 
   const webhookUrl = snapshottedFormDef.webhook?.url
   if (webhookUrl) {
-    logger.info({
-      message: 'Sending update webhook for multirespondent submission',
-      meta: logMeta,
-    })
-
-    WebhookFactory.sendInitialWebhook(
+    sendMrfInitialWebhookIfEligible({
       submission,
+      snapshot,
       webhookUrl,
-      !!snapshottedFormDef.webhook?.isRetryEnabled,
-    )
-      .andThen(() => okAsync(undefined))
-      .mapErr((error) => {
-        logger.error({
-          message: 'Multirespondent submission webhook error',
-          meta: logMeta,
-          error,
-        })
-      })
+      webhookFormat: snapshottedFormDef.webhook?.webhookFormat,
+      workflowStepCount: snapshottedFormDef.workflow?.length ?? 0,
+      isRetryEnabled: !!snapshottedFormDef.webhook?.isRetryEnabled,
+      growthbook,
+      logMeta,
+    })
   }
 
   const pdfResult = generatePdfAttachmentIfRequired({
@@ -1439,6 +2313,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       isRejected: isStepRejected,
       submissionId,
       growthbook,
+      workflowEvents: submission.workflowEvents,
     })
       ? pdfResult
       : okAsync(undefined)
@@ -1452,6 +2327,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     currentStepActiveFields:
       snapshottedFormDef.workflow[currentStepNumber]?.edit ?? [],
     pdfResult: sendMrfRespondentCopyEmailsPdfResult,
+    growthbook,
   }).mapErr((error) => {
     logger.error({
       message: 'Send multirespondent respondent copy email error',
@@ -1471,6 +2347,8 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       isRejected: true,
       attachments: attachments,
       pdfResult: sendMrfOutcomeEmailsPdfResult,
+      growthbook,
+      workflowEvents: submission.workflowEvents,
     }).mapErr((error) => {
       logger.error({
         message: 'Send mrf outcome email error',
@@ -1489,6 +2367,8 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     isApproval: checkIsFormApproval(snapshottedFormDef),
     attachments: attachments,
     pdfResult: sendMrfOutcomeEmailsPdfResult,
+    growthbook,
+    workflowEvents: submission.workflowEvents,
   })
     .mapErr((error) => {
       logger.error({
@@ -1506,11 +2386,12 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
         responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
           snapshottedFormDef._id,
           submissionId,
-          { key: submissionSecretKey },
+          { key: submissionSecretKey, stepToken },
         )}`,
         formId: snapshottedFormDef._id,
         submissionId,
         responses,
+        growthbook,
       }).mapErr((error) => {
         logger.error({
           message: 'Send multirespondent workflow email error',
@@ -1548,3 +2429,317 @@ export const getMultirespondentSubmission = (
     }
     return okAsync(submission)
   })
+
+export const stopMultirespondentSubmission = ({
+  formId,
+  submissionId,
+  actor,
+  emails,
+}: {
+  formId: string
+  submissionId: string
+  actor: { _id?: unknown; email: string }
+  /** People emailed about the stop, recorded on the stopped event. */
+  emails: string[]
+}): ResultAsync<
+  IMultirespondentSubmissionSchema,
+  DatabaseError | SubmissionNotFoundError | MrfWorkflowNotPendingError
+> =>
+  getMultirespondentSubmission(submissionId)
+    .andThen((submission) => {
+      if (String(submission.form) !== formId) {
+        return errAsync(new SubmissionNotFoundError())
+      }
+      const isPending =
+        !submission.stoppedAt &&
+        getMrfSubmissionWorkflowStatus(
+          (submission.submittedSteps ?? []) as SubmittedStep[],
+          submission.workflow.length,
+          submission.workflowStep,
+        ) === WorkflowStatus.PENDING
+      if (!isPending) return errAsync(new MrfWorkflowNotPendingError())
+      return okAsync(submission)
+    })
+    .andThen((submission) =>
+      ResultAsync.fromPromise(
+        MultirespondentSubmission.findOneAndUpdate(
+          {
+            _id: submission._id,
+            __v: submission.__v,
+            stoppedAt: { $exists: false },
+          },
+          {
+            $set: { stoppedAt: new Date(), stoppedBy: actor._id },
+            $push: {
+              workflowEvents: buildWorkflowEvent({
+                type: WorkflowEventType.Stopped,
+                actor,
+                stepNumber: (submission.submittedSteps?.length ?? 0) + 1,
+                emails,
+              }),
+            },
+            $inc: { __v: 1 },
+          },
+          { new: true },
+        ).exec(),
+        (error) => {
+          logger.error({
+            message: 'Error stopping multirespondent submission',
+            meta: {
+              action: 'stopMultirespondentSubmission',
+              formId,
+              submissionId,
+            },
+            error,
+          })
+          return transformMongoError(error)
+        },
+      ),
+    )
+    .andThen((stopped) =>
+      stopped ? okAsync(stopped) : errAsync(new MrfWorkflowNotPendingError()),
+    )
+
+export const sendBackMultirespondentSubmission = ({
+  formId,
+  formPublicKey,
+  submissionId,
+  targetStepNumber,
+  expectedStepNumber,
+  remarks,
+  stepOneRecipientEmail,
+  canSendBackToStepOne,
+  actor,
+}: {
+  formId: string
+  formPublicKey: string
+  submissionId: string
+  targetStepNumber: number
+  expectedStepNumber: number
+  remarks?: string
+  stepOneRecipientEmail?: string
+  canSendBackToStepOne: boolean
+  actor: { _id?: unknown; email: string }
+}): ResultAsync<
+  { stepNumber: number; emails: string[]; stepToken: string },
+  | DatabaseError
+  | SubmissionNotFoundError
+  | MrfWorkflowNotPendingError
+  | MrfSendBackInvalidStepError
+> =>
+  getMultirespondentSubmission(submissionId)
+    .andThen((submission) => {
+      if (String(submission.form) !== formId) {
+        return errAsync(new SubmissionNotFoundError())
+      }
+      const submittedSteps = (submission.submittedSteps ??
+        []) as SubmittedStep[]
+      const pendingStepNumber = submittedSteps.length + 1
+      const isPending =
+        !submission.stoppedAt &&
+        getMrfSubmissionWorkflowStatus(
+          submittedSteps,
+          submission.workflow.length,
+          submission.workflowStep,
+        ) === WorkflowStatus.PENDING
+      if (
+        !isPending ||
+        pendingStepNumber !== expectedStepNumber ||
+        submission.workflowStep !== submittedSteps.length - 1
+      ) {
+        return errAsync(new MrfWorkflowNotPendingError())
+      }
+      const isToStepOne = targetStepNumber === 1
+      if (
+        targetStepNumber < 1 ||
+        targetStepNumber >= pendingStepNumber ||
+        (isToStepOne &&
+          (!canSendBackToStepOne ||
+            !stepOneRecipientEmail ||
+            !!submission.verifiedContent))
+      ) {
+        return errAsync(new MrfSendBackInvalidStepError())
+      }
+      const keptSteps = submittedSteps.slice(0, targetStepNumber - 1)
+      const emails = Array.from(
+        new Set(
+          [
+            ...(isToStepOne
+              ? [stepOneRecipientEmail as string]
+              : (keptSteps[keptSteps.length - 1].nextStepRecipientEmails ??
+                [])),
+            ...(isToStepOne
+              ? []
+              : getAddedAssignees(submission.workflowEvents, targetStepNumber)),
+          ].map((email) => email.toLowerCase()),
+        ),
+      )
+      return okAsync({ submission, keptSteps, pendingStepNumber, emails })
+    })
+    .andThen(({ submission, keptSteps, pendingStepNumber, emails }) => {
+      const newStepToken = stepToken.generate()
+      return ResultAsync.fromPromise(
+        MultirespondentSubmission.findOneAndUpdate(
+          {
+            _id: submission._id,
+            form: formId,
+            __v: submission.__v,
+            stoppedAt: { $exists: false },
+            submittedSteps: { $size: pendingStepNumber - 1 },
+          },
+          {
+            $set: {
+              submittedSteps: keptSteps,
+              workflowStep: targetStepNumber - 2,
+              stepTokenHash: stepToken.hash(newStepToken),
+              encryptedStepToken: stepToken.wrap(newStepToken, formPublicKey),
+            },
+            $push: {
+              workflowEvents: {
+                $each: [
+                  ...buildMissingStepSubmittedEvents(
+                    (submission.submittedSteps ?? []) as SubmittedStep[],
+                    submission.workflowEvents,
+                  ),
+                  buildWorkflowEvent({
+                    type: WorkflowEventType.SentBack,
+                    actor,
+                    stepNumber: targetStepNumber,
+                    fromStepNumber: pendingStepNumber,
+                    emails,
+                    remarks,
+                  }),
+                ],
+              },
+            },
+            $inc: { __v: 1 },
+          },
+          { new: true },
+        ).exec(),
+        (error) => {
+          logger.error({
+            message: 'Error sending back multirespondent submission',
+            meta: {
+              action: 'sendBackMultirespondentSubmission',
+              formId,
+              submissionId,
+            },
+            error,
+          })
+          return transformMongoError(error)
+        },
+      ).andThen((updated) =>
+        updated
+          ? okAsync({
+              stepNumber: targetStepNumber,
+              emails,
+              stepToken: newStepToken,
+            })
+          : errAsync(new MrfWorkflowNotPendingError()),
+      )
+    })
+
+export const addAssigneesToPendingStep = ({
+  formId,
+  submissionId,
+  emails,
+  expectedStepNumber,
+  actor,
+}: {
+  formId: string
+  submissionId: string
+  emails: string[]
+  /** The pending step the admin saw, so a stale page cannot add to a later step. */
+  expectedStepNumber: number
+  actor: { _id?: unknown; email: string }
+}): ResultAsync<
+  { submission: IMultirespondentSubmissionSchema; stepNumber: number },
+  | DatabaseError
+  | SubmissionNotFoundError
+  | MrfWorkflowNotPendingError
+  | MrfAssigneeAlreadyAssignedError
+> =>
+  getMultirespondentSubmission(submissionId)
+    .andThen((submission) => {
+      if (String(submission.form) !== formId) {
+        return errAsync(new SubmissionNotFoundError())
+      }
+      const submittedSteps = (submission.submittedSteps ??
+        []) as SubmittedStep[]
+      const isPending =
+        !submission.stoppedAt &&
+        getMrfSubmissionWorkflowStatus(
+          submittedSteps,
+          submission.workflow.length,
+          submission.workflowStep,
+        ) === WorkflowStatus.PENDING
+      const stepNumber = submittedSteps.length + 1
+      if (!isPending || stepNumber !== expectedStepNumber) {
+        return errAsync(new MrfWorkflowNotPendingError())
+      }
+
+      const assigned = new Set([
+        ...(submittedSteps.length > 0
+          ? (submittedSteps[submittedSteps.length - 1]
+              .nextStepRecipientEmails ?? [])
+          : getStepOneSendBackRecipients(submission.workflowEvents)
+        ).map((email) => email.toLowerCase()),
+        ...getAddedAssignees(submission.workflowEvents, stepNumber),
+      ])
+      const alreadyAssigned = emails.filter((email) => assigned.has(email))
+      return alreadyAssigned.length > 0
+        ? errAsync(new MrfAssigneeAlreadyAssignedError(alreadyAssigned))
+        : okAsync(stepNumber)
+    })
+    .andThen((stepNumber) =>
+      ResultAsync.fromPromise(
+        // RATIONALE: the filter re-checks, in the same write, that the
+        // workflow is still pending on this step and nobody added these
+        // emails since the read, so a concurrent stop, step submit or
+        // duplicate add fails instead of adding to the wrong step.
+        MultirespondentSubmission.findOneAndUpdate(
+          {
+            _id: submissionId,
+            form: formId,
+            stoppedAt: { $exists: false },
+            submittedSteps: { $size: stepNumber - 1 },
+            workflowEvents: {
+              $not: {
+                $elemMatch: {
+                  type: WorkflowEventType.AssigneesAdded,
+                  stepNumber,
+                  emails: { $in: emails },
+                },
+              },
+            },
+          },
+          {
+            $push: {
+              workflowEvents: buildWorkflowEvent({
+                type: WorkflowEventType.AssigneesAdded,
+                actor,
+                stepNumber,
+                emails,
+              }),
+            },
+          },
+          { new: true },
+        ).exec(),
+        (error) => {
+          logger.error({
+            message: 'Error adding assignees to pending step',
+            meta: {
+              action: 'addAssigneesToPendingStep',
+              formId,
+              submissionId,
+            },
+            error,
+          })
+          return transformMongoError(error)
+        },
+      ).andThen((submission) =>
+        submission
+          ? okAsync({ submission, stepNumber })
+          : errAsync(new MrfWorkflowNotPendingError()),
+      ),
+    )

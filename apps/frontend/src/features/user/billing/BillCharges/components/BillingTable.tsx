@@ -22,7 +22,6 @@ type BillingColumnData = Pick<
 const AUTHTYPE_TO_TEXT: { [K in FormAuthType]?: string } = {
   [FormAuthType.NIL]: '-',
   [FormAuthType.SP]: 'Singpass',
-  [FormAuthType.SGID]: 'sgID',
   [FormAuthType.MyInfo]: 'MyInfo',
   [FormAuthType.CP]: 'Corppass',
 }

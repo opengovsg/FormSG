@@ -1,6 +1,6 @@
 import { mapValues } from 'lodash'
 
-import { API_BASE_URL } from '~services/ApiService'
+import { API_BASE_URL, getClientVersionHeader } from '~services/ApiService'
 
 import { ADMIN_FORM_ENDPOINT } from '~features/admin-form/common/AdminViewFormService'
 
@@ -34,8 +34,10 @@ export const getEncryptedResponsesStream = async (
   abortController?: AbortController,
 ) => {
   // Unable to use axios for streams, and thus using native fetch instead.
-  return fetch(generateDownloadUrl(formId, params), {
+  const url = generateDownloadUrl(formId, params)
+  return fetch(url, {
     signal: abortController?.signal,
+    headers: getClientVersionHeader(url),
   })
     .then((res) => res.body)
     .then(ndjsonStream)

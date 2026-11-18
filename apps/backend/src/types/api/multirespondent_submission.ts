@@ -1,21 +1,27 @@
+import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
 import {
-  FieldResponsesV3,
   FormFieldDto,
   FormLogic,
   FormResponseMode,
+  PaymentFieldsDto,
+  ProductItem,
   ResponseMetadata,
   SubmissionAttachmentsMap,
 } from 'formsg-shared/types'
 
+import type { ResolvedMrfStepAuth } from '../../app/modules/submission/multirespondent-submission/step-auth'
 import { IPopulatedMultirespondentForm } from '../form'
 import { IMultirespondentSubmissionSchema } from '../submission'
 
 export type ParsedMultirespondentSubmissionBody = {
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   responseMetadata?: ResponseMetadata
   version: number
   workflowStep: number
   respondentEmails?: string[]
+  paymentReceiptEmail?: string
+  paymentProducts?: Array<ProductItem>
+  payments?: PaymentFieldsDto
 }
 
 export type SnapshottedFormDef = Pick<
@@ -41,10 +47,17 @@ export type MultirespondentFormLoadedDto = {
   mrfSubmission?: IMultirespondentSubmissionSchema
   featureFlags: string[]
   respondentEmails?: string[]
+  // Resolved by verifyMyInfoHashes, before the payload is encrypted.
+  myInfoReadOnlyFields?: string[]
+  // Set by verifyMrfStepAuth when the submission's saved workflow uses step login.
+  stepAuth?: ResolvedMrfStepAuth
+  // This step's identity answers, filled from its verified login.
+  loginFilledFieldIds?: string[]
 }
 
 export type MultirespondentFormCompleteDto = MultirespondentFormLoadedDto & {
   encryptedPayload: MultirespondentSubmissionDto
+  verifiedContentPlaintext?: Record<string, string>
 }
 
 export type MultirespondentSubmissionDto = {
@@ -63,6 +76,13 @@ export type MultirespondentSubmissionDto = {
   workflowStep: number
   hashedSubmitterId?: string
   submitterId?: string
-  responses: FieldResponsesV3
+  myInfoReadOnlyFields?: string[]
+  responses: FieldResponsesV4
   mrfVersion: number
+  stepToken?: string
+  stepTokenHash?: string
+  encryptedStepToken?: string
+  paymentReceiptEmail?: string
+  paymentProducts?: Array<ProductItem>
+  payments?: PaymentFieldsDto
 }

@@ -16,6 +16,12 @@ module.exports = {
   },
   overrides: [
     {
+      files: ['__tests__/unit/backend/helpers/load-openid-client.js'],
+      parserOptions: {
+        ecmaVersion: 2020, // The test helper uses native dynamic import().
+      },
+    },
+    {
       files: ['*.ts', '*.tsx'],
       parser: '@typescript-eslint/parser',
       parserOptions: {

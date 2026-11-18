@@ -1,29 +1,55 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiPencil } from 'react-icons/bi'
-import { Box, chakra, Flex, Stack, Text } from '@chakra-ui/react'
+import {
+  Box,
+  chakra,
+  Flex,
+  Icon,
+  Stack,
+  Text,
+  useDisclosure,
+} from '@chakra-ui/react'
 import { Dictionary } from 'lodash'
 
 import { BasicField, FormField } from 'formsg-shared/types'
-import { FormWorkflowStepDto, WorkflowType } from 'formsg-shared/types/form'
+import {
+  FormAuthType,
+  FormWorkflowStepDto,
+  WorkflowType,
+} from 'formsg-shared/types/form'
 import { checkIsOptionsMismatched } from 'formsg-shared/utils/options-recipients-map-validation'
+import {
+  getStepAuthType,
+  isWorkflowStepAuthType,
+} from 'formsg-shared/utils/step-login'
 
-import IconButton from '~components/IconButton'
-
+import { useAdminForm } from '~features/admin-form/common/queries'
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
 import {
   createOrEditDataSelector,
+  requestSwitchToSelector,
   setToEditingSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
+import { useIsStepLoginShown } from '../../../hooks/useIsStepLoginShown'
+import { useIsWorkflowEditBlocked } from '../../../hooks/useIsWorkflowEditBlocked'
+import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
+import { STEP_LOGIN_LABEL_KEYS } from '../../../utils/stepLoginAvailability'
+import { CloseFormToEditModal } from '../../CloseFormToEditModal'
 import { StepLabel } from '../StepLabel'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { InactiveApprovalsBlock } from './InactiveApprovalsBlock'
+
+const MISSING_FIELD_MESSAGE = 'This field is missing'
+const NO_EMAILS_MESSAGE = 'No emails added'
+
+const STEP_LOGIN_COPY_KEY = 'features.adminForm.sidebar.workflow.stepLogin'
 
 interface InactiveStepBlockProps {
   stepNumber: number
@@ -41,6 +67,13 @@ const SubsequentStepRespondentBadges = ({
 }: RespondentBadgeProps): JSX.Element => {
   switch (step.workflow_type) {
     case WorkflowType.Static:
+      if (step.emails.length === 0) {
+        return (
+          <FieldLogicBadge
+            defaults={{ variant: 'error', message: NO_EMAILS_MESSAGE }}
+          />
+        )
+      }
       return (
         <>
           {step.emails.map((email) => (
@@ -49,14 +82,24 @@ const SubsequentStepRespondentBadges = ({
         </>
       )
     case WorkflowType.Dynamic:
-      return <FieldLogicBadge field={idToFieldMap[step.field]} />
+      return (
+        <FieldLogicBadge
+          field={idToFieldMap[step.field]}
+          defaults={{ variant: 'error', message: MISSING_FIELD_MESSAGE }}
+        />
+      )
     case WorkflowType.Conditional: {
       const selectedConditionalField = idToFieldMap[step.conditional_field]
       if (
         !selectedConditionalField ||
         selectedConditionalField.fieldType !== BasicField.Dropdown
       ) {
-        return <FieldLogicBadge field={selectedConditionalField} />
+        return (
+          <FieldLogicBadge
+            field={selectedConditionalField}
+            defaults={{ variant: 'error', message: MISSING_FIELD_MESSAGE }}
+          />
+        )
       }
       const selectedConditionalFieldOptions =
         selectedConditionalField.fieldOptions
@@ -75,6 +118,7 @@ const SubsequentStepRespondentBadges = ({
                 ? idToFieldMap[step.conditional_field]
                 : undefined
             }
+            defaults={{ variant: 'error', message: MISSING_FIELD_MESSAGE }}
           />
           {isOptionsMismatched ? (
             <FieldLogicBadge
@@ -100,19 +144,46 @@ export const InactiveStepBlock = ({
   step,
 }: InactiveStepBlockProps): JSX.Element | null => {
   const { t } = useTranslation()
-  const { idToFieldMap } = useAdminFormWorkflow()
+  const {
+    cardRadius,
+    cardHoverBorderColor,
+    cardHoverBg,
+    iconHoverColor,
+    sectionLabelTextStyle,
+    iconRestColor,
+    iconTransitionDuration,
+  } = useWorkflowSurfaces()
+  const { idToFieldMap, formWorkflow } = useAdminFormWorkflow()
+  const { data: form } = useAdminForm()
+  const isLoginShown = useIsStepLoginShown(stepNumber)
   const setToEditing = useAdminWorkflowStore(setToEditingSelector)
   const stateData = useAdminWorkflowStore(createOrEditDataSelector)
-
-  // Prevent editing step if some other step is being edited.
-  const isPreventEdit = useMemo(() => !!stateData, [stateData])
+  const requestSwitchTo = useAdminWorkflowStore(requestSwitchToSelector)
+  const isEditBlocked = useIsWorkflowEditBlocked()
+  const {
+    isOpen: isBlockedModalOpen,
+    onClose: onBlockedModalClose,
+    onOpen: onBlockedModalOpen,
+  } = useDisclosure()
 
   const handleClick = useCallback(() => {
-    if (isPreventEdit) {
+    if (isEditBlocked) {
+      onBlockedModalOpen()
+      return
+    }
+    if (stateData) {
+      requestSwitchTo(stepNumber)
       return
     }
     setToEditing(stepNumber)
-  }, [isPreventEdit, stepNumber, setToEditing])
+  }, [
+    isEditBlocked,
+    onBlockedModalOpen,
+    stateData,
+    stepNumber,
+    setToEditing,
+    requestSwitchTo,
+  ])
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
@@ -154,27 +225,63 @@ export const InactiveStepBlock = ({
     ))
   }, [idToFieldMap, step.edit])
 
+  const fieldsSection = (
+    <Stack>
+      <Text textStyle={sectionLabelTextStyle}>
+        {t('features.adminForm.sidebar.workflow.respondentBlock.fieldsToFill')}
+      </Text>
+      <Stack direction="column" spacing="0.25rem">
+        {questionBadges}
+      </Stack>
+    </Stack>
+  )
+  const stepAuthType = form
+    ? getStepAuthType(form, formWorkflow, stepNumber)
+    : FormAuthType.NIL
+  const loginSection =
+    isLoginShown && isWorkflowStepAuthType(stepAuthType) ? (
+      <Stack>
+        <Text textStyle={sectionLabelTextStyle}>
+          {t(`${STEP_LOGIN_COPY_KEY}.inactiveLabel`)}
+        </Text>
+        <Flex>
+          <LogicBadge>{t(STEP_LOGIN_LABEL_KEYS[stepAuthType])}</LogicBadge>
+        </Flex>
+      </Stack>
+    ) : null
+  const hideEmptyApprovals = isLoginShown
+    ? !step.approval_field || step.is_approval_enabled === false
+    : !step.approval_field
+  const approvalsSection =
+    isFirstStep || hideEmptyApprovals ? null : (
+      <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />
+    )
+
   return (
-    <Box pos="relative">
+    <Box pos="relative" zIndex={1} role="group">
+      <CloseFormToEditModal
+        isOpen={isBlockedModalOpen}
+        onClose={onBlockedModalClose}
+      />
       <chakra.button
         type="button"
         w="100%"
         textAlign="start"
-        borderRadius="4px"
+        borderRadius={cardRadius}
         bg="white"
         border="1px solid"
         borderColor="neutral.300"
         transitionProperty="common"
         transitionDuration="normal"
-        cursor={isPreventEdit ? 'not-allowed' : 'auto'}
-        disabled={isPreventEdit}
-        aria-disabled={isPreventEdit}
+        cursor="pointer"
+        _groupHover={{ borderColor: cardHoverBorderColor, bg: cardHoverBg }}
+        onClick={handleClick}
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
           <StepLabel stepNumber={stepNumber} stepName={step.step_name} />
 
           <Stack>
-            <Text textStyle="subhead-3">
+            <Text textStyle={sectionLabelTextStyle}>
               {t(
                 'features.adminForm.sidebar.workflow.respondentBlock.stepRespondent',
               )}
@@ -200,35 +307,24 @@ export const InactiveStepBlock = ({
             )}
           </Stack>
 
-          <Stack>
-            <Text textStyle="subhead-3">
-              {t(
-                'features.adminForm.sidebar.workflow.respondentBlock.fieldsToFill',
-              )}
-            </Text>
-            <Stack direction="column" spacing="0.25rem">
-              {questionBadges}
-            </Stack>
-          </Stack>
-          {!isFirstStep ? (
-            <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />
-          ) : null}
+          {loginSection}
+          {approvalsSection}
+          {fieldsSection}
         </Stack>
       </chakra.button>
-      {
-        <IconButton
-          top={{ base: '0.5rem', md: '2rem' }}
-          right={{ base: '0.5rem', md: '2rem' }}
-          pos="absolute"
-          aria-label={t(
-            'features.adminForm.sidebar.workflow.respondentBlock.clickToEdit',
-          )}
-          variant="clear"
-          onClick={handleClick}
-          icon={<BiPencil fontSize="1.5rem" />}
-          cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
-        />
-      }
+      <Icon
+        as={BiPencil}
+        aria-hidden
+        pointerEvents="none"
+        top={{ base: '0.5rem', md: '2rem' }}
+        right={{ base: '0.5rem', md: '2rem' }}
+        pos="absolute"
+        fontSize="1.5rem"
+        color={iconRestColor}
+        transitionProperty="common"
+        transitionDuration={iconTransitionDuration}
+        _groupHover={{ color: iconHoverColor }}
+      />
     </Box>
   )
 }

@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import {
   Flex,
   FormControl,
@@ -16,7 +17,10 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
 import Spinner from '~components/Spinner'
 
+import { useUsesStepLoginRules } from '~features/admin-form/create/workflow/hooks/useUsesStepLoginRules'
+
 import { useMutateFormSettings } from '../../mutations'
+import { isValidEsrvcId } from '../../utils'
 
 import { EsrvcHelperText } from './EsrvcHelperText'
 
@@ -29,6 +33,8 @@ export const EsrvcIdBox = ({
   settings,
   isDisabled,
 }: EsrvcIdBoxProps): JSX.Element => {
+  const { t } = useTranslation()
+  const usesStepLoginRules = useUsesStepLoginRules()
   const initialEsrvcId = useMemo(() => settings.esrvcId ?? '', [settings])
 
   const { mutateFormEsrvcId } = useMutateFormSettings()
@@ -70,11 +76,22 @@ export const EsrvcIdBox = ({
   )
   return (
     <form onSubmit={onSubmit} onBlur={handleBlur}>
-      <Stack ml="2.75rem" mb="1.25rem">
+      <Stack
+        ml="2.75rem"
+        mt={usesStepLoginRules ? '0.75rem' : undefined}
+        mb="1.25rem"
+      >
+        {usesStepLoginRules ? (
+          <FormLabel htmlFor="esrvcId" mb={0}>
+            {t('features.adminForm.sidebar.workflow.stepLogin.esrvcIdLabel')}
+          </FormLabel>
+        ) : null}
         <EsrvcHelperText authType={settings.authType} />
-        <VisuallyHidden>
-          <FormLabel htmlFor="esrvcId">e-service ID:</FormLabel>
-        </VisuallyHidden>
+        {usesStepLoginRules ? null : (
+          <VisuallyHidden>
+            <FormLabel htmlFor="esrvcId">e-service ID:</FormLabel>
+          </VisuallyHidden>
+        )}
         <Flex maxW="20rem" w="100%">
           <FormControl id="esrvcId" isInvalid={!!errors.esrvcId}>
             <InputGroup>
@@ -87,7 +104,7 @@ export const EsrvcIdBox = ({
                 {...register('esrvcId', {
                   validate: {
                     noWhitespace: (value) =>
-                      !value.trim().match(/\s/) ||
+                      isValidEsrvcId(value) ||
                       'e-service ID must not contain whitespace',
                   },
                 })}

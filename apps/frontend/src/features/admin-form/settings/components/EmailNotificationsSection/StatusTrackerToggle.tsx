@@ -23,21 +23,18 @@ export const StatusTrackerToggle = (): JSX.Element => {
 
   const { mutateMrfStatusTracker } = useMutateFormSettings()
 
-  const ToggleDescription = () => {
-    return (
-      <Text textStyle="body-2" color="secondary.400">
+  const ToggleDescription = () => (
+    <Text textStyle="body-2" color="secondary.400">
+      <Link target="_blank" href={STATUS_TRACKER_PREVIEW_LINK}>
         {t(
           'features.adminForm.settings.emailNotifications.section.regular.statusTrackerDescription',
-        )}{' '}
-        <Link target="_blank" href={STATUS_TRACKER_PREVIEW_LINK}>
-          here
-        </Link>{' '}
-        <Link target="_blank" href={STATUS_TRACKER_PREVIEW_LINK}>
-          <Icon as={BiLinkExternal} verticalAlign="middle" />
-        </Link>
-      </Text>
-    )
-  }
+        )}
+      </Link>{' '}
+      <Link target="_blank" href={STATUS_TRACKER_PREVIEW_LINK}>
+        <Icon as={BiLinkExternal} verticalAlign="middle" />
+      </Link>
+    </Text>
+  )
 
   const handleToggleStatusTracker = useCallback(() => {
     if (!settings || isLoadingSettings || mutateMrfStatusTracker.isLoading)

@@ -58,9 +58,9 @@ export const useUserMutations = () => {
   const transferOwnershipMutation = useMutation(
     (params: TransferOwnershipRequestDto) => transferOwnership(params),
     {
-      onSuccess: () => {
+      onSuccess: (_data, { email }) => {
         toast({
-          description: 'Ownership transferred.',
+          description: `If ${email} has logged in to FormSG before, all your forms are now transferred to them.`,
         })
       },
       onError: (error: ApiError) => {

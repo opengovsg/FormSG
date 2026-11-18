@@ -28,22 +28,21 @@ import {
   DatabaseValidationError,
   MalformedParametersError,
 } from '../core/core.errors'
-import { FormNotFoundError } from '../form/form.errors'
 import {
-  MyInfoCookieStateError,
+  FormDeletedError,
+  FormNotFoundError,
+  PrivateFormError,
+} from '../form/form.errors'
+import {
   MyInfoInvalidLoginCookieError,
   MyInfoMissingLoginCookieError,
 } from '../myinfo/myinfo.errors'
-import {
-  SgidInvalidJwtError,
-  SgidMissingJwtError,
-  SgidVerifyJwtError,
-} from '../sgid/sgid.errors'
 import {
   InvalidJwtError,
   MissingJwtError,
   VerifyJwtError,
 } from '../spcp/spcp.errors'
+import { MrfSubmissionStaleError } from '../submission/submission.errors'
 
 import {
   FieldNotFoundInTransactionError,
@@ -62,6 +61,8 @@ import {
 } from './verification.errors'
 
 const logger = createLoggerWithLabel(module)
+const VERIFICATION_BACKEND_ERROR_KEY_PREFIX =
+  'features.publicForm.backendErrors.verification'
 
 /**
  * Evaluates whether a field is verifiable
@@ -162,38 +163,48 @@ export const mapRouteError: MapRouteError = (
     case TransactionExpiredError:
       return {
         errorMessage: 'Your session has expired, please refresh and try again.',
+        errorMessageKey: `${VERIFICATION_BACKEND_ERROR_KEY_PREFIX}.sessionExpired`,
         statusCode: StatusCodes.BAD_REQUEST,
       }
     case OtpExpiredError:
       return {
         errorMessage: 'Your OTP has expired, please request for a new one.',
+        errorMessageKey: `${VERIFICATION_BACKEND_ERROR_KEY_PREFIX}.otpExpired`,
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
       }
     case OtpRetryExceededError:
       return {
         errorMessage:
           'You have entered too many invalid OTPs. Please request for a new OTP and try again.',
+        errorMessageKey: `${VERIFICATION_BACKEND_ERROR_KEY_PREFIX}.otpRetryExceeded`,
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
       }
     case WrongOtpError:
       return {
         errorMessage: 'Wrong OTP.',
+        errorMessageKey: `${VERIFICATION_BACKEND_ERROR_KEY_PREFIX}.wrongOtp`,
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
       }
     case WaitForOtpError:
       return {
         errorMessage: `You must wait for ${WAIT_FOR_OTP_SECONDS} seconds between each OTP request.`,
+        errorMessageKey: `${VERIFICATION_BACKEND_ERROR_KEY_PREFIX}.waitForOtp`,
+        errorMessageParams: {
+          waitForOtpSeconds: WAIT_FOR_OTP_SECONDS,
+        },
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
       }
     case OtpRequestCountExceededError:
       return {
         errorMessage: `You have requested too many OTPs. Please refresh and try again.`,
+        errorMessageKey: `${VERIFICATION_BACKEND_ERROR_KEY_PREFIX}.otpRequestCountExceeded`,
         statusCode: StatusCodes.BAD_REQUEST,
       }
     case InvalidNumberError:
       return {
         errorMessage:
           'This phone number does not seem to be valid. Please try again with a valid phone number.',
+        errorMessageKey: `${VERIFICATION_BACKEND_ERROR_KEY_PREFIX}.invalidNumber`,
         statusCode: StatusCodes.BAD_REQUEST,
       }
     case MalformedParametersError:
@@ -208,12 +219,8 @@ export const mapRouteError: MapRouteError = (
     case MissingJwtError:
     case InvalidJwtError:
     case VerifyJwtError:
-    case SgidVerifyJwtError:
-    case SgidInvalidJwtError:
-    case SgidMissingJwtError:
     case MyInfoMissingLoginCookieError:
     case MyInfoInvalidLoginCookieError:
-    case MyInfoCookieStateError:
     case MrfJwtValidationError:
       return {
         errorMessage: coreErrorMsg,
@@ -223,6 +230,7 @@ export const mapRouteError: MapRouteError = (
       return {
         errorMessage:
           'Sorry, we were unable to send the email out at this time. Please ensure that the email entered is correct. If this problem persists, please refresh and try again later.',
+        errorMessageKey: `${VERIFICATION_BACKEND_ERROR_KEY_PREFIX}.mailSend`,
         statusCode: StatusCodes.BAD_REQUEST,
       }
     case DatabasePayloadSizeError:
@@ -237,6 +245,11 @@ export const mapRouteError: MapRouteError = (
         // Message is injected internally
         errorMessage: error.message,
       }
+    case MrfSubmissionStaleError:
+      return {
+        errorMessage: error.message,
+        statusCode: StatusCodes.BAD_REQUEST,
+      }
     case FieldNotFoundInTransactionError:
     case TransactionNotFoundError:
     case FormNotFoundError:
@@ -244,11 +257,24 @@ export const mapRouteError: MapRouteError = (
         errorMessage: coreErrorMsg,
         statusCode: StatusCodes.NOT_FOUND,
       }
+    case PrivateFormError:
+      return {
+        errorMessage:
+          'This form has been taken down, so OTPs cannot be requested',
+        statusCode: StatusCodes.NOT_FOUND,
+      }
+    case FormDeletedError:
+      return {
+        errorMessage:
+          'This form is no longer active, so OTPs cannot be requested',
+        statusCode: StatusCodes.GONE,
+      }
     case SmsLimitExceededError:
     case OtpRequestError:
       return {
         errorMessage:
           'Sorry, this form is outdated. Please refresh your browser to get the latest version of the form',
+        errorMessageKey: `${VERIFICATION_BACKEND_ERROR_KEY_PREFIX}.outdatedForm`,
         statusCode: StatusCodes.BAD_REQUEST,
       }
     case HashingError:

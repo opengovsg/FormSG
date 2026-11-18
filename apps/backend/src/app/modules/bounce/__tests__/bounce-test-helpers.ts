@@ -13,9 +13,9 @@ import {
 } from 'src/types'
 
 export const MOCK_SNS_BODY: ISnsNotification = {
-  Type: 'type',
+  Type: 'Notification',
   MessageId: 'message-id',
-  TopicArn: 'topic-arn',
+  TopicArn: 'arn:aws:sns:ap-southeast-1:123456789012:formsg-email-bounces',
   Message: 'message',
   Timestamp: 'timestamp',
   SignatureVersion: '1',

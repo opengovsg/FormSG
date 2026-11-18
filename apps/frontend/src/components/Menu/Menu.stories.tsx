@@ -10,7 +10,7 @@ import {
   ThemingProps,
   Tr,
 } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { Menu, MenuButtonProps } from './Menu'
 
@@ -165,3 +165,4 @@ export const Playground: StoryFn = () => {
     </Box>
   )
 }
+Playground.tags = ['playground']

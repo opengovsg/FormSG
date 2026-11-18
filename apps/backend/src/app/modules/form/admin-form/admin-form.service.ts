@@ -1,4 +1,4 @@
-import { PresignedPost } from 'aws-sdk/clients/s3'
+import type { PresignedPost } from '@aws-sdk/s3-presigned-post'
 import {
   CONDITIONAL_ROUTING_DUPLICATE_OPTIONS_ERROR_MESSAGE,
   CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
@@ -6,6 +6,7 @@ import {
   FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
   FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
   FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE,
+  MAX_SAVED_VIEWS,
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
   WHITELISTED_SUBMITTER_ID_DECRYPTION_FIELDS,
@@ -14,21 +15,27 @@ import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
 import {
   AdminDashboardFormMetaDto,
   BasicField,
+  DeleteWorkflowAuthDto,
   DropdownFieldBase,
   DuplicateFormOverwriteDto,
   EndPageUpdateDto,
   FieldCreateDto,
   FieldUpdateDto,
+  FormAuthType,
   FormFieldDto,
   FormLogoState,
   FormMetadata,
   FormPermission,
   FormResponseMode,
+  FormSavedView,
+  FormSavedViewInput,
   FormSettings,
   FormStatus,
+  FormWebhook,
   FormWorkflowDto,
-  FormWorkflowStepDto,
+  FormWorkflowStepWriteDto,
   LogicDto,
+  MultirespondentFormSettings,
   PaymentChannel,
   SettingsUpdateDto,
   StartPageUpdateDto,
@@ -40,10 +47,33 @@ import {
   EncryptedStringsMessageContentWithMyPrivateKey,
 } from 'formsg-shared/utils/crypto'
 import {
+  canConvertSubmitterIdCollection,
+  createLoginIdentityField,
+  getLoginIdentityAttr,
+  getLoginIdentityAttrsForAuthType,
+  getLoginIdentityConfigErrors,
+  isLoginIdentityField,
+  isMyInfoDataField,
+  LOGIN_IDENTITY_LABELS,
+  LoginIdentityCandidate,
+} from 'formsg-shared/utils/login-identity'
+import {
   isMFinSeriesValid,
   isNricValid,
 } from 'formsg-shared/utils/nric-validation'
+import {
+  CORPPASS_STEPS_NEED_ESRVC_ID,
+  getLoginFieldPublishErrors,
+  getResultingLoginErrors,
+  hasLaterCorppassStepWithoutEsrvcId,
+  hasLaterStepLogin,
+  usesStepLoginRules,
+} from 'formsg-shared/utils/step-login'
 import { isUenValid } from 'formsg-shared/utils/uen-validation'
+import {
+  getIncompleteStepNumbers,
+  mustWorkflowBeComplete,
+} from 'formsg-shared/utils/workflow-step-completion'
 import { assignIn, last, omit, pick } from 'lodash'
 import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -67,10 +97,12 @@ import {
 } from '../../../../types'
 import { EditFormFieldParams, FormUpdateParams } from '../../../../types/api'
 import { aws as AwsConfig } from '../../../config/config'
+import { uenConfig } from '../../../config/features/uen.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getAgencyModel from '../../../models/agency.server.model'
 import getFormModel from '../../../models/form.server.model'
 import getFormWhitelistSubmitterIdsModel from '../../../models/form_whitelist.server.model'
+import { getCheckedAuthenticationConfigFilter } from '../../../models/form-authentication-config'
 import { getWorkspaceModel } from '../../../models/workspace.server.model'
 import {
   createPresignedPostDataPromise,
@@ -91,10 +123,13 @@ import {
 } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
+import { getWebhookType, toConsumerType } from '../../webhook/webhook.service'
 import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
 import {
+  ForbiddenFormError,
   FormInvalidResponseModeError,
   FormNotFoundError,
+  FormOpenToResponsesError,
   FormWhitelistSettingNotFoundError,
   LogicNotFoundError,
   TransferOwnershipError,
@@ -104,17 +139,34 @@ import {
   getFormFieldById,
   getFormFieldIndexById,
   getLogicById,
+  getSavedWorkflow,
   isFormEmailMode,
   isFormEncryptMode,
+  isFormMultirespondent,
 } from '../form.utils'
 
+import {
+  getRetainedWorkflowAuth,
+  prepareAuthFieldDeletion,
+} from './admin-form.auth-field-deletion'
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
   EditFieldError,
   FieldNotFoundError,
+  FormChangedWhileEditingError,
   InvalidCollaboratorError,
   InvalidFileTypeError,
+  SavedViewLimitError,
+  SavedViewNotFoundError,
 } from './admin-form.errors'
+import {
+  checkFormLoginWrite,
+  checkWorkflowStepLoginWrite,
+  FormLoginUpdate,
+  STEP_LOGIN_NOT_AVAILABLE,
+  StepLoginWriteError,
+  toSavedWorkflowStep,
+} from './admin-form.step-login'
 import {
   getUpdatedFormFields,
   insertTableShortTextColumnDefaultValidationOptions,
@@ -401,9 +453,8 @@ export const transferFormOwnership = (
  * @param currentOwnerEmail the email of the current owner
  * @param newOwnerEmail the email of the new owner to transfer to
  *
- * @return ok(true) if transfer is successful
- * @return err(MissingUserError) if the current form admin cannot be found
- * @return err(TransferOwnershipError) if new owner cannot be found in the database or new owner email is same as current owner
+ * @return ok(true) if transfer is successful, or if new owner cannot be found in the database
+ * @return err(TransferOwnershipError) if new owner email is same as current owner
  * @return err(DatabaseError) if any database errors like missing admin of current owner occurs
  */
 export const transferAllFormsOwnership = (
@@ -426,18 +477,18 @@ export const transferAllFormsOwnership = (
     // Step 1: Retrieve user document for new owner.
     UserService.findUserByEmail(newOwnerEmail)
       .mapErr((error) => {
-        logger.error({
-          message:
-            'Error occurred whilst finding new owner email to transfer ownership to',
-          meta: logMeta,
-          error,
-        })
-        // Override MissingUserError with more specific message if new owner
-        // cannot be found.
         if (error instanceof MissingUserError) {
-          return new TransferOwnershipError(
-            `${newOwnerEmail} must have logged in once before being added as Owner`,
-          )
+          logger.info({
+            message: 'New owner email to transfer ownership to has no account',
+            meta: logMeta,
+          })
+        } else {
+          logger.error({
+            message:
+              'Error occurred whilst finding new owner email to transfer ownership to',
+            meta: logMeta,
+            error,
+          })
         }
         return error
       })
@@ -478,6 +529,9 @@ export const transferAllFormsOwnership = (
       )
       // Step 3: On success, return true
       .map(() => true)
+      .orElse((error) =>
+        error instanceof MissingUserError ? okAsync(true) : errAsync(error),
+      )
   )
 }
 
@@ -493,8 +547,26 @@ type MultirespondentFormToCreate = Merge<
  * @returns ok(created form) on success
  * @returns err(Database*Error) on database errors
  */
+/**
+ * Drops any login a request put on workflow steps. The create-form body
+ * accepts unknown keys, so without this a raw request could save a later-step
+ * login without the checks the workflow step routes run. Step logins are
+ * only added through those routes.
+ */
+const omitWorkflowStepAuth = <T extends object>(params: T): T => {
+  const { workflow } = params as { workflow?: unknown }
+  if (!Array.isArray(workflow)) return params
+  return {
+    ...params,
+    workflow: workflow.map((step: unknown) =>
+      step && typeof step === 'object' ? omit(step, 'auth') : step,
+    ),
+  }
+}
+
 export const createForm = (
-  formParams: Merge<IForm, { admin: string }>,
+  // isSaveDraftEnabled omitted: creation decides it, not the caller.
+  formParams: Omit<Merge<IForm, { admin: string }>, 'isSaveDraftEnabled'>,
   workspaceId?: string,
 ): ResultAsync<
   IFormDocument,
@@ -580,9 +652,16 @@ export const createForm = (
     }
   }
 
+  // Copied forms bypass createForm, so they keep inheriting their source's
+  // setting; the schema default stays false for forms predating the field.
+  const newFormParams = {
+    ...omitWorkflowStepAuth(formParams),
+    isSaveDraftEnabled: true,
+  }
+
   if (workspaceId)
     return ResultAsync.fromPromise(
-      createFormInWorkspaceTransaction(formParams, workspaceId),
+      createFormInWorkspaceTransaction(newFormParams, workspaceId),
       (error) => {
         logger.error({
           message:
@@ -598,7 +677,7 @@ export const createForm = (
       },
     )
   return ResultAsync.fromPromise(
-    FormModel.create(formParams) as Promise<IFormDocument>,
+    FormModel.create(newFormParams) as Promise<IFormDocument>,
     (error) => {
       logger.error({
         message: 'Database error encountered when creating form',
@@ -666,6 +745,9 @@ type DuplicateFormOpts = {
   formOrigins?: FormMetadata['formOrigins']
 }
 
+export const LATER_STEP_LOGIN_DUPLICATE_MODE_ERROR =
+  'This form uses login on later workflow steps, so it can only be duplicated as a multi-respondent form.'
+
 /**
  * Duplicates given formId and replace owner with newAdminId.
  * @param originalForm the form to be duplicated
@@ -679,11 +761,32 @@ export const duplicateForm = (
   newAdminId: string,
   overrideParams: DuplicateFormOverwriteDto,
   opts?: DuplicateFormOpts,
-): ResultAsync<IFormDocument, FormNotFoundError | DatabaseError> => {
+): ResultAsync<
+  IFormDocument,
+  FormNotFoundError | DatabaseError | MalformedParametersError
+> => {
   const overrideProps = processDuplicateOverrideProps(
     overrideParams,
     newAdminId,
   )
+  // Without a workflow, Step 1's login would have to fill the fields later steps fill in.
+  if (
+    isFormMultirespondent(originalForm) &&
+    overrideProps.responseMode !== FormResponseMode.Multirespondent &&
+    hasLaterStepLogin(originalForm.workflow) &&
+    getResultingLoginErrors({
+      authType: originalForm.authType,
+      responseMode: overrideProps.responseMode,
+      isSubmitterIdCollectionEnabled:
+        originalForm.isSubmitterIdCollectionEnabled,
+      form_fields: originalForm.form_fields,
+      workflow: [],
+    }).length > 0
+  ) {
+    return errAsync(
+      new MalformedParametersError(LATER_STEP_LOGIN_DUPLICATE_MODE_ERROR),
+    )
+  }
   const { workspaceId, overrideEmails, isFromTemplate, formOrigins } =
     opts ?? {}
 
@@ -904,6 +1007,21 @@ export const updateOptionsToRecipientsMap = (
 }
 
 /**
+ * The question that fields filled from MyInfo or the login always show:
+ * the login identity label, or the stored MyInfo name.
+ */
+const getStandardTitle = (
+  field: Pick<FieldCreateDto, 'title' | 'myInfo'> & LoginIdentityCandidate,
+): string => {
+  const identityAttr = getLoginIdentityAttr(field)
+  if (identityAttr) return LOGIN_IDENTITY_LABELS[identityAttr]
+  const myInfoTitle = field.myInfo?.attr
+    ? MYINFO_ATTRIBUTE_MAP[field.myInfo.attr]?.value
+    : undefined
+  return myInfoTitle ?? field.title
+}
+
+/**
  * Updates the targeted form field with the new field provided
  * @param form the form the field to update belongs to
  * @param fieldId the id of the field to update
@@ -916,8 +1034,35 @@ export const updateFormField = (
   form: IPopulatedForm,
   fieldId: string,
   newField: FieldUpdateDto,
-): ResultAsync<FormFieldSchema, PossibleDatabaseError | FieldNotFoundError> => {
+): ResultAsync<
+  FormFieldSchema,
+  PossibleDatabaseError | FieldNotFoundError | MalformedParametersError
+> => {
+  // Updates merge into the stored field, so compare the merged sources.
+  const existingField = getFormFieldById(form.form_fields, fieldId)
+  if (
+    existingField &&
+    getLoginIdentityAttr(existingField) !==
+      getLoginIdentityAttr({
+        fieldType: newField.fieldType,
+        myInfo: 'myInfo' in newField ? newField.myInfo : existingField.myInfo,
+        corppass:
+          'corppass' in newField
+            ? newField.corppass
+            : (existingField as LoginIdentityCandidate).corppass,
+      })
+  ) {
+    return errAsync(
+      new MalformedParametersError(
+        "A field's login identity can't be changed. Delete the field and add it again.",
+      ),
+    )
+  }
   const _newField = insertTableShortTextColumnDefaultValidationOptions(newField)
+  // Login identity fields keep their standard question.
+  if (existingField && isLoginIdentityField(existingField)) {
+    _newField.title = getStandardTitle(existingField)
+  }
 
   return ResultAsync.fromPromise(
     form.updateFormFieldById(fieldId, _newField),
@@ -1014,11 +1159,7 @@ export const createFormField = (
   FormFieldSchema,
   PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
 > => {
-  // If MyInfo field, override field title to stored name.
-  if (newField.myInfo?.attr) {
-    newField.title =
-      MYINFO_ATTRIBUTE_MAP[newField.myInfo.attr]?.value ?? newField.title
-  }
+  newField.title = getStandardTitle(newField)
 
   return ResultAsync.fromPromise(
     form.insertFormField(newField, to),
@@ -1072,18 +1213,10 @@ export const createFormFields = ({
   FormFieldSchema[],
   PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
 > => {
-  // If MyInfo field, override field title to store name.
-  const fieldsToSave = newFields.map((newField) => {
-    if (newField.myInfo?.attr) {
-      return {
-        ...newField,
-        title:
-          MYINFO_ATTRIBUTE_MAP[newField.myInfo.attr]?.value ?? newField.title,
-      }
-    } else {
-      return newField
-    }
-  })
+  const fieldsToSave = newFields.map((newField) => ({
+    ...newField,
+    title: getStandardTitle(newField),
+  }))
 
   return ResultAsync.fromPromise(
     form.insertFormFields(fieldsToSave, to),
@@ -1390,7 +1523,7 @@ export const checkIsWhitelistSettingValid = (
     return !(
       isNricValid(entry) ||
       isMFinSeriesValid(entry) ||
-      isUenValid(entry)
+      isUenValid(entry, uenConfig.hiddenEntityTypes)
     )
   })
   // check for invalid entries
@@ -1565,14 +1698,209 @@ export const updateFormWhitelistSetting = (
   })
 }
 
+const findIncompleteSteps = (
+  form: IPopulatedForm,
+  workflow: FormWorkflowDto,
+): number[] =>
+  getIncompleteStepNumbers(
+    workflow,
+    form.form_fields as unknown as FormFieldDto[],
+  )
+
+const incompleteStepsError = (
+  stepNumbers: number[],
+  action: string,
+): MalformedParametersError => {
+  const described = stepNumbers.map((n) => `step ${n + 1}`).join(', ')
+  return new MalformedParametersError(`Please complete ${described} ${action}.`)
+}
+
+const webhookWorkflowConflict = () =>
+  new MalformedParametersError(
+    'Legacy webhooks only work with forms that have at most one workflow step. Turn off legacy webhooks or reduce the workflow to one step.',
+  )
+
+const isNonPlumberWebhook = (url: string | undefined): boolean =>
+  !!url && toConsumerType(getWebhookType(url)) === 'generic'
+
+const hasWebhookWorkflowConflict = (
+  url: string | undefined,
+  stepCount: number,
+  format: FormWebhook['webhookFormat'],
+): boolean => stepCount >= 2 && isNonPlumberWebhook(url) && format !== 'v4'
+
+// Keep both parts of the checked webhook choice stable until the write.
+const getCheckedWebhookFilter = (form: IPopulatedForm) => ({
+  'webhook.url': form.webhook?.url || { $in: ['', null] },
+  'webhook.webhookFormat': form.webhook?.webhookFormat ?? { $exists: false },
+})
+
+const getCheckedWebhookFilterIfMultistepWorkflow = (
+  form: IPopulatedForm,
+  stepCount: number,
+) => (stepCount >= 2 ? getCheckedWebhookFilter(form) : {})
+
+/** Request-only step keys that only step login rules accept. */
+const hasStepLoginRequestKeys = (step: FormWorkflowStepWriteDto): boolean =>
+  !!step.auth ||
+  !!step.first_step_login ||
+  step.expected_last_modified !== undefined ||
+  step.delete_auth_field_ids !== undefined
+
+/**
+ * The step login rules that creating and updating the step at `stepNumber`
+ * share. Without step login rules, no login keys are accepted and only Step 1
+ * can edit Myinfo fields, so approvers can't override verified data.
+ */
+const checkStepLoginRules = (
+  form: IPopulatedForm,
+  step: FormWorkflowStepWriteDto,
+  {
+    stepNumber,
+    isStepLoginEnabled,
+  }: { stepNumber: number; isStepLoginEnabled: boolean },
+): Result<
+  {
+    useStepLoginRules: boolean
+    stepToSave: FormWorkflowDto[0]
+    formLogin?: FormLoginUpdate
+    // Guards the save against a concurrent login change.
+    authConfigFilter: Record<string, unknown>
+  },
+  StepLoginWriteError
+> => {
+  const useStepLoginRules = usesStepLoginRules(
+    getSavedWorkflow(form),
+    isStepLoginEnabled,
+  )
+  if (!useStepLoginRules) {
+    if (hasStepLoginRequestKeys(step)) {
+      return err(new MalformedParametersError(STEP_LOGIN_NOT_AVAILABLE))
+    }
+    const editFieldIds = new Set((step.edit ?? []).map(String))
+    if (
+      stepNumber !== 0 &&
+      form.form_fields.some(
+        (field) =>
+          isMyInfoDataField(field) && editFieldIds.has(field._id.toString()),
+      )
+    ) {
+      return err(
+        new MalformedParametersError(
+          'Myinfo fields can only be edited in the first step of the workflow',
+        ),
+      )
+    }
+  }
+
+  const stepToSave = toSavedWorkflowStep(step) as FormWorkflowDto[0]
+  // A request without auth keeps the saved login. auth: null removes it.
+  const savedAuth = getSavedWorkflow(form)[stepNumber]?.auth
+  if (!('auth' in step) && savedAuth) stepToSave.auth = savedAuth
+  if (!useStepLoginRules) {
+    return ok({ useStepLoginRules, stepToSave, authConfigFilter: {} })
+  }
+
+  return checkWorkflowStepLoginWrite({
+    form,
+    stepNumber,
+    // Checks the login being saved, so a kept one isn't read as removed.
+    step: { ...step, auth: stepToSave.auth },
+    isStepLoginEnabled,
+  }).map(({ formLogin }) => ({
+    useStepLoginRules,
+    stepToSave,
+    formLogin,
+    authConfigFilter: getCheckedAuthenticationConfigFilter(form),
+  }))
+}
+
+/** Request-only delete keys that only step login rules accept. */
+const hasStepLoginDeleteKeys = (input: DeleteWorkflowAuthDto): boolean =>
+  input.retained_auth_type !== undefined ||
+  input.retained_esrvc_id !== undefined ||
+  input.expected_last_modified !== undefined ||
+  input.delete_auth_field_ids !== undefined
+
+const checkResultingWorkflowIsAllowed = (
+  form: IPopulatedForm,
+  workflow: FormWorkflowDto,
+  {
+    authType = form.authType,
+    formFields = form.form_fields,
+    useStepLoginRules,
+  }: {
+    authType?: FormAuthType
+    // The fields the write leaves behind, when it also deletes some.
+    formFields?: IPopulatedForm['form_fields']
+    useStepLoginRules: boolean
+  },
+): Result<true, MalformedParametersError> => {
+  const loginConfig = {
+    authType,
+    responseMode: form.responseMode,
+    isSubmitterIdCollectionEnabled: form.isSubmitterIdCollectionEnabled,
+    form_fields: formFields,
+    workflow,
+  }
+  // Workflow query updates bypass the form's document validation hooks.
+  const loginErrors = useStepLoginRules
+    ? getResultingLoginErrors(loginConfig)
+    : getLoginIdentityConfigErrors(loginConfig)
+  if (loginErrors.length) {
+    return err(new MalformedParametersError(loginErrors.join(' ')))
+  }
+
+  if (
+    hasWebhookWorkflowConflict(
+      form.webhook?.url,
+      workflow.length,
+      form.webhook?.webhookFormat,
+    )
+  ) {
+    return err(webhookWorkflowConflict())
+  }
+
+  if (!mustWorkflowBeComplete({ formStatus: form.status })) {
+    return ok(true)
+  }
+
+  // Every caller is MRF-only and the resulting login errors are already empty.
+  if (useStepLoginRules && hasLaterCorppassStepWithoutEsrvcId(workflow))
+    return err(new MalformedParametersError(CORPPASS_STEPS_NEED_ESRVC_ID))
+  const incompleteStepNumbers = getIncompleteStepNumbers(
+    workflow,
+    formFields as unknown as FormFieldDto[],
+  )
+  return incompleteStepNumbers.length === 0
+    ? ok(true)
+    : err(incompleteStepsError(incompleteStepNumbers, 'before saving'))
+}
+
 export const createWorkflowStep = (
   originalForm: IPopulatedForm,
-  newWorkflowStep: FormWorkflowStepDto,
-): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
+  newWorkflowStep: FormWorkflowStepWriteDto,
+  { isStepLoginEnabled = false }: { isStepLoginEnabled?: boolean } = {},
+): ResultAsync<
+  FormWorkflowDto,
+  | DatabaseError
+  | MalformedParametersError
+  | ForbiddenFormError
+  | FormOpenToResponsesError
+  | FormChangedWhileEditingError
+> => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
       new FormInvalidResponseModeError(
         'Cannot update workflow step for non-multirespondent mode forms',
+      ),
+    )
+  }
+
+  if ((originalForm as IPopulatedMultirespondentForm).payments_field?.enabled) {
+    return errAsync(
+      new MalformedParametersError(
+        'Remove the payment field before adding workflow steps',
       ),
     )
   }
@@ -1602,24 +1930,6 @@ export const createWorkflowStep = (
         'First step of workflow cannot be an approval step',
       ),
     )
-  }
-
-  // TODO(MRF-MYINFO): Remove this restriction once Myinfo fields are
-  // supported in workflow steps >= 2. Currently, only step 1 (the first
-  // respondent) can include Myinfo fields to prevent approvers from
-  // overriding verified data.
-  if (!isFirstStep) {
-    const editFieldIds = new Set((newWorkflowStep.edit ?? []).map(String))
-    const myInfoFieldInEdit = originalForm.form_fields.find(
-      (field) => field.myInfo?.attr && editFieldIds.has(field._id.toString()),
-    )
-    if (myInfoFieldInEdit) {
-      return errAsync(
-        new MalformedParametersError(
-          'Myinfo fields can only be edited in the first step of the workflow',
-        ),
-      )
-    }
   }
 
   const selectedApprovalField = newWorkflowStep.approval_field
@@ -1667,17 +1977,61 @@ export const createWorkflowStep = (
   const originalMrfForm = originalForm as IPopulatedMultirespondentForm
   const originalWorkflow = originalMrfForm.workflow ?? []
 
+  const loginCheck = checkStepLoginRules(originalForm, newWorkflowStep, {
+    stepNumber: originalWorkflow.length,
+    isStepLoginEnabled,
+  })
+  if (loginCheck.isErr()) return errAsync(loginCheck.error)
+  const { useStepLoginRules, stepToSave, formLogin, authConfigFilter } =
+    loginCheck.value
+
   // Create new workflow step
-  const updatedWorkflow = originalWorkflow.concat(newWorkflowStep)
+  let updatedWorkflow = originalWorkflow.concat(stepToSave)
+
+  // A new Step 1 can switch the form's login, as an update can. The admin
+  // confirms the fields no login can fill, and they go in the same write.
+  let formFields = originalForm.form_fields
+  let deletionGuard = {}
+  let deletionUpdate = {}
+  if (useStepLoginRules) {
+    const deletion = prepareAuthFieldDeletion({
+      form: originalForm,
+      workflow: updatedWorkflow,
+      authType: formLogin?.authType ?? originalForm.authType,
+      confirmedIds: newWorkflowStep.delete_auth_field_ids,
+      expectedLastModified: newWorkflowStep.expected_last_modified,
+    })
+    if (deletion.isErr()) return errAsync(deletion.error)
+    updatedWorkflow = deletion.value.workflow
+    formFields = deletion.value.form_fields
+    ;({ deletionGuard, deletionUpdate } = deletion.value)
+  }
+
+  const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow, {
+    authType: formLogin?.authType,
+    formFields,
+    useStepLoginRules,
+  })
+  if (check.isErr()) return errAsync(check.error)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
     originalForm.responseMode,
   ) as IMultirespondentFormModel
 
   return ResultAsync.fromPromise(
-    MultirespondentFormModel.findByIdAndUpdate(
-      originalMrfForm._id,
-      { workflow: updatedWorkflow },
+    MultirespondentFormModel.findOneAndUpdate(
+      {
+        _id: originalMrfForm._id,
+        ...authConfigFilter,
+        ...deletionGuard,
+        'payments_field.enabled': { $ne: true },
+        ...getCheckedWebhookFilterIfMultistepWorkflow(
+          originalForm,
+          updatedWorkflow.length,
+        ),
+      },
+      // Step 1's login is saved with the step so neither lands without the other.
+      { workflow: updatedWorkflow, ...formLogin, ...deletionUpdate },
       {
         new: true,
         runValidators: true,
@@ -1698,7 +2052,7 @@ export const createWorkflowStep = (
     },
   ).andThen((updatedForm) => {
     if (!updatedForm) {
-      return errAsync(new FormNotFoundError())
+      return errAsync(new FormChangedWhileEditingError())
     }
     return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
   })
@@ -1707,8 +2061,16 @@ export const createWorkflowStep = (
 export const updateFormWorkflowStep = (
   originalForm: IPopulatedForm,
   stepNumber: number,
-  updatedWorkflowStep: FormWorkflowStepDto,
-): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
+  updatedWorkflowStep: FormWorkflowStepWriteDto,
+  { isStepLoginEnabled = false }: { isStepLoginEnabled?: boolean } = {},
+): ResultAsync<
+  FormWorkflowDto,
+  | DatabaseError
+  | MalformedParametersError
+  | ForbiddenFormError
+  | FormOpenToResponsesError
+  | FormChangedWhileEditingError
+> => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
       new FormInvalidResponseModeError(
@@ -1741,24 +2103,6 @@ export const updateFormWorkflowStep = (
         'First step of workflow cannot be an approval step',
       ),
     )
-  }
-
-  // TODO(MRF-MYINFO): Remove this restriction once MyInfo fields are
-  // supported in workflow steps >= 2. Currently, only step 1 (the first
-  // respondent) can include MyInfo fields to prevent approvers from
-  // overriding verified data.
-  if (!isFirstStep) {
-    const editFieldIds = new Set((updatedWorkflowStep.edit ?? []).map(String))
-    const myInfoFieldInEdit = originalForm.form_fields.find(
-      (field) => field.myInfo?.attr && editFieldIds.has(field._id.toString()),
-    )
-    if (myInfoFieldInEdit) {
-      return errAsync(
-        new MalformedParametersError(
-          'MyInfo fields cannot be edited in non-first steps of the workflow',
-        ),
-      )
-    }
   }
 
   const selectedApprovalField = updatedWorkflowStep.approval_field
@@ -1812,18 +2156,65 @@ export const updateFormWorkflowStep = (
     return errAsync(new MalformedParametersError('Invalid step number'))
   }
 
-  const updatedWorkflow = originalMrfForm.workflow.map((step, index) =>
-    index === stepNumber ? updatedWorkflowStep : step,
+  const loginCheck = checkStepLoginRules(originalForm, updatedWorkflowStep, {
+    stepNumber,
+    isStepLoginEnabled,
+  })
+  if (loginCheck.isErr()) return errAsync(loginCheck.error)
+  const { useStepLoginRules, stepToSave, formLogin, authConfigFilter } =
+    loginCheck.value
+
+  let updatedWorkflow = originalMrfForm.workflow.map((step, index) =>
+    index === stepNumber ? stepToSave : step,
   )
+
+  let formFields = originalForm.form_fields
+  let deletionGuard = {}
+  let deletionUpdate = {}
+  if (useStepLoginRules) {
+    const deletion = prepareAuthFieldDeletion({
+      form: originalForm,
+      workflow: updatedWorkflow,
+      authType:
+        updatedWorkflowStep.first_step_login?.auth_type ??
+        originalForm.authType,
+      confirmedIds: updatedWorkflowStep.delete_auth_field_ids,
+      expectedLastModified: updatedWorkflowStep.expected_last_modified,
+    })
+    if (deletion.isErr()) return errAsync(deletion.error)
+    updatedWorkflow = deletion.value.workflow
+    ;({ deletionGuard, deletionUpdate } = deletion.value)
+    formFields = deletion.value.form_fields
+  }
+
+  const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow, {
+    authType: formLogin?.authType,
+    formFields,
+    useStepLoginRules,
+  })
+  if (check.isErr()) return errAsync(check.error)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
     originalForm.responseMode,
   ) as IMultirespondentFormModel
 
   return ResultAsync.fromPromise(
-    MultirespondentFormModel.findByIdAndUpdate(
-      originalMrfForm._id,
-      { workflow: updatedWorkflow },
+    MultirespondentFormModel.findOneAndUpdate(
+      {
+        _id: originalMrfForm._id,
+        ...authConfigFilter,
+        ...deletionGuard,
+        ...getCheckedWebhookFilterIfMultistepWorkflow(
+          originalForm,
+          updatedWorkflow.length,
+        ),
+      },
+      // Step 1's login is saved with the step so neither lands without the other.
+      {
+        workflow: updatedWorkflow,
+        ...formLogin,
+        ...deletionUpdate,
+      },
       {
         new: true,
         runValidators: true,
@@ -1845,9 +2236,141 @@ export const updateFormWorkflowStep = (
     },
   ).andThen((updatedForm) => {
     if (!updatedForm) {
-      return errAsync(new FormNotFoundError())
+      return errAsync(new FormChangedWhileEditingError())
     }
 
+    return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
+  })
+}
+
+/**
+ * Deletes a form's entire workflow.
+ *
+ * This is what deleting step 1 means. A workflow's first step is the one that
+ * starts it, so removing it does not shorten the workflow — it stops there
+ * being one. Shifting step 2 up into its place, which is what deleting any
+ * other step does, would silently hand the workflow's entry point to a
+ * respondent who was never meant to have it.
+ *
+ * Refused while the form is open. Respondents may be part-way through a
+ * workflow right now, and pulling it out from under them mid-submission is not
+ * something an admin can undo. Closing the form first is a deliberate act that
+ * makes the consequence visible. The UI says the same thing in a modal, but
+ * this is the rule — the modal is a courtesy.
+ *
+ * Deliberately unrecoverable and deliberately total: every step goes, not just
+ * the first. The form reverts to an ordinary single-respondent form, which an
+ * empty workflow already means everywhere else in the codebase.
+ */
+export const deleteFormWorkflow = (
+  originalForm: IPopulatedForm,
+  input: DeleteWorkflowAuthDto = {},
+  { isStepLoginEnabled = false }: { isStepLoginEnabled?: boolean } = {},
+): ResultAsync<
+  FormWorkflowDto,
+  | DatabaseError
+  | FormNotFoundError
+  | FormChangedWhileEditingError
+  | FormInvalidResponseModeError
+  | FormOpenToResponsesError
+  | MalformedParametersError
+> => {
+  if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
+    return errAsync(
+      new FormInvalidResponseModeError(
+        'Cannot delete workflow for non-multirespondent mode forms',
+      ),
+    )
+  }
+
+  if (originalForm.status === FormStatus.Public) {
+    return errAsync(
+      new FormOpenToResponsesError(
+        'Close your form to new responses before deleting its workflow',
+      ),
+    )
+  }
+
+  const originalMrfForm = originalForm as IPopulatedMultirespondentForm
+  const useStepLoginRules = usesStepLoginRules(
+    getSavedWorkflow(originalForm),
+    isStepLoginEnabled,
+  )
+  if (!useStepLoginRules && hasStepLoginDeleteKeys(input)) {
+    return errAsync(new MalformedParametersError(STEP_LOGIN_NOT_AVAILABLE))
+  }
+
+  // With step logins, the admin picks which step's login the form keeps and
+  // confirms the login fields that no longer have a step to fill them.
+  let guard = {}
+  let update: Record<string, unknown> = { workflow: [] }
+  if (useStepLoginRules) {
+    const retained = getRetainedWorkflowAuth(originalMrfForm, input)
+    if (retained.isErr()) return errAsync(retained.error)
+    const deletion = prepareAuthFieldDeletion({
+      form: originalForm,
+      workflow: [],
+      authType: retained.value.authType,
+      confirmedIds: input.delete_auth_field_ids,
+      expectedLastModified: input.expected_last_modified,
+    })
+    if (deletion.isErr()) return errAsync(deletion.error)
+    const check = checkResultingWorkflowIsAllowed(originalForm, [], {
+      authType: retained.value.authType,
+      formFields: deletion.value.form_fields,
+      useStepLoginRules,
+    })
+    if (check.isErr()) return errAsync(check.error)
+    // The admin chose which login to keep from the form as it was: every
+    // write bumps lastModified, so this rejects any change since.
+    guard = {
+      ...getCheckedAuthenticationConfigFilter(originalForm),
+      lastModified: originalForm.lastModified,
+    }
+    update = {
+      workflow: [],
+      ...retained.value,
+      form_fields: deletion.value.form_fields,
+      form_logics: deletion.value.form_logics,
+      ...(retained.value.authType !== originalForm.authType
+        ? {
+            isSingleSubmission: false,
+            whitelistedSubmitterIds: { isWhitelistEnabled: false },
+          }
+        : {}),
+    }
+  }
+
+  const MultirespondentFormModel = getFormModelByResponseMode(
+    originalForm.responseMode,
+  ) as IMultirespondentFormModel
+
+  return ResultAsync.fromPromise(
+    MultirespondentFormModel.findOneAndUpdate(
+      { _id: originalMrfForm._id, ...guard },
+      update,
+      { new: true, runValidators: true },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while deleting form workflow in database',
+        meta: {
+          action: 'deleteFormWorkflow',
+          formId: originalMrfForm._id,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      // Only the step login path guards the write on the form's state.
+      return errAsync(
+        useStepLoginRules
+          ? new FormChangedWhileEditingError()
+          : new FormNotFoundError(),
+      )
+    }
     return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
   })
 }
@@ -1855,7 +2378,15 @@ export const updateFormWorkflowStep = (
 export const deleteFormWorkflowStep = (
   originalForm: IPopulatedForm,
   stepNumber: number,
-): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
+  input: Pick<
+    DeleteWorkflowAuthDto,
+    'delete_auth_field_ids' | 'expected_last_modified'
+  > = {},
+  { isStepLoginEnabled = false }: { isStepLoginEnabled?: boolean } = {},
+): ResultAsync<
+  FormWorkflowDto,
+  DatabaseError | FormChangedWhileEditingError
+> => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
       new FormInvalidResponseModeError(
@@ -1867,24 +2398,73 @@ export const deleteFormWorkflowStep = (
   const originalMrfForm = originalForm as IPopulatedMultirespondentForm
   const originalWorkflow = originalMrfForm.workflow ?? []
 
+  // Express hands this over as a string; the route has no Joi cast. A strict
+  // equality check against 0 does not survive that, so compare the coercion.
+  const targetStepNumber = Number(stepNumber)
   const isStepNumberValid =
-    stepNumber >= 0 && stepNumber < originalWorkflow.length
+    Number.isInteger(targetStepNumber) &&
+    targetStepNumber >= 0 &&
+    targetStepNumber < originalWorkflow.length
   if (!isStepNumberValid) {
     return errAsync(new MalformedParametersError('Invalid step number'))
   }
 
-  // Remove step with stepNumber from workflow
-  const updatedWorkflow = originalWorkflow
-  updatedWorkflow.splice(stepNumber, 1)
+  let updatedWorkflow = originalWorkflow.filter(
+    (_step, index) => index !== targetStepNumber,
+  )
+
+  const useStepLoginRules = usesStepLoginRules(
+    getSavedWorkflow(originalForm),
+    isStepLoginEnabled,
+  )
+  if (!useStepLoginRules && hasStepLoginDeleteKeys(input)) {
+    return errAsync(new MalformedParametersError(STEP_LOGIN_NOT_AVAILABLE))
+  }
+
+  // With step logins, removing a step can leave login fields with no step
+  // whose login fills them; the admin confirms deleting those first.
+  let formFields = originalForm.form_fields
+  let guard = {}
+  let deletionUpdate = {}
+  if (useStepLoginRules) {
+    const deletion = prepareAuthFieldDeletion({
+      form: originalForm,
+      workflow: updatedWorkflow,
+      authType: originalForm.authType,
+      confirmedIds: input.delete_auth_field_ids,
+      expectedLastModified: input.expected_last_modified,
+    })
+    if (deletion.isErr()) return errAsync(deletion.error)
+    updatedWorkflow = deletion.value.workflow
+    formFields = deletion.value.form_fields
+    guard = {
+      ...getCheckedAuthenticationConfigFilter(originalForm),
+      ...deletion.value.deletionGuard,
+    }
+    deletionUpdate = deletion.value.deletionUpdate
+  }
+
+  const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow, {
+    formFields,
+    useStepLoginRules,
+  })
+  if (check.isErr()) return errAsync(check.error)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
     originalForm.responseMode,
   ) as IMultirespondentFormModel
 
   return ResultAsync.fromPromise(
-    MultirespondentFormModel.findByIdAndUpdate(
-      originalMrfForm._id,
-      { workflow: updatedWorkflow },
+    MultirespondentFormModel.findOneAndUpdate(
+      {
+        _id: originalMrfForm._id,
+        ...guard,
+        ...getCheckedWebhookFilterIfMultistepWorkflow(
+          originalForm,
+          updatedWorkflow.length,
+        ),
+      },
+      { workflow: updatedWorkflow, ...deletionUpdate },
       {
         new: true,
         runValidators: true,
@@ -1905,10 +2485,131 @@ export const deleteFormWorkflowStep = (
     },
   ).andThen((updatedForm) => {
     if (!updatedForm) {
-      return errAsync(new FormNotFoundError())
+      return errAsync(new FormChangedWhileEditingError())
     }
     return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
   })
+}
+
+/**
+ * Clears a lapsed closeAt when an admin manually reopens a form, so the sweep
+ * does not immediately close it again. A future closeAt, or one supplied in the
+ * same request, is left alone.
+ */
+const withExpiredCloseAtCleared = (
+  originalForm: IPopulatedForm,
+  body: SettingsUpdateDto,
+): SettingsUpdateDto => {
+  const isReopening = body.status === FormStatus.Public
+  const isReschedulingInSameRequest = body.closeAt !== undefined
+  const hasLapsedCloseAt =
+    !!originalForm.closeAt && new Date(originalForm.closeAt) <= new Date()
+
+  if (!isReopening || isReschedulingInSameRequest || !hasLapsedCloseAt) {
+    return body
+  }
+
+  return { ...body, closeAt: null }
+}
+
+/**
+ * Keeps `hasUsedGuidedMode` write-once. It records that a workflow was built with
+ * guided mode at some point, so it may only ever be set to true, and only when
+ * it is not already set. Every other value is dropped from the update.
+ */
+const withHasUsedGuidedModeWriteOnce = (
+  originalForm: IPopulatedForm,
+  body: SettingsUpdateDto,
+): SettingsUpdateDto => {
+  const requested = (body as MultirespondentFormSettings).hasUsedGuidedMode
+  if (requested === undefined) return body
+
+  const alreadyRecorded =
+    isFormMultirespondent(originalForm) && !!originalForm.hasUsedGuidedMode
+
+  if (requested === true && !alreadyRecorded) return body
+
+  const next = { ...body } as Partial<MultirespondentFormSettings>
+  delete next.hasUsedGuidedMode
+  return next as SettingsUpdateDto
+}
+
+const pinMrfWebhookFormatIfUnsetAndGeneric = (
+  form: IPopulatedForm,
+  body: SettingsUpdateDto,
+  isV4Enabled: boolean,
+): SettingsUpdateDto => {
+  if (
+    !isFormMultirespondent(form) ||
+    !isNonPlumberWebhook(body.webhook?.url) ||
+    form.webhook?.webhookFormat !== undefined ||
+    body.webhook?.webhookFormat !== undefined
+  ) {
+    return body
+  }
+  return {
+    ...body,
+    webhook: {
+      ...body.webhook,
+      webhookFormat: isV4Enabled ? 'v4' : 'v1',
+    },
+  }
+}
+
+/** Adds identity fields and disables legacy collection in a single save. */
+export const convertSubmitterIdCollection = (
+  form: IPopulatedForm,
+): ResultAsync<
+  FormSettings,
+  | FormOpenToResponsesError
+  | MalformedParametersError
+  | FormNotFoundError
+  | PossibleDatabaseError
+> => {
+  if (form.status === FormStatus.Public) {
+    return errAsync(
+      new FormOpenToResponsesError('Close your form to convert this setting.'),
+    )
+  }
+  if (!canConvertSubmitterIdCollection(form)) {
+    return errAsync(
+      new MalformedParametersError(
+        'This form does not collect NRIC/FIN/UENs through its settings.',
+      ),
+    )
+  }
+
+  form.isSubmitterIdCollectionEnabled = false
+  // Save only if form is unchanged to prevent race condition
+  form.increment()
+  const newFields = getLoginIdentityAttrsForAuthType(form.authType).map(
+    (attr) => ({
+      ...createLoginIdentityField(attr),
+      _id: new mongoose.Types.ObjectId(),
+    }),
+  )
+  // Keep collecting: an MRF workflow collects only through Step 1's fields.
+  const stepOne = isFormMultirespondent(form) ? form.workflow?.[0] : undefined
+  if (stepOne) {
+    stepOne.edit.push(...newFields.map(({ _id }) => String(_id)))
+  }
+  return ResultAsync.fromPromise(form.insertFormFields(newFields), (error) => {
+    if (error instanceof mongoose.Error.VersionError) {
+      return new DatabaseConflictError(
+        'This form has just been changed. Refresh the page and try again.',
+      )
+    }
+    logger.error({
+      message: 'Error converting submitter ID collection into fields',
+      meta: { action: 'convertSubmitterIdCollection', formId: form._id },
+      error,
+    })
+    return transformMongoError(error)
+  }).andThen((updatedForm) =>
+    updatedForm
+      ? okAsync(updatedForm.getSettings())
+      : errAsync(new FormNotFoundError()),
+  )
 }
 
 /**
@@ -1922,15 +2623,42 @@ export const deleteFormWorkflowStep = (
 export const updateFormSettings = (
   originalForm: IPopulatedForm,
   body: SettingsUpdateDto,
+  isV4Enabled = false,
+  isStepLoginEnabled = false,
 ): ResultAsync<
   FormSettings,
   | MalformedParametersError
-  | FormNotFoundError
+  | FormOpenToResponsesError
+  | FormChangedWhileEditingError
   | DatabaseError
   | DatabaseValidationError
   | DatabaseConflictError
   | DatabasePayloadSizeError
 > => {
+  const resultingUrl = body.webhook?.url ?? originalForm.webhook?.url
+  if (
+    body.webhook?.webhookFormat !== undefined &&
+    (!isFormMultirespondent(originalForm) ||
+      (resultingUrl && !isNonPlumberWebhook(resultingUrl)))
+  ) {
+    return errAsync(
+      new MalformedParametersError(
+        'Webhook format can only be selected for multirespondent forms without a Plumber URL',
+      ),
+    )
+  }
+  if (
+    body.webhook?.webhookFormat === 'v4' &&
+    originalForm.webhook?.webhookFormat !== 'v4' &&
+    !isV4Enabled
+  ) {
+    return errAsync(
+      new MalformedParametersError(
+        'V4 webhooks are not available for this form',
+      ),
+    )
+  }
+
   if (isFormEmailMode(originalForm)) {
     if (
       originalForm.isForceConvertToStorageMode &&
@@ -1942,6 +2670,92 @@ export const updateFormSettings = (
         ),
       )
     }
+  }
+
+  const useStepLoginRules = usesStepLoginRules(
+    getSavedWorkflow(originalForm),
+    isStepLoginEnabled,
+  )
+
+  if (useStepLoginRules && body.status === FormStatus.Public) {
+    const loginErrors = getLoginFieldPublishErrors({
+      authType: body.authType ?? originalForm.authType,
+      responseMode: originalForm.responseMode,
+      isSubmitterIdCollectionEnabled:
+        body.isSubmitterIdCollectionEnabled ??
+        originalForm.isSubmitterIdCollectionEnabled,
+      form_fields: originalForm.form_fields,
+      workflow: getSavedWorkflow(originalForm),
+    })
+    if (loginErrors.length)
+      return errAsync(new MalformedParametersError(loginErrors.join(' ')))
+  }
+
+  if (
+    body.status === FormStatus.Public &&
+    originalForm.responseMode === FormResponseMode.Multirespondent
+  ) {
+    const incompleteStepNumbers = findIncompleteSteps(
+      originalForm,
+      (originalForm as IPopulatedMultirespondentForm).workflow ?? [],
+    )
+    if (incompleteStepNumbers.length > 0) {
+      return errAsync(
+        incompleteStepsError(
+          incompleteStepNumbers,
+          'before opening your form to responses',
+        ),
+      )
+    }
+  }
+
+  const changesLogin =
+    body.authType !== undefined ||
+    body.esrvcId !== undefined ||
+    body.isSubmitterIdCollectionEnabled !== undefined
+  // Settings updates skip the form's save hooks, so check the login identity
+  // fields against the login and toggle they would end up with.
+  if (
+    !useStepLoginRules &&
+    (body.authType !== undefined ||
+      body.isSubmitterIdCollectionEnabled !== undefined)
+  ) {
+    const loginIdentityErrors = getLoginIdentityConfigErrors({
+      authType: body.authType ?? originalForm.authType,
+      responseMode: originalForm.responseMode,
+      isSubmitterIdCollectionEnabled:
+        body.isSubmitterIdCollectionEnabled ??
+        originalForm.isSubmitterIdCollectionEnabled,
+      form_fields: originalForm.form_fields,
+      workflow: getSavedWorkflow(originalForm),
+    })
+    if (loginIdentityErrors.length > 0) {
+      return errAsync(
+        new MalformedParametersError(loginIdentityErrors.join(' ')),
+      )
+    }
+  }
+  if (useStepLoginRules && changesLogin) {
+    const loginCheck = checkFormLoginWrite(
+      {
+        ...pick(originalForm, [
+          'authType',
+          'esrvcId',
+          'status',
+          'responseMode',
+          'form_fields',
+        ]),
+        isSubmitterIdCollectionEnabled:
+          body.isSubmitterIdCollectionEnabled ??
+          originalForm.isSubmitterIdCollectionEnabled,
+      },
+      {
+        authType: body.authType ?? originalForm.authType,
+        ...(body.esrvcId !== undefined ? { esrvcId: body.esrvcId } : {}),
+      },
+      getSavedWorkflow(originalForm),
+    )
+    if (loginCheck.isErr()) return errAsync(loginCheck.error)
   }
 
   // Don't allow emails updates or single response per submitterId
@@ -1960,14 +2774,73 @@ export const updateFormSettings = (
     }
   }
 
-  const dotifiedSettingsToUpdate = dotifyObject(body)
+  body = pinMrfWebhookFormatIfUnsetAndGeneric(originalForm, body, isV4Enabled)
+  const changesWebhookFormatOrUrl =
+    body.webhook?.url !== undefined || body.webhook?.webhookFormat !== undefined
+  const resultingFormat =
+    body.webhook?.webhookFormat ?? originalForm.webhook?.webhookFormat
+  if (isFormMultirespondent(originalForm)) {
+    if (
+      changesWebhookFormatOrUrl &&
+      hasWebhookWorkflowConflict(
+        resultingUrl,
+        originalForm.workflow?.length ?? 0,
+        resultingFormat,
+      )
+    ) {
+      return errAsync(webhookWorkflowConflict())
+    }
+    const mrfBody = body as MultirespondentFormSettings
+    if (
+      originalForm.payments_field?.enabled &&
+      ((mrfBody.emails && mrfBody.emails.length > 0) ||
+        mrfBody.stepOneEmailNotificationFieldId ||
+        body.isSingleSubmission)
+    ) {
+      return errAsync(
+        new MalformedParametersError(
+          'Cannot update email notification or single submission settings when payments are enabled',
+        ),
+      )
+    }
+  }
+
+  const dotifiedSettingsToUpdate = dotifyObject(
+    withHasUsedGuidedModeWriteOnce(
+      originalForm,
+      withExpiredCloseAtCleared(originalForm, body),
+    ),
+  )
   const ModelToUse = getFormModelByResponseMode(originalForm.responseMode)
 
+  // RATIONALE: The workflow steps may have been updated since the webhook workflow conflict check was done.
+  // Thus, we only update the workflow if the second step is not present for non-plumber webhooks.
+  const requiresSingleStep =
+    isFormMultirespondent(originalForm) &&
+    changesWebhookFormatOrUrl &&
+    isNonPlumberWebhook(resultingUrl) &&
+    resultingFormat !== 'v4'
+
+  const noSecondStepFilterIfRequiresSingleStep = requiresSingleStep
+    ? { 'workflow.1': { $exists: false } }
+    : {}
+
   return ResultAsync.fromPromise(
-    ModelToUse.findByIdAndUpdate(originalForm._id, dotifiedSettingsToUpdate, {
-      new: true,
-      runValidators: true,
-    }).exec(),
+    ModelToUse.findOneAndUpdate(
+      {
+        _id: originalForm._id,
+        ...(useStepLoginRules &&
+        (body.status === FormStatus.Public || changesLogin)
+          ? getCheckedAuthenticationConfigFilter(originalForm)
+          : {}),
+        ...noSecondStepFilterIfRequiresSingleStep,
+        ...(isFormMultirespondent(originalForm) && changesWebhookFormatOrUrl
+          ? getCheckedWebhookFilter(originalForm)
+          : {}),
+      },
+      dotifiedSettingsToUpdate,
+      { new: true, runValidators: true },
+    ).exec(),
     (error) => {
       logger.error({
         message: 'Error encountered while updating form settings',
@@ -1983,7 +2856,7 @@ export const updateFormSettings = (
     },
   ).andThen((updatedForm) => {
     if (!updatedForm) {
-      return errAsync(new FormNotFoundError())
+      return errAsync(new FormChangedWhileEditingError())
     }
     return okAsync(updatedForm.getSettings())
   })
@@ -2036,6 +2909,109 @@ export const updateFormMetadata = (
  * @returns ok(created logic dto) on success
  * @returns err(database errors) if db error is thrown during logic update
  */
+export const createFormSavedView = (
+  form: IPopulatedForm,
+  savedView: FormSavedViewInput,
+): ResultAsync<FormSavedView[], DatabaseError | SavedViewLimitError> => {
+  return ResultAsync.fromPromise(
+    FormModel.findOneAndUpdate(
+      {
+        _id: form._id,
+        [`savedViews.${MAX_SAVED_VIEWS - 1}`]: { $exists: false },
+      },
+      { $push: { savedViews: savedView } },
+      { new: true, runValidators: true },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when creating saved view',
+        meta: {
+          action: 'createFormSavedView',
+          formId: form._id,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new SavedViewLimitError())
+    }
+    return okAsync(updatedForm.savedViews ?? [])
+  })
+}
+
+/**
+ * Replaces a saved view's contents in place, keeping its id so it stays the
+ * view admins have selected.
+ * @param form The form the saved view belongs to
+ * @param savedViewId The id of the saved view to replace
+ * @param savedView The view's new name, filter, sort and columns
+ * @returns ok(the form's saved views) on success
+ * @returns err(SavedViewNotFoundError) if the form has no view with that id
+ * @returns err(database errors) if db error is thrown during the update
+ */
+export const updateFormSavedView = (
+  form: IPopulatedForm,
+  savedViewId: string,
+  savedView: FormSavedViewInput,
+): ResultAsync<FormSavedView[], DatabaseError | SavedViewNotFoundError> => {
+  return ResultAsync.fromPromise(
+    FormModel.findOneAndUpdate(
+      { _id: form._id, 'savedViews._id': savedViewId },
+      { $set: { 'savedViews.$': { ...savedView, _id: savedViewId } } },
+      { new: true, runValidators: true },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when updating saved view',
+        meta: {
+          action: 'updateFormSavedView',
+          formId: form._id,
+          savedViewId,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new SavedViewNotFoundError())
+    }
+    return okAsync(updatedForm.savedViews ?? [])
+  })
+}
+
+export const deleteFormSavedView = (
+  form: IPopulatedForm,
+  savedViewId: string,
+): ResultAsync<FormSavedView[], DatabaseError | FormNotFoundError> => {
+  return ResultAsync.fromPromise(
+    FormModel.findByIdAndUpdate(
+      form._id,
+      { $pull: { savedViews: { _id: savedViewId } } },
+      { new: true },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when deleting saved view',
+        meta: {
+          action: 'deleteFormSavedView',
+          formId: form._id,
+          savedViewId,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm.savedViews ?? [])
+  })
+}
+
 export const createFormLogic = (
   form: IPopulatedForm,
   createLogicBody: LogicDto,

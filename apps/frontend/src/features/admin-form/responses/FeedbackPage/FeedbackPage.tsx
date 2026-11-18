@@ -2,15 +2,7 @@ import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { UseMutationResult } from 'react-query'
 import { useParams } from 'react-router-dom'
-import {
-  Box,
-  ButtonGroup,
-  Container,
-  Flex,
-  Grid,
-  Icon,
-  Text,
-} from '@chakra-ui/react'
+import { Box, ButtonGroup, Flex, Grid, Icon, Text } from '@chakra-ui/react'
 
 import { ProcessedFeedbackMeta, ProcessedIssueMeta } from 'formsg-shared/types'
 
@@ -29,6 +21,7 @@ import {
 } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
 
+import { useResultsNavLayout } from '../components/FormResultsNavbar'
 import { useFormFeedback, useFormIssues } from '../queries'
 
 import { useIssueTableColumns } from './issue/IssueTable'
@@ -91,6 +84,7 @@ interface FeedbackPageTranslations {
 }
 
 export const FeedbackPage = (): JSX.Element => {
+  const { contentPr } = useResultsNavLayout()
   const { t } = useTranslation()
   const translations: FeedbackPageTranslations = t(
     'features.adminForm.feedback.feedbackPage',
@@ -190,27 +184,18 @@ export const FeedbackPage = (): JSX.Element => {
   }
 
   return (
-    <Container
-      overflowY="auto"
-      p="1.5rem"
-      maxW="69.5rem"
-      flex={1}
-      display="flex"
-      flexDir="column"
-    >
-      <Grid
+    <Flex flexDir="column" pb="1.5rem" pr={contentPr}>
+      <Flex
+        direction={{ base: 'column', sm: 'row' }}
         mb="1rem"
-        minH={{ md: '4rem' }}
-        alignItems="end"
+        alignItems={{ base: 'flex-start', md: 'center' }}
+        justifyContent="space-between"
         color="secondary.500"
-        gridTemplateColumns={{ base: 'auto', md: '1fr auto auto' }}
-        gridGap={{ base: '0.5rem', md: '1.5rem' }}
-        gridTemplateAreas={{
-          base: "'information information' 'feedbackType export'",
-          md: "'information feedbackType export'",
-        }}
+        gap="1rem"
+        w="100%"
+        maxW="100%"
       >
-        <Box gridArea="information" pl="0rem">
+        <Flex direction="column" flex={1} minW={0}>
           {currentFeedbackType === FeedbackType.Issues ? (
             <GetIssueInformationComponent
               count={issueProps.count}
@@ -223,8 +208,8 @@ export const FeedbackPage = (): JSX.Element => {
               translations={reviewProps.translations}
             />
           )}
-        </Box>
-        <ButtonGroup gridArea="feedbackType" isAttached variant="outline">
+        </Flex>
+        <ButtonGroup isAttached variant="outline" flexShrink={0}>
           <Button
             {...getFeedbackTypeButtonProps(
               currentFeedbackType,
@@ -245,7 +230,7 @@ export const FeedbackPage = (): JSX.Element => {
             {translations.issues}
           </Button>
         </ButtonGroup>
-        <Box gridArea="export" justifySelf="flex-end">
+        <Box flexShrink={0}>
           <FeedbackDownloadButton
             {...getFeedBackDownloadButtonProps(
               currentFeedbackType,
@@ -256,7 +241,7 @@ export const FeedbackPage = (): JSX.Element => {
             isMobile={isMobile}
           />
         </Box>
-      </Grid>
+      </Flex>
       <Box mb="3rem" overflow="auto" flex={1}>
         <FeedbackTable
           feedbackData={
@@ -290,7 +275,7 @@ export const FeedbackPage = (): JSX.Element => {
           onPageChange={setCurrentPage}
         />
       </Box>
-    </Container>
+    </Flex>
   )
 }
 

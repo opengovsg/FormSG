@@ -30,7 +30,7 @@ export const FormHeaderSaveDraftButton = ({
     <Tooltip
       isDisabled={!tooltipLabel}
       placement={isMobile ? 'top' : 'left'}
-      label={<Text data-chromatic="ignore">{tooltipLabel}</Text>}
+      label={<Text data-visual-test="transparent">{tooltipLabel}</Text>}
     >
       {isMobile ? (
         <IconButton

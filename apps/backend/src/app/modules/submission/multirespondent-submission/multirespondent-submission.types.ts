@@ -1,17 +1,18 @@
+import type { AttachmentAnswerV4 } from '@opengovsg/formsg-sdk'
 import {
-  AttachmentResponseV3,
   MyInfoAttribute,
   SubmissionErrorDto,
   SubmissionResponseDto,
   SubmittedStep,
 } from 'formsg-shared/types'
 
-import { IPopulatedMultirespondentForm } from 'src/types'
+import { IPopulatedMultirespondentForm, IWorkflowEvent } from 'src/types'
 
 import {
   MultirespondentFormCompleteDto,
   MultirespondentFormLoadedDto,
-  ParsedClearFormFieldResponsesV3,
+  ParsedClearAttachmentFieldResponseV4,
+  ParsedClearFormFieldResponsesV4,
   ParsedMultirespondentSubmissionBody,
 } from '../../../../types/api'
 import { ControllerHandler } from '../../core/core.types'
@@ -46,7 +47,8 @@ export type ProcessedMultirespondentSubmissionHandlerType = ControllerHandler<
   SubmissionResponseDto | SubmissionErrorDto,
   Omit<ParsedMultirespondentSubmissionBody, 'responses'> & {
     submissionSecretKey?: string
-    responses: ParsedClearFormFieldResponsesV3
+    stepToken?: string
+    responses: ParsedClearFormFieldResponsesV4
   },
   { captchaResponse?: unknown; captchaType?: unknown }
 >
@@ -80,6 +82,7 @@ export type MultirespondentSubmissionContent = {
   form: IPopulatedMultirespondentForm['_id']
   authType: IPopulatedMultirespondentForm['authType']
   myInfoFields: MyInfoAttribute[]
+  myInfoReadOnlyFields?: string[]
   form_fields: IPopulatedMultirespondentForm['form_fields']
   form_logics: IPopulatedMultirespondentForm['form_logics']
   workflow: IPopulatedMultirespondentForm['workflow']
@@ -92,10 +95,20 @@ export type MultirespondentSubmissionContent = {
   workflowStep: number
   mrfVersion: number
   submittedSteps: SubmittedStep[]
+  workflowEvents?: IWorkflowEvent[]
+  // RATIONALE: optional for backwards compatibility on
+  // in-flight mrf steps which do not have a step token at time of creation.
+  stepTokenHash?: string
+  encryptedStepToken?: string
+  // Only present on payment-enabled (necessarily zero-step) forms.
+  paymentId?: string
 }
 
-export type StrippedAttachmentResponseV3 = AttachmentResponseV3 & {
-  answer: AttachmentResponseV3['answer'] & {
+export type StrippedAttachmentResponseV4 = Omit<
+  ParsedClearAttachmentFieldResponseV4,
+  'answer'
+> & {
+  answer: AttachmentAnswerV4 & {
     filename: undefined
     content: undefined
   }

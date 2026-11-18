@@ -10,7 +10,9 @@ import {
   Skeleton,
   Text,
 } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from 'formsg-shared/constants/feature-flags'
 import { FormResponseMode } from 'formsg-shared/types/form/form'
 
 import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
@@ -67,6 +69,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
   } = formMethods
 
   const responseModeValue = watch('responseMode')
+  const isEscapeHatchEnabled = useFeatureIsOn(featureFlags.escapeHatch)
   const handleEmailButtonPress = () => {
     handleEmailFeedbackSubmit()
   }
@@ -82,9 +85,11 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
         <Container maxW="45rem" p={0}>
           <FormTitleInput />
           {isMrfCutoverEnabled ? (
-            <Box my="2.5rem">
-              <EscapeHatchLink onClick={goToStorageModeDetails} />
-            </Box>
+            isEscapeHatchEnabled && (
+              <Box my="2.5rem">
+                <EscapeHatchLink onClick={goToStorageModeDetails} />
+              </Box>
+            )
           ) : (
             <FormControl
               isRequired

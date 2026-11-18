@@ -10,9 +10,9 @@ import mongoose from 'mongoose'
 import SparkMD5 from 'spark-md5'
 import supertest, { Session } from 'supertest-session'
 
-import { aws } from 'src/app/config/config'
 import { getEncryptedFormModel } from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
+import { s3Operations } from 'src/app/utils/aws-s3'
 import { IUserSchema } from 'src/types'
 
 import { AdminFormsRouter } from '../admin-forms.routes'
@@ -269,11 +269,8 @@ describe('admin-form.presign.routes', () => {
       // Arrange
       // Mock error.
       jest
-        .spyOn(aws.s3, 'createPresignedPost')
-        // @ts-ignore
-        .mockImplementationOnce((_opts, cb) =>
-          cb(new Error('something went wrong')),
-        )
+        .spyOn(s3Operations, 'createPresignedPost')
+        .mockRejectedValueOnce(new Error('something went wrong'))
       const form = await EncryptFormModel.create({
         title: 'form',
         admin: defaultUser._id,
@@ -560,11 +557,8 @@ describe('admin-form.presign.routes', () => {
       // Arrange
       // Mock error.
       jest
-        .spyOn(aws.s3, 'createPresignedPost')
-        // @ts-ignore
-        .mockImplementationOnce((_opts, cb) =>
-          cb(new Error('something went wrong')),
-        )
+        .spyOn(s3Operations, 'createPresignedPost')
+        .mockRejectedValueOnce(new Error('something went wrong'))
       const form = await EncryptFormModel.create({
         title: 'form',
         admin: defaultUser._id,

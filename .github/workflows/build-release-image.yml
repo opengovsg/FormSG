@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.3.1
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           # Build the tagged release commit. Both the workflow_call (from the
           # release workflow) and workflow_dispatch paths supply the tag.
@@ -58,8 +58,10 @@ jobs:
 
       - name: Check if release image already exists
         id: check-exists
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
         run: |
-          IMAGE="${{ env.IMAGE_NAME }}:release-${{ steps.version.outputs.tag }}"
+          IMAGE="$IMAGE_NAME:release-$TAG"
           if docker manifest inspect "$IMAGE" > /dev/null 2>&1; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "Release image already exists: $IMAGE"

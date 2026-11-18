@@ -113,7 +113,7 @@ export const createLoginOtp = (
 
   return (
     // Step 1: Generate and hash OTP.
-    generateOtpWithHash({ email })
+    generateOtpWithHash({ logMeta: { email } })
       // Step 2: Upsert otp hash into database.
       .andThen(({ otp, hashedOtp, otpPrefix }) =>
         upsertOtp(email, hashedOtp)

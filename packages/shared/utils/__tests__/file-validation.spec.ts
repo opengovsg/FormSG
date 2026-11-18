@@ -1,3 +1,5 @@
+import JSZip from 'jszip'
+
 import fs from 'fs'
 import path from 'path'
 
@@ -5,6 +7,8 @@ import {
   getFileExtension,
   getInvalidFileExtensionsInZip,
   isInvalidFileExtension,
+  MAX_ZIP_ENTRY_COUNT,
+  MAX_ZIP_NESTING_DEPTH,
 } from '../file-validation'
 
 const RESOURCES = path.join(__dirname, '../../../../__tests__/resources')
@@ -90,6 +94,62 @@ describe('File validation utils', () => {
       const file = fs.readFileSync(path.join(RESOURCES, 'nestedInvalid.zip'))
       const actual = await getInvalidFileExtensionsInZip('nodebuffer', file)
       expect(actual).toEqual(['.a', '.oo'])
+    })
+
+    const nestZip = async (depth: number): Promise<Buffer> => {
+      let inner = await new JSZip()
+        .file('leaf.txt', 'leaf')
+        .generateAsync({ type: 'nodebuffer' })
+      for (let i = 0; i < depth; i++) {
+        inner = await new JSZip()
+          .file(`level-${i}.zip`, inner)
+          .generateAsync({ type: 'nodebuffer' })
+      }
+      return inner
+    }
+
+    it('should resolve a zip nested within the allowed depth', async () => {
+      const file = await nestZip(MAX_ZIP_NESTING_DEPTH - 1)
+      await expect(
+        getInvalidFileExtensionsInZip('nodebuffer', file),
+      ).resolves.toEqual([])
+    })
+
+    it('should reject a zip nested beyond the allowed depth', async () => {
+      const file = await nestZip(MAX_ZIP_NESTING_DEPTH + 1)
+      await expect(
+        getInvalidFileExtensionsInZip('nodebuffer', file),
+      ).rejects.toThrow()
+    })
+
+    it('should reject a zip with more entries than allowed', async () => {
+      const zip = new JSZip()
+      for (let i = 0; i < MAX_ZIP_ENTRY_COUNT + 1; i++) {
+        zip.file(`file-${i}.txt`, 'x')
+      }
+      const file = await zip.generateAsync({ type: 'nodebuffer' })
+      await expect(
+        getInvalidFileExtensionsInZip('nodebuffer', file),
+      ).rejects.toThrow()
+    })
+
+    it('should not leave an unhandled rejection when a nested zip precedes the entry limit', async () => {
+      const unhandled = jest.fn()
+      process.on('unhandledRejection', unhandled)
+      const zip = new JSZip()
+      zip.file('nested.zip', await nestZip(MAX_ZIP_NESTING_DEPTH + 1))
+      for (let i = 0; i < MAX_ZIP_ENTRY_COUNT; i++) {
+        zip.file(`file-${i}.txt`, 'x')
+      }
+      const file = await zip.generateAsync({ type: 'nodebuffer' })
+
+      await expect(
+        getInvalidFileExtensionsInZip('nodebuffer', file),
+      ).rejects.toThrow()
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
+      process.off('unhandledRejection', unhandled)
+      expect(unhandled).not.toHaveBeenCalled()
     })
   })
 })

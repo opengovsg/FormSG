@@ -165,11 +165,27 @@ async function decryptSubmissionData(
       }
 
       mrfSubmissionSecretKey = decryptedV4.submissionSecretKey
-      decryptedResponses = processDecryptedContentV4(
-        submissionData.form_fields,
-        decryptedV4.responses,
-        decryptedV4.verified,
-      )
+      try {
+        decryptedResponses = processDecryptedContentV4(
+          submissionData.form_fields,
+          submissionData.form_logics,
+          decryptedV4.responses,
+          decryptedV4.verified,
+        )
+      } catch (err) {
+        const error = err as Error
+        datadogLogs.logger.error('Could not adapt V4 content to V1', {
+          submissionId: submissionData._id,
+          error: {
+            message: error?.message,
+            name: error?.name,
+            stack: error?.stack,
+          },
+        })
+        return {
+          isSubmissionDecryptionSuccessful: false,
+        }
+      }
       break
     }
 
@@ -300,6 +316,7 @@ type LineData = {
   isDownloadAttachments: boolean
   formId: string
   hostOrigin: string
+  isWorkflowActionsOn: boolean
   isDownloadAttachmentsSuccessful: boolean
 } & DecryptionResult
 
@@ -318,6 +335,7 @@ async function getMaterializedCsvRecord(
     isDecryptionSuccessful,
     formId,
     hostOrigin,
+    isWorkflowActionsOn,
     isDownloadAttachmentsSuccessful,
   } = lineData
 
@@ -345,9 +363,7 @@ async function getMaterializedCsvRecord(
     CsvRecordStatus.Unknown,
     formId,
     hostOrigin,
-    parsedSubmission.submissionType === SubmissionType.Encrypt
-      ? parsedSubmission.payment
-      : undefined,
+    parsedSubmission.payment,
     parsedSubmission.submissionType === SubmissionType.Multirespondent
       ? {
           workflowStatus: parsedSubmission.mrfMeta.workflowStatus,
@@ -357,6 +373,9 @@ async function getMaterializedCsvRecord(
           lastSubmittedAt: parsedSubmission.mrfMeta.lastSubmittedAt,
           hasNextStepRecipientEmails:
             parsedSubmission.mrfMeta.hasNextStepRecipientEmails,
+          stoppedAt: isWorkflowActionsOn
+            ? parsedSubmission.mrfMeta.stoppedAt
+            : undefined,
         }
       : undefined,
   )
@@ -513,11 +532,12 @@ async function getDecryptedData(
   }
 
   if (isDownloadCsv) {
-    const { formId, hostOrigin } = getDecryptedDataParams
+    const { formId, hostOrigin, isWorkflowActionsOn } = getDecryptedDataParams
     materializedCsvRecord = await getMaterializedCsvRecord(ctx, {
       isDownloadAttachments,
       formId,
       hostOrigin,
+      isWorkflowActionsOn: !!isWorkflowActionsOn,
       isDownloadAttachmentsSuccessful:
         isDownloadAndDecryptSubmissionAttachmentsSuccessful,
       ...decryptedSubmissionResult,

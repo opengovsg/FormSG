@@ -1,30 +1,33 @@
 import { useTranslation } from 'react-i18next'
 import { Box, List, ListItem } from '@chakra-ui/react'
 
-import { FormResponseMode } from 'formsg-shared/types'
-
 import InlineMessage from '~components/InlineMessage'
 
 interface AuthSettingsDisabledExplanationTextProps {
   isFormPublic: boolean
   containsMyInfoFields: boolean
-  formResponseMode?: string
+  containsLoginIdentityFields: boolean
+  isSubmitterIdCollectionEnabled?: boolean
+  // Multi-respondent forms where only Step 1 can log in.
+  isMrfFirstStepOnly?: boolean
 }
 
 const FORM_IS_PUBLIC_DISABLED_EXPLANATION_TEXT =
   'To change Singpass settings, close your form to new responses.'
 const FORM_HAS_MYINFO_FIELDS =
-  'For changes to your Singpass authentication mode, remove all existing Myinfo fields.'
+  'To change your Singpass authentication mode, remove all existing Myinfo fields.'
 
 export const AuthSettingsDisabledExplanationText = ({
   isFormPublic,
   containsMyInfoFields,
-  formResponseMode,
+  containsLoginIdentityFields,
+  isSubmitterIdCollectionEnabled = false,
+  isMrfFirstStepOnly = false,
 }: AuthSettingsDisabledExplanationTextProps) => {
   const { t } = useTranslation()
 
   const infoboxTextArray: string[] = []
-  if (formResponseMode === FormResponseMode.Multirespondent) {
+  if (isMrfFirstStepOnly) {
     infoboxTextArray.push(
       t('features.adminForm.settings.general.singpass.mrfFirstStep'),
     )
@@ -34,12 +37,23 @@ export const AuthSettingsDisabledExplanationText = ({
     infoboxTextArray.push(FORM_IS_PUBLIC_DISABLED_EXPLANATION_TEXT)
   }
 
-  if (containsMyInfoFields) {
+  if (
+    containsMyInfoFields ||
+    (containsLoginIdentityFields && !isSubmitterIdCollectionEnabled)
+  ) {
     infoboxTextArray.push(FORM_HAS_MYINFO_FIELDS)
   }
 
+  if (containsLoginIdentityFields && isSubmitterIdCollectionEnabled) {
+    infoboxTextArray.push(
+      t(
+        'features.adminForm.settings.singpass.submitterIdCollection.loginFieldsLockAuth',
+      ),
+    )
+  }
+
   const infoboxTextComponent = infoboxTextArray.length ? (
-    infoboxTextArray.length > 2 ? (
+    infoboxTextArray.length > 1 ? (
       <InlineMessage mb="1rem">
         <List styleType="disc" pl="1.5rem" m={0}>
           {infoboxTextArray.map((text, i) => (

@@ -18,6 +18,7 @@ import isEmail from 'validator/lib/isEmail'
 
 import { BasicField, SubmitFormIssueBodyDto } from 'formsg-shared/types'
 
+import { ThemeColorScheme } from '~theme/foundations/colours'
 import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useToast } from '~hooks/useToast'
@@ -35,6 +36,7 @@ export interface FormIssueFeedbackProps {
   onClose: () => void
   isPreview: boolean
   formId: string
+  colorScheme?: ThemeColorScheme
 }
 
 export const FormIssueFeedbackModal = ({
@@ -42,6 +44,7 @@ export const FormIssueFeedbackModal = ({
   onClose,
   isPreview,
   formId,
+  colorScheme,
 }: FormIssueFeedbackProps): JSX.Element | null => {
   const { t } = useTranslation()
 
@@ -160,10 +163,19 @@ export const FormIssueFeedbackModal = ({
               justify="right"
               direction={{ base: 'column-reverse', md: 'row' }}
             >
-              <Button isFullWidth={isMobile} variant="clear" onClick={onClose}>
+              <Button
+                isFullWidth={isMobile}
+                variant="clear"
+                onClick={onClose}
+                colorScheme={colorScheme}
+              >
                 {t('features.common.cancel')}
               </Button>
-              <Button isFullWidth={isMobile} type="submit">
+              <Button
+                isFullWidth={isMobile}
+                type="submit"
+                colorScheme={colorScheme}
+              >
                 {t(
                   'features.publicForm.components.formIssueFeedbackModal.actions.submit',
                 )}

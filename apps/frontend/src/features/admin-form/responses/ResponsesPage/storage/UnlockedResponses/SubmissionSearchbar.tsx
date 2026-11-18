@@ -7,10 +7,12 @@ export const SubmissionSearchbar = ({
   submissionId,
   setSubmissionId,
   isAnyFetching,
+  isExpandable = true,
 }: {
   submissionId?: string
   setSubmissionId: (submissionId: string | null) => void
   isAnyFetching: boolean
+  isExpandable?: boolean
 }): JSX.Element => {
   const [inputValue, setInputValue] = useState(submissionId)
 
@@ -25,6 +27,7 @@ export const SubmissionSearchbar = ({
 
   return (
     <Searchbar
+      isExpandable={isExpandable}
       isDisabled={isAnyFetching}
       ref={inputRef}
       value={inputValue}
@@ -33,7 +36,9 @@ export const SubmissionSearchbar = ({
       onCollapseIconClick={() => setSubmissionId(null)}
       onSearch={setSubmissionId}
       placeholder={t(
-        'features.adminForm.responses.responsesPage.storage.unlockedResponses.submissionSearchbarPlaceholder',
+        isExpandable
+          ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.submissionSearchbarPlaceholder'
+          : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.searchResponsesPlaceholder',
       )}
     />
   )

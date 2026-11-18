@@ -1,26 +1,38 @@
-import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
+import type {
+  ChildrenAnswerV4,
+  FieldResponsesV4,
+  FieldResponseV4,
+} from '@opengovsg/formsg-sdk'
+import {
+  ATTACHMENT_QUESTION_PREFIX,
+  CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
+} from 'formsg-shared/constants'
+import {
+  MYINFO_ATTRIBUTE_MAP,
+  MYINFO_CHILD_TYPE_LABELS,
+} from 'formsg-shared/constants/field/myinfo'
 import {
   BasicField,
-  FieldResponsesV3,
-  FieldResponseV3,
+  ChildrenCompoundFieldBase,
+  FormAuthType,
   FormFieldDto,
   FormMetadata,
   FormWorkflowStepDto,
   MultirespondentSubmissionDto,
-  NdiResponseV3,
+  MyInfoChildAttributes,
+  MyInfoChildrenScope,
   PublicMultirespondentSubmissionDto,
+  SubmissionPaymentDto,
   SubmissionType,
   WorkflowType,
 } from 'formsg-shared/types'
-import {
-  answerKey,
-  handleAddressResponseDisplay,
-} from 'formsg-shared/utils/address'
-import { NON_RESPONSE_FIELD_SET } from 'formsg-shared/utils/field'
+import { handleAddressResponseDisplay } from 'formsg-shared/utils/address'
+import { applyMyInfoPrefixToFormFields } from 'formsg-shared/utils/myinfo-prefix'
 import { SIGNATURE_CAPTURED_STRING } from 'formsg-shared/utils/signature'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import jwt from 'jsonwebtoken'
+import { get } from 'lodash'
 import moment from 'moment'
 import { err, ok, Result } from 'neverthrow'
 
@@ -28,48 +40,73 @@ import {
   EmailRespondentConfirmationField,
   FormFieldSchema,
   IMultirespondentSubmissionSchema,
+  ISubmissionSchema,
   MultirespondentSubmissionData,
 } from '../../../../types'
-import { ParsedClearFormFieldResponsesV3 } from '../../../../types/api'
+import {
+  ParsedClearFormFieldResponsesV4,
+  ParsedClearFormFieldResponseV4,
+} from '../../../../types/api'
 import config from '../../../config/config'
 import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
 import { AutoReplyMailData } from '../../../services/mail/mail.types'
 import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-array-to-png'
-import { validateFieldV3 } from '../../../utils/field-validation'
+import { validateFieldV4 } from '../../../utils/field-validation'
+import { checkIsResponseChangedV4 } from '../../../utils/field-validation/field-validation.utils'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
+import { MyInfoHashDidNotMatchError } from '../../myinfo/myinfo.errors'
+import { MyInfoKey } from '../../myinfo/myinfo.types'
+import { getMyInfoChildHashKey } from '../../myinfo/myinfo.util'
 import { startsWithSPCPFieldTitle } from '../../spcp/spcp.util'
+import { toWorkflowEventDtos } from '../../workflow-event/workflow-event.service'
+import { MYINFO_PREFIX } from '../email-submission/email-submission.constants'
 import {
   InvalidWorkflowTypeError,
   ProcessingError,
-  ValidateFieldErrorV3,
+  ValidateFieldErrorV4,
 } from '../submission.errors'
+import {
+  ProcessedChildrenResponse,
+  ProcessedFieldResponse,
+} from '../submission.types'
 import { buildMrfMetadata } from '../submission.utils'
+import { projectSubmittedStepForAdmin } from '../submitted-step-visibility'
 
 import { MrfJwtPayload } from './multirespondent-submission.types'
+import { isMyInfoVerifiedFieldId } from './myinfo-read-only-fields'
 
-/**
- * Creates and returns a MultirespondentSubmissionDto object from submissionData and
- * attachment presigned urls.
- */
+export const isSubmissionMultirespondentMode = (
+  submission: ISubmissionSchema,
+): submission is IMultirespondentSubmissionSchema => {
+  return submission.submissionType === SubmissionType.Multirespondent
+}
+
 export const createMultirespondentSubmissionDto = (
   submissionData: MultirespondentSubmissionData,
   attachmentPresignedUrls: Record<string, string>,
+  payment?: SubmissionPaymentDto,
 ): MultirespondentSubmissionDto => {
   return {
     submissionType: SubmissionType.Multirespondent,
     refNo: submissionData._id,
+    payment,
     submissionTime: moment(submissionData.created)
       .tz('Asia/Singapore')
       .format('ddd, D MMM YYYY, hh:mm:ss A'),
 
-    form_fields: submissionData.form_fields,
+    form_fields: applyMyInfoPrefixToFormFields(
+      submissionData.form_fields,
+      submissionData.myInfoReadOnlyFields ?? [],
+    ),
     form_logics: submissionData.form_logics,
+    authType: submissionData.authType,
     workflow: submissionData.workflow,
 
     submissionPublicKey: submissionData.submissionPublicKey,
     encryptedContent: submissionData.encryptedContent,
     verifiedContent: submissionData.verifiedContent,
     encryptedSubmissionSecretKey: submissionData.encryptedSubmissionSecretKey,
+    encryptedStepToken: submissionData.encryptedStepToken,
     attachmentMetadata: attachmentPresignedUrls,
     version: submissionData.version,
     workflowStep: submissionData.workflowStep,
@@ -78,7 +115,12 @@ export const createMultirespondentSubmissionDto = (
       workflow: submissionData.workflow,
       workflowStep: submissionData.workflowStep,
       submittedSteps: submissionData.submittedSteps,
+      stoppedAt: submissionData.stoppedAt,
     }),
+    submittedSteps: submissionData.submittedSteps?.map(
+      projectSubmittedStepForAdmin,
+    ),
+    workflowEvents: toWorkflowEventDtos(submissionData.workflowEvents),
   }
 }
 
@@ -102,43 +144,39 @@ export const createPublicMultirespondentSubmissionDto = (
       submissionData.form_fields,
     ),
     workflow: stripWorkflowEmails(submissionData.workflow),
+    encryptedStepToken: undefined,
+    submittedSteps: undefined,
+    // Events name the admins who acted, so they never reach respondents.
+    workflowEvents: undefined,
   }
 }
 
-export const getFormDelimiter = (metadata?: FormMetadata): string =>
-  metadata?.delimiter ?? ', '
-
 export const getEmailFromResponses = (
   fieldId: string,
-  responses: FieldResponsesV3,
+  responses: FieldResponsesV4,
 ): string | null => {
   const field = responses[fieldId]
   if (!field || field.fieldType !== BasicField.Email) return null // Not an error, misconfigured or respondent has not filled.
-  return field.answer.value
+  return (field.answer as { value: string }).value
 }
 
 export const extractEmailAnswersFromResponses = (
-  responses: FieldResponsesV3,
+  responses: FieldResponsesV4,
 ): string[] => {
   if (!responses) return []
   return Object.values(responses)
-    .filter(
-      (
-        response,
-      ): response is Extract<
-        FieldResponseV3,
-        { fieldType: BasicField.Email }
-      > => response.fieldType === BasicField.Email,
-    )
-    .map((response) => response.answer.value)
+    .filter((response) => response.fieldType === BasicField.Email)
+    .map((response) => (response.answer as { value: string }).value)
     .filter(Boolean)
 }
 
 const getConditionalFieldEmailRecipient = (
   form_fields: FormFieldSchema[] | FormFieldDto[],
-  fieldId: string,
-  responses: FieldResponsesV3,
+  fieldId: string | undefined,
+  responses: FieldResponsesV4,
 ): string[] => {
+  if (!fieldId) return [] // Not an error, the step was never finished.
+
   const conditionalField = form_fields.find(
     (field) => field._id.toString() === fieldId.toString(),
   )
@@ -157,10 +195,10 @@ const getConditionalFieldEmailRecipient = (
     return [] // Not an error, misconfigured or respondent has not filled.
   }
 
+  const answerValue = (conditionalFieldResponse.answer as { value: string })
+    .value
   const emailRecipients =
-    conditionalField?.optionsToRecipientsMap?.[
-      conditionalFieldResponse.answer
-    ] ?? []
+    conditionalField?.optionsToRecipientsMap?.[answerValue] ?? []
 
   return emailRecipients
 }
@@ -168,7 +206,7 @@ const getConditionalFieldEmailRecipient = (
 export const retrieveWorkflowStepEmailAddresses = (
   form: { form_fields: FormFieldSchema[] | FormFieldDto[] },
   step: FormWorkflowStepDto,
-  responses: FieldResponsesV3,
+  responses: FieldResponsesV4,
 ): Result<string[], InvalidWorkflowTypeError> => {
   if (!step) return ok([]) // Not an error, just that the form has gone past its predefined workflow
   switch (step.workflow_type) {
@@ -200,6 +238,12 @@ export const retrieveWorkflowStepEmailAddresses = (
  * @param formId formId, used for logging
  * @param formFields all form fields in the form. Purpose: used to validate responses against the form field properties.
  * @param responses responses to validate
+ * @param workflowStep the workflow step this submission targets (0 = initial submission)
+ * @param stepAuthType login of the step being submitted (Step 1: the form's)
+ * @param formAuthType the form's auth type, from the form definition
+ * @param hasMyInfoLogin whether Step 1 or a later step of the submission's saved workflow logs in with MyInfo
+ * @param stepFieldIds fields the step being submitted may fill in
+ * @param isMrfChildrenEnabled whether the mrf-children feature flag is on; fail closed when unknown
  * @returns initial responses if all responses are valid, else an error.
  */
 export const validateMrfFieldResponses = ({
@@ -208,15 +252,27 @@ export const validateMrfFieldResponses = ({
   formFields,
   responses,
   previousResponses,
+  workflowStep,
+  stepAuthType,
+  formAuthType,
+  hasMyInfoLogin = false,
+  stepFieldIds = new Set(),
+  isMrfChildrenEnabled,
 }: {
   formId: string
   visibleFieldIds: FieldIdSet
   formFields: FormFieldDto[]
-  responses: ParsedClearFormFieldResponsesV3
-  previousResponses?: ParsedClearFormFieldResponsesV3
+  responses: ParsedClearFormFieldResponsesV4
+  previousResponses?: ParsedClearFormFieldResponsesV4
+  workflowStep: number
+  stepAuthType: FormAuthType
+  formAuthType: FormAuthType
+  hasMyInfoLogin?: boolean
+  stepFieldIds?: ReadonlySet<string>
+  isMrfChildrenEnabled: boolean
 }): Result<
-  ParsedClearFormFieldResponsesV3,
-  ValidateFieldErrorV3 | ProcessingError
+  ParsedClearFormFieldResponsesV4,
+  ValidateFieldErrorV4 | ProcessingError
 > => {
   const idToFieldMap = formFields.reduce<{
     [fieldId: string]: FormFieldDto
@@ -233,28 +289,263 @@ export const validateMrfFieldResponses = ({
       )
     }
 
-    // Since Myinfo fields are not currently supported for MRF
+    // Children (MyInfo child records) responses are only accepted while the
+    // mrf-children feature flag is on, and either filled in by a step after
+    // its own MyInfo login, or carried forward unchanged from an earlier
+    // step. A tampered carried-forward answer is still rejected here.
     if (response.fieldType === BasicField.Children) {
-      return err(
-        new ValidateFieldErrorV3(
-          'Children field type is not supported for MRF submisisons',
-        ),
-      )
+      const prevResponse = previousResponses?.[responseId]
+      const isFilledByThisStep =
+        stepAuthType === FormAuthType.MyInfo &&
+        (workflowStep === 0 || stepFieldIds.has(responseId))
+      // Only a Myinfo login, on Step 1 or a later step, can have filled it.
+      const isCarriedForward =
+        workflowStep > 0 &&
+        (hasMyInfoLogin || formAuthType === FormAuthType.MyInfo) &&
+        !!prevResponse &&
+        !checkIsResponseChangedV4({ response, prevResponse })
+      const isChildrenResponseAllowed =
+        isMrfChildrenEnabled && (isFilledByThisStep || isCarriedForward)
+      if (!isChildrenResponseAllowed) {
+        return err(
+          new ValidateFieldErrorV4(
+            'Children field type is not supported for this MRF submission',
+          ),
+        )
+      }
     }
 
-    const validateFieldV3Result = validateFieldV3({
+    const validateFieldV4Result = validateFieldV4({
       formId,
       formField,
       response,
       prevResponse: previousResponses?.[responseId],
       isVisible: visibleFieldIds.has(responseId),
     })
-    if (validateFieldV3Result.isErr()) {
-      return err(validateFieldV3Result.error)
+    if (validateFieldV4Result.isErr()) {
+      return err(validateFieldV4Result.error)
     }
   }
 
   return ok(responses)
+}
+
+/**
+ * Every MyInfo-prefillable field type allowed on MRF (Children excluded)
+ * carries a V4 answer of shape `{ value: string, ... }`. Extracts the string
+ * value, or undefined for any other shape.
+ */
+const extractV4StringAnswer = (
+  response: ParsedClearFormFieldResponseV4,
+): string | undefined => {
+  const value = get(response.answer, 'value')
+  return typeof value === 'string' ? value : undefined
+}
+
+/**
+ * Adapts a Children V4 response into the ProcessedChildrenResponse shape that
+ * handleMyInfoChildHashResponse consumes: a positional answerArray (one
+ * subarray per child, values ordered by the *field definition's*
+ * childrenSubFields, name first) plus childSubFieldsArray. The per-child hash
+ * keys derive from (fieldId, subField, childIndex, childName), so values are
+ * compared as-submitted — child DOBs were hashed in the frontend display
+ * format at prefill (hashChildrenFieldValues applies formatMyinfoDate), which
+ * is the same format the V4 answer carries. Missing or malformed subfield
+ * values become '' and can never satisfy a stored hash.
+ */
+const adaptV4ChildrenResponseForMyInfoHashCheck = ({
+  field,
+  response,
+  attr,
+}: {
+  field: FormFieldSchema | FormFieldDto
+  response: ParsedClearFormFieldResponseV4
+  attr: string
+}): ProcessedFieldResponse => {
+  const childrenSubFields =
+    (field as ChildrenCompoundFieldBase).childrenSubFields ?? []
+  const answer = (response.answer ?? {}) as ChildrenAnswerV4
+
+  const answerArray = Object.keys(answer)
+    .sort()
+    .map((childKey) =>
+      childrenSubFields.map((subField) => {
+        const subFieldAnswer: unknown = answer[childKey]?.value?.[subField]
+        const value =
+          typeof subFieldAnswer === 'object' && subFieldAnswer !== null
+            ? (subFieldAnswer as { value: unknown }).value
+            : undefined
+        return typeof value === 'string' ? value : ''
+      }),
+    )
+
+  return {
+    _id: field._id.toString(),
+    question: field.title,
+    fieldType: BasicField.Children,
+    answerArray,
+    childSubFieldsArray: childrenSubFields,
+    myInfo: { attr },
+    // Responses on hidden fields are rejected upstream in
+    // validateMultirespondentSubmission, so any response present here is on
+    // a visible field.
+    isVisible: true,
+  } as ProcessedChildrenResponse
+}
+
+/**
+ * Adapts parsed V4 clear responses (keyed by field id) into the
+ * ProcessedFieldResponse shape that MyInfoService.checkMyInfoHashes expects,
+ * to verify MyInfo prefill hashes exactly as encrypt mode does.
+ * The MyInfo attribute and fieldType are sourced from the *form definition*,
+ * never from the client payload — a respondent must not be able to skip the
+ * hash check by stripping or mislabelling the myInfo meta on a response.
+ *
+ * Children fields adapt to the per-child hash key scheme encrypt mode uses
+ * (handleMyInfoChildHashResponse / getMyInfoChildHashKey).
+ *
+ * @param responses parsed V4 clear responses, keyed by field id
+ * @param formFields the form's field definitions
+ * @returns responses on MyInfo fields, in checkMyInfoHashes-compatible shape
+ */
+export const adaptV4ResponsesForMyInfoHashCheck = (
+  responses: ParsedClearFormFieldResponsesV4,
+  formFields: FormFieldSchema[] | FormFieldDto[],
+): ProcessedFieldResponse[] => {
+  const adapted: ProcessedFieldResponse[] = []
+  for (const field of formFields) {
+    // Table fields have no myInfo key in the DTO union, hence the 'in' guard.
+    const attr = 'myInfo' in field ? field.myInfo?.attr : undefined
+    if (!attr) continue
+
+    const response = responses[field._id.toString()]
+    if (!response) continue
+
+    if (field.fieldType === BasicField.Children) {
+      adapted.push(
+        adaptV4ChildrenResponseForMyInfoHashCheck({ field, response, attr }),
+      )
+      continue
+    }
+
+    const rawValue = extractV4StringAnswer(response)
+    // Fail closed: a malformed answer on a MyInfo field compares as an empty
+    // string, which can never satisfy a stored hash.
+    let answer = rawValue ?? ''
+    if (field.fieldType === BasicField.Date && rawValue) {
+      // V4 dates arrive as 'DD/MM/YYYY'; convert to the 'DD MMM YYYY' wire
+      // format encrypt mode receives, which checkMyInfoHashes' transform
+      // turns back into the 'YYYY-MM-DD' form hashed at prefill.
+      const parsed = moment(rawValue, 'DD/MM/YYYY', true)
+      if (parsed.isValid()) {
+        answer = parsed.format('DD MMM YYYY')
+      }
+    }
+
+    adapted.push({
+      _id: field._id.toString(),
+      question: field.title,
+      fieldType: field.fieldType,
+      answer,
+      myInfo: { attr },
+      // Responses on hidden fields are rejected upstream in
+      // validateMultirespondentSubmission, so any response present here is on
+      // a visible field.
+      isVisible: true,
+    } as ProcessedFieldResponse)
+  }
+  return adapted
+}
+
+/**
+ * Stamps provenance.myinfoVerified on responses whose answers were actually
+ * verified against the MyInfo hashes saved at prefill time. verifiedKeys is
+ * checkMyInfoHashes' result: only keys that were compared AND matched appear
+ * in it (a mismatch fails the whole submission upstream); answers with no
+ * stored hash (e.g. user-filled child records) pass through unstamped. Hash
+ * keys are form-definition-driven, so a client cannot spoof a stamp by
+ * mislabelling its own payload. Mutates responses in place.
+ */
+export const stampMyInfoVerifiedOnResponses = (
+  responses: ParsedClearFormFieldResponsesV4,
+  verifiedKeys: Set<MyInfoKey>,
+): void => {
+  // NOTE: MyInfo Children subfields are all assumed to be uneditable, so the
+  // myinfoVerified stamp applies to the root children field rather than to
+  // each individual subfield.
+  for (const [fieldId, response] of Object.entries(responses)) {
+    if (isMyInfoVerifiedFieldId(fieldId, verifiedKeys)) {
+      response.provenance = { ...response.provenance, myinfoVerified: true }
+    }
+  }
+}
+
+const CHILD_TYPE_LABEL_TO_SCOPE: Record<string, MyInfoChildrenScope> =
+  Object.fromEntries(
+    Object.entries(MYINFO_CHILD_TYPE_LABELS).map(([scope, label]) => [
+      label,
+      scope as MyInfoChildrenScope,
+    ]),
+  )
+
+/**
+ * On a Children field that collects the Child type sub-field, makes each
+ * child's v4 `type` agree with that sub-field's answer wherever the MyInfo
+ * hash check verified it. A missing `type` is filled from the answer; one
+ * that disagrees fails the submission. Children whose Child type answer was
+ * not verified (no stored hash, i.e. not a MyInfo child) and fields without
+ * the sub-field are left alone, since nothing trustworthy says which record
+ * they came from.
+ *
+ * Must run after checkMyInfoHashes. Mutates responses in place.
+ */
+export const reconcileChildTypesWithChildTypeAnswers = (
+  responses: ParsedClearFormFieldResponsesV4,
+  formFields: FormFieldSchema[] | FormFieldDto[],
+  verifiedKeys: Set<MyInfoKey>,
+): Result<void, MyInfoHashDidNotMatchError> => {
+  for (const field of formFields) {
+    if (
+      field.fieldType !== BasicField.Children ||
+      !(field as ChildrenCompoundFieldBase).childrenSubFields?.includes(
+        MyInfoChildAttributes.ChildType,
+      )
+    ) {
+      continue
+    }
+    const fieldId = field._id.toString()
+    const response = responses[fieldId]
+    if (!response) continue
+
+    const answer = (response.answer ?? {}) as ChildrenAnswerV4
+    // Same child ordering as the hash check (adaptV4ChildrenResponseForMyInfoHashCheck).
+    for (const [childIdx, childKey] of Object.keys(answer).sort().entries()) {
+      const childEntry = answer[childKey]
+      const childName =
+        childEntry.value?.[MyInfoChildAttributes.ChildName]?.value ?? ''
+      const isChildTypeVerified = verifiedKeys.has(
+        getMyInfoChildHashKey(
+          fieldId,
+          MyInfoChildAttributes.ChildType,
+          childIdx,
+          childName,
+        ),
+      )
+      if (!isChildTypeVerified) continue
+
+      const label = childEntry.value[MyInfoChildAttributes.ChildType]?.value
+      const scope = label ? CHILD_TYPE_LABEL_TO_SCOPE[label] : undefined
+      if (!scope || (childEntry.type && childEntry.type !== scope)) {
+        return err(
+          new MyInfoHashDidNotMatchError(
+            'Child type did not match the child type answer',
+          ),
+        )
+      }
+      childEntry.type = scope
+    }
+  }
+  return ok(undefined)
 }
 
 /**
@@ -269,7 +560,7 @@ export const extractRespondentCopyEmailDatas = ({
   formFields,
   currentStepActiveFields,
 }: {
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   formFields: FormFieldSchema[] | FormFieldDto[]
   currentStepActiveFields: string[]
 }): AutoReplyMailData[] => {
@@ -284,10 +575,10 @@ export const extractRespondentCopyEmailDatas = ({
       field.fieldType === BasicField.Email &&
       field.autoReplyOptions?.hasAutoReply &&
       response &&
-      // checks if response has an answer (email)
+      // checks if response has an answer (email) - V4 email answer is always { value: string }
       typeof response.answer === 'object' &&
       'value' in response.answer &&
-      typeof response.answer.value === 'string'
+      typeof (response.answer as { value: string }).value === 'string'
     ) {
       const {
         autoReplyMessage,
@@ -297,7 +588,7 @@ export const extractRespondentCopyEmailDatas = ({
       } = field.autoReplyOptions
       return [
         {
-          email: response.answer.value,
+          email: (response.answer as { value: string }).value,
           subject: autoReplySubject,
           sender: autoReplySender,
           body: autoReplyMessage,
@@ -316,78 +607,101 @@ export type QuestionAnswerPair = {
   fieldType: BasicField
 }
 
+// TODO (keep-v4-attachment-prefix): remove with the flag
+const LEGACY_ATTACHMENT_QUESTION_PREFIX = '[Attachment] '
+
 /**
- * Given a single form field and its response, extracts question-answer pairs.
+ * Given a single form field and its response (V4), extracts question-answer pairs.
  * Used for email body/pdf outputs and individualResponsePage displays
  * Returns an array since some fields (e.g. table, children) will have
  * multiple question-answer pairs per response
  * @param formField - Single form field schema. Does not include Ndi responses, @see getQuestionAnswerPairsForMultipleFields on how to include ndi responses.
- * @param response - Response for the given form field
+ * @param response - V4 Response for the given form field
+ * @param keepV4AttachmentPrefix - labels attachments `[Attachment] ` instead of `[attachment] `
  * @returns An array of QuestionAnswer objects representing the extracted question-answer pairs for the given form field.
  */
 const getQuestionAnswerPairsForOneField = ({
   formField,
   response,
   includeSignatureDataPngDataUri,
-  delimiter = '; ',
+  includeVerifiedPrefix = true,
+  keepV4AttachmentPrefix,
 }: {
   formField: FormFieldSchema | FormFieldDto
-  response: FieldResponseV3
+  response: FieldResponseV4
   includeSignatureDataPngDataUri: boolean
-  delimiter?: string
+  includeVerifiedPrefix?: boolean
+  keepV4AttachmentPrefix: boolean
 }): QuestionAnswerPair[] => {
-  let questionTitle = formField.title
+  // V4 responses embed question text in response.question
+  let questionTitle = response.question || formField.title
+  // Hash-verified Myinfo answers carry provenance.myinfoVerified (stamped
+  // server-side at verification time); mark them the way encrypt mode marks
+  // hashed answers. The JSON dump passes includeVerifiedPrefix=false because
+  // machine consumers need raw question text.
+  if (includeVerifiedPrefix && response.provenance?.myinfoVerified) {
+    questionTitle = `${MYINFO_PREFIX}${questionTitle}`
+  }
   let answer = ''
-  let answerArray: string[] = []
   const questionAnswerPairs: QuestionAnswerPair[] = []
 
-  // edge case handling for headers
-  if (formField.fieldType === BasicField.Section) {
-    questionAnswerPairs.push({
-      question: questionTitle,
-      answer,
-      fieldType: formField.fieldType,
-    })
-    return questionAnswerPairs
-  }
-
+  const fieldType = response.fieldType as BasicField
   switch (response.fieldType) {
-    case BasicField.Attachment:
-      questionTitle = `[Attachment] ${questionTitle}`
-      answer = response.answer.answer
-      break
+    case BasicField.Attachment: {
+      const attachmentAnswer = response.answer as {
+        value: string
+        hasBeenScanned: boolean
+        md5Hash?: string
+      }
+      const prefix = keepV4AttachmentPrefix
+        ? LEGACY_ATTACHMENT_QUESTION_PREFIX
+        : ATTACHMENT_QUESTION_PREFIX
+      return [
+        {
+          question: `${prefix}${questionTitle}`,
+          answer: attachmentAnswer.value,
+          fieldType,
+        },
+      ]
+    }
     case BasicField.Address: {
-      const {
-        postalCode,
-        blockNumber,
-        streetName,
-        buildingName,
-        levelNumber,
-        unitNumber,
-      } = response.answer.addressSubFields
-      answerArray = [
-        blockNumber,
-        streetName,
-        buildingName,
-        levelNumber,
-        unitNumber,
-        postalCode,
+      const addressAnswer = response.answer as {
+        postalCode: { value: string }
+        blockNumber: { value: string }
+        streetName: { value: string }
+        buildingName: { value: string }
+        levelNumber: { value: string }
+        unitNumber: { value: string }
+      }
+      const answerArray = [
+        addressAnswer.blockNumber.value,
+        addressAnswer.streetName.value,
+        addressAnswer.buildingName.value,
+        addressAnswer.levelNumber.value,
+        addressAnswer.unitNumber.value,
+        addressAnswer.postalCode.value,
       ] // move postal code to end of array
-      answer = handleAddressResponseDisplay(Object.values(answerArray)).join(
-        ', ',
-      )
+      answer = handleAddressResponseDisplay(answerArray).join(', ')
       break
     }
     case BasicField.Email:
-    case BasicField.Mobile:
-      if (response.answer.signature)
+    case BasicField.Mobile: {
+      const verifiableAnswer = response.answer as {
+        value: string
+        signature?: string
+      }
+      if (includeVerifiedPrefix && verifiableAnswer.signature) {
         questionTitle = `[Verified] ${questionTitle}`
-
-      answer = response.answer.value
+      }
+      answer = verifiableAnswer.value
       break
-    case BasicField.Table:
-      if (formField.fieldType !== BasicField.Table || !response.answer) break
-      // eslint-disable-next-line no-case-declarations
+    }
+    case BasicField.Table: {
+      if (formField.fieldType !== BasicField.Table) break
+      const tableAnswer = response.answer as Record<
+        string,
+        { rowNum: number; value: Record<string, string | number> }
+      >
       const idToColTitleMap = formField.columns.reduce(
         (acc, col) => {
           acc[col._id] = col.title
@@ -396,8 +710,13 @@ const getQuestionAnswerPairsForOneField = ({
         {} as Record<string, string>,
       )
 
-      for (const row of response.answer) {
-        const validColumns = Object.entries(row).filter(
+      // Sort rows by rowNum for consistent ordering
+      const sortedRows = Object.values(tableAnswer).sort(
+        (a, b) => a.rowNum - b.rowNum,
+      )
+
+      for (const row of sortedRows) {
+        const validColumns = Object.entries(row.value).filter(
           ([colId]) => colId in idToColTitleMap,
         )
 
@@ -406,76 +725,106 @@ const getQuestionAnswerPairsForOneField = ({
             const colTitle = idToColTitleMap[colId]
             return `${colTitle}`
           })
-          .join(delimiter)
+          .join('; ')
 
         const delimitedColumnAnswers = validColumns
-          .map(([, colAns]) => colAns ?? '')
-          .join(delimiter)
+          .map(([, colAns]) =>
+            colAns !== null && colAns !== undefined ? String(colAns) : '',
+          )
+          .join('; ')
 
         const question = `[Table] ${formField.title} (${delimitedColumnTitles})`
-        const answer = delimitedColumnAnswers
 
         questionAnswerPairs.push({
           question,
-          answer,
-          fieldType: response.fieldType,
+          answer: delimitedColumnAnswers,
+          fieldType,
         })
       }
       return questionAnswerPairs
-    case BasicField.Radio:
-      answer =
-        'value' in response.answer
-          ? response.answer.value
-          : 'othersInput' in response.answer
-            ? 'Others: ' + response.answer.othersInput
-            : ''
-      break
-    case BasicField.Checkbox: {
-      answer = response.answer.value
-        .map((val) =>
-          val === CLIENT_CHECKBOX_OTHERS_INPUT_VALUE
-            ? response.answer.othersInput
-              ? 'Others: ' + response.answer.othersInput
-              : null
-            : val,
-        )
-        .filter(Boolean)
-        .join(', ')
+    }
+    case BasicField.Radio: {
+      const radioAnswer = response.answer as {
+        value: string
+        isOthersInput: boolean
+      }
+      if (radioAnswer.isOthersInput) {
+        answer = `Others: ${radioAnswer.value}`
+      } else {
+        answer = radioAnswer.value
+      }
       break
     }
+    case BasicField.Checkbox: {
+      const checkboxAnswer = response.answer as {
+        value: string[]
+        othersInput?: string
+      }
+      const selectedAnswers = checkboxAnswer.value.filter(
+        (val) => val !== CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
+      )
+
+      if (checkboxAnswer.othersInput) {
+        selectedAnswers.push(checkboxAnswer.othersInput)
+      }
+
+      answer = selectedAnswers.join(', ')
+      break
+    }
+    case BasicField.Children: {
+      if (formField.fieldType !== BasicField.Children) break
+      const childrenAnswer = response.answer as ChildrenAnswerV4
+      const subFields = formField.childrenSubFields ?? []
+
+      // One pair per child attribute, named exactly like getAnswersForChild
+      // (used by email/storage modes) so MRF emails match encrypt-mode
+      // emails: "Child <n> <attribute description>". Synthesized questions
+      // bypass response.question, so re-apply the [Myinfo] prefix for
+      // hash-verified answers (encrypt mode gates on hashedFields the same
+      // way).
+      const childMyInfoPrefix =
+        includeVerifiedPrefix && response.provenance?.myinfoVerified
+          ? MYINFO_PREFIX
+          : ''
+      Object.keys(childrenAnswer)
+        .sort()
+        .forEach((childKey, childIdx) => {
+          for (const subField of subFields) {
+            questionAnswerPairs.push({
+              question: `${childMyInfoPrefix}Child ${childIdx + 1} ${
+                MYINFO_ATTRIBUTE_MAP[subField].description
+              }`,
+              answer: childrenAnswer[childKey]?.value?.[subField]?.value ?? '',
+              fieldType,
+            })
+          }
+        })
+      return questionAnswerPairs
+    }
     case BasicField.Signature: {
-      const signatureQuestionAnswer = {
-        question: `[Signature] ${questionTitle}`,
+      const signatureAnswer = response.answer as {
+        value: [number, number, number][][]
+        type: string
+      }
+      const signatureQuestionAnswer: QuestionAnswerPair = {
+        question: `[signature] ${questionTitle}`,
         answer: SIGNATURE_CAPTURED_STRING,
         signatureDataPngDataUri: includeSignatureDataPngDataUri
-          ? convertToSignaturePngDataUri(response.answer.value)
+          ? convertToSignaturePngDataUri(signatureAnswer.value)
           : undefined,
-        fieldType: response.fieldType,
+        fieldType,
       }
       return [signatureQuestionAnswer]
     }
-    case BasicField.Children:
-      if (!response.answer.childFields || !response.answer.child) {
-        break
-      }
-      for (const [index, child] of response.answer.child.entries()) {
-        questionAnswerPairs.push({
-          question: `Child ${index + 1}: ${response.answer.childFields.toString()}`,
-          answer: child
-            ? child.toString()
-            : response.answer.childFields.map(() => '').toString(),
-          fieldType: response.fieldType,
-        })
-      }
-      return questionAnswerPairs
     default:
-      answer = response.answer
+      // For all string-answer fields (number, decimal, text, homeNo, dropdown, rating, nric, uen, date, countryRegion, section, yesNo)
+      answer = (response.answer as { value: string }).value ?? ''
   }
 
   questionAnswerPairs.push({
     question: questionTitle,
     answer,
-    fieldType: response.fieldType,
+    fieldType,
   })
   return questionAnswerPairs
 }
@@ -490,10 +839,14 @@ export const getQuestionAnswerPairsForMultipleFields = ({
   formFields,
   responses,
   includeSignatureDataPngDataUri = false,
+  includeVerifiedPrefix = true,
+  keepV4AttachmentPrefix,
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   includeSignatureDataPngDataUri?: boolean
+  includeVerifiedPrefix?: boolean
+  keepV4AttachmentPrefix: boolean
 }): QuestionAnswerPair[] => {
   const questionAnswerPairs: QuestionAnswerPair[] = []
   if (!formFields || !responses) {
@@ -503,34 +856,140 @@ export const getQuestionAnswerPairsForMultipleFields = ({
     const questionTitle = currentFormField.title
     const response = responses[currentFormField._id]
 
-    if (
-      (!response && currentFormField.fieldType !== BasicField.Section) || //Allow headers to be included
-      !questionTitle
-    )
-      continue
-
+    if (!response || !questionTitle) continue
     const questionAnswerPairsForCurrentFormField =
       getQuestionAnswerPairsForOneField({
         formField: currentFormField,
         response,
         includeSignatureDataPngDataUri,
+        includeVerifiedPrefix,
+        keepV4AttachmentPrefix,
       })
 
     questionAnswerPairs.push(...questionAnswerPairsForCurrentFormField)
   }
 
-  // Add Ndi responses if they exist
+  // Add Ndi responses if they exist (keyed by SPCP field title in both V3 and V4)
   for (const key in responses) {
     if (startsWithSPCPFieldTitle(key)) {
-      const { answer, fieldType } = responses[key] as NdiResponseV3
+      const ndiResponse = responses[key]
+      const answerValue = (ndiResponse.answer as { value: string }).value
       questionAnswerPairs.push({
         question: key,
-        answer,
-        fieldType,
+        answer: answerValue,
+        fieldType: ndiResponse.fieldType as unknown as BasicField,
       })
     }
   }
   return questionAnswerPairs
+}
+
+export const getFormDelimiter = (metadata?: FormMetadata): string =>
+  metadata?.delimiter ?? ', '
+
+// Field types that don't carry respondent answers; excluded from JSON dump.
+const NON_RESPONSE_FIELD_TYPES = new Set<string>([
+  BasicField.Section,
+  BasicField.Statement,
+  BasicField.Image,
+])
+
+/**
+ * Builds the JSON response payload attached to MRF completion emails.
+ *
+ * Unlike getQuestionAnswerPairsForMultipleFields (which targets human-facing
+ * email/PDF output), this dump targets machine consumers and so:
+ *   - emits an empty-string entry for every form field without a response
+ *     (schema-complete output), and
+ *   - flattens address answers to one entry per sub-field
+ *     (e.g. "Home Address - blockNumber") so each sub-field is individually
+ *     addressable downstream.
+ *
+ * Note: the `delimiter` param is accepted for caller compatibility but is
+ * currently unused post-V4 migration. See follow-up to restore admin
+ * `metadata.delimiter` customisation if needed.
+ */
+export const buildMrfResponseJson = ({
+  formFields,
+  responses,
+  formId,
+  responseId,
+  timestamp,
+  keepV4AttachmentPrefix,
+}: {
+  formFields: FormFieldSchema[] | FormFieldDto[]
+  responses: FieldResponsesV4
+  formId?: string
+  responseId: string
+  timestamp: string
+  delimiter?: string
+  keepV4AttachmentPrefix: boolean
+}): string => {
+  const entries: { question: string; answer: string }[] = [
+    ...(formId !== undefined ? [{ question: 'Form ID', answer: formId }] : []),
+    { question: 'Response ID', answer: responseId },
+    { question: 'Timestamp', answer: timestamp },
+  ]
+
+  if (!formFields || !responses) {
+    return JSON.stringify(entries)
+  }
+
+  for (const field of formFields) {
+    if (NON_RESPONSE_FIELD_TYPES.has(field.fieldType)) continue
+
+    const response = responses[field._id.toString()]
+
+    if (!response) {
+      // Label an unanswered attachment too, so its key matches an answered one
+      const isLabelledAttachment =
+        field.fieldType === BasicField.Attachment && !keepV4AttachmentPrefix
+      entries.push({
+        question: isLabelledAttachment
+          ? `${ATTACHMENT_QUESTION_PREFIX}${field.title}`
+          : field.title,
+        answer: '',
+      })
+      continue
+    }
+
+    if (response.fieldType === BasicField.Address) {
+      const addressAnswer = response.answer as Record<string, { value: string }>
+      for (const subField of Object.keys(addressAnswer)) {
+        entries.push({
+          question: `${field.title} - ${subField}`,
+          answer: addressAnswer[subField]?.value ?? '',
+        })
+      }
+      continue
+    }
+
+    const pairs = getQuestionAnswerPairsForMultipleFields({
+      formFields: [field] as unknown as FormFieldDto[],
+      responses: {
+        [field._id.toString()]: response,
+      } as unknown as FieldResponsesV4,
+      includeSignatureDataPngDataUri: false,
+      // [Verified] prefix is a UX hint for the email body; the JSON dump is
+      // for machine consumers and should carry the raw question text.
+      includeVerifiedPrefix: false,
+      keepV4AttachmentPrefix,
+    })
+    for (const p of pairs) {
+      entries.push({ question: p.question, answer: p.answer })
+    }
+  }
+
+  for (const key of Object.keys(responses)) {
+    if (!startsWithSPCPFieldTitle(key)) continue
+    const ndi = responses[key]
+    entries.push({
+      question: key,
+      answer: (ndi.answer as { value: string }).value,
+    })
+  }
+
+  return JSON.stringify(entries)
 }
 
 /**
@@ -542,9 +1001,11 @@ export const getQuestionAnswerPairsForMultipleFields = ({
 export const getResponsesDataFromMrfResponses = ({
   formFields,
   responses,
+  keepV4AttachmentPrefix,
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
+  keepV4AttachmentPrefix: boolean
 }): EmailRespondentConfirmationField[] => {
   if (!formFields || !responses) return []
 
@@ -552,6 +1013,7 @@ export const getResponsesDataFromMrfResponses = ({
     formFields,
     responses,
     includeSignatureDataPngDataUri: true,
+    keepV4AttachmentPrefix,
   })
 
   return questionAnswerPairs.map((questionAnswerPair) => {
@@ -562,82 +1024,6 @@ export const getResponsesDataFromMrfResponses = ({
       fieldType: questionAnswerPair.fieldType,
     }
   })
-}
-
-/**
- * Serialises MRF submission responses into a JSON string for email attachment.
- * Built directly from raw form fields and responses so that specific field types
- * (e.g. Address) can be handled in custom ways than the generic question-answer pair extraction
- * fields are handled consistently with the email body.
- */
-export const buildMrfResponseJson = ({
-  formFields,
-  responses,
-  responseId,
-  timestamp,
-  delimiter = ', ',
-}: {
-  formFields: FormFieldSchema[] | FormFieldDto[]
-  responses: FieldResponsesV3
-  responseId: string
-  timestamp: string
-  delimiter?: string
-}): string => {
-  const entries: Array<{ question: string; answer: string }> = [
-    { question: 'Response ID', answer: responseId },
-    { question: 'Timestamp', answer: timestamp },
-  ]
-
-  if (!formFields || !responses) return JSON.stringify(entries)
-
-  for (const field of formFields) {
-    // Skip non-response fields and fields without titles
-    if (NON_RESPONSE_FIELD_SET.has(field.fieldType as BasicField)) continue
-    if (!field.title) continue
-
-    const response = responses[field._id]
-    if (!response) {
-      entries.push({ question: field.title, answer: '' })
-      continue
-    }
-
-    switch (response.fieldType) {
-      case BasicField.Address: {
-        const subFields = response.answer.addressSubFields
-        for (const key of answerKey) {
-          entries.push({
-            question: `${field.title} - ${key}`,
-            answer: subFields[key as keyof typeof subFields],
-          })
-        }
-        break
-      }
-      case BasicField.Email:
-      case BasicField.Mobile:
-        entries.push({ question: field.title, answer: response.answer.value })
-        break
-      default: {
-        const pairs = getQuestionAnswerPairsForOneField({
-          formField: field,
-          response,
-          includeSignatureDataPngDataUri: false,
-          delimiter,
-        })
-        for (const pair of pairs) {
-          entries.push({ question: pair.question, answer: pair.answer })
-        }
-      }
-    }
-  }
-
-  for (const key in responses) {
-    if (startsWithSPCPFieldTitle(key)) {
-      const { answer } = responses[key] as NdiResponseV3
-      entries.push({ question: key, answer })
-    }
-  }
-
-  return JSON.stringify(entries)
 }
 
 /**
@@ -670,6 +1056,10 @@ export const getMrfCookieName = ({
 }): string => {
   return `Mrf_${formId}_${previousSubmissionId}`
 }
+
+export type MrfVersion = 2
+
+export const MRF_VERSION_V4: MrfVersion = 2
 
 export const formatSubmittedStepTimestamp = ({
   submittedSteps,

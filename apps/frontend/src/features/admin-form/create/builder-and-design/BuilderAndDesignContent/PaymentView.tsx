@@ -3,7 +3,9 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiCog, BiTrash } from 'react-icons/bi'
 import { Box, ButtonGroup, Collapse, Flex } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { FormFieldDto, FormResponseMode } from 'formsg-shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -40,6 +42,7 @@ import {
 
 export const PaymentView = () => {
   const { data: form } = useAdminForm()
+  const isMrfPaymentsEnabled = useFeatureIsOn(featureFlags.mrfPayments)
   const { handleBuilderClick, setFieldListTabIndex } = useCreatePageSidebar()
   const { paymentFromStore, paymentState, setToEditingPayment } =
     usePaymentStore((state) => ({
@@ -69,7 +72,16 @@ export const PaymentView = () => {
     }
   }, [paymentState])
 
-  if (form?.responseMode !== FormResponseMode.Encrypt) return null
+  const isEncryptMode = form?.responseMode === FormResponseMode.Encrypt
+  const isMrfMode = form?.responseMode === FormResponseMode.Multirespondent
+  // The mrf-payments flag gates enablement surfaces only: a payment-enabled
+  // MRF keeps its payment field visible (and deletable) in the builder even
+  // if the flag is switched off after enablement.
+  const isPaymentCapable =
+    isEncryptMode ||
+    (isMrfMode && (isMrfPaymentsEnabled || form.payments_field.enabled))
+
+  if (!isPaymentCapable) return null
 
   const isActive = paymentState === PaymentState.EditingPayment
 

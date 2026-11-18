@@ -11,7 +11,12 @@ import {
 
 import { XMotionBox } from '~templates/MotionBox'
 
-import { CanceledResult, DownloadOptions, DownloadResult } from '../../types'
+import {
+  CanceledResult,
+  DownloadOptions,
+  DownloadResult,
+  isCsvOnlyDownload,
+} from '../../types'
 import { isCanceledResult } from '../../utils/typeguards'
 import { CompleteScreen, ProgressModalContent } from '../ProgressModal'
 
@@ -30,6 +35,8 @@ export interface DownloadWithAttachmentModalProps extends Pick<
   initialState?: [DownloadWithAttachmentFlowStates, number]
   downloadMetadata?: DownloadResult | CanceledResult
   downloadOptions: DownloadOptions
+  isCsvFollowingTable?: boolean
+  isResponsesCountHidden?: boolean
 }
 
 /** Exported for testing. */
@@ -54,8 +61,12 @@ export const DownloadWithAttachmentModal = ({
   downloadPercentage,
   downloadMetadata,
   downloadOptions,
+  isCsvFollowingTable,
+  isResponsesCountHidden,
   initialState = INITIAL_STEP_STATE,
 }: DownloadWithAttachmentModalProps): JSX.Element => {
+  const [startedOptions, setStartedOptions] = useState(downloadOptions)
+  const isCsvOnly = isCsvOnlyDownload(startedOptions)
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -77,9 +88,10 @@ export const DownloadWithAttachmentModal = ({
   }, [downloadMetadata, isOpen])
 
   const handleDownload = useCallback(() => {
+    setStartedOptions(downloadOptions)
     setCurrentStep([DownloadWithAttachmentFlowStates.Progress, 1])
     return onDownload()
-  }, [onDownload])
+  }, [downloadOptions, onDownload])
 
   const { t } = useTranslation()
 
@@ -99,6 +111,8 @@ export const DownloadWithAttachmentModal = ({
           {currentStep === DownloadWithAttachmentFlowStates.Confirmation && (
             <ConfirmationScreen
               downloadOptions={downloadOptions}
+              isCsvFollowingTable={isCsvFollowingTable}
+              isResponsesCountHidden={isResponsesCountHidden}
               isDownloading={isDownloading}
               responsesCount={responsesCount}
               onCancel={onClose}
@@ -111,19 +125,28 @@ export const DownloadWithAttachmentModal = ({
               onCancel={onCancel}
             >
               <Text mb="1rem">
-                {t(
-                  'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.modal.progressMessage',
-                  { responsesCount: <b>{responsesCount.toLocaleString()}</b> },
-                )}
+                {isCsvOnly
+                  ? t(
+                      'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.progressModalContent',
+                    )
+                  : t(
+                      'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.modal.progressMessage',
+                      {
+                        responsesCount: (
+                          <b>{responsesCount.toLocaleString()}</b>
+                        ),
+                      },
+                    )}
               </Text>
             </ProgressModalContent>
           )}
           {currentStep === DownloadWithAttachmentFlowStates.Complete ? (
             isCanceledResult(downloadMetadata) ? (
-              <CanceledScreen onClose={onClose} />
+              <CanceledScreen onClose={onClose} isBeta={!isCsvOnly} />
             ) : (
               <CompleteScreen
-                isWithAttachments
+                isWithAttachments={startedOptions.isDownloadAttachments}
+                isBeta={!isCsvOnly}
                 downloadMetadata={downloadMetadata}
                 onClose={onClose}
               />

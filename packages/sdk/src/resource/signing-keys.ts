@@ -6,7 +6,8 @@ export const SIGNING_KEYS = {
   },
   development: {
     publicKey: 'Tl5gfszlKcQj99/0uafLwVpT6JAu4C0dHGvLq1cHzFE=',
-    secretKey: 'HDBXpu+2/gu10bLHpy8HjpN89xbA6boH9GwibPGJA8BOXmB+zOUpxCP33/S5p8vBWlPokC7gLR0ca8urVwfMUQ==',
+    secretKey:
+      'HDBXpu+2/gu10bLHpy8HjpN89xbA6boH9GwibPGJA8BOXmB+zOUpxCP33/S5p8vBWlPokC7gLR0ca8urVwfMUQ==',
   },
   production: {
     // production must never contain secret keys

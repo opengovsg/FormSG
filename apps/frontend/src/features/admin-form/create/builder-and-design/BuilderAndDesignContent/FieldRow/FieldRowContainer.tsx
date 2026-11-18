@@ -64,8 +64,9 @@ import { CreatePageSidebarContextProps } from '~features/admin-form/create/commo
 import {
   augmentWithMyInfoDisplayValue,
   extractPreviewValue,
+  getFieldLoginLabel,
+  getFieldSourceLabel,
   hasExistingFieldValue,
-  isMyInfo,
 } from '~features/myinfo/utils'
 
 import { useBuilderAndDesignContext } from '../../BuilderAndDesignContext'
@@ -73,6 +74,7 @@ import {
   setToInactiveSelector as setPaymentToInactiveSelector,
   usePaymentStore,
 } from '../../BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
+import { PENDING_CREATE_FIELD_ID } from '../../constants'
 import { useDeleteFormField } from '../../mutations/useDeleteFormField'
 import { useDuplicateFormField } from '../../mutations/useDuplicateFormField'
 import { useCreateTabForm } from '../../useCreateTabForm'
@@ -157,7 +159,8 @@ const FieldRowContainer = ({
     setPaymentToInactiveSelector,
   )
 
-  const isMyInfoField = useMemo(() => isMyInfo(field), [field])
+  const sourceBadge = getFieldSourceLabel(field)
+  const loginBadge = getFieldLoginLabel(field)
 
   // Explicitly defining isActive here to prevent constant checks to undefined
   // due to falsy nature of FieldBuilderState.CreatingField = 0
@@ -249,14 +252,24 @@ const FieldRowContainer = ({
     [handleFieldClick],
   )
 
+  // The placeholder moves in local state only, so a dirty draft is no reason
+  // to block it. A save in flight still is.
+  const canDragPendingField =
+    !isMobile &&
+    field._id === PENDING_CREATE_FIELD_ID &&
+    fieldBuilderState === FieldBuilderState.CreatingField
+
   const isDragDisabled = useMemo(() => {
-    return (
-      !isActive ||
-      isDirty ||
-      !!numFormFieldMutations ||
-      fieldBuilderState === FieldBuilderState.CreatingField
-    )
-  }, [isActive, isDirty, numFormFieldMutations, fieldBuilderState])
+    if (!isActive || !!numFormFieldMutations) return true
+    if (canDragPendingField) return false
+    return isDirty || fieldBuilderState === FieldBuilderState.CreatingField
+  }, [
+    isActive,
+    isDirty,
+    numFormFieldMutations,
+    fieldBuilderState,
+    canDragPendingField,
+  ])
 
   return (
     <Draggable
@@ -336,7 +349,8 @@ const FieldRowContainer = ({
                     snapshot.isDragging ? 'secondary.300' : 'secondary.200'
                   }
                 >
-                  {fieldBuilderState === FieldBuilderState.EditingField &&
+                  {(fieldBuilderState === FieldBuilderState.EditingField ||
+                    canDragPendingField) &&
                   !isDragDisabled ? (
                     <Icon as={BiGridHorizontal} fontSize="1.5rem" />
                   ) : (
@@ -356,7 +370,8 @@ const FieldRowContainer = ({
                     field={field}
                     colorTheme={colorTheme}
                     responseMode={responseMode}
-                    showMyInfoBadge={isMyInfoField}
+                    sourceBadge={sourceBadge}
+                    loginBadge={loginBadge}
                   />
                 </FormProvider>
               </Box>
@@ -512,7 +527,8 @@ type FieldRowProps = {
   field: FormFieldDto
   colorTheme?: FormColorTheme
   responseMode: FormResponseMode
-  showMyInfoBadge?: boolean
+  sourceBadge?: string
+  loginBadge?: string
 }
 
 const FieldRow = ({ field, ...rest }: FieldRowProps) => {

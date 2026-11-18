@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { fullScreenDecorator } from '~utils/storybook'
 import { ButtonProps } from '~components/Button'
@@ -17,7 +17,8 @@ export default {
   decorators: [fullScreenDecorator],
   parameters: {
     layout: 'fullscreen',
-    chromatic: { pauseAnimationAtEnd: true, delay: 50 },
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
 } as Meta
 

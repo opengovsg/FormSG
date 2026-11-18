@@ -132,24 +132,27 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
           return (
             !!val ||
             !getValues('ValidationOptions.selectedValidation') ||
-            'Please enter number of characters'
+            t('features.adminForm.sidebar.fields.number.error.numOfCharacter')
           )
         },
         validNumber: (val) => {
           // Check whether input is a valid number, avoid e
-          return !isNaN(Number(val)) || 'Please enter a valid number'
+          return (
+            !isNaN(Number(val)) ||
+            t('features.adminForm.sidebar.fields.number.error.validNumber')
+          )
         },
       },
       min: {
         value: 1,
-        message: 'Cannot be less than 1',
+        message: t('features.adminForm.sidebar.fields.number.error.min'),
       },
       max: {
         value: 10000,
-        message: 'Cannot be more than 10000',
+        message: t('features.adminForm.sidebar.fields.number.error.max'),
       },
     }),
-    [getValues],
+    [getValues, t],
   )
 
   // Effect to clear validation option errors when selection limit is toggled off.
@@ -179,13 +182,22 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
       <FormControl isReadOnly={isLoading}>
-        <Toggle {...register('required')} label="Required" />
+        <Toggle
+          {...register('required')}
+          label={t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.required',
+          )}
+        />
       </FormControl>
       <FormControl
         isReadOnly={isLoading}
         isInvalid={!isEmpty(errors.ValidationOptions)}
       >
-        <FormLabel isRequired>Number of characters allowed</FormLabel>
+        <FormLabel isRequired>
+          {t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.noCharactersAllowed',
+          )}
+        </FormLabel>
         <SimpleGrid
           mt="0.5rem"
           columns={{ base: 2, md: 1, lg: 2 }}
@@ -210,7 +222,9 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
                 flex={1}
                 inputMode="numeric"
                 showSteppers={false}
-                placeholder="Number of characters"
+                placeholder={t(
+                  'features.adminForm.sidebar.fields.commonFieldComponents.charactersAllowedPlaceholder',
+                )}
                 isDisabled={!watchedSelectedValidation}
                 onChange={validateNumberInput(onChange)}
                 {...rest}
@@ -225,8 +239,11 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
       <FormControl isReadOnly={isLoading}>
         <Toggle
           {...register('allowPrefill')}
-          label="Enable pre-fill"
-          description={`Use Field ID in the form URL to pre-fill this field for respondents. [Learn how](${GUIDE_PREFILL})`}
+          label={t('features.adminForm.sidebar.fields.shortText.prefill.label')}
+          description={t(
+            'features.adminForm.sidebar.fields.shortText.prefill.description',
+            { guidePrefill: GUIDE_PREFILL },
+          )}
         />
         {watchAllowPrefill ? (
           <>
@@ -236,7 +253,9 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
                 isDisabled={!field._id}
                 value={
                   field._id ??
-                  'Field ID will be generated after this field is saved'
+                  t(
+                    'features.adminForm.sidebar.fields.shortText.prefill.fieldIdPlaceholder',
+                  )
                 }
                 hasInputRightElement={Boolean(field._id)}
               />
@@ -244,7 +263,9 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
                 <InputRightElement>
                   <CopyButton
                     stringToCopy={field._id}
-                    aria-label="Copy field ID value"
+                    aria-label={t(
+                      'features.adminForm.sidebar.fields.shortText.prefill.copyFieldIdAriaLabel',
+                    )}
                   />
                 </InputRightElement>
               ) : null}
@@ -262,8 +283,12 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
                 {...rest}
                 isChecked={!!value}
                 onChange={onChange}
-                label="Prevent pre-fill editing"
-                description="This prevents respondents from clicking the field to edit it. However, field content can still be modified via the URL."
+                label={t(
+                  'features.adminForm.sidebar.fields.shortText.prefill.lock.label',
+                )}
+                description={t(
+                  'features.adminForm.sidebar.fields.shortText.prefill.lock.description',
+                )}
               />
             )}
           />

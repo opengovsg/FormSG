@@ -1,6 +1,7 @@
 import { MemoryRouter } from 'react-router-dom'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
+import { DateString } from 'formsg-shared/types'
 import { FormColorTheme } from 'formsg-shared/types/form/form'
 import { FormLogoState } from 'formsg-shared/types/form/form_logo'
 
@@ -11,7 +12,7 @@ import {
   getPublicFormWithoutSectionsResponse,
 } from '~/mocks/msw/handlers/public-form'
 
-import { getMobileViewParameters } from '~utils/storybook'
+import { getMobileViewGlobals, viewportModes } from '~utils/storybook'
 
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
@@ -39,9 +40,9 @@ export default {
     ),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
 } as Meta
 
@@ -49,132 +50,197 @@ const Template: StoryFn = () => <FormStartPage />
 
 export const NoEstimatedTime = Template.bind({})
 NoEstimatedTime.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook no estimated time',
-          startPage: {
-            estTimeTaken: 0,
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title: 'storybook no estimated time',
+              startPage: {
+                estTimeTaken: 0,
+              },
+            },
           },
-        },
-      },
-      delay: 0,
-    }),
-  ],
+          delay: 0,
+        }),
+      ],
+    },
+  },
+}
+
+/** 2359 SGT on 31 Dec 2026, stored as UTC. Should read as 11:59 PM (SGT). */
+export const WithDeadline = Template.bind({})
+WithDeadline.parameters = {
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title: 'storybook with deadline',
+              closeAt: '2026-12-31T15:59:00.000Z' as DateString,
+            },
+          },
+          delay: 0,
+        }),
+      ],
+    },
+  },
+}
+
+export const WithDeadlineNoEstimatedTime = Template.bind({})
+WithDeadlineNoEstimatedTime.parameters = {
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title: 'storybook with deadline, no estimated time',
+              closeAt: '2026-12-31T15:59:00.000Z' as DateString,
+              startPage: {
+                estTimeTaken: 0,
+              },
+            },
+          },
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }
 
 export const OverflowTitle = Template.bind({})
 OverflowTitle.parameters = {
-  msw: [
-    ...envHandlers,
-    getCustomLogoResponse(),
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title:
-            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-          startPage: {
-            logo: {
-              state: FormLogoState.Custom,
-              fileId: 'mockFormLogo',
+  argos: { modes: viewportModes('mobile') },
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getCustomLogoResponse(),
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title:
+                'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+              startPage: {
+                logo: {
+                  state: FormLogoState.Custom,
+                  fileId: 'mockFormLogo',
+                },
+              },
             },
           },
-        },
-      },
-      delay: 0,
-    }),
-  ],
-}
-
-export const OverflowTitleMobile = Template.bind({})
-OverflowTitleMobile.parameters = {
-  ...getMobileViewParameters(),
-  ...OverflowTitle.parameters,
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }
 
 export const ColorThemeBrown = Template.bind({})
 ColorThemeBrown.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook test brown theme',
-          startPage: {
-            colorTheme: FormColorTheme.Brown,
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title: 'storybook test brown theme',
+              startPage: {
+                colorTheme: FormColorTheme.Brown,
+              },
+            },
           },
-        },
-      },
-      delay: 0,
-    }),
-  ],
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }
 export const ColorThemeGreen = Template.bind({})
 ColorThemeGreen.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook test green theme',
-          startPage: {
-            colorTheme: FormColorTheme.Green,
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title: 'storybook test green theme',
+              startPage: {
+                colorTheme: FormColorTheme.Green,
+              },
+            },
           },
-        },
-      },
-      delay: 0,
-    }),
-  ],
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }
 
 export const ColorThemeGrey = Template.bind({})
 ColorThemeGrey.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook test grey theme',
-          startPage: {
-            colorTheme: FormColorTheme.Grey,
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title: 'storybook test grey theme',
+              startPage: {
+                colorTheme: FormColorTheme.Grey,
+              },
+            },
           },
-        },
-      },
-      delay: 0,
-    }),
-  ],
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }
 
 export const ColorThemeOrange = Template.bind({})
 ColorThemeOrange.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook test orange theme',
-          startPage: {
-            colorTheme: FormColorTheme.Orange,
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title: 'storybook test orange theme',
+              startPage: {
+                colorTheme: FormColorTheme.Orange,
+              },
+            },
           },
-        },
-      },
-      delay: 0,
-    }),
-  ],
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }
 
 export const ColorThemeRed = Template.bind({})
 ColorThemeRed.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook test red theme',
-          startPage: {
-            colorTheme: FormColorTheme.Red,
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              title: 'storybook test red theme',
+              startPage: {
+                colorTheme: FormColorTheme.Red,
+              },
+            },
           },
-        },
-      },
-      delay: 0,
-    }),
-  ],
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }
 
 const MiniHeaderTemplate: StoryFn<MiniHeaderProps> = (args) => (
@@ -190,7 +256,7 @@ MiniHeader.args = {
   isOpen: true,
 }
 MiniHeader.parameters = {
-  msw: [getPublicFormResponse()],
+  msw: { handlers: { default: [getPublicFormResponse()] } },
 }
 
 export const OverflowMiniHeader = MiniHeaderTemplate.bind({})
@@ -209,8 +275,8 @@ MiniHeaderMobileWithSections.args = {
 }
 MiniHeaderMobileWithSections.parameters = {
   ...MiniHeader.parameters,
-  ...getMobileViewParameters(),
 }
+MiniHeaderMobileWithSections.globals = getMobileViewGlobals()
 
 export const MiniHeaderMobileWithoutSections = MiniHeaderTemplate.bind({})
 MiniHeaderMobileWithoutSections.args = {
@@ -218,15 +284,19 @@ MiniHeaderMobileWithoutSections.args = {
   activeSectionId: undefined,
 }
 MiniHeaderMobileWithoutSections.parameters = {
-  msw: [
-    getPublicFormWithoutSectionsResponse({
-      overrides: {
-        form: {
-          title: 'storybook test title',
-        },
-      },
-      delay: 0,
-    }),
-  ],
-  ...getMobileViewParameters(),
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormWithoutSectionsResponse({
+          overrides: {
+            form: {
+              title: 'storybook test title',
+            },
+          },
+          delay: 0,
+        }),
+      ],
+    },
+  },
 }
+MiniHeaderMobileWithoutSections.globals = getMobileViewGlobals()

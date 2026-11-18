@@ -1,4 +1,4 @@
-import { composeStories } from '@storybook/react'
+import { composeStories } from '@storybook/react-vite'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import parsePhoneNumber from 'libphonenumber-js'
@@ -65,7 +65,7 @@ describe('User has no verified contact number', () => {
     expect(otpInput).toBeInTheDocument()
 
     // Act
-    await act(async () => userEvent.type(otpInput, '123456'))
+    await act(async () => userEvent.type(otpInput, 'A1B2C3D4'))
     await act(async () => userEvent.click(otpSubmitButton))
 
     // Assert

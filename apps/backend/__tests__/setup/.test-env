@@ -13,22 +13,18 @@ CP_OIDC_RP_REDIRECT_URL=http://localhost:5000/api/v3/corppass/login
 CP_OIDC_RP_JWKS_PUBLIC_PATH=./__tests__/setup/certs/test_cp_rp_public_jwks.json
 CP_OIDC_RP_JWKS_SECRET_PATH=./__tests__/setup/certs/test_cp_rp_secret_jwks.json
 
-MYINFO_CLIENT_CONFIG=dev
-MYINFO_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
-MYINFO_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
-MYINFO_CLIENT_ID=mockClientId
-MYINFO_CLIENT_SECRET=mockClientSecret
 MYINFO_JWT_SECRET=mockJwtSecret
-SINGPASS_ESRVC_ID=Test-eServiceId-Sp # Needed for MyInfo
+
+MYINFO_FAPI_ISSUER=http://localhost:5156/singpass/v3/fapi
+MYINFO_FAPI_CLIENT_ID=mockFapiClientId
+MYINFO_FAPI_RP_JWKS_PUBLIC_PATH=./__tests__/setup/certs/test_myinfo_fapi_rp_public_jwks.json
+MYINFO_FAPI_RP_JWKS_SECRET_PATH=./__tests__/setup/certs/test_myinfo_fapi_rp_secret_jwks.json
 
 SGID_HOSTNAME=http://localhost:5156
 SGID_CLIENT_ID=sgidclientid
 SGID_CLIENT_SECRET=sgidclientsecret
-SGID_FORM_LOGIN_REDIRECT_URI=http://localhost:5000/sgid/login
 SGID_ADMIN_LOGIN_REDIRECT_URI=http://localhost:5000/api/v3/auth/sgid/login
 SGID_PRIVATE_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
-SGID_PUBLIC_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/server.crt
-SGID_JWT_SECRET=sgidjwtsecret
 
 IS_SP_MAINTENANCE=Date/Time-SP
 IS_CP_MAINTENANCE=Date/Time-CP
@@ -56,6 +52,9 @@ SERVICES=s3
 IMAGE_S3_BUCKET=local-image-bucket
 LOGO_S3_BUCKET=local-logo-bucket
 ATTACHMENT_S3_BUCKET=local-attachment-bucket
+SUBMISSION_HISTORY_V4_S3_BUCKET=local-submission-history-v4-bucket
+SUBMISSION_HISTORY_V1_S3_BUCKET=local-submission-history-v1-bucket
+SUBMISSION_HISTORY_V1_ATTACHMENT_S3_BUCKET=local-submission-history-v1-attachment-bucket
 STATIC_ASSETS_S3_BUCKET=local-static-assets-bucket
 GUARDDUTY_QUARANTINE_S3_BUCKET=local-guardduty-quarantine-bucket
 GUARDDUTY_CLEAN_S3_BUCKET=local-guardduty-clean-bucket
@@ -83,6 +82,7 @@ MOCKPASS_UID=S8979373D # Not used by mockpass but keep in sync with MOCKPASS_UEN
 MOCKPASS_UEN=123456789A
 SP_RP_JWKS_ENDPOINT=http://localhost:5000/sp/.well-known/jwks.json
 CP_RP_JWKS_ENDPOINT=http://localhost:5000/api/v3/corppass/.well-known/jwks.json
+FAPI_CLIENT_JWKS_ENDPOINT=http://localhost:5000/mi/fapi/.well-known/jwks.json
 
 # WOG AD env vars for testing
 WOGAD_CLIENT_ID=test-client-id

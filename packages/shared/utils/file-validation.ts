@@ -5,6 +5,7 @@ import uniq from 'lodash/uniq'
 // Note: Guide should be updated if the list of valid extensions is changed.
 // https://guide.form.gov.sg/faq/faq/attachments
 export const VALID_EXTENSIONS = [
+  '.264',
   '.asc',
   '.avi',
   '.bmp',
@@ -12,6 +13,7 @@ export const VALID_EXTENSIONS = [
   '.class',
   '.csv',
   '.dat',
+  '.dcm',
   '.dgn',
   '.doc',
   '.docx',
@@ -19,17 +21,26 @@ export const VALID_EXTENSIONS = [
   '.dwf',
   '.dwg',
   '.dxf',
+  '.edr',
   '.ent',
   '.eps',
   '.gif',
+  '.gno',
   '.gz',
+  '.heif',
+  '.hevc',
   '.htm',
   '.html',
+  '.jdr',
   '.jfif',
   '.jpeg',
   '.jpg',
+  '.json',
   '.log',
+  '.m4a',
   '.mov',
+  '.mp3',
+  '.mp4',
   '.mpeg',
   '.mpg',
   '.mpp',
@@ -42,6 +53,7 @@ export const VALID_EXTENSIONS = [
   '.odp',
   '.ods',
   '.odt',
+  '.opencert',
   '.p7m',
   '.p7s',
   '.pcx',
@@ -63,6 +75,7 @@ export const VALID_EXTENSIONS = [
   '.tar',
   '.tif',
   '.tiff',
+  '.ts',
   '.txt',
   '.vcf',
   '.vsd',
@@ -109,26 +122,40 @@ export const isInvalidFileExtension = (ext: string): boolean =>
  * @param file the file to check
  * @return array of invalid file extensions in given zip file
  */
+export const MAX_ZIP_NESTING_DEPTH = 3
+export const MAX_ZIP_ENTRY_COUNT = 1000
+
 export const getInvalidFileExtensionsInZip = (
   dataFormat: 'blob' | 'nodebuffer',
   file: Blob | Buffer,
 ): Promise<string[]> => {
   // We wrap this checker into a closure because the data format
   // needs to be different for frontend vs backend.
+  let entryCount = 0
   const checkZipForInvalidFiles = async (
     file: Blob | Buffer,
+    depth: number,
   ): Promise<string[]> => {
+    if (depth > MAX_ZIP_NESTING_DEPTH) {
+      throw new Error('Zip file nesting is too deep')
+    }
     const zip = await JSZip.loadAsync(file)
+    const fileEntries = zip.filter((_relativePath, fileEntry) => !fileEntry.dir)
+    entryCount += fileEntries.length
+    if (entryCount > MAX_ZIP_ENTRY_COUNT) {
+      throw new Error('Zip file has too many entries')
+    }
     const invalidFileExtensions: (string | string[] | Promise<string[]>)[] = []
-    zip.forEach((_relativePath, fileEntry) => {
-      if (fileEntry.dir) return
+    fileEntries.forEach((fileEntry) => {
       const fileExt = getFileExtension(fileEntry.name)
       if (isInvalidFileExtension(fileExt)) {
         return invalidFileExtensions.push(fileExt)
       }
       if (fileExt === '.zip') {
         return invalidFileExtensions.push(
-          fileEntry.async(dataFormat).then(checkZipForInvalidFiles),
+          fileEntry
+            .async(dataFormat)
+            .then((nested) => checkZipForInvalidFiles(nested, depth + 1)),
         )
       }
     })
@@ -136,5 +163,5 @@ export const getInvalidFileExtensionsInZip = (
     const results = await Promise.all(invalidFileExtensions)
     return uniq(flattenDeep(results))
   }
-  return checkZipForInvalidFiles(file)
+  return checkZipForInvalidFiles(file, 0)
 }

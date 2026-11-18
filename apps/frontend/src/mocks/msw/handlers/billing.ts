@@ -30,7 +30,7 @@ const generateBillingMeta = (): BillingInfoDto => {
         adminEmail: 'admin5@mock.gov.sg',
         formName: 'form4',
         formId: 'form4id' as FormId,
-        authType: FormAuthType.SGID,
+        authType: FormAuthType.CP,
         total: 7,
       },
       {
@@ -66,7 +66,7 @@ const generateBillingMeta = (): BillingInfoDto => {
         adminEmail: 'admin7@mock.gov.sg',
         formName: 'form9',
         formId: 'form9id' as FormId,
-        authType: FormAuthType.SGID,
+        authType: FormAuthType.CP,
         total: 14,
       },
       {
@@ -109,7 +109,7 @@ export const getBillingInfo = ({
   return http.get<never, never, BillingInfoDto>(
     '/api/v3/billings',
     async () => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(generateBillingMeta(), { status: 200 })
     },
   )

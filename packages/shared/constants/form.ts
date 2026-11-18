@@ -1,6 +1,8 @@
 const PUBLIC_FORM_FIELDS = [
   'admin',
   'authType',
+  // Exposed so respondents see the deadline before they start filling the form
+  'closeAt',
   'isSubmitterIdCollectionEnabled',
   'isSingleSubmission',
   'endPage',
@@ -30,6 +32,7 @@ export const STORAGE_PUBLIC_FORM_FIELDS = [
 
 export const MULTIRESPONDENT_PUBLIC_FORM_FIELDS = [
   ...PUBLIC_FORM_FIELDS,
+  'payments_field',
   'publicKey',
   'workflow',
   'hasStatusTracker',
@@ -47,6 +50,7 @@ const FORM_SETTINGS_FIELDS = [
   'inactiveMessage',
   'status',
   'submissionLimit',
+  'closeAt',
   'title',
   'webhook',
   'hasMultiLang',
@@ -70,11 +74,15 @@ export const STORAGE_FORM_SETTINGS_FIELDS = [
 
 export const MULTIRESPONDENT_FORM_SETTINGS_FIELDS = [
   ...FORM_SETTINGS_FIELDS,
+  'payments_channel',
+  'payments_field',
   'publicKey',
+  'business',
   'emails',
   'stepsToNotify',
   'stepOneEmailNotificationFieldId',
   'hasStatusTracker',
+  'hasUsedGuidedMode',
   'whitelistedSubmitterIds',
 ] as const
 
@@ -115,10 +123,19 @@ export const E2EE_SUBMISSION_VERSION = 1
 // Encryption boundary shift implementation PR: https://github.com/opengovsg/FormSG/pull/6587
 export const VIRUS_SCANNER_SUBMISSION_VERSION = 2.1
 // MRF RFC: https://www.notion.so/opengov/RFC-Multi-respondent-forms-8ab40a8c17674937b345450d9dd2c81d?pvs=4
-export const MULTIRESPONDENT_FORM_SUBMISSION_VERSION = 3
+// Version 4: FE sends V4-shaped responses natively. The BE receiver shim
+// still adapts version-3 bodies from stale clients (adaptMrfV3BodyToV4).
+export const MULTIRESPONDENT_FORM_SUBMISSION_VERSION = 4
 
 // TODO: (Kill Email Mode) Remove this form after kill email mode is fully implemented.
 export const TEST_EMAIL_MODE_DEPRECATION_FEEDBACK_FORM_ID =
   '66c0966666c0966666c09666'
 
 export const RESPONDENT_EMAIL_FIELD_ID = 'respondent_email_field'
+
+export const MAX_SAVED_VIEWS = 5
+
+// Shared by MyInfo data fields and login identity fields, across all logins.
+export const MAX_LOGIN_FIELDS = 50
+
+export const MAX_SEND_BACK_REMARKS_LENGTH = 1000

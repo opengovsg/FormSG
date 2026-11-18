@@ -10,7 +10,7 @@ import { FormControl } from '@chakra-ui/react'
 
 import {
   AgencyBase,
-  FormResponseMode,
+  MultirespondentFormSettings,
   StorageFormSettings,
 } from 'formsg-shared/types'
 
@@ -21,6 +21,7 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { useMutateFormSettings } from '../../mutations'
 import { useAdminFormSettings } from '../../queries'
+import { isPaymentCapableFormSettings } from '../../utils'
 
 interface BusinessFieldInputProps {
   initialValue: string
@@ -73,7 +74,7 @@ const BusinessInfoBlock = ({
   settings,
   agencyDefaults,
 }: {
-  settings: StorageFormSettings
+  settings: StorageFormSettings | MultirespondentFormSettings
   agencyDefaults: AgencyBase['business']
 }) => {
   const { t } = useTranslation('translation', {
@@ -121,7 +122,7 @@ export const BusinessInfoSection = () => {
   if (
     isLoading ||
     !settings ||
-    settings.responseMode !== FormResponseMode.Encrypt ||
+    !isPaymentCapableFormSettings(settings) ||
     !adminSettings
   ) {
     return <></>

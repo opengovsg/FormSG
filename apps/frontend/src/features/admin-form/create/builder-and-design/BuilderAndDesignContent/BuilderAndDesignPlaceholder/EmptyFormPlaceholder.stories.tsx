@@ -1,5 +1,5 @@
 import { Box } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { AdminFormDto, FormResponseMode } from 'formsg-shared/types'
 
@@ -19,9 +19,13 @@ export default {
   component: EmptyFormPlaceholder,
   decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
   parameters: {
-    msw: buildMswRoutes({
-      responseMode: FormResponseMode.Encrypt,
-    }),
+    msw: {
+      handlers: {
+        default: buildMswRoutes({
+          responseMode: FormResponseMode.Encrypt,
+        }),
+      },
+    },
   },
 } as Meta
 

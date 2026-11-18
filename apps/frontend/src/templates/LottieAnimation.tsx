@@ -33,8 +33,8 @@ export const LottieAnimation = ({
 
   return (
     <Box
-      // The link will always change in Chromatic so this should be ignored.
-      data-chromatic="ignore"
+      // The link will always change between snapshots so this should be ignored.
+      data-visual-test="transparent"
       {...boxProps}
       ref={element}
     />

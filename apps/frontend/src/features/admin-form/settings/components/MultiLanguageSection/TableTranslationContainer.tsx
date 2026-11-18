@@ -1,4 +1,5 @@
 import { FieldError, useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Divider, Flex, FormControl, Text } from '@chakra-ui/react'
 
 import { Language } from 'formsg-shared/types'
@@ -30,6 +31,7 @@ export const TableTranslationContainer = ({
   unicodeLocale,
   errors,
 }: TableTranslationContainerProps) => {
+  const { t } = useTranslation()
   const { register } = useFormContext<TranslationInput>()
 
   return (
@@ -65,7 +67,7 @@ export const TableTranslationContainer = ({
               fontWeight="600"
               mb="1rem"
             >
-              Column
+              {t('features.adminForm.settings.multiLanguage.sections.column')}
             </Text>
             <Flex direction="column" width="100%">
               <Flex alignItems="flex-start" mb="2rem">
@@ -75,7 +77,7 @@ export const TableTranslationContainer = ({
                   mr="7.5rem"
                   width="6.25rem"
                 >
-                  Default
+                  {t('features.common.default')}
                 </Text>
                 <Textarea
                   placeholder={column.title}
@@ -106,7 +108,9 @@ export const TableTranslationContainer = ({
                   mb="1rem"
                   mt="2rem"
                 >
-                  Options
+                  {t(
+                    'features.adminForm.settings.multiLanguage.sections.options',
+                  )}
                 </Text>
                 <Flex alignItems="flex-start" mb="2rem">
                   <Text
@@ -115,7 +119,7 @@ export const TableTranslationContainer = ({
                     mr="7.5rem"
                     width="6.25rem"
                   >
-                    Default
+                    {t('features.common.default')}
                   </Text>
                   <Textarea
                     placeholder={column.fieldOptions?.join('\n') ?? ''}

@@ -1,20 +1,20 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson'
+import { FormResponseMode } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
-import { errAsync, ok, okAsync } from 'neverthrow'
+import { errAsync, okAsync } from 'neverthrow'
 import Stripe from 'stripe'
 import { SetRequired } from 'type-fest'
 
 import getPaymentModel from 'src/app/models/payment.server.model'
 import { getEncryptPendingSubmissionModel } from 'src/app/models/pending_submission.server.model'
-import { IPopulatedEncryptedForm, IPopulatedForm } from 'src/types'
+import { IPopulatedForm } from 'src/types'
 
 import config from '../../../config/config'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
-import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
 import * as StripeController from '../stripe.controller'
 import * as StripeService from '../stripe.service'
 
@@ -29,7 +29,6 @@ jest.mock('src/app/utils/convert-html-to-pdf')
 jest.mock(
   'src/app/modules/submission/encrypt-submission/encrypt-submission.service',
 )
-const MockEncryptSubmissionService = jest.mocked(EncryptSubmissionService)
 
 jest.mock('../../form/form.service')
 const MockFormService = jest.mocked(FormService)
@@ -63,6 +62,7 @@ describe('stripe.controller', () => {
     })
     const mockForm = {
       _id: MOCK_FORM_ID,
+      responseMode: FormResponseMode.Encrypt,
     } as IPopulatedForm
     it('should return UNPROCESSABLE_ENTITY when state mismatch', async () => {
       // Arrange
@@ -125,9 +125,6 @@ describe('stripe.controller', () => {
         Stripe.OAuthToken,
         'stripe_user_id' | 'stripe_publishable_key'
       >
-      MockEncryptSubmissionService.checkFormIsEncryptMode.mockReturnValueOnce(
-        ok(mockForm as IPopulatedEncryptedForm),
-      )
       MockStripeService.exchangeCodeForAccessToken.mockReturnValueOnce(
         okAsync(mockStripeToken),
       )

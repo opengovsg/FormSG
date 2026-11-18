@@ -23,6 +23,7 @@ import { HttpError } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
+import { applyMyInfoVerifiedView } from '~features/myinfo/utils'
 
 interface PreviewFormProviderProps {
   formId: string
@@ -115,12 +116,20 @@ export const TemplateFormProvider = ({
     () => (formFields ? getFieldPrefillMap(formFields, searchParams) : {}),
     [formFields, searchParams],
   )
+  const seedsMyInfoValues = form?.responseMode !== FormResponseMode.Email
+  const showsMyInfoVerifiedView =
+    form?.authType === FormAuthType.MyInfo && seedsMyInfoValues
   const augmentedFormFields = useMemo(
     () =>
       formFields
-        ? augmentFormFields(formFields, currentStepNumberWorkflowStep)
+        ? augmentFormFields(
+            showsMyInfoVerifiedView
+              ? formFields.map(applyMyInfoVerifiedView('SG'))
+              : formFields,
+            currentStepNumberWorkflowStep,
+          )
         : [],
-    [formFields, currentStepNumberWorkflowStep],
+    [formFields, showsMyInfoVerifiedView, currentStepNumberWorkflowStep],
   )
 
   const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
@@ -173,6 +182,7 @@ export const TemplateFormProvider = ({
         fieldPrefillMap,
         hasSingleSubmissionValidationError: false,
         hasRespondentNotWhitelistedError: false,
+        currentWorkflowStep: currentStepNumberWorkflowStep,
         ...commonFormValues,
         ...data,
         ...rest,

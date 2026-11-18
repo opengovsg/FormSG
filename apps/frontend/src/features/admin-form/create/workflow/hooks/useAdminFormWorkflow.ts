@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { keyBy } from 'lodash'
 
+import { PLUMBER_WEBHOOK_URL_REGEX } from 'formsg-shared/constants'
 import {
   BasicField,
   DropdownFieldBase,
@@ -15,11 +16,18 @@ import { FormFieldWithQuestionNo } from '~features/form/types'
 import { augmentFieldWithQuestionNo } from '~features/form/utils'
 import { augmentWithMyInfo } from '~features/myinfo/utils'
 
-export const useAdminFormWorkflow = () => {
-  const { data: form, isLoading } = useAdminForm()
+export const useAdminFormWorkflow = (options?: { staleTime?: number }) => {
+  const { data: form, isLoading } = useAdminForm(options)
 
-  const augmentedFormFields = augmentFieldWithQuestionNo(
-    form?.form_fields.map(augmentWithMyInfo) ?? [],
+  // Memoised on form_fields. Without this the array identity changes on every
+  // render, so the four useMemos below never hit and every consumer redoes a
+  // keyBy plus three filters over every field in the form.
+  const augmentedFormFields = useMemo(
+    () =>
+      augmentFieldWithQuestionNo(
+        form?.form_fields.map(augmentWithMyInfo) ?? [],
+      ),
+    [form?.form_fields],
   )
 
   const idToFieldMap = useMemo(
@@ -69,6 +77,13 @@ export const useAdminFormWorkflow = () => {
     isLoading,
     formFields: form?.form_fields,
     formWorkflow,
+    isPaymentEnabled:
+      form?.responseMode === FormResponseMode.Multirespondent &&
+      !!form.payments_field?.enabled,
+    isLegacyWebhookEnabled:
+      !!form?.webhook.url &&
+      !PLUMBER_WEBHOOK_URL_REGEX.test(form.webhook.url) &&
+      form.webhook.webhookFormat !== 'v4',
     idToFieldMap,
     emailFormFields,
     yesNoFormFields,

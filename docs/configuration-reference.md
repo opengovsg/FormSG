@@ -79,7 +79,7 @@ These are configured by creating groups of environment variables formatted like 
 | `NODE_ENV`           | [Express environment mode](https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production). Defaults to `'production'`. This should always be set to a production environment |
 | `SESSION_SECRET`     | Secret for `express-session` for session management. This should always be set to a secret and random value in a production environment.                                                                   |
 | `SUBMISSIONS_TOP_UP` | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`.                                                                                                              |
-| `FORMS_TOP_UP` | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`.                                                                                                              |
+| `FORMS_TOP_UP`       | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`.                                                                                                              |
 
 **Banners**
 
@@ -173,6 +173,7 @@ SITE_BANNER_CONTENT=hello:This is an invalid banner type, and the full text will
 | `MAIL_DEBUG`          | If set to `true`, then logs SMTP traffic, otherwise logs only transaction events.                                                                                                                                    |
 | `CHROMIUM_BIN`        | Filepath to chromium binary. Required for email autoreply PDF generation with Puppeteer.                                                                                                                             |
 | `BOUNCE_LIFE_SPAN`    | Time in milliseconds that bounces are tracked for each form. Defaults to 86400000ms or 24 hours. Only relevant if you have set up AWS to send bounce and delivery notifications to the /emailnotifications endpoint. |
+| `SES_SNS_TOPIC_ARNS`  | Comma-separated ARNs of the SNS topics that deliver SES bounce and delivery notifications. Notifications from any other topic are rejected. If unset, all notifications are rejected.                                |
 
 **Rate limits at specific endpoints**
 
@@ -222,7 +223,6 @@ Note that MyInfo is currently not supported for storage mode forms and enabling 
 | Variable                         | Description                                                                                                                                                                  |
 | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SPCP_COOKIE_MAX_AGE_PRESERVED`  | Duration of Singpass JWT before expiry in milliseconds. Defaults to 30 days.                                                                                                 |
-| `SINGPASS_ESRVC_ID`              | e-service ID registered with National Digital Identity office for Singpass authentication. Needed for MyInfo.                                                                |
 | `SP_OIDC_NDI_DISCOVERY_ENDPOINT` | NDI's Singpass OIDC Discovery Endpoint                                                                                                                                       |
 | `SP_OIDC_NDI_JWKS_ENDPOINT`      | NDI's Singpass OIDC JWKS Endpoint                                                                                                                                            |
 | `SP_OIDC_RP_CLIENT_ID`           | The Relying Party's Singpass Client ID as registered with NDI                                                                                                                |
@@ -235,11 +235,6 @@ Note that MyInfo is currently not supported for storage mode forms and enabling 
 | `CP_OIDC_RP_REDIRECT_URL`        | The Relying Party's Corppass Redirect URL                                                                                                                                    |
 | `CP_OIDC_RP_JWKS_PUBLIC_PATH`    | Path to the Relying Party's Public Json Web Key Set used for Corppass-related communication with NDI. This will be hosted at api/v3/corppass/.well-known/jwks.json endpoint. |
 | `CP_OIDC_RP_JWKS_SECRET_PATH`    | Path to the Relying Party's Secret Json Web Key Set used for Corppass-related communication with NDI                                                                         |
-| `MYINFO_CLIENT_CONFIG`           | Configures [MyInfoGovClient](https://github.com/opengovsg/myinfo-gov-client). Set this to either`stg` or `prod` to fetch MyInfo data from the corresponding endpoints.       |
-| `MYINFO_FORMSG_KEY`              | Filepath to MyInfo private key, which is used to decrypt data and sign requests when communicating with MyInfo.                                                              |
-| `MYINFO_CERT`                    | Path to MyInfo's public certificate, which is used to verify their signature.                                                                                                |
-| `MYINFO_CLIENT_ID`               | Client ID registered with MyInfo.                                                                                                                                            |
-| `MYINFO_CLIENT_SECRET`           | Client secret registered with MyInfo.                                                                                                                                        |
 | `MYINFO_JWT_SECRET`              | Secret for signing MyInfo JWT.                                                                                                                                               |
 | `IS_SP_MAINTENANCE`              | If set, displays a banner message on Singpass forms. Overrides `IS_CP_MAINTENANCE`.                                                                                          |
 | `IS_CP_MAINTENANCE`              | If set, displays a banner message on Corppass forms.                                                                                                                         |

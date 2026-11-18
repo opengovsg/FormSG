@@ -1,6 +1,6 @@
 import { Lambda } from '@aws-sdk/client-lambda'
+import type { S3Client } from '@aws-sdk/client-s3'
 import { PackageMode } from '@opengovsg/formsg-sdk/dist/types'
-import aws from 'aws-sdk'
 import { SessionOptions } from 'express-session'
 import { ConnectOptions } from 'mongoose'
 import Mail from 'nodemailer/lib/mailer'
@@ -32,13 +32,16 @@ export type AwsConfig = {
   imageS3Bucket: string
   logoS3Bucket: string
   attachmentS3Bucket: string
+  submissionHistoryV4S3Bucket: string
+  submissionHistoryV1S3Bucket: string
+  submissionHistoryV1AttachmentS3Bucket: string
   paymentProofS3Bucket: string
   region: string
   logoBucketUrl: string
   imageBucketUrl: string
   attachmentBucketUrl: string
   staticAssetsBucketUrl: string
-  s3: aws.S3
+  s3: S3Client
   endPoint: string
   guarddutyQuarantineS3BucketUrl: string
   guarddutyQuarantineS3Bucket: string
@@ -72,6 +75,7 @@ export type RateLimitConfig = {
   makeTextPrompt: number
   makeVisionPrompt: number
   mrfPendingSubmissionEmailReminder: number
+  analyticsEvents: number
 }
 
 export type PublicApiConfig = {
@@ -105,6 +109,7 @@ export type Config = {
   chromiumBin: string
   otpLifeSpan: number
   bounceLifeSpan: number
+  sesSnsTopicArns: string[]
   formsgSdkMode: PackageMode
   submissionsTopUp: number
   formsTopUp: number
@@ -148,6 +153,9 @@ export interface ICompulsoryVarsSchema {
     staticAssetsS3Bucket: string
     logoS3Bucket: string
     attachmentS3Bucket: string
+    submissionHistoryV4S3Bucket: string
+    submissionHistoryV1S3Bucket: string
+    submissionHistoryV1AttachmentS3Bucket: string
     paymentProofS3Bucket: string
   }
 }
@@ -156,22 +164,24 @@ export interface ISgidVarsSchema {
   clientId: string
   clientSecret: string
   privateKey: string
-  publicKey: string
   privateKeyPath: string
-  publicKeyPath: string
-  formLoginRedirectUri: string
   adminLoginRedirectUri: string
-  cookieMaxAge: number
-  cookieMaxAgePreserved: number
-  cookieDomain: string
   hostname: string
-  jwtSecret: string
 }
 
 export interface ISsoVarsSchema {
   discoveryUrl: string
   clientId: string
   clientSecret: string
+}
+
+export interface IOneVarsSchema {
+  discoveryUrl: string
+  clientId: string
+  // RATIONALE: JSON string of a JWK Set containing exactly one private
+  // signing key, used to authenticate via private_key_jwt (see
+  // auth-one.service.ts). one.gov.sg dropped client_secret_basic support.
+  clientJwksSecret: string
 }
 
 export interface IWogadVarsSchema {
@@ -214,6 +224,7 @@ export interface IOptionalVarsSchema {
     logger: boolean
     debug: boolean
     bounceLifeSpan: number
+    sesSnsTopicArns: string
     chromiumBin: string
     maxMessages: number
     maxConnections: number
@@ -231,6 +242,7 @@ export interface IOptionalVarsSchema {
     makeTextPrompt: number
     makeVisionPrompt: number
     mrfPendingSubmissionEmailReminder: number
+    analyticsEvents: number
   }
   iacMigration: {
     // TODO: (IaC Migration) Remove this after IaC migration is fully completed

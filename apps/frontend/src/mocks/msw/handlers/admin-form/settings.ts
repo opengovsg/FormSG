@@ -10,6 +10,7 @@ import {
   AdminFormDto,
   AdminFormViewDto,
   FormId,
+  FormMetadata,
   FormResponseMode,
   FormSettings,
 } from 'formsg-shared/types/form/form'
@@ -28,7 +29,7 @@ export const getAdminFormView = ({
   return http.get<{ formId: string }, never, AdminFormViewDto>(
     '/api/v3/admin/forms/:formId',
     async ({ params }) => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(
         createMockForm({
           _id: params.formId as FormId,
@@ -39,6 +40,20 @@ export const getAdminFormView = ({
       )
     },
   )
+}
+
+export const putAdminFormOrigins = ({
+  delay = 0,
+}: { delay?: number | 'infinite' } = {}) => {
+  return http.put<
+    { formId: string },
+    Pick<FormMetadata, 'formOrigins'>,
+    Pick<FormMetadata, 'formOrigins'>
+  >('/api/v3/admin/forms/:formId/form-origins', async ({ request }) => {
+    const { formOrigins } = await request.json()
+    await MswDelay(delay ?? 0)
+    return HttpResponse.json({ formOrigins }, { status: 200 })
+  })
 }
 
 export const getAdminFormSettings = ({
@@ -59,7 +74,7 @@ export const getAdminFormSettings = ({
   return http.get<{ formId: string }, never>(
     '/api/v3/admin/forms/:formId/settings',
     async ({ params }) => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(
         pick(
           createMockForm({
@@ -88,7 +103,7 @@ export const patchAdminFormSettings = ({
     '/api/v3/admin/forms/:formId/settings',
     async ({ params, request }) => {
       const body = await request.json()
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(
         pick(
           createMockForm({
@@ -101,6 +116,23 @@ export const patchAdminFormSettings = ({
             ? EMAIL_FORM_SETTINGS_FIELDS
             : STORAGE_FORM_SETTINGS_FIELDS,
         ),
+        { status: 200 },
+      )
+    },
+  )
+}
+
+export const getAdminFormStripeValidate = ({
+  delay = 0,
+}: {
+  delay?: number | 'infinite'
+} = {}) => {
+  return http.get<{ formId: string }, never>(
+    '/api/v3/admin/forms/:formId/stripe/validate',
+    async () => {
+      await MswDelay(delay ?? 0)
+      return HttpResponse.json(
+        { account: { charges_enabled: true } },
         { status: 200 },
       )
     },

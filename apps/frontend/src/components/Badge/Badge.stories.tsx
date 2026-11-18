@@ -1,5 +1,5 @@
 import { SimpleGrid, Text } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { Badge, BadgeProps } from './Badge'
 

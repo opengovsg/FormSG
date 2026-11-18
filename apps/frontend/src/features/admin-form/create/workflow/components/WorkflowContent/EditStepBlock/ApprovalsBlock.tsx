@@ -1,19 +1,29 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { FormControl } from '@chakra-ui/react'
+import { FormControl, Text } from '@chakra-ui/react'
+
+import { BasicField } from 'formsg-shared/types'
 
 import { textStyles } from '~theme/textStyles'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Toggle from '~components/Toggle'
 
+import { useAddFieldPicker } from '~features/admin-form/create/common/useAddFieldPicker'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
+import { useIsWorkflowSavePermissive } from '../../../hooks/useIsWorkflowSavePermissive'
 import { EditStepInputs } from '../../../types'
+import { useIsSpotlightActiveSection } from '../../Spotlight'
+import { nextEditFieldsForApproval } from '../utils/nextEditFieldsForApproval'
 
-import { FIELDS_TO_EDIT_NAME } from './EditStepBlock'
+import {
+  APPROVAL_ENABLED_NAME,
+  APPROVAL_FIELD_NAME,
+  FIELDS_TO_EDIT_NAME,
+} from './EditStepBlock'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
 
 interface ApprovalsBlockProps {
@@ -21,24 +31,30 @@ interface ApprovalsBlockProps {
   stepNumber: number
 }
 
-const APPROVAL_FIELD_NAME = 'approval_field'
 export const ApprovalsBlock = ({
   formMethods,
   stepNumber,
 }: ApprovalsBlockProps): JSX.Element => {
   const { t } = useTranslation()
+  const isSavePermissive = useIsWorkflowSavePermissive()
+  const isActiveSection = useIsSpotlightActiveSection()
+  const { withAddFieldItem, withAddFieldAction } = useAddFieldPicker({
+    label: t('features.adminForm.sidebar.workflow.addField.yesNo'),
+    fieldType: BasicField.YesNo,
+  })
   const {
     control,
     setValue,
+    getValues,
     formState: { errors },
     clearErrors,
     watch,
   } = formMethods
   const selectedApprovalField = watch(APPROVAL_FIELD_NAME)
-  const selectedEditFields = watch(FIELDS_TO_EDIT_NAME)
-  const [isApprovalToggleChecked, setIsApprovalToggleChecked] = useState(
-    !!selectedApprovalField,
-  )
+  const isApprovalToggleChecked =
+    watch(APPROVAL_ENABLED_NAME) ?? !!selectedApprovalField
+  const setIsApprovalToggleChecked = (isChecked: boolean) =>
+    setValue(APPROVAL_ENABLED_NAME, isChecked, { shouldDirty: true })
   const {
     yesNoFormFields = [],
     formWorkflow = [],
@@ -61,10 +77,30 @@ export const ApprovalsBlock = ({
     })
     .filter(Boolean)
 
+  const lastChosenApprovalField = useRef(selectedApprovalField ?? '')
+
+  const assignApprovalFieldToStep = (approvalFieldId: string) => {
+    const currentEdit = getValues(FIELDS_TO_EDIT_NAME) ?? []
+    const nextEdit = nextEditFieldsForApproval({
+      edit: currentEdit,
+      approvalFieldId,
+    })
+    if (nextEdit !== currentEdit) {
+      setValue(FIELDS_TO_EDIT_NAME, nextEdit, { shouldDirty: true })
+    }
+  }
+
   const onApprovalToggleChange = () => {
     const nextIsApprovalToggleChecked = !isApprovalToggleChecked
-    if (!nextIsApprovalToggleChecked) {
-      setValue(APPROVAL_FIELD_NAME, '')
+    if (nextIsApprovalToggleChecked) {
+      const remembered = lastChosenApprovalField.current
+      if (remembered && yesNoFieldIds.includes(remembered)) {
+        assignApprovalFieldToStep(remembered)
+        setValue(APPROVAL_FIELD_NAME, remembered, { shouldDirty: true })
+      }
+    } else {
+      lastChosenApprovalField.current = getValues(APPROVAL_FIELD_NAME) ?? ''
+      setValue(APPROVAL_FIELD_NAME, '', { shouldDirty: true })
       clearErrors(APPROVAL_FIELD_NAME)
     }
     setIsApprovalToggleChecked(nextIsApprovalToggleChecked)
@@ -72,10 +108,6 @@ export const ApprovalsBlock = ({
 
   const getValueIfNotDeleted = useCallback(
     (value: string) => {
-      // Why: When the Yes/No field has been deleted, the approval_field is still set to the
-      // invalid form field id but cannot be seen or cleared in the SingleSelect component
-      // since no matching Yes/No item can be found.
-      // Hence, we clear the approval_field to allow the user to re-select a new valid value.
       if (!isLoading && value && !yesNoFieldIds.includes(value)) {
         setValue(APPROVAL_FIELD_NAME, '')
         return ''
@@ -87,29 +119,33 @@ export const ApprovalsBlock = ({
 
   return (
     <EditStepBlockContainer>
+      {isActiveSection ? (
+        <Text textStyle="body-2" color="secondary.400">
+          {t('features.adminForm.sidebar.workflow.guidedHints.approvals')}
+        </Text>
+      ) : null}
       <Toggle
         isLoading={isLoading}
         onChange={onApprovalToggleChange}
         isChecked={isApprovalToggleChecked}
-        labelStyles={textStyles.h4}
+        labelStyles={{ ...textStyles.h4, color: 'inherit' }}
         label={t('features.adminForm.sidebar.workflow.approvals.toggle.label')}
         description={t(
           'features.adminForm.sidebar.workflow.approvals.toggle.description',
         )}
-        tooltipText={t(
-          'features.adminForm.sidebar.workflow.approvals.toggle.tooltip',
-        )}
-        tooltipVariant="info"
-        tooltipPlacement="top"
+        descriptionStyles={{ color: 'secondary.700' }}
       />
       {isApprovalToggleChecked ? (
-        <FormControl isInvalid={!!errors.approval_field?.message}>
+        <FormControl
+          isInvalid={!!errors.approval_field?.message}
+          isRequired={!isSavePermissive}
+        >
           <Controller
             name={APPROVAL_FIELD_NAME}
             control={control}
             rules={{
               validate: (value) => {
-                if (!value && isApprovalToggleChecked) {
+                if (!value && isApprovalToggleChecked && !isSavePermissive) {
                   return t(
                     'features.adminForm.sidebar.workflow.approvals.validation.noField',
                   )
@@ -119,27 +155,38 @@ export const ApprovalsBlock = ({
                     'features.adminForm.sidebar.workflow.approvals.validation.fieldAlreadyUsed',
                   )
                 }
-                if (value && !selectedEditFields.includes(value)) {
+                if (
+                  value &&
+                  !(getValues(FIELDS_TO_EDIT_NAME) ?? []).includes(value)
+                ) {
                   return t(
                     'features.adminForm.sidebar.workflow.approvals.validation.fieldNotAssignedToUser',
                   )
                 }
               },
             }}
-            render={({ field: { value = '', ...rest } }) => (
-              <>
+            render={({ field: { value = '', onChange, ...rest } }) => {
+              const displayValue = getValueIfNotDeleted(value)
+              const handleApprovalFieldChange = withAddFieldAction(
+                (newValue: string) => {
+                  assignApprovalFieldToStep(newValue)
+                  onChange(newValue)
+                },
+              )
+              return (
                 <SingleSelect
                   placeholder={t(
                     'features.adminForm.sidebar.workflow.approvals.toggle.placeholder',
                   )}
-                  items={yesNoFieldItems}
-                  value={getValueIfNotDeleted(value)}
+                  items={withAddFieldItem(yesNoFieldItems)}
+                  value={displayValue}
                   isClearable
                   isDisabled={isLoading}
+                  onChange={handleApprovalFieldChange}
                   {...rest}
                 />
-              </>
-            )}
+              )
+            }}
           />
           <FormErrorMessage>{errors.approval_field?.message}</FormErrorMessage>
         </FormControl>

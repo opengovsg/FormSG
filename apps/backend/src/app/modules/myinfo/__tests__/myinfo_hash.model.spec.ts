@@ -171,6 +171,78 @@ describe('MyInfo Hash Model', () => {
       })
     })
 
+    describe('step login scope', () => {
+      const SCOPE = { authSessionId: 'fapi-session-1', workflowStep: 1 }
+      // Scoped reads check expiry themselves, so outlive the test.
+      const STEP_COOKIE_MAX_AGE = 60 * 1000
+
+      it('should keep step-scoped and unscoped hashes apart', async () => {
+        // Unscoped (Step 1 / storage mode) hashes.
+        await MyInfoHash.updateHashes(
+          DEFAULT_INPUT_PARAMS.uinFin,
+          DEFAULT_INPUT_PARAMS.form.toHexString(),
+          { name: 'stepOne' },
+          STEP_COOKIE_MAX_AGE,
+        )
+        // Same person and form, scoped to a later step's login.
+        await MyInfoHash.updateHashes(
+          DEFAULT_INPUT_PARAMS.uinFin,
+          DEFAULT_INPUT_PARAMS.form.toHexString(),
+          { name: 'stepTwo' },
+          STEP_COOKIE_MAX_AGE,
+          SCOPE,
+        )
+
+        await expect(MyInfoHash.countDocuments()).resolves.toEqual(2)
+        await expect(
+          MyInfoHash.findHashes(
+            DEFAULT_INPUT_PARAMS.uinFin,
+            DEFAULT_INPUT_PARAMS.form.toHexString(),
+          ),
+        ).resolves.toEqual({ name: 'stepOne' })
+        await expect(
+          MyInfoHash.findHashes(
+            DEFAULT_INPUT_PARAMS.uinFin,
+            DEFAULT_INPUT_PARAMS.form.toHexString(),
+            SCOPE,
+          ),
+        ).resolves.toEqual({ name: 'stepTwo' })
+        // Another login session or step sees nothing.
+        await expect(
+          MyInfoHash.findHashes(
+            DEFAULT_INPUT_PARAMS.uinFin,
+            DEFAULT_INPUT_PARAMS.form.toHexString(),
+            { ...SCOPE, authSessionId: 'fapi-session-2' },
+          ),
+        ).resolves.toBeNull()
+        await expect(
+          MyInfoHash.findHashes(
+            DEFAULT_INPUT_PARAMS.uinFin,
+            DEFAULT_INPUT_PARAMS.form.toHexString(),
+            { ...SCOPE, workflowStep: 2 },
+          ),
+        ).resolves.toBeNull()
+      })
+
+      it('should not return expired step-scoped hashes', async () => {
+        await MyInfoHash.updateHashes(
+          DEFAULT_INPUT_PARAMS.uinFin,
+          DEFAULT_INPUT_PARAMS.form.toHexString(),
+          { name: 'stepTwo' },
+          -1000,
+          SCOPE,
+        )
+
+        await expect(
+          MyInfoHash.findHashes(
+            DEFAULT_INPUT_PARAMS.uinFin,
+            DEFAULT_INPUT_PARAMS.form.toHexString(),
+            SCOPE,
+          ),
+        ).resolves.toBeNull()
+      })
+    })
+
     describe('findHashes', () => {
       it('should find the correct document', async () => {
         // Arrange

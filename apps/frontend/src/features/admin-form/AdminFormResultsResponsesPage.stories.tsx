@@ -4,9 +4,12 @@ import {
   createRoutesFromElements,
   RouterProvider,
 } from 'react-router-dom'
-import { Meta, StoryFn } from '@storybook/react'
-import { expect, userEvent, waitFor, within } from '@storybook/test'
+import { Box } from '@chakra-ui/react'
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
+import { Meta, StoryFn } from '@storybook/react-vite'
+import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types/form'
 
 import {
@@ -14,21 +17,26 @@ import {
   getAdminFormCollaborators,
   getAdminFormSubmissions,
   getMultiRespondentSubmissionMetadataResponse,
+  getStorageSubmission,
   getStorageSubmissionMetadataResponse,
+  getStorageSubmissionsStream,
 } from '~/mocks/msw/handlers/admin-form'
 import { getUser } from '~/mocks/msw/handlers/user'
 
 import {
   ADMINFORM_RESULTS_SUBROUTE,
   ADMINFORM_ROUTE,
+  RESULTS_CHARTS_SUBROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
 } from '~constants/routes'
-import { getMobileViewParameters, viewports } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
+import { ChartsPage } from './responses/ChartsPage/ChartsPage'
 import {
   FeedbackPage,
   FormResultsLayout,
+  IndividualResponseDrawer,
   ResponsesLayout,
   ResponsesPage,
 } from './responses'
@@ -36,9 +44,9 @@ import {
 export default {
   title: 'Pages/AdminFormPage/Results/ResponsesTab',
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: {
       handlers: {
         default: [
@@ -70,6 +78,9 @@ const Template: StoryFn = () => {
             <Route index element={<ResponsesPage />} />
           </Route>
           <Route path={RESULTS_FEEDBACK_SUBROUTE} element={<FeedbackPage />} />
+          <Route path={RESULTS_CHARTS_SUBROUTE} element={<ResponsesLayout />}>
+            <Route index element={<ChartsPage />} />
+          </Route>
         </Route>
       </Route>,
     ),
@@ -82,6 +93,7 @@ const Template: StoryFn = () => {
   return <RouterProvider router={router} />
 }
 export const EmailForm = Template.bind({})
+EmailForm.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 
 export const EmailFormLoading = Template.bind({})
 EmailFormLoading.parameters = {
@@ -113,41 +125,36 @@ EmptyEmailForm.parameters = {
   },
 }
 
-export const EmailFormTablet = Template.bind({})
-EmailFormTablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
-  chromatic: { viewports: [viewports.md] },
-}
-
-export const EmailFormMobile = Template.bind({})
-EmailFormMobile.parameters = getMobileViewParameters()
+const storageFormHandlers = [
+  ...createFormBuilderMocks(
+    {
+      responseMode: FormResponseMode.Encrypt,
+      publicKey: MOCK_KEYPAIR.publicKey,
+    },
+    0,
+  ),
+  getAdminFormSubmissions(),
+  getStorageSubmissionMetadataResponse(),
+  getUser(),
+  getAdminFormCollaborators(),
+]
 
 export const StorageForm = Template.bind({})
 StorageForm.parameters = {
-  msw: {
-    handlers: {
-      default: [
-        ...createFormBuilderMocks(
-          {
-            responseMode: FormResponseMode.Encrypt,
-            publicKey: MOCK_KEYPAIR.publicKey,
-          },
-          0,
-        ),
-        getAdminFormSubmissions(),
-        getStorageSubmissionMetadataResponse(),
-        getUser(),
-        getAdminFormCollaborators(),
-      ],
-    },
-  },
+  argos: { modes: viewportModes('tablet', 'mobile') },
+  msw: { handlers: { default: storageFormHandlers } },
 }
 
 export const StorageFormUnlocked = Template.bind({})
 StorageFormUnlocked.parameters = StorageForm.parameters
-StorageFormUnlocked.play = async ({ canvasElement }) => {
+StorageFormUnlocked.parameters = {
+  ...StorageFormUnlocked.parameters,
+  argos: {
+    ...StorageFormUnlocked.parameters?.argos,
+    modes: viewportModes('tablet', 'mobile'),
+  },
+}
+const unlockResponses = async (canvasElement: HTMLElement) => {
   const canvas = within(canvasElement)
 
   await waitFor(
@@ -162,31 +169,125 @@ StorageFormUnlocked.play = async ({ canvasElement }) => {
     canvas.getByRole('button', { name: /unlock responses/i }),
   )
 }
-
-export const StorageFormUnlockedTablet = Template.bind({})
-StorageFormUnlockedTablet.parameters = {
-  ...EmailFormTablet.parameters,
-  ...StorageFormUnlocked.parameters,
+StorageFormUnlocked.play = async ({ canvasElement }) => {
+  await unlockResponses(canvasElement)
+  await expect(
+    await within(canvasElement).findByRole('button', {
+      name: 'Download options',
+    }),
+  ).toBeVisible()
 }
-StorageFormUnlockedTablet.play = StorageFormUnlocked.play
 
-export const StorageFormUnlockedMobile = Template.bind({})
-StorageFormUnlockedMobile.parameters = {
-  ...EmailFormMobile.parameters,
-  ...StorageFormUnlocked.parameters,
-}
-StorageFormUnlockedMobile.play = StorageFormUnlocked.play
+const delightfulDashboardGrowthBook = new GrowthBook({
+  features: { [featureFlags.delightfulDashboard]: { defaultValue: true } },
+})
 
-export const StorageFormTablet = Template.bind({})
-StorageFormTablet.parameters = {
-  ...EmailFormTablet.parameters,
+export const StorageFormUnlockedV2 = Template.bind({})
+StorageFormUnlockedV2.parameters = {
   ...StorageForm.parameters,
+  msw: {
+    handlers: {
+      default: [
+        ...storageFormHandlers,
+        getStorageSubmissionsStream({ publicKey: MOCK_KEYPAIR.publicKey }),
+        getStorageSubmission({ publicKey: MOCK_KEYPAIR.publicKey }),
+      ],
+    },
+  },
+}
+// Asserting the v2 toolbar guards against a local v1 toggle in localStorage
+// silently rendering v1 under this story's name.
+StorageFormUnlockedV2.play = async (context) => {
+  await StorageFormUnlocked.play?.(context)
+  await within(context.canvasElement).findByRole('button', {
+    name: /columns/i,
+  })
+}
+StorageFormUnlockedV2.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={delightfulDashboardGrowthBook}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+
+// Real page states retain the toolbar, table and count lifecycle together.
+export const StorageFormCountLoading = Template.bind({})
+StorageFormCountLoading.decorators = StorageFormUnlockedV2.decorators
+StorageFormCountLoading.parameters = {
+  msw: {
+    handlers: {
+      default: [
+        ...storageFormHandlers,
+        getStorageSubmissionsStream({
+          publicKey: MOCK_KEYPAIR.publicKey,
+          delay: 'infinite',
+        }),
+      ],
+    },
+  },
+}
+StorageFormCountLoading.play = async ({ canvasElement }) => {
+  await unlockResponses(canvasElement)
+  await expect(
+    await within(canvasElement).findByRole('status', { name: '' }),
+  ).toHaveTextContent('Loading response count')
 }
 
-export const StorageFormMobile = Template.bind({})
-StorageFormMobile.parameters = {
-  ...EmailFormMobile.parameters,
-  ...StorageForm.parameters,
+export const StorageFormCountLimitedScope = Template.bind({})
+StorageFormCountLimitedScope.decorators = StorageFormUnlockedV2.decorators
+StorageFormCountLimitedScope.parameters = {
+  msw: {
+    handlers: {
+      default: [
+        ...storageFormHandlers.filter(
+          (handler) =>
+            !handler.info.path.toString().endsWith('/submissions/metadata'),
+        ),
+        getStorageSubmissionMetadataResponse({ count: 25000 }),
+        getStorageSubmissionsStream({ publicKey: MOCK_KEYPAIR.publicKey }),
+        getStorageSubmission({ publicKey: MOCK_KEYPAIR.publicKey }),
+      ],
+    },
+  },
+}
+StorageFormCountLimitedScope.play = async (context) => {
+  await StorageFormUnlockedV2.play?.(context)
+  const canvas = within(context.canvasElement)
+  await expect(
+    await canvas.findByRole(
+      'button',
+      { name: /All responses\s*\(25,000\)/ },
+      { timeout: 30000 },
+    ),
+  ).toBeVisible()
+  await expect(
+    canvas.getByText('Only showing the most recent 10,000 responses'),
+  ).toBeVisible()
+}
+
+export const StorageFormCountFilteredZero = Template.bind({})
+StorageFormCountFilteredZero.decorators = StorageFormUnlockedV2.decorators
+StorageFormCountFilteredZero.parameters = StorageFormUnlockedV2.parameters
+StorageFormCountFilteredZero.play = async (context) => {
+  await StorageFormUnlockedV2.play?.(context)
+  const canvas = within(context.canvasElement)
+  await canvas.findByRole(
+    'button',
+    { name: /All responses\s*\(\d+\)/ },
+    { timeout: 30000 },
+  )
+  await userEvent.click(canvas.getByRole('button', { name: /filter/i }))
+  await userEvent.click(
+    await screen.findByRole('button', { name: 'Response ID' }),
+  )
+  await userEvent.type(
+    await screen.findByRole('textbox', { name: 'Response ID' }),
+    'no-matching-response',
+  )
+  await expect(
+    await canvas.findByRole('button', { name: /All responses\s*\(0\)/ }),
+  ).toBeVisible()
 }
 
 export const StorageFormLoading = Template.bind({})
@@ -216,6 +317,7 @@ MultiRespondentFormUnlocked.parameters = {
           {
             responseMode: FormResponseMode.Multirespondent,
             publicKey: MOCK_KEYPAIR.publicKey,
+            workflow: [],
           },
           0,
         ),
@@ -228,6 +330,80 @@ MultiRespondentFormUnlocked.parameters = {
   },
 }
 MultiRespondentFormUnlocked.play = StorageFormUnlocked.play
+
+const MOCK_SUBMISSION_ID = '62a8a7476f4f3e005bcd5ab7'
+
+// Mirrors the app's routes so a response opens in the drawer over the table.
+const DrawerTemplate: StoryFn = ({ responseNumber = 3 }) => {
+  const router = createMemoryRouter(
+    createRoutesFromElements(
+      <Route path={`${ADMINFORM_ROUTE}/:formId`} element={<AdminFormLayout />}>
+        <Route
+          path={ADMINFORM_RESULTS_SUBROUTE}
+          element={<FormResultsLayout />}
+        >
+          <Route element={<ResponsesLayout showResponses />}>
+            <Route index />
+            <Route
+              path=":submissionId"
+              element={<IndividualResponseDrawer />}
+            />
+          </Route>
+        </Route>
+      </Route>,
+    ),
+    {
+      initialEntries: [
+        {
+          pathname: `${ADMINFORM_ROUTE}/61540ece3d4a6e50ac0cc6ff/${ADMINFORM_RESULTS_SUBROUTE}/${MOCK_SUBMISSION_ID}`,
+          state: { responseNumber },
+        },
+      ],
+    },
+  )
+  return <RouterProvider router={router} />
+}
+
+export const StorageFormResponseDrawer = DrawerTemplate.bind({})
+StorageFormResponseDrawer.parameters = {
+  argos: { modes: viewportModes('mobile') },
+  // The router contains circular references, so skip automatic JSX serialization.
+  docs: { source: { type: 'code', code: '<IndividualResponseDrawer />' } },
+  msw: {
+    handlers: {
+      default: [
+        ...createFormBuilderMocks(
+          {
+            responseMode: FormResponseMode.Encrypt,
+            publicKey: MOCK_KEYPAIR.publicKey,
+          },
+          0,
+        ),
+        getAdminFormSubmissions(),
+        getStorageSubmissionMetadataResponse(),
+        getStorageSubmission({ publicKey: MOCK_KEYPAIR.publicKey }),
+        getUser(),
+        getAdminFormCollaborators(),
+      ],
+    },
+  },
+}
+StorageFormResponseDrawer.play = async ({ canvasElement }) => {
+  await unlockResponses(canvasElement)
+  const drawer = await screen.findByRole('dialog')
+  // Skeletons keep the response hidden until it is decrypted.
+  await waitFor(() =>
+    expect(within(drawer).getByText(MOCK_SUBMISSION_ID)).toBeVisible(),
+  )
+}
+
+export const StorageFormResponseDrawerLongNumber = DrawerTemplate.bind({})
+StorageFormResponseDrawerLongNumber.args = { responseNumber: 123456789 }
+StorageFormResponseDrawerLongNumber.parameters =
+  StorageFormResponseDrawer.parameters
+StorageFormResponseDrawerLongNumber.decorators =
+  StorageFormResponseDrawer.decorators
+StorageFormResponseDrawerLongNumber.play = StorageFormResponseDrawer.play
 
 export const Loading = Template.bind({})
 Loading.parameters = {
@@ -242,3 +418,23 @@ Loading.parameters = {
     },
   },
 }
+
+const labelledNavGrowthbook = new GrowthBook({
+  features: {
+    [featureFlags.delightfulDashboard]: { defaultValue: true },
+  },
+})
+export const LabelledNavigation = Template.bind({})
+LabelledNavigation.parameters = {
+  ...StorageForm.parameters,
+  argos: { modes: viewportModes('tablet', 'mobile') },
+}
+LabelledNavigation.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={labelledNavGrowthbook}>
+      <Box h="100vh">
+        <Story />
+      </Box>
+    </GrowthBookProvider>
+  ),
+]

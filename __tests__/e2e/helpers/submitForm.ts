@@ -100,27 +100,28 @@ const authForm = async (
 
   // Check that the submit button is not visible.
   await expect(
-    page.locator(
-      'button:text-matches("(submit now)|(submission disabled)", "gi")',
-    ),
+    page.getByRole('button', { name: /submit now|submission disabled/i }),
   ).toBeHidden()
 
   await page
     .getByRole('button', {
       name: `Log in with Singpass${
-        formSettings.authType === FormAuthType.CP
-          ? ' (Corporate)'
-          : formSettings.authType === FormAuthType.SGID
-            ? ' app'
-            : ''
+        formSettings.authType === FormAuthType.CP ? ' (Corporate)' : ''
       }`,
     })
     .click()
 
   // Mockpass talks to FormSG to login here.
   if (formSettings.authType === FormAuthType.MyInfo) {
-    // Click the consent button to share info with FormSG
-    await page.getByRole('button', { name: 'Submit' }).click()
+    // MyInfo logs in via FAPI, where Mockpass shows a profile picker instead
+    // of a consent page. Follow the MyInfo profile's assert URL so the
+    // callback gets that persona's MyInfo data; the custom profile form
+    // would drop it.
+    const assertUrl = await page
+      .locator(`#id-datalist option[value="${formSettings.nric} [MyInfo]"]`)
+      .getAttribute('data-asserturl')
+    if (!assertUrl) throw new Error('No Mockpass MyInfo profile found!')
+    await page.goto(assertUrl)
   }
 
   // Redirected to the form fields page. Verify log out button is visible with
@@ -153,9 +154,7 @@ const fillFields = async (
   // Check that the submit button is visible - this guarantees that we are on
   // the form fields page.
   await expect(
-    page.locator(
-      'button:text-matches("(submit now)|(submission disabled)", "gi")',
-    ),
+    page.getByRole('button', { name: /submit now|submission disabled/i }),
   ).toBeVisible()
 
   // Inject field ids into the metadata in order to ensure they are locatable.

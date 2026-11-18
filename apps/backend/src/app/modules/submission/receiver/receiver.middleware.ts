@@ -1,15 +1,13 @@
+import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
 import { Busboy } from 'busboy'
 import { NextFunction, Request, Response } from 'express-serve-static-core'
-import {
-  FieldResponse,
-  FieldResponsesV3,
-  FormResponseMode,
-} from 'formsg-shared/types'
+import { FieldResponse, FormResponseMode } from 'formsg-shared/types'
 import { Result } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'
+import { sendRouteError } from '../submission.utils'
 
 import { InitialiseMultipartReceiverError } from './receiver.errors'
 import * as SubmissionReceiver from './receiver.service'
@@ -82,7 +80,7 @@ export const receiveStorageSubmission: ControllerHandler<
 export const receiveMultirespondentSubmission: ControllerHandler<
   unknown,
   { message: string },
-  { responses: FieldResponsesV3 }
+  { responses: FieldResponsesV4 }
 > = async (req, res, next) => {
   return receiveSubmission(
     req,
@@ -99,7 +97,7 @@ const receiveSubmission = async (
   req: Request<
     unknown,
     { message: string },
-    { responses: FieldResponse[] | FieldResponsesV3 },
+    { responses: FieldResponse[] | FieldResponsesV4 },
     unknown,
     Record<string, unknown>
   >,
@@ -127,7 +125,6 @@ const receiveSubmission = async (
         meta: logMeta,
         error,
       })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      return sendRouteError(res, mapRouteError(error))
     })
 }

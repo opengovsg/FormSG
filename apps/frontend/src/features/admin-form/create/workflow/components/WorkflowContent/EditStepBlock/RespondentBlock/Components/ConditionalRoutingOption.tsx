@@ -14,6 +14,7 @@ import Papa from 'papaparse'
 import isEmail from 'validator/lib/isEmail'
 
 import {
+  BasicField,
   DropdownFieldBase,
   FormFieldDto,
   WorkflowType,
@@ -28,12 +29,16 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'
 
 import { useEditFormField } from '~features/admin-form/create/builder-and-design/mutations/useEditFormField'
+import { useAddFieldPicker } from '~features/admin-form/create/common/useAddFieldPicker'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { FormFieldWithQuestionNo } from '~features/form/types'
+
+import { useIsWorkflowSavePermissive } from '../../../../../hooks/useIsWorkflowSavePermissive'
 
 import { ConditionalRoutingMappingDeleteModal } from './ConditionalRoutingMappingDeleteModal'
 import { ConditionalRoutingOptionModal } from './ConditionalRoutingOptionModal'
 import { useWorkflowTypeValidation } from './hooks'
+import { NESTED_CONTROL_PR } from './layout'
 import { RespondentOptionProps } from './types'
 
 interface ConditionalRoutingOptionProps extends RespondentOptionProps {
@@ -46,12 +51,6 @@ export interface ConditionalRoutingConfig {
   csvFile: File | null
 }
 
-/**
- * Parses the conditional routing CSV file, validating that it has the required csv template file headers.
- * @param csvFile - The CSV file to parse
- * @returns A promise that resolves to the CSV content as a string
- * @throws Error if CSV headers are invalid (must have 'Options' and 'Emails' columns)
- */
 const parseConditionalRoutingTemplateCsv = async (csvFile: File) =>
   parseCsvFile(csvFile, (headerRow) => {
     return {
@@ -70,6 +69,12 @@ const getFileName = (
   fieldTitle: string | undefined,
 ) =>
   `conditional_routing_form_${formId ?? ''}_field_${fieldTitle ?? ''}_mapping.csv`
+
+const EMPTY_STATE_ACTION_STYLES = {
+  size: 'sm',
+  h: 'auto',
+  lineHeight: '1.25rem',
+} as const
 
 export const ConditionalRoutingOption = ({
   isLoading,
@@ -354,6 +359,12 @@ export const ConditionalRoutingOption = ({
   }
 
   const workflowTypeValidation = useWorkflowTypeValidation()
+  const isSavePermissive = useIsWorkflowSavePermissive()
+
+  const { withAddFieldItem, withAddFieldAction } = useAddFieldPicker({
+    label: t('features.adminForm.sidebar.workflow.addField.dropdown'),
+    fieldType: BasicField.Dropdown,
+  })
 
   const handleOpenModal = () => {
     conditionalRoutingConfigSetValue('csvFile', null)
@@ -406,8 +417,9 @@ export const ConditionalRoutingOption = ({
         </Text>
         {selectedWorkflowType === WorkflowType.Conditional ? (
           <FormControl
+            pr={NESTED_CONTROL_PR}
             id="conditional_field"
-            isRequired
+            isRequired={!isSavePermissive}
             isInvalid={
               !!validateOptionsToRecipientsMapErrorMessage ||
               !!errors.conditional_field
@@ -418,10 +430,14 @@ export const ConditionalRoutingOption = ({
                 control={control}
                 name="conditional_field"
                 rules={{
-                  required: t(
-                    'features.adminForm.sidebar.workflow.conditionalRouting.validation.noField',
-                  ),
+                  required: isSavePermissive
+                    ? false
+                    : t(
+                        'features.adminForm.sidebar.workflow.conditionalRouting.validation.noField',
+                      ),
                   validate: (selectedValue) => {
+                    if (!selectedValue) return true
+                    if (isSavePermissive) return true
                     if (noEmailToOptionsMappingErrorMessage) {
                       return noEmailToOptionsMappingErrorMessage
                     }
@@ -440,15 +456,18 @@ export const ConditionalRoutingOption = ({
                     )
                   },
                 }}
-                render={({ field: { value = '', ...rest } }) => (
+                render={({ field: { value = '', onChange, ...rest } }) => (
                   <SingleSelect
                     isDisabled={isLoading}
                     isClearable={false}
                     placeholder={t(
                       'features.adminForm.sidebar.workflow.dynamicRespondent.select',
                     )}
-                    items={conditionalFieldItems}
+                    // The picker gets the action row; the mapping modal keeps
+                    // only real fields.
+                    items={withAddFieldItem(conditionalFieldItems)}
                     value={value}
+                    onChange={withAddFieldAction(onChange)}
                     {...rest}
                   />
                 )}
@@ -473,7 +492,8 @@ export const ConditionalRoutingOption = ({
                   <Button
                     w="100%"
                     variant="outline"
-                    leftIcon={<BiPlus fontSize="1.5rem" />}
+                    {...EMPTY_STATE_ACTION_STYLES}
+                    leftIcon={<BiPlus />}
                     onClick={handleOpenModal}
                     isDisabled={!isSelectedConditionalFieldFound}
                   >

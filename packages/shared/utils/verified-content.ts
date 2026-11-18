@@ -6,6 +6,8 @@ export enum VerifiedKeys {
   SpUinFin = 'uinFin',
   CpUen = 'cpUen',
   CpUid = 'cpUid',
+  // Legacy: no longer written since sgID form login was removed, but still
+  // present in stored storage-mode submissions and must remain decryptable.
   SgidUinFin = 'sgidUinFin',
 }
 

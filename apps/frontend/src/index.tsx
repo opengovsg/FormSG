@@ -5,13 +5,18 @@ import './polyfills'
 import * as React from 'react'
 import { createRoot } from 'react-dom/client'
 
+import { redactSecretQueryParams } from 'formsg-shared/utils/urls'
+
 import { App } from './app/App'
+import { registerChunkPreloadErrorListener } from './app/chunkPreloadError'
 import * as dayjs from './utils/dayjs'
 import { env } from './env'
 
 if (import.meta.env.MODE === 'test') {
   import('./mocks/msw/browser').then(({ worker }) => worker.start())
 }
+
+registerChunkPreloadErrorListener()
 
 // Init Google Analytics
 declare global {
@@ -25,7 +30,9 @@ function gtag(...args: unknown[]) {
   dataLayer.push(arguments)
 }
 gtag('js', new Date())
-gtag('config', env.gaTrackingId || '')
+gtag('config', env.gaTrackingId || '', {
+  page_location: redactSecretQueryParams(window.location.href),
+})
 window.gtag = gtag
 
 // Init dayjs

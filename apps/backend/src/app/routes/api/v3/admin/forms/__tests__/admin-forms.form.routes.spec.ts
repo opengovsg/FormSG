@@ -24,6 +24,7 @@ import mongoose, { Types } from 'mongoose'
 import { err, errAsync, okAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
+import { statsdClient } from 'src/app/config/datadog-statsd-client'
 import getAdminFeedbackModel from 'src/app/models/admin_feedback.server.model'
 import getFormModel, {
   getEmailFormModel,
@@ -228,6 +229,23 @@ describe('admin-form.form.routes', () => {
           form_logics: [],
         }),
       )
+    })
+
+    it('should offer save draft on a form created from scratch', async () => {
+      // Act
+      const response = await request.post('/admin/forms').send({
+        form: {
+          emails: defaultUser.email,
+          responseMode: FormResponseMode.Email,
+          title: 'new form gets save draft',
+        },
+      })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body.isSaveDraftEnabled).toEqual(true)
+      const saved = await FormModel.findById(response.body._id)
+      expect(saved?.isSaveDraftEnabled).toEqual(true)
     })
 
     it('should return 200 with newly created storage mode form', async () => {
@@ -805,9 +823,14 @@ describe('admin-form.form.routes', () => {
       )
     })
 
-    it('should return 400 when the new owner is not in the database', async () => {
+    it('should return 200 with true without transferring forms when the new owner is not in the database', async () => {
       // Arrange
       const emailNotInDb = 'notindb@example.com'
+      const ownForm = await EmailFormModel.create({
+        title: 'Own form',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+      })
 
       // Act
       const response = await request
@@ -815,10 +838,10 @@ describe('admin-form.form.routes', () => {
         .send({ email: emailNotInDb })
 
       // Assert
-      expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: `${emailNotInDb} must have logged in once before being added as Owner`,
-      })
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(true)
+      const formAfter = await FormModel.findById(ownForm._id)
+      expect(String(formAfter?.admin)).toEqual(String(defaultUser._id))
     })
 
     it('should return 400 when the new owner is already the current owner', async () => {
@@ -1134,7 +1157,7 @@ describe('admin-form.form.routes', () => {
       // Assert
       expect(response.status).toEqual(403)
       expect(response.body).toEqual({
-        message: `User ${defaultUser.email} not authorized to perform delete operation on Form ${randomForm._id} with title: ${randomForm.title}.`,
+        message: `User ${defaultUser.email} not authorized to perform delete operation on Form ${randomForm._id}.`,
       })
     })
 
@@ -1245,6 +1268,34 @@ describe('admin-form.form.routes', () => {
         }),
       )
     })
+
+    // Neither picking up the new-form default nor being reset by the copy.
+    it.each([true, false])(
+      "should inherit the source form's save draft setting of %s, rather than the new-form default",
+      async (isSaveDraftEnabled) => {
+        // Arrange
+        const formToDupe = await EmailFormModel.create({
+          title: `source form, save draft ${isSaveDraftEnabled}`,
+          emails: [defaultUser.email],
+          admin: defaultUser._id,
+          isSaveDraftEnabled,
+        })
+
+        // Act
+        const response = await request
+          .post(`/admin/forms/${formToDupe._id}/duplicate`)
+          .send({
+            responseMode: FormResponseMode.Email,
+            title: `duplicate, save draft ${isSaveDraftEnabled}`,
+            emails: [defaultUser.email],
+          })
+
+        // Assert
+        expect(response.status).toEqual(200)
+        const duplicated = await FormModel.findById(response.body._id)
+        expect(duplicated?.isSaveDraftEnabled).toEqual(isSaveDraftEnabled)
+      },
+    )
 
     it('should return 400 when body.emails is missing when duplicating to an email form', async () => {
       // Arrange
@@ -1588,7 +1639,7 @@ describe('admin-form.form.routes', () => {
       // Assert
       expect(response.status).toEqual(403)
       expect(response.body).toEqual({
-        message: `User ${defaultUser.email} not authorized to perform read operation on Form ${randomForm._id} with title: ${randomForm.title}.`,
+        message: `User ${defaultUser.email} not authorized to perform read operation on Form ${randomForm._id}.`,
       })
     })
 
@@ -1754,6 +1805,31 @@ describe('admin-form.form.routes', () => {
         String(templateForm._id),
       )
     })
+
+    // Template-started forms staying off is the accepted gap.
+    it.each([true, false])(
+      "should inherit the template's save draft setting of %s, rather than the new-form default",
+      async (isSaveDraftEnabled) => {
+        // Arrange
+        const templateForm = await createPublicTemplateForm()
+        await templateForm.updateOne({ isSaveDraftEnabled })
+
+        // Act
+        const response = await request
+          .post(`/admin/forms/${templateForm._id}/use-template`)
+          .send({
+            responseMode: FormResponseMode.Encrypt,
+            title: `form from template, save draft ${isSaveDraftEnabled}`,
+            publicKey: 'some random public key',
+            emails: [],
+          })
+
+        // Assert
+        expect(response.status).toEqual(200)
+        const started = await FormModel.findById(response.body._id)
+        expect(started?.isSaveDraftEnabled).toEqual(isSaveDraftEnabled)
+      },
+    )
 
     it('should return 400 when an unrecognised form origin code is provided', async () => {
       // Arrange
@@ -2224,7 +2300,7 @@ describe('admin-form.form.routes', () => {
       // Assert
       expect(response.status).toEqual(403)
       expect(response.body).toEqual({
-        message: `User ${defaultUser.email} not authorized to perform read operation on Form ${MOCK_FORM._id} with title: ${MOCK_FORM.title}.`,
+        message: `User ${defaultUser.email} not authorized to perform read operation on Form ${MOCK_FORM._id}.`,
       })
     })
 
@@ -2815,7 +2891,7 @@ describe('admin-form.form.routes', () => {
       // Assert
       expect(response.status).toEqual(403)
       expect(response.body).toEqual({
-        message: `User ${defaultUser.email} not authorized to perform write operation on Form ${randomForm._id} with title: ${randomForm.title}.`,
+        message: `User ${defaultUser.email} not authorized to perform write operation on Form ${randomForm._id}.`,
       })
     })
 
@@ -2986,7 +3062,7 @@ describe('admin-form.form.routes', () => {
         startPage: MOCK_START_PAGE,
       })
       const expectedResponse = {
-        message: `User ${defaultUser.email} not authorized to perform write operation on Form ${form._id} with title: ${form.title}.`,
+        message: `User ${defaultUser.email} not authorized to perform write operation on Form ${form._id}.`,
       }
       // Act
       const resp = await request
@@ -3162,39 +3238,85 @@ describe('admin-form.form.routes', () => {
 
   describe('POST /admin/forms/feedback', () => {
     const MOCK_COMMENT = 'mock comment'
-    const MOCK_RATING = 0
+    const MOCK_CSAT = 3
 
     it('should return 200 when the request is successful', async () => {
+      // Arrange
+      const distributionSpy = jest.spyOn(statsdClient, 'distribution')
+
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
-        .send({ rating: MOCK_RATING, comment: MOCK_COMMENT })
+        .send({ csat: MOCK_CSAT, comment: MOCK_COMMENT })
 
       // Assert
       expect(resp.status).toBe(200)
       expect(resp.body.message).toContain(
         'Successfully submitted admin feedback',
       )
-      expect(resp.body.feedback.rating).toEqual(MOCK_RATING)
+      expect(resp.body.feedback.csat).toEqual(MOCK_CSAT)
+      // The legacy key is never written by a CSAT submission.
+      expect(resp.body.feedback.rating).toBeUndefined()
       expect(resp.body.feedback.comment).toEqual(MOCK_COMMENT)
+      expect(distributionSpy).toHaveBeenCalledWith(
+        'formsg.users.feedback.csat',
+        MOCK_CSAT,
+        1,
+        expect.objectContaining({ csat: `${MOCK_CSAT}` }),
+      )
+      // A CSAT submission must never touch the legacy thumbs metric.
+      expect(distributionSpy).not.toHaveBeenCalledWith(
+        'formsg.users.feedback.rating',
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+      )
     })
 
     it('should return 200 when the request is successful without comments', async () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
-        .send({ rating: MOCK_RATING })
+        .send({ csat: MOCK_CSAT })
 
       // Assert
       expect(resp.status).toBe(200)
       expect(resp.body.message).toContain(
         'Successfully submitted admin feedback',
       )
-      expect(resp.body.feedback.rating).toEqual(MOCK_RATING)
+      expect(resp.body.feedback.csat).toEqual(MOCK_CSAT)
       expect(resp.body.feedback.comment).toBeUndefined()
     })
 
-    it('should return 400 when rating is not provided in request body', async () => {
+    it('should store legacy thumbs under `rating` and emit the legacy metric', async () => {
+      // Arrange
+      const distributionSpy = jest.spyOn(statsdClient, 'distribution')
+
+      // Act
+      const resp = await request
+        .post(`/admin/forms/feedback`)
+        .send({ rating: 1 })
+
+      // Assert
+      expect(resp.status).toBe(200)
+      expect(resp.body.feedback.rating).toEqual(1)
+      // The legacy scale is never translated into the CSAT key.
+      expect(resp.body.feedback.csat).toBeUndefined()
+      expect(distributionSpy).toHaveBeenCalledWith(
+        'formsg.users.feedback.rating',
+        1,
+        1,
+        expect.objectContaining({ rating: '1' }),
+      )
+      expect(distributionSpy).not.toHaveBeenCalledWith(
+        'formsg.users.feedback.csat',
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+      )
+    })
+
+    it('should return 400 when neither rating nor csat is provided', async () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
@@ -3205,7 +3327,73 @@ describe('admin-form.form.routes', () => {
       expect(resp.body.message).toEqual('Validation failed')
     })
 
-    it('should return 400 when rating is not 0 or 1', async () => {
+    it('should return 400 when both rating and csat are provided', async () => {
+      // Act
+      const resp = await request
+        .post(`/admin/forms/feedback`)
+        .send({ rating: 1, csat: MOCK_CSAT })
+
+      // Assert
+      expect(resp.status).toBe(400)
+      expect(resp.body.message).toEqual('Validation failed')
+    })
+
+    it('should return 400 when a star value is sent under the legacy rating key', async () => {
+      // Guards the inverted-score trap: a 1-5 value must not be accepted as thumbs.
+      // Act
+      const resp = await request
+        .post(`/admin/forms/feedback`)
+        .send({ rating: 2 })
+
+      // Assert
+      expect(resp.status).toBe(400)
+      expect(resp.body.message).toEqual('Validation failed')
+    })
+
+    it('should return 400 when csat is out of 1-5 range', async () => {
+      // Act
+      const resp = await request.post(`/admin/forms/feedback`).send({ csat: 6 })
+
+      // Assert
+      expect(resp.status).toBe(400)
+      expect(resp.body.message).toEqual('Validation failed')
+    })
+
+    it.each(['download-v1', 'download-v2'])(
+      'should store and tag a %s triggerSource',
+      async (triggerSource) => {
+        // Arrange
+        const distributionSpy = jest.spyOn(statsdClient, 'distribution')
+
+        // Act
+        const resp = await request
+          .post(`/admin/forms/feedback`)
+          .send({ csat: MOCK_CSAT, triggerSource })
+
+        // Assert
+        expect(resp.status).toBe(200)
+        expect(resp.body.feedback.triggerSource).toEqual(triggerSource)
+        expect(distributionSpy).toHaveBeenCalledWith(
+          'formsg.users.feedback.csat',
+          MOCK_CSAT,
+          1,
+          expect.objectContaining({ triggerSource }),
+        )
+      },
+    )
+
+    it('should return 400 for an unknown triggerSource', async () => {
+      // Act
+      const resp = await request
+        .post(`/admin/forms/feedback`)
+        .send({ csat: MOCK_CSAT, triggerSource: 'download' })
+
+      // Assert
+      expect(resp.status).toBe(400)
+      expect(resp.body.message).toEqual('Validation failed')
+    })
+
+    it('should return 400 when rating is out of 0-1 range', async () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
@@ -3223,7 +3411,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
-        .send({ rating: MOCK_RATING })
+        .send({ csat: MOCK_CSAT })
 
       // Assert
       expect(resp.status).toEqual(401)
@@ -3240,7 +3428,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
-        .send({ rating: MOCK_RATING })
+        .send({ csat: MOCK_CSAT })
 
       // Assert
       expect(resp.status).toEqual(500)
@@ -3251,16 +3439,16 @@ describe('admin-form.form.routes', () => {
   })
   describe('PATCH /admin/forms/feedback/:feedbackId', () => {
     const MOCK_COMMENT = 'mock comment'
-    const MOCK_RATING = 0
+    const MOCK_CSAT = 3
     const MOCK_NEW_COMMENT = 'new comment'
-    const MOCK_NEW_RATING = 1
+    const MOCK_NEW_CSAT = 5
 
     let MOCK_ADMIN_FEEDBACK: IAdminFeedbackSchema
 
     beforeEach(async () => {
       MOCK_ADMIN_FEEDBACK = await AdminFeedbackModel.create({
         userId: defaultUser.id.toString(),
-        rating: MOCK_RATING,
+        csat: MOCK_CSAT,
         comment: MOCK_COMMENT,
       })
     })
@@ -3269,7 +3457,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .patch(`/admin/forms/feedback/${MOCK_ADMIN_FEEDBACK.id.toString()}`)
-        .send({ rating: MOCK_NEW_RATING, comment: MOCK_NEW_COMMENT })
+        .send({ csat: MOCK_NEW_CSAT, comment: MOCK_NEW_COMMENT })
 
       const updatedFeedback = await AdminFeedbackModel.findById(
         MOCK_ADMIN_FEEDBACK.id.toString(),
@@ -3279,7 +3467,20 @@ describe('admin-form.form.routes', () => {
       expect(resp.status).toEqual(200)
       expect(resp.body.message).toEqual('Successfully updated admin feedback')
       expect(updatedFeedback?.comment).toEqual(MOCK_NEW_COMMENT)
-      expect(updatedFeedback?.rating).toEqual(MOCK_NEW_RATING)
+      expect(updatedFeedback?.csat).toEqual(MOCK_NEW_CSAT)
+      expect(updatedFeedback?.feedbackChanged).toEqual(true)
+    })
+
+    it('should return 400 when both rating and csat are provided', async () => {
+      // A single row must never carry both scales.
+      // Act
+      const resp = await request
+        .patch(`/admin/forms/feedback/${MOCK_ADMIN_FEEDBACK.id.toString()}`)
+        .send({ rating: 1, csat: MOCK_NEW_CSAT })
+
+      // Assert
+      expect(resp.status).toEqual(400)
+      expect(resp.body.message).toEqual('Validation failed')
     })
 
     it('should return 200 without changes if request is successful without a body', async () => {
@@ -3301,7 +3502,7 @@ describe('admin-form.form.routes', () => {
       )
     })
 
-    it('should return 400 if validation fails because rating is not 0 or 1', async () => {
+    it('should return 400 if validation fails because rating is out of range', async () => {
       // Act
       const resp = await request
         .patch(`/admin/forms/feedback/${MOCK_ADMIN_FEEDBACK.id.toString()}`)
@@ -3330,7 +3531,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .patch(`/admin/forms/feedback/${new Types.ObjectId().toString()}`)
-        .send({ rating: MOCK_NEW_RATING, comment: MOCK_NEW_COMMENT })
+        .send({ csat: MOCK_NEW_CSAT, comment: MOCK_NEW_COMMENT })
 
       // Assert
       expect(resp.status).toEqual(404)
@@ -3341,14 +3542,14 @@ describe('admin-form.form.routes', () => {
       // create new admin feedback with different userId from defaultuser
       const newFeedback = await AdminFeedbackModel.create({
         userId: new Types.ObjectId().toHexString(),
-        rating: MOCK_RATING,
+        csat: MOCK_CSAT,
         comment: MOCK_COMMENT,
       })
 
       // Act
       const resp = await request
         .patch(`/admin/forms/feedback/${newFeedback.id.toString()}`)
-        .send({ rating: MOCK_NEW_RATING, comment: MOCK_NEW_COMMENT })
+        .send({ csat: MOCK_NEW_CSAT, comment: MOCK_NEW_COMMENT })
 
       // Assert
       expect(resp.status).toEqual(404)

@@ -62,6 +62,7 @@ export interface Common {
     }
     pageNotFound: string
     generic: string
+    serverError: string
   }
   tooltip: {
     deleteField: string
@@ -108,5 +109,6 @@ export interface Common {
   completed: string
   approved: string
   notApproved: string
+  stopped: string
   logout: string
 }

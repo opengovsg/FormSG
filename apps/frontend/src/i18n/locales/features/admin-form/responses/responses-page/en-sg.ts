@@ -26,6 +26,9 @@ export const enSG: ResponsesResponsesPage = {
           attachmentsDescription:
             'For attachments, <strong>a separate zip file</strong> will be downloaded for each response.',
           downloadTitle: 'Download {downloadItems}',
+          csvTitle: 'Download CSV',
+          csvAppliesTableView:
+            'The CSV includes the filters, sorting and columns applied to the table.',
           responsesText: 'responses',
           pdfsText: 'PDFs',
           attachmentsText: 'attachments',
@@ -70,6 +73,47 @@ export const enSG: ResponsesResponsesPage = {
         },
       },
       submissionSearchbarPlaceholder: 'Search by response ID',
+      searchResponsesPlaceholder: 'Search responses...',
+      filterMenu: {
+        dateRange: 'Date range',
+        columns: 'Filter by column',
+        filterApplied: 'Filter applied',
+        filterPlaceholder: 'Contains...',
+        clearFilter: 'Clear filter',
+        clearAllFilters: 'Clear all filters',
+      },
+      views: {
+        countUnavailable: 'Count unavailable',
+        loadingCount: 'Loading response count',
+        allResponses: 'All responses',
+        saveAsNewView: 'Save as new view',
+        saveView: 'Save view',
+        viewLimitReached: 'You can only save up to {MAX_VIEWS} views.',
+        viewName: 'View name',
+        viewNamePlaceholder: 'e.g. Pending approvals',
+        viewNameRequired: 'View name is required',
+        viewNameMinLength: 'View name must be at least {MIN_LENGTH} characters',
+        viewNameMaxLength: 'View name must be at most {MAX_LENGTH} characters',
+        deleteView: 'Delete view {VIEW_NAME}',
+        deleteViewTitle: 'Delete {VIEW_NAME}?',
+        deleteViewDescription:
+          'This view will be removed for everyone with access to the form. The responses themselves are not deleted.',
+        deleteViewSuccess: 'Your view has been successfully deleted.',
+        saveViewSuccess: 'Your view has been successfully saved.',
+      },
+      sortMenu: {
+        column: 'Column',
+        direction: 'Direction',
+        responseNumber: 'Response #',
+        ascending: 'Ascending',
+        descending: 'Descending',
+      },
+      toolbar: {
+        filter: 'Filter',
+        sort: 'Sort',
+        columns: 'Columns',
+        all: 'All',
+      },
       downloadButton: {
         label: 'Download options',
         navigateAwayPrompt: {
@@ -79,7 +123,7 @@ export const enSG: ResponsesResponsesPage = {
           confirmButtonText: 'Yes, leave this page',
         },
         progressModalContent:
-          '{dateRangeResponsesCount} responses are being processed. Navigating away from this page will stop the download.',
+          'All responses are being processed. Navigating away from this page will stop the download.',
         menuItem: {
           csv: 'Spreadsheet of responses (.csv)',
           attachments: 'Respondent-uploaded attachments',
@@ -87,9 +131,11 @@ export const enSG: ResponsesResponsesPage = {
         },
       },
       unlockedResponses: {
-        resultsFound: '{count, plural, =1 {result} other {results}} found',
-        responsesToDate:
-          '{count, plural, =1 {response} other {responses}} to date',
+        noMatchingResponses: 'No responses match your search or filters.',
+        recentOnly: 'Only showing the most recent {limit} responses',
+        recentOnlyWithView:
+          'Only applying filters and sorting to the most recent {limit} responses',
+        showMore: 'Show more',
       },
     },
     storageResponsesTab: {

@@ -30,7 +30,6 @@ import dedent from 'dedent'
 import { StatusCodes } from 'http-status-codes'
 
 import {
-  featureFlags,
   GO_ALREADY_EXIST_ERROR_MESSAGE,
   GO_VALIDATION_ERROR_MESSAGE,
 } from 'formsg-shared/constants'
@@ -55,7 +54,6 @@ import Textarea from '~components/Textarea'
 import { CopyButton } from '~templates/CopyButton'
 
 import { useEnv } from '~features/env/queries'
-import { useFeatureFlags } from '~features/feature-flags/queries'
 import { useListShortenerMutations } from '~features/link-shortener/mutations'
 import { useGoLink } from '~features/link-shortener/queries'
 import { useUser } from '~features/user/queries'
@@ -158,9 +156,6 @@ export const ShareFormModal = ({
   })
 
   const { data: { goGovBaseUrl } = {} } = useEnv()
-
-  const { data: flags } = useFeatureFlags()
-  const displayGoLink = flags?.has(featureFlags.goLinks)
 
   // Hard-coded .gov.sg whitelist for GoGov integration
   const gogovWhiteListed = '.gov.sg'
@@ -284,8 +279,8 @@ export const ShareFormModal = ({
         <Stack direction="row" align="center">
           <InputGroup>
             <Input
-              // The link will always change in Chromatic so this should be ignored.
-              data-chromatic="ignore"
+              // The link will always change between snapshots so this should be ignored.
+              data-visual-test="transparent"
               isReadOnly
               value={shareLink}
               hasInputRightElement={Boolean(formId)}
@@ -319,8 +314,8 @@ export const ShareFormModal = ({
       <Skeleton isLoaded={!!formId}>
         <InputGroup>
           <Input
-            // The link will always change in Chromatic so this should be ignored.
-            data-chromatic="ignore"
+            // The link will always change between snapshots so this should be ignored.
+            data-visual-test="transparent"
             isReadOnly
             isDisabled={isFormPrivate}
             value={`${templateLink}`}
@@ -403,8 +398,7 @@ export const ShareFormModal = ({
                   />
                   <FormLinkSection />
                   {/* GoLinkSection */}
-                  {(displayGoLink && whitelisted) ||
-                  goLinkSuffixData?.goLinkSuffix ? (
+                  {whitelisted || goLinkSuffixData?.goLinkSuffix ? (
                     <FormControl mt="1rem">
                       <FormLabel
                         isRequired

@@ -10,14 +10,14 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { featureFlags } from 'formsg-shared/constants'
 import { UserId } from 'formsg-shared/types'
 import { PublicFormViewDto } from 'formsg-shared/types/form'
 import { Workspace, WorkspaceId } from 'formsg-shared/types/workspace'
 
-import { getUser, MOCK_USER, userHandlers } from '~/mocks/msw/handlers/user'
+import { userHandlers } from '~/mocks/msw/handlers/user'
 
 import { ApiError } from '~typings/core'
 
@@ -56,9 +56,9 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    // Prevent flaky tests due to modal animating in.
-    chromatic: { pauseAnimationAtEnd: true },
-    msw: userHandlers({ delay: 0 }),
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
+    msw: { handlers: { default: userHandlers({ delay: 0 }) } },
   },
 } as Meta
 
@@ -111,66 +111,6 @@ MrfCutoverAndPaperTrackingOn.decorators = [
     </GrowthBookProvider>
   ),
 ]
-
-export const MrfCutoverOnChildrenBeta = Template.bind({})
-MrfCutoverOnChildrenBeta.decorators = [
-  (Story) => (
-    <GrowthBookProvider growthbook={mrfCutoverOn}>
-      <Story />
-    </GrowthBookProvider>
-  ),
-]
-MrfCutoverOnChildrenBeta.parameters = {
-  msw: [
-    getUser({
-      delay: 0,
-      mockUser: { ...MOCK_USER, betaFlags: { children: true } },
-    }),
-  ],
-}
-
-export const MrfCutoverOnWebhookV1Beta = Template.bind({})
-MrfCutoverOnWebhookV1Beta.decorators = [
-  (Story) => (
-    <GrowthBookProvider growthbook={mrfCutoverOn}>
-      <Story />
-    </GrowthBookProvider>
-  ),
-]
-MrfCutoverOnWebhookV1Beta.parameters = {
-  msw: [
-    getUser({
-      delay: 0,
-      mockUser: {
-        ...MOCK_USER,
-        betaFlags: { createStorageModeForV1Webhook: true },
-      },
-    }),
-  ],
-}
-
-export const MrfCutoverOnAllExceptions = Template.bind({})
-MrfCutoverOnAllExceptions.decorators = [
-  (Story) => (
-    <GrowthBookProvider growthbook={mrfCutoverOn}>
-      <Story />
-    </GrowthBookProvider>
-  ),
-]
-MrfCutoverOnAllExceptions.parameters = {
-  msw: [
-    getUser({
-      delay: 0,
-      mockUser: {
-        ...MOCK_USER,
-        betaFlags: {
-          children: true,
-          createStorageModeForV1Webhook: true,
-        },
-      },
-    }),
-  ],
-}
 
 export const StorageModeAckScreen = () => {
   const secretKey = 'mock-secret-key'

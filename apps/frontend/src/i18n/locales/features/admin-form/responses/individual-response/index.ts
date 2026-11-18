@@ -1,15 +1,80 @@
 export * from './en-sg'
 
 export interface ResponsesIndividualResponse {
-  backToList: string
-  nextSubmission: string
-  previousSubmission: string
   secretKeyVerification: {
     ctaText: string
     label: string
   }
   downloadAttachmentsAsZip: string
   responseLinkLabel: string
+  previousResponse: string
+  nextResponse: string
+  statusTrackingLinkLabel: string
+  responsesTab: string
+  activityTab: string
+  workflowActions: {
+    whoIsNotifiedLabel: string
+    whoIsNotifiedNone: string
+    stopButton: string
+    remindButton: string
+    reminderModal: {
+      title: string
+      description: string
+      confirm: string
+    }
+    activityLog: {
+      title: string
+      stepNumber: string
+      stepNameLabel: string
+      submitted: string
+      stepSubmitted: string
+      stepApproved: string
+      stepRejected: string
+      stepSent: string
+      actorClause: string
+      assigneeAdded: string
+      reminderTriggered: string
+      reminderSent: string
+      stopped: string
+      notificationRecipients: string
+      sentBack: string
+      remarks: string
+    }
+    reassignButton: string
+    sendBackButton: string
+    addAssigneeModal: {
+      currentlyAssignedLabel: string
+      noCurrentAssignees: string
+      title: string
+      description: string
+      label: string
+      requiredEmail: string
+      invalidEmail: string
+      alreadyAssigned: string
+      confirm: string
+      toastSuccess: string
+    }
+    stopModal: {
+      title: string
+      description: string
+      label: string
+      confirm: string
+      toastSuccess: string
+    }
+    sendBackModal: {
+      recipientsLabel: string
+      title: string
+      description: string
+      stepLabel: string
+      stepOneEmailLabel: string
+      stepOneEmailDescription: string
+      remarksLabel: string
+      remarksDescription: string
+      remarksTooLong: string
+      confirm: string
+      toastSuccess: string
+    }
+  }
   paymentSection: {
     paymentStatusLabel: {
       partiallyRefunded: string

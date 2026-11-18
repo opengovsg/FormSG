@@ -3,7 +3,6 @@ import { FieldType, FormFieldsV3 } from '../../src/types'
 import { AddressAnswerV4 } from '../../src/types-v4'
 
 describe('adaptV3ToV4', () => {
-
   describe('generic string fields', () => {
     const stringFieldTypes = [
       'section',
@@ -250,13 +249,18 @@ describe('adaptV3ToV4', () => {
 
       const result = adaptV3ToV4(v3)
 
-      const tableAnswer = result.field1.answer as Record<string, { rowNum: number; value: Record<string, string> }>
+      const tableAnswer = result.field1.answer as Record<
+        string,
+        { rowNum: number; value: Record<string, string> }
+      >
       const rows = Object.entries(tableAnswer)
       expect(rows).toHaveLength(2)
 
       // Keys should be UUIDs
       for (const [key] of rows) {
-        expect(key).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+        expect(key).toMatch(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+        )
       }
 
       // Sort by rowNum to verify values
@@ -405,6 +409,18 @@ describe('adaptV3ToV4', () => {
       })
 
       expect(result.field1.question).toBe('What is your name?')
+    })
+
+    it('should include table column names from formFields when converting V3 responses to V4', () => {
+      const subFields = { column: { question: 'Member name' } }
+      const result = adaptV3ToV4(
+        { table: { fieldType: 'table', answer: [{ column: 'Alice' }] } },
+        { formFields: { table: { question: 'Members', subFields } } }
+      )
+      expect(result.table.subFields).toEqual(subFields)
+      expect(Object.values(result.table.answer)).toEqual([
+        { rowNum: 0, value: { column: 'Alice' } },
+      ])
     })
 
     it('should prepend [Myinfo] to question when myInfo is present', () => {

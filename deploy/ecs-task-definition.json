@@ -53,10 +53,6 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SGID_PRIVATE_KEY"
         },
         {
-          "name": "SGID_JWT_SECRET",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SGID_JWT_SECRET"
-        },
-        {
           "name": "PAYMENT_STRIPE_SECRET_KEY",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/PAYMENT_STRIPE_SECRET_KEY"
         },
@@ -67,14 +63,6 @@
         {
           "name": "AZURE_OPENAI_API_KEY",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/AZURE_OPENAI_API_KEY"
-        },
-        {
-          "name": "SINGPASS_ESRVC_ID",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SINGPASS_ESRVC_ID"
-        },
-        {
-          "name": "MYINFO_CLIENT_SECRET",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_CLIENT_SECRET"
         },
         {
           "name": "MYINFO_JWT_SECRET",
@@ -96,6 +84,10 @@
           "name": "SES_CONFIG_SET",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SES_CONFIG_SET"
         },
+        {
+          "name": "SES_SNS_TOPIC_ARNS",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SES_SNS_TOPIC_ARNS"
+        },
         { "name": "DB_HOST", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/DB_HOST" },
         {
           "name": "CUSTOM_CLOUDWATCH_LOG_GROUP",
@@ -112,6 +104,10 @@
         {
           "name": "CRON_PAYMENT_API_SECRET",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/CRON_PAYMENT_API_SECRET"
+        },
+        {
+          "name": "CRON_SCHEDULED_CLOSURE_API_SECRET",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/CRON_SCHEDULED_CLOSURE_API_SECRET"
         },
         {
           "name": "SLACK_API_SECRET",
@@ -174,14 +170,6 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SGID_ADMIN_LOGIN_REDIRECT_URI"
         },
         {
-          "name": "SGID_FORM_LOGIN_REDIRECT_URI",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SGID_FORM_LOGIN_REDIRECT_URI"
-        },
-        {
-          "name": "SGID_PUBLIC_KEY",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SGID_PUBLIC_KEY"
-        },
-        {
           "name": "SGID_HOSTNAME",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SGID_HOSTNAME"
         },
@@ -222,22 +210,6 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SPCP_COOKIE_DOMAIN"
         },
         {
-          "name": "MYINFO_CLIENT_CONFIG",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_CLIENT_CONFIG"
-        },
-        {
-          "name": "MYINFO_CERT",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_CERT"
-        },
-        {
-          "name": "MYINFO_FORMSG_KEY",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_FORMSG_KEY"
-        },
-        {
-          "name": "MYINFO_CLIENT_ID",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_CLIENT_ID"
-        },
-        {
           "name": "SP_OIDC_NDI_DISCOVERY_ENDPOINT",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SP_OIDC_NDI_DISCOVERY_ENDPOINT"
         },
@@ -260,6 +232,22 @@
         {
           "name": "SP_OIDC_RP_JWKS_SECRET",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SP_OIDC_RP_JWKS_SECRET"
+        },
+        {
+          "name": "MYINFO_FAPI_ISSUER",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_FAPI_ISSUER"
+        },
+        {
+          "name": "MYINFO_FAPI_CLIENT_ID",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_FAPI_CLIENT_ID"
+        },
+        {
+          "name": "MYINFO_FAPI_RP_JWKS_PUBLIC",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_FAPI_RP_JWKS_PUBLIC"
+        },
+        {
+          "name": "MYINFO_FAPI_RP_JWKS_SECRET",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_FAPI_RP_JWKS_SECRET"
         },
         {
           "name": "CP_OIDC_NDI_DISCOVERY_ENDPOINT",
@@ -321,6 +309,18 @@
         {
           "name": "ATTACHMENT_S3_BUCKET",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/ATTACHMENT_S3_BUCKET"
+        },
+        {
+          "name": "SUBMISSION_HISTORY_V4_S3_BUCKET",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SUBMISSION_HISTORY_V4_S3_BUCKET"
+        },
+        {
+          "name": "SUBMISSION_HISTORY_V1_S3_BUCKET",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SUBMISSION_HISTORY_V1_S3_BUCKET"
+        },
+        {
+          "name": "SUBMISSION_HISTORY_V1_ATTACHMENT_S3_BUCKET",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SUBMISSION_HISTORY_V1_ATTACHMENT_S3_BUCKET"
         },
         {
           "name": "FORMSG_SDK_MODE",
@@ -412,6 +412,10 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/RBI_IP_LIST"
         },
         {
+          "name": "UEN_HIDDEN_ENTITY_TYPES",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/UEN_HIDDEN_ENTITY_TYPES"
+        },
+        {
           "name": "SSO_CLIENT_ID",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SSO_CLIENT_ID"
         },
@@ -434,6 +438,18 @@
         {
           "name": "WOGAD_AUTHORITY",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/WOGAD_AUTHORITY"
+        },
+        {
+          "name": "ONE_CLIENT_ID",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/ONE_CLIENT_ID"
+        },
+        {
+          "name": "ONE_OIDC_RP_JWKS_SECRET",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/ONE_OIDC_RP_JWKS_SECRET"
+        },
+        {
+          "name": "ONE_DISCOVERY_URL",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/ONE_DISCOVERY_URL"
         },
         {
           "name": "GUARDDUTY_QUARANTINE_S3_BUCKET",

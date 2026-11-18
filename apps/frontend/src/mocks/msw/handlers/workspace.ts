@@ -41,7 +41,7 @@ export const getWorkspaces = ({
   return http.get<never, never, WorkspaceDto[]>(
     '/api/v3/admin/workspaces',
     async () => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(mockWorkspaces, { status: 200 })
     },
   )

@@ -634,7 +634,7 @@ grep_search("functionName", includePattern: "**/*.ts")
 Singapore-specific:
 - **SingPass**: Citizen authentication
 - **CorpPass**: Corporate authentication
-- **sgID**: Alternative digital identity
+- **sgID**: Public officer login for admins (not used for form respondents)
 - **MyInfo**: Auto-prefill from government data
 - **MockPass**: Local development emulator
 

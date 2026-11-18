@@ -42,6 +42,7 @@ export const useUseTemplateWizardContext = (
     setCurrentStep,
     isMrfCutoverEnabled,
     isPaperTrackingSetUpPageEnabled,
+    isLegacySetup,
     proceedCtaLabel,
     goToStorageModeDetails,
     goToMrfDetails,
@@ -80,14 +81,14 @@ export const useUseTemplateWizardContext = (
     title,
     responseMode,
     emails,
-    formOrigins,
+    formOrigin,
   }: CreateFormWizardInputProps) => {
     if (!formId) return
 
     const metadata = buildFormClientMetadata({
       isPaperTrackingSetUpPageEnabled,
       isMrfCutoverEnabled,
-      formOrigins,
+      formOrigin,
       formResponseMode: responseMode,
     })
 
@@ -200,6 +201,7 @@ export const useUseTemplateWizardContext = (
     handleProceedFromDetails,
     goToFormDetails,
     isPaperTrackingSetUpPageEnabled,
+    isLegacySetup,
     proceedCtaLabel,
     handleEmailFeedbackSubmit,
     handleCreateEmailModeForm,

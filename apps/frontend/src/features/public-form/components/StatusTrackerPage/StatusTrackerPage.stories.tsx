@@ -1,10 +1,10 @@
-import { Meta, StoryFn } from '@storybook/react/*'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { envHandlers } from '~/mocks/msw/handlers/env'
 import { getPublicFormResponse } from '~/mocks/msw/handlers/public-form'
 import { getStatusTrackerDataResponse } from '~/mocks/msw/status-tracker'
 
-import { StoryRouter, viewports } from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { StatusTrackerPage } from './StatusTrackerPage'
 
@@ -26,29 +26,14 @@ export default {
     }),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
-    msw: DEFAULT_MSW_HANDLERS,
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
+    msw: { handlers: { default: DEFAULT_MSW_HANDLERS } },
   },
 } as Meta
 
 const Template: StoryFn = () => <StatusTrackerPage />
 
 export const Desktop = Template.bind({})
-
-export const Tablet = Template.bind({})
-Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
-  chromatic: { viewports: [viewports.md] },
-}
-
-export const Mobile = Template.bind({})
-Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
-}
+Desktop.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }

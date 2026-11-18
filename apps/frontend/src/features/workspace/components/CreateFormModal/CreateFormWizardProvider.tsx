@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
@@ -7,6 +7,7 @@ import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode, PublicFormViewDto } from 'formsg-shared/types'
 
+import { sendDdFormCreationSelectionAction } from '~utils/datadog'
 import formsgSdk from '~utils/formSdk'
 
 import { useUser } from '~features/user/queries'
@@ -50,6 +51,8 @@ export const useCommonFormWizardProvider = ({
   const [[currentStep, direction], setCurrentStep] = useState<
     [CreateFormFlowStates, -1 | 1 | 0]
   >([initialStep, -1])
+  // TODO [MRF-CUTOVER]: Remove after cutover escape hatch is no longer needed.
+  const [isLegacySetup, setIsLegacySetup] = useState(startsInStorageMode)
 
   /**
    * Only used for storage mode forms, but generated first so that the key is
@@ -75,20 +78,25 @@ export const useCommonFormWizardProvider = ({
   // TODO [MRF-CUTOVER]: Remove after cutover. -1 is used temporarily as there is an existing animation bug with +1.
   const goToStorageModeDetails = () => {
     setValue('responseMode', FormResponseMode.Encrypt)
+    setIsLegacySetup(true)
     setCurrentStep([CreateFormFlowStates.StorageModeDetails, -1])
   }
   const goToMrfDetails = () => {
     setValue('responseMode', FormResponseMode.Multirespondent)
+    setIsLegacySetup(false)
     setCurrentStep([CreateFormFlowStates.Details, -1])
   }
   const goToFormDetails = () => {
+    setIsLegacySetup(false)
     setCurrentStep([CreateFormFlowStates.Details, -1])
   }
 
   const makeHandleProceedFromDetails = (
     createForm: (inputs: CreateFormWizardInputProps) => unknown,
+    onValidProceed?: (inputs: CreateFormWizardInputProps) => void,
   ) =>
     formMethods.handleSubmit((inputs) => {
+      onValidProceed?.(inputs)
       if (isPaperTrackingSetUpPageEnabled) {
         return setCurrentStep([CreateFormFlowStates.Origin, 1])
       }
@@ -103,6 +111,7 @@ export const useCommonFormWizardProvider = ({
     setCurrentStep,
     isMrfCutoverEnabled,
     isPaperTrackingSetUpPageEnabled,
+    isLegacySetup,
     proceedCtaLabel,
     goToStorageModeDetails,
     goToMrfDetails,
@@ -123,6 +132,7 @@ export const useCreateFormWizardContext = (
     setCurrentStep,
     isMrfCutoverEnabled,
     isPaperTrackingSetUpPageEnabled,
+    isLegacySetup,
     proceedCtaLabel,
     goToStorageModeDetails,
     goToMrfDetails,
@@ -157,12 +167,12 @@ export const useCreateFormWizardContext = (
     title,
     responseMode,
     emails,
-    formOrigins,
+    formOrigin,
   }: CreateFormWizardInputProps) => {
     const metadata = buildFormClientMetadata({
       isPaperTrackingSetUpPageEnabled,
       isMrfCutoverEnabled,
-      formOrigins,
+      formOrigin,
       formResponseMode: responseMode,
     })
 
@@ -218,8 +228,24 @@ export const useCreateFormWizardContext = (
     createStorageModeOrMultirespondentForm,
   )
 
+  // Time spent on the selection (details) screen, restarted on every entry so
+  // returning from the MRF escape hatch does not inflate the measurement.
+  const detailsScreenStartMs = useRef<number | null>(null)
+  useEffect(() => {
+    if (currentStep === CreateFormFlowStates.Details) {
+      detailsScreenStartMs.current = performance.now()
+    }
+  }, [currentStep])
+
   const handleProceedFromDetails = makeHandleProceedFromDetails(
     createStorageModeOrMultirespondentForm,
+    ({ responseMode }) => {
+      if (detailsScreenStartMs.current === null) return
+      void sendDdFormCreationSelectionAction(
+        responseMode,
+        performance.now() - detailsScreenStartMs.current,
+      )
+    },
   )
 
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
@@ -282,6 +308,7 @@ export const useCreateFormWizardContext = (
     handleProceedFromDetails,
     goToFormDetails,
     isPaperTrackingSetUpPageEnabled,
+    isLegacySetup,
     proceedCtaLabel,
     isSingpass: false,
     hasMyInfoChildren: false,

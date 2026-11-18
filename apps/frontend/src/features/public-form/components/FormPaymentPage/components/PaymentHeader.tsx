@@ -7,7 +7,10 @@ export const PaymentHeader = (): JSX.Element => {
   const { form, spcpSession, miniHeaderRef, onMobileDrawerOpen, handleLogout } =
     usePublicFormContext()
 
-  const formHeaderProps = useFormHeader({ startPage: form?.startPage })
+  const formHeaderProps = useFormHeader({
+    startPage: form?.startPage,
+    closeAt: form?.closeAt,
+  })
 
   return (
     <FormHeader

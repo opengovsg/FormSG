@@ -280,7 +280,12 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
       <FormControl isReadOnly={isLoading}>
-        <Toggle {...register('required')} label="Required" />
+        <Toggle
+          {...register('required')}
+          label={t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.required',
+          )}
+        />
       </FormControl>
       <FormControl
         isReadOnly={isLoading}
@@ -358,7 +363,9 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
         <FormControl>
           <Toggle
             {...register('hasInvalidDays')}
-            label="Customise available days"
+            label={t(
+              'features.adminForm.sidebar.fields.date.customiseAvailableDays.title',
+            )}
           />
         </FormControl>
         {hasInvalidDaysRestriction && (
@@ -367,7 +374,9 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
               control={control}
               name="invalidDays"
               rules={{
-                required: 'Please select available days of the week',
+                required: t(
+                  'features.adminForm.sidebar.fields.date.customiseAvailableDays.requiredError',
+                ),
                 validate: (val) => {
                   const customMinDate = getValues(
                     'dateValidation.customMinDate',
@@ -388,7 +397,9 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
                       customMaxDate,
                       getRemainingDaysOfTheWeek(val),
                     ) ||
-                    "The selected days aren't available within your custom date range"
+                    t(
+                      'features.adminForm.sidebar.fields.date.customiseAvailableDays.noAvailableDaysError',
+                    )
                   )
                 },
               }}

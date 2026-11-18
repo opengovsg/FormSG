@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { ResendOtpButton, ResendOtpButtonProps } from './ResendOtpButton'
 import {
@@ -32,6 +32,7 @@ InProgress.args = {
 export const Playground: StoryFn<ResendOtpButtonContainerProps> = (args) => (
   <ResendOtpButtonContainer {...args} />
 )
+Playground.tags = ['playground']
 Playground.args = {
   onResendOtp: () => new Promise((res) => setTimeout(res, 800)),
 }

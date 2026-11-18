@@ -1,5 +1,6 @@
 import { HttpStatusCode } from 'axios'
 import { celebrate, Joi, Segments } from 'celebrate'
+import { randomBytes } from 'crypto'
 import { featureFlags } from 'formsg-shared/constants'
 import {
   ErrorCode,
@@ -14,9 +15,10 @@ import {
   PublicFormViewDto,
   StrippedFormWorkflowDto,
 } from 'formsg-shared/types'
+import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import { StatusCodes } from 'http-status-codes'
-import { err, ok, okAsync, Result } from 'neverthrow'
+import { err, okAsync } from 'neverthrow'
 
 import { IPopulatedMultirespondentForm } from '../../../../types'
 import { isTest } from '../../../config/config'
@@ -26,33 +28,26 @@ import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormIfPublic } from '../../auth/auth.service'
 import * as BillingService from '../../billing/billing.service'
 import { ControllerHandler } from '../../core/core.types'
+import { MYINFO_FAPI_SESSION_COOKIE_NAME } from '../../myinfo/fapi/myinfo.fapi.constants'
+import {
+  clearMyInfoFapiSessionCookie,
+  setMyInfoFapiSessionCookie,
+} from '../../myinfo/fapi/myinfo.fapi.controller'
+import {
+  MyInfoFapiIncompleteLoginError,
+  MyInfoFapiSessionFormMismatchError,
+} from '../../myinfo/fapi/myinfo.fapi.errors'
+import * as MyInfoFapiService from '../../myinfo/fapi/myinfo.fapi.service'
 import { MyInfoData } from '../../myinfo/myinfo.adapter'
 import {
-  MYINFO_AUTH_CODE_COOKIE_NAME,
-  MYINFO_AUTH_CODE_COOKIE_OPTIONS,
   MYINFO_LOGIN_COOKIE_NAME,
   MYINFO_LOGIN_COOKIE_OPTIONS,
 } from '../../myinfo/myinfo.constants'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import {
   createMyInfoLoginCookie,
-  extractAuthCode,
-  getMyInfoEserviceIdInForm,
+  shouldFetchSponsoredChildren,
 } from '../../myinfo/myinfo.util'
-import { SGIDMyInfoData } from '../../sgid/sgid.adapter'
-import {
-  SGID_CODE_VERIFIER_COOKIE_NAME,
-  SGID_COOKIE_NAME,
-  SGID_MYINFO_COOKIE_NAME,
-  SGID_MYINFO_LOGIN_COOKIE_NAME,
-} from '../../sgid/sgid.constants'
-import {
-  SgidInvalidJwtError,
-  SgidMalformedMyInfoCookieError,
-  SgidVerifyJwtError,
-} from '../../sgid/sgid.errors'
-import { SgidService } from '../../sgid/sgid.service'
-import { validateSgidForm } from '../../sgid/sgid.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import {
@@ -69,7 +64,15 @@ import {
 import * as FormService from '../form.service'
 
 import * as PublicFormService from './public-form.service'
-import { mapFormAuthError, mapRouteError } from './public-form.utils'
+import {
+  getLoginIdentityValues,
+  getStepOneMyInfoAttrs,
+  getStepOneMyInfoFields,
+  mapFormAuthError,
+  mapRouteError,
+  mergePrefilledFields,
+  prefillLoginIdentityFields,
+} from './public-form.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -202,140 +205,59 @@ export const handleGetPublicForm: ControllerHandler<
       // We always want to clear existing login cookies because we no longer
       // have the prefilled data
       res.clearCookie(MYINFO_LOGIN_COOKIE_NAME, MYINFO_LOGIN_COOKIE_OPTIONS)
-      const authCodeCookie: unknown = req.cookies[MYINFO_AUTH_CODE_COOKIE_NAME]
-      // No auth code cookie because user is accessing the form before logging
-      // in
-      if (!authCodeCookie) {
-        return res.json({
-          form: publicForm,
-          isIntranetUser,
-        })
-      }
-      // Clear auth code cookie once found, as it can't be reused
-      res.clearCookie(
-        MYINFO_AUTH_CODE_COOKIE_NAME,
-        MYINFO_AUTH_CODE_COOKIE_OPTIONS,
-      )
-      const useEsrvcId = req.growthbook?.isOn(featureFlags.useFormsgEsrvcId)
-      const myInfoFieldsResult = await extractAuthCode(authCodeCookie)
-        .asyncAndThen((authCode) => MyInfoService.retrieveAccessToken(authCode))
-        .andThen((accessToken) =>
-          MyInfoService.getMyInfoDataForForm(form, accessToken, useEsrvcId),
-        )
 
-      if (myInfoFieldsResult.isErr()) {
-        const error = myInfoFieldsResult.error
-        logger.error({
-          message: 'MyInfo login error',
-          meta: logMeta,
-          error,
+      const fapiSessionId: unknown =
+        req.signedCookies?.[MYINFO_FAPI_SESSION_COOKIE_NAME]
+      if (typeof fapiSessionId === 'string' && fapiSessionId) {
+        const fapiFieldsResult = await MyInfoFapiService.loadPersonForSession({
+          sessionId: fapiSessionId,
+          formId,
         })
-        // No need for cookie if data could not be retrieved
-        // NOTE: If the user does not have any cookie, clearing the cookie still has the same result
-        return res.json({
-          form: publicForm,
-          errorCodes: [ErrorCode.myInfo],
-          isIntranetUser,
-        })
-      }
-      myInfoFields = myInfoFieldsResult.value
-      spcpSession = { userName: myInfoFields.getUinFin() }
-      break
-    }
-    case FormAuthType.SGID: {
-      const jwtPayloadResult = await SgidService.extractSgidSingpassJwtPayload(
-        req.cookies[SGID_COOKIE_NAME],
-      )
-      if (jwtPayloadResult.isErr()) {
-        const error = jwtPayloadResult.error
-        // Report only relevant errors - verification failed for user here
-        if (
-          error instanceof SgidVerifyJwtError ||
-          error instanceof SgidInvalidJwtError
-        ) {
+        if (fapiFieldsResult.isErr()) {
+          const { error: fapiError } = fapiFieldsResult
+
+          // Frontend tab-scoping decides whether to discard a session for
+          // another form.
+          if (!(fapiError instanceof MyInfoFapiSessionFormMismatchError)) {
+            clearMyInfoFapiSessionCookie(res)
+          }
+
+          // Callback not yet reached, or the session belongs to another tab —
+          // treat either as no login attempt.
+          if (
+            fapiError instanceof MyInfoFapiIncompleteLoginError ||
+            fapiError instanceof MyInfoFapiSessionFormMismatchError
+          ) {
+            return res.json({ form: publicForm, isIntranetUser })
+          }
+
           logger.error({
-            message: 'Error getting public form',
+            message: 'MyInfo login error',
             meta: logMeta,
-            error,
+            error: fapiError,
+          })
+          return res.json({
+            form: publicForm,
+            errorCodes: [ErrorCode.myInfo],
+            isIntranetUser,
           })
         }
-        return res.json({ form: publicForm, isIntranetUser })
-      }
-      spcpSession = jwtPayloadResult.value
-      break
-    }
-    case FormAuthType.SGID_MyInfo: {
-      const parseSgidMyInfoCookieResult = Result.fromThrowable(
-        () =>
-          JSON.parse(req.cookies[SGID_MYINFO_COOKIE_NAME] ?? '{}') as {
-            jwt?: string
-            sub?: string
-          },
-        (error) => {
-          logger.error({
-            message: 'Error while calling JSON.parse on SGID MyInfo cookie',
-            meta: logMeta,
-            error,
-          })
-          return new SgidMalformedMyInfoCookieError()
-        },
-      )()
 
-      if (parseSgidMyInfoCookieResult.isErr()) {
+        clearMyInfoFapiSessionCookie(res)
+        myInfoFields = fapiFieldsResult.value
+      } else {
+        if (req.cookies[MYINFO_FAPI_SESSION_COOKIE_NAME]) {
+          // Present but unreadable (e.g. rotated SESSION_SECRET); drop it
+          // since nothing can consume it.
+          clearMyInfoFapiSessionCookie(res)
+        }
+        // User is accessing the form before logging in.
         return res.json({
           form: publicForm,
           isIntranetUser,
         })
       }
 
-      const parseSgidMyInfoCookie = parseSgidMyInfoCookieResult.value
-      const { jwt: accessToken = '', sub = '' } = parseSgidMyInfoCookie
-
-      if (!accessToken) {
-        return res.json({
-          form: publicForm,
-          isIntranetUser,
-        })
-      }
-      res.clearCookie(SGID_MYINFO_COOKIE_NAME)
-      res.clearCookie(SGID_MYINFO_LOGIN_COOKIE_NAME)
-
-      const jwtPayloadResult =
-        await SgidService.extractSgidJwtMyInfoPayload(accessToken)
-      if (jwtPayloadResult.isErr()) {
-        const error = jwtPayloadResult.error
-        logger.error({
-          message: 'sgID: MyInfo login error',
-          meta: logMeta,
-          error,
-        })
-        return res.json({
-          form: publicForm,
-          errorCodes: [ErrorCode.myInfo],
-          isIntranetUser,
-        })
-      }
-      const jwtPayload = jwtPayloadResult.value
-      const myInfoFieldsResult = await SgidService.retrieveUserInfo({
-        accessToken: jwtPayload.accessToken,
-        sub,
-      })
-
-      if (myInfoFieldsResult.isErr()) {
-        const error = myInfoFieldsResult.error
-        logger.error({
-          message: 'sgID: MyInfo login error',
-          meta: logMeta,
-          error,
-        })
-        return res.json({
-          form: publicForm,
-          errorCodes: [ErrorCode.myInfo],
-          isIntranetUser,
-        })
-      }
-
-      myInfoFields = new SGIDMyInfoData(myInfoFieldsResult.value.data)
       spcpSession = { userName: myInfoFields.getUinFin() }
       break
     }
@@ -425,12 +347,25 @@ export const handleGetPublicForm: ControllerHandler<
     })
   }
 
+  const withLoginIdentities = (formFields: FormFieldDto[]): FormFieldDto[] =>
+    prefillLoginIdentityFields(
+      formFields,
+      getLoginIdentityValues(authType, spcpSession),
+      'workflow' in publicForm ? publicForm.workflow : undefined,
+    )
+
   // generate form response based on authType
   switch (authType) {
     case FormAuthType.SP:
     case FormAuthType.CP:
       return res.json({
-        form: publicForm,
+        // Forms without login identity fields keep their response as is.
+        form: (publicForm.form_fields ?? []).some(isLoginIdentityField)
+          ? {
+              ...publicForm,
+              form_fields: withLoginIdentities(publicForm.form_fields),
+            }
+          : publicForm,
         isIntranetUser,
         spcpSession,
       })
@@ -453,7 +388,7 @@ export const handleGetPublicForm: ControllerHandler<
         await MyInfoService.prefillAndSaveMyInfoFields(
           form._id,
           myInfoFields,
-          form.toJSON().form_fields,
+          getStepOneMyInfoFields(form),
         )
 
       if (prefilledFieldsResult.isErr()) {
@@ -482,69 +417,17 @@ export const handleGetPublicForm: ControllerHandler<
           spcpSession,
           form: {
             ...publicForm,
-            form_fields: prefilledFields as FormFieldDto[],
+            form_fields: withLoginIdentities(
+              mergePrefilledFields(
+                form.toJSON().form_fields as FormFieldDto[],
+                prefilledFields as FormFieldDto[],
+              ),
+            ),
           },
           isIntranetUser,
           myInfoChildrenBirthRecords: (
             myInfoFields as MyInfoData
-          ).getChildrenBirthRecords(form.getUniqueMyInfoAttrs()),
-        })
-    }
-    case FormAuthType.SGID:
-      return res.json({
-        form: publicForm,
-        isIntranetUser,
-        spcpSession,
-      })
-    case FormAuthType.SGID_MyInfo: {
-      if (!myInfoFields) {
-        logger.error({
-          message: 'sgID_MyInfo: Failed to load MyInfo fields',
-          meta: logMeta,
-        })
-        // No need for cookie if data could not be retrieved
-        // NOTE: If the user does not have any cookie, clearing the cookie still has the same result
-        return res.json({
-          form: publicForm,
-          errorCodes: [ErrorCode.myInfo],
-          isIntranetUser,
-        })
-      }
-      const prefilledFieldsResult =
-        await MyInfoService.prefillAndSaveMyInfoFields(
-          form._id,
-          myInfoFields,
-          form.toJSON().form_fields,
-        )
-
-      if (prefilledFieldsResult.isErr()) {
-        const error = prefilledFieldsResult.error
-        logger.error({
-          message: 'sgID_MyInfo: Failed to prefill and save MyInfo fields',
-          meta: logMeta,
-          error,
-        })
-        return res.json({
-          form: publicForm,
-          errorCodes: [ErrorCode.myInfo],
-          isIntranetUser,
-        })
-      }
-
-      const prefilledFields = prefilledFieldsResult.value
-      return res
-        .cookie(
-          SGID_MYINFO_LOGIN_COOKIE_NAME,
-          createMyInfoLoginCookie(myInfoFields.getUinFin()),
-          MYINFO_LOGIN_COOKIE_OPTIONS,
-        )
-        .json({
-          form: {
-            ...publicForm,
-            form_fields: prefilledFields as FormFieldDto[],
-          },
-          spcpSession: { userName: myInfoFields.getUinFin() },
-          isIntranetUser,
+          ).getChildrenBirthRecords(getStepOneMyInfoAttrs(form)),
         })
     }
     default: {
@@ -672,20 +555,36 @@ export const _handleFormAuthRedirect: ControllerHandler<
   return FormService.retrieveFullFormById(formId)
     .andThen((form) => {
       formAuthType = form.authType
-      const useFormsgEsrvcId = req.growthbook?.isOn(
-        featureFlags.useFormsgEsrvcId,
-      )
+      // Add formId to growthbook attributes to allow for targeting in growthbook feature flags.
+      void req.growthbook?.setAttributes({
+        ...req.growthbook.getAttributes(),
+        formId,
+        adminEmail: form.admin.email,
+      })
+      // TODO [CP-PKCE]: Cleanup this flag once the nonce state format is fully
+      // rolled out. Only emit the nonce state format once every instance is
+      // able to parse it, otherwise a callback served by an compute instance running
+      // the older parser rejects the state outright.
+      const useStateNonce =
+        req.growthbook?.isOn(featureFlags.spcpOidcStateNonce) ?? false
+      const nonce = useStateNonce ? randomBytes(16).toString('hex') : undefined
+      // Fail closed: without a growthbook instance, only birth records are fetched.
+      const isMrfChildrenEnabled =
+        req.growthbook?.isOn(featureFlags.mrfChildren) ?? false
       switch (form.authType) {
         case FormAuthType.MyInfo:
-          return getMyInfoEserviceIdInForm(form, useFormsgEsrvcId).andThen(
-            ([form, eserviceId]) =>
-              MyInfoService.createRedirectURL({
-                formEsrvcId: eserviceId,
-                formId,
-                requestedAttributes: form.getUniqueMyInfoAttrs(),
-                encodedQuery,
-              }),
-          )
+          return MyInfoFapiService.startLogin({
+            formId,
+            encodedQuery,
+            requestedAttributes: getStepOneMyInfoAttrs(form),
+            includeSponsoredChildren: shouldFetchSponsoredChildren(
+              form,
+              isMrfChildrenEnabled,
+            ),
+          }).map(({ sessionId, redirectUrl }) => {
+            setMyInfoFapiSessionCookie(res, sessionId)
+            return redirectUrl
+          })
         case FormAuthType.SP: {
           return validateSpcpForm(form).asyncAndThen((form) => {
             const target = getRedirectTargetSpcpOidc(
@@ -693,11 +592,19 @@ export const _handleFormAuthRedirect: ControllerHandler<
               FormAuthType.SP,
               isPersistentLogin,
               encodedQuery,
+              nonce,
             )
-            return getOidcService(FormAuthType.SP).createRedirectUrl(
-              target,
-              form.esrvcId,
-            )
+            const oidcService = getOidcService(FormAuthType.SP)
+            return oidcService
+              .createRedirectUrl(target, form.esrvcId)
+              .map(({ redirectUrl, codeVerifier }) => {
+                res.cookie(
+                  oidcService.getCodeVerifierCookieName(nonce),
+                  codeVerifier,
+                  oidcService.getCodeVerifierCookieOptions(),
+                )
+                return redirectUrl
+              })
           })
         }
         case FormAuthType.CP: {
@@ -709,49 +616,21 @@ export const _handleFormAuthRedirect: ControllerHandler<
               FormAuthType.CP,
               isPersistentLogin,
               encodedQuery,
+              nonce,
             )
-            return getOidcService(FormAuthType.CP).createRedirectUrl(
-              target,
-              form.esrvcId,
-            )
+            const oidcService = getOidcService(FormAuthType.CP)
+            return oidcService
+              .createRedirectUrl(target, form.esrvcId)
+              .map(({ redirectUrl, codeVerifier }) => {
+                res.cookie(
+                  oidcService.getCodeVerifierCookieName(nonce),
+                  codeVerifier,
+                  oidcService.getCodeVerifierCookieOptions(),
+                )
+                return redirectUrl
+              })
           })
         }
-        case FormAuthType.SGID:
-          return validateSgidForm(form)
-            .andThen(() =>
-              SgidService.createRedirectUrl(
-                formId,
-                Boolean(isPersistentLogin),
-                [],
-                encodedQuery,
-              ),
-            )
-            .andThen(({ redirectUrl, codeVerifier }) => {
-              res.cookie(
-                SGID_CODE_VERIFIER_COOKIE_NAME,
-                codeVerifier,
-                SgidService.getCookieSettings(),
-              )
-              return ok(redirectUrl)
-            })
-        case FormAuthType.SGID_MyInfo:
-          return validateSgidForm(form)
-            .andThen(() =>
-              SgidService.createRedirectUrl(
-                formId,
-                false,
-                form.getUniqueMyInfoAttrs(),
-                encodedQuery,
-              ),
-            )
-            .andThen(({ redirectUrl, codeVerifier }) => {
-              res.cookie(
-                SGID_CODE_VERIFIER_COOKIE_NAME,
-                codeVerifier,
-                SgidService.getCookieSettings(),
-              )
-              return ok(redirectUrl)
-            })
         default:
           return err<never, AuthTypeMismatchError>(
             new AuthTypeMismatchError(form.authType),
@@ -779,7 +658,6 @@ export const _handleFormAuthRedirect: ControllerHandler<
         error,
       })
       const { statusCode, errorMessage } = mapFormAuthError(error)
-      res.clearCookie(SGID_CODE_VERIFIER_COOKIE_NAME)
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
@@ -802,7 +680,7 @@ export const handleFormAuthRedirect = [
 
 /**
  * NOTE: This is exported only for testing
- * Logs user out of SP / CP / MyInfo / SGID by deleting cookie
+ * Logs user out of SP / CP / MyInfo by deleting cookie
  * @param authType type of authentication
  *
  * @returns 200 with success message when user logs out successfully
@@ -810,12 +688,7 @@ export const handleFormAuthRedirect = [
  */
 export const _handlePublicAuthLogout: ControllerHandler<
   {
-    authType:
-      | FormAuthType.SP
-      | FormAuthType.CP
-      | FormAuthType.MyInfo
-      | FormAuthType.SGID
-      | FormAuthType.SGID_MyInfo
+    authType: FormAuthType.SP | FormAuthType.CP | FormAuthType.MyInfo
   },
   PublicFormAuthLogoutDto
 > = (req, res) => {
@@ -823,27 +696,25 @@ export const _handlePublicAuthLogout: ControllerHandler<
 
   const cookieName = PublicFormService.getCookieNameByAuthType(authType)
 
-  return res
-    .clearCookie(cookieName)
-    .status(200)
-    .json({ message: 'Successfully logged out.' })
+  res.clearCookie(cookieName)
+
+  // Additional cookies to clear for MyInfo
+  if (authType === FormAuthType.MyInfo) {
+    clearMyInfoFapiSessionCookie(res)
+  }
+
+  return res.status(200).json({ message: 'Successfully logged out.' })
 }
 
 /**
  * Handler for /forms/auth/:authType/logout
- * Valid AuthTypes are SP / CP / MyInfo / SGID
+ * Valid AuthTypes are SP / CP / MyInfo
  */
 export const handlePublicAuthLogout = [
   celebrate({
     [Segments.PARAMS]: Joi.object({
       authType: Joi.string()
-        .valid(
-          FormAuthType.SP,
-          FormAuthType.CP,
-          FormAuthType.MyInfo,
-          FormAuthType.SGID,
-          FormAuthType.SGID_MyInfo,
-        )
+        .valid(FormAuthType.SP, FormAuthType.CP, FormAuthType.MyInfo)
         .required(),
     }),
   }),

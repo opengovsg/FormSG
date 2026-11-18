@@ -44,7 +44,19 @@ export enum GenericStringAnswerResponseFieldV3 {
   CountryRegion = 'country_region',
 }
 
+/** Corppass login identities a field can be filled with. */
+export enum CorppassAttribute {
+  Uen = 'uen',
+  Uid = 'uid',
+}
+
+export type AllowCorppassBase<T extends CorppassAttribute> = {
+  corppass?: { attr: T }
+}
+
 export enum MyInfoAttribute {
+  // Filled from Singpass login, on an NRIC field only.
+  UinFin = 'uinfin',
   Name = 'name',
   PassportNumber = 'passportnumber',
   RegisteredAddress = 'regadd',
@@ -79,6 +91,7 @@ export enum MyInfoAttribute {
   ChildGender = 'childgender',
   ChildRace = 'childrace',
   ChildSecondaryRace = 'childsecondaryrace',
+  ChildType = 'childtype',
 }
 
 // We need to write this manually otherwise TS merges the names and keys
@@ -90,10 +103,12 @@ export enum MyInfoChildAttributes {
   ChildGender = 'childgender',
   ChildRace = 'childrace',
   ChildSecondaryRace = 'childsecondaryrace',
+  ChildType = 'childtype',
 }
 
 export type AllowedMyInfoFieldOption = Exclude<
   MyInfoAttribute,
+  | MyInfoAttribute.UinFin
   | MyInfoAttribute.ChildName
   | MyInfoAttribute.ChildBirthCertNo
   | MyInfoAttribute.ChildDateOfBirth
@@ -101,11 +116,23 @@ export type AllowedMyInfoFieldOption = Exclude<
   | MyInfoAttribute.ChildGender
   | MyInfoAttribute.ChildRace
   | MyInfoAttribute.ChildSecondaryRace
+  | MyInfoAttribute.ChildType
 >
+
+export enum MyInfoChildrenScope {
+  Local = 'local',
+  Sponsored = 'sponsored',
+}
 
 export type MyInfoChildData = Partial<{
   [key in MyInfoChildAttributes]: string[]
-}>
+}> & {
+  /**
+   * MyInfo scope each child record was retrieved under, parallel to the
+   * attribute arrays. Local children come first, then sponsored children.
+   */
+  scopes?: MyInfoChildrenScope[]
+}
 
 export type AllowMyInfoBase = {
   myInfo?: {

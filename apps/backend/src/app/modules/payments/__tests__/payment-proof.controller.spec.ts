@@ -1,21 +1,20 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import axios from 'axios'
-import { PaymentStatus, SubmissionType } from 'formsg-shared/types'
+import {
+  FormResponseMode,
+  PaymentStatus,
+  SubmissionType,
+} from 'formsg-shared/types'
 import mongoose, { Types } from 'mongoose'
-import { errAsync, ok, okAsync } from 'neverthrow'
+import { errAsync, okAsync } from 'neverthrow'
 
 import getPaymentModel from 'src/app/models/payment.server.model'
 import { getEncryptPendingSubmissionModel } from 'src/app/models/pending_submission.server.model'
 import * as ConvertHtmlToPdf from 'src/app/utils/convert-html-to-pdf'
-import {
-  IPaymentSchema,
-  IPopulatedEncryptedForm,
-  IPopulatedForm,
-} from 'src/types'
+import { IPaymentSchema, IPopulatedForm } from 'src/types'
 
 import * as FormService from '../../form/form.service'
-import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
 import * as PaymentProofController from '../payment-proof.controller'
 import { PaymentProofUploadS3Error } from '../payment-proof.errors'
 import * as PaymentProofService from '../payment-proof.service'
@@ -30,11 +29,6 @@ const MOCK_FORM_ID = new Types.ObjectId().toHexString()
 jest.mock('axios')
 jest.mock('src/app/modules/payments/stripe.utils')
 jest.mock('src/app/utils/convert-html-to-pdf')
-
-jest.mock(
-  'src/app/modules/submission/encrypt-submission/encrypt-submission.service',
-)
-const MockEncryptSubmissionService = jest.mocked(EncryptSubmissionService)
 
 jest.mock('../../form/form.service')
 const MockFormService = jest.mocked(FormService)
@@ -53,6 +47,7 @@ describe('stripe.controller', () => {
     const mockSubmissionId = new Types.ObjectId().toHexString()
     const mockForm = {
       _id: MOCK_FORM_ID,
+      responseMode: FormResponseMode.Encrypt,
       admin: {
         agency: {
           business: mockBusinessInfo,
@@ -94,9 +89,6 @@ describe('stripe.controller', () => {
     it('should reject when receipt url is not present', async () => {
       // Arrange
       MockFormService.retrieveFullFormById.mockReturnValue(okAsync(mockForm))
-      MockEncryptSubmissionService.checkFormIsEncryptMode.mockReturnValue(
-        ok(mockForm as IPopulatedEncryptedForm),
-      )
       const mockReq = expressHandler.mockRequest({
         params: { formId: mockForm._id, paymentId: payment._id },
       })
@@ -122,9 +114,6 @@ describe('stripe.controller', () => {
     it('should reject when receipt download from stripe fails', async () => {
       // Arrange
       MockFormService.retrieveFullFormById.mockReturnValue(okAsync(mockForm))
-      MockEncryptSubmissionService.checkFormIsEncryptMode.mockReturnValue(
-        ok(mockForm as IPopulatedEncryptedForm),
-      )
       const mockReq = expressHandler.mockRequest({
         params: { formId: mockForm._id, paymentId: payment._id },
       })
@@ -156,9 +145,6 @@ describe('stripe.controller', () => {
     it('should return with error if upload to s3 fails', async () => {
       // Arrange
       MockFormService.retrieveFullFormById.mockReturnValue(okAsync(mockForm))
-      MockEncryptSubmissionService.checkFormIsEncryptMode.mockReturnValue(
-        ok(mockForm as IPopulatedEncryptedForm),
-      )
 
       const mockReq = expressHandler.mockRequest({
         params: { formId: mockForm._id, paymentId: payment._id },
@@ -212,9 +198,6 @@ describe('stripe.controller', () => {
     it('should return with redirect link', async () => {
       // Arrange
       MockFormService.retrieveFullFormById.mockReturnValue(okAsync(mockForm))
-      MockEncryptSubmissionService.checkFormIsEncryptMode.mockReturnValue(
-        ok(mockForm as IPopulatedEncryptedForm),
-      )
 
       const mockReq = expressHandler.mockRequest({
         params: { formId: mockForm._id, paymentId: payment._id },

@@ -168,9 +168,7 @@ describe('UseTemplateWizardProvider — cutover behaviour', () => {
 
     act(() => {
       result.current.formMethods.setValue('title', 'New title')
-      result.current.formMethods.setValue('formOrigins', {
-        value: [FormOrigin.DigitalSpreadsheet],
-      })
+      result.current.formMethods.setValue('formOrigin', FormOrigin.Paper)
     })
     await act(async () => {
       await result.current.handleCreateStorageModeOrMultirespondentForm()
@@ -184,7 +182,7 @@ describe('UseTemplateWizardProvider — cutover behaviour', () => {
     ).toEqual(
       expect.objectContaining({
         metadata: {
-          formOrigins: { value: [FormOrigin.DigitalSpreadsheet] },
+          formOrigins: { value: [FormOrigin.Paper] },
         },
       }),
     )

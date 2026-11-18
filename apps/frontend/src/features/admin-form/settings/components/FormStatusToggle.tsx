@@ -1,36 +1,51 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Flex, Skeleton, Stack, Text, useDisclosure } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
-import { BasicField } from 'formsg-shared/types'
+import { featureFlags } from 'formsg-shared/constants'
 import {
   EmailFormDto,
   FormResponseMode,
   FormStatus,
 } from 'formsg-shared/types/form/form'
+import { hasLaterCorppassStepWithoutEsrvcId } from 'formsg-shared/utils/step-login'
 
-import InlineMessage from '~components/InlineMessage'
 import { Switch } from '~components/Toggle/Switch'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import {
+  AUTHENTICATION_DRAFT_NOTICE_ID,
+  AuthenticationDraftNotice,
+} from '~features/admin-form/create/common/AuthenticationDraftNotice'
+import { useAuthenticationPublishErrors } from '~features/admin-form/create/common/useAuthenticationPublishErrors'
+import { useIncompleteWorkflowStepLabels } from '~features/admin-form/create/workflow/hooks/useIncompleteWorkflowStepLabels'
 
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
 
 import { EmailModeConvertModal } from './EmailModeConvertModal'
+import { IncompleteWorkflowModal } from './IncompleteWorkflowModal'
 import { SecretKeyActivationModal } from './SecretKeyActivationModal'
 import { isEsrvcidRequired } from './utils'
 
 export const FormStatusToggle = (): JSX.Element => {
   const { t } = useTranslation()
   const {
-    data: { form_fields, _id: formId, ...adminFormData } = {},
+    data: adminForm,
+    data: { _id: formId, ...adminFormData } = {},
     isLoading: isLoadingForm,
   } = useAdminForm()
   const { data: formSettings, isLoading: isLoadingFormSettings } =
     useAdminFormSettings()
 
   const { status, responseMode, authType, esrvcId } = formSettings ?? {}
+
+  // Forms never asked at creation (made before the question existed, or
+  // through the MRF cutover escape hatch) are asked when opened.
+  const askFormOrigin =
+    useFeatureIsOn(featureFlags.enablePaperTrackingSetUpPage) &&
+    !adminForm?.metadata?.formOrigins?.value.length
 
   const secretKeyActivationModalProps = useDisclosure()
   const { onOpen: onOpenActivationModal } = secretKeyActivationModalProps
@@ -46,7 +61,17 @@ export const FormStatusToggle = (): JSX.Element => {
         'features.adminForm.settings.general.status.supplySingpassEServiceId',
       )
     }
-  }, [authType, esrvcId, formSettings?.responseMode, form_fields, status, t])
+
+    // Later Corppass steps have their own e-service ID.
+    if (
+      adminForm?.responseMode === FormResponseMode.Multirespondent &&
+      hasLaterCorppassStepWithoutEsrvcId(adminForm.workflow)
+    ) {
+      return t(
+        'features.adminForm.settings.general.status.supplyStepEServiceIds',
+      )
+    }
+  }, [adminForm, authType, esrvcId, status, t])
 
   const { mutateFormStatus } = useMutateFormSettings()
 
@@ -83,16 +108,28 @@ export const FormStatusToggle = (): JSX.Element => {
   const emailModeConvertModalProps = useDisclosure()
   const { onOpen: onOpenEmailModeConvertModal } = emailModeConvertModalProps
 
+  const incompleteWorkflowModalProps = useDisclosure()
+  const { onOpen: onOpenIncompleteWorkflowModal } = incompleteWorkflowModalProps
+  const incompleteStepLabels = useIncompleteWorkflowStepLabels()
+  const authenticationPublishErrors = useAuthenticationPublishErrors()
+
   const onFormToggleStatusClick = useCallback(() => {
+    if (!isFormPublic && authenticationPublishErrors.length > 0) return
+    if (!isFormPublic && incompleteStepLabels.length > 0) {
+      return onOpenIncompleteWorkflowModal()
+    }
     if (!isFormPublic && isForceConvertFromEmailToStorage) {
       return onOpenEmailModeConvertModal()
     }
     return handleToggleStatus()
   }, [
     handleToggleStatus,
+    incompleteStepLabels.length,
+    authenticationPublishErrors.length,
     isForceConvertFromEmailToStorage,
     isFormPublic,
     onOpenEmailModeConvertModal,
+    onOpenIncompleteWorkflowModal,
   ])
 
   return (
@@ -105,11 +142,19 @@ export const FormStatusToggle = (): JSX.Element => {
             formId={formId!}
           />
         )}
+        {formId ? (
+          <IncompleteWorkflowModal
+            {...incompleteWorkflowModalProps}
+            formId={formId}
+            incompleteStepLabels={incompleteStepLabels}
+          />
+        ) : null}
         {(formSettings?.responseMode === FormResponseMode.Encrypt ||
           formSettings?.responseMode === FormResponseMode.Multirespondent) && (
           <SecretKeyActivationModal
             {...secretKeyActivationModalProps}
             publicKey={formSettings.publicKey}
+            askFormOrigin={askFormOrigin}
           />
         )}
         <Flex
@@ -124,21 +169,31 @@ export const FormStatusToggle = (): JSX.Element => {
             {t('features.adminForm.settings.general.status.description.suffix')}
           </Text>
           <Switch
-            isDisabled={!!preventActivationMessage}
+            isDisabled={
+              !!preventActivationMessage ||
+              (!isFormPublic && authenticationPublishErrors.length > 0)
+            }
             aria-label={t(
               'features.adminForm.settings.general.status.ariaLabel',
             )}
-            aria-describedby="form-status"
+            aria-describedby={[
+              'form-status',
+              preventActivationMessage || authenticationPublishErrors.length > 0
+                ? AUTHENTICATION_DRAFT_NOTICE_ID
+                : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
             isLoading={mutateFormStatus.isLoading}
             isChecked={isFormPublic}
             onChange={onFormToggleStatusClick}
           />
         </Flex>
-        {preventActivationMessage ? (
-          <InlineMessage variant="warning">
-            {preventActivationMessage}
-          </InlineMessage>
-        ) : null}
+        {/* Every reason the form can't be opened yet sits in this one notice. */}
+        <AuthenticationDraftNotice
+          activationRequirement={preventActivationMessage}
+          mb={0}
+        />
       </Stack>
     </Skeleton>
   )

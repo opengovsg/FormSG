@@ -4,10 +4,10 @@ import { UseFormHandleSubmit, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
 import {
+  FormOrigin,
   FormResponseMode,
   PublicFormViewDto,
 } from 'formsg-shared/types/form/form'
-import { CheckboxFieldResponsesV3 } from 'formsg-shared/types/response-v3'
 
 import formsgSdk from '~utils/formSdk'
 import { CheckboxFieldValues } from '~templates/Field'
@@ -28,7 +28,8 @@ export interface CreateFormWizardInputProps {
   emails?: string[]
   // Storage form props
   storageAck?: boolean
-  formOrigins?: CheckboxFieldResponsesV3
+  // Answer to the origin question on the origin step.
+  formOrigin?: FormOrigin
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
   reason?: CheckboxFieldValues // for kill email mode
 }
@@ -48,6 +49,7 @@ export type CreateFormWizardContextReturn = {
   >
   goToFormDetails: () => void
   isPaperTrackingSetUpPageEnabled: boolean
+  isLegacySetup: boolean
   proceedCtaLabel: string
   keypair: ReturnType<typeof formsgSdk.crypto.generate>
   // Whether any async operation is in progress.

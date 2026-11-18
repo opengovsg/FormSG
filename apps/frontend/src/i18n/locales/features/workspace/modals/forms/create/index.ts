@@ -58,11 +58,6 @@ export interface CreateFormModal {
     description: string
   }
   escapeHatch: {
-    reasons: {
-      payments: string
-      children: string
-      webhooksV1: string
-    }
     prefix: string
     linkText: string
     suffix: string
@@ -70,19 +65,12 @@ export interface CreateFormModal {
   origin: {
     question: string
     options: {
-      paper: string
       digitalNew: string
-      digitalEmail: string
-      digitalDocument: string
-      digitalSpreadsheet: string
-      digitalFormbuilder: string
-      others: string
+      digitalExisting: string
+      paper: string
     }
-    otherInputLabel: string
     errors: {
-      atLeastOne: string
-      otherRequired: string
-      otherMaxLength: string
+      required: string
     }
     cta: {
       next: string

@@ -1,20 +1,37 @@
-import { Page } from '@playwright/test';
+import { Page } from '@playwright/test'
 
 /**
  * Closes any modals that may obstruct test flow,
  * such as the Rollout Announcement and Emergency Contact modals.
+ *
+ * These modals open only once the user has loaded, which can be after the page
+ * looks ready, so a one-off visibility check can miss them. Locator handlers
+ * instead close them whenever they show up before a later action.
  * @param {Page} page Playwright page
  */
-export const closeModals = async (
-  page: Page,
-) => {
-  // Close the Rollout Announcement modal if it is visible.
-  if (await page.getByText('New feature').isVisible()) {
-    await page.getByRole('button', { name: 'Cancel' }).click()
+export const closeModals = async (page: Page) => {
+  const pressEscape = async () => {
+    await page.keyboard.press('Escape')
   }
 
-  // Close the Emergency Contact modal if it is visible.
-  if (await page.getByRole('heading', { name: 'Emergency Contact' }).isVisible()) {
-    await page.locator('button[aria-label="Close"]').click()
-  }
+  await page.addLocatorHandler(
+    page.getByRole('dialog').filter({ hasText: 'New feature' }),
+    pressEscape,
+    { noWaitAfter: true },
+  )
+
+  await page.addLocatorHandler(
+    page.getByRole('dialog', { name: 'Emergency contact' }),
+    pressEscape,
+    { noWaitAfter: true },
+  )
+
+  // The admin feedback box is not a dialog, so Escape does not close it. It
+  // floats over the bottom of the page and covers the field drawer's buttons.
+  await page.addLocatorHandler(
+    page.getByRole('button', { name: 'close feedback box' }),
+    async (closeButton) => {
+      await closeButton.click()
+    },
+  )
 }

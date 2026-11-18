@@ -39,6 +39,7 @@ import {
   ForbiddenFormError,
   FormDeletedError,
   FormNotFoundError,
+  FormOpenToResponsesError,
   LogicNotFoundError,
   PrivateFormError,
   TransferOwnershipError,
@@ -46,8 +47,10 @@ import {
 import { UNICODE_ESCAPED_REGEX } from '../form.utils'
 
 import {
+  DeleteFirstWorkflowStepError,
   EditFieldError,
   FieldNotFoundError,
+  FormChangedWhileEditingError,
   GoGovAlreadyExistError,
   GoGovBadGatewayError,
   GoGovError,
@@ -60,6 +63,8 @@ import {
   ModelResponseInvalidSchemaFormatError,
   ModelResponseInvalidSyntaxError,
   PaymentChannelNotFoundError,
+  SavedViewLimitError,
+  SavedViewNotFoundError,
 } from './admin-form.errors'
 import {
   AssertFormFn,
@@ -82,12 +87,14 @@ export const mapRouteError = (
 ): ErrorResponseData => {
   switch (error.constructor) {
     case SmsLimitExceededError:
+    case SavedViewLimitError:
       return {
         statusCode: StatusCodes.CONFLICT,
         errorMessage: error.message,
       }
     case InvalidFileTypeError:
     case CreatePresignedPostError:
+    case DeleteFirstWorkflowStepError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
@@ -95,6 +102,7 @@ export const mapRouteError = (
     case FormNotFoundError:
     case FieldNotFoundError:
     case LogicNotFoundError:
+    case SavedViewNotFoundError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
         errorMessage: error.message,
@@ -102,6 +110,14 @@ export const mapRouteError = (
     case FormDeletedError:
       return {
         statusCode: StatusCodes.GONE,
+        errorMessage: error.message,
+      }
+    // Conflict rather than forbidden: the admin is allowed to do this, just not
+    // while the form is open. Closing it makes the same request succeed.
+    case FormOpenToResponsesError:
+    case FormChangedWhileEditingError:
+      return {
+        statusCode: StatusCodes.CONFLICT,
         errorMessage: error.message,
       }
     case PrivateFormError:
@@ -255,7 +271,7 @@ export const assertHasReadPermissions: AssertFormFn = (user, form) => {
     ? ok(true)
     : err(
         new ForbiddenFormError(
-          `User ${user.email} not authorized to perform read operation on Form ${form._id} with title: ${form.title}.`,
+          `User ${user.email} not authorized to perform read operation on Form ${form._id}.`,
         ),
       )
 }
@@ -272,7 +288,7 @@ export const assertHasDeletePermissions: AssertFormFn = (user, form) => {
     ? ok(true)
     : err(
         new ForbiddenFormError(
-          `User ${user.email} not authorized to perform delete operation on Form ${form._id} with title: ${form.title}.`,
+          `User ${user.email} not authorized to perform delete operation on Form ${form._id}.`,
         ),
       )
 }
@@ -300,7 +316,7 @@ export const assertHasWritePermissions: AssertFormFn = (user, form) => {
     ? ok(true)
     : err(
         new ForbiddenFormError(
-          `User ${user.email} not authorized to perform write operation on Form ${form._id} with title: ${form.title}.`,
+          `User ${user.email} not authorized to perform write operation on Form ${form._id}.`,
         ),
       )
 }

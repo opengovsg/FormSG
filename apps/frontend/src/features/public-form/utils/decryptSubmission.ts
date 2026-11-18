@@ -1,5 +1,5 @@
-import type { FieldResponseV4 } from '@opengovsg/formsg-sdk'
-import { adaptV4ToV3, isFieldResponsesV4 } from '@opengovsg/formsg-sdk'
+import type { FieldResponsesV4, FormFieldsV3 } from '@opengovsg/formsg-sdk'
+import { adaptV3ToV4, isFieldResponsesV4 } from '@opengovsg/formsg-sdk'
 import {
   EncryptedAttachmentContent,
   EncryptedFileContent,
@@ -7,11 +7,56 @@ import {
 import { decode as decodeBase64 } from '@stablelib/base64'
 
 import {
+  BasicField,
   FieldResponsesV3,
   PublicMultirespondentSubmissionDto,
 } from 'formsg-shared/types'
 
 import formsgSdk from '~utils/formSdk'
+
+export type DecryptedSubmission = Omit<
+  PublicMultirespondentSubmissionDto,
+  'encryptedContent' | 'version'
+> & {
+  responses: FieldResponsesV4
+  submissionSecretKey: string
+  /**
+   * Attachment contents embedded in the encrypted blob itself, keyed by field
+   * ID. Only present for legacy submissions stored before attachments moved
+   * out of the blob (mrfVersion == null) — the embedded `content` key is not
+   * part of the V3 response types and is dropped by adaptV3ToV4, so it is
+   * harvested here before adaptation.
+   */
+  legacyAttachmentContents?: Record<string, Uint8Array<ArrayBuffer>>
+}
+
+/**
+ * Normalizes decrypted responses to V4, the FE's working format.
+ * V3-stored blobs (mrfVersion 1 / legacy) are adapted to V4; question text is
+ * irrelevant for prefill so no form fields are provided, and provenance is
+ * left empty rather than fabricating timestamps.
+ */
+const normalizeToV4 = (rawResponses: unknown): FieldResponsesV4 =>
+  isFieldResponsesV4(rawResponses as Record<string, unknown>)
+    ? (rawResponses as FieldResponsesV4)
+    : adaptV3ToV4(rawResponses as FieldResponsesV3, { provenance: {} })
+
+const harvestLegacyAttachmentContents = (
+  rawResponses: Record<string, { fieldType?: string; answer?: unknown }>,
+): Record<string, Uint8Array<ArrayBuffer>> | undefined => {
+  if (isFieldResponsesV4(rawResponses)) return undefined
+  const contents: Record<string, Uint8Array<ArrayBuffer>> = {}
+  for (const [id, response] of Object.entries(rawResponses)) {
+    if (response.fieldType !== BasicField.Attachment) continue
+    const content = (
+      response.answer as { content?: { data?: ArrayLike<number> } } | undefined
+    )?.content
+    if (content?.data) {
+      contents[id] = Uint8Array.from(content.data)
+    }
+  }
+  return Object.keys(contents).length > 0 ? contents : undefined
+}
 
 /**
  * Decrypts a submission using the secret key
@@ -26,27 +71,17 @@ export const decryptSubmission = ({
 }: {
   submission?: PublicMultirespondentSubmissionDto
   secretKey?: string
-}):
-  | (Omit<
-      PublicMultirespondentSubmissionDto,
-      'encryptedContent' | 'version'
-    > & {
-      responses: FieldResponsesV3
-      submissionSecretKey: string
-    })
-  | undefined => {
+}): DecryptedSubmission | undefined => {
   if (!submission) throw Error('Encrypted submission undefined')
   if (!secretKey) throw Error('Secret key undefined')
 
-  // For testing, do not perform decryption and return the encrypted content directly
-  // (which will be a un-encrypted FieldResponsesV3 object)
+  // For testing, do not perform decryption and return the encrypted content
+  // directly (an un-encrypted V3 or V4 responses object)
   const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
   if (isTest) {
     return {
       ...submission,
-      responses: JSON.parse(
-        submission.encryptedContent,
-      ) as unknown as FieldResponsesV3,
+      responses: normalizeToV4(JSON.parse(submission.encryptedContent)),
       submissionSecretKey: secretKey,
     }
   }
@@ -59,19 +94,13 @@ export const decryptSubmission = ({
   )
   if (!decryptedContent) throw new Error('Could not decrypt the response')
 
-  // If the submission was encrypted in V4 format, convert back to V3
-  // since the respondent form view expects V3 shape
   const rawResponses = decryptedContent.responses
-  const responses: FieldResponsesV3 = isFieldResponsesV4(rawResponses)
-    ? (adaptV4ToV3(
-        rawResponses as Record<string, FieldResponseV4>,
-      ) as FieldResponsesV3)
-    : (rawResponses as FieldResponsesV3)
 
   // Add metadata for display.
   return {
     ...rest,
-    responses,
+    responses: normalizeToV4(rawResponses),
+    legacyAttachmentContents: harvestLegacyAttachmentContents(rawResponses),
     submissionSecretKey: secretKey,
   }
 }

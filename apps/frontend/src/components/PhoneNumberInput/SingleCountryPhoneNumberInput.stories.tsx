@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/react'
+import { Meta } from '@storybook/react-vite'
 
 import * as stories from './IntlPhoneNumberInput.stories'
 import { PhoneNumberInput } from './PhoneNumberInput'
@@ -42,6 +42,7 @@ Disabled.args = {
 }
 
 export const Playground = stories.Playground.bind({})
+Playground.tags = ['playground']
 Playground.args = {
   ...stories.Playground.args,
   allowInternational: false,

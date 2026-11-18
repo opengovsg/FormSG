@@ -13,6 +13,7 @@ import { verifyValidUnicodeString } from './admin-form.utils'
 const webhookSettingsValidator = Joi.object({
   url: Joi.string().uri().allow(''),
   isRetryEnabled: Joi.boolean(),
+  webhookFormat: Joi.string().valid('v1', 'v4'),
 }).min(1)
 
 /**
@@ -36,6 +37,7 @@ export const updateSettingsValidator = celebrate({
     inactiveMessage: Joi.string(),
     status: Joi.string().valid(...Object.values(FormStatus)),
     submissionLimit: Joi.number().allow(null),
+    closeAt: Joi.string().isoDate().allow(null),
     title: Joi.string(),
     webhook: webhookSettingsValidator,
     business: Joi.object({
@@ -49,6 +51,7 @@ export const updateSettingsValidator = celebrate({
     ),
     hasRespondentCopy: Joi.boolean(),
     hasStatusTracker: Joi.boolean(),
+    hasUsedGuidedMode: Joi.boolean(),
   })
     .min(1)
     .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),
@@ -73,6 +76,65 @@ export const getWebhookSettingsValidator = celebrate({
   }),
 })
 
+// Login on steps after Step 1. Null means no login, like absent.
+const workflowStepAuthValidator = Joi.object({
+  auth_type: Joi.string()
+    .valid(FormAuthType.MyInfo, FormAuthType.CP)
+    .required(),
+  // Only Corppass has an e-service ID.
+  esrvc_id: Joi.when('auth_type', {
+    is: FormAuthType.CP,
+    then: Joi.string().allow('').optional(),
+    otherwise: Joi.forbidden(),
+  }),
+})
+  .allow(null)
+  .optional()
+
+// Step 1's login, written to the form-level settings with the step.
+const firstStepLoginValidator = Joi.object({
+  auth_type: Joi.string()
+    .valid(FormAuthType.NIL, FormAuthType.MyInfo, FormAuthType.CP)
+    .required(),
+  esrvc_id: Joi.string().allow('').optional(),
+}).optional()
+
+// Login fields the admin confirmed for deletion, and the form version they saw.
+const authFieldDeletionKeys = {
+  expected_last_modified: Joi.string().isoDate().optional(),
+  delete_auth_field_ids: Joi.array()
+    .items(Joi.string().hex().length(24))
+    .unique()
+    .optional(),
+}
+
+const workflowStepLoginKeys = {
+  auth: workflowStepAuthValidator,
+  first_step_login: firstStepLoginValidator,
+  ...authFieldDeletionKeys,
+}
+
+/**
+ * Joi validator for DELETE /forms/:formId/workflow route.
+ */
+export const deleteWorkflowValidator = celebrate({
+  [Segments.BODY]: Joi.object({
+    ...authFieldDeletionKeys,
+    // The later step whose login the form keeps as its own.
+    retained_auth_type: Joi.string()
+      .valid(FormAuthType.MyInfo, FormAuthType.CP)
+      .optional(),
+    retained_esrvc_id: Joi.string().allow('').optional(),
+  }),
+})
+
+/**
+ * Joi validator for DELETE /forms/:formId/workflow/:stepNumber route.
+ */
+export const deleteWorkflowStepValidator = celebrate({
+  [Segments.BODY]: Joi.object(authFieldDeletionKeys),
+})
+
 /**
  * Joi validator for POST /forms/:formId/workflow/ route.
  */
@@ -85,16 +147,18 @@ export const createWorkflowStepValidator = celebrate({
     }),
     field: Joi.when('workflow_type', {
       is: WorkflowType.Dynamic,
-      then: Joi.string().required(),
+      then: Joi.string().optional(),
     }),
     edit: Joi.array().items(Joi.string()).required(),
     approval_field: Joi.string().optional(),
+    is_approval_enabled: Joi.boolean().optional(),
     conditional_field: Joi.when('workflow_type', {
       is: WorkflowType.Conditional,
-      then: Joi.string().required(),
+      then: Joi.string().optional(),
       otherwise: Joi.forbidden(),
     }),
     step_name: Joi.string().optional(),
+    ...workflowStepLoginKeys,
   }),
   [Segments.PARAMS]: Joi.object({
     formId: Joi.string().required(),
@@ -114,16 +178,18 @@ export const updateWorkflowStepValidator = celebrate({
     }),
     field: Joi.when('workflow_type', {
       is: WorkflowType.Dynamic,
-      then: Joi.string().required(),
+      then: Joi.string().optional(),
     }),
     edit: Joi.array().items(Joi.string().hex().length(24)).required(),
     approval_field: Joi.string().optional(),
+    is_approval_enabled: Joi.boolean().optional(),
     conditional_field: Joi.when('workflow_type', {
       is: WorkflowType.Conditional,
-      then: Joi.string().required(),
+      then: Joi.string().optional(),
       otherwise: Joi.forbidden(),
     }),
     step_name: Joi.string().optional(),
+    ...workflowStepLoginKeys,
   }),
   [Segments.PARAMS]: Joi.object({
     formId: Joi.string().required(),

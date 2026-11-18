@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { Box, Stack } from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
 
-import { FieldResponsesV3 } from 'formsg-shared/types'
 import { FormFieldDto } from 'formsg-shared/types/field'
 import {
   FormColorTheme,
@@ -26,7 +25,6 @@ import { PublicFormSubmitButton } from './PublicFormSubmitButton'
 import { VisibleFormFields } from './VisibleFormFields'
 
 export interface FormFieldsProps {
-  previousResponses?: FieldResponsesV3
   previousAttachments?: Record<string, Uint8Array>
   formFields: FormFieldDto[]
   formLogics: LogicDto[]
@@ -102,8 +100,9 @@ export const FormFields = ({
           </Stack>
         </Box>
       )}
-      {form?.responseMode === FormResponseMode.Encrypt &&
-        form?.payments_field.enabled && (
+      {(form?.responseMode === FormResponseMode.Encrypt ||
+        form?.responseMode === FormResponseMode.Multirespondent) &&
+        form?.payments_field?.enabled && (
           <Box
             mt="2.5rem"
             bg="white"

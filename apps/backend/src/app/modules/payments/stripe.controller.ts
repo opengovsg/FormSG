@@ -25,7 +25,7 @@ import { InvalidDomainError } from '../auth/auth.errors'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import * as PendingSubmissionModel from '../pending-submission/pending-submission.service'
-import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
+import { checkFormIsEncryptModeOrMultirespondent } from '../submission/submission.utils'
 
 import { getPaymentLogMeta } from './payment.service.utils'
 import { PaymentAccountInformationError } from './payments.errors'
@@ -107,7 +107,7 @@ const _handleConnectOauthCallback: ControllerHandler<
   // Step 2: Retrieve currently logged-in user.
   return (
     FormService.retrieveFullFormById(formId)
-      .andThen(checkFormIsEncryptMode)
+      .andThen(checkFormIsEncryptModeOrMultirespondent)
       .andThen((form) =>
         StripeService.exchangeCodeForAccessToken(code).andThen((token) => {
           // Step 4: Store access token in form.
@@ -179,7 +179,7 @@ export const getPaymentInfo: ControllerHandler<
         .andThen((submission) =>
           FormService.retrieveFullFormById(submission.form),
         )
-        .andThen(checkFormIsEncryptMode) // Payment forms are encrypted
+        .andThen(checkFormIsEncryptModeOrMultirespondent) // Payment-capable modes
         .andThen((form) => {
           const stripeAccount = payment.targetAccountId
           // Early termination to prevent consumption of QPS limit to stripe
@@ -306,7 +306,10 @@ export const reconcileAccount: ControllerHandler<
         meta: { ...logMeta, event },
       })
 
-      await StripeService.handleStripeEvent(event as Stripe.DiscriminatedEvent)
+      await StripeService.handleStripeEvent(
+        event as Stripe.DiscriminatedEvent,
+        req.growthbook,
+      )
         .andThen(() => {
           logger.warn({
             message:

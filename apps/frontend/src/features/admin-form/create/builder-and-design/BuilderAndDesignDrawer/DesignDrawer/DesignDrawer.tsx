@@ -18,10 +18,8 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { cloneDeep, get, isEmpty } from 'lodash'
 
-import { featureFlags } from 'formsg-shared/constants'
 import {
   FormColorTheme,
   FormLogoState,
@@ -36,7 +34,6 @@ import Radio from '~components/Radio'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
-import { FormDetailsSection } from '~features/admin-form/settings/components/FormDetailsSection'
 import { useEnv } from '~features/env/queries'
 import { getTitleBg } from '~features/public-form/components/FormStartPage/useFormHeader'
 
@@ -66,8 +63,11 @@ import {
   UploadImageInput,
 } from '../EditFieldDrawer/edit-fieldtype/EditImage/UploadImageInput'
 
+import { DesignFormTitleInput } from './DesignFormTitleInput'
+
 type DesignDrawerProps = {
   startPage: FormStartPage
+  title: string
 }
 
 export const DesignInput = (): JSX.Element | null => {
@@ -76,7 +76,7 @@ export const DesignInput = (): JSX.Element | null => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const { startPageMutation } = useMutateFormPage()
+  const { startPageMutation, titleMutation } = useMutateFormPage()
   const { handleClose } = useCreatePageSidebar()
 
   const {
@@ -111,12 +111,13 @@ export const DesignInput = (): JSX.Element | null => {
 
   const {
     register,
-    formState: { errors, isDirty },
+    formState: { errors, isDirty, dirtyFields },
     control,
     handleSubmit,
     clearErrors,
     setError,
     setFocus,
+    reset,
   } = useForm<FormStartPageInput>({
     mode: 'onBlur',
     defaultValues: startPageData,
@@ -185,9 +186,38 @@ export const DesignInput = (): JSX.Element | null => {
 
   const handleCloseDrawer = useCallback(() => handleClose(false), [handleClose])
 
+  const handleSaveTitleThenClose = useCallback(
+    (title: string, originalStartPageData: FormStartPageInput) => {
+      if (!dirtyFields.title) {
+        handleCloseDrawer()
+        return
+      }
+      titleMutation.mutate(title, {
+        onSuccess: handleCloseDrawer,
+        onError: (error: Error) => {
+          // Mark the just-saved fields clean; keep title's attempted value
+          // and its dirty/error state so the admin can retry just the name.
+          reset(
+            { ...originalStartPageData, title: startPageData?.title },
+            { keepDirtyValues: true },
+          )
+          setError('title', { message: error.message })
+        },
+      })
+    },
+    [
+      dirtyFields.title,
+      handleCloseDrawer,
+      reset,
+      setError,
+      startPageData?.title,
+      titleMutation,
+    ],
+  )
+
   const handleUpdateDesign = handleSubmit(
-    async (startPageData: FormStartPageInput) => {
-      const { logo, attachment, estTimeTaken, ...rest } = startPageData
+    async (formValues: FormStartPageInput) => {
+      const { logo, attachment, estTimeTaken, title, ...rest } = formValues
       const estTimeTakenTransformed =
         estTimeTaken === '' ? undefined : estTimeTaken
       if (logo.state !== FormLogoState.Custom) {
@@ -197,7 +227,9 @@ export const DesignInput = (): JSX.Element | null => {
             estTimeTaken: estTimeTakenTransformed,
             ...rest,
           },
-          { onSuccess: handleCloseDrawer },
+          {
+            onSuccess: () => handleSaveTitleThenClose(title, formValues),
+          },
         )
       } else {
         const customLogoMeta = await handleUploadLogo(attachment)
@@ -207,14 +239,12 @@ export const DesignInput = (): JSX.Element | null => {
             estTimeTaken: estTimeTakenTransformed,
             ...rest,
           },
-          { onSuccess: handleCloseDrawer },
+          {
+            onSuccess: () => handleSaveTitleThenClose(title, formValues),
+          },
         )
       }
     },
-  )
-
-  const showDesignDrawerFormTitle = useFeatureIsOn(
-    featureFlags.designDrawerFormTitle,
   )
 
   const handleClick = useCallback(async () => {
@@ -342,7 +372,7 @@ export const DesignInput = (): JSX.Element | null => {
         <FormErrorMessage>{errors.colorTheme?.message}</FormErrorMessage>
       </FormControl>
 
-      {showDesignDrawerFormTitle && <FormDetailsSection />}
+      <DesignFormTitleInput control={control} />
 
       <FormControl
         isReadOnly={startPageMutation.isLoading}
@@ -398,6 +428,7 @@ export const DesignInput = (): JSX.Element | null => {
 
 export const DesignDrawer = ({
   startPage,
+  title,
 }: DesignDrawerProps): JSX.Element | null => {
   const { t } = useTranslation()
   const { data: { logoBucketUrl } = {} } = useEnv()
@@ -423,6 +454,7 @@ export const DesignDrawer = ({
   useEffect(() => {
     setStartPageData({
       ...startPage,
+      title,
       estTimeTaken: startPage.estTimeTaken || '',
       attachment:
         startPage.logo.state !== FormLogoState.Custom
@@ -444,6 +476,7 @@ export const DesignDrawer = ({
     return resetDesignStore
   }, [
     startPage,
+    title,
     logoBucketUrl,
     resetDesignStore,
     setCustomLogoMeta,

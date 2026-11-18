@@ -1,9 +1,13 @@
+import { GrowthBook } from '@growthbook/growthbook'
 import JoiDate from '@joi/date'
 import axios from 'axios'
 import { ObjectId } from 'bson'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
-import { FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH } from 'formsg-shared/constants'
+import {
+  featureFlags,
+  FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH,
+} from 'formsg-shared/constants'
 import {
   KB,
   MAX_UPLOAD_FILE_SIZE,
@@ -14,6 +18,7 @@ import {
   AdminDashboardFormMetaDto,
   BasicField,
   CreateFormBodyDto,
+  DeleteWorkflowAuthDto,
   DeserializeTransform,
   DuplicateFormBodyDto,
   EndPageUpdateDto,
@@ -25,13 +30,16 @@ import {
   FormFeedbackMetaDto,
   FormFieldDto,
   FormLogoState,
+  FormMetadata,
   FormOrigin,
   FormResponseMode,
+  FormSavedView,
+  FormSavedViewInput,
   FormSettings,
   FormWebhookResponseModeSettings,
   FormWebhookSettings,
   FormWorkflowDto,
-  FormWorkflowStepDto,
+  FormWorkflowStepWriteDto,
   Language,
   LogicConditionState,
   LogicDto,
@@ -41,6 +49,7 @@ import {
   PreviewFormViewDto,
   PrivateFormErrorDto,
   PublicFormDto,
+  SavedViewSortDirection,
   SettingsUpdateDto,
   SmsCountsDto,
   StartPageUpdateDto,
@@ -51,11 +60,16 @@ import {
   EncryptedStringsMessageContent,
   encryptStringsMessage,
 } from 'formsg-shared/utils/crypto'
+import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
-import { ResultAsync } from 'neverthrow'
+import { errAsync, ResultAsync } from 'neverthrow'
 
-import { IFormDocument, IPopulatedForm } from '../../../../types'
+import {
+  IFormDocument,
+  IPopulatedForm,
+  IPopulatedUser,
+} from '../../../../types'
 import { EncryptSubmissionDto, FormUpdateParams } from '../../../../types/api'
 import { goGovConfig } from '../../../config/features/gogov.config'
 import { smsConfig } from '../../../config/features/sms.config'
@@ -77,13 +91,19 @@ import * as SubmissionService from '../../submission/submission.service'
 import { mapRouteError as mapSubmissionError } from '../../submission/submission.utils'
 import * as UserService from '../../user/user.service'
 import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
-import { PrivateFormError } from '../form.errors'
+import { ForbiddenFormError, PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
-import { getSubmissionType } from '../form.utils'
+import { isFormMultirespondent } from '../form.utils'
 
-import { EditFieldError, GoGovServerError } from './admin-form.errors'
+import {
+  DeleteFirstWorkflowStepError,
+  EditFieldError,
+  GoGovServerError,
+} from './admin-form.errors'
 import {
   createWorkflowStepValidator,
+  deleteWorkflowStepValidator,
+  deleteWorkflowValidator,
   getWebhookSettingsValidator,
   updateSettingsValidator,
   updateWebhookSettingsValidator,
@@ -625,12 +645,11 @@ export const countFormSubmissions: ControllerHandler<
 
   // Step 3: Has permissions, continue to retrieve submission counts.
   return formResult
-    .map(({ responseMode }) => getSubmissionType(responseMode))
-    .asyncAndThen((submissionType) =>
+    .asyncAndThen(({ responseMode }) =>
       SubmissionService.getFormSubmissionsCount({
         formId,
         dateRange,
-        submissionType, // RATIONALE: For storage mode forms converted from email mode, only count encrypt mode submissions
+        formResponseMode: responseMode,
       }),
     )
     .map((count) => res.json(count))
@@ -1146,8 +1165,7 @@ export const handleCopyTemplateForm = [
  * Handler for POST /admin/forms/all-transfer-owner.
  * @security session
  *
- * @returns 200 with true if transfer was successful
- * @returns 400 when new owner is not in the database yet
+ * @returns 200 with true if transfer was successful, or if new owner is not in the database yet
  * @returns 400 when new owner is already current owner
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
@@ -1447,6 +1465,22 @@ export const handleDuplicateFormField: ControllerHandler<
     })
 }
 
+// Evaluate only where a webhook format is chosen, with owner targeting.
+// Workflow saves check the stored format instead, so they never read this flag.
+const checkIsMrfWebhooksV4Enabled = (
+  form: IPopulatedForm,
+  growthbook?: GrowthBook,
+): boolean => {
+  if (!isFormMultirespondent(form)) return false
+  void growthbook?.setAttributes({
+    ...growthbook.getAttributes(),
+    formId: form._id.toString(),
+    adminEmail: form.admin.email,
+    adminAgency: form.admin.agency.shortName,
+  })
+  return growthbook?.isOn(featureFlags.mrfWebhooksV4) ?? false
+}
+
 export const _handleUpdateSettings: ControllerHandler<
   { formId: string },
   FormSettings | ErrorDto,
@@ -1456,18 +1490,14 @@ export const _handleUpdateSettings: ControllerHandler<
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const settingsToPatch = req.body
 
-  // Step 1: Retrieve currently logged in user.
-  return UserService.getPopulatedUserById(sessionUserId)
-    .andThen((user) =>
-      // Step 2: Retrieve form with write permission check.
-      AuthService.getFormAfterPermissionChecks({
-        user,
-        formId,
-        level: PermissionLevel.Write,
-      }),
-    )
-    .andThen((retrievedForm) =>
-      AdminFormService.updateFormSettings(retrievedForm, settingsToPatch),
+  return getWritableFormWithStepLoginFlag(sessionUserId, formId, req.growthbook)
+    .andThen(({ form: retrievedForm, isStepLoginEnabled }) =>
+      AdminFormService.updateFormSettings(
+        retrievedForm,
+        settingsToPatch,
+        checkIsMrfWebhooksV4Enabled(retrievedForm, req.growthbook),
+        isStepLoginEnabled,
+      ),
     )
     .map((updatedSettings) => res.status(StatusCodes.OK).json(updatedSettings))
     .mapErr((error) => {
@@ -1507,6 +1537,167 @@ export const handleUpdateSettings = [
   _handleUpdateSettings,
 ] as ControllerHandler[]
 
+type FormOriginsDto = Pick<FormMetadata, 'formOrigins'>
+
+export const _handleUpdateFormOrigins: ControllerHandler<
+  { formId: string },
+  FormOriginsDto | ErrorDto,
+  FormOriginsDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((form) =>
+      AdminFormService.updateFormMetadata(form, {
+        formOrigins: req.body.formOrigins,
+      }),
+    )
+    .map((metadata) =>
+      res.status(StatusCodes.OK).json({ formOrigins: metadata?.formOrigins }),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating form origins',
+        meta: {
+          action: 'handleUpdateFormOrigins',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for PUT /forms/:formId/form-origins.
+ * Saves the answer to the form origin question on an existing form, e.g.
+ * when an admin opens a form that was never asked.
+ * @security session
+ *
+ * @returns 200 with the saved form origins
+ * @returns 400 when body is malformed
+ * @returns 403 when current user does not have write permission
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 500 when database error occurs
+ */
+export const handleUpdateFormOrigins = [
+  celebrate({
+    [Segments.BODY]: clientMetadataValidator.fork(['formOrigins'], (schema) =>
+      schema.required(),
+    ),
+  }),
+  _handleUpdateFormOrigins,
+] as ControllerHandler[]
+
+const LOGIN_IDENTITY_FIELDS_DISABLED =
+  'NRIC/FIN/UEN login fields are not enabled.'
+
+const isNricFieldEnabledFor = (
+  growthbook: GrowthBook | undefined,
+  user: IPopulatedUser,
+  formId: string,
+): boolean => {
+  // Match frontend targeting for the signed-in admin, including collaborators.
+  void growthbook?.setAttributes({
+    ...growthbook.getAttributes(),
+    formId,
+    adminEmail: user.email,
+    adminAgency: user.agency?.shortName,
+  })
+  return growthbook?.isOn(featureFlags.isNricFieldEnabled) ?? false
+}
+
+// Admin gate only: respondent paths honour a saved step login regardless.
+// Later-step login fills NRIC/FIN/UEN fields, so it also needs that flag.
+const isMrfStepLoginEnabledFor = (
+  growthbook: GrowthBook | undefined,
+  user: IPopulatedUser,
+  formId: string,
+): boolean =>
+  isNricFieldEnabledFor(growthbook, user, formId) &&
+  (growthbook?.isOn(featureFlags.mrfStepLogin) ?? false)
+
+/**
+ * Retrieves the form with write permission, and whether step logins are on
+ * for this admin and form.
+ */
+const getWritableFormWithStepLoginFlag = (
+  sessionUserId: string,
+  formId: string,
+  growthbook: GrowthBook | undefined,
+) =>
+  UserService.getPopulatedUserById(sessionUserId).andThen((user) =>
+    AuthService.getFormAfterPermissionChecks({
+      user,
+      formId,
+      level: PermissionLevel.Write,
+    }).map((form) => ({
+      form,
+      isStepLoginEnabled: isMrfStepLoginEnabledFor(growthbook, user, formId),
+    })),
+  )
+
+/**
+ * Handler for POST /forms/:formId/settings/submitter-id-collection/convert.
+ * Converts the Collect NRIC/FIN/UENs setting into Step 1 login identity fields.
+ * @security session
+ *
+ * @returns 200 with updated form settings
+ * @returns 400 when the form has nothing to convert
+ * @returns 403 when write permission or the NRIC field flag is missing
+ * @returns 409 when the form is open to responses
+ * @returns 404 when form cannot be found
+ * @returns 410 when the form is archived
+ * @returns 422 when the converted form fails validation
+ * @returns 500 when database error occurs
+ */
+export const handleConvertSubmitterIdCollection: ControllerHandler<
+  { formId: string },
+  FormSettings | ErrorDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      isNricFieldEnabledFor(req.growthbook, user, formId)
+        ? AuthService.getFormAfterPermissionChecks({
+            user,
+            formId,
+            level: PermissionLevel.Write,
+          })
+        : errAsync(new ForbiddenFormError(LOGIN_IDENTITY_FIELDS_DISABLED)),
+    )
+    .andThen(AdminFormService.convertSubmitterIdCollection)
+    .map((updatedSettings) => res.status(StatusCodes.OK).json(updatedSettings))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when converting submitter ID collection',
+        meta: {
+          action: 'handleConvertSubmitterIdCollection',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
 export const _handleUpdateWebhookSettings: ControllerHandler<
   { formId: string },
   FormWebhookSettings | ErrorDto,
@@ -1539,9 +1730,13 @@ export const _handleUpdateWebhookSettings: ControllerHandler<
       }),
     )
     .andThen((retrievedForm) =>
-      AdminFormService.updateFormSettings(retrievedForm, {
-        webhook: webhookSettings,
-      }),
+      AdminFormService.updateFormSettings(
+        retrievedForm,
+        {
+          webhook: webhookSettings,
+        },
+        checkIsMrfWebhooksV4Enabled(retrievedForm, req.growthbook),
+      ),
     )
     .map((updatedSettings) => {
       const webhookSettings = { webhook: updatedSettings.webhook }
@@ -1584,41 +1779,57 @@ export const handleUpdateWebhookSettings = [
   _handleUpdateWebhookSettings,
 ] as ControllerHandler[]
 
+/**
+ * Reads the durable guided-mode marker off a form. Undefined when the form is
+ * not multirespondent, or when it was never retrieved because the request
+ * failed before the permission check.
+ */
+const guidedModeOf = (form: IPopulatedForm): boolean | undefined =>
+  isFormMultirespondent(form) ? !!form.hasUsedGuidedMode : undefined
+
 export const _handleCreateWorkflowStep: ControllerHandler<
   { formId: string },
   FormWorkflowDto | ErrorDto,
-  FormWorkflowStepDto
+  FormWorkflowStepWriteDto
 > = (req, res) => {
   const { formId } = req.params
   const workflowStepToCreate = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
+  let hasUsedGuidedMode: boolean | undefined
 
-  // Step 1: Retrieve currently logged in user.
   return (
-    UserService.getPopulatedUserById(sessionUserId)
-      .andThen((user) =>
-        // Step 2: Retrieve form with write permission check.
-        AuthService.getFormAfterPermissionChecks({
-          user,
-          formId,
-          level: PermissionLevel.Write,
-        }),
-      )
-      // Step 3: User has permissions, proceed to create form field with provided body.
-      .andThen((form) =>
-        AdminFormService.createWorkflowStep(form, workflowStepToCreate),
-      )
-      .map((updatedWorkflow) =>
-        res.status(StatusCodes.OK).json(updatedWorkflow),
-      )
+    getWritableFormWithStepLoginFlag(sessionUserId, formId, req.growthbook)
+      // User has permissions, proceed to create form field with provided body.
+      .andThen(({ form, isStepLoginEnabled }) => {
+        hasUsedGuidedMode = guidedModeOf(form)
+        return AdminFormService.createWorkflowStep(form, workflowStepToCreate, {
+          isStepLoginEnabled,
+        })
+      })
+      .map((updatedWorkflow) => {
+        if (hasUsedGuidedMode) {
+          logger.info({
+            message: 'Guided mode workflow step created',
+            meta: {
+              action: 'handleCreateWorkflowStep',
+              userId: sessionUserId,
+              formId,
+              hasUsedGuidedMode,
+              stepCount: updatedWorkflow.length,
+            },
+          })
+        }
+        return res.status(StatusCodes.OK).json(updatedWorkflow)
+      })
       .mapErr((error) => {
         logger.error({
-          message: 'Error occurred when creating form field',
+          message: 'Error occurred when creating form workflow step',
           meta: {
-            action: 'handleCreateFormField',
+            action: 'handleCreateWorkflowStep',
             ...createReqMeta(req),
             userId: sessionUserId,
             formId,
+            hasUsedGuidedMode,
             workflowStepToCreate,
           },
           error,
@@ -1640,30 +1851,38 @@ const _handleUpdateWorkflowStep: ControllerHandler<
     stepNumber: number
   },
   FormWorkflowDto | ErrorDto,
-  FormWorkflowStepDto
+  FormWorkflowStepWriteDto
 > = (req, res) => {
   const { formId, stepNumber } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const updatedWorkflowStep = req.body
+  let hasUsedGuidedMode: boolean | undefined
 
-  // Step 1: Retrieve currently logged in user.
-  return UserService.getPopulatedUserById(sessionUserId)
-    .andThen((user) =>
-      // Step 2: Retrieve form with write permission check.
-      AuthService.getFormAfterPermissionChecks({
-        user,
-        formId,
-        level: PermissionLevel.Write,
-      }),
-    )
-    .andThen((retrievedForm) =>
-      AdminFormService.updateFormWorkflowStep(
+  return getWritableFormWithStepLoginFlag(sessionUserId, formId, req.growthbook)
+    .andThen(({ form: retrievedForm, isStepLoginEnabled }) => {
+      hasUsedGuidedMode = guidedModeOf(retrievedForm)
+      return AdminFormService.updateFormWorkflowStep(
         retrievedForm,
         stepNumber,
         updatedWorkflowStep,
-      ),
-    )
-    .map((updatedWorkflow) => res.status(StatusCodes.OK).json(updatedWorkflow))
+        { isStepLoginEnabled },
+      )
+    })
+    .map((updatedWorkflow) => {
+      if (hasUsedGuidedMode) {
+        logger.info({
+          message: 'Guided mode workflow step updated',
+          meta: {
+            action: 'handleUpdateWorkflowStep',
+            userId: sessionUserId,
+            formId,
+            stepNumber,
+            hasUsedGuidedMode,
+          },
+        })
+      }
+      return res.status(StatusCodes.OK).json(updatedWorkflow)
+    })
     .mapErr((error) => {
       logger.error({
         message: 'Error occurred when updating form workflow step',
@@ -1672,6 +1891,7 @@ const _handleUpdateWorkflowStep: ControllerHandler<
           ...createReqMeta(req),
           userId: sessionUserId,
           formId,
+          hasUsedGuidedMode,
           updatedWorkflowStep,
         },
         error,
@@ -1686,51 +1906,165 @@ export const handleUpdateWorkflowStep = [
   _handleUpdateWorkflowStep,
 ] as ControllerHandler[]
 
-export const handleDeleteWorkflowStep: ControllerHandler<
+/**
+ * Handler for DELETE /:formId/workflow
+ *
+ * Deletes the form's entire workflow. This is also what deleting step 1 means:
+ * a workflow without its first step has no entry point, so the two are the same
+ * request and share this one route.
+ *
+ * @security session
+ *
+ * @returns 200 with the now-empty workflow
+ * @returns 403 when the user does not have permission to update the form
+ * @returns 404 when the form cannot be found
+ * @returns 409 when the form is still open to new responses
+ * @returns 410 when the form is archived
+ * @returns 422 when the form is not a multi-respondent form
+ * @returns 500 when a database error occurs
+ */
+export const _handleDeleteWorkflow: ControllerHandler<
+  { formId: string },
+  FormWorkflowDto | ErrorDto,
+  DeleteWorkflowAuthDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+  let hasUsedGuidedMode: boolean | undefined
+  let isStepLoginEnabled = false
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) => {
+      isStepLoginEnabled = isMrfStepLoginEnabledFor(
+        req.growthbook,
+        user,
+        formId,
+      )
+      return AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      })
+    })
+    .andThen((retrievedForm) => {
+      hasUsedGuidedMode = guidedModeOf(retrievedForm)
+      return AdminFormService.deleteFormWorkflow(retrievedForm, req.body, {
+        isStepLoginEnabled,
+      })
+    })
+    .map((updatedWorkflow) => {
+      if (hasUsedGuidedMode) {
+        logger.info({
+          message: 'Guided mode workflow deleted',
+          meta: {
+            action: 'handleDeleteWorkflow',
+            userId: sessionUserId,
+            formId,
+            hasUsedGuidedMode,
+          },
+        })
+      }
+      return res.status(StatusCodes.OK).json(updatedWorkflow)
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when deleting form workflow',
+        meta: {
+          action: 'handleDeleteWorkflow',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          hasUsedGuidedMode,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const handleDeleteWorkflow = [
+  deleteWorkflowValidator,
+  _handleDeleteWorkflow,
+] as ControllerHandler[]
+
+export const _handleDeleteWorkflowStep: ControllerHandler<
   {
     formId: string
     stepNumber: number
   },
-  FormWorkflowDto | ErrorDto
+  FormWorkflowDto | ErrorDto,
+  Pick<
+    DeleteWorkflowAuthDto,
+    'delete_auth_field_ids' | 'expected_last_modified'
+  >
 > = (req, res) => {
   const { formId, stepNumber } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
+  let hasUsedGuidedMode: boolean | undefined
+  let isStepLoginEnabled = false
 
-  // Step 1: Retrieve currently logged in user.
-  return (
-    UserService.getPopulatedUserById(sessionUserId)
-      .andThen((user) =>
-        // Step 2: Retrieve form with write permission check.
-        AuthService.getFormAfterPermissionChecks({
-          user,
-          formId,
-          level: PermissionLevel.Write,
-        }),
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) => {
+      isStepLoginEnabled = isMrfStepLoginEnabledFor(
+        req.growthbook,
+        user,
+        formId,
       )
-      // Step 3: Delete workflow step.
-      .andThen((retrievedForm) =>
-        AdminFormService.deleteFormWorkflowStep(retrievedForm, stepNumber),
+      return Number(stepNumber) === 0
+        ? errAsync(new DeleteFirstWorkflowStepError())
+        : AuthService.getFormAfterPermissionChecks({
+            user,
+            formId,
+            level: PermissionLevel.Write,
+          })
+    })
+    .andThen((retrievedForm) => {
+      hasUsedGuidedMode = guidedModeOf(retrievedForm)
+      return AdminFormService.deleteFormWorkflowStep(
+        retrievedForm,
+        stepNumber,
+        req.body,
+        { isStepLoginEnabled },
       )
-      .map((updatedWorkflow) =>
-        res.status(StatusCodes.OK).json(updatedWorkflow),
-      )
-      .mapErr((error) => {
-        logger.error({
-          message: 'Error occurred when deleting form workflow step',
+    })
+    .map((updatedWorkflow) => {
+      if (hasUsedGuidedMode) {
+        logger.info({
+          message: 'Guided mode workflow step deleted',
           meta: {
             action: 'handleDeleteWorkflowStep',
-            ...createReqMeta(req),
             userId: sessionUserId,
             formId,
             stepNumber,
+            hasUsedGuidedMode,
           },
-          error,
         })
-        const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+      }
+      return res.status(StatusCodes.OK).json(updatedWorkflow)
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when deleting form workflow step',
+        meta: {
+          action: 'handleDeleteWorkflowStep',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          stepNumber,
+          hasUsedGuidedMode,
+        },
+        error,
       })
-  )
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }
+
+export const handleDeleteWorkflowStep = [
+  deleteWorkflowStepValidator,
+  _handleDeleteWorkflowStep,
+] as ControllerHandler[]
 
 const LIMIT_IN_KB = 250
 const STRING_MAX_LENGTH = LIMIT_IN_KB * KB
@@ -1947,7 +2281,7 @@ export const handleGetSettings: ControllerHandler<
         user,
       })),
     )
-    .andThen(AuthService.checkFormForPermissions(PermissionLevel.Read))
+    .andThen(AuthService.checkFormForPermissions(PermissionLevel.Write))
     .map((form) => res.status(StatusCodes.OK).json(form.getSettings()))
     .mapErr((error) => {
       logger.error({
@@ -1985,7 +2319,7 @@ export const handleGetWhitelistSetting: ControllerHandler<
         user,
       })),
     )
-    .andThen(AuthService.checkFormForPermissions(PermissionLevel.Read))
+    .andThen(AuthService.checkFormForPermissions(PermissionLevel.Write))
     .andThen((form) => EmailSubmissionService.checkFormIsNotEmailMode(form))
     .map(async (form) => AdminFormService.getFormWhitelistSetting(form))
     .andThen((formWhitelistedSubmitterIds) => formWhitelistedSubmitterIds)
@@ -2294,11 +2628,14 @@ export const _handleCreateFormField: ControllerHandler<
     UserService.getPopulatedUserById(sessionUserId)
       .andThen((user) =>
         // Step 2: Retrieve form with write permission check.
-        AuthService.getFormAfterPermissionChecks({
-          user,
-          formId,
-          level: PermissionLevel.Write,
-        }),
+        isLoginIdentityField(formFieldToCreate) &&
+        !isNricFieldEnabledFor(req.growthbook, user, formId)
+          ? errAsync(new ForbiddenFormError(LOGIN_IDENTITY_FIELDS_DISABLED))
+          : AuthService.getFormAfterPermissionChecks({
+              user,
+              formId,
+              level: PermissionLevel.Write,
+            }),
       )
       // Step 3: User has permissions, proceed to create form field with provided body.
       .andThen((form) =>
@@ -2435,6 +2772,166 @@ const joiLogicBody = {
         .default([]),
     },
   ),
+}
+
+const joiSavedViewBody = {
+  name: Joi.string().trim().min(4).max(50).required(),
+  filter: Joi.object({
+    startDate: Joi.string().optional(),
+    endDate: Joi.string().optional(),
+    columnFilters: Joi.array()
+      .items(
+        Joi.object({
+          columnId: Joi.string().required(),
+          text: Joi.string().trim().min(1),
+          values: Joi.array().items(Joi.string()).unique(),
+        }).xor('text', 'values'),
+      )
+      .unique('columnId')
+      .optional(),
+  }).required(),
+  sort: Joi.object({
+    columnId: Joi.string().required(),
+    direction: Joi.string()
+      .valid(...Object.values(SavedViewSortDirection))
+      .required(),
+  }).optional(),
+  columnIds: Joi.array().items(Joi.string()).optional(),
+}
+
+export const _handleCreateSavedView: ControllerHandler<
+  { formId: string },
+  FormSavedView[] | ErrorDto,
+  FormSavedViewInput
+> = (req, res) => {
+  const { formId } = req.params
+  const savedViewBody = req.body
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((retrievedForm) =>
+      AdminFormService.createFormSavedView(retrievedForm, savedViewBody),
+    )
+    .map((savedViews) => res.status(StatusCodes.OK).json(savedViews))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when creating saved view',
+        meta: {
+          action: 'handleCreateSavedView',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for POST /forms/:formId/saved-views
+ */
+export const handleCreateSavedView = [
+  celebrate({
+    [Segments.BODY]: joiSavedViewBody,
+  }),
+  _handleCreateSavedView,
+] as ControllerHandler[]
+
+export const _handleUpdateSavedView: ControllerHandler<
+  { formId: string; savedViewId: string },
+  FormSavedView[] | ErrorDto,
+  FormSavedViewInput
+> = (req, res) => {
+  const { formId, savedViewId } = req.params
+  const savedViewBody = req.body
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((retrievedForm) =>
+      AdminFormService.updateFormSavedView(
+        retrievedForm,
+        savedViewId,
+        savedViewBody,
+      ),
+    )
+    .map((savedViews) => res.status(StatusCodes.OK).json(savedViews))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating saved view',
+        meta: {
+          action: 'handleUpdateSavedView',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          savedViewId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for PUT /forms/:formId/saved-views/:savedViewId
+ */
+export const handleUpdateSavedView = [
+  celebrate({
+    [Segments.BODY]: joiSavedViewBody,
+  }),
+  _handleUpdateSavedView,
+] as ControllerHandler[]
+
+export const handleDeleteSavedView: ControllerHandler<
+  { formId: string; savedViewId: string },
+  FormSavedView[] | ErrorDto
+> = (req, res) => {
+  const { formId, savedViewId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((retrievedForm) =>
+      AdminFormService.deleteFormSavedView(retrievedForm, savedViewId),
+    )
+    .map((savedViews) => res.status(StatusCodes.OK).json(savedViews))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when deleting saved view',
+        meta: {
+          action: 'handleDeleteSavedView',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          savedViewId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }
 
 /**

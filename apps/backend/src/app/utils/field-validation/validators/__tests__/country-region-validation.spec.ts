@@ -1,14 +1,17 @@
 import {
   generateDefaultField,
-  generateDefaultFieldV3,
-  generateGenericStringAnswerResponseV3,
+  generateDefaultFieldV4,
   generateNewSingleAnswerResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
 import { CountryRegion } from 'formsg-shared/constants/countryRegion'
 import { BasicField } from 'formsg-shared/types'
 
-import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
-import { validateField, validateFieldV3 } from 'src/app/utils/field-validation'
+import {
+  ValidateFieldError,
+  ValidateFieldErrorV4,
+} from 'src/app/modules/submission/submission.errors'
+import { validateField, validateFieldV4 } from 'src/app/utils/field-validation'
+import { ParsedClearFormFieldResponseV4 } from 'src/types/api'
 
 // We want users to see the country/region options in title-case but we also need the data in the backend to remain in upper-case.
 // As such, in handleSubmitForm, which runs before validation, we change the title-case country/region value into upper-case.
@@ -115,14 +118,23 @@ describe('Country/region validation', () => {
   })
 })
 
-describe('Country/region validation V3', () => {
-  it('should allow valid option', () => {
-    const formField = generateDefaultFieldV3(BasicField.CountryRegion, {})
-    const response = generateGenericStringAnswerResponseV3({
+describe('CountryRegion field validation V4', () => {
+  const makeCountryRegionResponseV4 = (answer: {
+    value: string
+  }): ParsedClearFormFieldResponseV4 =>
+    ({
       fieldType: BasicField.CountryRegion,
-      answer: simulateTransformationsHandleSubmitForm(CountryRegion.Singapore),
+      question: 'Country/region',
+      answer,
+      provenance: {},
+    }) as ParsedClearFormFieldResponseV4
+
+  it('should allow valid option', () => {
+    const formField = generateDefaultFieldV4(BasicField.CountryRegion, {})
+    const response = makeCountryRegionResponseV4({
+      value: simulateTransformationsHandleSubmitForm(CountryRegion.Singapore),
     })
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -133,12 +145,11 @@ describe('Country/region validation V3', () => {
   })
 
   it('should disallow invalid option', () => {
-    const formField = generateDefaultFieldV3(BasicField.CountryRegion, {})
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.CountryRegion,
-      answer: 'NOT A COUNTRY/REGION',
+    const formField = generateDefaultFieldV4(BasicField.CountryRegion, {})
+    const response = makeCountryRegionResponseV4({
+      value: 'NOT A COUNTRY/REGION',
     })
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -146,19 +157,16 @@ describe('Country/region validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow empty answer when required', () => {
-    const formField = generateDefaultFieldV3(BasicField.CountryRegion, {
+    const formField = generateDefaultFieldV4(BasicField.CountryRegion, {
       required: true,
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.CountryRegion,
-      answer: '',
-    })
-    const validateResult = validateFieldV3({
+    const response = makeCountryRegionResponseV4({ value: '' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -166,19 +174,16 @@ describe('Country/region validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should allow empty answer when not required', () => {
-    const formField = generateDefaultFieldV3(BasicField.CountryRegion, {
+    const formField = generateDefaultFieldV4(BasicField.CountryRegion, {
       required: false,
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.CountryRegion,
-      answer: '',
-    })
-    const validateResult = validateFieldV3({
+    const response = makeCountryRegionResponseV4({ value: '' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -189,14 +194,11 @@ describe('Country/region validation V3', () => {
   })
 
   it('should allow empty answer when it is required but not visible', () => {
-    const formField = generateDefaultFieldV3(BasicField.CountryRegion, {
+    const formField = generateDefaultFieldV4(BasicField.CountryRegion, {
       required: true,
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.CountryRegion,
-      answer: '',
-    })
-    const validateResult = validateFieldV3({
+    const response = makeCountryRegionResponseV4({ value: '' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -207,14 +209,11 @@ describe('Country/region validation V3', () => {
   })
 
   it('should disallow empty answer when it is required and visible', () => {
-    const formField = generateDefaultFieldV3(BasicField.CountryRegion, {
+    const formField = generateDefaultFieldV4(BasicField.CountryRegion, {
       required: true,
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.CountryRegion,
-      answer: '',
-    })
-    const validateResult = validateFieldV3({
+    const response = makeCountryRegionResponseV4({ value: '' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -222,20 +221,19 @@ describe('Country/region validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow multiple answers', () => {
-    const formField = generateDefaultFieldV3(BasicField.CountryRegion, {})
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.CountryRegion,
-      answer: [
+    const formField = generateDefaultFieldV4(BasicField.CountryRegion, {})
+    const response = makeCountryRegionResponseV4({
+      value: [
         simulateTransformationsHandleSubmitForm(CountryRegion.Singapore),
         simulateTransformationsHandleSubmitForm(CountryRegion.Slovak_Republic),
       ] as unknown as string,
     })
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -243,19 +241,18 @@ describe('Country/region validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Response has invalid shape'),
+      new ValidateFieldErrorV4('Response has invalid shape'),
     )
   })
 
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = generateDefaultFieldV3(BasicField.CountryRegion, {
+    const formField = generateDefaultFieldV4(BasicField.CountryRegion, {
       required: true,
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.CountryRegion,
-      answer: simulateTransformationsHandleSubmitForm(CountryRegion.Singapore),
+    const response = makeCountryRegionResponseV4({
+      value: simulateTransformationsHandleSubmitForm(CountryRegion.Singapore),
     })
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -263,7 +260,9 @@ describe('Country/region validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Attempted to submit response on a hidden field'),
+      new ValidateFieldErrorV4(
+        'Attempted to submit response on a hidden field',
+      ),
     )
   })
 })

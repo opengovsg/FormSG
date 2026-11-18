@@ -1,0 +1,263 @@
+import { ReactNode, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { BiChevronRight, BiX } from 'react-icons/bi'
+import { useDebounce } from 'react-use'
+import {
+  Divider,
+  Flex,
+  Icon,
+  InputGroup,
+  InputRightElement,
+  Popover,
+  PopoverBody,
+  PopoverContent,
+  PopoverTrigger,
+  Portal,
+  Stack,
+  Text,
+} from '@chakra-ui/react'
+
+import Badge from '~components/Badge'
+import Checkbox from '~components/Checkbox'
+import IconButton from '~components/IconButton'
+import Input from '~components/Input'
+
+const FILTER_DEBOUNCE_MS = 200
+
+interface ColumnFilterPopoverProps {
+  label: string
+  isApplied: boolean
+  isOpen: boolean
+  onOpen: () => void
+  onClose: () => void
+  children: ReactNode
+}
+
+const ColumnFilterPopover = ({
+  label,
+  isApplied,
+  isOpen,
+  onOpen,
+  onClose,
+  children,
+}: ColumnFilterPopoverProps): JSX.Element => {
+  const { t } = useTranslation()
+  const { filterApplied } = t(
+    'features.adminForm.responses.responsesPage.storage.unlockedResponses.filterMenu',
+    { returnObjects: true },
+  )
+
+  return (
+    <Popover
+      isOpen={isOpen}
+      onOpen={onOpen}
+      onClose={onClose}
+      placement="right-start"
+      modifiers={[
+        { name: 'flip', options: { fallbackPlacements: ['bottom-start'] } },
+      ]}
+      isLazy
+    >
+      <PopoverTrigger>
+        <Flex
+          as="button"
+          type="button"
+          align="center"
+          gap="0.5rem"
+          w="100%"
+          px="1rem"
+          py="0.625rem"
+          textAlign="left"
+          bg={isOpen ? 'primary.100' : undefined}
+          _hover={{ bg: 'primary.100' }}
+          aria-expanded={isOpen}
+        >
+          <Text
+            flex={1}
+            minW={0}
+            noOfLines={1}
+            textStyle="body-1"
+            title={label}
+          >
+            {label}
+          </Text>
+          {isApplied ? (
+            <Badge variant="subtle" colorScheme="primary" flexShrink={0}>
+              {filterApplied}
+            </Badge>
+          ) : null}
+          <Icon as={BiChevronRight} fontSize="1.25rem" flexShrink={0} />
+        </Flex>
+      </PopoverTrigger>
+      <Portal>
+        <PopoverContent w="16rem" bg="white">
+          <PopoverBody
+            p="0.75rem"
+            // RATIONALE: the popover is portalled but React still bubbles its
+            // key presses to the Filter menu, whose typeahead would take
+            // focus from the field, and whose Escape would close the menu.
+            onKeyDown={(event) => {
+              event.stopPropagation()
+              if (event.key === 'Enter' || event.key === 'Escape') {
+                onClose()
+              }
+            }}
+          >
+            {children}
+          </PopoverBody>
+        </PopoverContent>
+      </Portal>
+    </Popover>
+  )
+}
+
+interface ColumnFilterRowProps {
+  label: string
+  text: string
+  isOpen: boolean
+  onOpen: () => void
+  onClose: () => void
+  onFilter: (text: string) => void
+}
+
+/**
+ * A column in the Filter menu: clicking it opens a field beside it, or below it
+ * when the window is too narrow. The field's text filters the table to rows
+ * whose value in that column contains it.
+ */
+export const ColumnFilterRow = ({
+  label,
+  text,
+  isOpen,
+  onOpen,
+  onClose,
+  onFilter,
+}: ColumnFilterRowProps): JSX.Element => {
+  const { t } = useTranslation()
+  const { filterPlaceholder, clearFilter } = t(
+    'features.adminForm.responses.responsesPage.storage.unlockedResponses.filterMenu',
+    { returnObjects: true },
+  )
+  const [draft, setDraft] = useState(text)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => setDraft(text), [text])
+
+  useDebounce(
+    () => {
+      if (draft !== text) onFilter(draft)
+    },
+    FILTER_DEBOUNCE_MS,
+    [draft],
+  )
+
+  const handleClear = () => {
+    setDraft('')
+    onFilter('')
+    inputRef.current?.focus()
+  }
+
+  // Closing applies the text at once, so a filter typed just before clicking
+  // away is not lost to the debounce.
+  const handleClose = () => {
+    if (draft !== text) onFilter(draft)
+    onClose()
+  }
+
+  return (
+    <ColumnFilterPopover
+      label={label}
+      isApplied={!!text}
+      isOpen={isOpen}
+      onOpen={onOpen}
+      onClose={handleClose}
+    >
+      <InputGroup>
+        <Input
+          ref={inputRef}
+          autoFocus
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          placeholder={filterPlaceholder}
+          aria-label={label}
+        />
+        {draft ? (
+          <InputRightElement>
+            <IconButton
+              aria-label={clearFilter}
+              size="sm"
+              variant="clear"
+              colorScheme="secondary"
+              color="secondary.300"
+              icon={<BiX fontSize="1.25rem" />}
+              onClick={handleClear}
+            />
+          </InputRightElement>
+        ) : null}
+      </InputGroup>
+    </ColumnFilterPopover>
+  )
+}
+
+interface ColumnValuesFilterRowProps {
+  label: string
+  filterValues: string[]
+  values?: string[]
+  isOpen: boolean
+  onOpen: () => void
+  onClose: () => void
+  onFilter: (values: string[]) => void
+}
+
+export const ColumnValuesFilterRow = ({
+  label,
+  filterValues,
+  values,
+  isOpen,
+  onOpen,
+  onClose,
+  onFilter,
+}: ColumnValuesFilterRowProps): JSX.Element => {
+  const { t } = useTranslation()
+  const selected = values ?? filterValues
+  const isAllSelected = selected.length === filterValues.length
+
+  const handleToggle = (value: string, isChecked: boolean) =>
+    onFilter(
+      filterValues.filter((option) =>
+        option === value ? isChecked : selected.includes(option),
+      ),
+    )
+
+  return (
+    <ColumnFilterPopover
+      label={label}
+      isApplied={!!values}
+      isOpen={isOpen}
+      onOpen={onOpen}
+      onClose={onClose}
+    >
+      <Stack role="group" aria-label={label} spacing="0.5rem">
+        <Checkbox
+          isChecked={isAllSelected}
+          isIndeterminate={selected.length > 0 && !isAllSelected}
+          onChange={() => onFilter(isAllSelected ? [] : filterValues)}
+        >
+          {t(
+            'features.adminForm.responses.responsesPage.storage.unlockedResponses.toolbar.all',
+          )}
+        </Checkbox>
+        <Divider />
+        {filterValues.map((value) => (
+          <Checkbox
+            key={value}
+            isChecked={selected.includes(value)}
+            onChange={(event) => handleToggle(value, event.target.checked)}
+          >
+            {value}
+          </Checkbox>
+        ))}
+      </Stack>
+    </ColumnFilterPopover>
+  )
+}

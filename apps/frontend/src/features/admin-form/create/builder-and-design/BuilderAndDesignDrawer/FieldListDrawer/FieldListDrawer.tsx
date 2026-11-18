@@ -15,6 +15,10 @@ import {
   Tabs,
   Text,
 } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
+
+import { featureFlags } from 'formsg-shared/constants'
+import { isLoginIdentityResponseMode } from 'formsg-shared/utils/login-identity'
 
 import { Tab } from '~components/Tabs'
 
@@ -28,6 +32,7 @@ import { useMagicFormBuilder } from '../../MagicFormBuilder/useMagicFormBuilder'
 
 import {
   BasicFieldPanel,
+  CorppassFieldPanel,
   MyInfoFieldPanel,
   PaymentsInputPanel,
 } from './field-panels'
@@ -69,7 +74,8 @@ export const FieldListDrawer = (): JSX.Element => {
     keyPrefix: 'features.adminForm.sidebar.fields',
   })
   const { fieldListTabIndex, setFieldListTabIndex } = useCreatePageSidebar()
-  const { isLoading } = useCreateTabForm()
+  const { data: form, isLoading } = useCreateTabForm()
+  const isNricFieldEnabled = useFeatureIsOn(featureFlags.isNricFieldEnabled)
   const [searchValue, setSearchValue] = useState('')
 
   const tabsDataList = [
@@ -88,6 +94,17 @@ export const FieldListDrawer = (): JSX.Element => {
       key: FieldListTabIndex.MyInfo,
     },
     {
+      header: t('builder.tabs.corppass'),
+      component: CorppassFieldPanel,
+      // Login identity fields are available in Storage and MRF.
+      isHidden:
+        !isNricFieldEnabled ||
+        !form ||
+        !isLoginIdentityResponseMode(form.responseMode),
+      isDisabled: isLoading,
+      key: FieldListTabIndex.Corppass,
+    },
+    {
       header: t('builder.tabs.payments'),
       component: PaymentsInputPanel,
       isHidden: false,
@@ -100,6 +117,11 @@ export const FieldListDrawer = (): JSX.Element => {
     isDisabled: boolean
     key: FieldListTabIndex
   }[]
+  // Tabs index by position, so translate to and from the stable tab keys.
+  const tabPosition = Math.max(
+    tabsDataList.findIndex((tab) => tab.key === fieldListTabIndex),
+    0,
+  )
 
   return (
     <Tabs
@@ -107,8 +129,8 @@ export const FieldListDrawer = (): JSX.Element => {
       h="100%"
       display="flex"
       flexDir="column"
-      index={fieldListTabIndex}
-      onChange={setFieldListTabIndex}
+      index={tabPosition}
+      onChange={(position) => setFieldListTabIndex(tabsDataList[position].key)}
       isLazy
     >
       <Box pt="1rem" px="1.5rem" bg="white">

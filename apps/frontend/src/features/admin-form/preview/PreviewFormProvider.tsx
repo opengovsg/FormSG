@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -8,6 +8,10 @@ import get from 'lodash/get'
 import simplur from 'simplur'
 
 import { FormAuthType, FormResponseMode } from 'formsg-shared/types/form'
+import {
+  getStepAuthType,
+  usesStepLoginRules,
+} from 'formsg-shared/utils/step-login'
 
 import { usePreviewForm } from '~/features/admin-form/common/queries'
 import { FormNotFound } from '~/features/public-form/components/FormNotFound'
@@ -27,11 +31,22 @@ import { HttpError } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
+import { useIsMrfStepLoginEnabled } from '~features/admin-form/create/workflow/hooks/useIsMrfStepLoginEnabled'
+import { isFormPaymentsEnabled } from '~features/form/utils/isFormPaymentsEnabled'
+import { applyMyInfoVerifiedView } from '~features/myinfo/utils'
 import { SubmitEmailFormArgs } from '~features/public-form/PublicFormService'
 
 import { useEnv } from '../../env/queries'
 import { axiosDebugFlow } from '../../public-form/utils'
 import { usePreviewFormMutations } from '../common/mutations'
+
+import { getPreviewMockLoginId } from './constants'
+import { pickPrecedingStepValues } from './pickPrecedingStepValues'
+import {
+  getPreviewStepLabel,
+  usePreviewStep,
+  withPreviewStep,
+} from './usePreviewStep'
 
 interface PreviewFormProviderProps {
   formId: string
@@ -105,14 +120,6 @@ export const PreviewFormProvider = ({
   }, [data?.form.form_fields, toast, vfnToastIdRef])
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
-
-  const isAuthRequired = useMemo(
-    () =>
-      !!data?.form &&
-      data.form.authType !== FormAuthType.NIL &&
-      !data.spcpSession,
-    [data?.form, data?.spcpSession],
-  )
 
   const {
     submitEmailModeFormMutation,
@@ -322,9 +329,7 @@ export const PreviewFormProvider = ({
     ],
   )
 
-  const isPaymentEnabled =
-    data?.form.responseMode === FormResponseMode.Encrypt &&
-    data.form.payments_field.enabled
+  const isPaymentEnabled = isFormPaymentsEnabled(data?.form)
 
   const onSaveDraft = () => {
     toast({
@@ -338,31 +343,96 @@ export const PreviewFormProvider = ({
 
   const form = data?.form
   const formFields = form?.form_fields
-  const currentWorkflowStepNumber = 0
   const formWorkflow =
     form?.responseMode === FormResponseMode.Multirespondent
       ? form.workflow
       : undefined
+  const [currentWorkflowStepNumber, setCurrentWorkflowStepNumber] =
+    usePreviewStep(formWorkflow?.length ?? 0)
   const currentStepNumberWorkflowStep =
     formWorkflow && formWorkflow.length > currentWorkflowStepNumber
       ? formWorkflow[currentWorkflowStepNumber]
       : undefined
 
+  // A previewed later step shows its own login, mocked as logged in, never
+  // Step 1's. Step 1 keeps the form-level login. Without step logins, every
+  // step previews with Step 1's login, as before.
+  const isStepLoginEnabled = useIsMrfStepLoginEnabled()
+  const stepData = useMemo(() => {
+    if (
+      !data ||
+      !formWorkflow ||
+      currentWorkflowStepNumber === 0 ||
+      !usesStepLoginRules(formWorkflow, isStepLoginEnabled)
+    ) {
+      return data
+    }
+    const authType = getStepAuthType(
+      data.form,
+      formWorkflow,
+      currentWorkflowStepNumber,
+    )
+    return {
+      ...data,
+      form: { ...data.form, authType },
+      // Step 1's mock session may be the other provider's, so never reuse it.
+      spcpSession:
+        authType === FormAuthType.NIL
+          ? undefined
+          : { userName: getPreviewMockLoginId(authType) },
+    }
+  }, [data, formWorkflow, currentWorkflowStepNumber, isStepLoginEnabled])
+
+  const isAuthRequired =
+    !!stepData?.form &&
+    stepData.form.authType !== FormAuthType.NIL &&
+    !stepData.spcpSession
+
+  useEffect(() => {
+    if (!formWorkflow) return
+    const canonicalSearchParams = withPreviewStep(
+      searchParams,
+      currentWorkflowStepNumber,
+    )
+    if (canonicalSearchParams.toString() !== searchParams.toString()) {
+      setCurrentWorkflowStepNumber(currentWorkflowStepNumber)
+    }
+  }, [
+    formWorkflow,
+    searchParams,
+    currentWorkflowStepNumber,
+    setCurrentWorkflowStepNumber,
+  ])
+
   const fieldPrefillMap = useMemo(
     () => (formFields ? getFieldPrefillMap(formFields, searchParams) : {}),
     [formFields, searchParams],
   )
+  const seedsMyInfoValues = form?.responseMode !== FormResponseMode.Email
+  const showsMyInfoVerifiedView =
+    !!form &&
+    getStepAuthType(form, formWorkflow, currentWorkflowStepNumber) ===
+      FormAuthType.MyInfo &&
+    seedsMyInfoValues
   const augmentedFormFields = useMemo(
     () =>
       formFields
-        ? augmentFormFields(formFields, currentStepNumberWorkflowStep)
+        ? augmentFormFields(
+            showsMyInfoVerifiedView
+              ? formFields.map(applyMyInfoVerifiedView('SG'))
+              : formFields,
+            currentStepNumberWorkflowStep,
+          )
         : [],
-    [formFields, currentStepNumberWorkflowStep],
+    [formFields, showsMyInfoVerifiedView, currentStepNumberWorkflowStep],
   )
 
   const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
 
-  const defaultFormValues = useMemo(() => {
+  const [precedingStepValues, setPrecedingStepValues] =
+    useState<FormFieldValues>({})
+
+  const stepDefaultFormValues = useMemo(() => {
     if (!form?.responseMode) return {}
     return getInitialFormValues({
       formResponseMode: form?.responseMode,
@@ -382,9 +452,61 @@ export const PreviewFormProvider = ({
     searchParams,
   ])
 
+  const defaultFormValues = useMemo(
+    () => ({ ...stepDefaultFormValues, ...precedingStepValues }),
+    [stepDefaultFormValues, precedingStepValues],
+  )
+
   const formMethods = useForm<FormFieldValues>({
     defaultValues: defaultFormValues,
   })
+
+  const handlePreviewWorkflowStepChange = useCallback(
+    (stepNumber: number) => {
+      setPrecedingStepValues(
+        pickPrecedingStepValues(
+          formWorkflow?.slice(0, stepNumber) ?? [],
+          formMethods.getValues(),
+        ),
+      )
+      setCurrentWorkflowStepNumber(stepNumber)
+    },
+    [formWorkflow, formMethods, setCurrentWorkflowStepNumber],
+  )
+
+  const previousWorkflowStepNumberRef = useRef<number>()
+  const stepToastIdRef = useRef<string | number>()
+  useEffect(() => {
+    if (!formWorkflow) {
+      previousWorkflowStepNumberRef.current = undefined
+      return
+    }
+    const previousWorkflowStepNumber = previousWorkflowStepNumberRef.current
+    previousWorkflowStepNumberRef.current = currentWorkflowStepNumber
+    if (
+      previousWorkflowStepNumber === undefined ||
+      previousWorkflowStepNumber === currentWorkflowStepNumber
+    ) {
+      return
+    }
+    formMethods.reset(defaultFormValues)
+
+    if (stepToastIdRef.current) {
+      toast.close(stepToastIdRef.current)
+    }
+    stepToastIdRef.current = toast({
+      description: `You're previewing ${getPreviewStepLabel(
+        formWorkflow[currentWorkflowStepNumber],
+        currentWorkflowStepNumber,
+      )}.`,
+    })
+  }, [
+    formWorkflow,
+    currentWorkflowStepNumber,
+    defaultFormValues,
+    formMethods,
+    toast,
+  ])
 
   if (isNotFormId) {
     return <NotFoundErrorPage />
@@ -411,8 +533,15 @@ export const PreviewFormProvider = ({
         fieldPrefillMap,
         hasSingleSubmissionValidationError: false,
         hasRespondentNotWhitelistedError: false,
+        currentWorkflowStep: currentStepNumberWorkflowStep,
+        previewWorkflowStepNumber: formWorkflow
+          ? currentWorkflowStepNumber
+          : undefined,
+        onPreviewWorkflowStepChange: formWorkflow
+          ? handlePreviewWorkflowStepChange
+          : undefined,
         ...commonFormValues,
-        ...data,
+        ...stepData,
         ...rest,
       }}
     >

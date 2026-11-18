@@ -130,13 +130,6 @@ const addForm = async (
   // Close any modals that may obstruct test flow
   await closeModals(page)
 
-  // Press escape 5 times to get rid of any banners
-  await page.keyboard.press('Escape')
-  await page.keyboard.press('Escape')
-  await page.keyboard.press('Escape')
-  await page.keyboard.press('Escape')
-  await page.keyboard.press('Escape')
-
   await page.getByRole('button', { name: 'Create form' }).click()
 
   await page.getByLabel('Form name').fill(`e2e-test-${cuid()}`)
@@ -331,8 +324,8 @@ const addAuthSettings = async (
 
   await expectToast(page, /singpass authentication successfully enabled/i)
 
-  // Don't need to click if SGID is desired auth type
-  // since SGID is the default once Singpass is enabled
+  // Don't need to click if MyInfo is desired auth type
+  // since MyInfo is the default once Singpass is enabled
   if (formSettings.authType !== FormAuthType.MyInfo) {
     await page
       .locator('label', {
@@ -341,7 +334,7 @@ const addAuthSettings = async (
         ),
       })
       .first() // Since 'Singpass' will match all radio options, pick the first matching one.
-      .click({ position: { x: 1, y: 1 } }) // Clicking the center of the sgid button launches the sgid contact form, put this here until we get rid of the link
+      .click({ position: { x: 1, y: 1 } }) // Click the radio itself rather than the center of the label, which may contain links
 
     await expectToast(page, /singpass authentication successfully updated/i)
   }
@@ -397,7 +390,7 @@ const addAdminEmails = async (
   page: Page,
   formSettings: E2eSettingsOptions,
 ): Promise<void> => {
-  await page.getByRole('tab', { name: 'Email notifications' }).click()
+  await page.getByRole('tab', { name: 'Emails' }).click()
 
   // Ensure that we are on the email notifications page
   await expect(
@@ -753,7 +746,7 @@ const addMyInfoField = async (
 ): Promise<void> => {
   const label = MYINFO_FIELD_TO_DRAWER_META[attr].label
 
-  await page.getByRole('tab', { name: 'MyInfo' }).click()
+  await page.getByRole('tab', { name: 'Singpass' }).click()
   await page.getByRole('button', { name: label, exact: true }).click()
 }
 

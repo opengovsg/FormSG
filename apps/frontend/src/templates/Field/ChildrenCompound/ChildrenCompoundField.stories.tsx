@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
-import { merge } from 'lodash'
+import { Meta, StoryFn } from '@storybook/react-vite'
+import { get, merge } from 'lodash'
 
 import {
   BasicField,
   MyInfoChildAttributes,
   MyInfoChildData,
+  MyInfoChildrenScope,
 } from 'formsg-shared/types/field'
 
 import Button from '~components/Button'
@@ -47,22 +48,27 @@ const baseSchema: ChildrenCompoundFieldSchema = {
 }
 
 interface StoryChildrenCompoundFieldProps extends ChildrenCompoundFieldProps {
-  childrenBirthRecords: MyInfoChildData
+  childrenBirthRecords?: MyInfoChildData
+  defaultValues?: Record<string, unknown>
 }
 
 const Template: StoryFn<StoryChildrenCompoundFieldProps> = ({
   childrenBirthRecords,
+  defaultValues,
   ...args
 }) => {
-  const formMethods = useForm()
+  const formMethods = useForm({ defaultValues })
 
   const [submitValues, setSubmitValues] = useState<string>()
+  const [submitTypes, setSubmitTypes] = useState<string>()
 
-  const onSubmit = (values: Record<string, string | undefined>) => {
+  const onSubmit = (values: Record<string, unknown>) => {
+    // Form values are nested under the field id (RHF nests on dots).
     setSubmitValues(
-      JSON.stringify(values[`${args.schema._id}.child`]) ||
+      JSON.stringify(get(values, `${args.schema._id}.child`)) ||
         'Nothing was selected',
     )
+    setSubmitTypes(JSON.stringify(get(values, `${args.schema._id}.childTypes`)))
   }
 
   return (
@@ -81,12 +87,108 @@ const Template: StoryFn<StoryChildrenCompoundFieldProps> = ({
           Submit
         </Button>
         {submitValues && <Text>You have submitted: {submitValues}</Text>}
+        {submitTypes && <Text>Child types: {submitTypes}</Text>}
       </form>
     </FormProvider>
   )
 }
 
-export const AllowMultipleChildren = Template.bind({})
-AllowMultipleChildren.args = {
+export const SingleChild = Template.bind({})
+SingleChild.args = {
+  schema: baseSchema,
+}
+
+/** An existing form document whose stored allowMultiple flag is still `true`. */
+export const LegacyAllowMultipleFlag = Template.bind({})
+LegacyAllowMultipleFlag.args = {
   schema: merge({}, baseSchema, { allowMultiple: true }),
+}
+
+/**
+ * MRF steps 2+: the step-1 answer is carried forward read-only. There is no
+ * MyInfo session (myInfoChildrenBirthRecords is undefined), so the values come
+ * solely from the previous step's response; nothing is editable and no blank
+ * row is appended.
+ */
+export const DisabledCarriedForward = Template.bind({})
+DisabledCarriedForward.args = {
+  schema: merge({}, baseSchema, {
+    disabled: true,
+    childrenSubFields: [
+      MyInfoChildAttributes.ChildName,
+      MyInfoChildAttributes.ChildBirthCertNo,
+    ],
+  }),
+  defaultValues: {
+    [baseSchema._id]: {
+      child: [['Phua Chu King', 'T1234567X']],
+      childFields: [
+        MyInfoChildAttributes.ChildName,
+        MyInfoChildAttributes.ChildBirthCertNo,
+      ],
+    },
+  },
+}
+
+/**
+ * MRF steps 2+ where step 1 left the field unanswered: disabled with no
+ * carried-forward value must not auto-append a blank editable row.
+ */
+export const DisabledUnanswered = Template.bind({})
+DisabledUnanswered.args = {
+  schema: merge({}, baseSchema, { disabled: true }),
+}
+
+/** An existing form that still lists secondary race in `childrenSubFields`. */
+export const LegacySecondaryRaceSubField = Template.bind({})
+LegacySecondaryRaceSubField.args = {
+  schema: merge({}, baseSchema, {
+    childrenSubFields: [
+      MyInfoChildAttributes.ChildName,
+      MyInfoChildAttributes.ChildRace,
+      MyInfoChildAttributes.ChildSecondaryRace,
+    ],
+  }),
+}
+
+/**
+ * MyInfo returns the same child name as both a birth record and a sponsored
+ * record. Each record is listed and selectable on its own.
+ */
+export const SameNamedLocalAndSponsored = Template.bind({})
+SameNamedLocalAndSponsored.args = {
+  schema: merge({}, baseSchema, {
+    childrenSubFields: [
+      MyInfoChildAttributes.ChildName,
+      MyInfoChildAttributes.ChildType,
+    ],
+  }),
+  childrenBirthRecords: {
+    [MyInfoChildAttributes.ChildName]: ['SITI RY', 'THRO RY', 'THRO RY'],
+    [MyInfoChildAttributes.ChildType]: ['LOCAL', 'LOCAL', 'SPONSORED'],
+    scopes: [
+      MyInfoChildrenScope.Local,
+      MyInfoChildrenScope.Local,
+      MyInfoChildrenScope.Sponsored,
+    ],
+  },
+}
+
+/**
+ * MyInfo returns a record without every sub-field, e.g. a sponsored child with
+ * no birth certificate number. Its blank sub-fields are cleared and locked.
+ */
+export const RecordMissingSubField = Template.bind({})
+RecordMissingSubField.args = {
+  schema: merge({}, baseSchema, {
+    childrenSubFields: [
+      MyInfoChildAttributes.ChildName,
+      MyInfoChildAttributes.ChildBirthCertNo,
+    ],
+  }),
+  childrenBirthRecords: {
+    [MyInfoChildAttributes.ChildName]: ['SITI RY', 'THRO RY'],
+    [MyInfoChildAttributes.ChildBirthCertNo]: ['T1234567X', ''],
+    scopes: [MyInfoChildrenScope.Local, MyInfoChildrenScope.Sponsored],
+  },
 }

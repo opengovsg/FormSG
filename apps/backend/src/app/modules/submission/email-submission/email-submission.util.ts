@@ -53,7 +53,6 @@ import {
   PrivateFormError,
 } from '../../form/form.errors'
 import {
-  MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
   MyInfoInvalidLoginCookieError,
@@ -61,11 +60,6 @@ import {
   MyInfoMissingLoginCookieError,
 } from '../../myinfo/myinfo.errors'
 import { MyInfoKey } from '../../myinfo/myinfo.types'
-import {
-  SgidInvalidJwtError,
-  SgidMissingJwtError,
-  SgidVerifyJwtError,
-} from '../../sgid/sgid.errors'
 import {
   InvalidJwtError,
   MissingJwtError,
@@ -363,14 +357,10 @@ export const mapRouteError: MapRouteError = (error) => {
         errorMessage:
           'Missing Turnstile challenge. Please refresh and submit again.',
       }
-    case SgidMissingJwtError:
-    case SgidVerifyJwtError:
-    case SgidInvalidJwtError:
     case MissingJwtError:
     case VerifyJwtError:
     case InvalidJwtError:
     case MyInfoMissingLoginCookieError:
-    case MyInfoCookieStateError:
     case MyInfoInvalidLoginCookieError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,

@@ -1,7 +1,12 @@
-import { FormWorkflowDto, SubmittedStep } from 'formsg-shared/types'
+import { FormWorkflowDto, WebhookSubmittedStep } from 'formsg-shared/types'
 import * as z from 'zod'
 
 import { IFormSchema, ISubmissionSchema, WebhookView } from '../../../types'
+
+import {
+  QUEUE_MESSAGE_LIVE_ROW_VERSION,
+  QUEUE_MESSAGE_SNAPSHOT_VERSION,
+} from './webhook.constants'
 
 export interface WebhookParams {
   webhookUrl: string
@@ -12,15 +17,46 @@ export interface WebhookParams {
   signature: string
 }
 
-/**
- * Schema for webhook queue message, which allows an object to be validated.
- */
-export const webhookMessageSchema = z.object({
+const webhookMessageBaseSchema = {
   submissionId: z.string().regex(/^[a-f\d]{24}$/i),
   previousAttempts: z.array(z.number()),
   nextAttempt: z.number(),
-  _v: z.number(),
+}
+
+/**
+ * Retry queue message for which uses live row data for reconstructing retry payload.
+ */
+const LiveRowQueueMessage = z.object({
+  ...webhookMessageBaseSchema,
+  _v: z.literal(QUEUE_MESSAGE_LIVE_ROW_VERSION),
 })
+
+/**
+ * Reference to the snapshot to be used for reconstructing retry payload.
+ */
+const SnapshotRef = z.object({
+  submissionIndex: z.number().int(),
+  contentFormat: z.enum(['v1', 'v4']),
+  token: z.string().optional(),
+})
+export type SnapshotRef = z.infer<typeof SnapshotRef>
+
+/**
+ * Retry queue message for which uses snapshots for reconstructing retry payload.
+ */
+const SnapshotQueueMessage = z.object({
+  ...webhookMessageBaseSchema,
+  _v: z.literal(QUEUE_MESSAGE_SNAPSHOT_VERSION),
+  snapshotRef: SnapshotRef,
+})
+
+/**
+ * Schema for webhook retry queue message.
+ */
+export const webhookMessageSchema = z.discriminatedUnion('_v', [
+  SnapshotQueueMessage,
+  LiveRowQueueMessage,
+])
 
 /**
  * Shape of webhook queue message object.
@@ -36,6 +72,7 @@ export type WebhookQueueMessagePrettified = Omit<
 > & {
   previousAttempts: string[]
   nextAttempt: string
+  snapshotRef?: SnapshotRef
 }
 
 /**
@@ -65,5 +102,5 @@ export type PaymentWebhookEventObject = {
 export type WorkflowWebhookEventObject = {
   workflow: FormWorkflowDto
   workflowStep: number
-  submittedSteps: SubmittedStep[]
+  submittedSteps: WebhookSubmittedStep[]
 }

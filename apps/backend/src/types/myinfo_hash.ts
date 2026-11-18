@@ -9,7 +9,16 @@ export type IHashes = Partial<{
   [key in MyInfoAttribute | MyInfoChildKey]: string
 }>
 
-interface IMyInfoHash {
+/**
+ * A later MRF step's MyInfo login session. Absent for Step 1 and other forms,
+ * whose hashes are keyed by form and NRIC alone.
+ */
+export type MyInfoHashScope = {
+  authSessionId: string
+  workflowStep: number
+}
+
+interface IMyInfoHash extends Partial<MyInfoHashScope> {
   uinFin: string
   form: IFormSchema['_id']
   fields: IHashes
@@ -25,6 +34,11 @@ export interface IMyInfoHashModel extends Model<IMyInfoHashSchema> {
     formId: string,
     readOnlyHashes: IHashes,
     spCookieMaxAge: number,
+    scope?: MyInfoHashScope,
   ) => Promise<IMyInfoHashSchema | null>
-  findHashes: (uinFin: string, formId: string) => Promise<IHashes | null>
+  findHashes: (
+    uinFin: string,
+    formId: string,
+    scope?: MyInfoHashScope,
+  ) => Promise<IHashes | null>
 }

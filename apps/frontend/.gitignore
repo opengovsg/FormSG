@@ -28,3 +28,6 @@ build-storybook.log
 # Lint cache
 .eslintcache
 
+
+# Argos screenshots from the Storybook Vitest project
+/screenshots

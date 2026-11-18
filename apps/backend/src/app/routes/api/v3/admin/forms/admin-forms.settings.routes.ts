@@ -41,6 +41,41 @@ AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/settings')
    */
   .get(AdminFormController.handleGetSettings)
 
+AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/form-origins')
+  /**
+   * Save the answer to the form origin question on an existing form.
+   * @route PUT /admin/forms/:formId/form-origins
+   * @group admin
+   * @param body.formOrigins the chosen origin, same shape as at creation
+   * @returns 200 with the saved form origins
+   * @returns 400 when the body fails Joi validation
+   * @returns 401 when current user is not logged in
+   * @returns 403 when current user does not have write permission
+   * @returns 404 when form cannot be found
+   * @returns 410 when form is archived
+   * @returns 500 when database error occurs
+   */
+  .put(AdminFormController.handleUpdateFormOrigins)
+
+AdminFormsSettingsRouter.route(
+  '/:formId([a-fA-F0-9]{24})/settings/submitter-id-collection/convert',
+)
+  /**
+   * Convert the Collect NRIC/FIN/UENs setting into Step 1 login identity fields.
+   * @route POST /admin/forms/:formId/settings/submitter-id-collection/convert
+   * @security session
+   *
+   * @returns 200 with latest form settings on successful conversion
+   * @returns 400 when the form has nothing to convert
+   * @returns 403 when write permission or the NRIC field flag is missing
+   * @returns 409 when the form is open to responses
+   * @returns 404 when form cannot be found
+   * @returns 410 when the form is archived
+   * @returns 422 when the converted form fails validation
+   * @returns 500 when database error occurs
+   */
+  .post(AdminFormController.handleConvertSubmitterIdCollection)
+
 AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/settings/whitelist')
   .get(
     limitRate({ max: rateLimitConfig.downloadFormWhitelist }),

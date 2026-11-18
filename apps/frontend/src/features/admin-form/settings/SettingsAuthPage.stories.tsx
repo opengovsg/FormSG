@@ -1,22 +1,28 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
+import { Meta, StoryFn, StoryObj } from '@storybook/react-vite'
+import { http, HttpResponse } from 'msw'
 
-import { PaymentChannel } from 'formsg-shared/types'
+import { featureFlags } from 'formsg-shared/constants'
+import { BasicField, PaymentChannel } from 'formsg-shared/types'
 import {
+  AdminFormDto,
   FormAuthType,
   FormResponseMode,
   FormSettings,
   FormStatus,
+  WorkflowType,
 } from 'formsg-shared/types/form'
 
 import {
   createFormBuilderMocks,
+  createMockForm,
   getAdminFormSettings,
   MOCK_FORM_FIELDS_WITH_MYINFO,
   patchAdminFormSettings,
   putFormWhitelistSettingSimulateCsvStringValidationError,
 } from '~/mocks/msw/handlers/admin-form'
 
-import { StoryRouter, viewports } from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { SettingsAuthPage } from './SettingsAuthPage'
 
@@ -42,10 +48,7 @@ export default {
   title: 'Pages/AdminFormPage/Settings/AuthTab',
   component: SettingsAuthPage,
   decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
-  parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
-  },
+  parameters: {},
 } as Meta
 
 const Template: StoryFn = () => <SettingsAuthPage />
@@ -225,6 +228,7 @@ PrivateEmailSingpassFormSingleSubmissionEnabled.parameters = {
 // purpose: displays all available singpass settings in an enabled state
 export const PrivateStorageSingpassFormAllTogglesEnabled = Template.bind({})
 PrivateStorageSingpassFormAllTogglesEnabled.parameters = {
+  argos: { modes: viewportModes('tablet', 'mobile') },
   msw: {
     handlers: {
       default: buildEncryptModeMswRoutes({
@@ -336,32 +340,101 @@ PrivateStorageMyInfoUpdateWhitelistValidationErrorForm.parameters = {
   },
 }
 
-export const Tablet = Template.bind({})
-Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
+// Multi-respondent forms get one collapsible section per workflow step once
+// later steps can log in.
+const stepLoginOn = new GrowthBook({
+  features: {
+    [featureFlags.mrfStepLogin]: { defaultValue: true },
+    [featureFlags.isNricFieldEnabled]: { defaultValue: true },
   },
-  chromatic: { viewports: [viewports.md] },
+})
+
+const withStepLoginOn = (Story: StoryFn) => (
+  <GrowthBookProvider growthbook={stepLoginOn}>
+    <Story />
+  </GrowthBookProvider>
+)
+
+const MRF_STEP_LOGIN_FORM: Partial<AdminFormDto> = {
+  responseMode: FormResponseMode.Multirespondent,
+  authType: FormAuthType.MyInfo,
+  form_fields: [
+    {
+      title: 'Short answer',
+      description: '',
+      required: true,
+      disabled: false,
+      fieldType: BasicField.ShortText,
+      _id: '6200e1534ad4f00012848d90',
+      ValidationOptions: { customVal: null, selectedValidation: null },
+      allowPrefill: false,
+    },
+  ],
+  workflow: [
+    {
+      _id: '61e6857c9c794b0012f1c6f8',
+      workflow_type: WorkflowType.Static,
+      emails: [],
+      edit: ['6200e1534ad4f00012848d90'],
+      step_name: 'Applicant',
+    },
+    {
+      _id: '61e6857c9c794b0012f1c6f9',
+      workflow_type: WorkflowType.Static,
+      emails: ['test_1@tech.gov.sg'],
+      step_name: 'Approving officer',
+      edit: [],
+      auth: { auth_type: FormAuthType.CP, esrvc_id: 'STORYBOOK-TEST' },
+    },
+    {
+      _id: '61e6857c9c794b0012f1c6fa',
+      workflow_type: WorkflowType.Static,
+      emails: ['test_2@tech.gov.sg'],
+      step_name: 'Processing officer',
+      edit: [],
+    },
+  ],
+}
+
+const buildMrfStepLoginMswRoutes = (overrides: Partial<FormSettings>) => {
+  const current = createMockForm({
+    ...MRF_STEP_LOGIN_FORM,
+    status: overrides.status ?? FormStatus.Private,
+  }).form
+  return [
+    http.get('/api/v3/admin/forms/:formId', () =>
+      HttpResponse.json({ form: current }),
+    ),
+    http.get('/api/v3/admin/forms/:formId/settings', () =>
+      HttpResponse.json(current),
+    ),
+    ...createFormBuilderMocks({
+      ...MRF_STEP_LOGIN_FORM,
+      status: overrides.status ?? FormStatus.Private,
+    }),
+    patchAdminFormSettings({
+      overrides: { authType: FormAuthType.MyInfo, ...overrides },
+      mode: FormResponseMode.Multirespondent,
+    }),
+  ]
+}
+
+export const PrivateMrfStepLoginAccordion = Template.bind({})
+PrivateMrfStepLoginAccordion.decorators = [withStepLoginOn]
+PrivateMrfStepLoginAccordion.parameters = {
   msw: {
     handlers: {
-      default:
-        PrivateStorageSingpassFormAllTogglesEnabled.parameters.msw.handlers
-          .default,
+      default: buildMrfStepLoginMswRoutes({ status: FormStatus.Private }),
     },
   },
 }
 
-export const Mobile = Template.bind({})
-Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
+export const PublicMrfStepLoginAccordion = Template.bind({})
+PublicMrfStepLoginAccordion.decorators = [withStepLoginOn]
+PublicMrfStepLoginAccordion.parameters = {
   msw: {
     handlers: {
-      default:
-        PrivateStorageSingpassFormAllTogglesEnabled.parameters.msw.handlers
-          .default,
+      default: buildMrfStepLoginMswRoutes({ status: FormStatus.Public }),
     },
   },
 }
@@ -369,4 +442,17 @@ Mobile.parameters = {
 export const Loading = Template.bind({})
 Loading.parameters = {
   msw: { handlers: { default: [getAdminFormSettings({ delay: 'infinite' })] } },
+}
+
+export const LegacySingpassLoginOnly: StoryObj<typeof SettingsAuthPage> = {
+  parameters: {
+    msw: {
+      handlers: {
+        default: buildEmailModeMswRoutes({
+          status: FormStatus.Private,
+          authType: FormAuthType.SP,
+        }),
+      },
+    },
+  },
 }

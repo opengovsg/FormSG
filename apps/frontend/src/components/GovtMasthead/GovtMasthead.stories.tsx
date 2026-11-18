@@ -1,6 +1,6 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { viewports } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import {
   GovtMasthead as GovtMastheadComponent,
@@ -11,6 +11,8 @@ export default {
   title: 'Components/GovtMasthead',
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
   component: GovtMastheadComponent,
   decorators: [],
@@ -20,29 +22,11 @@ const Template: StoryFn<GovtMastheadProps> = (args) => (
   <GovtMastheadComponent {...args} />
 )
 
-export const MobileDefault = Template.bind({})
-MobileDefault.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
-}
-
-export const MobileExpanded = Template.bind({})
-MobileExpanded.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
-}
-MobileExpanded.storyName = 'Mobile/Expanded'
-MobileExpanded.args = {
-  defaultIsOpen: true,
-}
-
 export const DesktopDefault = Template.bind({})
+DesktopDefault.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const DesktopExpanded = Template.bind({})
+DesktopExpanded.parameters = { argos: { modes: viewportModes('mobile') } }
 DesktopExpanded.storyName = 'Desktop/Expanded'
 DesktopExpanded.args = {
   defaultIsOpen: true,

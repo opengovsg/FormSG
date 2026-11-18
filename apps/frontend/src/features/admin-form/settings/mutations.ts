@@ -1,10 +1,13 @@
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
+import { formatInTimeZone } from 'date-fns-tz'
 
+import { DateString } from 'formsg-shared/types'
 import {
   FormAuthType,
+  FormOrigin,
   FormResponseMode,
   FormSettings,
   FormStatus,
@@ -15,21 +18,27 @@ import { PAYMENT_DELETE_DEFAULT } from 'formsg-shared/utils/payments'
 
 import { ApiError } from '~typings/core'
 
+import { ADMINFORM_ROUTE } from '~constants/routes'
 import { useToast } from '~hooks/useToast'
 import { convertUnicodeLocaleToLanguage } from '~utils/multiLanguage'
 import { formatOrdinal } from '~utils/stringFormat'
 
+import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedbackContainer/adminFeedbackStore'
+
 import { updateFormPayments } from '../common/AdminFormPageService'
 import { adminFormKeys } from '../common/queries'
+import { FOCUS_CONVERTED_IDENTITY_STATE } from '../create/builder-and-design/useFocusConvertedIdentityField'
 
 import { adminFormSettingsKeys } from './queries'
 import {
+  convertSubmitterIdCollection,
   createStripeAccount,
   MrfEmailNotificationSettings,
   unlinkStripeAccount,
   updateBusinessInfo,
   updateFormAuthType,
   updateFormCaptcha,
+  updateFormCloseAt,
   updateFormEmails,
   updateFormEsrvcId,
   updateFormHasMultiLang,
@@ -37,10 +46,12 @@ import {
   updateFormIsSaveDraftEnabled,
   updateFormIssueNotification,
   updateFormLimit,
+  updateFormOrigins,
   updateFormRespondentCopy,
   updateFormStatus,
   updateFormSupportedLanguages,
   updateFormTitle,
+  updateFormWebhookFormat,
   updateFormWebhookRetries,
   updateFormWebhookUrl,
   updateFormWhitelistSetting,
@@ -54,6 +65,7 @@ import {
 export const useMutateFormSettings = () => {
   const { t } = useTranslation()
   const { formId } = useParams()
+  const navigate = useNavigate()
   if (!formId) {
     throw new Error(t('features.adminForm.settings.mutations.missingFormId'))
   }
@@ -122,6 +134,15 @@ export const useMutateFormSettings = () => {
     [generateErrorToast],
   )
 
+  const mutateFormOrigins = useMutation(
+    (formOrigin: FormOrigin) => updateFormOrigins(formId, formOrigin),
+    {
+      // So reopening this form later doesn't ask again.
+      onSuccess: () => queryClient.invalidateQueries(adminFormKeys.id(formId)),
+      onError: handleError,
+    },
+  )
+
   const mutateFormStatus = useMutation(
     (nextStatus: FormStatus) => updateFormStatus(formId, nextStatus),
     {
@@ -142,6 +163,11 @@ export const useMutateFormSettings = () => {
           : toastStatusClosedMessage
 
         handleSuccess({ newData, toastDescription: toastStatusMessage })
+
+        // Trigger admin feedback prompt when form goes public
+        if (isNowPublic) {
+          useAdminFeedbackStore.getState().setEligible('publish', formId)
+        }
       },
       onError: handleError,
     },
@@ -161,6 +187,27 @@ export const useMutateFormSettings = () => {
               submissionLimit: formatOrdinal(newData.submissionLimit),
             })
           : t('features.adminForm.settings.general.limit.toast.successRemoved')
+        handleSuccess({ newData, toastDescription: toastStatusMessage })
+      },
+      onError: handleError,
+    },
+  )
+
+  const mutateFormCloseAt = useMutation(
+    (nextCloseAt: DateString | null) => updateFormCloseAt(formId, nextCloseAt),
+    {
+      onSuccess: (newData) => {
+        const toastStatusMessage = newData.closeAt
+          ? t('features.adminForm.settings.general.expiry.toast.success', {
+              // The same 12-hour rendering and zone label as the banner
+              // respondents see.
+              closeAt: formatInTimeZone(
+                new Date(newData.closeAt),
+                'Asia/Singapore',
+                "d MMM yyyy, h:mm a '(SGT)'",
+              ),
+            })
+          : t('features.adminForm.settings.general.expiry.toast.successRemoved')
         handleSuccess({ newData, toastDescription: toastStatusMessage })
       },
       onError: handleError,
@@ -474,6 +521,28 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateConvertSubmitterIdCollection = useMutation(
+    () => convertSubmitterIdCollection(formId),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: t(
+            newData.authType === FormAuthType.CP
+              ? 'features.adminForm.sidebar.fields.loginIdentity.convertedToast.corppass'
+              : 'features.adminForm.sidebar.fields.loginIdentity.convertedToast.singpass',
+          ),
+        })
+        // Convert also changes the form fields and MRF Step 1.
+        void queryClient.invalidateQueries(adminFormKeys.id(formId))
+        navigate(`${ADMINFORM_ROUTE}/${formId}`, {
+          state: FOCUS_CONVERTED_IDENTITY_STATE,
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   const mutateIsSingleSubmission = useMutation(
     (nextIsSingleSubmissionPerNricEnabled: boolean) => {
       return updateIsSingleSubmission(
@@ -531,6 +600,21 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateWebhookFormat = useMutation(
+    (format: NonNullable<FormSettings['webhook']['webhookFormat']>) =>
+      updateFormWebhookFormat(formId, format),
+    {
+      onSuccess: (newData) =>
+        handleSuccess({
+          newData,
+          toastDescription: t(
+            'features.adminForm.settings.webhooks.legacy.saved',
+          ),
+        }),
+      onError: handleError,
+    },
+  )
+
   const mutateWebhookRetries = useMutation(
     (nextEnabled: boolean) => updateFormWebhookRetries(formId, nextEnabled),
     {
@@ -581,10 +665,13 @@ export const useMutateFormSettings = () => {
   )
 
   return {
+    mutateFormOrigins,
+    mutateWebhookFormat,
     mutateWebhookRetries,
     mutateFormWebhookUrl,
     mutateFormStatus,
     mutateFormLimit,
+    mutateFormCloseAt,
     mutateFormHasMultiLang,
     mutateFormSupportedLanguages,
     mutateFormInactiveMessage,
@@ -598,6 +685,7 @@ export const useMutateFormSettings = () => {
     mutateFormTitle,
     mutateFormAuthType,
     mutateIsSubmitterIdCollectionEnabled,
+    mutateConvertSubmitterIdCollection,
     mutateIsSingleSubmission,
     mutateFormWhitelistSetting,
     mutateFormEsrvcId,

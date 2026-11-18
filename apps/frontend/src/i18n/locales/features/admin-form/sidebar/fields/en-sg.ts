@@ -1,6 +1,25 @@
 import { Fields } from '.'
 
 export const enSG: Fields = {
+  loginIdentity: {
+    sectionLabel: 'Personal',
+    corppassPanelInfo:
+      "These fields fill in from the respondent's Corppass login.",
+    loginMissing:
+      'Enable {loginName} in the <settingsLink>Settings</settingsLink> tab to access these fields.',
+    convertedToast: {
+      singpass: 'The field "NRIC/FIN" was created.',
+      corppass: 'The fields "NRIC/FIN" and "UEN" were created.',
+    },
+    fieldLimit: 'Only {max} Myinfo fields are allowed ({count}/{max}).',
+    // Keyed by login identity attribute.
+    details: {
+      uinfin:
+        'The NRIC/FIN of the respondent. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
+      uen: "The UEN of the respondent's organisation. This field is verified by Corppass.",
+      uid: 'The NRIC/FIN or foreign ID of the respondent. This field is verified by Corppass.',
+    },
+  },
   builder: {
     title: 'Fields',
     createField: 'Create field',
@@ -8,7 +27,8 @@ export const enSG: Fields = {
     searchPlaceholder: 'Search fields',
     tabs: {
       basic: 'Basic',
-      myInfo: 'MyInfo',
+      myInfo: 'Singpass',
+      corppass: 'Corppass',
       payments: 'Payments',
     },
     image: 'Image',
@@ -72,6 +92,18 @@ export const enSG: Fields = {
       minimum: 'Minimum',
       maximum: 'Maximum',
     },
+    error: {
+      selectionLimitRequired: 'Please enter selection limits',
+      min: 'Cannot be less than 1',
+      max: 'Cannot be more than 10,000',
+      minLargerThanMax: 'Minimum cannot be larger than maximum',
+      maxLessThanMin: 'Maximum cannot be less than minimum',
+      moreThanNumOptions: 'Cannot be more than number of options',
+    },
+  },
+  dropdown: {
+    conditionalRoutingWarning:
+      'This field is linked to a step in your workflow. If you make any changes, ensure that the options and emails are updated in your CSV file.',
   },
   paragraph: 'Paragraph',
   section: {
@@ -94,6 +126,11 @@ export const enSG: Fields = {
       title: 'Restrict email domains',
       inputLabel: 'Domains allowed',
       placeholder: '@*.gov.sg\n@open.gov.sg\n@agency.gov.sg',
+      error: {
+        duplicate: 'Please remove duplicate email domains',
+        empty: 'Please enter at least one email domain',
+        invalid: 'Please enter only valid email domains starting with @',
+      },
     },
     emailConfirmation: {
       title: 'Email confirmation',
@@ -159,8 +196,24 @@ export const enSG: Fields = {
       maxRowGreaterThanMin: 'Maximum rows must be greater than minimum rows',
     },
     column: 'Column',
+    columnType: 'Column type',
     ariaLabelDelete: 'Delete column',
     addColumn: 'Add column',
+  },
+  shortText: {
+    prefill: {
+      label: 'Enable pre-fill',
+      description:
+        'Use Field ID in the form URL to pre-fill this field for respondents. [Learn how]({guidePrefill})',
+      fieldIdPlaceholder:
+        'Field ID will be generated after this field is saved',
+      copyFieldIdAriaLabel: 'Copy field ID value',
+      lock: {
+        label: 'Prevent pre-fill editing',
+        description:
+          'This prevents respondents from clicking the field to edit it. However, field content can still be modified via the URL.',
+      },
+    },
   },
   number: {
     validation: 'Number validation',
@@ -177,6 +230,7 @@ export const enSG: Fields = {
       validationType: 'Please select a validation type',
       numOfCharacter: 'Please enter number of characters',
       validDecimal: 'Please enter a valid decimal',
+      validNumber: 'Please enter a valid number',
       min: 'Cannot be less than 1',
       max: 'Cannot be more than 10000',
       rangeValue: 'Please enter range values',
@@ -195,6 +249,19 @@ export const enSG: Fields = {
   fieldListOption: {
     useForApprovals: 'Use for approvals',
   },
+  myInfoPreview: {
+    dataSource: 'Data source',
+    verifiedFor: 'Verified for',
+    singaporeans: 'Singaporeans',
+    permanentResidents: 'Permanent Residents',
+    foreignersWithSingpass:
+      'Foreigners with <singpassLink>Singpass</singpassLink>',
+    fieldDetails: 'Field details',
+    children: {
+      collectChildData: 'Collect the following child data',
+      allowMultiple: 'Allow respondent to add multiple children',
+    },
+  },
   myInfoPanel: {
     sections: {
       personal: 'Personal',
@@ -206,8 +273,6 @@ export const enSG: Fields = {
     singpassDisabledBefore: 'Enable Singpass in the',
     singpassDisabledSettings: 'Settings',
     singpassDisabledAfter: 'tab to access these fields.',
-    myInfoFieldsLimit:
-      'Only 30 Myinfo fields are allowed ({numMyInfoFields}/30).',
     learnMore: 'Learn more',
   },
   fixedPaymentAmountField: {
@@ -255,6 +320,10 @@ export const enSG: Fields = {
       // TODO [MRF-CUTOVER]: Remove after cutover.
       cutoverLegacyOnly:
         'Payments are only available in the legacy version of FormSG.',
+      mrfWorkflowSteps:
+        'Remove all workflow steps to enable payments. A form cannot have both a payment field and a workflow.',
+      mrfEmailNotifications:
+        'Remove email notifications in Settings to enable payments. A payment-enabled form does not send email notifications.',
       stripeNotConnectedBefore: 'Connect your Stripe account in',
       stripeNotConnectedSettings: 'Settings',
       stripeNotConnectedAfter: 'to add payment field.',

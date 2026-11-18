@@ -11,6 +11,8 @@ import { FCC } from '~typings/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 
+import { saveBeforeNavigation } from '~features/admin-form/common/navigationSave'
+
 import { FieldListTabIndex } from '../../builder-and-design/constants'
 import {
   DesignState,
@@ -23,6 +25,7 @@ import {
   setToInactiveSelector,
   useFieldBuilderStore,
 } from '../../builder-and-design/useFieldBuilderStore'
+import { useUsesStepLoginRules } from '../../workflow/hooks/useUsesStepLoginRules'
 
 export enum DrawerTabs {
   Builder,
@@ -30,6 +33,7 @@ export enum DrawerTabs {
   Logic,
   EndPage,
   Workflow,
+  Integration,
 }
 
 export type CreatePageSidebarContextProps = {
@@ -42,14 +46,20 @@ export type CreatePageSidebarContextProps = {
   handleLogicClick: (shouldBePending: boolean) => void
   handleEndpageClick: (shouldBePending: boolean) => void
   handleWorkflowClick: (shouldBePending: boolean) => void
+  handleIntegrationClick: (shouldBePending: boolean) => void
   handleClose: (shouldBePending: boolean) => void
   isDrawerOpen: boolean
   fieldListTabIndex: FieldListTabIndex
   setFieldListTabIndex: (tabIndex: FieldListTabIndex) => void
+  sidebarWidth: number
+  reportSidebarWidth: (width: number) => void
 }
 const CreatePageSidebarContext = createContext<
   CreatePageSidebarContextProps | undefined
 >(undefined)
+
+export const useSidebarWidth = (): number =>
+  useContext(CreatePageSidebarContext)?.sidebarWidth ?? 0
 
 export const useCreatePageSidebar = (): CreatePageSidebarContextProps => {
   const context = useContext(CreatePageSidebarContext)
@@ -63,6 +73,13 @@ export const useCreatePageSidebar = (): CreatePageSidebarContextProps => {
 export const useCreatePageSidebarContext =
   (): CreatePageSidebarContextProps => {
     const isMobile = useIsMobile()
+    const [sidebarWidth, setSidebarWidth] = useState(0)
+    const reportSidebarWidth = useCallback(
+      (width: number) =>
+        setSidebarWidth((current) => (current === width ? current : width)),
+      [],
+    )
+
     const [activeTab, setActiveTab] = useState<DrawerTabs | null>(null)
     // Any pending tab due to unsaved changes.
     // Pending tab can be `null` if the next tab state is to be closed.
@@ -70,7 +87,10 @@ export const useCreatePageSidebarContext =
       DrawerTabs | null | undefined
     >()
     const isDrawerOpen = useMemo(
-      () => activeTab !== null && activeTab !== DrawerTabs.Logic,
+      () =>
+        activeTab !== null &&
+        activeTab !== DrawerTabs.Logic &&
+        activeTab !== DrawerTabs.Integration,
       [activeTab],
     )
     const fieldBuilderState = useFieldBuilderStore(fieldBuilderStateSelector)
@@ -92,7 +112,7 @@ export const useCreatePageSidebarContext =
       if (activeTab !== DrawerTabs.Design) setDesignState(DesignState.Inactive)
     }, [activeTab, setDesignState])
 
-    const setActiveOrPendingTab = useCallback(
+    const applyTab = useCallback(
       (tab: DrawerTabs | null, shouldBePending?: boolean) => {
         if (shouldBePending) {
           setPendingTab(tab)
@@ -108,6 +128,26 @@ export const useCreatePageSidebarContext =
         }
       },
       [fieldBuilderState, isMobile, setFieldsToInactive],
+    )
+
+    // Leaving the Workflow tab saves the open step first, like leaving the
+    // page does. Only the step login editor registers that save.
+    const isStepLoginEnabled = useUsesStepLoginRules()
+    const setActiveOrPendingTab = useCallback(
+      (tab: DrawerTabs | null, shouldBePending?: boolean) => {
+        if (
+          isStepLoginEnabled &&
+          activeTab === DrawerTabs.Workflow &&
+          tab !== DrawerTabs.Workflow
+        ) {
+          void saveBeforeNavigation().then((saved) => {
+            if (saved) applyTab(tab, shouldBePending)
+          })
+          return
+        }
+        applyTab(tab, shouldBePending)
+      },
+      [activeTab, applyTab, isStepLoginEnabled],
     )
 
     const clearPendingTab = useCallback(() => {
@@ -144,6 +184,12 @@ export const useCreatePageSidebarContext =
       [setActiveOrPendingTab],
     )
 
+    const handleIntegrationClick = useCallback(
+      (shouldBePending: boolean) =>
+        setActiveOrPendingTab(DrawerTabs.Integration, shouldBePending),
+      [setActiveOrPendingTab],
+    )
+
     const handleClose = useCallback(
       (shouldBePending: boolean) => {
         setActiveOrPendingTab(null, shouldBePending)
@@ -161,6 +207,8 @@ export const useCreatePageSidebarContext =
     }, [isMobile, pendingTab, setFieldsToInactive])
 
     return {
+      sidebarWidth,
+      reportSidebarWidth,
       activeTab,
       pendingTab,
       clearPendingTab,
@@ -171,6 +219,7 @@ export const useCreatePageSidebarContext =
       handleLogicClick,
       handleEndpageClick,
       handleWorkflowClick,
+      handleIntegrationClick,
       handleClose,
       fieldListTabIndex,
       setFieldListTabIndex,

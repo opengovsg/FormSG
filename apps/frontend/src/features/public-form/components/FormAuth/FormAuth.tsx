@@ -32,15 +32,13 @@ const getDispayedAuthTypeText = (
       return t(
         'features.publicForm.components.formAuth.authType.singpassCorporate',
       )
-    case FormAuthType.SGID:
-    case FormAuthType.SGID_MyInfo:
-      return t('features.publicForm.components.formAuth.authType.singpassApp')
   }
 }
 
 export interface FormAuthProps {
   authType: Exclude<FormAuthType, FormAuthType.NIL>
-  isSubmitterIdCollectionEnabled: boolean
+  // Step 1 only. Undefined on a later MRF step's login, which shows no notice.
+  isSubmitterIdCollectionEnabled?: boolean
   hasSingleSubmissionValidationError: boolean
   hasRespondentNotWhitelistedError: boolean
 }
@@ -52,7 +50,7 @@ export const FormAuth = ({
   hasRespondentNotWhitelistedError,
 }: FormAuthProps): JSX.Element => {
   const { t } = useTranslation()
-  const { formId, form } = usePublicFormContext()
+  const { formId, form, mrfStepAuthTarget } = usePublicFormContext()
 
   const buttonColorScheme = useMemo(() => {
     if (!form) return
@@ -60,7 +58,11 @@ export const FormAuth = ({
   }, [form])
 
   const isMobile = useIsMobile()
-  const { handleLoginMutation } = usePublicAuthMutations(formId)
+  const { handleLoginMutation } = usePublicAuthMutations({
+    formId,
+    authType,
+    mrfStep: mrfStepAuthTarget,
+  })
   const displayedAuthTypeText = getDispayedAuthTypeText(authType, t)
 
   return (

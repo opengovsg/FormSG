@@ -2,14 +2,19 @@ import { useTranslation } from 'react-i18next'
 
 import { WorkflowType } from 'formsg-shared/types/form/workflow'
 
+import { useIsWorkflowSavePermissive } from '../../../../../hooks/useIsWorkflowSavePermissive'
+
 export const useWorkflowTypeValidation = () => {
   const { t } = useTranslation()
+  const isSavePermissive = useIsWorkflowSavePermissive()
   return {
-    required: t(
-      'features.adminForm.sidebar.workflow.conditionalRouting.errors.respondentType.required',
-    ),
+    required: isSavePermissive
+      ? false
+      : t(
+          'features.adminForm.sidebar.workflow.conditionalRouting.errors.respondentType.required',
+        ),
     validate: (value: WorkflowType) => {
-      if (!Object.values(WorkflowType).includes(value)) {
+      if (value && !Object.values(WorkflowType).includes(value)) {
         return t(
           'features.adminForm.sidebar.workflow.conditionalRouting.errors.respondentType.invalid',
         )

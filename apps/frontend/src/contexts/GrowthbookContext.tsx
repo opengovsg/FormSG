@@ -2,6 +2,7 @@ import { ReactNode, useEffect, useMemo } from 'react'
 import {
   GrowthBook,
   GrowthBookProvider as BaseGrowthBookProvider,
+  useGrowthBook,
 } from '@growthbook/growthbook-react'
 
 import { UserDto } from 'formsg-shared/types/user'
@@ -36,7 +37,7 @@ const injectGrowthBookAttributes = (
 }
 
 export const GrowthBookProvider = ({ children }: { children: ReactNode }) => {
-  const { data: { growthbookClientKey } = {} } = useEnv()
+  const { data: { growthbookClientKey, growthbookApiHost } = {} } = useEnv()
   const { isAuthenticated } = useAuth()
 
   const { user } = useUser({ enabled: !!isAuthenticated })
@@ -44,9 +45,9 @@ export const GrowthBookProvider = ({ children }: { children: ReactNode }) => {
   const growthbook = useMemo(
     () =>
       growthbookClientKey
-        ? createGrowthbookInstance(growthbookClientKey)
+        ? createGrowthbookInstance(growthbookClientKey, growthbookApiHost)
         : undefined,
-    [growthbookClientKey],
+    [growthbookClientKey, growthbookApiHost],
   )
 
   useEffect(() => {
@@ -61,4 +62,22 @@ export const GrowthBookProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </BaseGrowthBookProvider>
   )
+}
+
+/**
+ * Targets flags by form while an admin form page is mounted.
+ * RATIONALE: The provider sits above the router, so it cannot read the form ID itself.
+ * The ID is removed on unmount so workspace pages carry no stale formId.
+ */
+export const useGrowthBookFormId = (formId: string) => {
+  const growthbook = useGrowthBook()
+  useEffect(() => {
+    if (!growthbook) return
+    growthbook.setAttributes({ ...growthbook.getAttributes(), formId })
+    return () => {
+      const attributes = { ...growthbook.getAttributes() }
+      delete attributes.formId
+      growthbook.setAttributes(attributes)
+    }
+  }, [formId, growthbook])
 }

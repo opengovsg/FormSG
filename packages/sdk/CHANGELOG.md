@@ -2,6 +2,151 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.4.0](https://github.com/opengovsg/formsg/compare/sdk-v8.3.0...sdk-v8.4.0) (2026-10-28)
+
+
+### Features
+
+* **mrf:** [Myinfo] prefix for all verified responses across email and V4 webhook outputs (#10388) ([#10388](https://github.com/opengovsg/formsg/commit/a9e5fe011a245a20b9abc9a4430333a8715a4472))
+
+## [8.3.0](https://github.com/opengovsg/formsg/compare/sdk-v8.2.1...sdk-v8.3.0) (2026-10-27)
+
+
+### Features
+
+* **webhooks:** include table column labels in V4 metadata (#10344) ([#10344](https://github.com/opengovsg/formsg/commit/87e6160517ce2073dbcb7ad85c9a329ef1561f8f))
+
+## [8.2.1](https://github.com/opengovsg/formsg/compare/sdk-v8.2.0...sdk-v8.2.1) (2026-10-08)
+
+
+### Documentation
+
+* **sdk:** V4 webhook guide and V1-to-V4 migration guide (#10233) ([#10233](https://github.com/opengovsg/formsg/commit/a77a1c93b973441fd61d938d4c4686c665ab8d6f))
+
+## [8.2.0](https://github.com/opengovsg/formsg/compare/sdk-v8.1.1...sdk-v8.2.0) (2026-10-06)
+
+
+### Features
+
+* **sdk:** decrypt V4 webhook attachments with submission keys (#10188) ([#10188](https://github.com/opengovsg/formsg/commit/c07b45a97bee8b1909448b2f48a58fac35b4cb01))
+* **webhooks:** include form field metadata in V4 payloads (#10207) ([#10207](https://github.com/opengovsg/formsg/commit/4841043f36e815f1543c7c08b9a2e5d2bb7a3dac))
+
+## [8.1.1](https://github.com/opengovsg/formsg/compare/sdk-v8.1.0...sdk-v8.1.1) (2026-09-30)
+
+
+### Dependencies
+
+* **deps:** bump axios to 1.20.0 for CVE-2026-101898 (#10143) ([#10143](https://github.com/opengovsg/formsg/commit/bc39acd96c9cca7e5301b586f5b188d29bd9e1c0))
+
+## [8.1.0](https://github.com/opengovsg/formsg/compare/sdk-v8.0.2...sdk-v8.1.0) (2026-09-21)
+
+
+### Features
+
+* **mrf-children:** allow Children field on MRF behind flags (2/7) (#10002) ([#10002](https://github.com/opengovsg/formsg/commit/86bab551a84e43a8f9b3122c772ebddef6052dc8))
+* **mrf-children:** include Children answers in admin responses and CSV export (6/7) (#10006) ([#10006](https://github.com/opengovsg/formsg/commit/b5c303abb1b00ffd039dc3e38f35476cb429f549))
+
+## [8.0.2](https://github.com/opengovsg/formsg/compare/sdk-v8.0.1...sdk-v8.0.2) (2026-08-06)
+
+
+### Bug Fixes
+
+* use tsconfigRootDir in SDK eslint config so pre-commit hook works (#9828) ([#9828](https://github.com/opengovsg/formsg/commit/b050e6ac899893b8d7618043e897189a9707f062))
+
+## [8.0.1](https://github.com/opengovsg/formsg/compare/sdk-v8.0.0...sdk-v8.0.1) (2026-07-31)
+
+
+### Bug Fixes
+
+* **sdk:** improve large attachment decryption and handling (#9802) ([#9802](https://github.com/opengovsg/formsg/commit/a44f1e9cd351d951de61d888d76616b073e40b35))
+
+## [8.0.0](https://github.com/opengovsg/formsg/compare/sdk-v7.7.0...sdk-v8.0.0) (2026-07-30)
+
+
+### ⚠ BREAKING CHANGE
+
+* **mrf:** MRF submissions are sent with version: 4 and
+V4-shaped responses on the wire.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+* feat(frontend): make V4 the FE working format for previous MRF responses
+
+decryptSubmission now serves previous-step responses as V4: V4 blobs
+(mrfVersion 2) pass through untouched and V3 blobs (mrfVersion 1 /
+legacy) are adapted up via the SDK's adaptV3ToV4 — the inverse of the
+old behavior, which downgraded V4 to V3 as the working format.
+
+extractMrfPreviousStepResponseValue is rewritten as the inverse of
+createResponsesV4 (V4 answer shapes → form input values); the old
+version relied on V3 shapes coinciding with input values, which does
+not hold for V4. A round-trip test pins inputs → createResponsesV4 →
+extract as the identity for every prefillable field type, since step
+N+1 re-submits non-editable values through this exact loop.
+
+Legacy pre-mrfVersion submissions embed attachment content inside the
+encrypted blob; adaptV3ToV4 drops that key, so decryptSubmission now
+harvests it pre-adaptation (legacyAttachmentContents) for the
+provider's backward-compat path.
+
+Also drops the previousResponses prop on FormFields, which was unused.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+* chore: clean up comments
+
+* feat: make joi validation for provenance default to {}
+
+* feat: Update apps/frontend/src/features/public-form/utils/decryptSubmission.ts
+
+Co-authored-by: Eliot Lim <eliotlim@users.noreply.github.com>
+
+### Features
+
+* **mrf:** V4 response migration — PR 3/5 FE sends and works in V4 (#9782) ([#9782](https://github.com/opengovsg/formsg/commit/8929c1dce7379d2ab0e847719bb383ec13c41f32))
+
+## [7.7.0](https://github.com/opengovsg/formsg/compare/sdk-v7.6.0...sdk-v7.7.0) (2026-07-29)
+
+
+### Features
+
+* **mrf:** step-token write-guard for MRF next-step submissions (S3) (#9758) ([#9758](https://github.com/opengovsg/formsg/commit/9b124b4018b7eac81de53448d327c185b3839702))
+
+## [7.6.0](https://github.com/opengovsg/formsg/compare/sdk-v7.5.0...sdk-v7.6.0) (2026-07-23)
+
+
+### Features
+
+* reland v4 BE handling (reverts #9775) (#9785) ([#9775](https://github.com/opengovsg/formsg/commit/ed6bbd3fa548ce2d3d2d877bc04b398e9a3765ea))
+
+## [7.5.0](https://github.com/opengovsg/formsg/compare/sdk-v7.4.1...sdk-v7.5.0) (2026-07-22)
+
+
+### Features
+
+* v4 be cherry pick commits (#9776) ([#9776](https://github.com/opengovsg/formsg/commit/fa29b661a6735ec36335b8873bba3865e549f320))
+
+## [7.4.1](https://github.com/opengovsg/formsg/compare/sdk-v7.4.0...sdk-v7.4.1) (2026-07-22)
+
+
+### Chores
+
+* revert v4 be (#9775) ([#9775](https://github.com/opengovsg/formsg/commit/cdc25de38ec1ac6ed708ecbe612aff30cf5c28ba))
+
+## [7.4.0](https://github.com/opengovsg/formsg/compare/sdk-v7.3.2...sdk-v7.4.0) (2026-07-20)
+
+
+### Features
+
+* **mrf:** V4 response migration — PR 2/5 BE V4-native + V3 wire shim (#9637) ([#9637](https://github.com/opengovsg/formsg/commit/2a47c47e707d5c429257092c9b9ce78f3ff8e118))
+
+## [7.3.2](https://github.com/opengovsg/formsg/compare/sdk-v7.3.1...sdk-v7.3.2) (2026-07-16)
+
+
+### Chores
+
+* speed up jest runs by removing default local code coverage collection (#9757) ([#9757](https://github.com/opengovsg/formsg/commit/ab6c7015033aa970d633e642d6343c296ec375b2))
+
 ## [7.3.1](https://github.com/opengovsg/formsg/compare/sdk-v7.3.0...sdk-v7.3.1) (2026-06-10)
 
 

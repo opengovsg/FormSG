@@ -4,7 +4,7 @@ import {
   MyInfoDataClassification,
   MyInfoSource,
   MyInfoVehicle,
-} from '@opengovsg/myinfo-gov-client'
+} from '../myinfo.person.types'
 
 export const MYINFO_MOBILENO_AVAILABLE: IPerson = {
   mobileno: {

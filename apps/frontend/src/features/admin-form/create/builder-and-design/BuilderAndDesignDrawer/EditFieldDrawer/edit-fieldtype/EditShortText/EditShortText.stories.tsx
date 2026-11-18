@@ -1,10 +1,12 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
   BasicField,
   ShortTextFieldBase,
   TextSelectedValidation,
 } from 'formsg-shared/types'
+
+import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 
 import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 
@@ -34,8 +36,7 @@ export default {
     EditFieldDrawerDecorator,
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
+    msw: { handlers: { default: createFormBuilderMocks({}, 0) } },
   },
   args: {
     field: DEFAULT_SHORTTEXT_FIELD,

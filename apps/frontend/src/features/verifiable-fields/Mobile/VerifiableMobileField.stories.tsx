@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Decorator, Meta, StoryFn } from '@storybook/react'
+import { Decorator, Meta, StoryFn } from '@storybook/react-vite'
 
 import { BasicField } from 'formsg-shared/types/field'
 
@@ -11,7 +11,7 @@ import {
   postVfnTransactionResponse,
 } from '~/mocks/msw/handlers/public-form'
 
-import { getMobileViewParameters } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 import Button from '~components/Button'
 import {
   VerifiableFieldInput,
@@ -64,11 +64,15 @@ export default {
   component: VerifiableMobileFieldComponent,
   decorators: [MockProviders],
   parameters: {
-    msw: [
-      postVfnTransactionResponse(),
-      postGenerateVfnOtpResponse(),
-      postVerifyVfnOtpResponse(),
-    ],
+    msw: {
+      handlers: {
+        default: [
+          postVfnTransactionResponse(),
+          postGenerateVfnOtpResponse(),
+          postVerifyVfnOtpResponse(),
+        ],
+      },
+    },
     docs: {
       // Required in this story due to react-hook-form conflicting with
       // Storybook somehow.
@@ -131,15 +135,12 @@ const Template: StoryFn<StoryMobileFieldProps> = ({
 export const VerifiableMobileField = Template.bind({})
 
 export const PendingVerification = Template.bind({})
+PendingVerification.parameters = { argos: { modes: viewportModes('mobile') } }
 PendingVerification.args = {
   defaultValue: {
     value: '+6598888888',
   },
 }
-
-export const PendingVerificationMobile = Template.bind({})
-PendingVerificationMobile.args = PendingVerification.args
-PendingVerificationMobile.parameters = getMobileViewParameters()
 
 export const Verified = Template.bind({})
 Verified.args = {

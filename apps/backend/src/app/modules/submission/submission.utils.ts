@@ -1,10 +1,10 @@
 import { GrowthBook } from '@growthbook/growthbook'
 import { encode as encodeBase64 } from '@stablelib/base64'
 import crypto from 'crypto'
+import type { Response } from 'express'
 import {
   AdminEmailPdfFeatureValue,
   featureFlags,
-  MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
 } from 'formsg-shared/constants'
 import { FIELDS_TO_REJECT } from 'formsg-shared/constants/field/basic'
 import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
@@ -50,10 +50,10 @@ import {
   MapRouteErrors,
 } from '../../../types'
 import {
+  ParsedClearAttachmentFieldResponseV4,
   ParsedClearAttachmentResponse,
-  ParsedClearAttachmentResponseV3,
   ParsedClearFormFieldResponse,
-  ParsedClearFormFieldResponseV3,
+  ParsedClearFormFieldResponseV4,
 } from '../../../types/api'
 import { MapRouteError } from '../../../types/routing'
 import formsgSdk from '../../config/formsg-sdk'
@@ -84,6 +84,7 @@ import {
   EmptyErrorFieldError,
   MalformedParametersError,
 } from '../core/core.errors'
+import { ErrorResponseData } from '../core/core.types'
 import {
   ForbiddenFormError,
   FormDeletedError,
@@ -96,7 +97,6 @@ import {
 import { isFormEncryptModeOrMultirespondent } from '../form/form.utils'
 import { MYINFO_LOGIN_COOKIE_NAME } from '../myinfo/myinfo.constants'
 import {
-  MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
   MyInfoInvalidLoginCookieError,
@@ -108,15 +108,6 @@ import {
   InvalidPaymentProductsError,
   PaymentNotFoundError,
 } from '../payments/payments.errors'
-import {
-  SGID_COOKIE_NAME,
-  SGID_MYINFO_LOGIN_COOKIE_NAME,
-} from '../sgid/sgid.constants'
-import {
-  SgidInvalidJwtError,
-  SgidMissingJwtError,
-  SgidVerifyJwtError,
-} from '../sgid/sgid.errors'
 import {
   CreateRedirectUrlError,
   InvalidJwtError,
@@ -130,6 +121,10 @@ import { MalformedVerifiedContentError } from '../verified-content/verified-cont
 import { MYINFO_PREFIX } from './email-submission/email-submission.constants'
 import { ResponseFormattedForEmail } from './email-submission/email-submission.types'
 import {
+  SnapshotWriteError,
+  V1ContentMappingError,
+} from './multirespondent-submission/webhook/submission-snapshot.errors'
+import {
   AttachmentSizeLimitExceededError,
   AttachmentTooLargeError,
   AttachmentUploadError,
@@ -137,6 +132,8 @@ import {
   DownloadCleanFileFailedError,
   ExpectedResponseNotFoundError,
   FeatureDisabledError,
+  GuardDutyDownloadCleanFileFailedError,
+  GuardDutyFileAlreadyScannedError,
   GuardDutyInvalidFileKeyError,
   GuardDutyMaliciousFileDetectedError,
   GuardDutyParseVirusScannerLambdaPayloadError,
@@ -145,19 +142,30 @@ import {
   InvalidFieldIdError,
   InvalidFileExtensionError,
   InvalidFileKeyError,
+  InvalidWorkflowTypeError,
   MissingSubmitterIdError,
+  MrfAssigneeAlreadyAssignedError,
   MrfReminderInvalidWorkflowStepError,
+  MrfReminderLimitReachedError,
   MrfReminderRecipientEmailsEmptyError,
+  MrfSendBackInvalidStepError,
+  MrfStepLinkSupersededError,
+  MrfStepLoginSuspendedError,
+  MrfSubmissionStaleError,
+  MrfWorkflowActionsUnavailableError,
+  MrfWorkflowNotPendingError,
   MrfWorkflowOverflowError,
+  MrfWorkflowStoppedError,
   ParseVirusScannerLambdaPayloadError,
   ProcessingError,
   ResponseModeError,
+  StepTokenVerificationError,
   SubmissionFailedError,
   SubmissionNotFoundError,
   SubmissionSaveError,
   UnsupportedSettingsError,
   ValidateFieldError,
-  ValidateFieldErrorV3,
+  ValidateFieldErrorV4,
   VirusScanFailedError,
 } from './submission.errors'
 import {
@@ -174,6 +182,32 @@ type ResponseModeFilterParam = {
 }
 
 const MB_MULTIPLIER = 1000000
+const PUBLIC_FORM_BACKEND_ERROR_KEY_PREFIX =
+  'features.publicForm.backendErrors.submission'
+
+const submissionErrorKey = (suffix: string) =>
+  `${PUBLIC_FORM_BACKEND_ERROR_KEY_PREFIX}.${suffix}`
+
+const buildErrorDto = ({
+  errorMessage,
+  errorMessageKey,
+  errorMessageParams,
+}: ErrorResponseData) => ({
+  message: errorMessage,
+  ...(errorMessageKey ? { messageKey: errorMessageKey } : {}),
+  ...(errorMessageParams ? { messageParams: errorMessageParams } : {}),
+})
+
+export const sendRouteError = (
+  res: Response,
+  routeError: ErrorResponseData,
+  extraBody: Record<string, unknown> = {},
+) => {
+  return res.status(routeError.statusCode).json({
+    ...buildErrorDto(routeError),
+    ...extraBody,
+  })
+}
 
 /**
  * Handler to map ApplicationErrors to their correct status code and error
@@ -190,20 +224,41 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
+        errorMessageKey: submissionErrorKey('files.uploadFailed'),
       }
+    case SnapshotWriteError:
+    case V1ContentMappingError:
     case SubmissionSaveError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: error.message,
+        errorMessageKey: submissionErrorKey('saveFailed'),
       }
     case CreateRedirectUrlError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage,
+        errorMessageKey: submissionErrorKey('loginFailed'),
       }
     case FormRespondentNotWhitelistedError:
       return {
         statusCode: StatusCodes.FORBIDDEN,
+        errorMessage: error.message,
+      }
+    case MrfStepLinkSupersededError:
+    case StepTokenVerificationError:
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
+        errorMessage: error.message,
+      }
+    case MrfSubmissionStaleError:
+      return {
+        statusCode: StatusCodes.CONFLICT,
+        errorMessage: error.message,
+      }
+    case MrfStepLoginSuspendedError:
+      return {
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
         errorMessage: error.message,
       }
     case FormRespondentSingleSubmissionValidationError:
@@ -211,37 +266,37 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
       }
-    case SgidMissingJwtError:
-    case SgidVerifyJwtError:
-    case SgidInvalidJwtError:
     case MissingJwtError:
     case VerifyJwtError:
     case InvalidJwtError:
     case MyInfoMissingLoginCookieError:
-    case MyInfoCookieStateError:
     case MyInfoInvalidLoginCookieError:
     case MalformedVerifiedContentError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage:
           'Something went wrong with your login. Please try logging in and submitting again.',
+        errorMessageKey: submissionErrorKey('loginFailed'),
       }
     case MyInfoMissingHashError:
       return {
         statusCode: StatusCodes.GONE,
         errorMessage:
           'MyInfo verification expired, please refresh and try again.',
+        errorMessageKey: submissionErrorKey('myInfo.expired'),
       }
     case MyInfoHashDidNotMatchError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage: 'MyInfo verification failed.',
+        errorMessageKey: submissionErrorKey('myInfo.failed'),
       }
     case MyInfoHashingError:
       return {
         statusCode: StatusCodes.SERVICE_UNAVAILABLE,
         errorMessage:
           'MyInfo verification unavailable, please try again later.',
+        errorMessageKey: submissionErrorKey('myInfo.unavailable'),
       }
     case MissingUserError:
       return {
@@ -252,6 +307,7 @@ const errorMapper: MapRouteError = (
       return {
         statusCode: StatusCodes.NOT_FOUND,
         errorMessage: error.message,
+        errorMessageKey: 'features.publicForm.errors.notFound',
       }
     case ResponseModeError:
     case InvalidPaymentProductsError:
@@ -269,46 +325,54 @@ const errorMapper: MapRouteError = (
       return {
         statusCode: StatusCodes.GONE,
         errorMessage: error.message,
+        errorMessageKey: 'features.publicForm.errors.deleted',
       }
     case PrivateFormError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
         errorMessage:
           'This form has been taken down. For assistance, please contact the person who asked you to fill in this form.',
+        errorMessageKey: 'features.publicForm.errors.takenDown',
       }
     case CaptchaConnectionError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'Could not verify captcha. Please submit again in a few minutes.',
+        errorMessageKey: submissionErrorKey('captcha.connection'),
       }
     case VerifyCaptchaError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: 'Captcha was incorrect. Please submit again.',
+        errorMessageKey: submissionErrorKey('captcha.incorrect'),
       }
     case MissingCaptchaError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: 'Captcha was missing. Please refresh and submit again.',
+        errorMessageKey: submissionErrorKey('captcha.missing'),
       }
     case TurnstileConnectionError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage:
-          'Error connecting to Turnstile server . Please submit again in a few minutes.',
+          'Error connecting to Turnstile server. Please submit again in a few minutes.',
+        errorMessageKey: submissionErrorKey('turnstile.connection'),
       }
     case VerifyTurnstileError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'Incorrect Turnstile parameters. Please refresh and submit again.',
+        errorMessageKey: submissionErrorKey('turnstile.incorrectParameters'),
       }
     case MissingTurnstileError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'Missing Turnstile challenge. Please refresh and submit again.',
+        errorMessageKey: submissionErrorKey('turnstile.missingChallenge'),
       }
     case MalformedParametersError:
       return {
@@ -330,15 +394,17 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'Invalid data was found. Please check your responses and submit again.',
+        errorMessageKey: submissionErrorKey('validation.invalidData'),
       }
     case DatabasePayloadSizeError:
       return {
         statusCode: StatusCodes.REQUEST_TOO_LONG,
         errorMessage:
           'Submission too large to be saved. Please reduce the size of your submission and try again.',
+        errorMessageKey: submissionErrorKey('validation.submissionTooLarge'),
       }
     case ValidateFieldError:
-    case ValidateFieldErrorV3:
+    case ValidateFieldErrorV4:
     case DatabaseValidationError:
     case InvalidFileExtensionError:
     case AttachmentTooLargeError:
@@ -347,6 +413,7 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
+        errorMessageKey: submissionErrorKey('validation.invalidSubmission'),
       }
     case DatabaseConflictError:
     case ConflictError:
@@ -354,16 +421,33 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.CONFLICT,
         errorMessage:
           'The form has been updated. Please refresh and submit again.',
+        errorMessageKey: submissionErrorKey('validation.formUpdated'),
+      }
+    case MissingSubmitterIdError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+        errorMessageKey: submissionErrorKey('mrf.missingSubmitterId'),
+      }
+    case VirusScanFailedError:
+    case GuardDutyVirusScanFailedError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+        errorMessageKey: submissionErrorKey('files.virusScanFailed'),
+      }
+    case DownloadCleanFileFailedError:
+    case GuardDutyDownloadCleanFileFailedError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+        errorMessageKey: submissionErrorKey('files.cleanFileDownloadFailed'),
       }
     case FormWhitelistSettingNotFoundError:
-    case MissingSubmitterIdError:
     case PaymentNotFoundError:
     case CreatePresignedPostError:
     case DatabaseError:
     case EmptyErrorFieldError:
-    case VirusScanFailedError:
-    case GuardDutyVirusScanFailedError:
-    case DownloadCleanFileFailedError:
     case ParseVirusScannerLambdaPayloadError:
     case GuardDutyParseVirusScannerLambdaPayloadError:
       return {
@@ -372,31 +456,75 @@ const errorMapper: MapRouteError = (
       }
     case SubmissionFailedError:
     case InvalidFieldIdError:
-    case AttachmentSizeLimitExceededError:
     case InvalidFileKeyError:
     case GuardDutyInvalidFileKeyError:
+    case GuardDutyFileAlreadyScannedError:
     case GuardDutyMaliciousFileDetectedError:
-    case ExpectedResponseNotFoundError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
       }
+    case AttachmentSizeLimitExceededError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+        errorMessageKey: submissionErrorKey('files.totalSizeExceeded'),
+      }
+    case ExpectedResponseNotFoundError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+        errorMessageKey: submissionErrorKey('mrf.expectedResponseNotFound'),
+      }
+    case InvalidWorkflowTypeError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+        errorMessageKey: submissionErrorKey('mrf.invalidWorkflowType'),
+      }
     case MrfReminderInvalidWorkflowStepError:
+    case MrfReminderLimitReachedError:
     case MrfReminderRecipientEmailsEmptyError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
+      }
+    case MrfWorkflowStoppedError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'This workflow has been stopped. Please contact the form admin that gave you this link.',
+        errorMessageKey: submissionErrorKey('mrf.workflowStopped'),
+      }
+    case MrfSendBackInvalidStepError:
+    case MrfAssigneeAlreadyAssignedError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case MrfWorkflowActionsUnavailableError:
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
+        errorMessage: error.message,
+      }
+    case MrfWorkflowNotPendingError:
+      return {
+        statusCode: StatusCodes.CONFLICT,
+        errorMessage:
+          'This workflow is no longer pending. Refresh to see its latest status.',
       }
     case MrfWorkflowOverflowError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'The link you used is no longer valid. Please contact the form admin that gave you this link.',
+        errorMessageKey: submissionErrorKey('mrf.invalidLink'),
       }
     case MailSendError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: error.message,
+        errorMessageKey: submissionErrorKey('generic'),
       }
     default:
       logger.error({
@@ -410,6 +538,7 @@ const errorMapper: MapRouteError = (
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: 'Something went wrong. Please try again.',
+        errorMessageKey: submissionErrorKey('generic'),
       }
   }
 }
@@ -618,11 +747,12 @@ export const isAttachmentResponse = (
   )
 }
 
-export const isAttachmentResponseV3 = (
-  response: ParsedClearFormFieldResponseV3,
-): response is ParsedClearAttachmentResponseV3 => {
+export const isAttachmentResponseV4 = (
+  response: ParsedClearFormFieldResponseV4,
+): response is ParsedClearAttachmentFieldResponseV4 => {
   return (
     response.fieldType === BasicField.Attachment &&
+    'content' in response.answer &&
     response.answer.content !== undefined
   )
 }
@@ -634,18 +764,6 @@ export const isQuarantinedAttachmentResponse = (
   response: ParsedClearFormFieldResponse,
 ): response is ParsedClearAttachmentResponse => {
   return response.fieldType === BasicField.Attachment && response.answer !== ''
-}
-
-/**
- * Checks if a response is a quarantined attachment response to be processed by the virus scanner.
- */
-export const isQuarantinedAttachmentResponseV3 = (
-  response: ParsedClearFormFieldResponseV3,
-): response is ParsedClearAttachmentResponseV3 => {
-  return (
-    response.fieldType === BasicField.Attachment &&
-    response.answer.answer !== ''
-  )
 }
 
 /**
@@ -738,10 +856,11 @@ const encryptAttachment = async (
     const fileContentsView = new Uint8Array(attachment)
 
     label = 'Encrypt content'
-    const formsgSdkCrypto =
-      version < MULTIRESPONDENT_FORM_SUBMISSION_VERSION
-        ? formsgSdk.crypto
-        : formsgSdk.cryptoV3
+    // Crypto floor is fixed at the V3 cutover: submissions below wire version 3
+    // predate cryptoV3. Deliberately a literal — the MRF wire version constant
+    // moves on (4+), and shim-adapted stale-FE bodies keep version 3, so tying
+    // this to the constant would flip their crypto class as the wire advances.
+    const formsgSdkCrypto = version < 3 ? formsgSdk.crypto : formsgSdk.cryptoV3
     const encryptedAttachment = await formsgSdkCrypto.encryptFile(
       fileContentsView,
       publicKey,
@@ -833,8 +952,9 @@ export const getAnswersForChild = (
         _id: `${MyInfoAttribute.ChildrenBirthRecords}.${response._id}.${subFields[idx]}.${childIdx}`,
         fieldType: response.fieldType,
         // qnChildIdx represents the index of the MyInfo field
-        // childIdx represents the index of the child in this MyInfo field
-        // as there might be >1 child for each MyInfo child field if "Add another child" is used
+        // childIdx represents the index of the child in this MyInfo field.
+        // New submissions have one child; responses stored before v2.0 can have
+        // more and must keep exploding the same way.
         question: `Child ${qnChildIdx + childIdx + 1} ${
           MYINFO_ATTRIBUTE_MAP[subfield].description
         }`,
@@ -864,23 +984,14 @@ export const generateHashedSubmitterId = (id: string, salt: string) => {
 
 /**
  * Returns the cookie name based on auth type
- * Valid AuthTypes are SP / CP / MyInfo / SGID
+ * Valid AuthTypes are SP / CP / MyInfo
  */
 export const getCookieNameByAuthType = (
-  authType:
-    | FormAuthType.SP
-    | FormAuthType.CP
-    | FormAuthType.MyInfo
-    | FormAuthType.SGID
-    | FormAuthType.SGID_MyInfo,
+  authType: FormAuthType.SP | FormAuthType.CP | FormAuthType.MyInfo,
 ): string => {
   switch (authType) {
-    case FormAuthType.SGID_MyInfo:
-      return SGID_MYINFO_LOGIN_COOKIE_NAME
     case FormAuthType.MyInfo:
       return MYINFO_LOGIN_COOKIE_NAME
-    case FormAuthType.SGID:
-      return SGID_COOKIE_NAME
     default:
       return JwtName[authType]
   }
@@ -896,7 +1007,11 @@ export const getCookieNameByAuthType = (
 export const getMrfSubmissionWorkflowStatus = (
   submittedSteps: SubmittedStep[],
   numTotalSteps: number,
+  workflowStep?: number,
 ): WorkflowStatus | undefined => {
+  if (submittedSteps.length <= 0 && numTotalSteps > 0 && workflowStep === -1) {
+    return WorkflowStatus.PENDING
+  }
   if (submittedSteps.length <= 0 || numTotalSteps <= 0) {
     // NOTE: this occurs when no steps are recorded for submissions prior to this change or when no workflow is defined.
     return undefined
@@ -931,15 +1046,17 @@ export const buildMrfMetadata = ({
   workflow,
   workflowStep,
   submittedSteps,
+  stoppedAt,
 }: Pick<
   IMultirespondentSubmissionSchema,
-  'workflow' | 'workflowStep' | 'submittedSteps'
+  'workflow' | 'workflowStep' | 'submittedSteps' | 'stoppedAt'
 >): SubmissionMrfMetadata => {
   const workflowCurrentStepNumber = workflowStep + 1 // since workflowStep is zero indexed.
   const workflowNumTotalSteps = workflow.length
   const workflowStatus = getMrfSubmissionWorkflowStatus(
     submittedSteps ?? [],
     workflow.length,
+    workflowStep,
   )
 
   const lastSubmittedAt =
@@ -960,8 +1077,17 @@ export const buildMrfMetadata = ({
     workflowStatus,
     lastSubmittedAt,
     hasNextStepRecipientEmails,
+    ...(stoppedAt ? { stoppedAt: new Date(stoppedAt).toISOString() } : {}),
   }
 }
+
+/**
+ * Ops fallback: when on, MRF outputs keep the old `[Attachment] ` label and
+ * admin views drop the `[attachment] ` label. Off by default.
+ */
+// TODO (keep-v4-attachment-prefix): remove once no admin relies on the old label
+export const isKeepV4AttachmentPrefixOn = (growthbook?: GrowthBook): boolean =>
+  growthbook?.isOn(featureFlags.keepV4AttachmentPrefix) ?? false
 
 export const isAdminEmailPdfEnabled = ({
   growthbook,

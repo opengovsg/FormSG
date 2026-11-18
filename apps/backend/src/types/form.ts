@@ -69,6 +69,7 @@ type FormDefaultableKey =
   | 'status'
   | 'inactiveMessage'
   | 'submissionLimit'
+  | 'closeAt'
   | 'isListed'
   | 'webhook'
 
@@ -379,7 +380,13 @@ export interface IMultirespondentForm extends IForm {
   stepsToNotify: string[]
   stepOneEmailNotificationFieldId: string
   hasStatusTracker: boolean
+  hasUsedGuidedMode?: boolean
   whitelistedSubmitterIds?: WhitelistedSubmitterIds
+  // Nested objects will always be returned from mongoose finds, even if they
+  // are not defined in DB. See https://github.com/Automattic/mongoose/issues/5310
+  payments_channel: FormPaymentsChannel
+  payments_field: FormPaymentsField
+  business?: FormBusinessField
 }
 
 export type IMultirespondentFormSchema = IMultirespondentForm & IFormSchema
@@ -513,7 +520,7 @@ export type IEncryptedFormModel = Model<IEncryptedFormSchema> & IFormModel
 
 export type IEmailFormModel = IFormModel & Model<IEmailFormSchema>
 
-export type IMultirespondentFormModel = IFormModel &
-  Model<IMultirespondentFormSchema>
+export type IMultirespondentFormModel = Model<IMultirespondentFormSchema> &
+  IFormModel
 
 export type IOnboardedForm<T extends IForm> = T

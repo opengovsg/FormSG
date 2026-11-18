@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
-import { Stack } from '@chakra-ui/react'
-import { useFeatureIsOn, useFeatureValue } from '@growthbook/growthbook-react'
+import { Stack, Text } from '@chakra-ui/react'
+import { useFeatureValue } from '@growthbook/growthbook-react'
 import { StatusCodes } from 'http-status-codes'
 
 import { featureFlags, WogadLoginFeatureValue } from 'formsg-shared/constants'
@@ -13,6 +13,7 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { useToast } from '~hooks/useToast'
 import { sendLoginOtp, verifyLoginOtp } from '~services/AuthService'
+import Spinner from '~components/Spinner'
 
 import {
   trackAdminLogin,
@@ -20,10 +21,10 @@ import {
 } from '~features/analytics/AnalyticsService'
 
 import { LoginForm, LoginFormInputs } from './components/LoginForm'
+import { ONE_LOGIN_URL, OneLoginButton } from './components/OneLoginButton'
 import { OrDivider } from './components/OrDivider'
 import { OtpForm, OtpFormInputs } from './components/OtpForm'
 import { SgidLoginButton } from './components/SgidLoginButton'
-import { SsoLoginButton } from './components/SsoLoginButton'
 import { WogadLoginButton } from './components/WogadLoginButton'
 import { LoginPageTemplate } from './LoginPageTemplate'
 import { useIsIntranetCheck, useIsOgpIpCheck, useIsRbiIpCheck } from './queries'
@@ -50,22 +51,18 @@ const isWogadLoginEnabled = ({
 
 const LoginOptionButtons = ({
   shouldShowWogadLogin,
-  shouldShowSsoLogin,
-  shouldShowSgidLogin,
+  shouldShowOneLogin,
 }: {
   shouldShowWogadLogin: boolean
-  shouldShowSsoLogin: boolean
-  shouldShowSgidLogin: boolean
+  shouldShowOneLogin: boolean
 }) => {
-  const isLoginOptionButtonsPresent =
-    shouldShowWogadLogin || shouldShowSsoLogin || shouldShowSgidLogin
-  return isLoginOptionButtonsPresent ? (
+  return (
     <Stack spacing="1rem">
       {shouldShowWogadLogin && <WogadLoginButton />}
-      {shouldShowSsoLogin && <SsoLoginButton />}
-      {shouldShowSgidLogin && <SgidLoginButton />}
+      {shouldShowOneLogin && <OneLoginButton />}
+      <SgidLoginButton />
     </Stack>
-  ) : undefined
+  )
 }
 
 const isDev = import.meta.env.MODE === 'development'
@@ -74,8 +71,10 @@ export const LoginPage = (): JSX.Element => {
   const { data: isIntranetIp = false } = useIsIntranetCheck()
   const { data: isRbiIp = false } = useIsRbiIpCheck()
   const { data: isOgpIp = false } = useIsOgpIpCheck()
-  const showOgpSuiteSso = useFeatureIsOn(featureFlags.ogpSuiteSso)
-  const shouldShowSsoLogin = (isOgpIp && showOgpSuiteSso) || isDev
+  // RATIONALE: one.gov.sg is the suite rebuild of sso.gov.sg, so it inherits
+  // sso's gate as-is. The IP check is a rollout knob, not a security control —
+  // the backend already whitelists domains and one.gov.sg verifies officers.
+  const shouldShowOneLogin = isOgpIp || isDev
   const wogadLoginFeatureValue = useFeatureValue(
     featureFlags.wogadLogin,
     WogadLoginFeatureValue.OFF,
@@ -85,10 +84,6 @@ export const LoginPage = (): JSX.Element => {
     isIntranetIp,
     isRbiIp,
   })
-  const enableIntranetSgidLogin = useFeatureIsOn(
-    featureFlags.enableIntranetSgidLogin,
-  )
-  const shouldShowSgidLogin = !isIntranetIp || enableIntranetSgidLogin
 
   const isMobile = useIsMobile()
 
@@ -114,10 +109,29 @@ export const LoginPage = (): JSX.Element => {
         return t('features.login.LoginPage.forbidden')
       case StatusCodes.UNAUTHORIZED.toString():
         return t('features.login.LoginPage.expiredSession')
-      default:
+      default: {
+        const code = parseInt(statusCode ?? '')
+        if (code >= 500 && code < 600) {
+          return t('features.common.errors.serverError')
+        }
         return t('features.common.errors.generic')
+      }
     }
   }, [statusCode])
+
+  // RATIONALE: this page is the RP's initiate_login_uri, not the API endpoint,
+  // so the launcher hop lands in the officer's own browser before /authorize.
+  // On GSIB, Menlo keeps its remote-tab pairing in window.name; left in place,
+  // the next one.gov.sg navigation re-attaches to the stale remote tab (parked
+  // on this page) and bounces back here forever. The backend validates iss.
+  const iss = params.get('iss')
+  useEffect(() => {
+    if (!iss) return
+    window.name = ''
+    window.location.assign(
+      `${ONE_LOGIN_URL}?${new URLSearchParams({ iss }).toString()}`,
+    )
+  }, [iss])
 
   useEffect(() => {
     if (!toastMessage) return
@@ -159,6 +173,16 @@ export const LoginPage = (): JSX.Element => {
     await sendLoginOtp(email).then(({ otpPrefix }) => setOtpPrefix(otpPrefix))
   }
 
+  // Same layout as OneHoldingPage, so the launcher hop doesn't flash the form.
+  if (iss) {
+    return (
+      <Stack spacing={4} align="center" justify="center" height="100%">
+        <Spinner />
+        <Text>{t('features.login.LoginPage.signingInWithOne')}</Text>
+      </Stack>
+    )
+  }
+
   return (
     <LoginPageTemplate>
       {!email ? (
@@ -168,8 +192,7 @@ export const LoginPage = (): JSX.Element => {
                 <LoginOptionButtons
                   key="buttons"
                   shouldShowWogadLogin={shouldShowWogadLogin}
-                  shouldShowSsoLogin={shouldShowSsoLogin}
-                  shouldShowSgidLogin={shouldShowSgidLogin}
+                  shouldShowOneLogin={shouldShowOneLogin}
                 />,
                 <LoginForm key="form" onSubmit={handleSendOtp} />,
               ]
@@ -178,8 +201,7 @@ export const LoginPage = (): JSX.Element => {
                 <LoginOptionButtons
                   key="buttons"
                   shouldShowWogadLogin={shouldShowWogadLogin}
-                  shouldShowSsoLogin={shouldShowSsoLogin}
-                  shouldShowSgidLogin={shouldShowSgidLogin}
+                  shouldShowOneLogin={shouldShowOneLogin}
                 />,
               ]}
         </Stack>

@@ -1,15 +1,26 @@
-import { expect, userEvent, waitFor, within } from '@storybook/test'
+import { ReactNode, useLayoutEffect, useState } from 'react'
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
+import { StoryFn } from '@storybook/react-vite'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 
+import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
+  FormAuthType,
   FormFieldDto,
   FormResponseMode,
+  FormStatus,
+  MyInfoAttribute,
   WorkflowType,
 } from 'formsg-shared/types'
 
 import { getAdminFormView } from '~/mocks/msw/handlers/admin-form'
 
 import { StoryRouter } from '~utils/storybook'
+
+import { CreatePageSidebarProvider } from '~features/admin-form/create/common'
+
+import { useAdminWorkflowStore } from '../../../adminWorkflowStore'
 
 import { EditStepBlock } from './EditStepBlock'
 
@@ -128,6 +139,7 @@ const mrfFormViewWithFields = [
   getAdminFormView({
     mode: FormResponseMode.Multirespondent,
     overrides: {
+      workflow: [],
       form_fields: [
         form_field_1,
         form_field_2,
@@ -142,6 +154,34 @@ const mrfFormViewWithFields = [
   }),
 ]
 
+const myinfo_field: FormFieldDto = {
+  title: 'Name',
+  description: '',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.ShortText,
+  _id: '6200e1534ad4f00012848d93',
+  ValidationOptions: {
+    customVal: null,
+    selectedValidation: null,
+  },
+  allowPrefill: false,
+  myInfo: { attr: MyInfoAttribute.Name },
+}
+
+const mrfFormViewWith = (form_fields: FormFieldDto[]) => [
+  getAdminFormView({
+    mode: FormResponseMode.Multirespondent,
+    overrides: { workflow: [], form_fields },
+  }),
+]
+
+const withCreatePageSidebar = (Story: StoryFn) => (
+  <CreatePageSidebarProvider>
+    <Story />
+  </CreatePageSidebarProvider>
+)
+
 export default {
   component: EditStepBlock,
   title:
@@ -153,12 +193,71 @@ export default {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     onSubmit: () => {},
   },
-  decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
+  decorators: [
+    withCreatePageSidebar,
+    StoryRouter({ initialEntries: ['/12345'], path: '/:formId' }),
+  ],
   parameters: {
     msw: {
-      handlers: mrfFormViewWithFields,
+      handlers: { default: mrfFormViewWithFields },
     },
   },
+}
+
+const GuidedCreation = ({ children }: { children: ReactNode }): JSX.Element => {
+  const [isCreating, setIsCreating] = useState(false)
+
+  useLayoutEffect(() => {
+    useAdminWorkflowStore.getState().setToCreating()
+    setIsCreating(true)
+    return () => useAdminWorkflowStore.getState().reset()
+  }, [])
+
+  return <>{isCreating ? children : null}</>
+}
+
+const withGuidedCreation = (Story: StoryFn) => (
+  <GuidedCreation>
+    <Story />
+  </GuidedCreation>
+)
+
+const revealSections =
+  (count: number) =>
+  async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement)
+    for (let i = 0; i < count; i++) {
+      await userEvent.click(
+        await canvas.findByRole('button', { name: 'Continue' }),
+      )
+    }
+  }
+
+export const GuidedStep1Name = {
+  args: { stepNumber: 0, submitButtonLabel: 'Add step' },
+  decorators: [withGuidedCreation],
+}
+
+export const GuidedStep1People = {
+  ...GuidedStep1Name,
+  play: revealSections(1),
+}
+
+export const GuidedStep1Fields = {
+  ...GuidedStep1Name,
+  play: revealSections(2),
+}
+
+export const GuidedStep2WhatTheyDo = {
+  args: { stepNumber: 1, submitButtonLabel: 'Add step' },
+  decorators: [withGuidedCreation],
+  play: revealSections(2),
+}
+
+export const GuidedStep2Fields = {
+  args: { stepNumber: 1, submitButtonLabel: 'Add step' },
+  decorators: [withGuidedCreation],
+  play: revealSections(3),
 }
 
 export const Step1Empty = {
@@ -188,7 +287,7 @@ export const Step2FixedEmailDefault = {
     )
     await waitFor(
       async () => {
-        await userEvent.click(await canvas.getByText('Specific email(s)'))
+        await userEvent.click(await canvas.getByText('Specific emails'))
       },
       {
         timeout: 5000,
@@ -215,7 +314,7 @@ export const Step2FixedEmailEmpty = {
     )
     await waitFor(
       async () => {
-        await userEvent.click(await canvas.getByText('Specific email(s)'))
+        await userEvent.click(await canvas.getByText('Specific emails'))
       },
       {
         timeout: 5000,
@@ -230,25 +329,19 @@ export const Step2FixedEmailEmpty = {
 export const Step2ConditionalRoutingEmpty = {
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const canvas = within(canvasElement)
-    await waitFor(
-      async () =>
-        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
-      {
-        timeout: 5000,
-      },
-    )
-    await waitFor(
-      async () => {
-        await userEvent.click(
-          await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
-          ),
-        )
-      },
-      {
-        timeout: 5000,
-      },
-    )
+    const conditionalRouting = canvas.getByRole('radio', {
+      name: /Emails assigned to options in a Dropdown field/,
+    })
+    // The radio is disabled while the form loads, and clicking a disabled
+    // radio is a silent no-op, so wait for it before clicking.
+    await waitFor(() => expect(conditionalRouting).toBeEnabled(), {
+      timeout: 5000,
+    })
+    await userEvent.click(conditionalRouting)
+    await expect(conditionalRouting).toBeChecked()
+    await expect(
+      await canvas.findByPlaceholderText('Select a field'),
+    ).toBeVisible()
   },
   args: {
     stepNumber: 1,
@@ -272,7 +365,7 @@ export const Step2ConditionalRouting = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
+            'Emails assigned to options in a Dropdown field',
           ),
         )
       },
@@ -307,7 +400,7 @@ export const Step2ConditionalRoutingValidOptionsUploaded = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
+            'Emails assigned to options in a Dropdown field',
           ),
         )
       },
@@ -342,7 +435,7 @@ export const Step2ConditionalRoutingInvalidOptionsUploadedErrorMessage = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
+            'Emails assigned to options in a Dropdown field',
           ),
         )
       },
@@ -377,7 +470,7 @@ export const Step2ConditionalRoutingNoFieldSelectedErrorMessage = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
+            'Emails assigned to options in a Dropdown field',
           ),
         )
       },
@@ -420,7 +513,7 @@ export const Step2ConditionalRoutingNoOptionsToReicipientsMapErrorMessage = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
+            'Emails assigned to options in a Dropdown field',
           ),
         )
       },
@@ -451,34 +544,37 @@ export const Step2ConditionalRoutingNoOptionsToReicipientsMapErrorMessage = {
 export const Step2ConditionalRoutingReplace = {
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const canvas = within(canvasElement)
-    await waitFor(
-      async () =>
-        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
-      {
-        timeout: 5000,
-      },
-    )
-    await waitFor(
-      async () => {
-        await userEvent.click(
-          await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
-          ),
-        )
-      },
-      {
-        timeout: 5000,
-      },
-    )
-    await waitFor(
-      async () => {
-        const replaceButton = await canvas.getByLabelText(
-          'Click to replace file',
-        )
-        await userEvent.click(replaceButton)
-      },
+
+    const conditionalOption = await canvas.findByRole(
+      'radio',
+      { name: /Emails assigned to options in a Dropdown field/i },
       { timeout: 5000 },
     )
+    await waitFor(() => expect(conditionalOption).toBeEnabled(), {
+      timeout: 5000,
+    })
+    await userEvent.click(conditionalOption)
+    await waitFor(() => expect(conditionalOption).toBeChecked(), {
+      timeout: 5000,
+    })
+
+    const replaceButton = await canvas.findByLabelText(
+      'Click to replace file',
+      undefined,
+      { timeout: 5000 },
+    )
+    await waitFor(() => expect(replaceButton).toBeEnabled(), { timeout: 5000 })
+    await userEvent.click(replaceButton)
+
+    // Replacing opens the replace-CSV modal, which is what this story captures.
+    // The modal portals to the body, so it is outside canvasElement.
+    await expect(
+      await within(document.body).findByRole(
+        'dialog',
+        { name: /replace your csv file/i },
+        { timeout: 5000 },
+      ),
+    ).toBeInTheDocument()
   },
   args: {
     stepNumber: 3,
@@ -530,29 +626,21 @@ export const Step3AllSelectedValid = {
 export const Step4ApprovalFieldNotInEditErrorMessage = {
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const canvas = within(canvasElement)
-    await waitFor(
-      async () =>
-        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
-      {
-        timeout: 5000,
-      },
+
+    const saveButton = await canvas.findByRole(
+      'button',
+      { name: 'Save step' },
+      { timeout: 5000 },
     )
-    await waitFor(
-      async () => {
-        await userEvent.click(await canvas.getByText('Save step'))
-      },
-      {
-        timeout: 5000,
-      },
-    )
+    await waitFor(() => expect(saveButton).toBeEnabled(), { timeout: 5000 })
+    await userEvent.click(saveButton)
+
     await expect(
-      await canvas.findByText((content) => {
-        return content
-          .toLowerCase()
-          .includes(
-            'the selected yes/no field has not been assigned to this respondent'.toLowerCase(),
-          )
-      }),
+      await canvas.findByText(
+        /the selected yes\/no field has not been assigned to this person/i,
+        undefined,
+        { timeout: 5000 },
+      ),
     ).toBeInTheDocument()
   },
   args: {
@@ -572,4 +660,165 @@ export const Step4ApprovalFieldNotInEditErrorMessage = {
       },
     },
   },
+}
+
+const selectRespondentOption =
+  (label: string) =>
+  async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement)
+    const option = await canvas.findByRole(
+      'radio',
+      { name: new RegExp(label, 'i') },
+      { timeout: 5000 },
+    )
+    await waitFor(() => expect(option).toBeEnabled(), { timeout: 5000 })
+    await userEvent.click(option)
+    await waitFor(() => expect(option).toBeChecked(), { timeout: 5000 })
+  }
+
+export const EmptyStateFieldsPicker = {
+  args: { stepNumber: 0 },
+  parameters: { msw: { handlers: { default: mrfFormViewWith([]) } } },
+}
+
+export const EmptyStateFieldsPickerMyInfoOnly = {
+  args: { stepNumber: 1 },
+  parameters: {
+    msw: { handlers: { default: mrfFormViewWith([myinfo_field]) } },
+  },
+}
+
+export const EmptyStateEmailRouting = {
+  args: { stepNumber: 1 },
+  parameters: {
+    msw: {
+      handlers: {
+        default: mrfFormViewWith([
+          form_field_1,
+          form_field_5,
+          dropdown_field_valid_mapping,
+        ]),
+      },
+    },
+  },
+  play: selectRespondentOption('An Email field from the form'),
+}
+
+export const EmptyStateConditionalRouting = {
+  args: { stepNumber: 1 },
+  parameters: {
+    msw: {
+      handlers: {
+        default: mrfFormViewWith([form_field_1, form_field_3, form_field_5]),
+      },
+    },
+  },
+  play: selectRespondentOption(
+    'Emails assigned to options in a Dropdown field',
+  ),
+}
+
+export const EmptyStateApprovalField = {
+  args: {
+    stepNumber: 1,
+    defaultValues: { approval_field: 'deleted_objectId' },
+  },
+  parameters: {
+    msw: {
+      handlers: {
+        default: mrfFormViewWith([
+          form_field_3,
+          form_field_5,
+          dropdown_field_valid_mapping,
+        ]),
+      },
+    },
+  },
+}
+
+// Login block: Step 1 edits the form-level login, later steps their own.
+const stepLoginOn = new GrowthBook({
+  features: {
+    [featureFlags.mrfStepLogin]: { defaultValue: true },
+    [featureFlags.isNricFieldEnabled]: { defaultValue: true },
+  },
+})
+
+const withStepLoginOn = (Story: StoryFn) => (
+  <GrowthBookProvider growthbook={stepLoginOn}>
+    <Story />
+  </GrowthBookProvider>
+)
+
+const mrfSingpassFormView = [
+  getAdminFormView({
+    mode: FormResponseMode.Multirespondent,
+    overrides: {
+      status: FormStatus.Private,
+      authType: FormAuthType.MyInfo,
+      form_fields: [form_field_1, form_field_3, form_field_5, myinfo_field],
+      workflow: [
+        {
+          _id: '61e6857c9c794b0012f1c6f8',
+          workflow_type: WorkflowType.Static,
+          emails: [],
+          edit: [form_field_1._id, myinfo_field._id],
+        },
+        {
+          _id: '61e6857c9c794b0012f1c6f9',
+          workflow_type: WorkflowType.Static,
+          emails: ['test_1@tech.gov.sg'],
+          edit: [form_field_3._id],
+          auth: { auth_type: FormAuthType.MyInfo },
+        },
+        {
+          _id: '61e6857c9c794b0012f1c6fa',
+          workflow_type: WorkflowType.Static,
+          emails: ['test_2@tech.gov.sg'],
+          edit: [form_field_5._id],
+          auth: { auth_type: FormAuthType.CP, esrvc_id: 'STORYBOOK-TEST' },
+        },
+      ],
+    },
+  }),
+]
+
+export const Step1Login = {
+  args: {
+    stepNumber: 0,
+    defaultValues: {
+      workflow_type: WorkflowType.Static,
+      edit: [form_field_1._id, myinfo_field._id],
+    },
+  },
+  decorators: [withStepLoginOn],
+  parameters: { msw: { handlers: mrfSingpassFormView } },
+}
+
+export const Step2LoginSingpass = {
+  args: {
+    stepNumber: 1,
+    defaultValues: {
+      workflow_type: WorkflowType.Static,
+      emails: ['test_1@tech.gov.sg'],
+      edit: [form_field_3._id],
+      auth: { auth_type: FormAuthType.MyInfo },
+    },
+  },
+  decorators: [withStepLoginOn],
+  parameters: { msw: { handlers: mrfSingpassFormView } },
+}
+
+export const Step3LoginCorppass = {
+  args: {
+    stepNumber: 2,
+    defaultValues: {
+      workflow_type: WorkflowType.Static,
+      emails: ['test_2@tech.gov.sg'],
+      edit: [form_field_5._id],
+      auth: { auth_type: FormAuthType.CP, esrvc_id: 'STORYBOOK-TEST' },
+    },
+  },
+  decorators: [withStepLoginOn],
+  parameters: { msw: { handlers: mrfSingpassFormView } },
 }

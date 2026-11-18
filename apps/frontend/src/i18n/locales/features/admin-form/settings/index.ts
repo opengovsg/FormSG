@@ -1,5 +1,6 @@
 import { EmailNotifications } from './email-notifications'
 import { General } from './general'
+import { MultiLanguage } from './multi-language'
 import { Payments } from './payments'
 import { Webhooks } from './webhooks'
 
@@ -9,7 +10,45 @@ export type HasTitle = {
   title: string
 }
 
+type SubmitterIdCollectionLoginStrings = {
+  switchHint: string
+  stopTitle: string
+  stopDescription: string
+  collectLaterDescription: string
+  movedToFields: string
+  goToFields: string
+  modalTitle: string
+  outputTitle: string
+  collectionExplanation: string
+}
+
+export interface SingpassSettingsStrings extends HasTitle {
+  loginTitle: string
+  submitterIdCollection: {
+    toggleLabel: string
+    addNricField: string
+    convert: string
+    learnMore: string
+    stopCollecting: string
+    makeTheSwitch: string
+    closeFormToConvert: string
+    loginFieldsLockAuth: string
+    removeIdentityFieldsFirst: string
+    autoConvertNotice: string
+    otherFormsAutoConvertNotice: string
+    preview: {
+      howYouCollect: string
+      automationWarning: string
+      checkFullChanges: string
+      responsesUnchanged: string
+    }
+    singpass: SubmitterIdCollectionLoginStrings
+    corppass: SubmitterIdCollectionLoginStrings
+  }
+}
+
 export interface SettingsTabsStrings {
+  navLabels: { emails: string; multiLanguage: string }
   newBadge: string
   multiLanguage: string
 }
@@ -105,7 +144,7 @@ export interface SettingsMutationsStrings {
 
 export interface Settings {
   general: General
-  singpass: HasTitle
+  singpass: SingpassSettingsStrings
   tabs: SettingsTabsStrings
   secretKeyModal: SecretKeyModalStrings
   secretKeyVerification: SecretKeyVerificationStrings
@@ -113,4 +152,5 @@ export interface Settings {
   emailNotifications: EmailNotifications
   webhooks: Webhooks
   payments: Payments
+  multiLanguage: MultiLanguage
 }

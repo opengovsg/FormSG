@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
   FormColorTheme,
@@ -33,17 +33,17 @@ export default {
     EditFieldDrawerDecorator,
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
-    msw: [...createFormBuilderMocks({}, 0)],
+    msw: { handlers: { default: [...createFormBuilderMocks({}, 0)] } },
   },
   args: {
     startPage: DEFAULT_START_PAGE,
+    title: 'Storybook form title',
   },
 } as Meta<StoryArgs>
 
 interface StoryArgs {
   startPage: FormStartPage
+  title: string
 }
 
 const Template: StoryFn<StoryArgs> = (args) => {

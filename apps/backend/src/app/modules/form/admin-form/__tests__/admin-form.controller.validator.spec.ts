@@ -22,6 +22,10 @@ describe('clientMetadataValidator', () => {
         },
       },
       {
+        name: 'the digitalExisting answer',
+        metadata: { formOrigins: { value: ['digitalExisting'] } },
+      },
+      {
         name: 'valid selection with "Other" + non-empty text',
         metadata: {
           formOrigins: {

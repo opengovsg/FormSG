@@ -6,9 +6,9 @@ import {
   SimpleGrid,
   Text,
 } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { viewports } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 import Button from '~components/Button'
 
 import { YesNo, YesNoProps } from './YesNo'
@@ -21,6 +21,7 @@ export default {
 
 const Template: StoryFn<YesNoProps> = (args) => <YesNo {...args} />
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 Default.args = {
   name: 'testInput',
 }
@@ -88,28 +89,6 @@ DisabledHighContrast.parameters = {
   },
 }
 
-export const Mobile = Template.bind({})
-Mobile.args = {
-  name: 'testMobileInput',
-}
-Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
-}
-
-export const Tablet = Template.bind({})
-Tablet.args = {
-  name: 'testTabletInput',
-}
-Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
-  chromatic: { viewports: [viewports.md] },
-}
-
 export const Playground: StoryFn = ({
   name,
   label,
@@ -151,6 +130,7 @@ export const Playground: StoryFn = ({
     </form>
   )
 }
+Playground.tags = ['playground']
 Playground.args = {
   name: 'Test playground input',
   label: 'YesNo field label',

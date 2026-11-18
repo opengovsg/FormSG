@@ -1,0 +1,146 @@
+import { Meta, StoryFn } from '@storybook/react-vite'
+
+import {
+  FormAuthType,
+  FormResponseMode,
+  FormStatus,
+  FormWorkflowStepDto,
+  WorkflowType,
+} from 'formsg-shared/types'
+
+import {
+  createFormBuilderMocks,
+  MOCK_CORPPASS_UEN_FIELD,
+  MOCK_MYINFO_NAME_FIELD,
+} from '~/mocks/msw/handlers/admin-form'
+
+import { StoryRouter, viewportModes } from '~utils/storybook'
+
+import { useAdminForm } from '~features/admin-form/common/queries'
+
+import { DeleteWorkflowModal } from './DeleteWorkflowModal'
+
+const workflow_step_1: FormWorkflowStepDto = {
+  _id: '61e6857c9c794b0012f1c6f8',
+  workflow_type: WorkflowType.Static,
+  emails: [],
+  edit: [],
+}
+
+const buildMocks = (status: FormStatus) =>
+  createFormBuilderMocks({
+    responseMode: FormResponseMode.Multirespondent,
+    status,
+    workflow: [workflow_step_1],
+  })
+
+const AfterFormLoads = ({
+  entryPoint,
+}: {
+  entryPoint: 'workflow-card' | 'first-step'
+}) => {
+  const { isLoading } = useAdminForm()
+  if (isLoading) return null
+  return (
+    <DeleteWorkflowModal
+      isOpen
+      onClose={() => undefined}
+      entryPoint={entryPoint}
+    />
+  )
+}
+
+/**
+ * The modal has three states. Two of them are not variants of each other: one
+ * asks the admin to confirm something destructive, the other tells them they
+ * cannot do it yet and points at the fix. Which of those shows is decided by
+ * the form's status.
+ *
+ * The third is the destructive state entered from step 1, which adds a line
+ * explaining why deleting a step deleted the whole workflow. The form-open
+ * state is deliberately shared across both entry points, so there is no
+ * first-step variant of it to shoot.
+ */
+export default {
+  title: 'Features/AdminForm/Workflow/DeleteWorkflowModal',
+  component: DeleteWorkflowModal,
+  decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
+  parameters: {
+    layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
+  },
+} as Meta
+
+const Template: StoryFn = () => <AfterFormLoads entryPoint="workflow-card" />
+
+const FirstStepTemplate: StoryFn = () => (
+  <AfterFormLoads entryPoint="first-step" />
+)
+
+/** Form closed: deleting is allowed, and the confirm button is destructive. */
+export const FormClosed = Template.bind({})
+FormClosed.parameters = {
+  argos: { modes: viewportModes('mobile') },
+  msw: { handlers: { default: buildMocks(FormStatus.Private) } },
+}
+
+/**
+ * Form open: the API refuses this, so the modal does not offer it. The primary
+ * action goes to settings, which is the only place the admin can unblock
+ * themselves.
+ */
+export const FormOpen = Template.bind({})
+FormOpen.parameters = {
+  argos: { modes: viewportModes('mobile') },
+  msw: { handlers: { default: buildMocks(FormStatus.Public) } },
+}
+
+/**
+ * Entered from step 1's delete button. Same outcome and same actions as
+ * FormClosed, with a leading line explaining why a step delete removes the
+ * workflow.
+ */
+export const FirstStepFormClosed = FirstStepTemplate.bind({})
+FirstStepFormClosed.parameters = {
+  argos: { modes: viewportModes('mobile') },
+  msw: { handlers: { default: buildMocks(FormStatus.Private) } },
+}
+
+/** Choose the retained provider, then review field deletion before committing. */
+export const MixedAuthentication = Template.bind({})
+MixedAuthentication.parameters = {
+  msw: {
+    handlers: {
+      default: createFormBuilderMocks({
+        responseMode: FormResponseMode.Multirespondent,
+        status: FormStatus.Private,
+        authType: FormAuthType.MyInfo,
+        form_fields: [MOCK_MYINFO_NAME_FIELD, MOCK_CORPPASS_UEN_FIELD],
+        workflow: [
+          {
+            ...workflow_step_1,
+            edit: [MOCK_MYINFO_NAME_FIELD._id],
+            step_name: 'Requester',
+          },
+          {
+            _id: '61e6857c9c794b0012f1c6f9',
+            workflow_type: WorkflowType.Static,
+            emails: ['approver@example.gov.sg'],
+            edit: [MOCK_CORPPASS_UEN_FIELD._id],
+            step_name: 'Approver',
+            auth: { auth_type: FormAuthType.CP, esrvc_id: 'AGENCY-SERVICE-A' },
+          },
+          {
+            _id: '61e6857c9c794b0012f1c6fa',
+            workflow_type: WorkflowType.Static,
+            emails: ['processor@example.gov.sg'],
+            edit: [],
+            step_name: 'Processor',
+            auth: { auth_type: FormAuthType.CP, esrvc_id: 'AGENCY-SERVICE-B' },
+          },
+        ],
+      }),
+    },
+  },
+}

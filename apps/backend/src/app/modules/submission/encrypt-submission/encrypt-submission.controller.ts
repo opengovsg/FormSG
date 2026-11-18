@@ -41,7 +41,6 @@ import {
 import * as FormService from '../../form/form.service'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
-import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
@@ -53,6 +52,7 @@ import {
   generateHashedSubmitterId,
   getCookieNameByAuthType,
   mapRouteError,
+  sendRouteError,
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
@@ -78,6 +78,13 @@ const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)
 const Payment = getPaymentModel(mongoose)
+const paymentInvalidSettingsRouteError = {
+  statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+  errorMessage:
+    "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+  errorMessageKey:
+    'features.publicForm.backendErrors.submission.payment.invalidSettings',
+}
 
 const submitEncryptModeForm = async (
   req: SubmitEncryptModeFormHandlerRequest,
@@ -111,10 +118,7 @@ const submitEncryptModeForm = async (
 
   if (!hasEnsuredAll) {
     if (!res.headersSent) {
-      const { errorMessage, statusCode } = mapRouteError(
-        new SubmissionFailedError(),
-      )
-      return res.status(statusCode).json({ message: errorMessage })
+      return sendRouteError(res, mapRouteError(new SubmissionFailedError()))
     }
     return // required to stop submission processing
   }
@@ -140,16 +144,12 @@ const submitEncryptModeForm = async (
         .extractJwt(req.cookies)
         .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
       if (jwtPayloadResult.isErr()) {
-        const { statusCode, errorMessage } = mapRouteError(
-          jwtPayloadResult.error,
-        )
         logger.error({
           message: 'Failed to verify Singpass JWT with auth client',
           meta: logMeta,
           error: jwtPayloadResult.error,
         })
-        return res.status(statusCode).json({
-          message: errorMessage,
+        return sendRouteError(res, mapRouteError(jwtPayloadResult.error), {
           spcpSubmissionFailure: true,
         })
       }
@@ -162,16 +162,12 @@ const submitEncryptModeForm = async (
         .extractJwt(req.cookies)
         .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
       if (jwtPayloadResult.isErr()) {
-        const { statusCode, errorMessage } = mapRouteError(
-          jwtPayloadResult.error,
-        )
         logger.error({
           message: 'Failed to verify Corppass JWT with auth client',
           meta: logMeta,
           error: jwtPayloadResult.error,
         })
-        return res.status(statusCode).json({
-          message: errorMessage,
+        return sendRouteError(res, mapRouteError(jwtPayloadResult.error), {
           spcpSubmissionFailure: true,
         })
       }
@@ -179,64 +175,31 @@ const submitEncryptModeForm = async (
       userInfo = jwtPayloadResult.value.userInfo
       break
     }
-    case FormAuthType.SGID_MyInfo:
     case FormAuthType.MyInfo: {
-      const jwtPayloadResult = await extractMyInfoLoginJwt(
-        req.cookies,
-        authType,
-      )
+      const jwtPayloadResult = await extractMyInfoLoginJwt(req.cookies)
         .andThen(MyInfoService.verifyLoginJwt)
         .map(({ uinFin }) => {
           return uinFin
         })
         .mapErr((error) => {
           logger.error({
-            message: `Error verifying MyInfo${
-              authType === FormAuthType.SGID_MyInfo ? '(over SGID)' : ''
-            } hashes`,
+            message: 'Error verifying MyInfo hashes',
             meta: logMeta,
             error,
           })
           return error
         })
       if (jwtPayloadResult.isErr()) {
-        const { statusCode, errorMessage } = mapRouteError(
-          jwtPayloadResult.error,
-        )
         logger.error({
-          message: `Failed to verify ${
-            authType === FormAuthType.SGID_MyInfo ? 'SGID' : 'Singpass'
-          } JWT with auth client`,
+          message: 'Failed to verify Singpass JWT with auth client',
           meta: logMeta,
           error: jwtPayloadResult.error,
         })
-        return res.status(statusCode).json({
-          message: errorMessage,
+        return sendRouteError(res, mapRouteError(jwtPayloadResult.error), {
           spcpSubmissionFailure: true,
         })
       }
       userName = jwtPayloadResult.value
-      break
-    }
-    case FormAuthType.SGID: {
-      const jwtPayloadResult = SgidService.extractSgidSingpassJwtPayload(
-        req.cookies.jwtSgid,
-      )
-      if (jwtPayloadResult.isErr()) {
-        const { statusCode, errorMessage } = mapRouteError(
-          jwtPayloadResult.error,
-        )
-        logger.error({
-          message: 'Failed to verify sgID JWT with auth client',
-          meta: logMeta,
-          error: jwtPayloadResult.error,
-        })
-        return res.status(statusCode).json({
-          message: errorMessage,
-          spcpSubmissionFailure: true,
-        })
-      }
-      userName = jwtPayloadResult.value.userName
       break
     }
   }
@@ -248,9 +211,7 @@ const submitEncryptModeForm = async (
     form.whitelistedSubmitterIds?.isWhitelistEnabled &&
     (form.authType === FormAuthType.SP ||
       form.authType === FormAuthType.CP ||
-      form.authType === FormAuthType.SGID ||
-      form.authType === FormAuthType.MyInfo ||
-      form.authType === FormAuthType.SGID_MyInfo)
+      form.authType === FormAuthType.MyInfo)
   ) {
     const hasRespondentNotWhitelistedErrorResult =
       await FormService.checkHasRespondentNotWhitelistedFailure(
@@ -291,7 +252,7 @@ const submitEncryptModeForm = async (
   let hashedSubmitterId
   // Generate submitterId for Singpass auth modes
   if (submitterId && form.authType !== FormAuthType.NIL) {
-    hashedSubmitterId = generateHashedSubmitterId(submitterId, form.id)
+    hashedSubmitterId = generateHashedSubmitterId(submitterId, String(form._id))
   }
 
   // Encrypt Verified SPCP Fields
@@ -309,9 +270,7 @@ const submitEncryptModeForm = async (
         break
       }
       case FormAuthType.SP:
-      case FormAuthType.SGID:
-      case FormAuthType.MyInfo:
-      case FormAuthType.SGID_MyInfo: {
+      case FormAuthType.MyInfo: {
         if (!userName) break
         parsedResponses.addNdiResponses({
           authType: form.authType,
@@ -325,9 +284,7 @@ const submitEncryptModeForm = async (
     if (
       form.authType === FormAuthType.SP ||
       form.authType === FormAuthType.CP ||
-      form.authType === FormAuthType.SGID ||
-      form.authType === FormAuthType.MyInfo ||
-      form.authType === FormAuthType.SGID_MyInfo
+      form.authType === FormAuthType.MyInfo
     ) {
       const encryptVerifiedContentResult =
         VerifiedContentService.getVerifiedContent({
@@ -348,9 +305,12 @@ const submitEncryptModeForm = async (
           error,
         })
 
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .json({ message: 'Invalid data was found. Please submit again.' })
+        return sendRouteError(res, {
+          statusCode: StatusCodes.BAD_REQUEST,
+          errorMessage: 'Invalid data was found. Please submit again.',
+          errorMessageKey:
+            'features.publicForm.backendErrors.submission.validation.invalidData',
+        })
       } else {
         // No errors, set local variable to the encrypted string.
         verified = encryptVerifiedContentResult.value
@@ -368,12 +328,7 @@ const submitEncryptModeForm = async (
     )
 
     if (attachmentUploadResult.isErr()) {
-      const { statusCode, errorMessage } = mapRouteError(
-        attachmentUploadResult.error,
-      )
-      return res.status(statusCode).json({
-        message: errorMessage,
-      })
+      return sendRouteError(res, mapRouteError(attachmentUploadResult.error))
     } else {
       attachmentMetadata = attachmentUploadResult.value
     }
@@ -476,10 +431,7 @@ const _createPaymentSubmission = async ({
       message: 'Error when creating payment: amount is missing',
       meta: logMeta,
     })
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message:
-        "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
-    })
+    return sendRouteError(res, paymentInvalidSettingsRouteError)
   }
 
   const paymentMinAmount =
@@ -494,10 +446,7 @@ const _createPaymentSubmission = async ({
       message: 'Error when creating payment: amount is not within bounds',
       meta: logMeta,
     })
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message:
-        "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
-    })
+    return sendRouteError(res, paymentInvalidSettingsRouteError)
   }
   const paymentReceiptEmail =
     encryptedPayload.paymentReceiptEmail?.toLowerCase()
@@ -507,9 +456,9 @@ const _createPaymentSubmission = async ({
         'Error when creating payment: payment receipt email not provided.',
       meta: logMeta,
     })
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message:
-        "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+    return sendRouteError(res, {
+      ...paymentInvalidSettingsRouteError,
+      statusCode: StatusCodes.BAD_REQUEST,
     })
   }
 
@@ -546,9 +495,12 @@ const _createPaymentSubmission = async ({
       error: err,
     })
     // Block the submission so that user can try to resubmit
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message:
+    return sendRouteError(res, {
+      statusCode: StatusCodes.BAD_REQUEST,
+      errorMessage:
         'Could not save pending submission. For assistance, please contact the person who asked you to fill in this form.',
+      errorMessageKey:
+        'features.publicForm.backendErrors.submission.payment.pendingSubmissionSaveFailed',
     })
   }
 
@@ -599,9 +551,12 @@ const _createPaymentSubmission = async ({
       error: err,
     })
     // Return a 502 error here since the issue was with Stripe.
-    return res.status(StatusCodes.BAD_GATEWAY).json({
-      message:
+    return sendRouteError(res, {
+      statusCode: StatusCodes.BAD_GATEWAY,
+      errorMessage:
         'There was a problem creating the payment intent. Please try again.',
+      errorMessageKey:
+        'features.publicForm.backendErrors.submission.payment.intentCreateFailed',
     })
   }
 
@@ -649,9 +604,12 @@ const _createPaymentSubmission = async ({
     }
     // Regardless of whether the cancellation succeeded or failed, block the
     // submission so that user can try to resubmit
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message:
+    return sendRouteError(res, {
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      errorMessage:
         'There was a problem updating the payment document. Please try again.',
+      errorMessageKey:
+        'features.publicForm.backendErrors.submission.payment.documentUpdateFailed',
     })
   }
 

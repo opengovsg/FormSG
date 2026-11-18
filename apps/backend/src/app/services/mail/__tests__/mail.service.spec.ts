@@ -71,7 +71,7 @@ describe('mail.service', () => {
   })
 
   describe('sendVerificationOtp', () => {
-    const MOCK_OTP = '123456'
+    const MOCK_OTP = 'A1B2C3D4'
 
     const expectedArg = expect.objectContaining({
       to: MOCK_VALID_EMAIL,
@@ -201,7 +201,7 @@ describe('mail.service', () => {
   })
 
   describe('sendLoginOtp', () => {
-    const MOCK_OTP = '123456'
+    const MOCK_OTP = 'A1B2C3D4'
     const MOCK_IP = 'mock:5000'
     const MOCK_OTP_PREFIX = 'ABC'
 
@@ -388,6 +388,7 @@ describe('mail.service', () => {
         },
       ],
       formData: [],
+      includeFormIdInResponseJson: true,
     }
 
     const FORMATTED_SUBMISSION_TIME = moment(
@@ -396,8 +397,13 @@ describe('mail.service', () => {
       .tz('Asia/Singapore')
       .format('ddd, DD MMM YYYY hh:mm:ss A')
 
-    // Should include the metadata in the front.
+    // Should include the metadata in the front, with the form ID first
+    // since includeFormIdInResponseJson is enabled in the mock params.
     const EXPECTED_JSON_DATA = [
+      {
+        question: 'Form ID',
+        answer: String(MOCK_VALID_SUBMISSION_PARAMS.form._id),
+      },
       {
         question: 'Response ID',
         answer: MOCK_VALID_SUBMISSION_PARAMS.submission.id,
@@ -443,6 +449,32 @@ describe('mail.service', () => {
       expectedHtml = (
         await MailUtils.generateSubmissionToAdminHtml(htmlData)
       )._unsafeUnwrap()
+    })
+
+    it('should include "Form ID" as the first entry of the response JSON in the standardised template', async () => {
+      // Arrange
+      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+      const params = {
+        ...cloneDeep(MOCK_VALID_SUBMISSION_PARAMS),
+        useStandardisedEmailTemplate: true,
+      }
+
+      const expectedResponseJson = JSON.stringify([
+        { question: 'Form ID', answer: String(params.form._id) },
+        { question: 'Response ID', answer: params.submission.id },
+        { question: 'Timestamp', answer: FORMATTED_SUBMISSION_TIME },
+        ...params.dataCollationData,
+        // The template embeds the JSON as text, so double quotes are rendered
+        // as HTML entities.
+      ]).replace(/"/g, '&quot;')
+
+      // Act
+      await mailService.sendSubmissionToAdmin(params)
+
+      // Assert
+      expect(sendMailSpy).toHaveBeenCalledOnce()
+      const sentHtml = sendMailSpy.mock.calls[0][0].html as string
+      expect(sentHtml).toContain(expectedResponseJson)
     })
 
     it('should include submission attachments and pdf if it is provided', async () => {
@@ -1680,6 +1712,109 @@ describe('mail.service', () => {
       )
       // Verify no call send to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(0)
+    })
+  })
+
+  describe('sendMrfApprovalEmail', () => {
+    const MOCK_RESPONSE_ID = '666872d118b702c4f517ef9a'
+    it('should carry the outcome in the subject and not in a heading', async () => {
+      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+
+      const actualResult = await mailService.sendMrfApprovalEmail({
+        emails: [MOCK_VALID_EMAIL],
+        formId: 'mockFormId',
+        formTitle: 'mockFormTitle',
+        responseId: MOCK_RESPONSE_ID,
+        timestamp: 'Wed, 7 Oct 2026, 08:17:08 AM',
+        isRejected: false,
+        formQuestionAnswers: [{ question: 'Q1', answer: 'A1' }],
+        responseJson: '{"Q1":"A1"}',
+      })
+
+      expect(actualResult).toEqual(ok(true))
+      expect(sendMailSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          subject: `Approved - mockFormTitle (${MOCK_RESPONSE_ID})`,
+        }),
+      )
+      expect(sendMailSpy.mock.calls[0][0].html).not.toContain(
+        'has been approved',
+      )
+    })
+  })
+
+  describe('sendMrfWorkflowStoppedEmail', () => {
+    const MOCK_RESPONSE_ID = '666872d118b702c4f517ef9a'
+    it('should send the stopped outcome email without answers', async () => {
+      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+
+      const actualResult = await mailService.sendMrfWorkflowStoppedEmail({
+        emails: [MOCK_VALID_EMAIL],
+        formId: 'mockFormId',
+        formTitle: 'mockFormTitle',
+        responseId: MOCK_RESPONSE_ID,
+        submissionId: MOCK_RESPONSE_ID,
+        timestamp: 'Wed, 7 Oct 2026, 08:17:08 AM',
+      })
+
+      expect(actualResult).toEqual(ok(true))
+      expect(sendMailSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: [MOCK_VALID_EMAIL],
+          subject: `Stopped - mockFormTitle (${MOCK_RESPONSE_ID})`,
+          headers: expect.objectContaining({
+            'X-Formsg-Email-Type': 'Workflow stopped',
+          }),
+        }),
+      )
+      expect(sendMailSpy.mock.calls[0][0].html).toContain(
+        'This workflow has been stopped',
+      )
+      expect(sendMailSpy.mock.calls[0][0].html).not.toContain('Start of JSON')
+    })
+  })
+
+  describe('sendMrfWorkflowSentBackEmail', () => {
+    const MOCK_RESPONSE_ID = '666872d118b702c4f517ef9a'
+    const send = (remarks?: string) =>
+      mailService.sendMrfWorkflowSentBackEmail({
+        emails: [MOCK_VALID_EMAIL],
+        formId: 'mockFormId',
+        formTitle: 'mockFormTitle',
+        responseId: MOCK_RESPONSE_ID,
+        responseUrl: 'https://form.gov.sg/mock-link',
+        remarks,
+      })
+
+    it('should send the amendment request with the new link and escaped remarks', async () => {
+      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+
+      const actualResult = await send('Fix the <b>dates</b>')
+
+      expect(actualResult).toEqual(ok(true))
+      expect(sendMailSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: [MOCK_VALID_EMAIL],
+          subject: `Amendments requested - mockFormTitle (${MOCK_RESPONSE_ID})`,
+          headers: expect.objectContaining({
+            'X-Formsg-Email-Type': 'Workflow sent back',
+          }),
+        }),
+      )
+      const { html } = sendMailSpy.mock.calls[0][0]
+      expect(html).toContain('https://form.gov.sg/mock-link')
+      expect(html).toContain('Remarks from the form admin:')
+      expect(html).toContain('Fix the &lt;b&gt;dates&lt;/b&gt;')
+    })
+
+    it('should leave the remarks section out when there are none', async () => {
+      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+
+      await send()
+
+      expect(sendMailSpy.mock.calls[0][0].html).not.toContain(
+        'Remarks from the form admin',
+      )
     })
   })
 

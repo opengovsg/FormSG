@@ -6,6 +6,7 @@ import { AuthRouter } from './auth'
 import { BillingsRouter } from './billings'
 import { ClientRouter } from './client'
 import { CorppassOidcRouter } from './corppass'
+import { CronRouter } from './cron'
 import { FeatureFlagsRouter } from './feature-flags'
 import { PublicFormsRouter } from './forms'
 import { IntranetRouter } from './intranet'
@@ -31,3 +32,4 @@ V3Router.use('/payments', PaymentsRouter)
 V3Router.use('/feature-flags', FeatureFlagsRouter)
 V3Router.use('/intranet', IntranetRouter)
 V3Router.use('/status', StatusTrackerRouter)
+V3Router.use('/cron', CronRouter)

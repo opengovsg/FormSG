@@ -1,8 +1,8 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { times } from 'lodash'
 import { delay as MswDelay, http, HttpResponse } from 'msw'
+import { expect, screen, waitFor, within } from 'storybook/test'
 
-import { UserId } from 'formsg-shared/types'
 import {
   AdminDashboardFormMetaDto,
   FormResponseMode,
@@ -15,12 +15,12 @@ import { getWorkspaces } from '~/mocks/msw/handlers/workspace'
 
 import { DASHBOARD_ROUTE } from '~constants/routes'
 import {
-  getMobileViewParameters,
   LoggedInDecorator,
   mockDateDecorator,
   StoryRouter,
   ViewedEmergencyContactDecorator,
   ViewedRolloutDecorator,
+  viewportModes,
 } from '~utils/storybook'
 
 import { WorkspacePage } from './WorkspacePage'
@@ -91,18 +91,39 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     mockdate: new Date('2021-12-01T06:22:27.219Z'),
-    msw: BASE_MSW_HANDLERS,
+    msw: { handlers: { default: BASE_MSW_HANDLERS } },
+    // ViewedRolloutDecorator marks the announcement as seen for this user, so
+    // it only shows in the story about it.
+    userId: MOCK_USER._id,
   },
 } as Meta
 
 const Template: StoryFn = () => <WorkspacePage />
+
+// The CTA is disabled until the forms load, so screenshot the loaded page.
+const findLoadedCreateFormButton = async (canvasElement: HTMLElement) => {
+  const button = await within(canvasElement).findByRole('button', {
+    name: 'Create form',
+    // Hidden from the a11y tree while the announcement modal is open.
+    hidden: true,
+  })
+  await waitFor(() => expect(button).toBeEnabled())
+  return button
+}
+
+const playLoaded: StoryFn['play'] = async ({ canvasElement }) => {
+  await expect(await findLoadedCreateFormButton(canvasElement)).toBeVisible()
+}
+
 export const Desktop = Template.bind({})
-export const Mobile = Template.bind({})
-Mobile.parameters = {
-  ...getMobileViewParameters(),
+Desktop.parameters = { argos: { modes: viewportModes('mobile') } }
+Desktop.play = playLoaded
+
+export const LoadingDesktop = Template.bind({})
+LoadingDesktop.parameters = {
   a11y: {
     config: {
       // Seems to be a false positive, since a loading screen should have nothing focusable.
@@ -110,120 +131,120 @@ Mobile.parameters = {
       rules: [{ id: 'scrollable-region-focusable', enabled: false }],
     },
   },
-}
-
-export const LoadingDesktop = Template.bind({})
-LoadingDesktop.parameters = {
-  msw: [
-    http.get<never, never, AdminDashboardFormMetaDto[]>(
-      '/api/v3/admin/forms',
-      async () => {
-        await MswDelay('infinite')
-        return HttpResponse.json()
-      },
-    ),
-  ],
-}
-
-export const LoadingMobile = Template.bind({})
-LoadingMobile.parameters = {
-  ...Mobile.parameters,
-  ...LoadingDesktop.parameters,
+  argos: { modes: viewportModes('mobile') },
+  msw: {
+    handlers: {
+      default: [
+        http.get<never, never, AdminDashboardFormMetaDto[]>(
+          '/api/v3/admin/forms',
+          async () => {
+            await MswDelay('infinite')
+            return HttpResponse.json([])
+          },
+        ),
+      ],
+    },
+  },
 }
 
 export const Empty = Template.bind({})
 Empty.parameters = {
-  msw: [
-    ...envHandlers,
-    http.get<never, never, AdminDashboardFormMetaDto[]>(
-      '/api/v3/admin/forms',
-      () => {
-        return HttpResponse.json()
-      },
-    ),
-    getWorkspaces(),
-    getUser({
-      delay: 0,
-      mockUser: {
-        ...MOCK_USER,
-        _id: 'undefined' as UserId,
-        email: 'meh@example.com',
-      },
-    }),
-  ],
+  argos: { modes: viewportModes('mobile') },
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        http.get<never, never, AdminDashboardFormMetaDto[]>(
+          '/api/v3/admin/forms',
+          () => {
+            return HttpResponse.json([])
+          },
+        ),
+        getWorkspaces(),
+        getUser({
+          delay: 0,
+          mockUser: {
+            ...MOCK_USER,
+            email: 'meh@example.com',
+          },
+        }),
+      ],
+    },
+  },
 }
-
-export const EmptyMobile = Template.bind({})
-EmptyMobile.parameters = {
-  ...Empty.parameters,
-  ...Mobile.parameters,
-}
+Empty.play = playLoaded
 
 export const EmptyWithAnnouncementModal = Template.bind({})
 EmptyWithAnnouncementModal.parameters = {
-  msw: [
-    http.get<never, never, AdminDashboardFormMetaDto[]>(
-      '/api/v3/admin/forms',
-      () => {
-        return HttpResponse.json()
-      },
-    ),
-    ...BASE_MSW_HANDLERS,
-  ],
+  argos: { modes: viewportModes('mobile') },
+  msw: {
+    handlers: {
+      default: [
+        http.get<never, never, AdminDashboardFormMetaDto[]>(
+          '/api/v3/admin/forms',
+          () => {
+            return HttpResponse.json([])
+          },
+        ),
+        ...BASE_MSW_HANDLERS,
+      ],
+    },
+  },
+  // Any other user: the mock user has not seen the announcement.
+  userId: 'another_user',
 }
-
-export const EmptyMobileWithAnnouncementModal = Template.bind({})
-EmptyMobileWithAnnouncementModal.parameters = {
-  ...EmptyWithAnnouncementModal.parameters,
-  ...Mobile.parameters,
+EmptyWithAnnouncementModal.play = async ({ canvasElement }) => {
+  await findLoadedCreateFormButton(canvasElement)
+  await expect(
+    await screen.findByRole('button', { name: 'Next' }),
+  ).toBeVisible()
 }
 
 export const AllOpenDesktop = Template.bind({})
 AllOpenDesktop.parameters = {
-  msw: [
-    http.get<never, never, AdminDashboardFormMetaDto[]>(
-      '/api/v3/admin/forms',
-      () => {
-        return HttpResponse.json(
-          THIRTY_FORMS.filter((form) => form.status === FormStatus.Public),
-        )
-      },
-    ),
-    ...BASE_MSW_HANDLERS,
-  ],
+  argos: { modes: viewportModes('mobile') },
+  msw: {
+    handlers: {
+      default: [
+        http.get<never, never, AdminDashboardFormMetaDto[]>(
+          '/api/v3/admin/forms',
+          () => {
+            return HttpResponse.json(
+              THIRTY_FORMS.filter((form) => form.status === FormStatus.Public),
+            )
+          },
+        ),
+        ...BASE_MSW_HANDLERS,
+      ],
+    },
+  },
 }
+AllOpenDesktop.play = playLoaded
 
 export const AllOpenDesktopNoAnnouncementModal = Template.bind({})
 AllOpenDesktopNoAnnouncementModal.parameters = {
+  argos: { modes: viewportModes('mobile') },
   ...AllOpenDesktop.parameters,
-  msw: [
-    ...envHandlers,
-    http.get<never, never, AdminDashboardFormMetaDto[]>(
-      '/api/v3/admin/forms',
-      () => {
-        return HttpResponse.json(THIRTY_FORMS)
-      },
-    ),
-    getWorkspaces(),
-    getUser({
-      delay: 0,
-      mockUser: {
-        ...MOCK_USER,
-        _id: 'undefined' as UserId,
-        email: 'meh@example.com',
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        http.get<never, never, AdminDashboardFormMetaDto[]>(
+          '/api/v3/admin/forms',
+          () => {
+            return HttpResponse.json(THIRTY_FORMS)
+          },
+        ),
+        getWorkspaces(),
+        getUser({
+          delay: 0,
+          mockUser: {
+            ...MOCK_USER,
+            email: 'meh@example.com',
+          },
+        }),
+      ],
+    },
+  },
 }
-
-export const AllOpenMobile = Template.bind({})
-AllOpenMobile.parameters = {
-  ...Mobile.parameters,
-  ...AllOpenDesktop.parameters,
-}
-
-export const AllOpenMobileNoAnnouncementModal = Template.bind({})
-AllOpenMobileNoAnnouncementModal.parameters = {
-  ...Mobile.parameters,
-  ...AllOpenDesktopNoAnnouncementModal.parameters,
-}
+AllOpenDesktopNoAnnouncementModal.play = playLoaded

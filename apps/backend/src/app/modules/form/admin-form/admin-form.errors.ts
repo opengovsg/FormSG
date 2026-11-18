@@ -1,6 +1,7 @@
 import {
   GO_ALREADY_EXIST_ERROR_MESSAGE,
   GO_VALIDATION_ERROR_MESSAGE,
+  MAX_SAVED_VIEWS,
 } from 'formsg-shared/constants'
 
 import { ApplicationError, ErrorCodes } from '../../core/core.errors'
@@ -99,5 +100,37 @@ export class ModelResponseFailureError extends ApplicationError {
 export class ModelGetClientFailureError extends ApplicationError {
   constructor(message = 'Failed to get model client') {
     super(message, ErrorCodes.ADMIN_FORM_MODEL_GET_CLIENT_FAILURE)
+  }
+}
+
+export class DeleteFirstWorkflowStepError extends ApplicationError {
+  constructor(
+    message = 'Deleting the first step means deleting the workflow; use DELETE /workflow',
+  ) {
+    super(message, undefined, ErrorCodes.ADMIN_FORM_DELETE_FIRST_WORKFLOW_STEP)
+  }
+}
+
+export class FormChangedWhileEditingError extends ApplicationError {
+  constructor() {
+    super(
+      'This form changed while you were editing. Refresh and try again.',
+      undefined,
+      ErrorCodes.ADMIN_FORM_CHANGED_WHILE_EDITING,
+    )
+  }
+}
+
+export class SavedViewLimitError extends ApplicationError {
+  constructor(
+    message = `A form can have at most ${MAX_SAVED_VIEWS} saved views`,
+  ) {
+    super(message, undefined, ErrorCodes.ADMIN_FORM_SAVED_VIEW_LIMIT)
+  }
+}
+
+export class SavedViewNotFoundError extends ApplicationError {
+  constructor(message = 'Saved view to update not found') {
+    super(message, undefined, ErrorCodes.ADMIN_FORM_SAVED_VIEW_NOT_FOUND)
   }
 }

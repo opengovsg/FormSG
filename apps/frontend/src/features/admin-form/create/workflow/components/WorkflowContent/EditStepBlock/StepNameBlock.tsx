@@ -13,7 +13,9 @@ import {
 import { textStyles } from '~theme/textStyles'
 import FormLabel from '~components/FormControl/FormLabel'
 
+import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
 import { EditStepInputs } from '../../../types'
+import { useIsSpotlightActiveSection } from '../../Spotlight'
 
 import { EditStepBlockContainer } from './EditStepBlockContainer'
 
@@ -30,6 +32,8 @@ export const StepNameBlock = ({
   formMethods,
 }: StepNameProps): JSX.Element => {
   const { t } = useTranslation()
+  const { cardRadius, stepLabelTextStyle } = useWorkflowSurfaces()
+  const isActiveSection = useIsSpotlightActiveSection()
   const {
     formState: { errors },
     control,
@@ -39,9 +43,13 @@ export const StepNameBlock = ({
 
   const customStepName = watch(STEP_NAME)
 
-  const displayStepName = customStepName
+  const placeholder = customStepName
     ? customStepName
-    : `Step ${stepNumber + 1}`
+    : stepNumber === 0
+      ? t('features.adminForm.sidebar.workflow.stepName.placeholderStepOne')
+      : t('features.adminForm.sidebar.workflow.stepName.placeholderLaterStep', {
+          stepNumber: stepNumber + 1,
+        })
 
   return (
     <EditStepBlockContainer>
@@ -53,8 +61,8 @@ export const StepNameBlock = ({
             px="1rem"
             borderWidth="1px"
             borderColor="secondary.300"
-            borderRadius="4px"
-            textStyle="subhead-3"
+            borderRadius={cardRadius}
+            textStyle={stepLabelTextStyle}
           >
             {stepNumber + 1}
           </Text>
@@ -68,6 +76,13 @@ export const StepNameBlock = ({
             <FormLabel isRequired style={textStyles.h4} textStyle={'subhead-1'}>
               {t('features.adminForm.sidebar.workflow.stepName.label')}
             </FormLabel>
+            {isActiveSection ? (
+              <Text textStyle="body-2" color="secondary.400" mb="0.5rem">
+                {t('features.adminForm.sidebar.workflow.guidedHints.stepName', {
+                  stepNumber: stepNumber + 1,
+                })}
+              </Text>
+            ) : null}
             <Controller
               control={control}
               name={STEP_NAME}
@@ -80,7 +95,7 @@ export const StepNameBlock = ({
               render={({ field }) => (
                 <Input
                   {...field}
-                  placeholder={displayStepName}
+                  placeholder={placeholder}
                   _focus={{
                     _placeholder: { color: 'transparent' },
                   }}

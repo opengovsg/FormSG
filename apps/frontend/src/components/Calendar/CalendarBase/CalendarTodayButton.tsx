@@ -11,7 +11,7 @@ export const CalendarTodayButton = (): JSX.Element => {
   return (
     <Box sx={styles.todayLinkContainer}>
       <Button
-        aria-label="Focus on today's date"
+        aria-label="Select today's date"
         colorScheme={colorScheme}
         variant="link"
         type="button"

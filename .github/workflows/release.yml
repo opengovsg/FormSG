@@ -10,10 +10,15 @@ name: Release
 # push deliberately does not start other workflows:
 #
 #   release ─┬─► build (build-release-image.yml)
-#            │      └─► deploy-stg / deploy-prod (deploy-ecs-*.yml)
-#            ├─► deploy-pdf-gen-stg / -prod
-#            ├─► deploy-virus-scanner-stg / -prod
+#            │      └─► deploy-stg ─► smoke-stg ─► deploy-prod (deploy-ecs-*.yml)
+#            ├─► deploy-pdf-gen-stg      └──────► all other -prod deploys
+#            ├─► deploy-virus-scanner-stg
+#            ├─► deploy-scheduled-closure-stg
 #            └─► publish-sdk          (only when the SDK was bumped)
+#
+# smoke-stg runs the Datadog synthetics CI smoke suite against stg.form.gov.sg
+# after the staging app deploy and gates every production deploy: nothing
+# reaches production unless staging passes the smoke tests (push-on-green).
 #
 # NOTE: pushing the bump commit to develop with GITHUB_TOKEN requires develop's
 # branch-protection ruleset to grant a bypass to the github-actions[bot] actor.
@@ -26,7 +31,7 @@ permissions:
   contents: read
 
 env:
-  NODE_VERSION: '22.22'
+  NODE_VERSION: '22.23'
   PNPM_VERSION: '10.30.3'
   CTV_VERSION: '12.6.1' # commit-and-tag-version version used by this workflow
 
@@ -51,7 +56,7 @@ jobs:
       # actions/checkout persists the DEPLOY_KEY for the origin remote, so the
       # push steps below can write the bump commit and tags back to develop.
       - name: Checkout develop
-        uses: actions/checkout@v4.3.1
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           ref: develop
           ssh-key: ${{ secrets.DEPLOY_KEY }}
@@ -64,12 +69,12 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           version: ${{ env.PNPM_VERSION }}
 
       - name: Use Node.js
-        uses: actions/setup-node@v4.4.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -78,7 +83,7 @@ jobs:
       # locally. .internal.versionrc.js excludes packages/sdk, so this commit
       # never touches the SDK. Same config the laptop flow used.
       - name: Bump app version, regenerate changelog and tag
-        run: pnpm dlx commit-and-tag-version@${{ env.CTV_VERSION }} --config .internal.versionrc.js
+        run: pnpm dlx "commit-and-tag-version@$CTV_VERSION" --config .internal.versionrc.js
 
       - name: Resolve release version
         id: version
@@ -88,9 +93,9 @@ jobs:
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
         run: |
-          version="${{ steps.version.outputs.tag }}"
-          ./scripts/generate_test_checklist.sh "${version#v}" CHANGELOG.md >> "$GITHUB_STEP_SUMMARY"
+          ./scripts/generate_test_checklist.sh "${TAG#v}" CHANGELOG.md >> "$GITHUB_STEP_SUMMARY"
 
       # Cuts the SDK release the way release_prep.sh did: bump
       # packages/sdk/package.json, update packages/sdk/CHANGELOG.md and create a
@@ -106,7 +111,7 @@ jobs:
             echo "No new SDK commits since ${last_sdk_tag}; skipping SDK release."
             echo "tag=" >> "$GITHUB_OUTPUT"
           else
-            pnpm dlx commit-and-tag-version@${{ env.CTV_VERSION }} --config .external.versionrc.js
+            pnpm dlx "commit-and-tag-version@$CTV_VERSION" --config .external.versionrc.js
             echo "tag=sdk-v$(jq -r .version packages/sdk/package.json)" >> "$GITHUB_OUTPUT"
           fi
 
@@ -114,25 +119,29 @@ jobs:
       # bump commit. The downstream jobs check out these tags, so they must be on
       # the remote before this job finishes.
       - name: Push commits and tags
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          SDK_TAG: ${{ steps.sdk.outputs.tag }}
         run: |
           git push origin HEAD:develop
-          git push origin "refs/tags/${{ steps.version.outputs.tag }}"
-          if [[ -n "${{ steps.sdk.outputs.tag }}" ]]; then
-            git push origin "refs/tags/${{ steps.sdk.outputs.tag }}"
+          git push origin "refs/tags/$TAG"
+          if [[ -n "$SDK_TAG" ]]; then
+            git push origin "refs/tags/$SDK_TAG"
           fi
 
       - name: Update GitHub Releases page
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
         run: |
-          if gh release view "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
-            echo "Updating existing GitHub release ${{ steps.version.outputs.tag }} with regenerated release notes."
-            gh api "repos/${{ github.repository }}/releases/generate-notes" \
-              -f "tag_name=${{ steps.version.outputs.tag }}" \
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Updating existing GitHub release $TAG with regenerated release notes."
+            gh api "repos/$GITHUB_REPOSITORY/releases/generate-notes" \
+              -f "tag_name=$TAG" \
               --jq .body > .release_notes.md
-            gh release edit "${{ steps.version.outputs.tag }}" --notes-file .release_notes.md
+            gh release edit "$TAG" --notes-file .release_notes.md
           else
-            gh release create "${{ steps.version.outputs.tag }}" \
+            gh release create "$TAG" \
               --verify-tag \
               --generate-notes
           fi
@@ -163,9 +172,19 @@ jobs:
       version: ${{ needs.release.outputs.version }}
     secrets: inherit
 
+  smoke-stg:
+    name: Staging synthetics gate
+    needs: deploy-stg
+    permissions:
+      contents: read
+    uses: ./.github/workflows/synthetics-smoke.yml
+    with:
+      url: https://stg.form.gov.sg
+    secrets: inherit
+
   deploy-prod:
     name: Deploy app to production
-    needs: [release, build]
+    needs: [release, build, smoke-stg]
     permissions:
       contents: read
       packages: write
@@ -188,11 +207,33 @@ jobs:
 
   deploy-pdf-gen-prod:
     name: Deploy PDF generator to production
-    needs: [release, build]
+    needs: [release, build, smoke-stg]
     permissions:
       contents: read
       id-token: write
     uses: ./.github/workflows/deploy-pdf-gen-prod.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+    secrets: inherit
+
+  deploy-scheduled-closure-stg:
+    name: Deploy scheduled closure to stg
+    needs: [release, build]
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/deploy-scheduled-closure-stg.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+    secrets: inherit
+
+  deploy-scheduled-closure-prod:
+    name: Deploy scheduled closure to production
+    needs: [release, build, smoke-stg]
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/deploy-scheduled-closure-prod.yml
     with:
       version: ${{ needs.release.outputs.version }}
     secrets: inherit
@@ -210,7 +251,7 @@ jobs:
 
   deploy-virus-scanner-prod:
     name: Deploy virus scanner to production
-    needs: [release, build]
+    needs: [release, build, smoke-stg]
     permissions:
       contents: read
       id-token: write

@@ -23,6 +23,7 @@ export const useSecretKey = (formId: string) => {
   const { data: secretKey } = useQuery({
     queryKey: adminFormResponsesKeys.secretKey(formId),
     initialData: '',
+    enabled: false,
   })
 
   const queryClient = useQueryClient()

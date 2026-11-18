@@ -18,8 +18,7 @@ export const enSG: EmergencyContact = {
       'A text message with a verification code was just sent to you. The code will be valid for 10 minutes.',
     errors: {
       required: 'OTP is required.',
-      numbersOnly: 'Only numbers are allowed.',
-      invalid: 'Please enter a 6 digit OTP.',
+      invalid: 'Please enter a {otpLength} character OTP.',
     },
   },
 }

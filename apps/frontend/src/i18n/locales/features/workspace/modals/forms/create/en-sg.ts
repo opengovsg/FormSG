@@ -67,31 +67,19 @@ export const enSG: CreateFormModal = {
       "This is the legacy version. Use it only if the latest version of FormSG is missing a feature you need, or you're running into issues with it.",
   },
   escapeHatch: {
-    reasons: {
-      payments: 'payments',
-      children: 'Myinfo Children fields',
-      webhooksV1: 'webhooks v1',
-    },
-    prefix: 'Need {reasons}? Use the ',
+    prefix: "If something's missing or not working, use the ",
     linkText: 'legacy version of FormSG',
     suffix: '.',
   },
   origin: {
-    question: 'How is this data being collected today?',
+    question: 'Before FormSG, how did you collect this?',
     options: {
-      paper: 'Paper form',
-      digitalNew: "This data isn't collected",
-      digitalEmail: 'Emails',
-      digitalDocument: 'Documents (e.g. PDF, Word)',
-      digitalSpreadsheet: 'Spreadsheets (e.g. Excel, Sheets)',
-      digitalFormbuilder: 'Other form builders',
-      others: 'Other',
+      digitalNew: 'Not collected',
+      digitalExisting: 'Digitally',
+      paper: 'On paper',
     },
-    otherInputLabel: 'Other source',
     errors: {
-      atLeastOne: 'Please select at least 1 option.',
-      otherRequired: 'Please specify a value for the "others" option',
-      otherMaxLength: 'Please use {maxLength} characters or fewer.',
+      required: 'Please select an option.',
     },
     cta: {
       next: 'Next step',

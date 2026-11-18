@@ -1,4 +1,3 @@
-// import { PutObjectTaggingCommand, S3Client } from '@aws-sdk/client-s3'
 import { celebrate, Joi, Segments } from 'celebrate'
 import { NextFunction } from 'express'
 import {
@@ -7,6 +6,7 @@ import {
   FormResponseMode,
   isPaymentsProducts,
 } from 'formsg-shared/types'
+import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'
 import { StatusCodes } from 'http-status-codes'
 import { ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
@@ -29,6 +29,11 @@ import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
 import * as PaymentsService from '../../payments/payments.service'
 import { IPopulatedStorageFormWithResponsesAndHash } from '../email-submission/email-submission.types'
+import {
+  checkLoginIdentityAnswers,
+  getLoginIdentityValuesFromCookies,
+  prefixLoginIdentityQuestions,
+} from '../login-identity-answers'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { sharedSubmissionParams } from '../submission.constants'
 import * as SubmissionService from '../submission.service'
@@ -37,6 +42,7 @@ import {
   isAttachmentResponse,
   isQuarantinedAttachmentResponse,
   mapRouteError,
+  sendRouteError,
 } from '../submission.utils'
 
 import {
@@ -263,12 +269,7 @@ export const scanAndRetrieveAttachments = async (
       error: scanAndRetrieveFilesResult.error,
     })
 
-    const { statusCode, errorMessage } = mapRouteError(
-      scanAndRetrieveFilesResult.error,
-    )
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
+    return sendRouteError(res, mapRouteError(scanAndRetrieveFilesResult.error))
   }
 
   logger.info({
@@ -311,9 +312,12 @@ export const validatePaymentSubmission = async (
         meta: logMeta,
       })
 
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message:
+      return sendRouteError(res, {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
           'The payment settings in this form have been updated. Please refresh and try again.',
+        errorMessageKey:
+          'features.publicForm.backendErrors.submission.payment.settingsUpdated',
       })
     }
     return PaymentsService.validatePaymentProducts(
@@ -327,10 +331,7 @@ export const validatePaymentSubmission = async (
           meta: logMeta,
           error,
         })
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
+        return sendRouteError(res, mapRouteError(error))
       })
   }
   return next()
@@ -386,9 +387,8 @@ export const validateStorageSubmission = async (
       // Validate MyInfo responses
       const { authType } = form
       switch (authType) {
-        case FormAuthType.SGID_MyInfo:
         case FormAuthType.MyInfo: {
-          return extractMyInfoLoginJwt(req.cookies, authType)
+          return extractMyInfoLoginJwt(req.cookies)
             .andThen(MyInfoService.verifyLoginJwt)
             .asyncAndThen(({ uinFin }) =>
               MyInfoService.fetchMyInfoHashes(uinFin, form._id)
@@ -408,9 +408,7 @@ export const validateStorageSubmission = async (
             .mapErr((error) => {
               spcpSubmissionFailure = true
               logger.error({
-                message: `Error verifying MyInfo${
-                  authType === FormAuthType.SGID_MyInfo ? '(over SGID)' : ''
-                } hashes`,
+                message: 'Error verifying MyInfo hashes',
                 meta: logMeta,
                 error,
               })
@@ -422,6 +420,38 @@ export const validateStorageSubmission = async (
             parsedResponses,
           })
       }
+    })
+    .andThen((result) => {
+      // Login identity answers must match the login, like MyInfo answers.
+      const formFields = formDef.form_fields ?? []
+      if (!formFields.some(isLoginIdentityField)) return okAsync(result)
+      const { responses } = result.parsedResponses
+      return getLoginIdentityValuesFromCookies(formDef.authType, req.cookies)
+        .andThen((values) =>
+          checkLoginIdentityAnswers(
+            formFields,
+            (fieldId) => {
+              const response = responses.find(({ _id }) => _id === fieldId)
+              return response && 'answer' in response
+                ? response.answer
+                : undefined
+            },
+            values,
+          ),
+        )
+        .map((verifiedFieldIds) => {
+          prefixLoginIdentityQuestions(responses, formFields, verifiedFieldIds)
+          return result
+        })
+        .mapErr((error) => {
+          spcpSubmissionFailure = true
+          logger.error({
+            message: 'Error verifying login identity answers',
+            meta: logMeta,
+            error,
+          })
+          return error
+        })
     })
     .map(({ parsedResponses, hashedFields }) => {
       const storageFormData = formatMyInfoStorageResponseData(
@@ -437,9 +467,7 @@ export const validateStorageSubmission = async (
         meta: logMeta,
         error,
       })
-      const { statusCode, errorMessage } = mapRouteError(error)
-      return res.status(statusCode).json({
-        message: errorMessage,
+      return sendRouteError(res, mapRouteError(error), {
         spcpSubmissionFailure,
       })
     })
@@ -563,12 +591,7 @@ export const validateEncryptSubmission = async (
       meta: logMeta,
       error: incomingSubmissionResult.error,
     })
-    const { statusCode, errorMessage } = mapRouteError(
-      incomingSubmissionResult.error,
-    )
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
+    return sendRouteError(res, mapRouteError(incomingSubmissionResult.error))
   }
 
   logger.info({
@@ -625,8 +648,7 @@ export const createFormsgAndRetrieveForm = async (
       meta: logMeta,
       error: formResult.error,
     })
-    const { errorMessage, statusCode } = mapRouteError(formResult.error)
-    return res.status(statusCode).json({ message: errorMessage })
+    return sendRouteError(res, mapRouteError(formResult.error))
   }
 
   // Step 3b: Set formsg.formDef in req.body
@@ -641,12 +663,10 @@ export const createFormsgAndRetrieveForm = async (
         'Trying to submit non-encrypt mode submission on encrypt-form submission endpoint',
       meta: logMeta,
     })
-    const { statusCode, errorMessage } = mapRouteError(
-      checkFormIsEncryptModeResult.error,
+    return sendRouteError(
+      res,
+      mapRouteError(checkFormIsEncryptModeResult.error),
     )
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
   }
 
   // Step 4b: Set formsg.encryptedFormDef in req.body

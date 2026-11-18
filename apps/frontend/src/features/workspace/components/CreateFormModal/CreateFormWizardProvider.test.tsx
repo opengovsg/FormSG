@@ -1,10 +1,7 @@
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { act, renderHook } from '@testing-library/react'
 
-import {
-  CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
-  featureFlags,
-} from 'formsg-shared/constants'
+import { featureFlags } from 'formsg-shared/constants'
 import { FormOrigin, FormResponseMode } from 'formsg-shared/types/form/form'
 
 import { useUser } from '~features/user/queries'
@@ -94,7 +91,7 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
     expect(mrfMutation.mutate).not.toHaveBeenCalled()
   })
 
-  it('creates the storage-mode form with selected origins as metadata', async () => {
+  it('creates the storage-mode form with the chosen origin as metadata', async () => {
     setFlags({ cutover: false, paperTracking: true })
     const { result } = renderHook(() => useCreateFormWizardContext(vi.fn()))
 
@@ -102,9 +99,7 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
       result.current.formMethods.reset({
         title: 'My form',
         responseMode: FormResponseMode.Encrypt,
-        formOrigins: {
-          value: [FormOrigin.Paper, FormOrigin.DigitalSpreadsheet],
-        },
+        formOrigin: FormOrigin.Paper,
       }),
     )
     await act(async () => {
@@ -114,16 +109,12 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
     expect(storageMutation.mutate).toHaveBeenCalledTimes(1)
     expect(storageMutation.mutate.mock.calls[0][0]).toEqual(
       expect.objectContaining({
-        metadata: {
-          formOrigins: {
-            value: [FormOrigin.Paper, FormOrigin.DigitalSpreadsheet],
-          },
-        },
+        metadata: { formOrigins: { value: [FormOrigin.Paper] } },
       }),
     )
   })
 
-  it('creates the MRF form with selected origins as metadata', async () => {
+  it('creates the MRF form with the chosen origin as metadata', async () => {
     setFlags({ cutover: true, paperTracking: true })
     const { result } = renderHook(() => useCreateFormWizardContext(vi.fn()))
 
@@ -131,9 +122,7 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
       result.current.formMethods.reset({
         title: 'My form',
         responseMode: FormResponseMode.Multirespondent,
-        formOrigins: {
-          value: [FormOrigin.Paper, FormOrigin.DigitalSpreadsheet],
-        },
+        formOrigin: FormOrigin.DigitalExisting,
       }),
     )
     await act(async () => {
@@ -143,16 +132,12 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
     expect(mrfMutation.mutate).toHaveBeenCalledTimes(1)
     expect(mrfMutation.mutate.mock.calls[0][0]).toEqual(
       expect.objectContaining({
-        metadata: {
-          formOrigins: {
-            value: [FormOrigin.Paper, FormOrigin.DigitalSpreadsheet],
-          },
-        },
+        metadata: { formOrigins: { value: [FormOrigin.DigitalExisting] } },
       }),
     )
   })
 
-  it('carries the typed "Other" detail into metadata', async () => {
+  it('preserves the origin answer across a Back→Forward round-trip and submits it unchanged', async () => {
     setFlags({ cutover: true, paperTracking: true })
     const { result } = renderHook(() => useCreateFormWizardContext(vi.fn()))
 
@@ -160,42 +145,7 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
       result.current.formMethods.reset({
         title: 'My form',
         responseMode: FormResponseMode.Multirespondent,
-        formOrigins: {
-          value: [CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
-          othersInput: 'Carrier pigeon',
-        },
-      }),
-    )
-    await act(async () => {
-      await result.current.handleCreateStorageModeOrMultirespondentForm()
-    })
-
-    expect(mrfMutation.mutate.mock.calls[0][0]).toEqual(
-      expect.objectContaining({
-        metadata: {
-          formOrigins: {
-            value: [CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
-            othersInput: 'Carrier pigeon',
-          },
-        },
-      }),
-    )
-  })
-
-  it('preserves the origin selection (including "Other" text) across a Back→Forward round-trip and submits it unchanged', async () => {
-    setFlags({ cutover: true, paperTracking: true })
-    const { result } = renderHook(() => useCreateFormWizardContext(vi.fn()))
-
-    // Arrive on the origin step with a title and an origin selection that
-    // includes the "Other" sentinel plus free text.
-    act(() =>
-      result.current.formMethods.reset({
-        title: 'My form',
-        responseMode: FormResponseMode.Multirespondent,
-        formOrigins: {
-          value: [FormOrigin.Paper, CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
-          othersInput: 'Carrier pigeon',
-        },
+        formOrigin: FormOrigin.DigitalExisting,
       }),
     )
     await act(async () => {
@@ -203,40 +153,23 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
     })
     expect(result.current.currentStep).toBe(CreateFormFlowStates.Origin)
 
-    // Navigate Back to the title step.
     act(() => result.current.goToFormDetails())
     expect(result.current.currentStep).toBe(CreateFormFlowStates.Details)
+    expect(result.current.formMethods.getValues('formOrigin')).toBe(
+      FormOrigin.DigitalExisting,
+    )
 
-    // The selection is NOT cleared on Back — it persists in formMethods.
-    expect(result.current.formMethods.getValues('formOrigins')).toEqual({
-      value: [FormOrigin.Paper, CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
-      othersInput: 'Carrier pigeon',
-    })
-
-    // Return forward to the origin step; the prior selection is still there
-    // for the Controller to re-hydrate.
     await act(async () => {
       await result.current.handleProceedFromDetails()
     })
     expect(result.current.currentStep).toBe(CreateFormFlowStates.Origin)
-    expect(result.current.formMethods.getValues('formOrigins')).toEqual({
-      value: [FormOrigin.Paper, CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
-      othersInput: 'Carrier pigeon',
-    })
 
-    // Submitting from there produces the same origin metadata it would have
-    // without the Back→Forward round-trip.
     await act(async () => {
       await result.current.handleCreateStorageModeOrMultirespondentForm()
     })
     expect(mrfMutation.mutate.mock.calls[0][0]).toEqual(
       expect.objectContaining({
-        metadata: {
-          formOrigins: {
-            value: [FormOrigin.Paper, CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
-            othersInput: 'Carrier pigeon',
-          },
-        },
+        metadata: { formOrigins: { value: [FormOrigin.DigitalExisting] } },
       }),
     )
   })
@@ -267,7 +200,7 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
       result.current.formMethods.reset({
         title: 'My form',
         responseMode: FormResponseMode.Multirespondent,
-        formOrigins: { value: [FormOrigin.Paper] },
+        formOrigin: FormOrigin.Paper,
       }),
     )
     await act(async () => {

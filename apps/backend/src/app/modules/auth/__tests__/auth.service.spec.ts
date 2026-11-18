@@ -29,7 +29,7 @@ const TokenModel = getTokenModel(mongoose)
 
 const VALID_EMAIL_DOMAIN = 'test.gov.sg'
 const VALID_EMAIL = `valid@${VALID_EMAIL_DOMAIN}`
-const MOCK_OTP = '123456'
+const MOCK_OTP = 'A1B2C3D4'
 const MOCK_OTP_PREFIX = 'ABC'
 
 describe('auth.service', () => {

@@ -3,7 +3,7 @@ import i18n from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import ICU from 'i18next-icu'
 
-import { Language } from 'formsg-shared/types'
+import { Language } from 'formsg-shared/types/form/form'
 
 import { locales } from './locales'
 
@@ -17,6 +17,12 @@ i18n
     debug: false,
     interpolation: {
       escapeValue: false, // react already safes from xss
+    },
+    react: {
+      // Wrap text nodes rendered by <Trans> in spans so browser translation
+      // (which replaces bare text nodes with <font> elements) cannot crash
+      // React reconciliation. See https://github.com/facebook/react/issues/11538
+      transWrapTextNodes: 'span',
     },
   })
 export default i18n

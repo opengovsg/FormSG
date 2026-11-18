@@ -5,6 +5,8 @@ provider:
   name: aws
   region: ap-southeast-1
   stage: ${opt:stage}
+  # Applies to zip-packaged functions only; the image function ignores it.
+  runtime: nodejs22.x
   iam:
     role:
       statements:
@@ -67,7 +69,16 @@ provider:
         file: services/virus-scanner-guardduty/Dockerfile
         platform: linux/amd64
 
+# Only the zip-packaged function is packaged; the image function is built from
+# the Dockerfile above.
+package:
+  patterns:
+    - '!./**'
+    - 'dist/**'
+
 functions:
+  # Transitional: the image function stays until the backend has switched to
+  # the zip function below. Remove it, the ecr block and the Dockerfile after.
   virus-scanner-guardduty:
     image:
       name: virus-scanner-guardduty
@@ -77,6 +88,18 @@ functions:
     # Provision concurrency so at least one instance always hot
     # https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/#provisioned-concurrency
     # 1 for staging environments, 5 for prod
+    provisionedConcurrency: ${param:provisionedConcurrency}
+  scanner:
+    handler: dist/index.handler
+    # Explicit name so it is independent of the function key, and shaped like
+    # the other lambdas (pdf-gen-sparticuz-<stage>, form-scheduled-closure-<stage>).
+    # The backend's GUARDDUTY_LAMBDA_FUNCTION_NAME must match.
+    name: virus-scanner-guardduty-${opt:stage}
+    description: Waits for the GuardDuty malware scan verdict on a quarantined form attachment and copies clean files to the clean bucket
+    environment:
+      NODE_OPTIONS: --enable-source-maps
+    timeout: 300
+    memorySize: 128
     provisionedConcurrency: ${param:provisionedConcurrency}
 
 plugins:

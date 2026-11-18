@@ -1,4 +1,3 @@
-import bcrypt from 'bcrypt'
 import {
   myInfoCountries,
   myInfoDialects,
@@ -12,7 +11,8 @@ import {
 import {
   BasicField,
   ChildrenCompoundFieldBase,
-  FormAuthType,
+  FormFieldDto,
+  FormResponseMode,
   MyInfoAttribute as InternalAttr,
   MyInfoAttribute,
   MyInfoChildAttributes,
@@ -21,16 +21,19 @@ import {
 } from 'formsg-shared/types'
 import { formatMyinfoDate } from 'formsg-shared/utils/dates'
 import { hasProp } from 'formsg-shared/utils/has-prop'
+import {
+  getLoginIdentityAttr,
+  isLoginIdentityField,
+} from 'formsg-shared/utils/login-identity'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
+import { compact, uniq } from 'lodash'
 import moment from 'moment'
-import mongoose, { FlattenMaps } from 'mongoose'
+import { FlattenMaps } from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
-import { v4 as uuidv4, validate as validateUUID } from 'uuid'
 
 import {
   IFieldSchema,
-  IFormSchema,
   IHashes,
   IMyInfo,
   MapRouteError,
@@ -40,41 +43,27 @@ import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { DatabaseError } from '../core/core.errors'
 import {
-  AuthTypeMismatchError,
-  FormAuthNoEsrvcIdError,
-  FormNotFoundError,
-} from '../form/form.errors'
-import { SGIDMyInfoData } from '../sgid/sgid.adapter'
-import { SGID_MYINFO_LOGIN_COOKIE_NAME } from '../sgid/sgid.constants'
-import {
   ProcessedChildrenResponse,
   ProcessedFieldResponse,
 } from '../submission/submission.types'
 
-import { MyInfoData } from './myinfo.adapter'
 import { MYINFO_LOGIN_COOKIE_NAME } from './myinfo.constants'
 import {
-  MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
-  MyInfoInvalidAuthCodeCookieError,
   MyInfoMissingHashError,
   MyInfoMissingLoginCookieError,
 } from './myinfo.errors'
+import { compareMyInfoValue, hashMyInfoValue } from './myinfo.hash'
 import {
-  MyInfoAuthCodeCookiePayload,
-  MyInfoAuthCodeCookieState,
   MyInfoChildKey,
   MyInfoComparePromises,
-  MyInfoForm,
   MyInfoHashPromises,
   MyInfoLoginCookiePayload,
-  MyInfoRelayState,
   VisibleMyInfoResponse,
 } from './myinfo.types'
 
 const logger = createLoggerWithLabel(module)
-const HASH_SALT_ROUNDS = 1
 
 /**
  * See hashFieldValues for usage.
@@ -115,9 +104,15 @@ function hashChildrenFieldValues(
       if (subField === MyInfoChildAttributes.ChildDateOfBirth) {
         myInfoFormattedValue = formatMyinfoDate(value)
       }
-      readOnlyHashPromises[
-        getMyInfoChildHashKey(field._id, subField, childIdx, childName)
-      ] = bcrypt.hash(myInfoFormattedValue, HASH_SALT_ROUNDS)
+      const hashKey = getMyInfoChildHashKey(
+        field._id,
+        subField,
+        childIdx,
+        childName,
+      )
+      readOnlyHashPromises[hashKey] = new Promise((resolve) =>
+        resolve(hashMyInfoValue(hashKey, myInfoFormattedValue)),
+      )
     })
   })
 }
@@ -126,11 +121,14 @@ function hashChildrenFieldValues(
  * Hashes field values which are prefilled and MyInfo-verified.
  * @param prefilledFormFields Fields with fieldValue prefilled using MyInfo and disabled
  * set to true if the prefilled value is MyInfo-verified
+ * @param skipUinFin true for a later MRF step's login, whose NRIC/FIN answer is
+ * filled from the login session rather than checked against a hash
  * @returns object mapping MyInfo attributes to Promises of their hashes
  */
 export const hashFieldValues = (
   prefilledFormFields: PossiblyPrefilledField[],
   childrenBirthRecords?: MyInfoChildData,
+  { skipUinFin = false }: { skipUinFin?: boolean } = {},
 ): MyInfoHashPromises => {
   const readOnlyHashPromises: MyInfoHashPromises = {}
 
@@ -144,9 +142,11 @@ export const hashFieldValues = (
       return
     }
     if (!field.myInfo?.attr || !field.fieldValue || !field.disabled) return
-    readOnlyHashPromises[field.myInfo.attr] = bcrypt.hash(
-      field.fieldValue.toString(),
-      HASH_SALT_ROUNDS,
+    if (skipUinFin && field.myInfo.attr === MyInfoAttribute.UinFin) return
+    const attr = field.myInfo.attr
+    const value = field.fieldValue.toString()
+    readOnlyHashPromises[attr] = new Promise((resolve) =>
+      resolve(hashMyInfoValue(attr, value)),
     )
   })
 
@@ -175,7 +175,7 @@ const compareSingleHash = (
   field: VisibleMyInfoResponse,
 ): Promise<boolean> => {
   const transformedAnswer = transformAnswer(field)
-  return bcrypt.compare(transformedAnswer, hash)
+  return compareMyInfoValue(field.myInfo.attr, transformedAnswer, hash)
 }
 
 /**
@@ -246,48 +246,6 @@ export const mapVerifyMyInfoError: MapRouteError = (error) => {
 }
 
 /**
- * Maps errors while creating MyInfo redirect URL to status codes and messages.
- * @param error Error to be mapped
- * @param coreErrorMessage Default error message
- */
-export const mapRedirectURLError: MapRouteError = (
-  error,
-  coreErrorMessage = 'Something went wrong. Please refresh and try again.',
-) => {
-  switch (error.constructor) {
-    case FormNotFoundError:
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        errorMessage:
-          'Could not find the form requested. Please refresh and try again.',
-      }
-    case AuthTypeMismatchError:
-      return {
-        statusCode: StatusCodes.BAD_REQUEST,
-        errorMessage:
-          'This form does not have MyInfo enabled. Please refresh and try again.',
-      }
-    case DatabaseError:
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: coreErrorMessage,
-      }
-    default:
-      logger.error({
-        message: 'Unknown route error observed',
-        meta: {
-          action: 'mapRedirectURLError',
-        },
-        error,
-      })
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: coreErrorMessage,
-      }
-  }
-}
-
-/**
  * Retrieves the field options which should be provided with a MyInfo
  * dropdown field.
  * @param myInfoAttr MyInfo attribute
@@ -297,47 +255,6 @@ export const getMyInfoFieldOptions = (
 ): string[] => {
   const [myInfoField] = myInfoTypes.filter((type) => type.name === myInfoAttr)
   return myInfoField?.fieldOptions || []
-}
-
-/**
- * Creates state which MyInfo should forward back once user has logged in.
- * @param formId ID of form which user is logging into
- */
-export const createRelayState = (
-  formId: string,
-  encodedQuery?: string,
-): string =>
-  JSON.stringify({
-    uuid: uuidv4(),
-    formId,
-    encodedQuery,
-  })
-
-/**
- * returns form with an e-service ID if form is a MyInfo form
- * @param form Form to validate
- */
-export const getMyInfoEserviceIdInForm = <T extends IFormSchema>(
-  form: T,
-  useFormsgEsrvcId?: boolean,
-): Result<
-  [MyInfoForm<T>, string],
-  FormAuthNoEsrvcIdError | AuthTypeMismatchError
-> => {
-  if (isMyInfoForm(form)) {
-    const esrvcId = useFormsgEsrvcId
-      ? spcpMyInfoConfig.spEsrvcId
-      : form.esrvcId || spcpMyInfoConfig.spEsrvcId
-    return ok([form, esrvcId])
-  }
-  return err(new AuthTypeMismatchError(FormAuthType.MyInfo, form.authType))
-}
-
-// Typeguard to ensure that form is MyInfo authType
-const isMyInfoForm = <F extends IFormSchema>(
-  form: F,
-): form is MyInfoForm<F> => {
-  return form.authType === FormAuthType.MyInfo
 }
 
 /**
@@ -356,74 +273,17 @@ export const isMyInfoLoginCookie = (
 }
 
 /**
- * Type guard for MyInfo auth code cookie.
- * @param cookie Unknown object
- */
-export const isMyInfoAuthCodeCookie = (
-  cookie: unknown,
-): cookie is MyInfoAuthCodeCookiePayload => {
-  if (
-    cookie &&
-    typeof cookie === 'object' &&
-    hasProp(cookie, 'state') &&
-    typeof cookie.state === 'string'
-  ) {
-    // Test for success state
-    if (
-      cookie.state === MyInfoAuthCodeCookieState.Success &&
-      hasProp(cookie, 'authCode') &&
-      typeof cookie.authCode === 'string' &&
-      cookie.authCode.length
-    ) {
-      return true
-    } else if (
-      // Test for any other valid state
-      Object.values<string>(MyInfoAuthCodeCookieState).includes(cookie.state)
-    ) {
-      return true
-    }
-  }
-  return false
-}
-
-/**
  * Extracts a MyInfo login cookie from a request's cookies
  * @param cookies Cookies in a request
  */
 export const extractMyInfoLoginJwt = (
   cookies: Record<string, unknown>,
-  authType: FormAuthType.MyInfo | FormAuthType.SGID_MyInfo,
 ): Result<string, MyInfoMissingLoginCookieError> => {
-  const jwt =
-    cookies[
-      authType === FormAuthType.MyInfo
-        ? MYINFO_LOGIN_COOKIE_NAME
-        : SGID_MYINFO_LOGIN_COOKIE_NAME
-    ]
+  const jwt = cookies[MYINFO_LOGIN_COOKIE_NAME]
   if (typeof jwt === 'string' && !!jwt) {
     return ok(jwt)
   }
   return err(new MyInfoMissingLoginCookieError())
-}
-
-/**
- * Extracts a MyInfo auth code cookie from a request's cookies, and validates
- * its shape.
- * @param cookies Cookies in a request
- */
-export const extractAuthCode = (
-  cookie: unknown,
-): Result<
-  string,
-  MyInfoInvalidAuthCodeCookieError | MyInfoCookieStateError
-> => {
-  if (!isMyInfoAuthCodeCookie(cookie)) {
-    return err(new MyInfoInvalidAuthCodeCookieError(cookie))
-  }
-  if (cookie.state !== MyInfoAuthCodeCookieState.Success) {
-    return err(new MyInfoCookieStateError())
-  }
-  return ok(cookie.authCode)
 }
 
 /**
@@ -441,19 +301,22 @@ export const createMyInfoLoginCookie = (uinFin: string): string => {
   })
 }
 
-export const isMyInfoRelayState = (obj: unknown): obj is MyInfoRelayState =>
-  typeof obj === 'object' &&
-  !!obj &&
-  hasProp(obj, 'formId') &&
-  typeof obj.formId === 'string' &&
-  mongoose.Types.ObjectId.isValid(obj.formId) &&
-  hasProp(obj, 'uuid') &&
-  typeof obj.uuid === 'string' &&
-  validateUUID(obj.uuid) &&
-  ((hasProp(obj, 'encodedQuery') && typeof obj.encodedQuery === 'string') ||
-    !hasProp(obj, 'encodedQuery'))
-
 const MyInfoChildAttributeSet = new Set(Object.values(MyInfoChildAttributes))
+
+/**
+ * Whether a form may fetch sponsored children alongside birth records.
+ * Requires the mrf-children feature flag, and only Multirespondent
+ * forms qualify: they submit v4 responses, which record a per-child `type`
+ * (local or sponsored). v1 responses have no such slot, so keeping them
+ * local-only lets a later v1-to-v4 migration assume `local`.
+ * @param isMrfChildrenEnabled whether the mrf-children flag is on; callers
+ * pass false when the flag state is unknown so the fetch fails closed
+ */
+export const shouldFetchSponsoredChildren = (
+  form: { responseMode: FormResponseMode },
+  isMrfChildrenEnabled: boolean,
+): boolean =>
+  isMrfChildrenEnabled && form.responseMode === FormResponseMode.Multirespondent
 
 export const isMyInfoChildrenBirthRecords = (
   attr: InternalAttr | undefined,
@@ -474,6 +337,9 @@ export const isMyInfoChildrenBirthRecords = (
 export const getMyInfoAttr = (
   field: IFieldSchema | FlattenMaps<IFieldSchema>,
 ): string | string[] | undefined => {
+  // NRIC/FIN login identity fields are filled from the login session, not
+  // requested from or verified against MyInfo.
+  if (isLoginIdentityField(field)) return undefined
   // Need to explode compound field.
   if (field.myInfo?.attr === MyInfoAttribute.ChildrenBirthRecords) {
     return (
@@ -482,6 +348,25 @@ export const getMyInfoAttr = (
   }
   return field.myInfo?.attr
 }
+
+/**
+ * Unique MyInfo attributes to request for the given fields, with compound
+ * fields exploded into their sub-attributes.
+ */
+export const getUniqueMyInfoAttrsForFields = (
+  fields: readonly (IFieldSchema | FlattenMaps<IFieldSchema> | FormFieldDto)[],
+): InternalAttr[] =>
+  compact(
+    uniq(
+      fields.flatMap((field) =>
+        // The NRIC/FIN field is filled from the login, not prefilled from
+        // MyInfo, but still records uinfin. MyInfo always grants uinfin.
+        getLoginIdentityAttr(field) === MyInfoAttribute.UinFin
+          ? MyInfoAttribute.UinFin
+          : getMyInfoAttr(field as FlattenMaps<IFieldSchema>),
+      ),
+    ),
+  ) as InternalAttr[]
 
 /**
  * Helper function to get a MyInfo child's hash key inside an IHashes.
@@ -499,12 +384,53 @@ export const getMyInfoChildHashKey = (
 }
 
 /**
+ * Finds the prefill hashes for every MyInfo child sharing the submitted name,
+ * grouped by the child's index in the MyInfo data and keyed by sub-field. The
+ * submitted child's position is unrelated to that index, so matching by name
+ * is what lets any MyInfo child verify. Grouping by record is what stops a
+ * submission from mixing sub-field values across two same-named children.
+ */
+const findMyInfoChildHashesByRecord = (
+  hashes: IHashes,
+  fieldId: string,
+  childName: string,
+): Map<number, Partial<Record<MyInfoChildAttributes, string>>> => {
+  const prefix = `${MyInfoAttribute.ChildrenBirthRecords}.${fieldId}.`
+  const byRecord = new Map<
+    number,
+    Partial<Record<MyInfoChildAttributes, string>>
+  >()
+  for (const [key, hash] of Object.entries(hashes)) {
+    if (!hash || !key.startsWith(prefix)) continue
+    // Remainder is `<childAttr>.<childIdx>.<childName>`; the name may contain dots.
+    const rest = key.slice(prefix.length)
+    const firstDot = rest.indexOf('.')
+    const secondDot = rest.indexOf('.', firstDot + 1)
+    if (firstDot < 0 || secondDot < 0) continue
+    if (rest.slice(secondDot + 1) !== childName) continue
+    const childAttr = rest.slice(0, firstDot) as MyInfoChildAttributes
+    const childIdx = Number(rest.slice(firstDot + 1, secondDot))
+    if (!Number.isInteger(childIdx)) continue
+    const record = byRecord.get(childIdx) ?? {}
+    record[childAttr] = hash
+    byRecord.set(childIdx, record)
+  }
+  return byRecord
+}
+
+/**
  * This function is responsible for checking the validity of hashes of
- * MyInfo Child fields.
+ * MyInfo Child fields. Hashes are looked up by child name, and the result is
+ * recorded under the submitted child's positional key, which downstream
+ * consumers match on.
  *
- * NOTE: if the hashes comparison fail, it assumes that it's a manually user
- * inputted child. As such, it will just not indicate in the response
- * that it is MyInfo verified.
+ * When several MyInfo children share the submitted name, every sub-field is
+ * judged against the single record that matches the most sub-fields, so a
+ * submission cannot pass by combining values from two different children.
+ *
+ * NOTE: if no hash exists for a submitted child, it assumes that it's a
+ * manually user inputted child. As such, it will just not indicate in the
+ * response that it is MyInfo verified.
  * @param field the processed response
  * @param hashes a map containing all the attributes mapped to hashes
  * @param myInfoResponsesMap the response to give to the user
@@ -522,19 +448,59 @@ export const handleMyInfoChildHashResponse = (
   childField.answerArray.forEach((childAnswer, childIndex) => {
     // Name should be first field for child answers
     const childName = childAnswer[0]
-    // Validate each answer (child)
-    childAnswer.forEach((attrAnswer, subFieldIndex) => {
+    const candidates = findMyInfoChildHashesByRecord(
+      hashes,
+      field._id,
+      childName,
+    )
+    // Intentional, to allow user-filled fields to pass through.
+    if (candidates.size === 0) return
+
+    // Compare every submitted sub-field against every same-named record, then
+    // keep the record with the most matches (lowest index on a tie).
+    const bestRecord = Promise.all(
+      [...candidates.entries()].map(async ([childIdx, record]) => {
+        const matches = await Promise.all(
+          childAnswer.map((attrAnswer, subFieldIndex) => {
+            const subField = subFields[subFieldIndex]
+            const hash = record[subField]
+            return hash
+              ? compareMyInfoValue(
+                  getMyInfoChildHashKey(
+                    field._id,
+                    subField,
+                    childIdx,
+                    childName,
+                  ),
+                  attrAnswer,
+                  hash,
+                )
+              : undefined
+          }),
+        )
+        return { childIdx, matches }
+      }),
+    ).then((evaluated) =>
+      evaluated.reduce((best, current) => {
+        const score = (m: (boolean | undefined)[]) => m.filter(Boolean).length
+        return score(current.matches) > score(best.matches) ? current : best
+      }),
+    )
+
+    childAnswer.forEach((_attrAnswer, subFieldIndex) => {
+      const subField = subFields[subFieldIndex]
+      const hasHash = [...candidates.values()].some((r) => r[subField])
+      if (!hasHash) return
       const key = getMyInfoChildHashKey(
         field._id,
-        subFields[subFieldIndex],
+        subField,
         childIndex,
         childName,
       )
-      const hash = hashes[key]
-      // Intentional, to allow user-filled fields to pass through.
-      if (hash) {
-        myInfoResponsesMap.set(key, bcrypt.compare(attrAnswer, hash))
-      }
+      myInfoResponsesMap.set(
+        key,
+        bestRecord.then(({ matches }) => matches[subFieldIndex] ?? false),
+      )
     })
   })
   return
@@ -582,38 +548,16 @@ export const logIfFieldValueNotInMyinfoList = (
   fieldValue: string,
   myInfoAttr: string | string[],
   myInfoList: string[],
-  myInfoData: MyInfoData | SGIDMyInfoData,
 ) => {
-  const isFieldValueInMyinfoList = myInfoList.includes(fieldValue)
-  const myInfoSource =
-    myInfoData instanceof MyInfoData ? 'Singpass MyInfo' : 'SGID MyInfo'
+  if (myInfoList.includes(fieldValue)) return
 
-  if (isFieldValueInMyinfoList) return
-
-  if (myInfoSource === 'Singpass MyInfo') {
-    logger.error({
-      message: 'Myinfo field value not found in existing Myinfo constants list',
-      meta: {
-        action: 'prefillAndSaveMyInfoFields',
-        myInfoFieldValue: fieldValue,
-        myInfoAttr,
-        myInfoSource,
-      },
-    })
-  } else if (
-    // SGID returns NA instead of empty field values, we don't need this to be logged
-    // as this is expected behaviour
-    myInfoSource === 'SGID MyInfo' &&
-    fieldValue !== 'NA'
-  ) {
-    logger.error({
-      message: 'Myinfo field value not found in existing Myinfo constants list',
-      meta: {
-        action: 'prefillAndSaveMyInfoFields',
-        myInfoFieldValue: fieldValue,
-        myInfoAttr,
-        myInfoSource,
-      },
-    })
-  }
+  logger.error({
+    message: 'Myinfo field value not found in existing Myinfo constants list',
+    meta: {
+      action: 'prefillAndSaveMyInfoFields',
+      myInfoFieldValue: fieldValue,
+      myInfoAttr,
+      myInfoSource: 'Singpass MyInfo',
+    },
+  })
 }

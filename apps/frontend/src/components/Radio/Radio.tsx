@@ -207,7 +207,7 @@ export const Radio = forwardRef<RadioProps, 'input'>(
     }
 
     const labelStyles: SystemStyleObject = {
-      width: isLabelFullWidth ? 'full' : undefined,
+      ...(isLabelFullWidth ? { flex: 1, minWidth: 0 } : {}),
       userSelect: 'none',
       marginStart: spacing,
       ...styles.label,

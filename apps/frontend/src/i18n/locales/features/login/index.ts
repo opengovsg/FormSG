@@ -13,7 +13,6 @@ export interface Login {
       signin: string
       otpRequired: string
       otpLengthCheck: string
-      otpTypeCheck: string
       otpFromEmail: string
     }
     SgidLoginButton: {
@@ -29,12 +28,16 @@ export interface Login {
     WogadLoginButton: {
       loginText: string
     }
+    OneLoginButton: {
+      loginText: string
+    }
   }
   LoginPage: {
     slogan: string
     banner: string
     forbidden: string
     expiredSession: string
+    signingInWithOne: string
   }
   SelectProfilePage: {
     accountSelection: string

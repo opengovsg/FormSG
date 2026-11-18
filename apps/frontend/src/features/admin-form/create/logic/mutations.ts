@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 
@@ -15,6 +16,7 @@ import {
 } from './FormLogicService'
 
 export const useLogicMutations = () => {
+  const { t } = useTranslation()
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
@@ -46,7 +48,9 @@ export const useLogicMutations = () => {
           return prev
         })
         toast({
-          description: 'The logic was successfully created.',
+          description: t(
+            'features.adminForm.sidebar.logic.mutations.createSuccess',
+          ),
         })
       },
       onError: handleError,
@@ -67,7 +71,9 @@ export const useLogicMutations = () => {
           return prev
         })
         toast({
-          description: 'The logic was successfully deleted.',
+          description: t(
+            'features.adminForm.sidebar.logic.mutations.deleteSuccess',
+          ),
         })
       },
       onError: handleError,
@@ -91,7 +97,9 @@ export const useLogicMutations = () => {
           return prev
         })
         toast({
-          description: 'The logic was successfully updated.',
+          description: t(
+            'features.adminForm.sidebar.logic.mutations.updateSuccess',
+          ),
         })
       },
       onError: handleError,

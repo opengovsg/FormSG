@@ -20,8 +20,8 @@ const ListWithIcon = ({
   icon: As
 }) => (
   <GridItem>
-    <Flex align="center">
-      <Icon as={icon} mr="0.5rem" />
+    <Flex align="flex-start">
+      <Icon as={icon} mr="0.5rem" mt="0.25rem" flexShrink={0} />
       <Text>{children}</Text>
     </Flex>
   </GridItem>
@@ -41,7 +41,12 @@ export function ChartsSupportedFieldsInfoBox() {
           'features.adminForm.responses.charts.components.supportedFieldsInfoBox.supportedFields',
         )}
       </Text>
-      <Grid templateColumns="repeat(3,1fr)" mt="1.5rem" gap="1rem 2rem">
+      <Grid
+        templateColumns="repeat(3,1fr)"
+        mt="1.5rem"
+        rowGap="1rem"
+        columnGap={{ base: '1.25rem', md: '2rem' }}
+      >
         <ListWithIcon icon={BiRename}>
           {t(
             'features.adminForm.responses.charts.components.supportedFieldsInfoBox.shortAnswer',

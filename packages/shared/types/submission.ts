@@ -14,6 +14,7 @@ import {
   StrippedFormWorkflowDto,
 } from './form'
 import { ErrorCode } from './errorCodes'
+import { WorkflowEventDto } from './workflow-event'
 export type SubmissionId = Opaque<string, 'SubmissionId'>
 export const SubmissionId = z.string() as unknown as z.Schema<SubmissionId>
 
@@ -42,11 +43,29 @@ export const WebhookResponse = z.object({
 
 export type WebhookResponse = z.infer<typeof WebhookResponse>
 
+/**
+ * Auth types that forms can no longer be set to, but which remain on
+ * submissions and pending submissions stored before they were removed.
+ * Kept so those documents still pass schema validation when re-saved.
+ */
+export enum LegacySubmissionAuthType {
+  SGID = 'SGID',
+  SGID_MyInfo = 'SGID_MyInfo',
+}
+
+// Single source of truth for the auth types a stored submission may hold.
+export const SubmissionAuthType = z.nativeEnum({
+  ...FormAuthType,
+  ...LegacySubmissionAuthType,
+})
+export type SubmissionAuthType = z.infer<typeof SubmissionAuthType>
+
 export const SubmissionBase = z.object({
   form: z.string(),
-  authType: z.nativeEnum(FormAuthType),
+  authType: SubmissionAuthType,
   submitterId: z.string().optional(),
   myInfoFields: z.array(z.nativeEnum(MyInfoAttribute)).optional(),
+  myInfoReadOnlyFields: z.array(z.string()).optional(),
   submissionType: z.nativeEnum(SubmissionType),
   responseMetadata: ResponseMetadata.optional(),
   webhookResponses: z.array(WebhookResponse).optional(),
@@ -97,11 +116,21 @@ export const ApprovalStatus = z.enum([
   WorkflowStatus.REJECTED,
 ])
 
+const SubmittedStepSnapshotTokens = z.object({
+  v4: z.string().optional(),
+  v1: z.string().optional(),
+})
+
+export type SubmittedStepSnapshotTokens = z.infer<
+  typeof SubmittedStepSnapshotTokens
+>
+
 const SubmittedNonApprovalStep = z.object({
   isApproval: z.literal(false),
   submittedAt: z.string().datetime({ precision: 3 }),
   nextStepRecipientEmails: z.array(z.string()).optional(),
   submitterId: z.string().optional(),
+  snapshotTokens: SubmittedStepSnapshotTokens.optional(),
 })
 
 export type SubmittedNonApprovalStep = z.infer<typeof SubmittedNonApprovalStep>
@@ -120,6 +149,60 @@ export const SubmittedStep = z.discriminatedUnion('isApproval', [
 
 export type SubmittedStep = z.infer<typeof SubmittedStep>
 
+export type SubmittedStepField =
+  | keyof SubmittedNonApprovalStep
+  | keyof SubmittedApprovalStep
+
+/**
+ * The boundaries at which `submittedSteps` leaves the server.
+ * - `webhook`: the array shipped verbatim inside `workflowContent`.
+ * - `public`: unauthenticated responses reachable by submission id (eg, status tracking link).
+ * - `admin`: authenticated admin queries.
+ */
+export type SubmittedStepBoundary = 'webhook' | 'public' | 'admin'
+
+export const SUBMITTED_STEP_VISIBILITY = {
+  isApproval: { webhook: true, public: true, admin: true },
+  submittedAt: { webhook: true, public: true, admin: true },
+  status: { webhook: true, public: true, admin: true },
+  nextStepRecipientEmails: {
+    webhook: true,
+    public: false,
+    admin: true,
+  },
+  submitterId: { webhook: true, public: true, admin: false },
+  snapshotTokens: { webhook: false, public: false, admin: false },
+} as const satisfies Record<
+  SubmittedStepField,
+  Record<SubmittedStepBoundary, boolean>
+>
+
+type SubmittedStepVisibility = typeof SUBMITTED_STEP_VISIBILITY
+
+type VisibleFieldsAt<B extends SubmittedStepBoundary> = {
+  [K in keyof SubmittedStepVisibility]: SubmittedStepVisibility[K][B] extends true
+    ? K
+    : never
+}[keyof SubmittedStepVisibility]
+
+/**
+ * Distributes over the discriminated union so each member keeps only the fields
+ * it actually declares that are visible at boundary `B`.
+ */
+type ProjectSubmittedStep<
+  S,
+  B extends SubmittedStepBoundary,
+> = S extends unknown ? Pick<S, Extract<keyof S, VisibleFieldsAt<B>>> : never
+
+export type WebhookSubmittedStep = ProjectSubmittedStep<
+  SubmittedStep,
+  'webhook'
+>
+
+export type PublicSubmittedStep = ProjectSubmittedStep<SubmittedStep, 'public'>
+
+export type AdminSubmittedStep = ProjectSubmittedStep<SubmittedStep, 'admin'>
+
 export const MultirespondentSubmissionBase = SubmissionBase.extend({
   // Store the form fields and logic here, to use as reference for future
   // submitters. Don't bother to validate since this is injected by the backend.
@@ -137,6 +220,10 @@ export const MultirespondentSubmissionBase = SubmissionBase.extend({
   workflowStep: z.number(),
   mrfVersion: z.number().optional(),
   submittedSteps: z.array(SubmittedStep).optional(),
+  // RATIONALE: optional for backwards compatibility on
+  // in-flight mrf steps which do not have a step token at time of creation.
+  stepTokenHash: z.string().optional(),
+  encryptedStepToken: z.string().optional(),
 })
 
 export type MultirespondentSubmissionBase = z.infer<
@@ -184,12 +271,16 @@ export type StorageModeSubmissionDto = SubmissionDtoBase & {
 
 export type MultirespondentSubmissionDto = SubmissionDtoBase & {
   submissionType: SubmissionType.Multirespondent
+  payment?: SubmissionPaymentDto
   form_fields: FormFieldDto[]
   form_logics: LogicDto[]
+  // Step 1's login, copied from the form with the workflow
+  authType: SubmissionAuthType
   workflow: FormWorkflowDto
   verifiedContent?: string
   submissionPublicKey: string
   encryptedSubmissionSecretKey: string
+  encryptedStepToken?: string
   encryptedContent: string
   attachmentMetadata: Record<string, string>
   workflowStep: number
@@ -198,14 +289,25 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
   mrfVersion: number
 
   mrfMeta: SubmissionMrfMetadata
+  submittedSteps?: AdminSubmittedStep[]
+  workflowEvents?: WorkflowEventDto[]
 }
 
 export type PublicMultirespondentSubmissionDto = Omit<
   MultirespondentSubmissionDto,
-  'workflow' | 'form_fields'
+  | 'authType'
+  | 'workflow'
+  | 'form_fields'
+  | 'encryptedStepToken'
+  | 'payment'
+  | 'submittedSteps'
+  | 'workflowEvents'
 > & {
   form_fields: StrippedFormFieldDto[]
   workflow: StrippedFormWorkflowDto
+  encryptedStepToken: undefined
+  submittedSteps?: undefined
+  workflowEvents?: undefined
 }
 
 export type SubmissionDto =
@@ -240,6 +342,7 @@ export const MultirespondentSubmissionStreamDto =
     mrfVersion: true,
   }).extend({
     attachmentMetadata: z.record(z.string()),
+    payment: z.optional(SubmissionPaymentDto),
     _id: SubmissionId,
     created: DateString,
     mrfMeta: z.object({
@@ -248,6 +351,7 @@ export const MultirespondentSubmissionStreamDto =
       workflowStatus: z.nativeEnum(WorkflowStatus).optional(),
       lastSubmittedAt: z.string().optional(),
       hasNextStepRecipientEmails: z.boolean(),
+      stoppedAt: z.string().optional(),
     }),
   })
 
@@ -276,6 +380,7 @@ export type SubmissionMrfMetadata =
       workflowStatus: WorkflowStatus | undefined // `undefined` is due to submissions before this PR not storing this value
       lastSubmittedAt: string | undefined
       hasNextStepRecipientEmails: boolean
+      stoppedAt?: string
     }
   | undefined
 
@@ -318,13 +423,15 @@ export type SubmissionCountQueryDto =
     }
   | undefined
 
+export const MAX_SUBMISSION_METADATA_PAGE_SIZE = 10000
+
 export type FormSubmissionMetadataQueryDto = RequireAtLeastOne<
   {
     page: number
     submissionId: string
   },
   'page' | 'submissionId'
->
+> & { pageSize?: number; startDate?: string; endDate?: string }
 
 /**
  * Shape of email form submissions
@@ -369,10 +476,11 @@ export type PaymentSubmissionData = {
 }
 
 export type StatusTrackerData = {
-  submittedSteps: SubmittedStep[] | undefined
+  submittedSteps: PublicSubmittedStep[] | undefined
   workflow: StrippedFormWorkflowDto
   responseId: string | undefined
   form: string
+  stoppedAt?: string
 }
 
 // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.

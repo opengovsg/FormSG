@@ -6,6 +6,7 @@ export const enSG: Login = {
     banner: 'You can now collect payments directly on your form!',
     forbidden: 'You do not have access to this service.',
     expiredSession: 'Your login session has expired. Please login again.',
+    signingInWithOne: 'Signing into one.gov.sg...',
   },
   SelectProfilePage: {
     accountSelection: 'Choose an account to continue to FormSG',
@@ -31,8 +32,7 @@ export const enSG: Login = {
     OTPForm: {
       signin: 'Sign in',
       otpRequired: 'OTP is required.',
-      otpLengthCheck: 'Please enter a 6 digit OTP.',
-      otpTypeCheck: 'Only numbers are allowed.',
+      otpLengthCheck: 'Please enter a {otpLength} character OTP.',
       otpFromEmail: 'Enter OTP sent to {email}',
     },
     SgidLoginButton: {
@@ -47,6 +47,9 @@ export const enSG: Login = {
     },
     WogadLoginButton: {
       loginText: 'Log in with WOG AD',
+    },
+    OneLoginButton: {
+      loginText: 'Log in with one.gov.sg',
     },
   },
 }

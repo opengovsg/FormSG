@@ -1,6 +1,7 @@
 import { getSigningPublicKey, getVerificationPublicKey } from './util/publicKey'
 import Crypto from './crypto'
 import CryptoV3 from './crypto-v3'
+import CryptoV4 from './crypto-v4'
 import { PackageInitParams } from './types'
 import Verification from './verification'
 import Webhooks from './webhooks'
@@ -12,6 +13,7 @@ export {
   ADDRESS_SUBFIELD_KEYS,
   GENERIC_STRING_FIELD_TYPES,
 } from './constants-v4'
+export { generateUUID } from './util/crypto'
 
 export type {
   DecryptedContent,
@@ -36,11 +38,17 @@ export type {
   AddressAnswerV4,
   AttachmentAnswerV4,
   CheckboxAnswerV4,
+  ChildEntryV4,
   ChildrenAnswerV4,
+  ChildSubFieldAnswerV4,
   DecryptedContentV4,
+  DecryptedContentV4WithStepToken,
+  DecryptedContentAndAttachmentsV4,
+  DecryptParamsV4,
   FieldResponsesV4,
   FieldResponseV4,
   FormFieldMeta,
+  SubFieldMeta,
   FormFieldV4,
   FormFieldsV4,
   RadioAnswerV4,
@@ -78,6 +86,7 @@ export default function (config: PackageInitParams = {}) {
     }),
     crypto: new Crypto({ signingPublicKey }),
     cryptoV3: new CryptoV3({ signingPublicKey }),
+    cryptoV4: new CryptoV4({ signingPublicKey }),
     verification: new Verification({
       publicKey: verificationPublicKey,
       secretKey: verificationOptions?.secretKey,

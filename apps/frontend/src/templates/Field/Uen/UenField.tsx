@@ -18,6 +18,7 @@ export const UenField = ({
   schema,
   disableRequiredValidation,
   isHighContrast,
+  sourceBadge,
 }: UenFieldProps): JSX.Element => {
   const validationRules = useUenValidationRules(
     schema,
@@ -27,7 +28,11 @@ export const UenField = ({
   const { register, setValue } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} isHighContrast={isHighContrast}>
+    <FieldContainer
+      schema={schema}
+      isHighContrast={isHighContrast}
+      sourceBadge={sourceBadge}
+    >
       <Input
         aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""

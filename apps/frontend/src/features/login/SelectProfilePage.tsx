@@ -29,7 +29,7 @@ import { DASHBOARD_ROUTE, LOGIN_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { useToast } from '~hooks/useToast'
-import { ApiService } from '~services/ApiService'
+import { ApiService, HttpError } from '~services/ApiService'
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
 
@@ -132,7 +132,21 @@ export const SelectProfilePage = (): JSX.Element => {
   // If redirected back here but already authed, redirect to dashboard.
   if (user) window.location.replace(DASHBOARD_ROUTE)
   // User doesn't have any profiles, should reattempt to login
-  if (profilesResponse.error) window.location.replace(LOGIN_ROUTE)
+
+  if (profilesResponse.error) {
+    const err = profilesResponse.error
+    const statusCode = err instanceof HttpError ? err.code : undefined
+
+    if (statusCode === StatusCodes.UNAUTHORIZED) {
+      // 401 — session invalid, redirect quietly
+      window.location.replace(LOGIN_ROUTE)
+    } else {
+      // all other HTTP errors — redirect with status so LoginPage can surface the appropriate toast.
+      // For non-HTTP errors (e.g. network failures), use a non-5xx sentinel so we fall back to the generic toast.
+      const statusParam = statusCode ?? 0
+      window.location.replace(`${LOGIN_ROUTE}?status=${statusParam}`)
+    }
+  }
 
   useEffect(() => {
     if (profilesResponse.data?.profiles.length === 0) {

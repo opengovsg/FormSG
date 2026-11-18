@@ -3,6 +3,7 @@ import {
   ADMIN_FORM_META_FIELDS,
   EMAIL_FORM_SETTINGS_FIELDS,
   EMAIL_PUBLIC_FORM_FIELDS,
+  MAX_LOGIN_FIELDS,
   MB,
   MULTIRESPONDENT_FORM_SETTINGS_FIELDS,
   MULTIRESPONDENT_PUBLIC_FORM_FIELDS,
@@ -24,11 +25,13 @@ import {
   FormPaymentsField,
   FormPermission,
   FormResponseMode,
+  FormSavedView,
   FormSettings,
   FormStartPage,
   FormStatus,
   FormWebhookResponseModeSettings,
   FormWebhookSettings,
+  FormWorkflowDto,
   Language,
   LogicConditionState,
   LogicDto,
@@ -38,14 +41,26 @@ import {
   PaymentType,
   PublicMultirespondentFormDto,
   PublicStorageFormDto,
+  SavedViewSortDirection,
   StorageFormSettings,
   WorkflowType,
 } from 'formsg-shared/types'
 import { reorder } from 'formsg-shared/utils/immutable-array-fns'
 import { getApplicableIfStates } from 'formsg-shared/utils/logic'
+import {
+  getLoginIdentityConfigErrors,
+  isLoginField,
+  isMyInfoDataField,
+} from 'formsg-shared/utils/login-identity'
+import {
+  formUsesAuthType,
+  getLoginFieldPublishErrors,
+  getResultingLoginErrors,
+  hasLaterStepLogin,
+} from 'formsg-shared/utils/step-login'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
-import { compact, omit, pick, uniq } from 'lodash'
+import { omit, pick } from 'lodash'
 import mongoose, {
   ClientSession,
   Mongoose,
@@ -81,7 +96,7 @@ import {
 import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
-import { getMyInfoAttr } from '../modules/myinfo/myinfo.util'
+import { getUniqueMyInfoAttrsForFields } from '../modules/myinfo/myinfo.util'
 import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
 
 import { ProductSchema } from './payments/productSchema'
@@ -118,10 +133,15 @@ import LogicSchema, {
 import { CustomFormLogoSchema, FormLogoSchema } from './form_logo.server.schema'
 import { FORM_WHITELISTED_SUBMITTER_IDS_ID } from './form_whitelist.server.model'
 import WorkflowStepSchema, {
+  ESRVC_ID_SCHEMA,
   WorkflowStepConditionalSchema,
   WorkflowStepDynamicSchema,
   WorkflowStepStaticSchema,
 } from './form_workflow_step.server.schema'
+import {
+  getStepLoginAuthenticationConfigGuard,
+  saveWithAuthenticationConfigGuard,
+} from './form-authentication-config'
 import getUserModel from './user.server.model'
 import { isPositiveInteger } from './utils'
 
@@ -215,6 +235,35 @@ export const formPaymentsFieldSchema = {
   },
 }
 
+export const formPaymentsChannelSchema = {
+  channel: {
+    type: String,
+    enum: Object.values(PaymentChannel),
+    default: PaymentChannel.Unconnected,
+  },
+  target_account_id: {
+    type: String,
+    default: '',
+    validate: [/^\S*$/i, 'target_account_id must not contain whitespace.'],
+  },
+  publishable_key: {
+    type: String,
+    default: '',
+    validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
+  },
+  payment_methods: {
+    type: [String],
+    default: [],
+  },
+}
+
+export const formBusinessSchema = {
+  type: {
+    address: { type: String, default: '', trim: true },
+    gstRegNo: { type: String, default: '', trim: true },
+  },
+}
+
 const whitelistedSubmitterIdNestedPath = new Schema(
   {
     isWhitelistEnabled: {
@@ -231,6 +280,42 @@ const whitelistedSubmitterIdNestedPath = new Schema(
   },
   { _id: false },
 )
+
+const SavedViewSchema = new Schema<FormSavedView>({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  filter: {
+    startDate: { type: String },
+    endDate: { type: String },
+    columnFilters: {
+      type: [
+        {
+          _id: false,
+          columnId: { type: String, required: true },
+          text: { type: String },
+          values: { type: [String], default: undefined },
+        },
+      ],
+      default: undefined,
+    },
+  },
+  sort: {
+    type: {
+      columnId: { type: String, required: true },
+      direction: {
+        type: String,
+        enum: Object.values(SavedViewSortDirection),
+        required: true,
+      },
+    },
+    required: false,
+    default: undefined,
+  },
+  columnIds: { type: [String], default: undefined },
+})
 
 const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   publicKey: {
@@ -268,36 +353,11 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
       isWhitelistEnabled: false,
     }),
   },
-  payments_channel: {
-    channel: {
-      type: String,
-      enum: Object.values(PaymentChannel),
-      default: PaymentChannel.Unconnected,
-    },
-    target_account_id: {
-      type: String,
-      default: '',
-      validate: [/^\S*$/i, 'target_account_id must not contain whitespace.'],
-    },
-    publishable_key: {
-      type: String,
-      default: '',
-      validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
-    },
-    payment_methods: {
-      type: [String],
-      default: [],
-    },
-  },
+  payments_channel: formPaymentsChannelSchema,
 
   payments_field: formPaymentsFieldSchema,
 
-  business: {
-    type: {
-      address: { type: String, default: '', trim: true },
-      gstRegNo: { type: String, default: '', trim: true },
-    },
-  },
+  business: formBusinessSchema,
 
   isForceConvertToStorageMode: {
     type: Boolean,
@@ -414,6 +474,9 @@ EmailFormSchema.methods.__replaceWithStorageModeFormWithSameId =
   }
 
 const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
+  webhook: {
+    webhookFormat: { type: String, enum: ['v1', 'v4'], required: false },
+  },
   publicKey: {
     type: String,
     required: true,
@@ -471,7 +534,49 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
     type: Boolean,
     default: false,
   },
+  hasUsedGuidedMode: {
+    type: Boolean,
+    required: false,
+  },
+
+  payments_channel: formPaymentsChannelSchema,
+
+  payments_field: formPaymentsFieldSchema,
+
+  business: formBusinessSchema,
 })
+
+MultirespondentFormSchema.methods.addPaymentAccountId = function ({
+  accountId,
+  publishableKey,
+}: {
+  accountId: FormPaymentsChannel['target_account_id']
+  publishableKey: FormPaymentsChannel['publishable_key']
+}) {
+  if (this.payments_channel?.channel === PaymentChannel.Unconnected) {
+    this.payments_channel = {
+      // Definitely Stripe for now, may be different later on.
+      channel: PaymentChannel.Stripe,
+      target_account_id: accountId,
+      publishable_key: publishableKey,
+      payment_methods: [],
+    }
+  }
+  return this.save()
+}
+
+MultirespondentFormSchema.methods.removePaymentAccount = async function () {
+  this.payments_channel = {
+    channel: PaymentChannel.Unconnected,
+    target_account_id: '',
+    publishable_key: '',
+    payment_methods: [],
+  }
+  if (this.payments_field) {
+    this.payments_field.enabled = false
+  }
+  return this.save()
+}
 
 MultirespondentFormSchema.methods.getWhitelistedSubmitterIds = function () {
   return this.get('whitelistedSubmitterIds', null, {
@@ -482,11 +587,21 @@ MultirespondentFormSchema.methods.getWhitelistedSubmitterIds = function () {
 MultirespondentFormSchema.methods.getDuplicateParams = function (
   overrideProps: OverrideProps,
 ) {
-  const newForm = pick(this, [
-    ...FORM_SCHEMA_COMMON_DUPLICATE_PARAMS,
-    'workflow',
-  ]) as PickDuplicateForm
-  return { ...newForm, ...overrideProps }
+  if (!hasLaterStepLogin(this.workflow)) {
+    const newForm = pick(this, [
+      ...FORM_SCHEMA_COMMON_DUPLICATE_PARAMS,
+      'workflow',
+    ]) as PickDuplicateForm
+    return { ...newForm, ...overrideProps }
+  }
+  const newForm = pick(this, FORM_SCHEMA_COMMON_DUPLICATE_PARAMS)
+  // Later steps keep their login but not their Corppass e-service ID
+  const sourceWorkflow: FormWorkflowDto = this.toObject().workflow ?? []
+  const workflow = sourceWorkflow.map((step) =>
+    step.auth ? { ...step, auth: omit(step.auth, 'esrvc_id') } : step,
+  )
+  return { ...newForm, workflow, ...overrideProps } as PickDuplicateForm &
+    OverrideProps
 }
 
 const MultirespondentFormWorkflowPath = MultirespondentFormSchema.path(
@@ -504,6 +619,50 @@ MultirespondentFormWorkflowPath.discriminator(
 MultirespondentFormWorkflowPath.discriminator(
   WorkflowType.Conditional,
   WorkflowStepConditionalSchema,
+)
+
+// Payments on multirespondent forms are only supported when the form behaves
+// as a single-submission form: no workflow steps, no form-configured email
+// notifications, no single-submission enforcement. This document-level guard
+// covers every save() path (creation, duplication, instance methods); update
+// paths that bypass document validation (findByIdAndUpdate) must enforce the
+// same conditions atomically via their query filter.
+MultirespondentFormSchema.pre<IMultirespondentFormSchema>(
+  'validate',
+  function (next) {
+    if (!this.payments_field?.enabled) {
+      return next()
+    }
+    if ((this.workflow?.length ?? 0) > 0) {
+      this.invalidate(
+        'payments_field.enabled',
+        'Payments cannot be enabled on a multirespondent form with workflow steps',
+      )
+      return next()
+    }
+    if ((this.emails?.length ?? 0) > 0) {
+      this.invalidate(
+        'payments_field.enabled',
+        'Payments cannot be enabled on a multirespondent form with email notifications',
+      )
+      return next()
+    }
+    if (this.stepOneEmailNotificationFieldId) {
+      this.invalidate(
+        'payments_field.enabled',
+        'Payments cannot be enabled on a multirespondent form with a respondent email notification',
+      )
+      return next()
+    }
+    if (this.isSingleSubmission) {
+      this.invalidate(
+        'payments_field.enabled',
+        'Payments cannot be enabled on a multirespondent form with single submission enforcement',
+      )
+      return next()
+    }
+    return next()
+  },
 )
 
 const compileFormModel = (db: Mongoose): IFormModel => {
@@ -524,22 +683,35 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
       form_fields: {
         type: [BaseFieldSchema],
-        validate: {
-          validator: function (this: IFormSchema) {
-            const myInfoFieldCount = (this.form_fields ?? []).reduce(
-              (acc, field) => acc + (field.myInfo ? 1 : 0),
-              0,
-            )
-            return (
-              myInfoFieldCount === 0 ||
-              ((this.authType === FormAuthType.MyInfo ||
-                this.authType === FormAuthType.SGID_MyInfo) &&
-                myInfoFieldCount <= 30)
-            )
+        // Identity fields' logins are checked with the other identity rules
+        // in the pre-validate hook.
+        validate: [
+          {
+            validator: function (this: IFormSchema) {
+              // Any step's Singpass login may fill Myinfo fields; the
+              // pre-validate hook checks each field's owning step.
+              return (
+                formUsesAuthType(
+                  {
+                    authType: this.authType ?? FormAuthType.NIL,
+                    workflow: this.get('workflow'),
+                  },
+                  FormAuthType.MyInfo,
+                ) || !(this.form_fields ?? []).some(isMyInfoDataField)
+              )
+            },
+            message: 'Myinfo fields need Singpass login.',
           },
-          message:
-            'Check that your form is MyInfo-authenticated and has 30 or fewer MyInfo fields.',
-        },
+          {
+            validator: function (this: IFormSchema) {
+              return (
+                (this.form_fields ?? []).filter(isLoginField).length <=
+                MAX_LOGIN_FIELDS
+              )
+            },
+            message: `Forms can have at most ${MAX_LOGIN_FIELDS} Myinfo, NRIC/FIN and UEN fields. Remove a field and try again.`,
+          },
+        ],
       },
       form_logics: {
         type: [LogicSchema],
@@ -730,6 +902,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         default: true,
       },
 
+      savedViews: {
+        type: [SavedViewSchema],
+        default: [],
+      },
+
       authType: {
         type: String,
         enum: Object.values(FormAuthType),
@@ -759,11 +936,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       // whether esrvcId is available, and mongoose@v6 now saves objects with keys
       // in the order the keys are specifified in the schema instead of the object.
       // See https://mongoosejs.com/docs/migrating_to_6.html#schema-defined-document-key-order.
-      esrvcId: {
-        type: String,
-        required: false,
-        validate: [/^\S*$/i, 'e-service ID must not contain whitespace'],
-      },
+      esrvcId: { ...ESRVC_ID_SCHEMA, required: false },
 
       status: {
         type: String,
@@ -827,6 +1000,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         type: Number,
         default: null,
         min: 1,
+      },
+
+      closeAt: {
+        // Instant at which the form stops accepting responses
+        type: Date,
+        default: null,
       },
 
       goLinkSuffix: {
@@ -946,21 +1125,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormSchema.method<IFormSchema>(
     'getUniqueMyInfoAttrs',
     function getUniqueMyInfoAttrs() {
-      if (
-        this.authType !== FormAuthType.MyInfo &&
-        this.authType !== FormAuthType.SGID_MyInfo
-      ) {
+      if (this.authType !== FormAuthType.MyInfo) {
         return []
       }
-
-      // Compact is used to remove undefined from array
-      return compact(
-        uniq(
-          this.form_fields?.flatMap((field) => {
-            return getMyInfoAttr(field)
-          }),
-        ),
-      )
+      return getUniqueMyInfoAttrsForFields(this.form_fields ?? [])
     },
   )
 
@@ -1175,9 +1343,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   FormDocumentSchema.methods.updateFormFieldById = function (
+    this: IFormDocument,
     fieldId: string,
     newField: FormFieldDto,
   ) {
+    const checkedConfig = getStepLoginAuthenticationConfigGuard(this)
     const fieldToUpdate = getFormFieldById(this.form_fields, fieldId)
     if (!fieldToUpdate) return Promise.resolve(null)
 
@@ -1187,13 +1357,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       fieldToUpdate.set(newField)
     }
 
-    return this.save()
+    return saveWithAuthenticationConfigGuard(this, checkedConfig)
   }
 
   FormDocumentSchema.methods.insertFormField = function (
+    this: IFormDocument,
     newField: FormField,
     to?: number,
   ) {
+    const checkedConfig = getStepLoginAuthenticationConfigGuard(this)
     const formFields = this.form_fields as Types.DocumentArray<IFieldSchema>
     // Must use undefined check since number can be 0; i.e. falsey.
     if (to !== undefined) {
@@ -1202,13 +1374,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     } else {
       formFields.push(newField)
     }
-    return this.save()
+    return saveWithAuthenticationConfigGuard(this, checkedConfig)
   }
 
   FormDocumentSchema.methods.insertFormFields = function (
+    this: IFormDocument,
     newFields: FormField[],
     to?: number,
   ) {
+    const checkedConfig = getStepLoginAuthenticationConfigGuard(this)
     const formFields = this.form_fields as Types.DocumentArray<IFieldSchema>
     // Must use undefined check since number can be 0; i.e. falsey.
     if (to !== undefined) {
@@ -1217,12 +1391,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     } else {
       formFields.push(...newFields)
     }
-    return this.save()
+    return saveWithAuthenticationConfigGuard(this, checkedConfig)
   }
 
   FormDocumentSchema.method<IFormDocument>(
     'duplicateFormFieldByIdAndIndex',
     function (fieldId: string, insertionIndex: number) {
+      const checkedConfig = getStepLoginAuthenticationConfigGuard(this)
       const fieldToDuplicate = getFormFieldById(this.form_fields, fieldId)
       if (!fieldToDuplicate) return Promise.resolve(null)
 
@@ -1233,7 +1408,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       ) as FormFieldSchema
 
       this.form_fields.splice(insertionIndex, 0, duplicatedField)
-      return this.save()
+      return saveWithAuthenticationConfigGuard(this, checkedConfig)
     },
   )
 
@@ -1243,6 +1418,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       fieldId: string,
       newPosition: number,
     ): Promise<IFormDocument | null> {
+      const checkedConfig = getStepLoginAuthenticationConfigGuard(this)
       const existingFieldPosition = this.form_fields.findIndex(
         (f) => String(f._id) === fieldId,
       )
@@ -1256,7 +1432,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         newPosition,
       )
       this.form_fields = updatedFormFields
-      return this.save()
+      return saveWithAuthenticationConfigGuard(this, checkedConfig)
     },
   )
 
@@ -1463,8 +1639,27 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     formId: string,
     newPayments: FormPaymentsField,
   ) {
-    return this.findByIdAndUpdate(
-      formId,
+    // Enabling payments re-asserts the notification and single-submission
+    // guards atomically in the query, closing the race against concurrent
+    // settings updates. `workflow` and `stepOneEmailNotificationFieldId` are
+    // multirespondent-only fields (they match vacuously on storage mode);
+    // `emails` exists on both modes and must be empty to enable payments in
+    // either. Empty arrays are matched via `field.0` non-existence rather
+    // than `$size` so legacy storage-mode documents missing `emails`
+    // entirely also pass. A miss (null) when enabling therefore means
+    // "preconditions not met", not necessarily "form missing".
+    const filter = newPayments.enabled
+      ? {
+          _id: formId,
+          'workflow.0': { $exists: false },
+          'emails.0': { $exists: false },
+          stepOneEmailNotificationFieldId: { $in: [null, ''] },
+          isSingleSubmission: { $ne: true },
+        }
+      : { _id: formId }
+
+    return this.findOneAndUpdate(
+      filter,
       { payments_field: newPayments },
       { new: true, runValidators: true },
     ).exec()
@@ -1529,6 +1724,28 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       return next(validationError)
     }
 
+    const loginConfig = {
+      authType: this.authType ?? FormAuthType.NIL,
+      responseMode: this.responseMode,
+      isSubmitterIdCollectionEnabled: this.isSubmitterIdCollectionEnabled,
+      form_fields: this.form_fields,
+      workflow: this.get('workflow'),
+    }
+    // Step login rules apply only to forms with a later-step login. Only an
+    // admin with mrf-singpass-all-steps on can add a form's first one.
+    const loginIdentityErrors = !hasLaterStepLogin(loginConfig.workflow)
+      ? getLoginIdentityConfigErrors(loginConfig)
+      : this.status === FormStatus.Public
+        ? getLoginFieldPublishErrors(loginConfig)
+        : getResultingLoginErrors(loginConfig)
+    if (loginIdentityErrors.length > 0) {
+      const validationError = this.invalidate(
+        'form_fields',
+        loginIdentityErrors.join(' '),
+      ) as mongoose.Error.ValidationError
+      return next(validationError)
+    }
+
     // Validate that admin exists before form is created.
     return User.findById(this.admin).then((admin) => {
       if (!admin) {
@@ -1565,6 +1782,22 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     admin: 1,
     lastModified: -1,
   })
+
+  // Serves the scheduled closure sweep. Partial, because most forms have no
+  // closeAt and would only bloat the index.
+  //
+  // NOTE: `autoIndex` is off outside dev/test (see config.ts), so this does not
+  // create the index on a deployed database — it has to be created by hand in
+  // Atlas, in the background, before the feature carries real traffic.
+  FormSchema.index(
+    {
+      status: 1,
+      closeAt: 1,
+    },
+    {
+      partialFilterExpression: { closeAt: { $type: 'date' } },
+    },
+  )
 
   const FormModel = db.model<IFormSchema, IFormModel>(
     FORM_SCHEMA_ID,

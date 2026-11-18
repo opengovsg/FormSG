@@ -55,6 +55,7 @@ describe('DupeFormWizardProvider', () => {
       setCurrentStep: vi.fn(),
       isMrfCutoverEnabled: false,
       isPaperTrackingSetUpPageEnabled: false,
+      isLegacySetup: false,
       proceedCtaLabel: 'Create form',
       goToStorageModeDetails: vi.fn(),
       goToMrfDetails: vi.fn(),

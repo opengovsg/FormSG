@@ -30,12 +30,16 @@ export const getMultirespondentSubmissionEditPath = (
   submissionId: string,
   options?: {
     key?: string
+    stepToken?: string
   },
 ) => {
   const editPath = `${formId}/edit/${submissionId}`
-  const { key } = options || {}
+  const { key, stepToken } = options || {}
   if (key) {
-    return `${editPath}?key=${encodeURIComponent(key)}`
+    const withKey = `${editPath}?key=${encodeURIComponent(key)}`
+    return stepToken
+      ? `${withKey}&token=${encodeURIComponent(stepToken)}`
+      : withKey
   }
   return editPath
 }
@@ -45,4 +49,21 @@ export const getStatusTrackerPath = (
   submissionId: string | undefined,
 ) => {
   return `${formId}/status/${submissionId}`
+}
+
+const SECRET_QUERY_PARAMS = ['key', 'token']
+
+export const redactSecretQueryParams = (url: string): string => {
+  let parsed: URL
+  try {
+    parsed = new URL(url)
+  } catch {
+    return url
+  }
+  const secretParams = SECRET_QUERY_PARAMS.filter((param) =>
+    parsed.searchParams.has(param),
+  )
+  if (secretParams.length === 0) return url
+  secretParams.forEach((param) => parsed.searchParams.set(param, 'REDACTED'))
+  return parsed.toString()
 }

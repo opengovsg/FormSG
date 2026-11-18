@@ -1,17 +1,20 @@
 import { Outlet } from 'react-router-dom'
 
-import { ResponsesTabWrapper } from './common/ResponsesTabWrapper'
 import { UnlockedResponsesProvider } from './storage/UnlockedResponses'
+import { ResponsesPage } from './ResponsesPage'
 
 /**
  * Page for rendering subroutes via `Outlet` component for admin form result responses pages.
  */
-export const ResponsesLayout = (): JSX.Element => {
+export const ResponsesLayout = ({
+  showResponses = false,
+}: {
+  showResponses?: boolean
+} = {}): JSX.Element => {
   return (
-    <ResponsesTabWrapper>
-      <UnlockedResponsesProvider>
-        <Outlet />
-      </UnlockedResponsesProvider>
-    </ResponsesTabWrapper>
+    <UnlockedResponsesProvider>
+      {showResponses ? <ResponsesPage /> : null}
+      <Outlet />
+    </UnlockedResponsesProvider>
   )
 }

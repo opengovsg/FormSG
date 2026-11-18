@@ -1,6 +1,22 @@
 export * from './en-sg'
 
 export interface Fields {
+  loginIdentity: {
+    sectionLabel: string
+    corppassPanelInfo: string
+    loginMissing: string
+    // Keyed by login, since Singpass adds one field and Corppass two.
+    convertedToast: {
+      singpass: string
+      corppass: string
+    }
+    fieldLimit: string
+    details: {
+      uinfin: string
+      uen: string
+      uid: string
+    }
+  }
   builder: {
     title: string
     createField: string
@@ -9,6 +25,7 @@ export interface Fields {
     tabs: {
       basic: string
       myInfo: string
+      corppass: string
       payments: string
     }
     image: string
@@ -70,6 +87,17 @@ export interface Fields {
       minimum: string
       maximum: string
     }
+    error: {
+      selectionLimitRequired: string
+      min: string
+      max: string
+      minLargerThanMax: string
+      maxLessThanMin: string
+      moreThanNumOptions: string
+    }
+  }
+  dropdown: {
+    conditionalRoutingWarning: string
   }
   paragraph: string
   section: {
@@ -92,6 +120,11 @@ export interface Fields {
       title: string
       inputLabel: string
       placeholder: string
+      error: {
+        duplicate: string
+        empty: string
+        invalid: string
+      }
     }
     emailConfirmation: {
       title: string
@@ -153,8 +186,21 @@ export interface Fields {
       maxRowGreaterThanMin: string
     }
     column: string
+    columnType: string
     ariaLabelDelete: string
     addColumn: string
+  }
+  shortText: {
+    prefill: {
+      label: string
+      description: string
+      fieldIdPlaceholder: string
+      copyFieldIdAriaLabel: string
+      lock: {
+        label: string
+        description: string
+      }
+    }
   }
   number: {
     validation: string
@@ -171,6 +217,7 @@ export interface Fields {
       validationType: string
       numOfCharacter: string
       validDecimal: string
+      validNumber: string
       min: string
       max: string
       rangeValue: string
@@ -188,6 +235,18 @@ export interface Fields {
   fieldListOption: {
     useForApprovals: string
   }
+  myInfoPreview: {
+    dataSource: string
+    verifiedFor: string
+    singaporeans: string
+    permanentResidents: string
+    foreignersWithSingpass: string
+    fieldDetails: string
+    children: {
+      collectChildData: string
+      allowMultiple: string
+    }
+  }
   myInfoPanel: {
     sections: {
       personal: string
@@ -199,7 +258,6 @@ export interface Fields {
     singpassDisabledBefore: string
     singpassDisabledSettings: string
     singpassDisabledAfter: string
-    myInfoFieldsLimit: string
     learnMore: string
   }
   fixedPaymentAmountField: {
@@ -242,6 +300,8 @@ export interface Fields {
       storageModeOnly: string
       // TODO [MRF-CUTOVER]: Remove after cutover.
       cutoverLegacyOnly: string
+      mrfWorkflowSteps: string
+      mrfEmailNotifications: string
       stripeNotConnectedBefore: string
       stripeNotConnectedSettings: string
       stripeNotConnectedAfter: string

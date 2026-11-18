@@ -6,6 +6,10 @@ import {
 } from 'formsg-shared/types'
 
 import {
+  CSV_DOWNLOAD_STATUS_COLUMN_ID,
+  CSV_MRF_PENDING_RESPONSE_AT_COLUMN_ID,
+  CSV_MRF_WORKFLOW_STATUS_COLUMN_ID,
+  CSV_PAYMENT_COLUMN_IDS,
   MRF_PENDING_RESPONSE_AT_LABEL,
   MRF_WORKFLOW_STATUS_LABEL,
 } from '~features/admin-form/responses/constants'
@@ -14,6 +18,7 @@ import { getPaymentDataView } from '../../../common/utils/getPaymentDataView'
 import {
   getPendingResponseAtString,
   getStatusFromWorkflowStatus,
+  MRF_STATUS,
 } from '../../../common/utils/mrfSubmissionView'
 import {
   CsvRecordData,
@@ -69,36 +74,6 @@ export class CsvRecord {
     this.#record = record
   }
 
-  // Function mapping payment data keys to ids. This is necessary to maintain
-  // static mapping from keys to IDs which is important for the csv generator to
-  // put the correct values in the correct columns.
-  private paymentDataKeyToId(key: keyof SubmissionPaymentDto): string {
-    switch (key) {
-      case 'id':
-        return '000000000000000000000001'
-      case 'amount':
-        return '000000000000000000000002'
-      case 'email':
-        return '000000000000000000000003'
-      case 'status':
-        return '000000000000000000000004'
-      case 'paymentDate':
-        return '000000000000000000000005'
-      case 'paymentIntentId':
-        return '000000000000000000000006'
-      case 'transactionFee':
-        return '000000000000000000000007'
-      case 'receiptUrl':
-        return '000000000000000000000008'
-      case 'payoutId':
-        return '000000000000000000000009'
-      case 'payoutDate':
-        return '00000000000000000000000a'
-      case 'products':
-        return '00000000000000000000000b'
-    }
-  }
-
   // Function mapping mrf data keys to ids. This is necessary to maintain
   // static mapping from keys to IDs which is important for the csv generator to
   // put the correct values in the correct columns.
@@ -109,9 +84,9 @@ export class CsvRecord {
   ): string {
     switch (key) {
       case MRF_WORKFLOW_STATUS_LABEL:
-        return '000000000000000000010001'
+        return CSV_MRF_WORKFLOW_STATUS_COLUMN_ID
       case MRF_PENDING_RESPONSE_AT_LABEL:
-        return '000000000000000000010002'
+        return CSV_MRF_PENDING_RESPONSE_AT_COLUMN_ID
       default: {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _: never = key
@@ -133,7 +108,7 @@ export class CsvRecord {
    */
   materializeSubmissionData() {
     const downloadStatus: CsvRecordData = {
-      _id: '000000000000000000000000',
+      _id: CSV_DOWNLOAD_STATUS_COLUMN_ID,
       fieldType: 'textfield',
       question: 'Download Status',
       answer: this.#statusMessage,
@@ -145,7 +120,7 @@ export class CsvRecord {
       getPaymentDataView(this.hostOrigin, this.paymentData, this.form).forEach(
         ({ key, name, value }) =>
           output.push({
-            _id: this.paymentDataKeyToId(key),
+            _id: CSV_PAYMENT_COLUMN_IDS[key],
             fieldType: 'textfield',
             question: name,
             answer: value,
@@ -153,11 +128,18 @@ export class CsvRecord {
       )
     }
 
-    if (this.mrfData) {
+    // A submission to a multirespondent form with no workflow has nothing to
+    // report in these columns. Gated per submission, so one workflow
+    // submission anywhere in the export is enough to bring the columns in, on
+    // either dashboard.
+    if (this.mrfData && this.mrfData.workflowNumTotalSteps > 0) {
       const workflowStatus = this.mrfData.workflowStatus
-      const mrfSubmissionStatus = workflowStatus
-        ? getStatusFromWorkflowStatus(workflowStatus)
-        : ''
+      const isStopped = !!this.mrfData.stoppedAt
+      const mrfSubmissionStatus = isStopped
+        ? MRF_STATUS.STOPPED
+        : workflowStatus
+          ? getStatusFromWorkflowStatus(workflowStatus)
+          : ''
       const workFlowStatusColumn: CsvRecordData = {
         _id: this.mrfDataKeyToId(MRF_WORKFLOW_STATUS_LABEL),
         fieldType: 'textfield',
@@ -168,10 +150,11 @@ export class CsvRecord {
       const workflowCurrentStepNumber = this.mrfData.workflowCurrentStepNumber
       const workflowNumTotalSteps = this.mrfData.workflowNumTotalSteps
 
-      const pendingAtString =
-        workflowStatus === undefined ||
-        workflowCurrentStepNumber === undefined ||
-        workflowNumTotalSteps === undefined
+      const pendingAtString = isStopped
+        ? '-'
+        : workflowStatus === undefined ||
+            workflowCurrentStepNumber === undefined ||
+            workflowNumTotalSteps === undefined
           ? ''
           : getPendingResponseAtString({
               workflowStatus,

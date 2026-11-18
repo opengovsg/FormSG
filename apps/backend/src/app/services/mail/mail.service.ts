@@ -33,6 +33,7 @@ import {
   WorkflowOutcome,
 } from '../../views/templates/EmailTemplate'
 import { FormDeactivatedNotification } from '../../views/templates/FormDeactivatedNotification'
+import { FormScheduledClosureNotification } from '../../views/templates/FormScheduledClosureNotification'
 import { SmsThresholdWarningNotification } from '../../views/templates/SmsThresholdWarningNotification'
 import { smsThreshold } from '../sms/sms.utils'
 
@@ -47,6 +48,7 @@ import {
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
   FormDeactivatedNotificationHtmlData,
+  FormScheduledClosureNotificationHtmlData,
   IssueReportedNotificationData,
   MailOptions,
   MailServiceParams,
@@ -681,6 +683,81 @@ export class MailService {
   }
 
   /**
+   * Sends a notification that a form has closed by reaching its scheduled
+   * expiry date. Unlike sendFormDeactivatedNotification this needs no
+   * remediation, only confirmation.
+   *
+   * @param args the parameter object
+   * @param args.emailRecipients emails to send to
+   * @param args.formTitle title of form
+   * @param args.formId ID of form
+   * @param args.closedAt human-readable close instant, pre-formatted in SGT
+   */
+  sendFormScheduledClosureNotification = ({
+    emailRecipients,
+    formTitle,
+    formId,
+    closedAt,
+  }: {
+    emailRecipients: string[]
+    formTitle: string
+    formId: string
+    closedAt: string
+  }): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const htmlData: FormScheduledClosureNotificationHtmlData = {
+      formTitle,
+      formLink: `${this.#appUrl}/${formId}`,
+      formSettingsLink: `${this.#appUrl}/admin/form/${formId}/settings`,
+      closedAt,
+    }
+
+    const generatedHtml = fromPromise(
+      render(FormScheduledClosureNotification(htmlData)),
+      (e) => {
+        logger.error({
+          message: 'Failed to render FormScheduledClosureNotification',
+          meta: {
+            action: 'sendFormScheduledClosureNotification',
+            error: e,
+          },
+        })
+
+        return new MailGenerationError(
+          'Error generating form scheduled closure notification email',
+        )
+      },
+    )
+
+    return generatedHtml.andThen((mailHtml) => {
+      const mail: MailOptions = {
+        to: emailRecipients,
+        from: this.#senderFromString,
+        subject: `Form closed as scheduled - ${formTitle} (${formId})`,
+        html: mailHtml,
+        headers: {
+          [EMAIL_HEADERS.emailType]: EmailType.WarningNotification,
+          [EMAIL_HEADERS.formId]: formId,
+        },
+      }
+
+      return this.#sendNodeMail(mail, { mailId: 'scheduled-closure' }).mapErr(
+        (error) => {
+          logger.error({
+            message: 'Error sending form scheduled closure notification email',
+            meta: {
+              action: 'sendFormScheduledClosureNotification',
+              formTitle,
+              formId,
+            },
+            error,
+          })
+          return error
+        },
+      )
+    })
+  }
+
+  /**
    * Sends a notification for sms threshold hit warning
    * @param args the parameter object
    * @param args.emailRecipients emails to send to
@@ -771,6 +848,7 @@ export class MailService {
     formData,
     pdfAttachment,
     useStandardisedEmailTemplate,
+    includeFormIdInResponseJson,
   }: {
     replyToEmails?: string[]
     form: Pick<IFormHasEmailSchema, '_id' | 'title' | 'emails'>
@@ -783,6 +861,7 @@ export class MailService {
     }[]
     pdfAttachment?: Mail.Attachment
     useStandardisedEmailTemplate?: boolean
+    includeFormIdInResponseJson?: boolean
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
     const logMeta = {
       action: 'sendSubmissionToAdmin',
@@ -807,6 +886,7 @@ export class MailService {
 
     const refNo = String(submission.id)
     const formTitle = form.title
+    const formId = String(form._id)
     const submissionTime = moment(submission.created)
       .tz('Asia/Singapore')
       .format('ddd, DD MMM YYYY hh:mm:ss A')
@@ -824,6 +904,17 @@ export class MailService {
     let fullDataCollationData
     if (dataCollationData) {
       fullDataCollationData = [
+        // Surface the form ID first so admins feeding this JSON through an
+        // automation can tell which form a response came from. Form ID is the
+        // stable identifier automations should route on.
+        ...(includeFormIdInResponseJson
+          ? [
+              {
+                question: 'Form ID',
+                answer: formId,
+              },
+            ]
+          : []),
         {
           question: 'Response ID',
           answer: refNo,
@@ -858,7 +949,7 @@ export class MailService {
 
       return this.#sendEmailWithTemplate({
         emails: adminEmails,
-        formId: String(form._id),
+        formId,
         subject: `Response received - ${formTitle} (${refNo})`,
         htmlData: emailData,
         attachments: attachmentsToInclude,
@@ -1193,6 +1284,7 @@ export class MailService {
     responseJson,
     attachments,
     replyTo,
+    emailType = EmailType.WorkflowCompletion,
   }: {
     emails: string[]
     formId: string
@@ -1204,6 +1296,7 @@ export class MailService {
     responseJson: string
     attachments?: Mail.Attachment[]
     replyTo?: string
+    emailType?: EmailType.WorkflowCompletion | EmailType.AdminResponse
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
     const emailTemplateData: EmailData = {
       formTitle,
@@ -1219,25 +1312,67 @@ export class MailService {
       subject: `Response received - ${formTitle} (${responseId})`,
       htmlData: emailTemplateData,
       attachments,
-      emailType: EmailType.WorkflowCompletion,
+      emailType,
       actionName: 'sendMrfWorkflowCompletionEmail',
       submissionId,
       replyTo,
     })
   }
 
-  sendMrfApprovalEmail = ({
+  #sendMrfOutcomeEmail = ({
+    emailTitle,
+    outcome,
+    emailType,
+    actionName,
     emails,
     formId,
     formTitle,
     responseId,
     submissionId,
     timestamp,
-    isRejected,
     formQuestionAnswers,
     responseJson,
     attachments,
     replyTo,
+  }: {
+    emailTitle?: string
+    outcome: WorkflowOutcome
+    emailType: EmailType
+    actionName: string
+    emails: string[]
+    formId: string
+    formTitle: string
+    responseId: string
+    submissionId?: string
+    timestamp: string
+    formQuestionAnswers?: QuestionAnswer[]
+    responseJson?: string
+    attachments?: Mail.Attachment[]
+    replyTo?: string
+  }): ResultAsync<true, MailGenerationError | MailSendError> =>
+    this.#sendEmailWithTemplate({
+      emails,
+      formId,
+      subject: `${outcome} - ${formTitle} (${responseId})`,
+      htmlData: {
+        emailTitle,
+        formTitle,
+        responseId: responseId.toString(),
+        timestamp,
+        outcome,
+        formQuestionAnswers,
+        responseJson,
+      },
+      attachments,
+      emailType,
+      actionName,
+      submissionId,
+      replyTo,
+    })
+
+  sendMrfApprovalEmail = ({
+    isRejected,
+    ...props
   }: {
     emails: string[]
     formId: string
@@ -1250,32 +1385,64 @@ export class MailService {
     responseJson: string
     attachments?: Mail.Attachment[]
     replyTo?: string
-  }): ResultAsync<true, MailGenerationError | MailSendError> => {
-    const outcome = isRejected
-      ? WorkflowOutcome.NOT_APPROVED
-      : WorkflowOutcome.APPROVED
-    const htmlData: EmailData = {
-      emailTitle: `${formTitle} has been ${outcome.toLowerCase()}`,
-      formTitle,
-      responseId: responseId.toString(),
-      timestamp,
-      outcome,
-      formQuestionAnswers,
-      responseJson,
-    }
-
-    return this.#sendEmailWithTemplate({
-      emails,
-      formId,
-      subject: `${outcome} - ${formTitle} (${responseId})`,
-      htmlData,
-      attachments,
+  }): ResultAsync<true, MailGenerationError | MailSendError> =>
+    this.#sendMrfOutcomeEmail({
+      ...props,
+      outcome: isRejected
+        ? WorkflowOutcome.NOT_APPROVED
+        : WorkflowOutcome.APPROVED,
       emailType: EmailType.WorkflowApproval,
       actionName: 'sendMrfApprovalEmail',
-      submissionId,
-      replyTo,
     })
-  }
+
+  sendMrfWorkflowSentBackEmail = ({
+    emails,
+    formId,
+    formTitle,
+    responseId,
+    responseUrl,
+    remarks,
+  }: {
+    emails: string[]
+    formId: string
+    formTitle: string
+    responseId: string
+    responseUrl: string
+    remarks?: string
+  }): ResultAsync<true, MailGenerationError | MailSendError> =>
+    this.#sendEmailWithTemplate({
+      emails,
+      formId,
+      subject: `Amendments requested - ${formTitle} (${responseId})`,
+      htmlData: {
+        emailTitle: `Amend your part of ${formTitle}`,
+        emailBody: [
+          'The form admin has sent this response back to you for amendments. The answers given so far are filled in.',
+          ...(remarks ? ['', 'Remarks from the form admin:', remarks] : []),
+        ].join('\n'),
+        formTitle,
+        responseId,
+        reviewUrl: responseUrl,
+      },
+      emailType: EmailType.WorkflowSentBack,
+      actionName: 'sendMrfWorkflowSentBackEmail',
+    })
+
+  sendMrfWorkflowStoppedEmail = (props: {
+    emails: string[]
+    formId: string
+    formTitle: string
+    responseId: string
+    submissionId: string
+    timestamp: string
+  }): ResultAsync<true, MailGenerationError | MailSendError> =>
+    this.#sendMrfOutcomeEmail({
+      ...props,
+      emailTitle: 'This workflow has been stopped',
+      outcome: WorkflowOutcome.STOPPED,
+      emailType: EmailType.WorkflowStopped,
+      actionName: 'sendMrfWorkflowStoppedEmail',
+    })
 
   sendRespondentCopyEmail = ({
     formId,

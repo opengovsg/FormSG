@@ -1,4 +1,4 @@
-import { composeStories } from '@storybook/react'
+import { composeStories } from '@storybook/react-vite'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
@@ -140,6 +140,35 @@ describe('radio validation', () => {
     expect(
       screen.getByText(/Please specify a value for the "others" option/i),
     ).toBeInTheDocument()
+  })
+
+  it('disables the "Others" input when an option other than "Others" is checked', async () => {
+    // Arrange
+    const user = userEvent.setup()
+    const checkboxOptionLabel =
+      ValidationRequired.args?.schema?.fieldOptions?.[0]
+    if (!checkboxOptionLabel) {
+      throw new Error(
+        'Test setup: ValidationRequired story must define at least one field option',
+      )
+    }
+    render(<ValidationRequired />)
+    const othersInput = screen.getByLabelText('"Other" response')
+    const checkboxOption = screen.getByLabelText(checkboxOptionLabel)
+
+    // Assert
+    // Initially nothing is selected, so the input stays editable to allow
+    // typing to auto-select the "Others" option.
+    expect(othersInput).toBeEnabled()
+
+    // Act
+    // Check a non-"Others" option.
+    await user.click(checkboxOption)
+
+    // Assert
+    // "Others" input should now be greyed out (disabled) to signal that its
+    // content will not be submitted unless "Others" is also checked.
+    expect(othersInput).toBeDisabled()
   })
 
   it('renders success when unchecking some options before submitting', async () => {

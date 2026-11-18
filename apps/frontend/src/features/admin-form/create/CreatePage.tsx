@@ -10,6 +10,7 @@ import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { NavigationPrompt } from '~templates/NavigationPrompt'
 
+import { NavigationSaveGuard } from '~features/admin-form/common/NavigationSaveGuard'
 import { useUser } from '~features/user/queries'
 
 import { DirtyModal } from '../common/components/DirtyModal'
@@ -22,7 +23,11 @@ import {
 import { CreatePageContent } from './common/CreatePageContent'
 import { CreatePageSidebar } from './common/CreatePageSidebar'
 import { CreatePageSidebarProvider } from './common/CreatePageSidebarContext'
+import { OpenFieldListTabOnArrival } from './common/OpenFieldListTabOnArrival'
+import { OpenWorkflowTabOnArrival } from './common/OpenWorkflowTabOnArrival'
+import { StageFieldOnArrival } from './common/StageFieldOnArrival'
 import { FeatureTour } from './featureTour/FeatureTour'
+import { useUsesStepLoginRules } from './workflow/hooks/useUsesStepLoginRules'
 
 export const CreatePage = (): JSX.Element => {
   const { formId } = useParams()
@@ -57,11 +62,19 @@ export const CreatePage = (): JSX.Element => {
   }, [isLoading, hasAdminSeenFeatureTour])
 
   const isDirty = useDirtyFieldStore(isDirtySelector)
+  const isStepLoginEnabled = useUsesStepLoginRules()
 
   return (
     <>
-      <NavigationPrompt when={isDirty} />
+      {isStepLoginEnabled ? (
+        <NavigationSaveGuard fallbackDirty={isDirty} />
+      ) : (
+        <NavigationPrompt when={isDirty} />
+      )}
       <CreatePageSidebarProvider>
+        <OpenWorkflowTabOnArrival />
+        <OpenFieldListTabOnArrival />
+        <StageFieldOnArrival />
         <DirtyModal />
         <Flex
           h="100%"

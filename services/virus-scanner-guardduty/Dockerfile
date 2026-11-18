@@ -1,4 +1,4 @@
-FROM node:22-bookworm-slim
+FROM node:22.23.5-bookworm-slim
 
 # Install aws-lambda-cpp build dependencies
 RUN apt-get update && \
@@ -11,7 +11,8 @@ RUN apt-get update && \
   autoconf \
   libtool \
   automake \
-  python3
+  python3 \
+  xz-utils
 
 # Install pnpm
 RUN npm install -g pnpm@10.30.3
@@ -20,6 +21,7 @@ WORKDIR /workspace
 
 # Copy workspace config and lockfile from monorepo root
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY patches ./patches/
 COPY services/virus-scanner-guardduty/package.json ./services/virus-scanner-guardduty/
 
 # Install only virus-scanner dependencies

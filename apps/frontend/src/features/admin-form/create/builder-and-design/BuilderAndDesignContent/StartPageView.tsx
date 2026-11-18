@@ -7,7 +7,7 @@ import { FormAuthType, FormLogoState, FormStartPage } from 'formsg-shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 
-import { PREVIEW_MOCK_UINFIN } from '~features/admin-form/preview/constants'
+import { getPreviewMockLoginId } from '~features/admin-form/preview/constants'
 import { useEnv } from '~features/env/queries'
 import { FormInstructions } from '~features/public-form/components/FormInstructions/FormInstructions'
 import {
@@ -94,6 +94,8 @@ export const StartPageView = () => {
     return form?.startPage
   }, [form?.startPage, startPageFromStore])
 
+  const previewTitle = startPageData?.title ?? form?.title
+
   // Color theme options and other design stuff, identical to public form
   const { logoImgSrc, ...formBannerLogoProps } = useFormBannerLogo({
     logoBucketUrl,
@@ -101,7 +103,11 @@ export const StartPageView = () => {
     agency: form?.admin.agency,
     colorTheme: form?.startPage.colorTheme,
   })
-  const formHeaderProps = useFormHeader({ startPage, hover: hoverStartPage })
+  const formHeaderProps = useFormHeader({
+    startPage,
+    closeAt: form?.closeAt,
+    hover: hoverStartPage,
+  })
 
   const headerRef = useRef<HTMLDivElement | null>(null)
   const instructionsRef = useRef<HTMLDivElement | null>(null)
@@ -195,11 +201,11 @@ export const StartPageView = () => {
           {...formBannerLogoProps}
         />
         <FormHeader
-          title={form?.title}
+          title={previewTitle}
           showHeader
           loggedInId={
             form && form.authType !== FormAuthType.NIL
-              ? PREVIEW_MOCK_UINFIN
+              ? getPreviewMockLoginId(form.authType)
               : undefined
           }
           {...formHeaderProps}

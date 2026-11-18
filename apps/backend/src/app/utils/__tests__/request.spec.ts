@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson'
+import { X_FORMSG_CLIENT_VERSION } from 'formsg-shared/constants'
 import { createRequest } from 'node-mocks-http'
 
 import { createReqMeta } from 'src/app/utils/request'
@@ -46,6 +47,34 @@ describe('request', () => {
             referer: expect.stringContaining(mockSubmissionId.toHexString()),
           }),
         }),
+      )
+    })
+  })
+
+  describe('createReqMeta', () => {
+    it('should include the client version sent by the frontend', () => {
+      // Arrange
+      const req = createRequest({
+        url: '/mockEndpoint',
+        headers: { [X_FORMSG_CLIENT_VERSION]: '9.35.0' },
+      })
+
+      // Act
+      const reqMeta = createReqMeta(req)
+
+      // Assert
+      expect(reqMeta.clientVersion).toBe('9.35.0')
+    })
+
+    it('should mask the step link token in the logged url', () => {
+      const req = createRequest({
+        url: '/api/v3/forms/f/submissions/s?stepToken=abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG&other=1',
+      })
+
+      const reqMeta = createReqMeta(req)
+
+      expect(reqMeta.urlWithQueryParams).toBe(
+        '/api/v3/forms/f/submissions/s?stepToken=abcdefghijklmnopqrs************************&other=1',
       )
     })
   })

@@ -1,7 +1,7 @@
 import { MemoryRouter } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { http, HttpResponse } from 'msw'
 
 import { featureFlags } from 'formsg-shared/constants'
@@ -38,8 +38,9 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    chromatic: { pauseAnimationAtEnd: true },
-    msw: baseMsw,
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
+    msw: { handlers: { default: baseMsw } },
   },
 } as Meta
 
@@ -73,47 +74,59 @@ MrfCutoverOn.decorators = [withCutover]
 export const MrfCutoverOnChildrenBeta = Template.bind({})
 MrfCutoverOnChildrenBeta.decorators = [withCutover]
 MrfCutoverOnChildrenBeta.parameters = {
-  msw: [
-    getUser({
-      delay: 0,
-      mockUser: { ...MOCK_USER, betaFlags: { children: true } },
-    }),
-    getPreviewFormResponse({ delay: 0 }),
-    getDashboardResponse(),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getUser({
+          delay: 0,
+          mockUser: { ...MOCK_USER, betaFlags: { children: true } },
+        }),
+        getPreviewFormResponse({ delay: 0 }),
+        getDashboardResponse(),
+      ],
+    },
+  },
 }
 
 export const MrfCutoverOnWebhookV1Beta = Template.bind({})
 MrfCutoverOnWebhookV1Beta.decorators = [withCutover]
 MrfCutoverOnWebhookV1Beta.parameters = {
-  msw: [
-    getUser({
-      delay: 0,
-      mockUser: {
-        ...MOCK_USER,
-        betaFlags: { createStorageModeForV1Webhook: true },
-      },
-    }),
-    getPreviewFormResponse({ delay: 0 }),
-    getDashboardResponse(),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getUser({
+          delay: 0,
+          mockUser: {
+            ...MOCK_USER,
+            betaFlags: { createStorageModeForV1Webhook: true },
+          },
+        }),
+        getPreviewFormResponse({ delay: 0 }),
+        getDashboardResponse(),
+      ],
+    },
+  },
 }
 
 export const MrfCutoverOnAllExceptions = Template.bind({})
 MrfCutoverOnAllExceptions.decorators = [withCutover]
 MrfCutoverOnAllExceptions.parameters = {
-  msw: [
-    getUser({
-      delay: 0,
-      mockUser: {
-        ...MOCK_USER,
-        betaFlags: {
-          children: true,
-          createStorageModeForV1Webhook: true,
-        },
-      },
-    }),
-    getPreviewFormResponse({ delay: 0 }),
-    getDashboardResponse(),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getUser({
+          delay: 0,
+          mockUser: {
+            ...MOCK_USER,
+            betaFlags: {
+              children: true,
+              createStorageModeForV1Webhook: true,
+            },
+          },
+        }),
+        getPreviewFormResponse({ delay: 0 }),
+        getDashboardResponse(),
+      ],
+    },
+  },
 }

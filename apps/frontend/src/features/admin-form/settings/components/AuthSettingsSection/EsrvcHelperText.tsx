@@ -21,7 +21,7 @@ export const EsrvcHelperText = ({
           <Link isExternal href={SINGPASS_PARTNER_SUPPORT_LINK}>
             Singpass partner support
           </Link>{' '}
-          for your e-Service ID
+          for your e-service ID
         </Text>
       )
     default:

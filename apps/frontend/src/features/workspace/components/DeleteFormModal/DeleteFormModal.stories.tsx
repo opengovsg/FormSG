@@ -1,11 +1,11 @@
 import { useDisclosure } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { FormId } from 'formsg-shared/types'
 
 import { MOCK_USER, userHandlers } from '~/mocks/msw/handlers/user'
 
-import { getMobileViewParameters } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import { DeleteFormModal, DeleteFormModalProps } from './DeleteFormModal'
 
@@ -22,9 +22,9 @@ export default {
   },
   parameters: {
     layout: 'fullscreen',
-    // Prevent flaky tests due to modal animating in.
-    chromatic: { pauseAnimationAtEnd: true },
-    msw: userHandlers({ delay: 0 }),
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
+    msw: { handlers: { default: userHandlers({ delay: 0 }) } },
   },
 } as Meta<DeleteFormModalProps>
 
@@ -40,6 +40,4 @@ const Template: StoryFn<DeleteFormModalProps> = (args) => {
   )
 }
 export const Default = Template.bind({})
-
-export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
+Default.parameters = { argos: { modes: viewportModes('mobile') } }

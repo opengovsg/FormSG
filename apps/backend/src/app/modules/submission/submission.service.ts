@@ -1,6 +1,9 @@
-import { InvokeCommandOutput } from '@aws-sdk/client-lambda'
+import type { InvokeCommandOutput } from '@aws-sdk/client-lambda'
+import type {
+  GetObjectCommandOutput,
+  PutObjectCommandOutput,
+} from '@aws-sdk/client-s3'
 import { Uint8ArrayBlobAdapter } from '@smithy/util-stream/dist-types/blob/Uint8ArrayBlobAdapter'
-import { ManagedUpload } from 'aws-sdk/clients/s3'
 import Bluebird from 'bluebird'
 import crypto from 'crypto'
 import {
@@ -12,13 +15,14 @@ import {
   SubmissionPaymentDto,
   SubmissionType,
 } from 'formsg-shared/types'
+import { applyMyInfoPrefixToFormFields } from 'formsg-shared/utils/myinfo-prefix'
 import { StatusCodes } from 'http-status-codes'
 import omit from 'lodash/omit'
 import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
-import { Transform, Writable } from 'stream'
+import { Transform } from 'stream'
 import { validate } from 'uuid'
 
 import {
@@ -26,6 +30,7 @@ import {
   IEncryptSubmissionModel,
   IMultirespondentSubmissionModel,
   IPopulatedForm,
+  ISubmissionModel,
   ISubmissionSchema,
   MultirespondentSubmissionCursorData,
   StorageModeSubmissionCursorData,
@@ -33,6 +38,7 @@ import {
 } from '../../../types'
 import {
   ParsedClearAttachmentFieldResponseV3,
+  ParsedClearAttachmentFieldResponseV4,
   ParsedClearAttachmentResponse,
   ParsedClearFormFieldResponse,
 } from '../../../types/api'
@@ -45,6 +51,9 @@ import { AutoReplyMailData } from '../../services/mail/mail.types'
 import {
   createPresignedPostDataPromise,
   CreatePresignedPostError,
+  getS3Object,
+  getSignedS3Url,
+  putS3Object,
 } from '../../utils/aws-s3'
 import { createQueryWithDateParam, isMalformedDate } from '../../utils/date'
 import {
@@ -57,6 +66,7 @@ import {
   MalformedParametersError,
 } from '../core/core.errors'
 import { InvalidSubmissionIdError } from '../feedback/feedback.errors'
+import { getSubmissionType } from '../form/form.utils'
 import { PaymentNotFoundError } from '../payments/payments.errors'
 import * as PaymentsService from '../payments/payments.service'
 
@@ -67,6 +77,7 @@ import {
   AttachmentUploadError,
   DownloadCleanFileFailedError,
   GuardDutyDownloadCleanFileFailedError,
+  GuardDutyFileAlreadyScannedError,
   GuardDutyInvalidFileKeyError,
   GuardDutyMaliciousFileDetectedError,
   GuardDutyParseVirusScannerLambdaPayloadError,
@@ -109,6 +120,8 @@ const PendingSubmissionModel = getPendingSubmissionModel(mongoose)
  * @param dateRange optional date range to narrow down submission count
  * @param dateRange.startDate the start date of the date range
  * @param dateRange.endDate the end date of the date range
+ * @param formResponseMode optional response mode of the form, used to count
+ * only the submission types countable for that mode
  *
  * @returns ok(form submission count)
  * @returns err(MalformedParametersError) if date range provided is malformed
@@ -118,14 +131,14 @@ const PendingSubmissionModel = getPendingSubmissionModel(mongoose)
 export const getFormSubmissionsCount = ({
   formId,
   dateRange = {},
-  submissionType,
+  formResponseMode,
 }: {
   formId: string
   dateRange?: {
     startDate?: string
     endDate?: string
   }
-  submissionType?: SubmissionType
+  formResponseMode?: FormResponseMode
 }): ResultAsync<number, MalformedParametersError | DatabaseError> => {
   if (
     isMalformedDate(dateRange.startDate) ||
@@ -133,6 +146,18 @@ export const getFormSubmissionsCount = ({
   ) {
     return errAsync(new MalformedParametersError('Malformed date parameter'))
   }
+
+  // RATIONALE: Forms mode-migrated between storage and multirespondent mode
+  // (in either direction) retain submissions of both types, so both
+  // admin-viewable types count — on the dashboard and toward the submission
+  // limit alike. Email submissions carry no encrypted content and stay
+  // excluded for storage mode forms converted from email mode.
+  const submissionType =
+    formResponseMode === undefined
+      ? undefined
+      : formResponseMode === FormResponseMode.Email
+        ? getSubmissionType(formResponseMode)
+        : { $in: [SubmissionType.Encrypt, SubmissionType.Multirespondent] }
 
   const countQuery = {
     form: formId,
@@ -284,6 +309,37 @@ const parseVirusScannerLambdaPayload = (
 
 type DownloadCleanFileError = DownloadCleanFileFailedError | InvalidFileKeyError
 
+const s3BodyToBuffer = async (
+  body: GetObjectCommandOutput['Body'],
+): Promise<Buffer> => {
+  if (!body) {
+    throw new Error('S3 getObject response is missing Body')
+  }
+
+  const byteArray = await body.transformToByteArray()
+  return Buffer.from(byteArray)
+}
+
+/**
+ * Delay before the single retry of a failed clean-file download. Long enough
+ * for a transient DNS blip (e.g. `getaddrinfo EAI_AGAIN`) to clear, short
+ * enough not to noticeably extend an already-slow submission.
+ */
+export const CLEAN_FILE_DOWNLOAD_RETRY_DELAY_MS = 1000
+
+/**
+ * S3 4xx responses (NoSuchKey, AccessDenied, NoSuchVersion, ...) are
+ * deterministic, so retrying them only adds latency.
+ */
+const isNonRetryableS3Error = (error: unknown): boolean => {
+  const statusCode = (error as { $metadata?: { httpStatusCode?: number } })
+    ?.$metadata?.httpStatusCode
+  return statusCode !== undefined && statusCode >= 400 && statusCode < 500
+}
+
+const sleep = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms))
+
 /**
  * Downloads file from clean bucket
  * @param cleanFileKey object key of the file in the clean bucket
@@ -311,50 +367,48 @@ export const downloadCleanFile = (
     return errAsync(new InvalidFileKeyError())
   }
 
-  let buffer = Buffer.alloc(0)
-
-  const writeStream = new Writable({
-    write(chunk, _encoding, callback) {
-      buffer = Buffer.concat([buffer, chunk])
-      callback()
-    },
-  })
-
-  const readStream = AwsConfig.s3
-    .getObject({
-      Bucket: bucketName,
-      Key: cleanFileKey,
-      VersionId: versionId,
-    })
-    .createReadStream()
-
   const downloadStartTime = Date.now()
   logger.info({
     message: 'File download from S3 has started',
     meta: logMeta,
   })
 
-  readStream.pipe(writeStream)
+  const fetchCleanFile = () =>
+    getS3Object({
+      Bucket: bucketName,
+      Key: cleanFileKey,
+      VersionId: versionId,
+    }).then(({ Body }) => s3BodyToBuffer(Body))
+
+  // Retry once after a short backoff to ride out transient network failures
+  // (e.g. DNS lookup timeouts against S3) instead of failing the submission.
+  const fetchCleanFileWithRetry = () =>
+    fetchCleanFile().catch(async (error) => {
+      if (isNonRetryableS3Error(error)) return Promise.reject(error)
+
+      logger.warn({
+        message:
+          'Error encountered when downloading file from clean bucket, retrying once',
+        meta: { ...logMeta, retryDelayMs: CLEAN_FILE_DOWNLOAD_RETRY_DELAY_MS },
+        error,
+      })
+      await sleep(CLEAN_FILE_DOWNLOAD_RETRY_DELAY_MS)
+      return fetchCleanFile()
+    })
 
   return ResultAsync.fromPromise(
-    new Promise<Buffer>((resolve, reject) => {
-      readStream.on('end', () => {
-        logger.info({
-          message: 'Successfully downloaded file from S3',
-          meta: logMeta,
-        })
-        const downloadEndTime = Date.now()
-        logger.info({
-          message: 'File download from S3 duration',
-          meta: { ...logMeta, time: downloadEndTime - downloadStartTime },
-        })
-
-        resolve(buffer)
+    fetchCleanFileWithRetry().then((buffer) => {
+      logger.info({
+        message: 'Successfully downloaded file from S3',
+        meta: logMeta,
+      })
+      const downloadEndTime = Date.now()
+      logger.info({
+        message: 'File download from S3 duration',
+        meta: { ...logMeta, time: downloadEndTime - downloadStartTime },
       })
 
-      readStream.on('error', (error) => {
-        reject(error)
-      })
+      return buffer
     }),
     (error) => {
       logger.error({
@@ -370,7 +424,7 @@ export const downloadCleanFile = (
 
 type AttachmentReducerData = {
   attachmentMetadata: AttachmentMetadata // type alias for Map<string, string>
-  attachmentUploadPromises: Promise<ManagedUpload.SendData>[]
+  attachmentUploadPromises: Promise<PutObjectCommandOutput>[]
 }
 
 /**
@@ -378,6 +432,7 @@ type AttachmentReducerData = {
  *
  * @param formId the id of the form to upload attachments for
  * @param attachmentData Attachment blob data from the client (including the attachment)
+ * @param bucket the bucket to upload to, defaulting to the default attachmentS3Bucket.
  *
  * @returns ok(AttachmentMetadata) A map of field id to the s3 key of the uploaded attachment
  * @returns err(AttachmentUploadError) if the upload has failed
@@ -385,6 +440,7 @@ type AttachmentReducerData = {
 export const uploadAttachments = (
   formId: string,
   attachmentData: Record<string, unknown>,
+  bucket: string = AwsConfig.attachmentS3Bucket,
 ): ResultAsync<AttachmentMetadata, AttachmentUploadError> => {
   const { attachmentMetadata, attachmentUploadPromises } = Object.keys(
     attachmentData,
@@ -402,13 +458,11 @@ export const uploadAttachments = (
 
       accumulator.attachmentMetadata.set(fieldId, uploadKey)
       accumulator.attachmentUploadPromises.push(
-        AwsConfig.s3
-          .upload({
-            Bucket: AwsConfig.attachmentS3Bucket,
-            Key: uploadKey,
-            Body: Buffer.from(individualAttachment),
-          })
-          .promise(),
+        putS3Object({
+          Bucket: bucket,
+          Key: uploadKey,
+          Body: Buffer.from(individualAttachment),
+        }),
       )
 
       return accumulator
@@ -557,10 +611,17 @@ export const getSubmissionMetadata = (
     return okAsync(null)
   }
 
+  // The mode lookup is kept purely as the guard rejecting email mode forms.
   return getEncryptedSubmissionModelByResponseMode(responseMode).asyncAndThen(
-    (modelToUse) =>
+    () =>
       ResultAsync.fromPromise(
-        modelToUse.findSingleMetadata(formId, submissionId),
+        // Forms mode-migrated between storage and multirespondent mode (in
+        // either direction) retain submissions of both types, so metadata
+        // lookups must span both via the base model.
+        SubmissionModel.findEncryptedOrMultirespondentSingleMetadata(
+          formId,
+          submissionId,
+        ),
         (error) => {
           logger.error({
             message: 'Failure retrieving metadata from database',
@@ -582,25 +643,31 @@ export const getSubmissionMetadataList = (
   responseMode: FormResponseMode,
   formId: string,
   page?: number,
+  pageSize?: number,
+  dateRange: { startDate?: string; endDate?: string } = {},
 ): ResultAsync<SubmissionMetadataList, ResponseModeError | DatabaseError> =>
-  getEncryptedSubmissionModelByResponseMode(responseMode).asyncAndThen(
-    (modelToUse) =>
-      ResultAsync.fromPromise(
-        modelToUse.findAllMetadataByFormId(formId, { page }),
-        (error) => {
-          logger.error({
-            message: 'Failure retrieving metadata page from database',
-            meta: {
-              action: 'getSubmissionMetadataList',
-              responseMode,
-              formId,
-              page,
-            },
-            error,
-          })
-          return new DatabaseError(getMongoErrorMessage(error))
-        },
+  getEncryptedSubmissionModelByResponseMode(responseMode).asyncAndThen(() =>
+    ResultAsync.fromPromise(
+      // See getSubmissionMetadata: mode-migrated forms mix submission
+      // types, and the page and count must agree across both.
+      SubmissionModel.findAllEncryptedOrMultirespondentMetadataByFormId(
+        formId,
+        { page, pageSize, ...dateRange },
       ),
+      (error) => {
+        logger.error({
+          message: 'Failure retrieving metadata page from database',
+          meta: {
+            action: 'getSubmissionMetadataList',
+            responseMode,
+            formId,
+            page,
+          },
+          error,
+        })
+        return new DatabaseError(getMongoErrorMessage(error))
+      },
+    ),
   )
 
 /**
@@ -619,44 +686,45 @@ export const getEncryptedSubmissionData = (
   SubmissionData,
   ResponseModeError | SubmissionNotFoundError | DatabaseError
 > =>
-  getEncryptedSubmissionModelByResponseMode(responseMode).asyncAndThen(
-    (modelToUse) =>
-      ResultAsync.fromPromise(
-        modelToUse.findEncryptedSubmissionById(
-          formId,
-          submissionId,
-        ) as Promise<SubmissionData | null>,
-        (error) => {
-          logger.error({
-            message: 'Failure retrieving encrypted submission from database',
-            meta: {
-              action: 'getEncryptedSubmissionData',
-              responseMode,
-              formId,
-              submissionId,
-            },
-            error,
-          })
-          return new DatabaseError(getMongoErrorMessage(error))
-        },
-      ).andThen((submission) => {
-        if (!submission) {
-          logger.error({
-            message: 'Unable to find encrypted submission from database',
-            meta: {
-              action: 'getEncryptedResponse',
-              formId,
-              submissionId,
-            },
-          })
-          return errAsync(
-            new SubmissionNotFoundError(
-              'Unable to find encrypted submission from database',
-            ),
-          )
-        }
-        return okAsync(submission)
-      }),
+  getEncryptedSubmissionModelByResponseMode(responseMode).asyncAndThen(() =>
+    ResultAsync.fromPromise(
+      // See getSubmissionMetadata: mode-migrated forms mix submission
+      // types, so the lookup must span both via the base model.
+      SubmissionModel.findEncryptedOrMultirespondentSubmissionById(
+        formId,
+        submissionId,
+      ),
+      (error) => {
+        logger.error({
+          message: 'Failure retrieving encrypted submission from database',
+          meta: {
+            action: 'getEncryptedSubmissionData',
+            responseMode,
+            formId,
+            submissionId,
+          },
+          error,
+        })
+        return new DatabaseError(getMongoErrorMessage(error))
+      },
+    ).andThen((submission) => {
+      if (!submission) {
+        logger.error({
+          message: 'Unable to find encrypted submission from database',
+          meta: {
+            action: 'getEncryptedResponse',
+            formId,
+            submissionId,
+          },
+        })
+        return errAsync(
+          new SubmissionNotFoundError(
+            'Unable to find encrypted submission from database',
+          ),
+        )
+      }
+      return okAsync(submission)
+    }),
   )
 
 /**
@@ -681,6 +749,7 @@ export const getSubmissionCursor = (
   ReturnType<
     | IEncryptSubmissionModel['getSubmissionCursorByFormId']
     | IMultirespondentSubmissionModel['getSubmissionCursorByFormId']
+    | ISubmissionModel['getEncryptedOrMultirespondentSubmissionCursorByFormId']
   >,
   MalformedParametersError
 > => {
@@ -695,16 +764,17 @@ export const getSubmissionCursor = (
     return err(new MalformedParametersError('Invalid limit parameter'))
   }
 
-  return getEncryptedSubmissionModelByResponseMode(responseMode).andThen(
-    (modelToUse) =>
-      ok(
-        modelToUse.getSubmissionCursorByFormId(
-          formId,
-          dateRange,
-          isSortByLatest,
-          limit,
-        ),
+  return getEncryptedSubmissionModelByResponseMode(responseMode).andThen(() =>
+    ok(
+      // See getSubmissionMetadata: mode-migrated forms mix submission
+      // types, so the stream must span both via the base model.
+      SubmissionModel.getEncryptedOrMultirespondentSubmissionCursorByFormId(
+        formId,
+        dateRange,
+        isSortByLatest,
+        limit,
       ),
+    ),
   )
 }
 
@@ -722,13 +792,28 @@ export const addMrfMetadata = (): Transform => {
       callback,
     ) => {
       if (data.submissionType === SubmissionType.Multirespondent) {
-        const { workflow, workflowStep, submittedSteps, ...rest } = data
+        const {
+          workflow,
+          workflowStep,
+          submittedSteps,
+          stoppedAt,
+          myInfoReadOnlyFields,
+          form_fields,
+          ...rest
+        } = data
         const dataWithMrfMeta = {
           ...rest,
+          form_fields:
+            form_fields &&
+            applyMyInfoPrefixToFormFields(
+              form_fields,
+              myInfoReadOnlyFields ?? [],
+            ),
           mrfMeta: buildMrfMetadata({
             workflow,
             workflowStep,
             submittedSteps,
+            stoppedAt,
           }),
         }
         return callback(null, dataWithMrfMeta)
@@ -767,17 +852,30 @@ export const transformAttachmentMetaStream = ({
 
       const transformedMetadata: Record<string, string> = {}
       let processedCount = 0
+      let hasErrored = false
 
       for (const [key, objectPath] of Object.entries(unprocessedMetadata)) {
-        AwsConfig.s3.getSignedUrl(
-          'getObject',
+        getSignedS3Url(
           {
             Bucket: AwsConfig.attachmentS3Bucket,
             Key: objectPath,
-            Expires: urlValidDuration,
           },
-          (error, url) => {
-            if (error) {
+          urlValidDuration,
+        )
+          .then((url) => {
+            transformedMetadata[key] = url
+            processedCount += 1
+
+            // Finished processing, replace current attachment metadata with the
+            // signed URLs.
+            if (processedCount === totalCount) {
+              data.attachmentMetadata = transformedMetadata
+              return callback(null, data)
+            }
+          })
+          .catch((error) => {
+            if (!hasErrored) {
+              hasErrored = true
               logger.error({
                 message: 'Error occured whilst retrieving signed URL from S3',
                 meta: {
@@ -789,18 +887,7 @@ export const transformAttachmentMetaStream = ({
               })
               return callback(error)
             }
-
-            transformedMetadata[key] = url
-            processedCount += 1
-
-            // Finished processing, replace current attachment metadata with the
-            // signed URLs.
-            if (processedCount === totalCount) {
-              data.attachmentMetadata = transformedMetadata
-              return callback(null, data)
-            }
-          },
-        )
+          })
       }
     },
   })
@@ -815,7 +902,9 @@ export const addPaymentDataStream = (): Transform => {
   return new Transform({
     objectMode: true,
     transform: async (
-      data: StorageModeSubmissionCursorData,
+      data:
+        | StorageModeSubmissionCursorData
+        | MultirespondentSubmissionCursorData,
       _encoding,
       callback,
     ) => {
@@ -1118,13 +1207,12 @@ export const transformAttachmentMetasToSignedUrls = (
   const keyToSignedUrlPromises: Record<string, Promise<string>> = {}
 
   for (const [key, objectPath] of attachmentMetadata) {
-    keyToSignedUrlPromises[key] = AwsConfig.s3.getSignedUrlPromise(
-      'getObject',
+    keyToSignedUrlPromises[key] = getSignedS3Url(
       {
         Bucket: AwsConfig.attachmentS3Bucket,
         Key: objectPath,
-        Expires: urlValidDuration,
       },
+      urlValidDuration,
     )
   }
 
@@ -1148,6 +1236,7 @@ export const transformAttachmentMetasToSignedUrls = (
 type TriggerGuardDutyScanningError =
   | GuardDutyVirusScanFailedError
   | GuardDutyInvalidFileKeyError
+  | GuardDutyFileAlreadyScannedError
   | GuardDutyMaliciousFileDetectedError
   | GuardDutyParseVirusScannerLambdaPayloadError
 
@@ -1208,9 +1297,10 @@ export const triggerGuardDutyScanning = (
         if (error instanceof ParseVirusScannerLambdaPayloadError) {
           return new GuardDutyParseVirusScannerLambdaPayloadError()
         } else if (error.statusCode === StatusCodes.NOT_FOUND) {
-          return new GuardDutyInvalidFileKeyError(
-            'GUARDDUTY Invalid file key - file key is not found in the quarantine bucket. The file must be uploaded first.',
-          )
+          // File key is valid but not in the quarantine bucket - almost always
+          // a replayed request whose attachments were already scanned and moved
+          // to the clean bucket.
+          return new GuardDutyFileAlreadyScannedError()
         } else if (error.statusCode !== StatusCodes.BAD_REQUEST) {
           return new GuardDutyVirusScanFailedError()
         }
@@ -1298,4 +1388,80 @@ export const triggerGuardDutyScanThenDownloadCleanFileChain = <
         return error
       })
   )
+}
+
+/**
+ * V4 version: Helper function to trigger guardduty scanning and download clean file.
+ * In V4, attachment data is nested inside response.answer rather than at the top level.
+ * @param response quarantined V4 attachment response
+ * @returns modified response with answer.content replaced with clean file buffer,
+ * and answer.value/answer.filename set to the real (uploaded) filename.
+ */
+export const triggerGuardDutyScanThenDownloadCleanFileChainV4 = (
+  response: ParsedClearAttachmentFieldResponseV4,
+  formId: string,
+): ResultAsync<
+  ParsedClearAttachmentFieldResponseV4,
+  TriggerGuardDutyScanThenDownloadCleanFileChainError
+> => {
+  const quarantineFileKey = response.answer.value
+  const logMeta = {
+    action: 'triggerGuardDutyScanThenDownloadCleanFileChainV4',
+    formId,
+    quarantineFileKey,
+  }
+  return triggerGuardDutyScanning(quarantineFileKey)
+    .mapErr((error) => {
+      if (error instanceof GuardDutyMaliciousFileDetectedError) {
+        logger.error({
+          message: 'GUARDDUTY Malicious file detected during lambda virus scan',
+          meta: logMeta,
+          error,
+        })
+        return new GuardDutyMaliciousFileDetectedError(response.answer.filename)
+      }
+      return error
+    })
+    .map((lambdaOutput) => {
+      logger.info({
+        message:
+          'GUARDDUTY Successfully retrieved clean file from virus scanning lambda',
+        meta: { ...logMeta, cleanFileKey: lambdaOutput.body.cleanFileKey },
+      })
+      return lambdaOutput.body
+    })
+    .andThen((cleanAttachment) =>
+      downloadCleanFile(
+        cleanAttachment.cleanFileKey,
+        cleanAttachment.destinationVersionId,
+        AwsConfig.guarddutyCleanS3Bucket,
+      ).map(
+        (attachmentBuffer) =>
+          ({
+            ...response,
+            answer: {
+              ...response.answer,
+              content: attachmentBuffer,
+              filename: response.answer.filename,
+              // Promote the real filename into `value` (the canonical, durable
+              // answer field). Until now `value` held the quarantine bucket key
+              // (a bare UUID); every downstream sink — email/PDF Q&A, response
+              // JSON, the V4->V3 webhook adapter, the encrypted-at-rest answer,
+              // and the admin CSV/attachment download name — reads `value`, so
+              // leaving it as the UUID drops the filename (and its extension).
+              // This mirrors the V3 chain's `answer: response.filename`.
+              value: response.answer.filename,
+            },
+          }) as ParsedClearAttachmentFieldResponseV4,
+      ),
+    )
+    .mapErr((error) => {
+      if (error instanceof DownloadCleanFileFailedError) {
+        return new GuardDutyDownloadCleanFileFailedError()
+      }
+      if (error instanceof InvalidFileKeyError) {
+        return new GuardDutyInvalidFileKeyError()
+      }
+      return error
+    })
 }

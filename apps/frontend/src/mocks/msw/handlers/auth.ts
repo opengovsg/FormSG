@@ -7,7 +7,7 @@ export const otpGenerationResponse = ({
     '/api/v3/auth/otp/generate',
     async ({ request }) => {
       const body = await request.json()
-      await MswDelay()
+      await MswDelay(0)
       return HttpResponse.json(
         isInvalid
           ? 'This is not a whitelisted public service email domain. Please log in with your official government or government-linked email address.'
@@ -26,15 +26,15 @@ export const authHandlers = [
       const body = await request.json()
 
       if (body.otp === '123456') {
-        await MswDelay()
+        await MswDelay(0)
         return new HttpResponse({ status: 200 })
       }
-      await MswDelay()
+      await MswDelay(0)
       return HttpResponse.json({ message: 'Wrong OTP' }, { status: 401 })
     },
   ),
   http.get('/api/v3/auth/logout', async () => {
-    await MswDelay()
+    await MswDelay(0)
     return HttpResponse.json(
       { message: 'Sign out successful' },
       { status: 200 },

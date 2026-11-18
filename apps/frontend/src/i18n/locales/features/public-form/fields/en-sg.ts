@@ -57,12 +57,12 @@ export const enSG: Fields = {
       email: {
         title: 'Verify your email',
         description:
-          'An email with a 6-digit verification code was sent to you. It will be valid for 30 minutes.',
+          'An email with a verification code was sent to you. It will be valid for 30 minutes.',
       },
       mobile: {
         title: 'Verify your mobile number',
         description:
-          'An SMS with a 6-digit verification code was sent to you. It will be valid for 30 minutes.',
+          'An SMS with a verification code was sent to you. It will be valid for 30 minutes.',
       },
     },
   },

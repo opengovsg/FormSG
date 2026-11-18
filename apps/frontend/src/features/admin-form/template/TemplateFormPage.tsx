@@ -1,8 +1,5 @@
 import { useParams } from 'react-router-dom'
 import { Flex, useDisclosure } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
-
-import { featureFlags } from 'formsg-shared/constants/feature-flags'
 
 import { fillHeightCss } from '~utils/fillHeightCss'
 import GovtMasthead from '~components/GovtMasthead'
@@ -21,8 +18,6 @@ import { PreviewFormBannerContainer } from '../common/components/PreviewFormBann
 
 import { TemplateFormProvider } from './TemplateFormProvider'
 import {
-  UseTemplateFrame,
-  UseTemplateTour,
   UseTemplateWall,
   UseTemplateWallScrollTrigger,
 } from './UseTemplateNudges'
@@ -30,12 +25,6 @@ import {
 export const TemplateFormPage = (): JSX.Element => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
-
-  const isFrameOn = useFeatureIsOn(featureFlags.useTemplateFrame)
-  const isTourOn = useFeatureIsOn(featureFlags.useTemplateTour)
-  const isWallScrollOn = useFeatureIsOn(featureFlags.useTemplateWallScroll)
-  const isWallSubmitOn = useFeatureIsOn(featureFlags.useTemplateWallSubmit)
-  const isWallOn = isWallScrollOn || isWallSubmitOn
 
   const {
     isOpen: isWallOpen,
@@ -45,16 +34,15 @@ export const TemplateFormPage = (): JSX.Element => {
 
   return (
     <Flex flexDir="column" css={fillHeightCss} pos="relative">
-      {isFrameOn && <UseTemplateFrame />}
       <TemplateFormProvider
         formId={formId}
-        onTemplatePreviewSubmitClick={isWallSubmitOn ? onWallOpen : undefined}
+        onTemplatePreviewSubmitClick={onWallOpen}
       >
         <GovtMasthead />
         <PreviewFormBannerContainer isTemplate />
         <FormSectionsProvider>
           <PublicFormLogo />
-          <FormStartPage isTemplate />
+          <FormStartPage hasStickyPreviewBanner />
           <PublicFormWrapper>
             <FormInstructions />
             <FormFields />
@@ -62,21 +50,16 @@ export const TemplateFormPage = (): JSX.Element => {
             <FormEndPage />
             <FormFooter />
           </PublicFormWrapper>
-          {isWallScrollOn && (
-            <UseTemplateWallScrollTrigger
-              formId={formId}
-              onTrigger={onWallOpen}
-            />
-          )}
-          {isWallOn && (
-            <UseTemplateWall
-              formId={formId}
-              isOpen={isWallOpen}
-              onClose={onWallClose}
-            />
-          )}
+          <UseTemplateWallScrollTrigger
+            formId={formId}
+            onTrigger={onWallOpen}
+          />
+          <UseTemplateWall
+            formId={formId}
+            isOpen={isWallOpen}
+            onClose={onWallClose}
+          />
         </FormSectionsProvider>
-        {isTourOn && <UseTemplateTour />}
       </TemplateFormProvider>
     </Flex>
   )

@@ -7,11 +7,12 @@ import { ISgidVarsSchema } from 'src/types'
 import { sgid } from '../../../config/features/sgid.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { retrieveFileContent } from '../../../utils/iac'
+
 import {
   SgidCreateRedirectUrlError,
   SgidFetchAccessTokenError,
   SgidFetchUserInfoError,
-} from '../../sgid/sgid.errors'
+} from './auth-sgid.errors'
 
 const logger = createLoggerWithLabel(module)
 export const SGID_LOGIN_OAUTH_STATE = 'login'

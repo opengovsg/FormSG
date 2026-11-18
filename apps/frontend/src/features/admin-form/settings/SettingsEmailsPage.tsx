@@ -47,11 +47,17 @@ export const SettingsEmailsPage = (): JSX.Element => {
 
   const isFormPublic = settings?.status === FormStatus.Public
 
+  // A payment form sends no form-configured emails. On encrypt-mode forms
+  // this arms on mere Stripe connection; on MRF it arms only when payments
+  // are enabled, so a merely Stripe-connected MRF keeps full use of its
+  // notification settings.
   const isPaymentsEnabled = !!(
     settings &&
-    settings.responseMode === FormResponseMode.Encrypt &&
-    (settings.payments_channel.channel !== PaymentChannel.Unconnected ||
-      settings.payments_field.enabled)
+    ((settings.responseMode === FormResponseMode.Encrypt &&
+      (settings.payments_channel.channel !== PaymentChannel.Unconnected ||
+        settings.payments_field.enabled)) ||
+      (settings.responseMode === FormResponseMode.Multirespondent &&
+        settings.payments_field.enabled))
   )
 
   const isEmailMode = settings?.responseMode === FormResponseMode.Email

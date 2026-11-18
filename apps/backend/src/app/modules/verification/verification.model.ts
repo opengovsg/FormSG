@@ -1,9 +1,5 @@
 import { PAYMENT_CONTACT_FIELD_ID } from 'formsg-shared/constants'
-import {
-  BasicField,
-  FormPaymentsField,
-  FormResponseMode,
-} from 'formsg-shared/types'
+import { BasicField, FormPaymentsField } from 'formsg-shared/types'
 import { TRANSACTION_EXPIRE_AFTER_SECONDS } from 'formsg-shared/utils/verification'
 import { pick } from 'lodash'
 import { Mongoose, Schema } from 'mongoose'
@@ -12,6 +8,7 @@ import {
   FormFieldSchema,
   IEncryptedFormSchema,
   IFormSchema,
+  IMultirespondentFormSchema,
   IVerificationFieldSchema,
   IVerificationModel,
   IVerificationSchema,
@@ -133,25 +130,23 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
   }
 
   VerificationSchema.statics.createTransactionFromForm = async function (
-    form: IFormSchema | IEncryptedFormSchema,
+    form: IFormSchema | IEncryptedFormSchema | IMultirespondentFormSchema,
   ): Promise<IVerificationSchema | null> {
     const formFields = getVerifiableFormFields(form.form_fields)
-    if (form.responseMode === FormResponseMode.Encrypt) {
-      const { payments_field } = form as IEncryptedFormSchema
-      const paymentField = getVerifiablePaymentContactField(payments_field)
-      if (!formFields && !paymentField) return null
-      return this.create({
-        formId: form._id,
-        fields: formFields ?? [],
-        paymentField,
-      })
-    } else {
-      if (!formFields) return null
-      return this.create({
-        formId: form._id,
-        fields: formFields,
-      })
-    }
+    // Every supported response mode may be payment-enabled, in which case
+    // the payment contact email is verifiable even when no form field is.
+    // Deprecated email-mode forms carry no payments_field, so paymentField
+    // resolves to null and only their form fields matter.
+    const { payments_field } = form as
+      | IEncryptedFormSchema
+      | IMultirespondentFormSchema
+    const paymentField = getVerifiablePaymentContactField(payments_field)
+    if (!formFields && !paymentField) return null
+    return this.create({
+      formId: form._id,
+      fields: formFields ?? [],
+      paymentField,
+    })
   }
 
   VerificationSchema.statics.incrementFieldRetries = async function (

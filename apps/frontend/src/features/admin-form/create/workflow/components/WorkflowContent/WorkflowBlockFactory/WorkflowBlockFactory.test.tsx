@@ -1,0 +1,184 @@
+import { composeStories } from '@storybook/react-vite'
+import { act, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+
+import { Language } from 'formsg-shared/types'
+
+import i18n from '~/i18n/i18n'
+
+import { useAdminWorkflowStore } from '../../../adminWorkflowStore'
+import * as pageStories from '../../../CreatePageWorkflowTab.stories'
+import { AdminEditWorkflowState } from '../../../types'
+import { STEP_CONNECTOR_TEST_ID } from '../WorkflowContent'
+
+const { WithWorkflow } = composeStories(pageStories)
+
+const STEP_ONE_DONE = /step 1 is the public-facing step/i
+const STEP_TWO_DONE = /nice, step 2 is all set/i
+const ADD_ANOTHER = { name: /yes, add a step/i }
+const DECLINE = { name: /no, i'm done/i }
+
+const renderWorkflow = async (Story: typeof WithWorkflow) => {
+  await act(async () => {
+    render(<Story />)
+  })
+  await screen.findByRole('button', { name: /add step/i }, { timeout: 4000 })
+}
+
+const finishCreating = async (stepNumber: number) => {
+  await act(async () => {
+    useAdminWorkflowStore.getState().setCompletedStep(stepNumber)
+  })
+}
+
+describe('completion peek card after a step is built', () => {
+  beforeAll(() => {
+    Element.prototype.scrollIntoView = vi.fn()
+    return i18n.changeLanguage(Language.ENGLISH)
+  })
+
+  afterAll(() => {
+    delete (Element.prototype as Partial<Pick<Element, 'scrollIntoView'>>)
+      .scrollIntoView
+  })
+
+  afterEach(() => useAdminWorkflowStore.getState().reset())
+
+  it('reports step 1 in its own words, since its respondents are not chosen', async () => {
+    await renderWorkflow(WithWorkflow)
+    await finishCreating(0)
+
+    expect(screen.getByText(STEP_ONE_DONE)).toBeInTheDocument()
+    expect(screen.getByRole('button', ADD_ANOTHER)).toBeInTheDocument()
+  })
+
+  it('names a later step, counting from one', async () => {
+    await renderWorkflow(WithWorkflow)
+    await finishCreating(1)
+
+    expect(screen.getByText(STEP_TWO_DONE)).toBeInTheDocument()
+  })
+
+  it('reports on the step that was built and no other', async () => {
+    await renderWorkflow(WithWorkflow)
+    await finishCreating(1)
+
+    expect(screen.queryByText(STEP_ONE_DONE)).not.toBeInTheDocument()
+  })
+
+  it('opens a new step card and stops reporting when another step is asked for', async () => {
+    const user = userEvent.setup()
+    await renderWorkflow(WithWorkflow)
+    await finishCreating(0)
+
+    await act(async () => {
+      await user.click(screen.getByRole('button', ADD_ANOTHER))
+    })
+
+    expect(screen.queryByText(STEP_ONE_DONE)).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /^continue$/i }),
+    ).toBeInTheDocument()
+  })
+
+  it('hands over to the completion email card when the admin says they are done', async () => {
+    const user = userEvent.setup()
+    await renderWorkflow(WithWorkflow)
+    await finishCreating(0)
+
+    await act(async () => {
+      await user.click(screen.getByRole('button', DECLINE))
+    })
+
+    expect(screen.queryByText(STEP_ONE_DONE)).not.toBeInTheDocument()
+    expect(useAdminWorkflowStore.getState().createOrEditData).toEqual({
+      state: AdminEditWorkflowState.EditingEmailCard,
+    })
+  })
+
+  it('remembers the step it reported on, so cancelling can bring it back', async () => {
+    const user = userEvent.setup()
+    await renderWorkflow(WithWorkflow)
+    await finishCreating(0)
+
+    await act(async () => {
+      await user.click(screen.getByRole('button', DECLINE))
+    })
+    await act(async () => {
+      useAdminWorkflowStore.getState().setToInactive()
+    })
+
+    expect(await screen.findByText(STEP_ONE_DONE)).toBeInTheDocument()
+  })
+
+  it('stays out of the way while the step it reports on is open for editing', async () => {
+    await renderWorkflow(WithWorkflow)
+    await finishCreating(0)
+    await act(async () => {
+      useAdminWorkflowStore.getState().setToEditing(0)
+    })
+
+    expect(screen.queryByText(STEP_ONE_DONE)).not.toBeInTheDocument()
+  })
+
+  describe('while a step is reporting', () => {
+    it('withholds the Add step button, leaving the report the only way on', async () => {
+      await renderWorkflow(WithWorkflow)
+      expect(
+        screen.getByRole('button', { name: /add step/i }),
+      ).toBeInTheDocument()
+
+      await finishCreating(0)
+
+      expect(
+        screen.queryByRole('button', { name: /add step/i }),
+      ).not.toBeInTheDocument()
+    })
+
+    it('takes the connector with it, so nothing dangles under the report', async () => {
+      await renderWorkflow(WithWorkflow)
+      const before = screen.queryAllByTestId(STEP_CONNECTOR_TEST_ID).length
+
+      await finishCreating(0)
+
+      expect(screen.queryAllByTestId(STEP_CONNECTOR_TEST_ID)).toHaveLength(
+        before - 1,
+      )
+    })
+
+    it('gives the Add step button back once the admin says they are done', async () => {
+      const user = userEvent.setup()
+      await renderWorkflow(WithWorkflow)
+      await finishCreating(0)
+
+      await act(async () => {
+        await user.click(screen.getByRole('button', DECLINE))
+      })
+
+      expect(
+        await screen.findByRole('button', { name: /add step/i }),
+      ).toBeInTheDocument()
+    })
+  })
+})
+
+describe('what retires a completion report', () => {
+  afterEach(() => useAdminWorkflowStore.getState().reset())
+
+  it('drops it when a save was only clearing the way for another card', () => {
+    const store = useAdminWorkflowStore.getState()
+    store.requestSwitchTo(1)
+    store.setCompletedStep(0)
+    store.completeSave()
+
+    expect(useAdminWorkflowStore.getState().completedStepNumber).toBeNull()
+  })
+
+  it('keeps it when a save finished a step and opened nothing', () => {
+    const store = useAdminWorkflowStore.getState()
+    store.setCompletedStep(0)
+    store.completeSave()
+
+    expect(useAdminWorkflowStore.getState().completedStepNumber).toBe(0)
+  })
+})

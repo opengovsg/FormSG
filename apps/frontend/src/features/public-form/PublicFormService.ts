@@ -12,6 +12,7 @@ import {
   PaymentFieldsDto,
 } from 'formsg-shared/types/field'
 import {
+  MrfStepAuthSessionDto,
   ProductItem,
   PublicFormAuthLogoutDto,
   PublicFormAuthRedirectDto,
@@ -33,6 +34,7 @@ import { transformAllIsoStringsToDate } from '~utils/date'
 import {
   API_BASE_URL,
   ApiService,
+  getClientVersionHeader,
   processFetchResponse,
 } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
@@ -40,7 +42,7 @@ import { FormFieldValues } from '~templates/Field'
 import {
   createClearSubmissionFormData,
   createClearSubmissionWithVirusScanningFormData,
-  createClearSubmissionWithVirusScanningFormDataV3,
+  createClearSubmissionWithVirusScanningFormDataV4,
   getAttachmentsMap,
 } from './utils/createSubmission'
 import { convertEncryptedAttachmentToFileContent } from './utils/decryptSubmission'
@@ -111,6 +113,61 @@ export const logoutPublicForm = async (
   ).then(({ data }) => data)
 }
 
+const getMrfStepAuthEndpoint = (formId: string, submissionId: string) =>
+  `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/${submissionId}/auth`
+
+/**
+ * Gets the login redirect url for the pending step of an MRF submission.
+ * The step token goes in the body, never the url.
+ * @returns redirect url for the step's login
+ */
+export const getMrfStepAuthRedirectUrl = async ({
+  formId,
+  submissionId,
+  stepToken,
+  encodedQuery,
+}: {
+  formId: string
+  submissionId: string
+  stepToken?: string
+  encodedQuery?: string
+}): Promise<PublicFormAuthRedirectDto['redirectURL']> => {
+  return ApiService.post<PublicFormAuthRedirectDto>(
+    `${getMrfStepAuthEndpoint(formId, submissionId)}/redirect`,
+    { stepToken, encodedQuery },
+  ).then(({ data }) => data.redirectURL)
+}
+
+/**
+ * Gets the login requirement and session for the pending step of an MRF
+ * submission, completing a MyInfo login started for that step.
+ */
+export const getMrfStepAuthSession = async ({
+  formId,
+  submissionId,
+  stepToken,
+}: {
+  formId: string
+  submissionId: string
+  stepToken?: string
+}): Promise<MrfStepAuthSessionDto> => {
+  return ApiService.post<MrfStepAuthSessionDto>(
+    `${getMrfStepAuthEndpoint(formId, submissionId)}/session`,
+    { stepToken },
+  ).then(({ data }) => data)
+}
+
+/** Logs out of the pending step of this MRF submission only. */
+export const logoutMrfStep = async (
+  formId: string,
+  submissionId: string,
+): Promise<PublicFormAuthLogoutDto> => {
+  return ApiService.post<PublicFormAuthLogoutDto>(
+    `${getMrfStepAuthEndpoint(formId, submissionId)}/logout`,
+    {},
+  ).then(({ data }) => data)
+}
+
 /**
  * Returns the data of a single submission of a given multirespondent form
  * @param arg.formId The id of the form to query
@@ -120,12 +177,15 @@ export const logoutPublicForm = async (
 export const getMultirespondentSubmissionById = async ({
   formId,
   submissionId,
+  stepToken,
 }: {
   formId: string
   submissionId: string
+  stepToken?: string
 }): Promise<PublicMultirespondentSubmissionDtoWithAttachments> => {
   return ApiService.get<PublicMultirespondentSubmissionDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/${submissionId}`,
+    stepToken ? { params: { stepToken } } : undefined,
   ).then(async ({ data }) => {
     const encryptedAttachments: PublicMultirespondentSubmissionDtoWithAttachments['encryptedAttachments'] =
       {}
@@ -184,7 +244,11 @@ export type SubmitStorageFormWithVirusScanningArgs =
 export type SubmitMultirespondentFormWithVirusScanningArgs =
   SubmitEmailFormArgs & {
     submissionSecretKey?: string
+    stepToken?: string
     fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[]
+    paymentReceiptEmail?: string
+    paymentProducts?: Array<ProductItem>
+    payments?: PaymentFieldsDto
   }
 
 export const submitEmailModeForm = async ({
@@ -265,16 +329,15 @@ export const submitStorageModeFormWithFetch = async ({
     captchaType,
   }).toString()
 
-  const response = await fetch(
-    `${API_BASE_URL}${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage?${queryString}`,
-    {
-      method: 'POST',
-      body: formData,
-      headers: {
-        Accept: 'application/json',
-      },
+  const url = `${API_BASE_URL}${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage?${queryString}`
+  const response = await fetch(url, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      Accept: 'application/json',
+      ...getClientVersionHeader(url),
     },
-  )
+  })
 
   return processFetchResponse(response)
 }
@@ -357,21 +420,20 @@ export const submitEmailModeFormWithFetch = async ({
     captchaType,
   }).toString()
 
-  const response = await fetch(
-    `${API_BASE_URL}${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email?${queryString}`,
-    {
-      method: 'POST',
-      body: formData,
-      headers: {
-        Accept: 'application/json',
-      },
+  const url = `${API_BASE_URL}${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email?${queryString}`
+  const response = await fetch(url, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      Accept: 'application/json',
+      ...getClientVersionHeader(url),
     },
-  )
+  })
 
   return processFetchResponse(response)
 }
 
-// Submit storage mode form with virus scanning (storage v2.1+)
+// Submit multirespondent form with virus scanning
 export const submitMultirespondentForm = async ({
   formFields,
   formLogics,
@@ -383,6 +445,9 @@ export const submitMultirespondentForm = async ({
   fieldIdToQuarantineKeyMap,
   respondentEmails,
   selectedFormLanguage = Language.ENGLISH,
+  paymentReceiptEmail,
+  paymentProducts,
+  payments,
 }: SubmitMultirespondentFormWithVirusScanningArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
@@ -390,13 +455,16 @@ export const submitMultirespondentForm = async ({
     formLogics,
   })
 
-  const formData = createClearSubmissionWithVirusScanningFormDataV3(
+  const formData = createClearSubmissionWithVirusScanningFormDataV4(
     {
       formFields,
       formInputs: filteredInputs,
       responseMetadata,
       version: MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
       respondentEmails: respondentEmails,
+      paymentReceiptEmail,
+      paymentProducts,
+      payments,
     },
     fieldIdToQuarantineKeyMap,
   )
@@ -427,6 +495,7 @@ export const updateMultirespondentSubmission = async ({
   responseMetadata,
   fieldIdToQuarantineKeyMap,
   submissionSecretKey,
+  stepToken,
   respondentEmails,
 }: SubmitMultirespondentFormWithVirusScanningArgs & {
   submissionId?: string
@@ -437,12 +506,13 @@ export const updateMultirespondentSubmission = async ({
     formLogics,
   })
 
-  const formData = createClearSubmissionWithVirusScanningFormDataV3(
+  const formData = createClearSubmissionWithVirusScanningFormDataV4(
     {
       formFields,
       formInputs: filteredInputs,
       responseMetadata,
       submissionSecretKey,
+      stepToken,
       version: MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
       respondentEmails: respondentEmails,
     },

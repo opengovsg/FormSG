@@ -1,22 +1,43 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
+import { featureFlags } from 'formsg-shared/constants'
 import {
   AttachmentSize,
   BasicField,
   FormFieldDto,
+  MyInfoAttribute,
 } from 'formsg-shared/types/field'
 import {
   AdminFormDto,
+  FormAuthType,
   FormResponseMode,
+  FormStatus,
   FormWorkflowStepDto,
+  MultirespondentFormSettings,
   WorkflowType,
 } from 'formsg-shared/types/form'
 
-import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
+import {
+  createFormBuilderMocks,
+  getAdminFormSettings,
+  MOCK_CORPPASS_UEN_FIELD,
+  MOCK_MYINFO_NAME_FIELD,
+  patchAdminFormSettings,
+} from '~/mocks/msw/handlers/admin-form'
+import { getUser } from '~/mocks/msw/handlers/user'
 
-import { StoryRouter, viewports } from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
+
+import { CreatePageSidebarProvider } from '~features/admin-form/create/common'
 
 import { CreatePageWorkflowTab } from './CreatePageWorkflowTab'
+
+const withCreatePageSidebar = (Story: StoryFn) => (
+  <CreatePageSidebarProvider>
+    <Story />
+  </CreatePageSidebarProvider>
+)
 
 const buildMswRoutes = (
   overrides?: Partial<AdminFormDto>,
@@ -26,19 +47,23 @@ const buildMswRoutes = (
 export default {
   title: 'Pages/AdminFormPage/Create/WorkflowTab',
   component: CreatePageWorkflowTab,
-  decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
+  decorators: [
+    withCreatePageSidebar,
+    StoryRouter({ initialEntries: ['/12345'], path: '/:formId' }),
+  ],
   parameters: {
     layout: 'fullscreen',
-    // Required so skeleton "animation" does not hide content.
-    // Pass a very short delay to avoid bug where Chromatic takes a snapshot before
-    // the story has loaded
-    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: {
       handlers: {
         default: buildMswRoutes({
           responseMode: FormResponseMode.Multirespondent,
           workflow: [],
         }),
+        settings: [
+          getAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+        ],
       },
     },
   },
@@ -177,6 +202,13 @@ const workflow_step_2: FormWorkflowStepDto = {
   edit: [form_field_3._id, form_field_4._id],
 }
 
+const workflow_step_2_with_no_emails: FormWorkflowStepDto = {
+  _id: '61e6857c9c794b0012f1c701',
+  workflow_type: WorkflowType.Static,
+  emails: [],
+  edit: [form_field_3._id, form_field_4._id],
+}
+
 const workflow_step_2_with_deleted_field: FormWorkflowStepDto = {
   _id: '61e6857c9c794b0012f1cnkl',
   workflow_type: WorkflowType.Static,
@@ -240,42 +272,73 @@ const FORM_WITH_WORKFLOW: Partial<AdminFormDto> = {
 
 const Template: StoryFn = () => <CreatePageWorkflowTab />
 export const NoWorkflow = Template.bind({})
-
-export const MobileNoWorkflow = Template.bind({})
-MobileNoWorkflow.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
+NoWorkflow.parameters = {
+  argos: { modes: viewportModes('mobile') },
+  msw: {
+    handlers: {
+      default: buildMswRoutes({ ...FORM_WITH_WORKFLOW, workflow: [] }),
+    },
   },
-  chromatic: { viewports: [viewports.xs] },
 }
 
 export const WithWorkflow = Template.bind({})
 WithWorkflow.parameters = {
-  msw: { handlers: { default: buildMswRoutes(FORM_WITH_WORKFLOW) } },
+  msw: {
+    handlers: {
+      default: [
+        ...buildMswRoutes(FORM_WITH_WORKFLOW),
+        getAdminFormSettings({
+          mode: FormResponseMode.Multirespondent,
+          overrides: {
+            status: FormStatus.Private,
+            emails: ['admin@example.gov.sg'],
+            stepsToNotify: [workflow_step_2._id],
+            stepOneEmailNotificationFieldId: form_field_5._id,
+          } satisfies Partial<MultirespondentFormSettings>,
+        }),
+        patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+      ],
+    },
+  },
+  documentation: {
+    storyDescription:
+      'The whole step card is clickable and shows a hover affordance (border, background, pencil tint). Hover only appears in the canvas, as there is no pseudo-state addon.',
+  },
 }
 
 export const MobileWithWorkflow = Template.bind({})
 MobileWithWorkflow.parameters = {
   msw: { handlers: { default: buildMswRoutes(FORM_WITH_WORKFLOW) } },
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
+}
+MobileWithWorkflow.globals = {
+  viewport: { value: 'mobile1', isRotated: false },
 }
 
 export const Step1 = Template.bind({})
 Step1.parameters = {
   msw: {
     handlers: {
-      default: buildMswRoutes({
-        ...FORM_WITH_WORKFLOW,
-        workflow: [workflow_step_1],
-      }),
+      default: [
+        ...buildMswRoutes({
+          ...FORM_WITH_WORKFLOW,
+          workflow: [workflow_step_1],
+        }),
+        getAdminFormSettings({
+          mode: FormResponseMode.Multirespondent,
+          overrides: {
+            status: FormStatus.Private,
+            emails: ['admin@example.gov.sg'],
+            stepsToNotify: [],
+            stepOneEmailNotificationFieldId: form_field_5._id,
+          } satisfies Partial<MultirespondentFormSettings>,
+        }),
+        patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+      ],
     },
   },
   documentation: {
     storyDescription:
-      'Step 1 of a workflow should not show any respondent selected',
+      'A workflow that stops at step 1. The completion email card waits for a second step, so the page ends at the Add step button.',
   },
 }
 
@@ -285,6 +348,7 @@ Step3Approval.parameters = {
     handlers: {
       default: buildMswRoutes({
         ...FORM_WITH_WORKFLOW,
+        status: FormStatus.Private,
         workflow: [
           workflow_step_1,
           workflow_step_2,
@@ -292,6 +356,10 @@ Step3Approval.parameters = {
         ],
       }),
     },
+  },
+  documentation: {
+    storyDescription:
+      'A step whose approval field is already chosen, on a closed form. Toggling the approval off and on again puts the same field back.',
   },
 }
 
@@ -301,6 +369,7 @@ Step3ApprovalFieldDeleted.parameters = {
     handlers: {
       default: buildMswRoutes({
         ...FORM_WITH_WORKFLOW,
+        status: FormStatus.Private,
         workflow: [
           workflow_step_1,
           workflow_step_2,
@@ -308,6 +377,26 @@ Step3ApprovalFieldDeleted.parameters = {
         ],
       }),
     },
+  },
+  documentation: {
+    storyDescription:
+      'A step whose approval field has been deleted. The toggle stays on with nothing chosen, which keeps the step unfinished so the form cannot be opened.',
+  },
+}
+
+export const Step2NoEmails = Template.bind({})
+Step2NoEmails.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        workflow: [workflow_step_1, workflow_step_2_with_no_emails],
+      }),
+    },
+  },
+  documentation: {
+    storyDescription:
+      'Specific emails selected, none entered. Saving an incomplete step is allowed, so the card shows the missing-field error.',
   },
 }
 
@@ -365,7 +454,205 @@ Step2InvalidConditionalRecipientSelected.parameters = {
   },
 }
 
+export const WithWorkflowClosedForm = Template.bind({})
+WithWorkflowClosedForm.parameters = {
+  msw: {
+    handlers: {
+      default: [
+        ...buildMswRoutes({
+          ...FORM_WITH_WORKFLOW,
+          status: FormStatus.Private,
+        }),
+        getAdminFormSettings({
+          mode: FormResponseMode.Multirespondent,
+          overrides: {
+            status: FormStatus.Private,
+            emails: ['admin@example.gov.sg'],
+            stepsToNotify: [workflow_step_2._id],
+            stepOneEmailNotificationFieldId: form_field_5._id,
+          } satisfies Partial<MultirespondentFormSettings>,
+        }),
+        patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+      ],
+    },
+  },
+}
+
+export const NoCompletionEmail = Template.bind({})
+NoCompletionEmail.parameters = {
+  msw: {
+    handlers: {
+      default: [
+        ...buildMswRoutes(FORM_WITH_WORKFLOW),
+        getAdminFormSettings({
+          mode: FormResponseMode.Multirespondent,
+          overrides: {
+            status: FormStatus.Private,
+            emails: [],
+            stepsToNotify: [],
+            stepOneEmailNotificationFieldId: '',
+          } satisfies Partial<MultirespondentFormSettings>,
+        }),
+        patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+      ],
+    },
+  },
+  documentation: {
+    storyDescription:
+      'A workflow whose completion email has never been set up. The status tracking peek card waits for that card to be saved.',
+  },
+}
+
+export const NewStepOnPrivateForm = Template.bind({})
+NewStepOnPrivateForm.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        status: FormStatus.Private,
+      }),
+    },
+  },
+  documentation: {
+    storyDescription:
+      'The shared mock form is public, which makes every step save strictly. A closed form saves permissively, so an unfinished step can be kept and flagged on its card instead.',
+  },
+}
+
 export const Loading = Template.bind({})
 Loading.parameters = {
   msw: { handlers: { default: buildMswRoutes({}, 'infinite') } },
+}
+
+const webhookWorkflowParameters = (
+  url: string,
+  workflow = [workflow_step_1],
+  webhookFormat?: 'v1' | 'v4',
+) => ({
+  msw: {
+    handlers: {
+      default: [
+        getUser(),
+        getAdminFormSettings({
+          overrides: { responseMode: FormResponseMode.Multirespondent },
+        }),
+        // Closed, since an open form blocks workflow edits outright.
+        ...buildMswRoutes({
+          ...FORM_WITH_WORKFLOW,
+          status: FormStatus.Private,
+          workflow,
+          webhook: { url, isRetryEnabled: false, webhookFormat },
+        }),
+      ],
+    },
+  },
+})
+
+export const SingleStepGenericWebhook = Template.bind({})
+SingleStepGenericWebhook.parameters = webhookWorkflowParameters(
+  'https://example.com/webhook',
+)
+
+export const SingleStepPlumberWebhook = Template.bind({})
+SingleStepPlumberWebhook.parameters = webhookWorkflowParameters(
+  'https://plumber.gov.sg/webhooks/abc',
+)
+
+export const NoWorkflowGenericWebhook = Template.bind({})
+NoWorkflowGenericWebhook.parameters = webhookWorkflowParameters(
+  'https://example.com/webhook',
+  [],
+)
+
+export const SingleStepV4Webhook = Template.bind({})
+SingleStepV4Webhook.parameters = webhookWorkflowParameters(
+  'https://example.com/webhook',
+  [workflow_step_1],
+  'v4',
+)
+
+const stepLoginFlags = new GrowthBook({
+  features: {
+    [featureFlags.mrfStepLogin]: { defaultValue: true },
+    [featureFlags.isNricFieldEnabled]: { defaultValue: true },
+  },
+})
+
+const stepLoginFields: FormFieldDto[] = [
+  { ...form_field_5, title: 'Requester email' },
+  { ...form_field_6, title: 'Approver email' },
+  { ...form_field_1, title: 'Approve this request?' },
+  {
+    _id: '620115cf3bc125001349f901',
+    title: 'Requester NRIC/FIN',
+    description: '',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.Nric,
+    myInfo: { attr: MyInfoAttribute.UinFin },
+  },
+  MOCK_MYINFO_NAME_FIELD,
+  MOCK_CORPPASS_UEN_FIELD,
+]
+
+/** Singpass and Corppass logins on different steps. */
+export const StepLoginMixedProviders = Template.bind({})
+StepLoginMixedProviders.decorators = [
+  (Story: StoryFn) => (
+    <GrowthBookProvider growthbook={stepLoginFlags}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+StepLoginMixedProviders.parameters = {
+  msw: {
+    handlers: {
+      default: [
+        ...buildMswRoutes({
+          ...FORM_WITH_WORKFLOW,
+          status: FormStatus.Private,
+          authType: FormAuthType.MyInfo,
+          form_fields: stepLoginFields,
+          workflow: [
+            {
+              _id: '61e6857c9c794b0012f1c6f8',
+              workflow_type: WorkflowType.Static,
+              emails: [],
+              step_name: 'Requester',
+              edit: [form_field_5._id, '620115cf3bc125001349f901'],
+            },
+            {
+              _id: '61e6857c9c794b0012f1c6f9',
+              workflow_type: WorkflowType.Static,
+              emails: ['approver@agency.gov.sg'],
+              step_name: 'Approving officer',
+              edit: [form_field_1._id, MOCK_CORPPASS_UEN_FIELD._id],
+              approval_field: form_field_1._id,
+              is_approval_enabled: true,
+              auth: { auth_type: FormAuthType.CP },
+            },
+            {
+              _id: '61e6857c9c794b0012f1c6fa',
+              workflow_type: WorkflowType.Dynamic,
+              field: form_field_6._id,
+              step_name: 'Processing officer',
+              edit: [form_field_6._id],
+            },
+          ],
+        }),
+        getAdminFormSettings({
+          mode: FormResponseMode.Multirespondent,
+          overrides: {
+            status: FormStatus.Private,
+            authType: FormAuthType.MyInfo,
+            isSingleSubmission: false,
+            emails: ['admin@agency.gov.sg'],
+            stepsToNotify: [],
+            stepOneEmailNotificationFieldId: form_field_5._id,
+          } satisfies Partial<MultirespondentFormSettings>,
+        }),
+        patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+      ],
+    },
+  },
 }

@@ -1,3 +1,4 @@
+import type { FormFieldMeta } from '@opengovsg/formsg-sdk'
 import {
   EmailModeSubmissionBase,
   MultirespondentSubmissionBase,
@@ -5,6 +6,7 @@ import {
   SubmissionBase,
   SubmissionMetadata,
   SubmissionType,
+  SubmittedStepSnapshotTokens,
   WebhookResponse,
 } from 'formsg-shared/types/submission'
 import mongoose, {
@@ -24,6 +26,7 @@ import {
 
 import { IFormSchema } from './form'
 import { IPaymentSchema } from './payment'
+import { IWorkflowEvent } from './workflow_event'
 
 export interface WebhookData {
   formId: string
@@ -34,8 +37,9 @@ export interface WebhookData {
   created: IEncryptedSubmissionSchema['created']
   attachmentDownloadUrls: Record<string, string>
   paymentContent?: PaymentWebhookEventObject | object
-  workflowContent?: WorkflowWebhookEventObject | object
+  workflowContent?: WorkflowWebhookEventObject
   encryptedSubmissionSecretKey?: string
+  formFields?: Record<string, Pick<FormFieldMeta, 'question' | 'subFields'>>
 }
 
 export interface WebhookView {
@@ -46,6 +50,8 @@ export type SubmissionWebhookInfo = {
   webhookUrl: string
   isRetryEnabled: boolean
   webhookView: WebhookView
+  submittedStepSnapshotTokens?: (SubmittedStepSnapshotTokens | undefined)[]
+  pendingSubmissionId?: string
 }
 
 export type FindFormsWithSubsAboveResult = {
@@ -53,16 +59,22 @@ export type FindFormsWithSubsAboveResult = {
   count: number
 }
 
-export type IPopulatedWebhookSubmission = (
-  | IEncryptedSubmissionSchema
-  | IMultirespondentSubmissionSchema
-) & {
+type WithWebhookPopulation<T extends ISubmissionSchema> = Omit<
+  T,
+  'paymentId'
+> & {
   form: {
     _id: IFormSchema['_id']
     webhook: IFormSchema['webhook']
   }
-  paymentId: IPaymentSchema
+  // `undefined` for non-payment submissions,
+  // null if the payment doc for the given `paymentId` cannot be found.
+  paymentId?: IPaymentSchema | null
 }
+
+export type IPopulatedWebhookSubmission =
+  | WithWebhookPopulation<IEncryptedSubmissionSchema>
+  | WithWebhookPopulation<IMultirespondentSubmissionSchema>
 
 export interface ISubmissionSchema extends SubmissionBase, Document {
   // `any` allows for population and correct typing
@@ -135,6 +147,72 @@ export interface ISubmissionModel extends Model<ISubmissionSchema> {
     submissionId: string,
     webhookResponse: WebhookResponse,
   ): Promise<ISubmissionSchema | null>
+
+  /**
+   * Finds a single admin-viewable submission of a form by id, across both
+   * Encrypt and Multirespondent submission types. Multirespondent forms
+   * mode-migrated from storage mode retain their pre-migration encrypt
+   * submissions, so the lookup must not be pinned to one discriminator.
+   * Email submissions are deliberately excluded.
+   * @param formId the id of the form the submission belongs to
+   * @param submissionId the id of the submission to retrieve
+   */
+  findEncryptedOrMultirespondentSubmissionById(
+    formId: string,
+    submissionId: string,
+  ): Promise<SubmissionData | null>
+
+  /**
+   * Returns a cursor over a form's admin-viewable submissions, spanning both
+   * Encrypt and Multirespondent submission types in one sorted stream.
+   * Multirespondent forms mode-migrated from storage mode retain their
+   * pre-migration encrypt submissions, which a single discriminator cursor
+   * cannot see. Email submissions are deliberately excluded.
+   * @param formId the id of the form to stream submissions for
+   * @param dateRange optional date range to limit submissions to
+   */
+  getEncryptedOrMultirespondentSubmissionCursorByFormId(
+    formId: string,
+    dateRange: {
+      startDate?: string
+      endDate?: string
+    },
+    isSortByLatest?: boolean,
+    limit?: number,
+  ): QueryCursor<SubmissionCursorData, QueryOptions<ISubmissionSchema>>
+
+  /**
+   * Returns metadata for a single admin-viewable submission of a form,
+   * across both Encrypt and Multirespondent submission types. Encrypt
+   * documents produce entries without mrf metadata, so they render like a
+   * multirespondent submission with no workflow.
+   * @param formId the id of the form the submission belongs to
+   * @param submissionId the id of the submission
+   */
+  findEncryptedOrMultirespondentSingleMetadata(
+    formId: string,
+    submissionId: string,
+  ): Promise<SubmissionMetadata | null>
+
+  /**
+   * Returns a page of metadata and the total count of a form's
+   * admin-viewable submissions, spanning both Encrypt and Multirespondent
+   * submission types so page rows and totals agree on mode-migrated forms.
+   * Email submissions are deliberately excluded from both.
+   * @param formId the id of the form to list metadata for
+   */
+  findAllEncryptedOrMultirespondentMetadataByFormId(
+    formId: string,
+    params?: {
+      page?: number
+      pageSize?: number
+      startDate?: string
+      endDate?: string
+    },
+  ): Promise<{
+    metadata: SubmissionMetadata[]
+    count: number
+  }>
 }
 
 export interface IEmailSubmissionSchema
@@ -161,9 +239,15 @@ export interface IMultirespondentSubmissionSchema
   // Allows for population and correct typing
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  paymentId: any
   submissionType: SubmissionType.Multirespondent
   getWebhookView(): Promise<WebhookView>
   mrfVersion: number
+  workflowEvents: IWorkflowEvent[]
+  stoppedAt?: Date
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  stoppedBy?: any
 }
 
 // When retrieving from database, the attachmentMetadata type becomes an object
@@ -184,10 +268,12 @@ export type MultirespondentSubmissionCursorData = Pick<
   IMultirespondentSubmissionSchema,
   | 'form_fields'
   | 'form_logics'
+  | 'myInfoReadOnlyFields'
   | 'submissionType'
   | 'encryptedSubmissionSecretKey'
   | 'encryptedContent'
   | 'verifiedContent'
+  | 'paymentId'
   | 'created'
   | 'id'
   | 'version'
@@ -195,6 +281,7 @@ export type MultirespondentSubmissionCursorData = Pick<
   | 'workflowStep'
   | 'submittedSteps'
   | 'workflow'
+  | 'stoppedAt'
 > & { attachmentMetadata?: Record<string, string> } & Document
 
 export type SubmissionCursorData =
@@ -220,17 +307,24 @@ export type MultirespondentSubmissionData = {
   IMultirespondentSubmissionSchema,
   | 'form_fields'
   | 'form_logics'
+  | 'myInfoReadOnlyFields'
+  | 'authType'
   | 'workflow'
   | 'submissionPublicKey'
   | 'encryptedSubmissionSecretKey'
   | 'encryptedContent'
   | 'verifiedContent'
   | 'attachmentMetadata'
+  | 'paymentId'
   | 'created'
   | 'version'
   | 'workflowStep'
   | 'mrfVersion'
   | 'submittedSteps'
+  | 'stepTokenHash'
+  | 'encryptedStepToken'
+  | 'workflowEvents'
+  | 'stoppedAt'
 > &
   Document
 
@@ -265,7 +359,12 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
      */
     findAllMetadataByFormId(
       formId: string,
-      params?: { page?: number; pageSize?: number },
+      params?: {
+        page?: number
+        pageSize?: number
+        startDate?: string
+        endDate?: string
+      },
     ): Promise<{
       metadata: SubmissionMetadata[]
       count: number
@@ -324,7 +423,12 @@ export type IMultirespondentSubmissionModel =
        */
       findAllMetadataByFormId(
         formId: string,
-        params?: { page?: number; pageSize?: number },
+        params?: {
+          page?: number
+          pageSize?: number
+          startDate?: string
+          endDate?: string
+        },
       ): Promise<{
         metadata: SubmissionMetadata[]
         count: number

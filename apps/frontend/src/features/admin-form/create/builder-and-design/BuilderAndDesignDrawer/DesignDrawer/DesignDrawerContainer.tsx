@@ -5,5 +5,7 @@ import { DesignDrawer } from './DesignDrawer'
 export const DesignDrawerContainer = (): JSX.Element | null => {
   const { data: form } = useAdminForm()
 
-  return form ? <DesignDrawer startPage={form.startPage} /> : null
+  return form ? (
+    <DesignDrawer startPage={form.startPage} title={form.title} />
+  ) : null
 }

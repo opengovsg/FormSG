@@ -43,6 +43,7 @@ export interface SubmissionDataForDecryption {
   hostOrigin: string
   formsgSdkMode: string
   useV4?: boolean
+  isWorkflowActionsOn?: boolean
 }
 
 export type CleanableDecryptionWorkerApi = {
@@ -58,6 +59,13 @@ export interface DownloadOptions {
   isDownloadCsv: boolean
   isDownloadPdf: boolean
 }
+
+export const isCsvOnlyDownload = ({
+  isDownloadCsv,
+  isDownloadAttachments,
+  isDownloadPdf,
+}: DownloadOptions): boolean =>
+  isDownloadCsv && !isDownloadAttachments && !isDownloadPdf
 
 /**
  * Decrypted formatted data returned by the decryption worker.

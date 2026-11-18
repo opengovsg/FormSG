@@ -1,0 +1,54 @@
+name: Synthetics sync
+
+# Pushes the Datadog synthetic test definitions in .github/synthetics/tests/
+# to Datadog when they change — on PRs (so new tests are created and shaken
+# down on the preview before they join the release gate) and on develop.
+# New definitions are created (or adopted by name if they already exist in
+# Datadog), and any resulting ids.json changes are committed back to the
+# source branch. GITHUB_TOKEN pushes don't trigger workflows, so the
+# commit-back can't loop — but it also won't re-trigger the PR preview:
+# re-run the preview (or push again) to smoke-test a just-created test.
+# Fork PRs have no secrets; the sync fails there, which is correct.
+
+on:
+  pull_request:
+    paths: ['.github/synthetics/**']
+  push:
+    branches: [develop]
+    paths: ['.github/synthetics/**']
+  workflow_dispatch:
+
+concurrency:
+  group: synthetics-sync-${{ github.head_ref || github.ref }}
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    name: Push test definitions to Datadog
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          # On PRs, check out the head branch (not the detached merge commit)
+          # so the ids.json commit-back lands on the PR.
+          ref: ${{ github.head_ref || github.ref }}
+      - name: Sync
+        env:
+          DD_API_KEY: ${{ secrets.DD_API_KEY }}
+          DD_APP_KEY: ${{ secrets.DD_APP_KEY }}
+        run: .github/synthetics/sync.sh push
+      - name: Commit updated ids.json
+        # Run even when the sync partially failed — tests created before the
+        # failure must still get their ids recorded, or they'd be orphaned
+        # (adopt-by-name would recover them, but recording is cheaper).
+        if: ${{ !cancelled() }}
+        run: |
+          if ! git diff --quiet .github/synthetics/ids.json; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add .github/synthetics/ids.json
+            git commit -m 'ci(synthetics): record new Datadog test ids'
+            git push
+          fi

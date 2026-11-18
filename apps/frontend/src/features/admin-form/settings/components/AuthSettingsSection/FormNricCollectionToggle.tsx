@@ -28,7 +28,6 @@ export const FormSubmitterIdCollectionToggle = ({
 
   return (
     <Toggle
-      containerStyles={{ opacity: isDisabled ? 0.8 : 1 }}
       isDisabled={isDisabled}
       isLoading={!settings || mutateIsSubmitterIdCollectionEnabled.isLoading}
       isChecked={isSubmitterIdCollectionEnabled}

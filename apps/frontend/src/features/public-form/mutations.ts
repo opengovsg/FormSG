@@ -10,11 +10,14 @@ import {
 import { useToast } from '~hooks/useToast'
 
 import { useStorePrefillQuery } from './hooks/useStorePrefillQuery'
+import { setExpectedAuthFormId } from './utils/authRedirectStorage'
 import {
   FieldIdToQuarantineKeyType,
   getAttachmentPresignedPostData,
   getAttachmentSizes,
+  getMrfStepAuthRedirectUrl,
   getPublicFormAuthRedirectUrl,
+  logoutMrfStep,
   logoutPublicForm,
   SubmitEmailFormArgs,
   submitEmailModeForm,
@@ -29,18 +32,40 @@ import {
   uploadAttachmentToQuarantine,
 } from './PublicFormService'
 
-export const usePublicAuthMutations = (formId: string) => {
+/** The pending step of an MRF submission, whose login replaces Step 1's. */
+export type MrfStepAuthTarget = {
+  submissionId: string
+  stepToken?: string
+}
+
+export const usePublicAuthMutations = ({
+  formId,
+  authType,
+  mrfStep,
+}: {
+  formId: string
+  authType?: Exclude<FormAuthType, FormAuthType.NIL>
+  mrfStep?: MrfStepAuthTarget
+}) => {
   const { storePrefillQuery } = useStorePrefillQuery()
 
   const toast = useToast({ status: 'success', isClosable: true })
 
   const handleLoginMutation = useMutation(
     () => {
+      // Also keeps the submission key and step token for the return trip.
       const encodedQuery = storePrefillQuery()
-      return getPublicFormAuthRedirectUrl(formId, false, encodedQuery)
+      return mrfStep
+        ? getMrfStepAuthRedirectUrl({ formId, ...mrfStep, encodedQuery })
+        : getPublicFormAuthRedirectUrl(formId, false, encodedQuery)
     },
     {
       onSuccess: (redirectUrl) => {
+        // Only MyInfo carries the origin-wide FAPI session cookie that can be
+        // claimed by another form, so only MyInfo needs the tab-scoped guard.
+        if (authType === FormAuthType.MyInfo) {
+          setExpectedAuthFormId(formId)
+        }
         window.location.assign(redirectUrl)
       },
       onError: (error: Error) => {
@@ -54,7 +79,9 @@ export const usePublicAuthMutations = (formId: string) => {
 
   const handleLogoutMutation = useMutation(
     (authType: Exclude<FormAuthType, FormAuthType.NIL>) =>
-      logoutPublicForm(authType),
+      mrfStep
+        ? logoutMrfStep(formId, mrfStep.submissionId)
+        : logoutPublicForm(authType),
     {
       onSuccess: () => {
         // Refresh browser to reset form state.
@@ -73,6 +100,7 @@ export const usePublicFormMutations = (
   formId: string,
   submissionId?: string,
   submissionSecretKey?: string,
+  stepToken?: string,
 ) => {
   const submitEmailModeFormMutation = useMutation(
     (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
@@ -175,7 +203,11 @@ export const usePublicFormMutations = (
 
   const updateMultirespondentSubmissionMutation =
     useSubmitMutationWithAttachmentVirusScanning((args) =>
-      updateMultirespondentSubmission({ ...args, submissionSecretKey }),
+      updateMultirespondentSubmission({
+        ...args,
+        submissionSecretKey,
+        stepToken,
+      }),
     )
 
   return {

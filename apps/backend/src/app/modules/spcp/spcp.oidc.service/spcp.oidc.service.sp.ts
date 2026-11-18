@@ -11,6 +11,7 @@ import {
 } from '../spcp.errors'
 import { SpOidcClient } from '../spcp.oidc.client'
 import {
+  CodeVerifierCookieName,
   ExtractedNDIPayload,
   ExtractedSingpassNDIPayload,
   JwtName,
@@ -27,6 +28,7 @@ const logger = createLoggerWithLabel(module)
 export class SpOidcServiceClass extends SpcpOidcServiceClass {
   authType = FormAuthType.SP
   jwtName = JwtName.SP
+  codeVerifierCookieName = CodeVerifierCookieName.SP
 
   oidcClient: SpOidcClient
   oidcProps: SpOidcProps
@@ -91,11 +93,13 @@ export class SpOidcServiceClass extends SpcpOidcServiceClass {
    * Method to exchange auth code for decrypted and verified idToken and then extract NRIC
    * Used for Singpass forms
    * @param code authorisation code
+   * @param codeVerifier PKCE code verifier matching the code_challenge sent in the authorisation request
    * @returns okAsync(nric)
    * @returns errAsync(InvalidIdTokenError) if failed to retrieve NRIC
    */
   exchangeAuthCodeAndRetrieveData(
     code: string,
+    codeVerifier?: string,
   ): ResultAsync<ExtractedSingpassNDIPayload, InvalidIdTokenError> {
     const logMeta = {
       action: 'exchangeAuthCodeAndRetrieveData',
@@ -103,7 +107,7 @@ export class SpOidcServiceClass extends SpcpOidcServiceClass {
 
     return ResultAsync.fromPromise(
       this.oidcClient
-        .exchangeAuthCodeAndDecodeVerifyToken(code)
+        .exchangeAuthCodeAndDecodeVerifyToken(code, codeVerifier)
         .then((decodedVerifiedToken) => {
           return this.oidcClient.extractNricOrForeignIdFromIdToken(
             decodedVerifiedToken,

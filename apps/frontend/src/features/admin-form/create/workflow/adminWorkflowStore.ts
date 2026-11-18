@@ -1,21 +1,41 @@
 import create from 'zustand'
 import { devtools } from 'zustand/middleware'
 
-import { AdminEditWorkflowState } from './types'
+import { AdminEditWorkflowState, CreateOrEditData, GuidedWrapUp } from './types'
 
 type AdminWorkflowStore = {
   setToCreating: () => void
   setToEditing: (stepNumber: number) => void
+  setToEditingEmailCard: () => void
+  continueToEmailCard: () => void
   setToInactive: () => void
   reset: () => void
-  createOrEditData:
-    | { state: AdminEditWorkflowState.CreatingStep }
-    | { state: AdminEditWorkflowState.EditingStep; stepNumber: number }
-    | null
+  createOrEditData: CreateOrEditData | null
+  pendingSwitchTo: CreateOrEditData | null
+  requestSwitchTo: (stepNumber: number) => void
+  requestSwitchToEmailCard: () => void
+  requestSwitchToCreating: () => void
+  cancelPendingSwitch: () => void
+  completeSave: () => void
+  completedStepNumber: number | null
+  setCompletedStep: (stepNumber: number) => void
+  dismissCompletedStep: () => void
+  isGuidedSetup: boolean
+  setGuidedSetup: (isGuidedSetup: boolean) => void
+  isOnWelcomeCard: boolean
+  showWelcomeCard: () => void
+  startBuildingFromWelcome: () => void
+  guidedWrapUp: GuidedWrapUp
+  setGuidedWrapUp: (stage: GuidedWrapUp) => void
 }
+
+export const DEFAULT_IS_GUIDED_SETUP = true
 
 const INITIAL_STATE = {
   createOrEditData: null,
+  pendingSwitchTo: null,
+  completedStepNumber: null,
+  isOnWelcomeCard: false,
 }
 
 export const isCreatingStateSelector = (state: AdminWorkflowStore) =>
@@ -37,17 +57,81 @@ export const setToCreatingSelector = (state: AdminWorkflowStore) =>
 export const setToEditingSelector = (state: AdminWorkflowStore) =>
   state.setToEditing
 
+export const isEditingEmailCardSelector = (state: AdminWorkflowStore) =>
+  state.createOrEditData?.state === AdminEditWorkflowState.EditingEmailCard
+
+export const setToEditingEmailCardSelector = (state: AdminWorkflowStore) =>
+  state.setToEditingEmailCard
+
+export const continueToEmailCardSelector = (state: AdminWorkflowStore) =>
+  state.continueToEmailCard
+
 export const setToInactiveSelector = (state: AdminWorkflowStore) =>
   state.setToInactive
 
+export const pendingSwitchToSelector = (state: AdminWorkflowStore) =>
+  state.pendingSwitchTo
+
+export const requestSwitchToSelector = (state: AdminWorkflowStore) =>
+  state.requestSwitchTo
+
+export const requestSwitchToEmailCardSelector = (state: AdminWorkflowStore) =>
+  state.requestSwitchToEmailCard
+
+export const requestSwitchToCreatingSelector = (state: AdminWorkflowStore) =>
+  state.requestSwitchToCreating
+
+export const cancelPendingSwitchSelector = (state: AdminWorkflowStore) =>
+  state.cancelPendingSwitch
+
+export const completeSaveSelector = (state: AdminWorkflowStore) =>
+  state.completeSave
+
+export const completedStepNumberSelector = (state: AdminWorkflowStore) =>
+  state.completedStepNumber
+
+export const setCompletedStepSelector = (state: AdminWorkflowStore) =>
+  state.setCompletedStep
+
+export const dismissCompletedStepSelector = (state: AdminWorkflowStore) =>
+  state.dismissCompletedStep
+
+export const isGuidedSetupSelector = (state: AdminWorkflowStore) =>
+  state.isGuidedSetup
+
+export const setGuidedSetupSelector = (state: AdminWorkflowStore) =>
+  state.setGuidedSetup
+
+export const isOnWelcomeCardSelector = (state: AdminWorkflowStore) =>
+  state.isOnWelcomeCard
+
+export const showWelcomeCardSelector = (state: AdminWorkflowStore) =>
+  state.showWelcomeCard
+
+export const startBuildingFromWelcomeSelector = (state: AdminWorkflowStore) =>
+  state.startBuildingFromWelcome
+
+export const guidedWrapUpSelector = (state: AdminWorkflowStore) =>
+  state.guidedWrapUp
+
+export const setGuidedWrapUpSelector = (state: AdminWorkflowStore) =>
+  state.setGuidedWrapUp
+
 export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
-  devtools((set) => ({
+  devtools((set, get) => ({
     createOrEditData: null,
+    pendingSwitchTo: null,
+    completedStepNumber: null,
+    isGuidedSetup: DEFAULT_IS_GUIDED_SETUP,
+    isOnWelcomeCard: false,
+    guidedWrapUp: GuidedWrapUp.None,
+    setGuidedWrapUp: (stage) => set({ guidedWrapUp: stage }),
     setToCreating: () =>
       set({
         createOrEditData: {
           state: AdminEditWorkflowState.CreatingStep,
         },
+        completedStepNumber: null,
       }),
     setToEditing: (stepNumber) =>
       set({
@@ -55,8 +139,55 @@ export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
           state: AdminEditWorkflowState.EditingStep,
           stepNumber,
         },
+        completedStepNumber: null,
+      }),
+    setToEditingEmailCard: () =>
+      set({
+        createOrEditData: {
+          state: AdminEditWorkflowState.EditingEmailCard,
+        },
+        completedStepNumber: null,
+      }),
+    continueToEmailCard: () =>
+      set({
+        createOrEditData: {
+          state: AdminEditWorkflowState.EditingEmailCard,
+        },
+      }),
+    setCompletedStep: (stepNumber) => set({ completedStepNumber: stepNumber }),
+    dismissCompletedStep: () => set({ completedStepNumber: null }),
+    setGuidedSetup: (isGuidedSetup) => set({ isGuidedSetup }),
+    showWelcomeCard: () => set({ isOnWelcomeCard: true }),
+    startBuildingFromWelcome: () =>
+      set({
+        isOnWelcomeCard: false,
+        createOrEditData: { state: AdminEditWorkflowState.CreatingStep },
       }),
     setToInactive: () => set({ createOrEditData: null }),
     reset: () => set(INITIAL_STATE),
+    requestSwitchTo: (stepNumber) =>
+      set({
+        pendingSwitchTo: {
+          state: AdminEditWorkflowState.EditingStep,
+          stepNumber,
+        },
+      }),
+    requestSwitchToEmailCard: () =>
+      set({
+        pendingSwitchTo: { state: AdminEditWorkflowState.EditingEmailCard },
+      }),
+    requestSwitchToCreating: () =>
+      set({
+        pendingSwitchTo: { state: AdminEditWorkflowState.CreatingStep },
+      }),
+    cancelPendingSwitch: () => set({ pendingSwitchTo: null }),
+    completeSave: () => {
+      const pendingSwitchTo = get().pendingSwitchTo
+      set({
+        createOrEditData: pendingSwitchTo,
+        pendingSwitchTo: null,
+        ...(pendingSwitchTo ? { completedStepNumber: null } : {}),
+      })
+    },
   })),
 )

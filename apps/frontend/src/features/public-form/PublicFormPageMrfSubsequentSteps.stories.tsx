@@ -1,5 +1,6 @@
-import { Meta, StoryFn } from '@storybook/react/*'
-import { expect, waitFor } from '@storybook/test'
+import { Meta, StoryFn } from '@storybook/react-vite'
+import { http, HttpResponse } from 'msw'
+import { expect, waitFor, within } from 'storybook/test'
 
 import { FormResponseMode, WorkflowType } from 'formsg-shared/types'
 
@@ -21,6 +22,7 @@ import { StoryRouter } from '~utils/storybook'
 
 import { SAVE_DRAFT_INDEXEDDB_STORE_NAME } from '~features/form/constants'
 
+import { getSaveDraftKey } from './utils/saveDraft'
 import { DraftSubmission } from './PublicFormContext'
 import PublicFormPage from './PublicFormPage'
 import SaveDraftSetupWrapper from './SaveDraftSetupWrapper'
@@ -46,10 +48,10 @@ export default {
     }),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
-    msw: DEFAULT_MSW_HANDLERS,
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
+    msw: { handlers: { default: DEFAULT_MSW_HANDLERS } },
   },
 } as Meta
 
@@ -65,71 +67,80 @@ const PREVIOUS_SUBMISSION_TABLE_FIELD_WITH_ONE_ROW =
 export const WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRows =
   Template.bind({})
 WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRows.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Multirespondent,
-          workflow: [],
-        },
-      },
-    }),
-    getEncryptedSubmissionResponse({
-      overrides: {
-        workflow: [
-          {
-            _id: 'step-0',
-            edit: ['table-field-for-test-id'],
-            workflow_type: WorkflowType.Static,
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              responseMode: FormResponseMode.Multirespondent,
+              workflow: [],
+            },
           },
-          {
-            _id: 'step-1',
-            edit: [],
-            workflow_type: WorkflowType.Static,
+        }),
+        getEncryptedSubmissionResponse({
+          overrides: {
+            workflow: [
+              {
+                _id: 'step-0',
+                edit: ['table-field-for-test-id'],
+                workflow_type: WorkflowType.Static,
+              },
+              {
+                _id: 'step-1',
+                edit: [],
+                workflow_type: WorkflowType.Static,
+              },
+            ],
+            form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
+            encryptedContent:
+              PREVIOUS_SUBMISSION_TABLE_FIELD_WITH_ADDITIONAL_ROWS,
           },
-        ],
-        form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
-        encryptedContent: PREVIOUS_SUBMISSION_TABLE_FIELD_WITH_ADDITIONAL_ROWS,
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 
 export const WithMultiRespondentFormStep2EditableTableFieldLessThanMinimumRows =
   Template.bind({})
 
 WithMultiRespondentFormStep2EditableTableFieldLessThanMinimumRows.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          responseMode: FormResponseMode.Multirespondent,
-          workflow: [],
-        },
-      },
-    }),
-    getEncryptedSubmissionResponse({
-      overrides: {
-        workflow: [
-          {
-            _id: 'step-0',
-            edit: ['table-field-for-test-id'],
-            workflow_type: WorkflowType.Static,
+  msw: {
+    handlers: {
+      default: [
+        getPublicFormResponse({
+          overrides: {
+            form: {
+              responseMode: FormResponseMode.Multirespondent,
+              workflow: [],
+            },
           },
-          {
-            _id: 'step-1',
-            edit: ['table-field-for-test-id'],
-            workflow_type: WorkflowType.Static,
+        }),
+        getEncryptedSubmissionResponse({
+          overrides: {
+            workflow: [
+              {
+                _id: 'step-0',
+                edit: ['table-field-for-test-id'],
+                workflow_type: WorkflowType.Static,
+              },
+              {
+                _id: 'step-1',
+                edit: ['table-field-for-test-id'],
+                workflow_type: WorkflowType.Static,
+              },
+            ],
+            form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
+            workflowStep: 0,
+            encryptedContent: PREVIOUS_SUBMISSION_TABLE_FIELD_WITH_ONE_ROW,
           },
-        ],
-        form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
-        workflowStep: 0,
-        encryptedContent: PREVIOUS_SUBMISSION_TABLE_FIELD_WITH_ONE_ROW,
-      },
-    }),
-    ...DEFAULT_MSW_HANDLERS,
-  ],
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
 }
 
 const STEP_2_SAVED_DRAFT_RESPONSES = {
@@ -170,37 +181,41 @@ WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRowsWithSaveDraft.par
       storyDescription:
         'This story asserts that the saved draft does not override the previous submission when the table field is non-editabl in the current mrf workflow step',
     },
-    msw: [
-      getPublicFormResponse({
-        overrides: {
-          form: {
-            responseMode: FormResponseMode.Multirespondent,
-            workflow: [],
-            isSaveDraftEnabled: true,
-          },
-        },
-      }),
-      getEncryptedSubmissionResponse({
-        overrides: {
-          workflow: [
-            {
-              _id: 'step-0',
-              edit: ['table-field-for-test-id'],
-              workflow_type: WorkflowType.Static,
+    msw: {
+      handlers: {
+        default: [
+          getPublicFormResponse({
+            overrides: {
+              form: {
+                responseMode: FormResponseMode.Multirespondent,
+                workflow: [],
+                isSaveDraftEnabled: true,
+              },
             },
-            {
-              _id: 'step-1',
-              edit: [],
-              workflow_type: WorkflowType.Static,
+          }),
+          getEncryptedSubmissionResponse({
+            overrides: {
+              workflow: [
+                {
+                  _id: 'step-0',
+                  edit: ['table-field-for-test-id'],
+                  workflow_type: WorkflowType.Static,
+                },
+                {
+                  _id: 'step-1',
+                  edit: [],
+                  workflow_type: WorkflowType.Static,
+                },
+              ],
+              form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
+              encryptedContent:
+                PREVIOUS_SUBMISSION_TABLE_FIELD_WITH_ADDITIONAL_ROWS,
             },
-          ],
-          form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
-          encryptedContent:
-            PREVIOUS_SUBMISSION_TABLE_FIELD_WITH_ADDITIONAL_ROWS,
-        },
-      }),
-      ...DEFAULT_MSW_HANDLERS,
-    ],
+          }),
+          ...DEFAULT_MSW_HANDLERS,
+        ],
+      },
+    },
   }
 
 WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRowsWithSaveDraft.decorators =
@@ -254,6 +269,71 @@ WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRowsWithSaveDraft.pla
     })
   }
 
+export const WithStepLinkRestoresDraftSavedBeforeStepLinks = Template.bind({})
+
+const STEP_LINK_TOKEN = 'step-link-token'
+
+WithStepLinkRestoresDraftSavedBeforeStepLinks.parameters = {
+  ...WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRowsWithSaveDraft.parameters,
+  docs: {
+    storyDescription:
+      'A draft saved under the key without a step link is restored on a link with a token, and moved to that link',
+  },
+  router: {
+    path: '/:formId/edit/:submissionId',
+    initialEntries: [
+      `/61540ece3d4a6e50ac0cc6ff/edit/68d4b9900415e65225fd3e4e?key=mock-key&token=${STEP_LINK_TOKEN}`,
+    ],
+  },
+}
+
+WithStepLinkRestoresDraftSavedBeforeStepLinks.decorators =
+  WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRowsWithSaveDraft.decorators
+
+WithStepLinkRestoresDraftSavedBeforeStepLinks.play = async ({ step }) => {
+  const stepLinkDraftKey = getSaveDraftKey({
+    formId: '61540ece3d4a6e50ac0cc6ff',
+    formSubmissionId: '68d4b9900415e65225fd3e4e',
+    isMrf: true,
+    currentMrfWorkflowStepNumber: 1,
+    stepToken: STEP_LINK_TOKEN,
+  })
+
+  await step('Assert that the draft is restored', async () => {
+    await waitFor(
+      () => {
+        expect(document.body).toHaveTextContent(
+          'Your draft has been successfully restored.',
+        )
+      },
+      { timeout: 3000 },
+    )
+  })
+
+  await step('Assert that the draft moved to the step link key', async () => {
+    await waitFor(async () => {
+      const movedDraft = (await _getFromIndexedDBForTest({
+        key: stepLinkDraftKey,
+        storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+      })) as DraftSubmission | undefined
+      expect(movedDraft?.draftResponses).toBeTruthy()
+      expect(
+        await _getFromIndexedDBForTest({
+          key: MULTIRESPONDENT_MODE_PUBLIC_FORM_STEP_1_SAVE_DRAFT_KEY,
+          storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+        }),
+      ).toBeUndefined()
+    })
+  })
+
+  await step('Cleanup saved draft', async () => {
+    await _removeFromIndexedDBForTest({
+      key: stepLinkDraftKey,
+      storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+    })
+  })
+}
+
 export const WithMultiRespondentFormStep2EditableTableFieldAdditionalRowsWithSaveDraft =
   Template.bind({})
 
@@ -263,37 +343,41 @@ WithMultiRespondentFormStep2EditableTableFieldAdditionalRowsWithSaveDraft.parame
       storyDescription:
         'This story asserts that the saved draft overrides the previous submission when the table field is editable in the current mrf workflow step',
     },
-    msw: [
-      getPublicFormResponse({
-        overrides: {
-          form: {
-            responseMode: FormResponseMode.Multirespondent,
-            workflow: [],
-            isSaveDraftEnabled: true,
-          },
-        },
-      }),
-      getEncryptedSubmissionResponse({
-        overrides: {
-          workflow: [
-            {
-              _id: 'step-0',
-              edit: ['table-field-for-test-id'],
-              workflow_type: WorkflowType.Static,
+    msw: {
+      handlers: {
+        default: [
+          getPublicFormResponse({
+            overrides: {
+              form: {
+                responseMode: FormResponseMode.Multirespondent,
+                workflow: [],
+                isSaveDraftEnabled: true,
+              },
             },
-            {
-              _id: 'step-1',
-              edit: ['table-field-for-test-id'],
-              workflow_type: WorkflowType.Static,
+          }),
+          getEncryptedSubmissionResponse({
+            overrides: {
+              workflow: [
+                {
+                  _id: 'step-0',
+                  edit: ['table-field-for-test-id'],
+                  workflow_type: WorkflowType.Static,
+                },
+                {
+                  _id: 'step-1',
+                  edit: ['table-field-for-test-id'],
+                  workflow_type: WorkflowType.Static,
+                },
+              ],
+              form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
+              encryptedContent:
+                PREVIOUS_SUBMISSION_TABLE_FIELD_WITH_ADDITIONAL_ROWS,
             },
-          ],
-          form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
-          encryptedContent:
-            PREVIOUS_SUBMISSION_TABLE_FIELD_WITH_ADDITIONAL_ROWS,
-        },
-      }),
-      ...DEFAULT_MSW_HANDLERS,
-    ],
+          }),
+          ...DEFAULT_MSW_HANDLERS,
+        ],
+      },
+    },
   }
 
 WithMultiRespondentFormStep2EditableTableFieldAdditionalRowsWithSaveDraft.decorators =
@@ -346,3 +430,38 @@ WithMultiRespondentFormStep2EditableTableFieldAdditionalRowsWithSaveDraft.play =
       })
     })
   }
+
+export const WithStoppedWorkflow = Template.bind({})
+WithStoppedWorkflow.parameters = {
+  msw: {
+    handlers: {
+      default: [
+        http.get('/api/v3/forms/:formId/submissions/:submissionId', () =>
+          HttpResponse.json(
+            {
+              message:
+                'This workflow has been stopped. Please contact the form admin that gave you this link.',
+              messageKey:
+                'features.publicForm.backendErrors.submission.mrf.workflowStopped',
+            },
+            { status: 400 },
+          ),
+        ),
+        getPublicFormResponse({
+          overrides: {
+            form: { responseMode: FormResponseMode.Multirespondent },
+          },
+        }),
+        ...DEFAULT_MSW_HANDLERS,
+      ],
+    },
+  },
+}
+WithStoppedWorkflow.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement)
+  await waitFor(() =>
+    expect(
+      canvas.getByText(/This workflow has been stopped/),
+    ).toBeInTheDocument(),
+  )
+}

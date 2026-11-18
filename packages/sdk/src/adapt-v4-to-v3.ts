@@ -1,4 +1,7 @@
-import { ADDRESS_SUBFIELD_KEYS, GENERIC_STRING_FIELD_TYPES } from './constants-v4'
+import {
+  ADDRESS_SUBFIELD_KEYS,
+  GENERIC_STRING_FIELD_TYPES,
+} from './constants-v4'
 import { FieldType, FormFieldsV3 } from './types'
 import {
   AddressAnswerV4,

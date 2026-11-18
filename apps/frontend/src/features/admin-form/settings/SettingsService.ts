@@ -2,6 +2,8 @@ import Stripe from 'stripe'
 
 import {
   EmailFormSettings,
+  FormMetadata,
+  FormOrigin,
   FormSettings,
   MultirespondentFormSettings,
   SettingsUpdateDto,
@@ -63,6 +65,20 @@ export const getFormEncryptedWhitelistedSubmitterIds = async (
   }).then(({ data }) => data)
 }
 
+/**
+ * Saves the answer to the origin question on an existing form, for forms
+ * that were never asked at creation.
+ */
+export const updateFormOrigins = async (
+  formId: string,
+  formOrigin: FormOrigin,
+): Promise<Pick<FormMetadata, 'formOrigins'>> => {
+  return ApiService.put<Pick<FormMetadata, 'formOrigins'>>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/form-origins`,
+    { formOrigins: { value: [formOrigin] } },
+  ).then(({ data }) => data)
+}
+
 export const updateFormStatus: UpdateFormFn<'status'> = async (
   formId,
   status,
@@ -75,6 +91,13 @@ export const updateFormLimit: UpdateFormFn<'submissionLimit'> = async (
   newLimit,
 ) => {
   return updateFormSettings(formId, { submissionLimit: newLimit })
+}
+
+export const updateFormCloseAt: UpdateFormFn<'closeAt'> = async (
+  formId,
+  newCloseAt,
+) => {
+  return updateFormSettings(formId, { closeAt: newCloseAt })
 }
 
 export const updateFormHasMultiLang: UpdateFormFn<'hasMultiLang'> = async (
@@ -157,6 +180,12 @@ export const updateMrfEmailNotifications: UpdateMultiRespondentFormFn<
   return updateFormSettings(formId, newSettings)
 }
 
+export const updateMrfHasUsedGuidedMode: UpdateMultiRespondentFormFn<{
+  hasUsedGuidedMode: boolean
+}> = async (formId, newHasUsedGuidedMode) => {
+  return updateFormSettings(formId, newHasUsedGuidedMode)
+}
+
 export const updateFormAuthType: UpdateFormFn<'authType'> = async (
   formId,
   newAuthType,
@@ -198,6 +227,11 @@ export const updateFormWebhookUrl = async (
   })
 }
 
+export const updateFormWebhookFormat = async (
+  formId: string,
+  webhookFormat: NonNullable<FormSettings['webhook']['webhookFormat']>,
+) => updateFormSettings(formId, { webhook: { webhookFormat } })
+
 export const updateFormWebhookRetries = async (
   formId: string,
   nextEnabled?: FormSettings['webhook']['isRetryEnabled'],
@@ -223,6 +257,19 @@ export const updateGstEnabledFlag = async (
   return updateFormSettings(formId, {
     payments_field: { gst_enabled: gstEnabledFlag },
   })
+}
+
+/**
+ * Converts the Collect NRIC/FIN/UENs setting into Step 1 login identity fields.
+ * @param formId the id of the form to convert
+ * @returns updated form settings
+ */
+export const convertSubmitterIdCollection = async (
+  formId: string,
+): Promise<FormSettings> => {
+  return ApiService.post<FormSettings>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/settings/submitter-id-collection/convert`,
+  ).then(({ data }) => data)
 }
 
 /**

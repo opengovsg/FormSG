@@ -7,11 +7,13 @@ import {
   IPaymentSchema,
   IPopulatedEncryptedForm,
   IPopulatedForm,
+  IPopulatedMultirespondentForm,
 } from '../../../types'
 import { aws as AwsConfig } from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { DAY_IN_SECONDS } from '../../constants/time'
 import { stripe } from '../../loaders/stripe'
+import { getSignedS3Url, putS3Object } from '../../utils/aws-s3'
 import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 
 import { getPaymentLogMeta } from './payment.service.utils'
@@ -62,13 +64,11 @@ export const _storePaymentProofInS3 = (
   })
 
   return ResultAsync.fromPromise(
-    AwsConfig.s3
-      .upload({
-        Bucket: AwsConfig.paymentProofS3Bucket,
-        Key: objectPath,
-        Body: pdfBuffer,
-      })
-      .promise(),
+    putS3Object({
+      Bucket: AwsConfig.paymentProofS3Bucket,
+      Key: objectPath,
+      Body: pdfBuffer,
+    }),
     (error) => {
       logger.error({
         message: 'Error occured whilst uploading pdfBuffer to S3',
@@ -132,11 +132,13 @@ export const _getPaymentProofPresignedS3Url = (
     },
   })
   return ResultAsync.fromPromise(
-    AwsConfig.s3.getSignedUrlPromise('getObject', {
-      Bucket: AwsConfig.paymentProofS3Bucket,
-      Key: objectPath,
-      Expires: 1 * DAY_IN_SECONDS,
-    }),
+    getSignedS3Url(
+      {
+        Bucket: AwsConfig.paymentProofS3Bucket,
+        Key: objectPath,
+      },
+      DAY_IN_SECONDS,
+    ),
     (error) => {
       logger.error({
         message: 'Error occured whilst retrieving signed URL from S3',
@@ -179,7 +181,7 @@ export const _retrieveReceiptUrlFromStripe = (
 
 const _generatePaymentInvoiceAsPdf = (
   payment: ICompletedPaymentSchema,
-  populatedForm: IPopulatedEncryptedForm,
+  populatedForm: IPopulatedEncryptedForm | IPopulatedMultirespondentForm,
   receiptUrl: string,
 ): ResultAsync<Buffer, StripeFetchError | InvoicePdfGenerationError> => {
   if (!payment.completedPayment?.receiptUrl) {
@@ -236,7 +238,7 @@ const _generatePaymentInvoiceAsPdf = (
 
 export const generatePaymentInvoiceUrl = (
   payment: IPaymentSchema,
-  populatedForm: IPopulatedEncryptedForm,
+  populatedForm: IPopulatedEncryptedForm | IPopulatedMultirespondentForm,
 ): ResultAsync<
   string,
   | StripeFetchError

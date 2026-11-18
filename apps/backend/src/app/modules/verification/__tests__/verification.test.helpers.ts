@@ -6,7 +6,7 @@ import { IVerificationField } from 'src/types'
 
 export const MOCK_SIGNED_DATA = 'mockSignedData'
 export const MOCK_HASHED_OTP = 'mockHashedOtp'
-export const MOCK_OTP = '123456'
+export const MOCK_OTP = 'A1B2C3D4'
 export const MOCK_OTP_PREFIX = 'ABC'
 export const MOCK_EMAIL_RECIPIENT = 'form@open.gov.sg'
 export const MOCK_LOCAL_RECIPIENT = '+6581234567'

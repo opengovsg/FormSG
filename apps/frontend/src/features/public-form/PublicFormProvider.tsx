@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
-import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
+import { useGrowthBook } from '@growthbook/growthbook-react'
 import { differenceInMilliseconds, format, isPast } from 'date-fns'
 import { flow, times } from 'lodash'
 import get from 'lodash/get'
@@ -35,7 +35,9 @@ import {
   PublicFormDto,
   StrippedFormWorkflowStepDto,
 } from 'formsg-shared/types/form'
+import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'
 import { centsToDollars, dollarsToCents } from 'formsg-shared/utils/payments'
+import { hasLaterStepLogin } from 'formsg-shared/utils/step-login'
 
 import { MONGODB_ID_REGEX } from '~constants/routes'
 import { useBrowserStm } from '~hooks/payments'
@@ -66,6 +68,7 @@ import {
   isFieldEnabledByMrfWorkflow,
 } from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
 import { extractMrfPreviousStepResponseValue } from '~features/form/utils/extractMrfPreviousStepResponseValue'
+import { isFormPaymentsEnabled } from '~features/form/utils/isFormPaymentsEnabled'
 import { hasExistingFieldValue } from '~features/myinfo/utils'
 import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
 import { extractPreviewValue } from '~features/myinfo/utils/extractPreviewValue'
@@ -82,16 +85,36 @@ import {
 
 import { PrefillMap } from './components/FormFields/FormFields'
 import { FormNotFound } from './components/FormNotFound'
+import {
+  REDIRECTED_QUERY_KEY,
+  useFetchPrefillQuery,
+} from './hooks/useFetchPrefillQuery'
 import { decryptAttachment, decryptSubmission } from './utils/decryptSubmission'
 import { postIFrameMessage } from './utils/iframeMessaging'
-import { getDraftToSave, getRestoreDraftFormValues } from './utils/saveDraft'
-import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
+import {
+  getDraftToSave,
+  getRestoreDraftFormValues,
+  getSaveDraftKey,
+} from './utils/saveDraft'
+import {
+  getPendingStepAuthType,
+  mergeStepLoginSession,
+} from './utils/stepLogin'
+import {
+  MrfStepAuthTarget,
+  usePublicAuthMutations,
+  usePublicFormMutations,
+} from './mutations'
 import {
   DraftSubmission,
   PublicFormContext,
   SubmissionData,
 } from './PublicFormContext'
-import { useEncryptedSubmission, usePublicFormView } from './queries'
+import {
+  useEncryptedSubmission,
+  useMrfStepAuthSession,
+  usePublicFormView,
+} from './queries'
 import { axiosDebugFlow } from './utils'
 
 interface PublicFormProviderProps {
@@ -211,12 +234,21 @@ const transformFormInputTrimTextInputs =
     )
   }
 
+// The login fills these fields and the server rejects an answer that differs
+// from it, so they are never editable. They are labelled as required, since
+// the login always provides them.
+const augmentLoginIdentityField = (field: FormFieldDto): FormFieldDto =>
+  isLoginIdentityField(field)
+    ? { ...field, disabled: true, required: true }
+    : field
+
 export const augmentFormFields = (
   formFields: FormFieldDto[],
   currentStepNumberWorkflowStep?: StrippedFormWorkflowStepDto,
 ) => {
   return formFields
     .map(augmentWithMyInfo)
+    .map(augmentLoginIdentityField)
     .map((fields) =>
       augmentFieldWithMrfWorkflowDisabling(
         currentStepNumberWorkflowStep,
@@ -370,31 +402,6 @@ export const getInitialFormValues = ({
   return defaultFormValues
 }
 
-const getSaveDraftKey = ({
-  formId,
-  formSubmissionId,
-  isMrf,
-  currentMrfWorkflowStepNumber,
-}: {
-  formId: string
-  formSubmissionId?: string
-  isMrf: boolean
-  /**
-   * @note currentMrfWorkflowStepNumber is 0-indexed.
-   */
-  currentMrfWorkflowStepNumber: number
-}) => {
-  const FORMSG_SAVE_DRAFT_PREFIX = 'formsg-save-draft'
-  return [
-    FORMSG_SAVE_DRAFT_PREFIX,
-    formId,
-    formSubmissionId,
-    isMrf ? 'step' + currentMrfWorkflowStepNumber : undefined,
-  ]
-    .filter(Boolean)
-    .join('-')
-}
-
 export const PublicFormProvider = ({
   formId,
   submissionId: previousSubmissionId,
@@ -409,6 +416,23 @@ export const PublicFormProvider = ({
 
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
+
+  const [searchParams] = useSearchParams()
+
+  // MRF key
+  let submissionSecretKey = ''
+  try {
+    submissionSecretKey = decodeURIComponent(searchParams.get('key') ?? '')
+  } catch (e) {
+    console.log(e)
+  }
+
+  let stepToken = ''
+  try {
+    stepToken = decodeURIComponent(searchParams.get('token') ?? '')
+  } catch (e) {
+    console.log(e)
+  }
 
   const {
     /**
@@ -435,6 +459,7 @@ export const PublicFormProvider = ({
     previousSubmissionId,
     // Stop querying once submissionData is present.
     /* enabled= */ !submissionData,
+    stepToken || undefined,
   )
 
   /**
@@ -448,19 +473,108 @@ export const PublicFormProvider = ({
    *
    * @returns Form data with latest form definition if Storage mode or 1st step of MRF, otherwise snapshotted form definition for >= 2nd step of MRF.
    */
+  // Whether this submission's saved workflow has a later-step login. Without
+  // one, a later step behaves exactly as before step logins existed.
+  const hasSavedStepLogin = hasLaterStepLogin(
+    encryptedPreviousSubmission?.workflow,
+  )
+
+  // After a step login redirect, the submission key and step token come back
+  // from session storage, so wait for them before using the url. Other
+  // restores are left to FormFields, as before.
+  const isRestoringPrefillQuery = useFetchPrefillQuery({
+    enabled: hasSavedStepLogin,
+  })
+  const wasRestoringPrefillQueryRef = useRef(false)
+  if (isRestoringPrefillQuery) wasRestoringPrefillQueryRef.current = true
+  const isAwaitingPrefillQuery =
+    wasRestoringPrefillQueryRef.current &&
+    searchParams.has(REDIRECTED_QUERY_KEY)
+
+  // Only a pending step saved with its own login uses the step login flow.
+  const pendingStepAuthType =
+    latestFormData?.form.responseMode === FormResponseMode.Multirespondent
+      ? getPendingStepAuthType(encryptedPreviousSubmission)
+      : undefined
+
+  const { data: mrfStepAuth, isLoading: isMrfStepAuthLoading } =
+    useMrfStepAuthSession({
+      formId,
+      submissionId: previousSubmissionId,
+      stepToken: stepToken || undefined,
+      enabled:
+        !!pendingStepAuthType && !isAwaitingPrefillQuery && !submissionData,
+    })
+
+  const mrfStepAuthTarget: MrfStepAuthTarget | undefined = useMemo(
+    () =>
+      pendingStepAuthType && previousSubmissionId
+        ? {
+            submissionId: previousSubmissionId,
+            stepToken: stepToken || undefined,
+          }
+        : undefined,
+    [pendingStepAuthType, previousSubmissionId, stepToken],
+  )
+
   const data = useMemo(() => {
-    return latestFormData && encryptedPreviousSubmission
-      ? {
-          ...latestFormData,
-          form: {
-            ...latestFormData.form,
-            form_fields: encryptedPreviousSubmission.form_fields,
-            form_logics: encryptedPreviousSubmission.form_logics,
-            workflow: encryptedPreviousSubmission.workflow,
-          },
-        }
-      : latestFormData
-  }, [latestFormData, encryptedPreviousSubmission])
+    if (!latestFormData || !encryptedPreviousSubmission) return latestFormData
+    const snapshotData = {
+      ...latestFormData,
+      form: {
+        ...latestFormData.form,
+        form_fields: encryptedPreviousSubmission.form_fields,
+        form_logics: encryptedPreviousSubmission.form_logics,
+        workflow: encryptedPreviousSubmission.workflow,
+      },
+    }
+    if (!pendingStepAuthType && !hasSavedStepLogin) return snapshotData
+    // A later step without its own login, in a workflow where another later
+    // step has one, has no login at all. Step 1's login and session must not
+    // carry over to it.
+    if (!pendingStepAuthType) {
+      return {
+        ...snapshotData,
+        form: {
+          ...snapshotData.form,
+          authType: FormAuthType.NIL,
+          isSubmitterIdCollectionEnabled: false,
+        },
+        spcpSession: undefined,
+        myInfoChildrenBirthRecords: undefined,
+        errorCodes: undefined,
+      }
+    }
+
+    // A later step with its own login never uses Step 1's session. If its
+    // session can't be read, submission still enforces the step's login.
+    const { formFields, isLoggedIn } = mrfStepAuth
+      ? mergeStepLoginSession({
+          formFields: snapshotData.form.form_fields,
+          workflow: encryptedPreviousSubmission.workflow,
+          workflowStep: encryptedPreviousSubmission.workflowStep + 1,
+          session: mrfStepAuth,
+        })
+      : { formFields: snapshotData.form.form_fields, isLoggedIn: false }
+    return {
+      ...snapshotData,
+      form: {
+        ...snapshotData.form,
+        form_fields: formFields,
+        authType: pendingStepAuthType,
+        isSubmitterIdCollectionEnabled: false,
+      },
+      spcpSession: isLoggedIn ? mrfStepAuth?.spcpSession : undefined,
+      myInfoChildrenBirthRecords: mrfStepAuth?.myInfoChildrenBirthRecords,
+      errorCodes: mrfStepAuth?.errorCodes,
+    }
+  }, [
+    latestFormData,
+    encryptedPreviousSubmission,
+    pendingStepAuthType,
+    hasSavedStepLogin,
+    mrfStepAuth,
+  ])
 
   const [numVisibleFields, setNumVisibleFields] = useState(0)
 
@@ -506,7 +620,10 @@ export const PublicFormProvider = ({
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
 
-  const isLoading = isFormLoading || isSubmissionLoading
+  const isLoading =
+    isFormLoading ||
+    isSubmissionLoading ||
+    (!!pendingStepAuthType && !submissionData && isMrfStepAuthLoading)
   const error = publicFormError || encryptedSubmissionError
 
   const [previousSubmission, setPreviousSubmission] =
@@ -517,16 +634,6 @@ export const PublicFormProvider = ({
   const [previousAttachments, setPreviousAttachments] = useState<
     Record<string, Uint8Array<ArrayBuffer>>
   >({})
-
-  const [searchParams] = useSearchParams()
-
-  // MRF key
-  let submissionSecretKey = ''
-  try {
-    submissionSecretKey = decodeURIComponent(searchParams.get('key') ?? '')
-  } catch (e) {
-    console.log(e)
-  }
 
   useEffect(() => {
     // Function to decrypt attachments retrieved from S3 using the submission secret key
@@ -564,22 +671,12 @@ export const PublicFormProvider = ({
     if (encryptedPreviousSubmission?.mrfVersion != null) {
       if (submissionSecretKey) decryptAttachments()
     } else {
-      // Backward compatibility to retrieve attachments from the DB itself once
-      // the previous submission responses are decrypted.
-      if (previousSubmission) {
-        // Backward compatibility
-        const previousAttachments: Record<string, Uint8Array<ArrayBuffer>> = {}
-        Object.keys(previousSubmission.responses).forEach((id) => {
-          const response = previousSubmission.responses[id]
-          if (response.fieldType === BasicField.Attachment) {
-            previousAttachments[id] = Uint8Array.from(
-              //@ts-expect-error 'content' required for backward compatibility, but
-              // does not exist on AttachmentFieldResponseV3 in mrfVersion >= 1 versions
-              response.answer.content.data,
-            )
-          }
-        })
-        setPreviousAttachments(previousAttachments)
+      // Backward compatibility to retrieve attachments embedded in the
+      // encrypted blob itself (legacy submissions predating mrfVersion).
+      // These are harvested pre-adaptation by decryptSubmission, since the
+      // embedded content is dropped when responses are adapted to V4.
+      if (previousSubmission?.legacyAttachmentContents) {
+        setPreviousAttachments(previousSubmission.legacyAttachmentContents)
       }
     }
   }, [encryptedPreviousSubmission, previousSubmission, submissionSecretKey])
@@ -588,7 +685,8 @@ export const PublicFormProvider = ({
     previousSubmissionId &&
     encryptedPreviousSubmission &&
     !previousSubmission &&
-    !isSubmissionSecretKeyInvalid
+    !isSubmissionSecretKeyInvalid &&
+    !isAwaitingPrefillQuery
   ) {
     // During test, we want to bypass the secret key validation
     const isValid =
@@ -676,9 +774,7 @@ export const PublicFormProvider = ({
     captchaType = CaptchaTypes.Recaptcha
   }
 
-  const isPaymentEnabled =
-    data?.form.responseMode === FormResponseMode.Encrypt &&
-    data.form.payments_field.enabled
+  const isPaymentEnabled = isFormPaymentsEnabled(data?.form)
 
   const hasMyInfoError = !!data?.errorCodes?.find(
     (errorCode) => errorCode === ErrorCode.myInfo,
@@ -737,11 +833,26 @@ export const PublicFormProvider = ({
       }
     }
 
+    if (previousSubmissionId && encryptedSubmissionError) {
+      return {
+        title: data?.form.title ?? t('features.publicForm.errors.notFound'),
+        header: t('features.publicForm.errors.notAvailable'),
+        message: encryptedSubmissionError.message,
+      }
+    }
+
     // Decryption failed for previous submission
     if (isSubmissionSecretKeyInvalid) {
       return t('features.publicForm.errors.submissionSecretKeyInvalid')
     }
-  }, [error, data, previousSubmissionId, isSubmissionSecretKeyInvalid, t])
+  }, [
+    error,
+    encryptedSubmissionError,
+    data,
+    previousSubmissionId,
+    isSubmissionSecretKeyInvalid,
+    t,
+  ])
 
   const generateVfnExpiryToast = useCallback(() => {
     if (vfnToastIdRef.current) {
@@ -772,6 +883,9 @@ export const PublicFormProvider = ({
     formId,
     previousSubmissionId,
     previousSubmission?.submissionSecretKey,
+    // Empty (tokenless / flag-off link) → undefined so JSON.stringify drops
+    // `stepToken` from the PUT body, keeping it byte-identical to today.
+    stepToken || undefined,
   )
 
   const form = data?.form
@@ -810,11 +924,15 @@ export const PublicFormProvider = ({
     [formFields, currentStepNumberWorkflowStep],
   )
 
-  const formDraftSubmissionKey = getSaveDraftKey({
+  const saveDraftKeyParams = {
     formId,
     formSubmissionId: previousSubmissionId,
     isMrf: form?.responseMode === FormResponseMode.Multirespondent,
     currentMrfWorkflowStepNumber: currentWorkflowStepNumber,
+  }
+  const formDraftSubmissionKey = getSaveDraftKey({
+    ...saveDraftKeyParams,
+    stepToken: stepToken || undefined,
   })
 
   const memoizedInitialValue = useMemo(
@@ -828,6 +946,7 @@ export const PublicFormProvider = ({
   const [draftSubmission, setDraftSubmission, clearDraftSubmission] =
     useIndexedDb<DraftSubmission>({
       key: formDraftSubmissionKey,
+      legacyKey: getSaveDraftKey(saveDraftKeyParams),
       initialValue: memoizedInitialValue,
       storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
     })
@@ -951,7 +1070,10 @@ export const PublicFormProvider = ({
     })
   }
 
-  const { handleLogoutMutation } = usePublicAuthMutations(formId)
+  const { handleLogoutMutation } = usePublicAuthMutations({
+    formId,
+    mrfStep: mrfStepAuthTarget,
+  })
 
   const handleLogout = useCallback(() => {
     if (!data?.form || data.form.authType === FormAuthType.NIL) return
@@ -1298,26 +1420,63 @@ export const PublicFormProvider = ({
               }
             })
         }
-        case FormResponseMode.Multirespondent:
+        case FormResponseMode.Multirespondent: {
+          // Payment fields only apply on creation: a payment-enabled form is
+          // necessarily zero-step, so the update path never carries them.
+          const mrfPaymentData =
+            !previousSubmissionId && form.payments_field?.enabled
+              ? {
+                  paymentReceiptEmail: paymentReceiptEmailField?.value,
+                  paymentProducts: paymentProducts?.filter<ProductItem>(
+                    (product): product is ProductItem =>
+                      product.selected && product.quantity > 0,
+                  ),
+                  ...(form.payments_field.payment_type === PaymentType.Variable
+                    ? {
+                        payments: {
+                          amount_cents: dollarsToCents(
+                            paymentVariableInputAmountField ?? '0',
+                          ),
+                        },
+                      }
+                    : {}),
+                }
+              : {}
+
           return (
             previousSubmissionId
               ? updateMultirespondentSubmissionMutation
               : submitMultirespondentFormMutation
           )
-            .mutateAsync(formData, {
-              onSuccess: ({ submissionId, timestamp, mrfStep }) => {
-                trackSubmitForm(form)
-                setSubmissionData({
-                  id: submissionId,
+            .mutateAsync(
+              { ...formData, ...mrfPaymentData },
+              {
+                onSuccess: ({
+                  submissionId,
                   timestamp,
                   mrfStep,
-                })
+                  // payment forms will have non-empty paymentData field
+                  paymentData,
+                }) => {
+                  trackSubmitForm(form)
+                  if (paymentData) {
+                    navigate(getPaymentPageUrl(formId, paymentData.paymentId))
+                    storePaymentMemory(paymentData.paymentId)
+                    return
+                  }
+                  setSubmissionData({
+                    id: submissionId,
+                    timestamp,
+                    mrfStep,
+                  })
+                },
               },
-            })
+            )
             .then(() => clearDraftSubmission())
             .catch(async (error) => {
               showErrorToast(error, form)
             })
+        }
       }
     },
     [
@@ -1370,6 +1529,7 @@ export const PublicFormProvider = ({
         handleLogout,
         formId,
         previousSubmissionId,
+        mrfStepAuthTarget,
         error,
         submissionData,
         isAuthRequired,
@@ -1392,6 +1552,7 @@ export const PublicFormProvider = ({
         defaultFormValues,
         augmentedFormFields,
         fieldPrefillMap,
+        currentWorkflowStep: currentStepNumberWorkflowStep,
         ...commonFormValues,
         ...data,
         ...rest,

@@ -28,6 +28,11 @@ export type FieldBuilderStore = {
     holding?: boolean,
   ) => void
   updateEditState: (field: FormFieldDto, holding?: boolean) => void
+  /**
+   * Moves the not-yet-created field without touching the draft itself, so a
+   * drag cannot clobber edits the drawer has not flushed yet.
+   */
+  setCreateInsertionIndex: (insertionIndex: number) => void
   setToInactive: (holding?: boolean) => void
   stateData:
     | FieldBuilderCreateEditStateData
@@ -40,6 +45,13 @@ export type FieldBuilderStore = {
     | null
   clearHoldingStateData: () => void
   moveFromHolding: () => void
+  pendingFieldCreation: {
+    field: FieldCreateDto
+    insertionIndex: number
+  } | null
+  stageFieldCreation: (field: FieldCreateDto, insertionIndex: number) => void
+  clearPendingFieldCreation: () => void
+  consumePendingFieldCreation: () => void
 }
 
 export const useFieldBuilderStore = create<FieldBuilderStore>()(
@@ -76,6 +88,16 @@ export const useFieldBuilderStore = create<FieldBuilderStore>()(
         set({ stateData })
       }
     },
+    setCreateInsertionIndex: (insertionIndex) => {
+      const { stateData } = get()
+      if (
+        stateData.state !== FieldBuilderState.CreatingField ||
+        stateData.insertionIndex === insertionIndex
+      ) {
+        return
+      }
+      set({ stateData: { ...stateData, insertionIndex } })
+    },
     updateEditState: (field, holding) => {
       // perf: prevent store update if field is the same
       const current = get()
@@ -94,6 +116,22 @@ export const useFieldBuilderStore = create<FieldBuilderStore>()(
       } else {
         set({ stateData })
       }
+    },
+    pendingFieldCreation: null,
+    stageFieldCreation: (field, insertionIndex) =>
+      set({ pendingFieldCreation: { field, insertionIndex } }),
+    clearPendingFieldCreation: () => set({ pendingFieldCreation: null }),
+    consumePendingFieldCreation: () => {
+      const pending = get().pendingFieldCreation
+      if (!pending) return
+      set({
+        stateData: {
+          state: FieldBuilderState.CreatingField,
+          field: pending.field,
+          insertionIndex: pending.insertionIndex,
+        },
+        pendingFieldCreation: null,
+      })
     },
     setToInactive: (holding?: boolean) => {
       const nextState: FieldBuilderStore['holdingStateData'] = {
@@ -123,6 +161,28 @@ export const updateCreateStateSelector = (
 export const updateEditStateSelector = (
   state: FieldBuilderStore,
 ): FieldBuilderStore['updateEditState'] => state.updateEditState
+
+export const setCreateInsertionIndexSelector = (
+  state: FieldBuilderStore,
+): FieldBuilderStore['setCreateInsertionIndex'] => state.setCreateInsertionIndex
+
+export const pendingFieldCreationSelector = (
+  state: FieldBuilderStore,
+): FieldBuilderStore['pendingFieldCreation'] => state.pendingFieldCreation
+
+export const stageFieldCreationSelector = (
+  state: FieldBuilderStore,
+): FieldBuilderStore['stageFieldCreation'] => state.stageFieldCreation
+
+export const clearPendingFieldCreationSelector = (
+  state: FieldBuilderStore,
+): FieldBuilderStore['clearPendingFieldCreation'] =>
+  state.clearPendingFieldCreation
+
+export const consumePendingFieldCreationSelector = (
+  state: FieldBuilderStore,
+): FieldBuilderStore['consumePendingFieldCreation'] =>
+  state.consumePendingFieldCreation
 
 export const setToInactiveSelector = (
   state: FieldBuilderStore,

@@ -2,11 +2,11 @@ import { useCallback, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { BiRadioCircleMarked } from 'react-icons/bi'
 import { FormControl } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { get } from 'lodash'
 import difference from 'lodash/difference'
 
-import { fixedHeightDecorator, viewports } from '~utils/storybook'
+import { fixedHeightDecorator } from '~utils/storybook'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -96,11 +96,8 @@ MobileTruncatedOption.args = {
   values: ['What happens when the label is fairly long', 'Bat'],
   defaultIsOpen: true,
 }
-MobileTruncatedOption.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
+MobileTruncatedOption.globals = {
+  viewport: { value: 'mobile1', isRotated: false },
 }
 
 export const Invalid = Template.bind({})
@@ -171,6 +168,7 @@ export const Playground: StoryFn<MultiSelectProps> = ({
     </form>
   )
 }
+Playground.tags = ['playground']
 
 Playground.args = {
   isDisabled: false,

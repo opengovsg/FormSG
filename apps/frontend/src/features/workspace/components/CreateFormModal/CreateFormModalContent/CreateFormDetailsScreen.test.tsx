@@ -14,6 +14,12 @@ import {
 
 import { CreateFormDetailsScreen } from './CreateFormDetailsScreen'
 
+const state = vi.hoisted(() => ({ escapeHatch: true }))
+
+vi.mock('@growthbook/growthbook-react', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@growthbook/growthbook-react')>()),
+  useFeatureIsOn: () => state.escapeHatch,
+}))
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k: string) => k }),
   Trans: ({ children }: PropsWithChildren) => children,
@@ -87,6 +93,23 @@ const renderDetailsScreen = (
 }
 
 describe('CreateFormDetailsScreen', () => {
+  beforeEach(() => {
+    state.escapeHatch = true
+  })
+
+  it('shows the escape hatch when the flag is on', () => {
+    renderDetailsScreen({ isMrfCutoverEnabled: true })
+
+    expect(screen.getByTestId('escape-hatch')).toBeInTheDocument()
+  })
+
+  it('hides the escape hatch when the flag is off', () => {
+    state.escapeHatch = false
+    renderDetailsScreen({ isMrfCutoverEnabled: true })
+
+    expect(screen.queryByTestId('escape-hatch')).not.toBeInTheDocument()
+  })
+
   it('renders the proceed CTA label from the wizard context', () => {
     renderDetailsScreen({ proceedCtaLabel: 'Next step' })
 

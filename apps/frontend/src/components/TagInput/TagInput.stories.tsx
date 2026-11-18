@@ -1,6 +1,6 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { getMobileViewParameters } from '~utils/storybook'
+import { getMobileViewGlobals } from '~utils/storybook'
 
 import { TagInput, TagInputProps } from './TagInput'
 
@@ -53,4 +53,4 @@ Mobile.args = {
     'test@example.com',
   ],
 }
-Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()

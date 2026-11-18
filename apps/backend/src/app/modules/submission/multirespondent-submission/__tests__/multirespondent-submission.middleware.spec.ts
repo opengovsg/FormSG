@@ -4,11 +4,25 @@ import {
   isFieldResponsesV4,
 } from '@opengovsg/formsg-sdk/adapters'
 import { ObjectId } from 'bson'
-import { BasicField, FormAuthType, FormResponseMode } from 'formsg-shared/types'
+import { featureFlags } from 'formsg-shared/constants'
+import {
+  BasicField,
+  CorppassAttribute,
+  FormAuthType,
+  FormResponseMode,
+  MyInfoAttribute,
+  MyInfoChildAttributes,
+} from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, ok, okAsync } from 'neverthrow'
+import nacl from 'tweetnacl'
+import { decodeBase64, encodeBase64, encodeUTF8 } from 'tweetnacl-util'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
+import {
+  MyInfoHashDidNotMatchError,
+  MyInfoMissingHashError,
+} from 'src/app/modules/myinfo/myinfo.errors'
 import { MyInfoService } from 'src/app/modules/myinfo/myinfo.service'
 import * as MyInfoUtil from 'src/app/modules/myinfo/myinfo.util'
 import * as OidcService from 'src/app/modules/spcp/spcp.oidc.service'
@@ -19,24 +33,45 @@ import * as LogicAdaptor from 'src/app/utils/logic-adaptor'
 import * as FeatureFlagService from '../../../feature-flags/feature-flags.service'
 import * as FormService from '../../../form/form.service'
 import { SubmissionNotFoundError } from '../../submission.errors'
+import * as SubmissionService from '../../submission.service'
 import { generateHashedSubmitterId } from '../../submission.utils'
 import {
   createFormsgAndRetrieveForm,
   encryptSubmission,
+  ensureMrfStepLoginNotSuspended,
   handleNdiResponses,
+  scanAndRetrieveAttachments,
+  validateMultirespondentRemindBody,
   validateMultirespondentSubmission,
+  validateMultirespondentSubmissionParams,
+  validatePaymentSubmission,
+  verifyLoginIdentityAnswers,
+  verifyMyInfoHashes,
 } from '../multirespondent-submission.middleware'
 import {
   checkFormIsMultirespondent,
   getMultirespondentSubmission,
 } from '../multirespondent-submission.service'
 import * as MrfUtils from '../multirespondent-submission.utils'
+import * as stepToken from '../step-token'
 
 jest.mock('../../../feature-flags/feature-flags.service')
 jest.mock('../../../form/form.service')
 jest.mock('../multirespondent-submission.service')
-jest.mock('../../../spcp/spcp.oidc.service')
-jest.mock('../../../myinfo/myinfo.service')
+// RATIONALE: The factory mocks are required to prevent Jest from
+// hanging when automock is enabled, due to retries against localhost.
+jest.mock('../../../spcp/spcp.oidc.service', () => ({
+  __esModule: true,
+  getOidcService: jest.fn(),
+}))
+jest.mock('../../../myinfo/myinfo.service', () => ({
+  __esModule: true,
+  MyInfoService: {
+    verifyLoginJwt: jest.fn(),
+    fetchMyInfoHashes: jest.fn(),
+    checkMyInfoHashes: jest.fn(),
+  },
+}))
 jest.mock('../../../verified-content/verified-content.service')
 jest.mock('src/app/modules/myinfo/myinfo.util')
 jest.mock('src/app/modules/spcp/spcp.util')
@@ -47,7 +82,15 @@ jest.mock('@opengovsg/formsg-sdk/adapters', () => ({
   isFieldResponsesV4: jest.fn(),
 }))
 jest.mock('src/app/utils/logic-adaptor')
-jest.mock('../multirespondent-submission.utils')
+jest.mock('../multirespondent-submission.utils', () => {
+  const actual = jest.requireActual(
+    '../multirespondent-submission.utils',
+  ) as typeof import('../multirespondent-submission.utils')
+  return {
+    ...actual,
+    validateMrfFieldResponses: jest.fn(),
+  }
+})
 jest.mock('src/app/config/formsg-sdk', () => ({
   __esModule: true,
   default: {
@@ -59,6 +102,90 @@ jest.mock('src/app/config/formsg-sdk', () => ({
 }))
 
 describe('Multirespondent Submission Middleware', () => {
+  describe('scanAndRetrieveAttachments', () => {
+    afterEach(() => jest.restoreAllMocks())
+
+    it('stores the scanned attachment checksum as hexadecimal', async () => {
+      const fieldId = new ObjectId().toHexString()
+      const content = Buffer.from('hello')
+      const scanned = {
+        fieldType: BasicField.Attachment,
+        answer: { value: 'hello.txt', content, hasBeenScanned: false },
+        provenance: {},
+      }
+      const scan = jest
+        .spyOn(
+          SubmissionService,
+          'triggerGuardDutyScanThenDownloadCleanFileChainV4',
+        )
+        .mockReturnValueOnce(okAsync(scanned as any))
+      const req = {
+        get: jest.fn(),
+        headers: {},
+        body: { responses: { [fieldId]: scanned } },
+        formsg: { formDef: { _id: new ObjectId() } },
+      }
+      const next = jest.fn()
+
+      await scanAndRetrieveAttachments(req as any, {} as any, next)
+
+      expect(scan).toHaveBeenCalledTimes(1)
+      expect(req.body.responses[fieldId].answer).toEqual({
+        value: 'hello.txt',
+        content,
+        hasBeenScanned: true,
+        md5Hash: '5d41402abc4b2a76b9719d911017c592',
+      })
+      expect(next).toHaveBeenCalledWith()
+    })
+  })
+
+  describe('validateMultirespondentRemindBody', () => {
+    const runValidator = (body: Record<string, unknown>): Promise<unknown> =>
+      new Promise((resolve) =>
+        validateMultirespondentRemindBody(
+          { body, method: 'POST', headers: {}, query: {}, params: {} } as any,
+          {} as any,
+          resolve as any,
+        ),
+      )
+
+    it('accepts a reminder body carrying both the secret key and the step token', async () => {
+      const error = await runValidator({
+        submissionSecretKey: 'k',
+        stepToken: 't',
+      })
+      expect(error).toBeFalsy()
+    })
+  })
+
+  describe('validateMultirespondentSubmissionParams', () => {
+    const runValidator = (body: Record<string, unknown>): Promise<unknown> =>
+      new Promise((resolve) =>
+        validateMultirespondentSubmissionParams(
+          { body, method: 'POST', headers: {}, query: {}, params: {} } as any,
+          {} as any,
+          resolve as any,
+        ),
+      )
+
+    it('accepts a payment amount below the global minimum, which is enforced in the controller where global_min_amount_override applies', async () => {
+      const error = await runValidator({
+        version: 4,
+        payments: { amount_cents: 10 },
+      })
+      expect(error).toBeFalsy()
+    })
+
+    it('rejects a payment amount above the global maximum', async () => {
+      const error = await runValidator({
+        version: 4,
+        payments: { amount_cents: 200 * 1000 * 100 + 1 },
+      })
+      expect(error).toBeTruthy()
+    })
+  })
+
   // Helper function to create fresh mockReq objects for each test
   const createMockReq = (params: { formId: string; submissionId?: string }) =>
     ({
@@ -67,6 +194,13 @@ describe('Multirespondent Submission Middleware', () => {
         respondentEmails: ['test@example.com'],
       },
       formsg: undefined,
+      growthbook: {
+        isOn: jest.fn().mockReturnValue(false),
+        setAttributes: jest.fn().mockResolvedValue(undefined),
+        getAttributes: jest.fn().mockReturnValue({
+          unclobberedAttributeKey: 'unclobberedValue',
+        }),
+      },
       // Add Express request methods and properties
       get: jest.fn((name: string) => {
         if (name === 'cf-connecting-ip') return '127.0.0.1'
@@ -131,6 +265,7 @@ describe('Multirespondent Submission Middleware', () => {
       // Add other required properties to satisfy IPopulatedForm interface
       admin: {
         _id: new ObjectId(),
+        email: 'admin@example.com',
         agency: {
           fullName: 'Government Technology Agency',
         },
@@ -244,6 +379,11 @@ describe('Multirespondent Submission Middleware', () => {
       expect(getMultirespondentSubmission).toHaveBeenCalledWith(
         MOCK_SUBMISSION_ID,
       )
+      expect(mockReq.growthbook?.setAttributes).toHaveBeenCalledWith({
+        ...mockReq.growthbook?.getAttributes(),
+        formId: MOCK_FORM_ID,
+        adminEmail: MOCK_FORM.admin.email,
+      })
     })
 
     it('should return error response when submissionId exists but mrfSubmission is not found', async () => {
@@ -410,6 +550,7 @@ describe('Multirespondent Submission Middleware', () => {
     beforeEach(() => {
       jest.clearAllMocks()
       jest.resetAllMocks()
+      jest.mocked(MyInfoService.fetchMyInfoHashes).mockReturnValue(okAsync({}))
     })
 
     describe('submitterId is set', () => {
@@ -644,6 +785,8 @@ describe('Multirespondent Submission Middleware', () => {
         expect(mockRes.status).toHaveBeenCalledWith(500)
         expect(mockRes.json).toHaveBeenCalledWith({
           message: 'Failed to retrieve submitter ID. Please try again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.mrf.missingSubmitterId',
         })
       })
     })
@@ -694,12 +837,14 @@ describe('Multirespondent Submission Middleware', () => {
         responses: {},
       })
 
-      jest.mocked(SpcpUtil.createNdiResponsesV3FromRecord).mockReturnValue({
+      jest.mocked(SpcpUtil.createNdiResponsesV4FromRecord).mockReturnValue({
         'SingPass Validated NRIC': {
           fieldType: BasicField.Nric,
-          answer: 'S9812379B',
+          answer: { value: 'S9812379B' },
+          question: 'SingPass Validated NRIC',
+          provenance: {},
         },
-      })
+      } as any)
 
       const mockNext = jest.fn()
 
@@ -722,7 +867,7 @@ describe('Multirespondent Submission Middleware', () => {
 
       // Assert
       expect(
-        jest.mocked(SpcpUtil.createNdiResponsesV3FromRecord),
+        jest.mocked(SpcpUtil.createNdiResponsesV4FromRecord),
       ).toHaveBeenCalled()
       expect(mockReq.formsg.encryptedPayload.responses).toHaveProperty(
         'SingPass Validated NRIC',
@@ -774,12 +919,14 @@ describe('Multirespondent Submission Middleware', () => {
         },
       })
 
-      jest.mocked(SpcpUtil.createNdiResponsesV3FromRecord).mockReturnValue({
+      jest.mocked(SpcpUtil.createNdiResponsesV4FromRecord).mockReturnValue({
         'SingPass Validated NRIC': {
           fieldType: BasicField.Nric,
-          answer: 'S1234567A',
+          answer: { value: 'S1234567A' },
+          question: 'SingPass Validated NRIC',
+          provenance: {},
         },
-      })
+      } as any)
 
       jest
         .mocked(VerifiedContentService.getVerifiedContent)
@@ -842,22 +989,644 @@ describe('Multirespondent Submission Middleware', () => {
     })
   })
 
+  describe('verifyMyInfoHashes', () => {
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_MYINFO_FIELD_ID = new ObjectId().toHexString()
+
+    const MOCK_MYINFO_FORM_DEF = {
+      _id: MOCK_FORM_ID,
+      authType: FormAuthType.MyInfo,
+      form_fields: [
+        {
+          _id: MOCK_MYINFO_FIELD_ID,
+          fieldType: BasicField.ShortText,
+          title: 'Name',
+          myInfo: { attr: 'name' },
+        },
+      ],
+    }
+
+    const MOCK_MYINFO_RESPONSES = {
+      [MOCK_MYINFO_FIELD_ID]: {
+        fieldType: BasicField.ShortText,
+        answer: { value: 'John Tan' },
+        question: 'Name',
+        provenance: {},
+      },
+    }
+
+    const setupMyInfoLoginMocks = () => {
+      jest
+        .mocked(MyInfoUtil.extractMyInfoLoginJwt)
+        .mockReturnValue(ok('mock-jwt-string'))
+      jest
+        .mocked(MyInfoService.verifyLoginJwt)
+        .mockReturnValue(ok({ uinFin: 'S1234567A' }))
+    }
+
+    // A first-step (new) submission on a MyInfo-authed form.
+    const createMyInfoMockReq = () => {
+      const mockReq = createMockReq({ formId: MOCK_FORM_ID })
+      mockReq.body.responses = MOCK_MYINFO_RESPONSES
+      mockReq.formsg = {
+        formDef: MOCK_MYINFO_FORM_DEF,
+        mrfSubmission: undefined,
+      }
+      return mockReq
+    }
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      jest.resetAllMocks()
+    })
+
+    it('should retain verified field IDs when MyInfo hashes match', async () => {
+      // Arrange
+      setupMyInfoLoginMocks()
+      jest
+        .mocked(MyInfoService.fetchMyInfoHashes)
+        .mockReturnValue(okAsync({ name: 'mock-hash' }))
+      jest
+        .mocked(MyInfoService.checkMyInfoHashes)
+        .mockReturnValue(okAsync(new Set([MOCK_MYINFO_FIELD_ID])))
+
+      const mockNext = jest.fn()
+      const mockReq = createMyInfoMockReq()
+      const mockRes = createMockRes()
+
+      // Act
+      await verifyMyInfoHashes(mockReq, mockRes as any, mockNext)
+
+      // Assert
+      expect(mockNext).toHaveBeenCalled()
+      expect(jest.mocked(MyInfoService.fetchMyInfoHashes)).toHaveBeenCalledWith(
+        'S1234567A',
+        MOCK_FORM_ID,
+      )
+      expect(mockReq.formsg.myInfoReadOnlyFields).toEqual([
+        MOCK_MYINFO_FIELD_ID,
+      ])
+      // The responses passed to the hash check must be adapted from the V4
+      // shape, with the myInfo attribute sourced from the form definition.
+      expect(jest.mocked(MyInfoService.checkMyInfoHashes)).toHaveBeenCalledWith(
+        [
+          expect.objectContaining({
+            _id: MOCK_MYINFO_FIELD_ID,
+            fieldType: BasicField.ShortText,
+            answer: 'John Tan',
+            myInfo: { attr: 'name' },
+            isVisible: true,
+          }),
+        ],
+        { name: 'mock-hash' },
+      )
+    })
+
+    it('checks a later step’s Myinfo answers when its stored fields have ObjectId IDs', async () => {
+      // Arrange: later-step fields come from the stored submission, so their
+      // IDs are ObjectIds while response keys are strings.
+      const identityFieldId = new ObjectId().toHexString()
+      jest
+        .mocked(MyInfoService.fetchMyInfoHashes)
+        .mockReturnValue(okAsync({ name: 'mock-hash' }))
+      jest
+        .mocked(MyInfoService.checkMyInfoHashes)
+        .mockReturnValue(okAsync(new Set([MOCK_MYINFO_FIELD_ID])))
+      const mockReq = createMockReq({ formId: MOCK_FORM_ID })
+      mockReq.body.responses = MOCK_MYINFO_RESPONSES
+      mockReq.formsg = {
+        formDef: MOCK_MYINFO_FORM_DEF,
+        mrfSubmission: { myInfoReadOnlyFields: ['step-one-field'] },
+        loginFilledFieldIds: [identityFieldId],
+        stepAuth: {
+          kind: 'verified',
+          workflowStep: 1,
+          stepFields: [
+            {
+              ...MOCK_MYINFO_FORM_DEF.form_fields[0],
+              _id: new ObjectId(MOCK_MYINFO_FIELD_ID),
+            },
+          ],
+          session: {
+            authType: FormAuthType.MyInfo,
+            uinFin: 'S1234567D',
+            myInfoAuthSessionId: 'auth-session',
+          },
+        },
+      }
+      const mockNext = jest.fn()
+
+      // Act
+      await verifyMyInfoHashes(mockReq, createMockRes() as any, mockNext)
+
+      // Assert
+      expect(mockNext).toHaveBeenCalled()
+      expect(MyInfoService.fetchMyInfoHashes).toHaveBeenCalledWith(
+        'S1234567D',
+        MOCK_FORM_ID,
+        { authSessionId: 'auth-session', workflowStep: 1 },
+      )
+      expect(mockReq.formsg.myInfoReadOnlyFields).toEqual([
+        'step-one-field',
+        MOCK_MYINFO_FIELD_ID,
+        identityFieldId,
+      ])
+    })
+
+    it('stamps provenance.myinfoVerified on a later step’s login-filled identities', async () => {
+      // Arrange: emails read provenance, not the read-only list, so later-step
+      // identities need the stamp to show '[Myinfo]' like Step 1's do.
+      const identityFieldId = new ObjectId().toHexString()
+      const mockReq = createMockReq({ formId: MOCK_FORM_ID })
+      mockReq.body.responses = {
+        [identityFieldId]: {
+          fieldType: BasicField.Nric,
+          answer: { value: 'S1234567D' },
+          question: 'NRIC/FIN',
+          provenance: {},
+        },
+      }
+      mockReq.formsg = {
+        formDef: MOCK_MYINFO_FORM_DEF,
+        mrfSubmission: { myInfoReadOnlyFields: [] },
+        loginFilledFieldIds: [identityFieldId],
+        stepAuth: {
+          kind: 'verified',
+          workflowStep: 1,
+          stepFields: [
+            {
+              _id: new ObjectId(identityFieldId),
+              fieldType: BasicField.Nric,
+              title: 'NRIC/FIN',
+            },
+          ],
+          session: { authType: FormAuthType.SP, uinFin: 'S1234567D' },
+        },
+      }
+      const mockNext = jest.fn()
+
+      // Act
+      await verifyMyInfoHashes(mockReq, createMockRes() as any, mockNext)
+
+      // Assert
+      expect(mockNext).toHaveBeenCalled()
+      expect(mockReq.formsg.myInfoReadOnlyFields).toEqual([identityFieldId])
+      expect(mockReq.body.responses[identityFieldId].provenance).toEqual({
+        myinfoVerified: true,
+      })
+    })
+
+    it('should stamp provenance.myinfoVerified on responses whose child hash keys were verified', async () => {
+      // Arrange
+      setupMyInfoLoginMocks()
+      const childrenFieldId = new ObjectId().toHexString()
+      const childrenField = {
+        _id: childrenFieldId,
+        title: 'Children',
+        fieldType: BasicField.Children,
+        childrenSubFields: [MyInfoChildAttributes.ChildName],
+        myInfo: { attr: MyInfoAttribute.ChildrenBirthRecords },
+      }
+      const childrenResponse = {
+        fieldType: BasicField.Children,
+        question: 'Children',
+        provenance: {},
+        answer: {
+          child0: {
+            value: {
+              [MyInfoChildAttributes.ChildName]: { value: 'PHUA CHU KING' },
+            },
+          },
+        },
+      }
+      jest.mocked(MyInfoService.fetchMyInfoHashes).mockReturnValue(okAsync({}))
+      jest
+        .mocked(MyInfoService.checkMyInfoHashes)
+        .mockReturnValue(
+          okAsync(
+            new Set([
+              `${MyInfoAttribute.ChildrenBirthRecords}.${childrenFieldId}.${MyInfoChildAttributes.ChildName}.0.PHUA CHU KING`,
+            ]) as any,
+          ),
+        )
+
+      const mockNext = jest.fn()
+      const mockReq = createMyInfoMockReq()
+      mockReq.formsg.formDef = {
+        ...MOCK_MYINFO_FORM_DEF,
+        form_fields: [childrenField],
+      }
+      mockReq.body.responses = { [childrenFieldId]: childrenResponse }
+      const mockRes = createMockRes()
+
+      // Act
+      await verifyMyInfoHashes(mockReq, mockRes as any, mockNext)
+
+      // Assert: the verification outcome is recorded on the responses inside
+      // this middleware, i.e. before encryptSubmission snapshots them into
+      // the stored encryptedContent.
+      expect(mockNext).toHaveBeenCalled()
+      expect(childrenResponse.provenance).toEqual({ myinfoVerified: true })
+    })
+
+    it('should reject the submission with 401 when a MyInfo answer does not match its hash', async () => {
+      // Arrange
+      setupMyInfoLoginMocks()
+      jest
+        .mocked(MyInfoService.fetchMyInfoHashes)
+        .mockReturnValue(okAsync({ name: 'mock-hash' }))
+      jest
+        .mocked(MyInfoService.checkMyInfoHashes)
+        .mockReturnValue(errAsync(new MyInfoHashDidNotMatchError()))
+
+      const mockNext = jest.fn()
+      const mockReq = createMyInfoMockReq()
+      const mockRes = createMockRes()
+
+      // Act
+      await verifyMyInfoHashes(mockReq, mockRes as any, mockNext)
+
+      // Assert
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.UNAUTHORIZED)
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'MyInfo verification failed.',
+          spcpSubmissionFailure: true,
+        }),
+      )
+    })
+
+    it('should reject the submission with 401 when a child type disagrees with its Child type answer', async () => {
+      // Arrange
+      setupMyInfoLoginMocks()
+      const childrenFieldId = new ObjectId().toHexString()
+      const childrenField = {
+        _id: childrenFieldId,
+        title: 'Children',
+        fieldType: BasicField.Children,
+        childrenSubFields: [
+          MyInfoChildAttributes.ChildName,
+          MyInfoChildAttributes.ChildType,
+        ],
+        myInfo: { attr: MyInfoAttribute.ChildrenBirthRecords },
+      }
+      const childrenResponse = {
+        fieldType: BasicField.Children,
+        question: 'Children',
+        provenance: {},
+        answer: {
+          child0: {
+            value: {
+              [MyInfoChildAttributes.ChildName]: { value: 'THRO RY' },
+              [MyInfoChildAttributes.ChildType]: { value: 'SPONSORED' },
+            },
+            type: 'local',
+          },
+        },
+      }
+      const { getMyInfoChildHashKey } = jest.requireActual<typeof MyInfoUtil>(
+        'src/app/modules/myinfo/myinfo.util',
+      )
+      jest
+        .mocked(MyInfoUtil.getMyInfoChildHashKey)
+        .mockImplementation(getMyInfoChildHashKey)
+      jest.mocked(MyInfoService.fetchMyInfoHashes).mockReturnValue(okAsync({}))
+      jest
+        .mocked(MyInfoService.checkMyInfoHashes)
+        .mockReturnValue(
+          okAsync(
+            new Set([
+              getMyInfoChildHashKey(
+                childrenFieldId,
+                MyInfoChildAttributes.ChildType,
+                0,
+                'THRO RY',
+              ),
+            ]),
+          ),
+        )
+
+      const mockNext = jest.fn()
+      const mockReq = createMyInfoMockReq()
+      mockReq.formsg.formDef = {
+        ...MOCK_MYINFO_FORM_DEF,
+        form_fields: [childrenField],
+      }
+      mockReq.body.responses = { [childrenFieldId]: childrenResponse }
+      const mockRes = createMockRes()
+
+      // Act
+      await verifyMyInfoHashes(mockReq, mockRes as any, mockNext)
+
+      // Assert
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.UNAUTHORIZED)
+    })
+
+    it('should reject the submission with 410 when MyInfo hashes are missing or expired', async () => {
+      // Arrange
+      setupMyInfoLoginMocks()
+      jest
+        .mocked(MyInfoService.fetchMyInfoHashes)
+        .mockReturnValue(errAsync(new MyInfoMissingHashError()))
+
+      const mockNext = jest.fn()
+      const mockReq = createMyInfoMockReq()
+      const mockRes = createMockRes()
+
+      // Act
+      await verifyMyInfoHashes(mockReq, mockRes as any, mockNext)
+
+      // Assert
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(
+        jest.mocked(MyInfoService.checkMyInfoHashes),
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.GONE)
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'MyInfo verification expired, please refresh and try again.',
+          spcpSubmissionFailure: true,
+        }),
+      )
+    })
+
+    it('should skip the hash check for non-MyInfo forms', async () => {
+      // Arrange
+      const mockNext = jest.fn()
+      const mockReq = createMyInfoMockReq()
+      mockReq.formsg.formDef = {
+        ...MOCK_MYINFO_FORM_DEF,
+        authType: FormAuthType.NIL,
+      }
+      const mockRes = createMockRes()
+
+      // Act
+      await verifyMyInfoHashes(mockReq, mockRes as any, mockNext)
+
+      // Assert
+      expect(mockNext).toHaveBeenCalled()
+      expect(
+        jest.mocked(MyInfoService.fetchMyInfoHashes),
+      ).not.toHaveBeenCalled()
+      expect(
+        jest.mocked(MyInfoService.checkMyInfoHashes),
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should skip the hash check for updates to an existing submission (steps >= 2)', async () => {
+      // Arrange: an existing submission means the incoming submission is for
+      // step >= 2; MyInfo prefill only happens on the first step.
+      const mockNext = jest.fn()
+      const mockReq = createMyInfoMockReq()
+      mockReq.formsg.mrfSubmission = { workflowStep: 0 }
+      const mockRes = createMockRes()
+
+      // Act
+      await verifyMyInfoHashes(mockReq, mockRes as any, mockNext)
+
+      // Assert
+      expect(mockNext).toHaveBeenCalled()
+      expect(
+        jest.mocked(MyInfoService.fetchMyInfoHashes),
+      ).not.toHaveBeenCalled()
+      expect(
+        jest.mocked(MyInfoService.checkMyInfoHashes),
+      ).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('ensureMrfStepLoginNotSuspended', () => {
+    const STEP = { workflow_type: 'static', emails: [], edit: [] }
+    const NO_LATER_LOGIN = [STEP, STEP]
+    const LATER_LOGIN = [STEP, { ...STEP, auth: { auth_type: 'MyInfo' } }]
+
+    it.each([
+      {
+        name: 'blocks a new submission on a form with a later-step login',
+        formWorkflow: LATER_LOGIN,
+        savedWorkflow: undefined,
+        isBlocked: true,
+      },
+      {
+        name: 'blocks an update whose saved workflow has one, even if the form dropped it',
+        formWorkflow: NO_LATER_LOGIN,
+        savedWorkflow: LATER_LOGIN,
+        isBlocked: true,
+      },
+      {
+        name: 'allows an update whose saved workflow has none',
+        formWorkflow: LATER_LOGIN,
+        savedWorkflow: NO_LATER_LOGIN,
+        isBlocked: false,
+      },
+      {
+        name: 'allows a new submission on a form without one',
+        formWorkflow: NO_LATER_LOGIN,
+        savedWorkflow: undefined,
+        isBlocked: false,
+      },
+    ])(
+      'with the kill switch on, $name',
+      ({ formWorkflow, savedWorkflow, isBlocked }) => {
+        const mockReq = createMockReq({ formId: 'form-id' })
+        mockReq.growthbook.isOn.mockImplementation(
+          (flag: string) => flag === featureFlags.mrfStepLoginKillSwitch,
+        )
+        mockReq.formsg = {
+          formDef: { _id: 'form-id', workflow: formWorkflow },
+          mrfSubmission: savedWorkflow && {
+            _id: 'submission-id',
+            workflow: savedWorkflow,
+          },
+        }
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        ensureMrfStepLoginNotSuspended(mockReq, mockRes as any, mockNext)
+
+        expect(mockNext).toHaveBeenCalledTimes(isBlocked ? 0 : 1)
+        expect(mockRes.status.mock.calls).toEqual(
+          isBlocked ? [[StatusCodes.UNPROCESSABLE_ENTITY]] : [],
+        )
+      },
+    )
+
+    it('lets a later-step login through while the kill switch is off', () => {
+      const mockReq = createMockReq({ formId: 'form-id' })
+      mockReq.formsg = { formDef: { _id: 'form-id', workflow: LATER_LOGIN } }
+      const mockNext = jest.fn()
+
+      ensureMrfStepLoginNotSuspended(mockReq, createMockRes() as any, mockNext)
+
+      expect(mockNext).toHaveBeenCalled()
+    })
+  })
+
+  describe('verifyLoginIdentityAnswers', () => {
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const UID_FIELD_ID = new ObjectId().toHexString()
+    const UEN_FIELD_ID = new ObjectId().toHexString()
+    const CP_FORM_DEF = {
+      _id: MOCK_FORM_ID,
+      authType: FormAuthType.CP,
+      form_fields: [
+        {
+          _id: UID_FIELD_ID,
+          fieldType: BasicField.Nric,
+          title: 'NRIC/FIN',
+          corppass: { attr: CorppassAttribute.Uid },
+        },
+        {
+          _id: UEN_FIELD_ID,
+          fieldType: BasicField.Uen,
+          title: 'UEN',
+          corppass: { attr: CorppassAttribute.Uen },
+        },
+      ],
+    }
+    const createIdentityMockReq = (
+      uid: string,
+      formsg: Record<string, unknown> = {},
+    ) => {
+      const mockReq = createMockReq({ formId: MOCK_FORM_ID })
+      mockReq.body.responses = {
+        [UID_FIELD_ID]: {
+          fieldType: BasicField.Nric,
+          answer: { value: uid },
+          provenance: {},
+        },
+        [UEN_FIELD_ID]: {
+          fieldType: BasicField.Uen,
+          answer: { value: '201912345A' },
+          provenance: {},
+        },
+      }
+      mockReq.formsg = {
+        formDef: CP_FORM_DEF,
+        myInfoReadOnlyFields: [],
+        ...formsg,
+      }
+      return mockReq
+    }
+
+    beforeEach(() => {
+      jest.resetAllMocks()
+      jest.mocked(OidcService.getOidcService).mockReturnValue({
+        extractJwt: () => ok('jwt'),
+        extractJwtPayload: () =>
+          okAsync({ userName: '201912345A', userInfo: 'FOREIGN12345' }),
+      } as any)
+    })
+
+    it('marks Step 1 identity answers that match the login as verified', async () => {
+      const mockNext = jest.fn()
+      const mockReq = createIdentityMockReq('FOREIGN12345')
+
+      await verifyLoginIdentityAnswers(
+        mockReq,
+        createMockRes() as any,
+        mockNext,
+      )
+
+      expect(mockNext).toHaveBeenCalled()
+      expect(mockReq.formsg.myInfoReadOnlyFields).toEqual([
+        UID_FIELD_ID,
+        UEN_FIELD_ID,
+      ])
+    })
+
+    it('stamps provenance.myinfoVerified on verified identity answers', async () => {
+      const mockNext = jest.fn()
+      const mockReq = createIdentityMockReq('FOREIGN12345')
+
+      await verifyLoginIdentityAnswers(
+        mockReq,
+        createMockRes() as any,
+        mockNext,
+      )
+
+      expect(mockNext).toHaveBeenCalled()
+      expect(mockReq.body.responses[UID_FIELD_ID].provenance).toEqual({
+        myinfoVerified: true,
+      })
+      expect(mockReq.body.responses[UEN_FIELD_ID].provenance).toEqual({
+        myinfoVerified: true,
+      })
+    })
+
+    it('does not stamp provenance when verification is rejected', async () => {
+      const mockNext = jest.fn()
+      const mockReq = createIdentityMockReq('S9999999Z')
+
+      await verifyLoginIdentityAnswers(
+        mockReq,
+        createMockRes() as any,
+        mockNext,
+      )
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockReq.body.responses[UID_FIELD_ID].provenance).toEqual({})
+    })
+
+    it('rejects an identity answer that differs from the login', async () => {
+      const mockNext = jest.fn()
+      const mockRes = createMockRes()
+
+      await verifyLoginIdentityAnswers(
+        createIdentityMockReq('S9999999Z'),
+        mockRes as any,
+        mockNext,
+      )
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.UNAUTHORIZED)
+    })
+
+    it('skips forms without identity fields', async () => {
+      const mockNext = jest.fn()
+      const mockReq = createIdentityMockReq('S9999999Z', {
+        formDef: { ...CP_FORM_DEF, form_fields: [] },
+      })
+
+      await verifyLoginIdentityAnswers(
+        mockReq,
+        createMockRes() as any,
+        mockNext,
+      )
+
+      expect(mockNext).toHaveBeenCalled()
+      expect(OidcService.getOidcService).not.toHaveBeenCalled()
+    })
+  })
+
   describe('encryptSubmission', () => {
     const MOCK_FORM_ID = new ObjectId().toHexString()
 
-    const MOCK_FORM = {
+    const MOCK_FORM_KEYPAIR = nacl.box.keyPair()
+    const MOCK_FORM_PUBLIC_KEY = encodeBase64(MOCK_FORM_KEYPAIR.publicKey)
+    const MOCK_FORM_SECRET_KEY = encodeBase64(MOCK_FORM_KEYPAIR.secretKey)
+
+    const MOCK_FORM_BASE = {
       _id: MOCK_FORM_ID,
-      publicKey: 'mockPublicKey',
+      publicKey: MOCK_FORM_PUBLIC_KEY,
+      admin: { email: 'admin@example.com' },
       form_fields: [
         { _id: 'field1', fieldType: BasicField.ShortText, title: 'Field 1' },
       ],
     } as any
 
     const MOCK_RESPONSES = {
-      field1: { fieldType: BasicField.ShortText, answer: 'hello' },
+      field1: {
+        fieldType: BasicField.ShortText,
+        answer: 'hello',
+        question: 'Field 1',
+        provenance: {},
+      },
     }
 
-    const createMockEncryptReq = (isV4FlagOn: boolean) =>
+    const createMockEncryptReq = (hasWebhook: boolean) =>
       ({
         params: { formId: MOCK_FORM_ID },
         body: {
@@ -867,10 +1636,15 @@ describe('Multirespondent Submission Middleware', () => {
           responseMetadata: {},
         },
         formsg: {
-          formDef: MOCK_FORM,
+          formDef: hasWebhook
+            ? {
+                ...MOCK_FORM_BASE,
+                webhook: { url: 'https://example.com/webhook' },
+              }
+            : MOCK_FORM_BASE,
         },
         growthbook: {
-          isOn: jest.fn().mockReturnValue(isV4FlagOn),
+          isOn: jest.fn().mockReturnValue(false),
           setAttributes: jest.fn().mockResolvedValue(undefined),
           getAttributes: jest.fn().mockReturnValue({}),
         },
@@ -905,21 +1679,9 @@ describe('Multirespondent Submission Middleware', () => {
       mockDecrypt.mockReturnValue({ responses: MOCK_RESPONSES })
     })
 
-    it('should encrypt responses as V3 and set mrfVersion to 1 when feature flag is off', async () => {
-      const mockReq = createMockEncryptReq(false)
-      const mockNext = jest.fn()
-      const mockRes = createMockRes()
-
-      await encryptSubmission(mockReq, mockRes as any, mockNext)
-
-      expect(jest.mocked(adaptV3ToV4)).not.toHaveBeenCalled()
-      expect(mockReq.formsg.encryptedPayload.mrfVersion).toBe(1)
-      expect(mockNext).toHaveBeenCalled()
-    })
-
-    it('should adapt V3 responses to V4 format and set mrfVersion to 2 when feature flag is on', async () => {
-      jest.mocked(adaptV3ToV4).mockReturnValue({
-        field1: { answer: 'hello', question: 'Field 1', provenance: {} },
+    it('should encrypt responses as V4 and set mrfVersion to 2 when the form has a generic webhook url', async () => {
+      jest.mocked(adaptV4ToV3).mockReturnValue({
+        field1: { fieldType: BasicField.ShortText, answer: 'hello' },
       } as any)
 
       const mockReq = createMockEncryptReq(true)
@@ -928,12 +1690,37 @@ describe('Multirespondent Submission Middleware', () => {
 
       await encryptSubmission(mockReq, mockRes as any, mockNext)
 
-      expect(jest.mocked(adaptV3ToV4)).toHaveBeenCalledWith(
-        { field1: { fieldType: BasicField.ShortText, answer: 'hello' } },
-        { formFields: { field1: { question: 'Field 1' } }, provenance: {} },
-      )
+      expect(jest.mocked(adaptV4ToV3)).not.toHaveBeenCalled()
       expect(mockReq.formsg.encryptedPayload.mrfVersion).toBe(2)
       expect(mockNext).toHaveBeenCalled()
+    })
+
+    it('carries verified field IDs through encryption and NDI handling without fetching hashes again', async () => {
+      const mockReq = createMockEncryptReq(false)
+      mockReq.formsg.formDef.authType = FormAuthType.MyInfo
+      jest
+        .mocked(MyInfoService.fetchMyInfoHashes)
+        .mockReturnValue(okAsync({ name: 'hash' }))
+      jest
+        .mocked(MyInfoService.checkMyInfoHashes)
+        .mockReturnValue(okAsync(new Set(['field1'])))
+      jest
+        .mocked(VerifiedContentService.getVerifiedContent)
+        .mockReturnValue(ok({ uinFin: 'S1234567A' }))
+      jest.mocked(MyInfoUtil.extractMyInfoLoginJwt).mockReturnValue(ok('jwt'))
+      jest
+        .mocked(MyInfoService.verifyLoginJwt)
+        .mockReturnValue(ok({ uinFin: 'S1234567A' }))
+      const mockRes = createMockRes()
+
+      await verifyMyInfoHashes(mockReq, mockRes as any, jest.fn())
+      await encryptSubmission(mockReq, mockRes as any, jest.fn())
+      await handleNdiResponses(mockReq, mockRes as any, jest.fn())
+
+      expect(mockReq.formsg.encryptedPayload.myInfoReadOnlyFields).toEqual([
+        'field1',
+      ])
+      expect(MyInfoService.fetchMyInfoHashes).toHaveBeenCalledTimes(1)
     })
 
     it('should return 500 and not call next() when decryptFromSubmissionKey returns falsy', async () => {
@@ -952,6 +1739,175 @@ describe('Multirespondent Submission Middleware', () => {
       )
       expect(mockRes.json).toHaveBeenCalled()
       expect(mockNext).not.toHaveBeenCalled()
+    })
+
+    describe('step-token mint', () => {
+      const unwrapStepToken = (
+        encryptedStepToken: string,
+        formSecretKey: string,
+      ): string | null => {
+        const [senderPublicKey, nonceAndCipher] = encryptedStepToken.split(';')
+        const [nonce, cipher] = nonceAndCipher.split(':').map(decodeBase64)
+        const opened = nacl.box.open(
+          cipher,
+          nonce,
+          decodeBase64(senderPublicKey),
+          decodeBase64(formSecretKey),
+        )
+        return opened ? encodeUTF8(opened) : null
+      }
+
+      it('should mint a step token whose hash and wrapped copy match the raw token', async () => {
+        const mockReq = createMockEncryptReq(false)
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await encryptSubmission(mockReq, mockRes as any, mockNext)
+
+        const payload = mockReq.formsg.encryptedPayload
+        expect(payload.stepToken).toEqual(expect.any(String))
+        // Hash on the row verifies against the raw token in the link.
+        expect(payload.stepTokenHash).toBe(stepToken.hash(payload.stepToken))
+        // Wrapped copy unwraps (with the form secret key) to the same raw token.
+        expect(
+          unwrapStepToken(payload.encryptedStepToken, MOCK_FORM_SECRET_KEY),
+        ).toBe(payload.stepToken)
+        expect(mockNext).toHaveBeenCalled()
+      })
+
+      it('should mint a fresh, unique token on each advance (rotation)', async () => {
+        const run = async () => {
+          const mockReq = createMockEncryptReq(false)
+          await encryptSubmission(mockReq, createMockRes() as any, jest.fn())
+          return mockReq.formsg.encryptedPayload.stepToken as string
+        }
+        expect(await run()).not.toBe(await run())
+      })
+    })
+
+    describe('mrf version gate', () => {
+      const PLUMBER_URL = 'https://plumber.gov.sg/webhooks/abc'
+      const ZAPIER_URL = 'https://hooks.zapier.com/hooks/catch/123/abc'
+      const GENERIC_URL = 'https://example.com/hook'
+      const V3_ADAPTED = {
+        field1: { fieldType: BasicField.ShortText, answer: 'hello' },
+      }
+
+      const runGate = async ({
+        webhookUrl,
+        webhookFormat,
+        flags = [],
+      }: {
+        webhookUrl?: string
+        webhookFormat?: 'v1' | 'v4'
+        flags?: string[]
+      }) => {
+        jest.mocked(adaptV4ToV3).mockClear()
+        jest.mocked(adaptV4ToV3).mockReturnValue(V3_ADAPTED as any)
+        jest.mocked(formsgSdk.cryptoV3.encrypt).mockClear()
+        const mockReq = createMockEncryptReq(false)
+        if (webhookUrl) {
+          mockReq.formsg.formDef = {
+            ...MOCK_FORM_BASE,
+            webhook: { url: webhookUrl, isRetryEnabled: false, webhookFormat },
+          }
+        }
+        mockReq.growthbook.isOn = jest.fn((flag: string) =>
+          flags.includes(flag),
+        )
+        await encryptSubmission(mockReq, createMockRes() as any, jest.fn())
+        return mockReq
+      }
+
+      const expectEncryptedAs = (
+        mockReq: Awaited<ReturnType<typeof runGate>>,
+        expected: 1 | 2,
+      ) => {
+        expect(mockReq.formsg.encryptedPayload.mrfVersion).toBe(expected)
+        if (expected === 2) {
+          // V4: encrypt the in-process responses as-is; do not downgrade.
+          expect(jest.mocked(adaptV4ToV3)).not.toHaveBeenCalled()
+          expect(jest.mocked(formsgSdk.cryptoV3.encrypt)).toHaveBeenCalledWith(
+            MOCK_RESPONSES,
+            MOCK_FORM_PUBLIC_KEY,
+          )
+        } else {
+          // V3: downgrade via adaptV4ToV3, then encrypt the adapted shape.
+          expect(jest.mocked(adaptV4ToV3)).toHaveBeenCalledWith(MOCK_RESPONSES)
+          expect(jest.mocked(formsgSdk.cryptoV3.encrypt)).toHaveBeenCalledWith(
+            V3_ADAPTED,
+            MOCK_FORM_PUBLIC_KEY,
+          )
+        }
+      }
+
+      describe('always V4 regardless of webhook URL', () => {
+        it('plumber.gov.sg is V4', async () => {
+          expectEncryptedAs(await runGate({ webhookUrl: PLUMBER_URL }), 2)
+        })
+
+        it('example.com is V4', async () => {
+          expectEncryptedAs(await runGate({ webhookUrl: GENERIC_URL }), 2)
+        })
+
+        it('hooks.zapier.com is V4', async () => {
+          expectEncryptedAs(await runGate({ webhookUrl: ZAPIER_URL }), 2)
+        })
+
+        it('no webhook URL is V4', async () => {
+          expectEncryptedAs(await runGate({ flags: [] }), 2)
+        })
+      })
+
+      describe('ignored inputs that never affect the row version', () => {
+        it('ignores webhookFormat on plumber (v1 still V4)', async () => {
+          expectEncryptedAs(
+            await runGate({
+              webhookUrl: PLUMBER_URL,
+              webhookFormat: 'v1',
+            }),
+            2,
+          )
+        })
+
+        it('ignores webhookFormat and enableMrfWebhooks on generic (V4 either way)', async () => {
+          expectEncryptedAs(
+            await runGate({
+              webhookUrl: GENERIC_URL,
+              webhookFormat: 'v1',
+              flags: [featureFlags.enableMrfWebhooks],
+            }),
+            2,
+          )
+          expectEncryptedAs(
+            await runGate({
+              webhookUrl: GENERIC_URL,
+              webhookFormat: 'v4',
+              flags: [],
+            }),
+            2,
+          )
+        })
+
+        it('ignores webhookFormat and enableMrfWebhooks on zapier (V4 either way)', async () => {
+          expectEncryptedAs(
+            await runGate({
+              webhookUrl: ZAPIER_URL,
+              webhookFormat: 'v1',
+              flags: [featureFlags.enableMrfWebhooks],
+            }),
+            2,
+          )
+          expectEncryptedAs(
+            await runGate({
+              webhookUrl: ZAPIER_URL,
+              webhookFormat: 'v4',
+              flags: [],
+            }),
+            2,
+          )
+        })
+      })
     })
   })
 
@@ -980,13 +1936,13 @@ describe('Multirespondent Submission Middleware', () => {
       { step: 1, edit: [EDITABLE_FIELD_ID] }, // only field1 editable at step 1
     ]
 
-    // mrfVersion: 2 means responses were encrypted in V4 format
+    // mrfVersion: 1 means previous submission was encrypted in V3 format
     // workflowStep: 0 means the current incoming submission is at step 1
-    const MOCK_MRF_SUBMISSION_V2 = {
+    const MOCK_MRF_SUBMISSION_V1 = {
       form: MOCK_FORM_ID,
-      encryptedContent: 'v4-encrypted-content',
+      encryptedContent: 'v3-encrypted-content',
       version: 1,
-      mrfVersion: 2,
+      mrfVersion: 1,
       form_fields: SNAPSHOT_FORM_FIELDS,
       form_logics: [],
       workflow: SNAPSHOT_WORKFLOW,
@@ -999,29 +1955,31 @@ describe('Multirespondent Submission Middleware', () => {
       getWebhookView: jest.fn(),
     } as any
 
-    // V4 decrypted responses (each entry has provenance)
-    const MOCK_V4_DECRYPTED_RESPONSES = {
+    // V3 decrypted responses returned by decryptFromSubmissionKey for a V3-encrypted previous submission
+    const MOCK_V3_DECRYPTED_RESPONSES = {
       [EDITABLE_FIELD_ID]: {
+        fieldType: BasicField.ShortText,
         answer: 'original',
+      },
+      [NON_EDITABLE_FIELD_ID]: {
+        fieldType: BasicField.ShortText,
+        answer: 'locked-value',
+      },
+    }
+
+    // V4 responses produced by adaptV3ToV4 (V4 shape with provenance)
+    const MOCK_V4_ADAPTED_RESPONSES = {
+      [EDITABLE_FIELD_ID]: {
+        fieldType: BasicField.ShortText,
+        answer: { value: 'original' },
         question: 'Editable Field',
         provenance: {},
       },
       [NON_EDITABLE_FIELD_ID]: {
-        answer: 'locked-value',
+        fieldType: BasicField.ShortText,
+        answer: { value: 'locked-value' },
         question: 'Non-editable Field',
         provenance: {},
-      },
-    }
-
-    // V3 responses produced by adaptV4ToV3
-    const MOCK_V3_CONVERTED_RESPONSES = {
-      [EDITABLE_FIELD_ID]: {
-        fieldType: BasicField.ShortText,
-        answer: 'original',
-      },
-      [NON_EDITABLE_FIELD_ID]: {
-        fieldType: BasicField.ShortText,
-        answer: 'locked-value',
       },
     }
 
@@ -1036,16 +1994,21 @@ describe('Multirespondent Submission Middleware', () => {
       ;(
         formsgSdk.cryptoV3.decryptFromSubmissionKey as jest.Mock
       ).mockReturnValue({
-        responses: MOCK_V4_DECRYPTED_RESPONSES,
+        responses: MOCK_V3_DECRYPTED_RESPONSES,
         verified: {},
         submissionSecretKey: '',
       })
 
-      jest.mocked(isFieldResponsesV4).mockReturnValue(true)
+      // Previous decrypted responses are V3-shaped, so isFieldResponsesV4 must return false
+      // to trigger the V3->V4 adaptation path
+      jest.mocked(isFieldResponsesV4).mockReturnValue(false)
 
+      jest.mocked(adaptV3ToV4).mockReturnValue(MOCK_V4_ADAPTED_RESPONSES as any)
+
+      // adaptV4ToV3 is still called once on req.body.responses for logic evaluation
       jest
         .mocked(adaptV4ToV3)
-        .mockReturnValue(MOCK_V3_CONVERTED_RESPONSES as any)
+        .mockReturnValue(MOCK_V3_DECRYPTED_RESPONSES as any)
 
       jest
         .mocked(LogicAdaptor.getVisibleFieldIdsV3)
@@ -1057,10 +2020,10 @@ describe('Multirespondent Submission Middleware', () => {
 
       jest
         .mocked(MrfUtils.validateMrfFieldResponses)
-        .mockReturnValue(ok(MOCK_V3_CONVERTED_RESPONSES) as any)
+        .mockReturnValue(ok(MOCK_V4_ADAPTED_RESPONSES) as any)
     })
 
-    it('should call adaptV4ToV3 and call next when previous mrfVersion is 2 and non-editable fields match', async () => {
+    it('should call adaptV3ToV4 and call next when previous mrfVersion is 1 and non-editable fields match', async () => {
       const mockReq = createMockReq({
         formId: MOCK_FORM_ID,
         submissionId: MOCK_SUBMISSION_ID,
@@ -1068,11 +2031,15 @@ describe('Multirespondent Submission Middleware', () => {
       mockReq.body.responses = {
         [EDITABLE_FIELD_ID]: {
           fieldType: BasicField.ShortText,
-          answer: 'updated',
+          answer: { value: 'updated' },
+          question: 'Editable Field',
+          provenance: {},
         },
         [NON_EDITABLE_FIELD_ID]: {
           fieldType: BasicField.ShortText,
-          answer: 'locked-value',
+          answer: { value: 'locked-value' },
+          question: 'Non-editable Field',
+          provenance: {},
         },
       }
       mockReq.body.submissionSecretKey = 'submission-secret-key'
@@ -1083,7 +2050,7 @@ describe('Multirespondent Submission Middleware', () => {
           form_logics: [],
           workflow: SNAPSHOT_WORKFLOW,
         },
-        mrfSubmission: MOCK_MRF_SUBMISSION_V2,
+        mrfSubmission: MOCK_MRF_SUBMISSION_V1,
       }
 
       const mockNext = jest.fn()
@@ -1091,24 +2058,14 @@ describe('Multirespondent Submission Middleware', () => {
 
       await validateMultirespondentSubmission(mockReq, mockRes as any, mockNext)
 
-      expect(jest.mocked(adaptV4ToV3)).toHaveBeenCalledWith(
-        MOCK_V4_DECRYPTED_RESPONSES,
+      expect(jest.mocked(adaptV3ToV4)).toHaveBeenCalledWith(
+        MOCK_V3_DECRYPTED_RESPONSES,
+        { formFields: {}, provenance: {} },
       )
       expect(mockNext).toHaveBeenCalled()
     })
 
-    it('should reject submission when a non-editable field is tampered after V4-to-V3 conversion', async () => {
-      jest.mocked(adaptV4ToV3).mockReturnValue({
-        [EDITABLE_FIELD_ID]: {
-          fieldType: BasicField.ShortText,
-          answer: 'original',
-        },
-        [NON_EDITABLE_FIELD_ID]: {
-          fieldType: BasicField.ShortText,
-          answer: 'locked-value',
-        },
-      } as any)
-
+    it('should reject submission when a non-editable field is tampered after V3-to-V4 conversion', async () => {
       const mockReq = createMockReq({
         formId: MOCK_FORM_ID,
         submissionId: MOCK_SUBMISSION_ID,
@@ -1116,11 +2073,15 @@ describe('Multirespondent Submission Middleware', () => {
       mockReq.body.responses = {
         [EDITABLE_FIELD_ID]: {
           fieldType: BasicField.ShortText,
-          answer: 'updated',
+          answer: { value: 'updated' },
+          question: 'Editable Field',
+          provenance: {},
         },
         [NON_EDITABLE_FIELD_ID]: {
           fieldType: BasicField.ShortText,
-          answer: 'tampered', // differs from 'locked-value'
+          answer: { value: 'tampered' }, // differs from 'locked-value'
+          question: 'Non-editable Field',
+          provenance: {},
         },
       }
       mockReq.body.submissionSecretKey = 'submission-secret-key'
@@ -1131,7 +2092,7 @@ describe('Multirespondent Submission Middleware', () => {
           form_logics: [],
           workflow: SNAPSHOT_WORKFLOW,
         },
-        mrfSubmission: MOCK_MRF_SUBMISSION_V2,
+        mrfSubmission: MOCK_MRF_SUBMISSION_V1,
       }
 
       const mockNext = jest.fn()
@@ -1139,11 +2100,436 @@ describe('Multirespondent Submission Middleware', () => {
 
       await validateMultirespondentSubmission(mockReq, mockRes as any, mockNext)
 
-      expect(jest.mocked(adaptV4ToV3)).toHaveBeenCalledWith(
-        MOCK_V4_DECRYPTED_RESPONSES,
+      expect(jest.mocked(adaptV3ToV4)).toHaveBeenCalledWith(
+        MOCK_V3_DECRYPTED_RESPONSES,
+        { formFields: {}, provenance: {} },
       )
       expect(mockNext).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(400)
+    })
+
+    describe('previous answers left out of the submission', () => {
+      const submitEditableFieldOnly = async (
+        mergedVisibleFieldIds: Set<string>,
+      ) => {
+        jest
+          .mocked(LogicAdaptor.getVisibleFieldIdsV3)
+          .mockReturnValueOnce(ok(new Set([EDITABLE_FIELD_ID])) as any)
+          .mockReturnValueOnce(ok(mergedVisibleFieldIds) as any)
+        const mockReq = createMockReq({
+          formId: MOCK_FORM_ID,
+          submissionId: MOCK_SUBMISSION_ID,
+        })
+        mockReq.body.responses = {
+          [EDITABLE_FIELD_ID]: {
+            fieldType: BasicField.ShortText,
+            answer: { value: 'updated' },
+            question: 'Editable Field',
+            provenance: {},
+          },
+        }
+        mockReq.body.submissionSecretKey = 'submission-secret-key'
+        mockReq.formsg = {
+          formDef: {
+            _id: MOCK_FORM_ID,
+            form_fields: SNAPSHOT_FORM_FIELDS,
+            form_logics: [],
+            workflow: SNAPSHOT_WORKFLOW,
+          },
+          mrfSubmission: MOCK_MRF_SUBMISSION_V1,
+        }
+        const mockNext = jest.fn()
+
+        await validateMultirespondentSubmission(
+          mockReq,
+          createMockRes() as any,
+          mockNext,
+        )
+
+        return { responses: mockReq.body.responses, mockNext }
+      }
+
+      it('puts back a non-editable answer that is still visible', async () => {
+        const { responses, mockNext } = await submitEditableFieldOnly(
+          ALL_VISIBLE_FIELD_IDS,
+        )
+
+        expect(responses[NON_EDITABLE_FIELD_ID]).toEqual(
+          MOCK_V4_ADAPTED_RESPONSES[NON_EDITABLE_FIELD_ID],
+        )
+        expect(mockNext).toHaveBeenCalled()
+      })
+
+      it('drops a non-editable answer whose field is now hidden', async () => {
+        const { responses, mockNext } = await submitEditableFieldOnly(
+          new Set([EDITABLE_FIELD_ID]),
+        )
+
+        expect(responses).not.toHaveProperty(NON_EDITABLE_FIELD_ID)
+        expect(
+          jest.mocked(MrfUtils.validateMrfFieldResponses),
+        ).toHaveBeenCalledWith(
+          expect.objectContaining({
+            responses: { [EDITABLE_FIELD_ID]: expect.anything() },
+          }),
+        )
+        expect(mockNext).toHaveBeenCalled()
+      })
+    })
+
+    it('should carry forward server-owned provenance from the previous response on re-submitted non-editable fields', async () => {
+      // Previous submission is V4-encrypted, with myinfoVerified stamped at
+      // step 1 on the non-editable field.
+      const previousV4Responses = {
+        [EDITABLE_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'original' },
+          question: 'Editable Field',
+          provenance: {},
+        },
+        [NON_EDITABLE_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'locked-value' },
+          question: 'Non-editable Field',
+          provenance: { myinfoVerified: true },
+        },
+      }
+      ;(
+        formsgSdk.cryptoV3.decryptFromSubmissionKey as jest.Mock
+      ).mockReturnValue({
+        responses: previousV4Responses,
+        verified: {},
+        submissionSecretKey: '',
+      })
+      jest.mocked(isFieldResponsesV4).mockReturnValue(true)
+
+      const mockReq = createMockReq({
+        formId: MOCK_FORM_ID,
+        submissionId: MOCK_SUBMISSION_ID,
+      })
+      // Step-2 carry-forward: client re-submits the non-editable field, but
+      // Joi has stripped its provenance.
+      mockReq.body.responses = {
+        [EDITABLE_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'updated' },
+          question: 'Editable Field',
+          provenance: {},
+        },
+        [NON_EDITABLE_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'locked-value' },
+          question: 'Non-editable Field',
+          provenance: {},
+        },
+      }
+      mockReq.body.submissionSecretKey = 'submission-secret-key'
+      mockReq.formsg = {
+        formDef: {
+          _id: MOCK_FORM_ID,
+          form_fields: SNAPSHOT_FORM_FIELDS,
+          form_logics: [],
+          workflow: SNAPSHOT_WORKFLOW,
+        },
+        mrfSubmission: { ...MOCK_MRF_SUBMISSION_V1, mrfVersion: 2 },
+      }
+
+      const mockNext = jest.fn()
+      const mockRes = createMockRes()
+
+      await validateMultirespondentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).toHaveBeenCalled()
+      expect(mockReq.body.responses[NON_EDITABLE_FIELD_ID].provenance).toEqual({
+        myinfoVerified: true,
+      })
+    })
+
+    describe('step-token write-guard', () => {
+      const RAW_STEP_TOKEN = stepToken.generate()
+
+      // Build a request whose decrypt-gate will pass (matching the beforeEach
+      // mocks), varying only the step-token bits.
+      const createGuardReq = ({
+        stepTokenHash,
+        presentedToken,
+      }: {
+        stepTokenHash?: string
+        presentedToken?: string
+      }) => {
+        const mockReq = createMockReq({
+          formId: MOCK_FORM_ID,
+          submissionId: MOCK_SUBMISSION_ID,
+        })
+        mockReq.body.responses = {
+          [EDITABLE_FIELD_ID]: {
+            fieldType: BasicField.ShortText,
+            answer: { value: 'updated' },
+            question: 'Editable Field',
+            provenance: {},
+          },
+          [NON_EDITABLE_FIELD_ID]: {
+            fieldType: BasicField.ShortText,
+            answer: { value: 'locked-value' },
+            question: 'Non-editable Field',
+            provenance: {},
+          },
+        }
+        mockReq.body.submissionSecretKey = 'submission-secret-key'
+        mockReq.body.stepToken = presentedToken
+        mockReq.growthbook = { isOn: jest.fn(() => false) }
+        mockReq.formsg = {
+          formDef: {
+            _id: MOCK_FORM_ID,
+            form_fields: SNAPSHOT_FORM_FIELDS,
+            form_logics: [],
+            workflow: SNAPSHOT_WORKFLOW,
+          },
+          mrfSubmission: { ...MOCK_MRF_SUBMISSION_V1, stepTokenHash },
+        }
+        return mockReq
+      }
+
+      it('should advance when a valid step token accompanies a valid decrypt', async () => {
+        const mockReq = createGuardReq({
+          stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
+          presentedToken: RAW_STEP_TOKEN,
+        })
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await validateMultirespondentSubmission(
+          mockReq,
+          mockRes as any,
+          mockNext,
+        )
+
+        expect(mockNext).toHaveBeenCalled()
+        expect(mockRes.status).not.toHaveBeenCalled()
+      })
+
+      it('should return 403 and not advance when the presented token is wrong (decrypt still valid)', async () => {
+        const mockReq = createGuardReq({
+          stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
+          presentedToken: stepToken.generate(), // wrong token
+        })
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await validateMultirespondentSubmission(
+          mockReq,
+          mockRes as any,
+          mockNext,
+        )
+
+        expect(mockNext).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+      })
+
+      it('should return 403 when the token is absent but the row carries a hash (decrypt-gate alone no longer advances)', async () => {
+        const mockReq = createGuardReq({
+          stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
+          presentedToken: undefined, // absent
+        })
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await validateMultirespondentSubmission(
+          mockReq,
+          mockRes as any,
+          mockNext,
+        )
+
+        expect(mockNext).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+      })
+
+      it('should reject a tokenless update to a zero-step submission (hash on row, raw token never delivered)', async () => {
+        // The guard itself is purely token-based — it knows nothing about
+        // payments. The payment-terminality guarantee (no post-payment edits)
+        // falls out of it structurally: a payment-enabled form is necessarily
+        // zero-step, the step token is minted at creation but its raw value
+        // is only ever delivered via next-step email links, and a zero-step
+        // form sends none — so no caller can ever present a valid token.
+        const mockReq = createGuardReq({
+          stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
+          presentedToken: undefined, // nobody ever received the raw token
+        })
+        // Zero-step everywhere it is recorded: the form definition and the
+        // submission's workflow snapshot must agree for the fixture to
+        // describe a real row (updates read the snapshot, creates the form).
+        mockReq.formsg.formDef.workflow = []
+        mockReq.formsg.mrfSubmission = {
+          ...mockReq.formsg.mrfSubmission,
+          workflow: [],
+          workflowStep: 0,
+        }
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await validateMultirespondentSubmission(
+          mockReq,
+          mockRes as any,
+          mockNext,
+        )
+
+        expect(mockNext).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+      })
+
+      it('should advance on a legacy row without a hash even with no token (migration grace)', async () => {
+        const mockReq = createGuardReq({
+          stepTokenHash: undefined, // legacy in-flight row
+          presentedToken: undefined,
+        })
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await validateMultirespondentSubmission(
+          mockReq,
+          mockRes as any,
+          mockNext,
+        )
+
+        expect(mockNext).toHaveBeenCalled()
+        expect(mockRes.status).not.toHaveBeenCalled()
+      })
+    })
+  })
+
+  describe('validatePaymentSubmission', () => {
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const PRODUCT_ID = new ObjectId().toHexString()
+
+    const PRODUCT_DEFINITION = {
+      _id: PRODUCT_ID,
+      name: 'Product A',
+      description: 'A product',
+      multi_qty: false,
+      min_qty: 1,
+      max_qty: 1,
+      amount_cents: 100_00,
+    }
+
+    // Uses the real PaymentsService.validatePaymentProducts, so these tests
+    // pin the full tamper-rejection behavior, not just the wiring.
+    const createPaymentReq = ({
+      formProducts,
+      paymentProducts,
+    }: {
+      formProducts?: unknown
+      paymentProducts?: unknown
+    }) => {
+      const req = createMockReq({ formId: MOCK_FORM_ID })
+      req.formsg = {
+        formDef: {
+          toObject: () => ({
+            _id: MOCK_FORM_ID,
+            payments_field: formProducts
+              ? { enabled: true, products: formProducts }
+              : undefined,
+          }),
+        },
+      }
+      if (paymentProducts) req.body.paymentProducts = paymentProducts
+      return req
+    }
+
+    it('should call next when the submission carries no payment products', async () => {
+      const mockReq = createPaymentReq({
+        formProducts: [PRODUCT_DEFINITION],
+      })
+      const mockRes = createMockRes()
+      const mockNext = jest.fn()
+
+      await validatePaymentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).toHaveBeenCalled()
+      expect(mockRes.status).not.toHaveBeenCalled()
+    })
+
+    it('should call next when submitted products match the form definition', async () => {
+      const mockReq = createPaymentReq({
+        formProducts: [PRODUCT_DEFINITION],
+        paymentProducts: [
+          { data: PRODUCT_DEFINITION, selected: true, quantity: 1 },
+        ],
+      })
+      const mockRes = createMockRes()
+      const mockNext = jest.fn()
+
+      await validatePaymentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).toHaveBeenCalled()
+      expect(mockRes.status).not.toHaveBeenCalled()
+    })
+
+    it('should return 400 when payment products are submitted to a form without product definitions', async () => {
+      const mockReq = createPaymentReq({
+        paymentProducts: [
+          { data: PRODUCT_DEFINITION, selected: true, quantity: 1 },
+        ],
+      })
+      const mockRes = createMockRes()
+      const mockNext = jest.fn()
+
+      await validatePaymentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+    })
+
+    it('should return 400 when a submitted product price is tampered', async () => {
+      const mockReq = createPaymentReq({
+        formProducts: [PRODUCT_DEFINITION],
+        paymentProducts: [
+          {
+            data: { ...PRODUCT_DEFINITION, amount_cents: 50 },
+            selected: true,
+            quantity: 1,
+          },
+        ],
+      })
+      const mockRes = createMockRes()
+      const mockNext = jest.fn()
+
+      await validatePaymentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+    })
+
+    it('should return 400 when quantity exceeds the single-quantity limit', async () => {
+      const mockReq = createPaymentReq({
+        formProducts: [PRODUCT_DEFINITION],
+        paymentProducts: [
+          { data: PRODUCT_DEFINITION, selected: true, quantity: 2 },
+        ],
+      })
+      const mockRes = createMockRes()
+      const mockNext = jest.fn()
+
+      await validatePaymentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+    })
+
+    it('should return 400 when the same product is selected twice', async () => {
+      const mockReq = createPaymentReq({
+        formProducts: [PRODUCT_DEFINITION],
+        paymentProducts: [
+          { data: PRODUCT_DEFINITION, selected: true, quantity: 1 },
+          { data: PRODUCT_DEFINITION, selected: true, quantity: 1 },
+        ],
+      })
+      const mockRes = createMockRes()
+      const mockNext = jest.fn()
+
+      await validatePaymentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
     })
   })
 })

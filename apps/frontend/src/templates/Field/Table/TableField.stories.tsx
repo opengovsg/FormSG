@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { assign, merge, times } from 'lodash'
 
 import { BasicField } from 'formsg-shared/types/field'
 
-import { viewports } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 import Button from '~components/Button'
 
 import { TableFieldSchema } from '../types'
@@ -165,19 +165,9 @@ const Template: StoryFn<StoryTableFieldProps> = ({
 }
 
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('mobile') } }
 Default.args = {
   schema: baseSchema,
-}
-
-export const Mobile = Template.bind({})
-Mobile.args = {
-  schema: baseSchema,
-}
-Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
 }
 
 export const NoAddableRows = Template.bind({})
@@ -248,4 +238,24 @@ export const DisabledWithLongDropdownOption = Template.bind({})
 DisabledWithLongDropdownOption.args = {
   schema: { ...longDropdownSchema, disabled: true },
   defaultValue: longDropdownDefaultValues,
+}
+
+const LONG_SHORT_TEXT_VALUE =
+  'This is a very long text column value that should be available when disabled'
+
+const longShortTextDefaultValues = baseSchema.columns.reduce<
+  Record<string, string>
+>((acc, c) => {
+  if (c.columnType === BasicField.ShortText) {
+    acc[c._id] = LONG_SHORT_TEXT_VALUE
+  } else if (c.columnType === BasicField.Dropdown) {
+    acc[c._id] = STORYBOOK_DROPDOWN_OPTIONS[1]
+  }
+  return acc
+}, {})
+
+export const DisabledWithLongShortTextValue = Template.bind({})
+DisabledWithLongShortTextValue.args = {
+  schema: { ...baseSchema, disabled: true },
+  defaultValue: longShortTextDefaultValues,
 }

@@ -450,7 +450,7 @@ export const getPublicFormResponse = ({
           }
         },
       ) as PublicFormViewDto
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(response)
     },
   )
@@ -483,7 +483,7 @@ export const getPublicFormWithoutSectionsResponse = ({
           }
         },
       ) as PublicFormViewDto
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(response)
     },
   )
@@ -514,7 +514,7 @@ export const getPublicFormErrorResponse = ({
   message?: string
 } = {}) => {
   return http.get<{ formId: string }>('/api/v3/forms/:formId', async () => {
-    await MswDelay(delay)
+    await MswDelay(delay ?? 0)
 
     return HttpResponse.json({ message }, { status })
   })
@@ -542,7 +542,7 @@ export const postVfnTransactionResponse = ({
   return http.post<{ formId: string }, never, FetchNewTransactionResponse>(
     `/api/v3/forms/:formId/fieldverifications`,
     async () => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json({
         transactionId: `mock-transaction-id-${Math.random()}`,
         expireAt: addMilliseconds(new Date(), expiryMsOverride),
@@ -559,7 +559,7 @@ export const postGenerateVfnOtpResponse = ({
   return http.post(
     `/api/v3/forms/:formId/fieldverifications/:transactionId/fields/:fieldId/otp/generate`,
     async () => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return new HttpResponse()
     },
   )
@@ -573,7 +573,7 @@ export const postVerifyVfnOtpResponse = ({
   return http.post(
     `/api/v3/forms/:formId/fieldverifications/:transactionId/fields/:fieldId/otp/verify`,
     async () => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json('mock-signature-hehe')
     },
   )
@@ -619,7 +619,7 @@ export const getEncryptedSubmissionResponse = ({
       },
     ) as PublicMultirespondentSubmissionDto
 
-    await MswDelay(delay)
+    await MswDelay(delay ?? 0)
     return HttpResponse.json(response)
   })
 }

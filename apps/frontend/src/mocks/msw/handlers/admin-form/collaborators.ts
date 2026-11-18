@@ -12,7 +12,7 @@ export const getAdminFormCollaborators = ({
   return http.get<{ formId: string }>(
     '/api/v3/admin/forms/:formId/collaborators',
     async () => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(overrides ?? [], {
         status: 200,
       })
@@ -30,7 +30,7 @@ export const updateFormCollaborators = ({
   return http.put<{ formId: string }>(
     '/api/v3/admin/forms/:formId/collaborators',
     async () => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json([], {
         status: errorCode,
       })

@@ -1,4 +1,4 @@
-import { WorkflowType } from 'formsg-shared/types'
+import { FormAuthType, WorkflowType } from 'formsg-shared/types'
 import { Schema } from 'mongoose'
 import validator from 'validator'
 
@@ -9,6 +9,15 @@ import {
   IWorkflowStepStaticSchema,
 } from '../../types'
 import { transformEmails } from '../modules/form/form.utils'
+
+/** Shared by the form's `esrvcId` and a later step's `auth.esrvc_id`. */
+export const ESRVC_ID_SCHEMA = {
+  type: String,
+  validate: [/^\S*$/i, 'e-service ID must not contain whitespace'] as [
+    RegExp,
+    string,
+  ],
+}
 
 const WorkflowStepSchema = new Schema<IWorkflowStepSchema>(
   {
@@ -25,9 +34,30 @@ const WorkflowStepSchema = new Schema<IWorkflowStepSchema>(
     approval_field: {
       type: Schema.Types.ObjectId,
     },
+    is_approval_enabled: {
+      type: Boolean,
+      required: false,
+    },
     step_name: {
       type: String,
       required: false,
+    },
+    // Login for steps after Step 1. Step 1 keeps the form-level authType and
+    // esrvcId, so workflow[0] never carries auth. Absent means no login.
+    auth: {
+      type: new Schema(
+        {
+          auth_type: {
+            type: String,
+            enum: [FormAuthType.MyInfo, FormAuthType.CP],
+            required: true,
+          },
+          esrvc_id: ESRVC_ID_SCHEMA,
+        },
+        { _id: false },
+      ),
+      required: false,
+      default: undefined,
     },
   },
   {
@@ -60,7 +90,7 @@ export const WorkflowStepDynamicSchema = new Schema<IWorkflowStepDynamicSchema>(
   {
     field: {
       type: Schema.Types.ObjectId,
-      required: true,
+      required: false,
     },
   },
 )
@@ -69,7 +99,7 @@ export const WorkflowStepConditionalSchema =
   new Schema<IWorkflowStepConditionalSchema>({
     conditional_field: {
       type: Schema.Types.ObjectId,
-      required: true,
+      required: false,
     },
   })
 

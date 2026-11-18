@@ -1,7 +1,77 @@
-import { SubmissionMetadata } from 'formsg-shared/types'
+import type { FormField } from '@opengovsg/formsg-sdk/dist/types'
+
+import {
+  AdminFormDto,
+  BasicField,
+  FormFieldDto,
+  FormResponseMode,
+  SubmissionMetadata,
+  WorkflowStatus,
+} from 'formsg-shared/types'
 import { centsToDollars } from 'formsg-shared/utils/payments'
 
-import { getNetAmount } from '../utils'
+import {
+  getFieldColumnSources,
+  getIsPaymentsForm,
+  getNetAmount,
+  getReminderButtonState,
+} from '../utils'
+
+describe('getIsPaymentsForm', () => {
+  it('should return false when form is undefined', () => {
+    // Act
+    const result = getIsPaymentsForm(undefined)
+    // Assert
+    expect(result).toBe(false)
+  })
+
+  it('should return false for a non-payments-capable form', () => {
+    // Arrange
+    const form = {
+      responseMode: FormResponseMode.Email,
+    } as AdminFormDto
+    // Act
+    const result = getIsPaymentsForm(form)
+    // Assert
+    expect(result).toBe(false)
+  })
+
+  it('should return payments_field.enabled for an Encrypt form', () => {
+    // Arrange
+    const form = {
+      responseMode: FormResponseMode.Encrypt,
+      payments_field: { enabled: true },
+    } as AdminFormDto
+    // Act
+    const result = getIsPaymentsForm(form)
+    // Assert
+    expect(result).toBe(true)
+  })
+
+  it('should return payments_field.enabled for a Multirespondent form', () => {
+    // Arrange
+    const form = {
+      responseMode: FormResponseMode.Multirespondent,
+      payments_field: { enabled: true },
+    } as AdminFormDto
+    // Act
+    const result = getIsPaymentsForm(form)
+    // Assert
+    expect(result).toBe(true)
+  })
+
+  it('should return false when a Multirespondent form has payments disabled', () => {
+    // Arrange
+    const form = {
+      responseMode: FormResponseMode.Multirespondent,
+      payments_field: { enabled: false },
+    } as AdminFormDto
+    // Act
+    const result = getIsPaymentsForm(form)
+    // Assert
+    expect(result).toBe(false)
+  })
+})
 
 describe('getNetAmount', () => {
   it('should return empty string when no payments are provided', () => {
@@ -71,5 +141,121 @@ describe('getNetAmount', () => {
     const result = getNetAmount(zeroTransactionFee)
     // Assert
     expect(result).toContain(centsToDollars(EXPECTED_PAYMENT_AMOUNT))
+  })
+})
+
+describe('getReminderButtonState', () => {
+  const pending: SubmissionMetadata['mrf'] = {
+    workflowStatus: WorkflowStatus.PENDING,
+    workflowCurrentStepNumber: 1,
+    workflowNumTotalSteps: 3,
+    lastSubmittedAt: undefined,
+    hasNextStepRecipientEmails: true,
+  }
+
+  it('enables the reminder for a pending step with recipients', () => {
+    expect(getReminderButtonState(pending)).toBe('enabled')
+  })
+
+  it('disables the reminder once the workflow is stopped', () => {
+    expect(
+      getReminderButtonState({
+        ...pending!,
+        stoppedAt: '2026-10-07T08:00:00.000Z',
+      }),
+    ).toBe('disabled')
+  })
+
+  it('hides the reminder when the step has no recipients', () => {
+    expect(
+      getReminderButtonState({
+        ...pending!,
+        hasNextStepRecipientEmails: false,
+      }),
+    ).toBe('hidden')
+  })
+
+  it('hides the reminder once the workflow is no longer pending', () => {
+    expect(
+      getReminderButtonState({
+        ...pending!,
+        workflowStatus: WorkflowStatus.APPROVED,
+      }),
+    ).toBe('hidden')
+  })
+})
+
+describe('getFieldColumnSources', () => {
+  const formField = (
+    _id: string,
+    title: string,
+    fieldType = BasicField.ShortText,
+  ) => ({ _id, title, fieldType }) as FormFieldDto
+  const response = (
+    _id: string,
+    question: string,
+    fieldType = BasicField.ShortText,
+  ): FormField => ({ _id, question, fieldType, answer: 'answer' })
+
+  it("lists the form's answerable fields in form order", () => {
+    const result = getFieldColumnSources({
+      formFields: [
+        formField('name', 'Name'),
+        formField('intro', 'Intro', BasicField.Section),
+        formField('email', 'Email', BasicField.Email),
+      ],
+      submissionIdsNewestFirst: [],
+    })
+
+    expect(result).toEqual([
+      { id: 'name', title: 'Name', fieldType: BasicField.ShortText },
+      { id: 'email', title: 'Email', fieldType: BasicField.Email },
+    ])
+  })
+
+  it('keeps a deleted field that a submission answered, after the current fields', () => {
+    const result = getFieldColumnSources({
+      formFields: [formField('name', 'Name')],
+      responsesBySubmissionId: new Map([
+        ['s1', [response('name', 'Name'), response('phone', 'Phone')]],
+      ]),
+      submissionIdsNewestFirst: ['s1'],
+    })
+
+    expect(result.map(({ id }) => id)).toEqual(['name', 'phone'])
+    expect(result[1].title).toBe('Phone')
+  })
+
+  it('titles a deleted field with the question from the newest submission', () => {
+    const result = getFieldColumnSources({
+      formFields: [],
+      responsesBySubmissionId: new Map([
+        ['old', [response('phone', 'Phone number')]],
+        ['new', [response('phone', 'Mobile number')]],
+      ]),
+      submissionIdsNewestFirst: ['new', 'old'],
+    })
+
+    expect(result).toEqual([
+      { id: 'phone', title: 'Mobile number', fieldType: BasicField.ShortText },
+    ])
+  })
+
+  it('skips headers and non-answerable deleted fields', () => {
+    const result = getFieldColumnSources({
+      formFields: [],
+      responsesBySubmissionId: new Map([
+        [
+          's1',
+          [
+            { ...response('header', 'Section'), isHeader: true },
+            response('statement', 'Read this', BasicField.Statement),
+          ],
+        ],
+      ]),
+      submissionIdsNewestFirst: ['s1'],
+    })
+
+    expect(result).toEqual([])
   })
 })

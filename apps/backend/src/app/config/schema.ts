@@ -122,6 +122,24 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       default: null,
       env: 'ATTACHMENT_S3_BUCKET',
     },
+    submissionHistoryV4S3Bucket: {
+      doc: 'S3 Bucket for v4 submission snapshots',
+      format: String,
+      default: null,
+      env: 'SUBMISSION_HISTORY_V4_S3_BUCKET',
+    },
+    submissionHistoryV1S3Bucket: {
+      doc: 'S3 Bucket for v1 submission snapshots',
+      format: String,
+      default: null,
+      env: 'SUBMISSION_HISTORY_V1_S3_BUCKET',
+    },
+    submissionHistoryV1AttachmentS3Bucket: {
+      doc: 'S3 Bucket for form-key-encrypted copies of v1 webhook attachments',
+      format: String,
+      default: null,
+      env: 'SUBMISSION_HISTORY_V1_ATTACHMENT_S3_BUCKET',
+    },
     paymentProofS3Bucket: {
       doc: 'S3 Bucket to upload payment proof to',
       format: String,
@@ -269,6 +287,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       format: 'int',
       default: 86400000,
       env: 'BOUNCE_LIFE_SPAN',
+    },
+    sesSnsTopicArns: {
+      doc: 'Comma-separated ARNs of SNS topics allowed to send SES notifications. Notifications from other topics are rejected.',
+      format: String,
+      default: '',
+      env: 'SES_SNS_TOPIC_ARNS',
     },
     chromiumBin: {
       doc: 'Path to chromium executable for PDF generation',
@@ -449,6 +473,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       format: 'int',
       default: 60,
       env: 'MRF_PENDING_SUBMISSION_EMAIL_REMINDER_RATE_LIMIT',
+    },
+    analyticsEvents: {
+      doc: 'Per-minute, per-IP request limit for recording product analytics events',
+      format: 'int',
+      default: 60,
+      env: 'ANALYTICS_EVENTS_RATE_LIMIT',
     },
   },
   iacMigration: {

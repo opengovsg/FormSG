@@ -5,7 +5,7 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson'
 import { subMinutes, subYears } from 'date-fns'
-import { BasicField } from 'formsg-shared/types'
+import { BasicField, FormStatus } from 'formsg-shared/types'
 import {
   NUM_OTP_RETRIES,
   WAIT_FOR_OTP_SECONDS,
@@ -18,6 +18,7 @@ import nodemailer from 'nodemailer'
 import Mail from 'nodemailer/lib/mailer'
 import session, { Session } from 'supertest-session'
 
+import { getEmailFormModel } from 'src/app/models/form.server.model'
 import {
   generateFieldParams,
   MOCK_HASHED_OTP,
@@ -91,6 +92,8 @@ describe('public-forms.verification.routes', () => {
       mailDomain: MOCK_VALID_EMAIL_DOMAIN,
       formOptions: {
         form_fields: [emailField, mobileField],
+        // OTP generation requires the form to be public
+        status: FormStatus.Public,
       },
     })
     mockVerifiableFormId = String(verifiableForm._id)
@@ -193,6 +196,8 @@ describe('public-forms.verification.routes', () => {
       })
       const expectedResponse = {
         message: 'Your session has expired, please refresh and try again.',
+        messageKey:
+          'features.publicForm.backendErrors.verification.sessionExpired',
       }
 
       // Act
@@ -289,11 +294,36 @@ describe('public-forms.verification.routes', () => {
       expect(response.body).toContainKey('otpPrefix')
     })
 
+    it('should return 404 when the form is not public', async () => {
+      // Arrange
+      await getEmailFormModel(mongoose).findByIdAndUpdate(
+        mockVerifiableFormId,
+        { status: FormStatus.Private },
+      )
+      const expectedResponse = {
+        message: 'This form has been taken down, so OTPs cannot be requested',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/generate`,
+        )
+        .send({
+          answer: 'open@gov.sg',
+        })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.NOT_FOUND)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
     it('should return 400 when fieldType is email but the provided email is not valid', async () => {
       // Arrange
       const expectedResponse = {
         message:
           'Sorry, we were unable to send the email out at this time. Please ensure that the email entered is correct. If this problem persists, please refresh and try again later.',
+        messageKey: 'features.publicForm.backendErrors.verification.mailSend',
       }
 
       // Act
@@ -319,6 +349,8 @@ describe('public-forms.verification.routes', () => {
       })
       const expectedResponse = {
         message: 'Your session has expired, please refresh and try again.',
+        messageKey:
+          'features.publicForm.backendErrors.verification.sessionExpired',
       }
 
       // Act
@@ -367,6 +399,7 @@ describe('public-forms.verification.routes', () => {
       const expectedResponse = {
         message:
           'Sorry, we were unable to send the email out at this time. Please ensure that the email entered is correct. If this problem persists, please refresh and try again later.',
+        messageKey: 'features.publicForm.backendErrors.verification.mailSend',
       }
 
       // Act
@@ -447,6 +480,10 @@ describe('public-forms.verification.routes', () => {
       // Arrange
       const expectedResponse = {
         message: `You must wait for ${WAIT_FOR_OTP_SECONDS} seconds between each OTP request.`,
+        messageKey: 'features.publicForm.backendErrors.verification.waitForOtp',
+        messageParams: {
+          waitForOtpSeconds: WAIT_FOR_OTP_SECONDS,
+        },
       }
 
       // Act
@@ -567,6 +604,8 @@ describe('public-forms.verification.routes', () => {
       })
       const expectedResponse = {
         message: 'Your session has expired, please refresh and try again.',
+        messageKey:
+          'features.publicForm.backendErrors.verification.sessionExpired',
       }
 
       // Act
@@ -674,6 +713,7 @@ describe('public-forms.verification.routes', () => {
       })
       const expectedResponse = {
         message: 'Your OTP has expired, please request for a new one.',
+        messageKey: 'features.publicForm.backendErrors.verification.otpExpired',
       }
 
       // Act
@@ -699,6 +739,8 @@ describe('public-forms.verification.routes', () => {
       const expectedResponse = {
         message:
           'You have entered too many invalid OTPs. Please request for a new OTP and try again.',
+        messageKey:
+          'features.publicForm.backendErrors.verification.otpRetryExceeded',
       }
 
       // Act
@@ -718,6 +760,7 @@ describe('public-forms.verification.routes', () => {
       jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(false)
       const expectedResponse = {
         message: 'Wrong OTP.',
+        messageKey: 'features.publicForm.backendErrors.verification.wrongOtp',
       }
 
       // Act
@@ -725,7 +768,7 @@ describe('public-forms.verification.routes', () => {
         .post(
           `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/verify`,
         )
-        .send({ otp: '000000' })
+        .send({ otp: '00000000' })
 
       // Assert
       expect(response.status).toBe(StatusCodes.UNPROCESSABLE_ENTITY)

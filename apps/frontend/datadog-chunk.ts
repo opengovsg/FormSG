@@ -9,6 +9,7 @@
 import { datadogRum, RumInitConfiguration } from '@datadog/browser-rum'
 
 import type { FrontendRuntimeEnv } from 'formsg-shared/types'
+import { redactSecretQueryParams } from 'formsg-shared/utils/urls'
 
 declare global {
   interface Window {
@@ -19,6 +20,11 @@ declare global {
 // Discard benign RUM errors.
 // Ensure that beforeSend returns true to keep the event and false to discard it.
 const ddBeforeSend: RumInitConfiguration['beforeSend'] = (event) => {
+  event.view.url = redactSecretQueryParams(event.view.url)
+  if (event.view.referrer) {
+    event.view.referrer = redactSecretQueryParams(event.view.referrer)
+  }
+
   if (event.type !== 'error') return true
 
   // Caused by @chakra-ui/react@latest-v1 -> @chakra-ui/modal@1.11.1 -> react-remove-scroll@2.4.1

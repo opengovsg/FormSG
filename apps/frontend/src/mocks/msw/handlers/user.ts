@@ -32,7 +32,7 @@ export const MOCK_USER: UserDto = {
 
 export const getUnauthedUser = ({ delay = 0 }: WithDelayProps = {}) => {
   return http.get<never, never, UserDto>('/api/v3/user', async () => {
-    await MswDelay(delay)
+    await MswDelay(delay ?? 0)
     return new HttpResponse(null, {
       status: 401,
     })
@@ -44,7 +44,7 @@ export const getUser = ({
   mockUser = MOCK_USER,
 }: { mockUser?: UserDto } & WithDelayProps = {}) => {
   return http.get<never, never, UserDto>('/api/v3/user', async () => {
-    await MswDelay(delay)
+    await MswDelay(delay ?? 0)
     return HttpResponse.json(mockUser, {
       status: 200,
     })
@@ -53,7 +53,7 @@ export const getUser = ({
 
 export const postGenerateContactOtp = ({ delay }: WithDelayProps = {}) => {
   return http.post('/api/v3/user/contact/otp/generate', async () => {
-    await MswDelay(delay)
+    await MswDelay(delay ?? 0)
     return HttpResponse.json(null, {
       status: 200,
     })
@@ -71,7 +71,7 @@ export const postVerifyContactOtp = ({
       const nextContact = body.contact
 
       if (mockOtp && body.otp !== mockOtp) {
-        await MswDelay(delay)
+        await MswDelay(delay ?? 0)
         return HttpResponse.json(
           { message: 'OTP is invalid. Please try again.' },
           {
@@ -80,7 +80,7 @@ export const postVerifyContactOtp = ({
         )
       }
 
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(
         { ...MOCK_USER, contact: nextContact },
         {

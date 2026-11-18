@@ -473,8 +473,81 @@ describe('webhook.service', () => {
       expect(result._unsafeUnwrap()).toBe(true)
       expect(MockWebhookQueueMessage.fromSubmissionId).toHaveBeenCalledWith(
         String(testSubmission._id),
+        // No snapshot for this step, so the retry names none and falls back to
+        // the live row.
+        undefined,
       )
       expect(MOCK_PRODUCER.sendMessage).toHaveBeenCalledWith(mockQueueMessage)
+    })
+
+    it('should enqueue a retry naming the step submission when that step froze a snapshot', async () => {
+      const mockQueueMessage =
+        'mockQueueMessage' as unknown as WebhookQueueMessage
+      MockWebhookQueueMessage.fromSubmissionId.mockReturnValueOnce(
+        ok(mockQueueMessage),
+      )
+      MockAxios.post.mockResolvedValue(MOCK_AXIOS_FAILURE_RESPONSE)
+      const MOCK_PRODUCER = generateMockProducer()
+
+      const result = await WebhookService.createInitialWebhookSender(
+        MOCK_PRODUCER,
+      )(
+        testSubmission,
+        MOCK_WEBHOOK_URL,
+        /* isRetryEnabled= */ true,
+        /* webhookView= */ undefined,
+        /* snapshotRef= */ { submissionIndex: 1, contentFormat: 'v4' },
+      )
+
+      expect(result._unsafeUnwrap()).toBe(true)
+      expect(MockWebhookQueueMessage.fromSubmissionId).toHaveBeenCalledWith(
+        String(testSubmission._id),
+        { submissionIndex: 1, contentFormat: 'v4' },
+      )
+    })
+  })
+
+  describe('toConsumerType', () => {
+    it.each(['plumber.gov.sg', 'staging.plumber.gov.sg', 'uat.plumber.gov.sg'])(
+      'classifies %s as plumber',
+      (hostname) => {
+        expect(
+          WebhookService.toConsumerType(
+            WebhookService.getWebhookType(`https://${hostname}/webhooks/abc`),
+          ),
+        ).toBe('plumber')
+      },
+    )
+
+    it.each([
+      'https://dev.plumber.gov.sg/webhooks/abc',
+      'https://nested.staging.plumber.gov.sg/webhooks/abc',
+      'https://staging.plumber.gov.sg.evil.com/webhooks/abc',
+      'https://staging.plumber.gov.sg@evil.com/webhooks/abc',
+      'https://evil.com/staging.plumber.gov.sg/webhooks/abc',
+      'http://staging.plumber.gov.sg/webhooks/abc',
+      'https://uat.plumber.gov.sg/other/abc',
+      'https://uat.plumber.gov.sg/webhooks-evil/abc',
+    ])('classifies an unsupported Plumber-like URL as generic: %s', (url) => {
+      expect(WebhookService.getWebhookType(url)).toBe('generic')
+    })
+
+    it('classifies a zapier URL as generic', () => {
+      expect(
+        WebhookService.toConsumerType(
+          WebhookService.getWebhookType(
+            'https://hooks.zapier.com/hooks/catch/123/abc',
+          ),
+        ),
+      ).toBe('generic')
+    })
+
+    it('classifies any other URL as generic', () => {
+      expect(
+        WebhookService.toConsumerType(
+          WebhookService.getWebhookType('https://example.com/hook'),
+        ),
+      ).toBe('generic')
     })
   })
 })

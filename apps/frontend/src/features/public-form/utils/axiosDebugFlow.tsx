@@ -4,10 +4,13 @@ import { ClientEnvVars } from 'formsg-shared/types'
 
 import { env } from '~/env'
 
-import { ApiService } from '~services/ApiService'
+import { ApiService, getClientVersionHeader } from '~services/ApiService'
 
 const getClientEnvWithFetch = async () => {
-  const response = await fetch(`${env.appUrl}/api/v3/client/env`)
+  const url = `${env.appUrl}/api/v3/client/env`
+  const response = await fetch(url, {
+    headers: getClientVersionHeader(url),
+  })
   if (response.ok) {
     const clientEnv = await response.json()
     datadogLogs.logger.info(`handleSubmitForm: fetch env vars successful`, {

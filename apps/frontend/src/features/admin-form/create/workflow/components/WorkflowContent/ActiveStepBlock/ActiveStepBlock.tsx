@@ -1,11 +1,15 @@
 import { useCallback } from 'react'
 
-import { FormWorkflowStep, FormWorkflowStepDto } from 'formsg-shared/types'
+import {
+  FormWorkflowStepDto,
+  FormWorkflowStepWriteDto,
+} from 'formsg-shared/types'
 
 import { datadogRum } from '~utils/datadog'
 
 import {
-  setToInactiveSelector,
+  cancelPendingSwitchSelector,
+  completeSaveSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
 import { useWorkflowMutations } from '../../../mutations'
@@ -17,8 +21,7 @@ export interface ActiveStepBlockProps {
   handleOpenDeleteModal: () => void
 }
 
-const handleTracking = (step: FormWorkflowStep, stepNumber: number) => {
-  // stepNumber is 0-indexed
+const handleTracking = (step: FormWorkflowStepWriteDto, stepNumber: number) => {
   if (stepNumber === 0) {
     const hasFieldsSelected = step.edit.length > 0
     if (hasFieldsSelected) {
@@ -44,22 +47,25 @@ export const ActiveStepBlock = ({
   handleOpenDeleteModal,
 }: ActiveStepBlockProps): JSX.Element => {
   const { updateStepMutation } = useWorkflowMutations()
-  const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
+  const completeSave = useAdminWorkflowStore(completeSaveSelector)
+  const cancelPendingSwitch = useAdminWorkflowStore(cancelPendingSwitchSelector)
 
   const handleSubmit = useCallback(
-    (step: FormWorkflowStep) => {
+    async (step: FormWorkflowStepWriteDto, afterSave?: () => Promise<void>) => {
       handleTracking(step, stepNumber)
-      updateStepMutation.mutate(
-        {
+      try {
+        await updateStepMutation.mutateAsync({
           stepNumber,
           updateStepBody: step,
-        },
-        {
-          onSuccess: () => setToInactive(),
-        },
-      )
+        })
+        await afterSave?.()
+        completeSave()
+      } catch (error) {
+        cancelPendingSwitch()
+        throw error
+      }
     },
-    [updateStepMutation, stepNumber, setToInactive],
+    [updateStepMutation, stepNumber, completeSave, cancelPendingSwitch],
   )
 
   return (

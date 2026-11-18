@@ -47,6 +47,7 @@ import { SlLocationPin } from 'react-icons/sl'
 import { As } from '@chakra-ui/react'
 
 import { BasicField, MyInfoAttribute } from 'formsg-shared/types/field'
+import { LOGIN_IDENTITY_LABELS } from 'formsg-shared/utils/login-identity'
 
 import { SignatureIcon } from '~assets/icons'
 
@@ -300,6 +301,13 @@ const BiDummyIcon = BiCalendar // random icon that is not actually shown in app
 export const MYINFO_FIELD_TO_DRAWER_META: {
   [key in MyInfoAttribute]: BuilderSidebarFieldMeta
 } = {
+  // Login identity, not MyInfo data: the builder offers it as an identity
+  // field. This entry keeps the map complete and supplies its icon.
+  [MyInfoAttribute.UinFin]: {
+    label: LOGIN_IDENTITY_LABELS[MyInfoAttribute.UinFin],
+    icon: BiUser,
+    isSubmitted: true,
+  },
   [MyInfoAttribute.Name]: {
     label: 'Name',
     icon: BiUser,
@@ -430,12 +438,12 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
   // The following child field's icons will never be used.
   // So they can be any placeholder.
   [MyInfoAttribute.ChildBirthCertNo]: {
-    label: 'Birth Certificate Number',
+    label: 'Birth certificate number',
     icon: BiDummyIcon,
     isSubmitted: true,
   },
   [MyInfoAttribute.ChildDateOfBirth]: {
-    label: 'Date of Birth',
+    label: 'Date of birth',
     icon: BiDummyIcon,
     isSubmitted: true,
   },
@@ -445,7 +453,7 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
     isSubmitted: true,
   },
   [MyInfoAttribute.ChildVaxxStatus]: {
-    label: 'Vaccination Requirements',
+    label: 'Vaccination status',
     icon: BiDummyIcon,
     isSubmitted: true,
   },
@@ -460,7 +468,12 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
     isSubmitted: true,
   },
   [MyInfoAttribute.ChildSecondaryRace]: {
-    label: 'Secondary Race',
+    label: 'Secondary race',
+    icon: BiDummyIcon,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.ChildType]: {
+    label: 'Record type',
     icon: BiDummyIcon,
     isSubmitted: true,
   },

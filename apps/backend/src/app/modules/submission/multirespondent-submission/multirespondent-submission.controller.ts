@@ -3,17 +3,29 @@ import { featureFlags } from 'formsg-shared/constants'
 import {
   ErrorDto,
   FormResponseMode,
+  PaymentChannel,
+  PaymentType,
   PublicMultirespondentSubmissionDto,
   SubmissionType,
+  WorkflowEventType,
 } from 'formsg-shared/types'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
 import { StatusCodes } from 'http-status-codes'
-import { errAsync, okAsync } from 'neverthrow'
+import mongoose from 'mongoose'
+import { errAsync } from 'neverthrow'
+import Stripe from 'stripe'
 
-import { Environment } from '../../../../types'
+import { Environment, IPopulatedMultirespondentForm } from '../../../../types'
+import { StripePaymentMetadataDto } from '../../../../types/payment'
 import config, { isTest } from '../../../config/config'
+import { paymentConfig } from '../../../config/features/payment.config'
 import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
-import { createLoggerWithLabel } from '../../../config/logger'
+import {
+  createLoggerWithLabel,
+  CustomLoggerParams,
+} from '../../../config/logger'
+import { stripe } from '../../../loaders/stripe'
+import getPaymentModel from '../../../models/payment.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
 import { Pipeline } from '../../../utils/pipeline-middleware'
@@ -27,14 +39,22 @@ import { assertFormAvailable } from '../../form/admin-form/admin-form.utils'
 import { FormInvalidResponseModeError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import * as UserService from '../../user/user.service'
+import { recordWorkflowEvent } from '../../workflow-event/workflow-event.service'
 import {
   ensureFormWithinSubmissionLimits,
   ensurePublicForm,
   ensureValidCaptcha,
 } from '../encrypt-submission/encrypt-submission.ensures'
+import {
+  getPaymentAmount,
+  getPaymentIntentDescription,
+  getStripePaymentMethod,
+} from '../encrypt-submission/encrypt-submission.utils'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import {
   InvalidSubmissionTypeError,
+  MrfStepLinkSupersededError,
+  MrfWorkflowStoppedError,
   SubmissionFailedError,
   SubmissionSaveError,
 } from '../submission.errors'
@@ -42,13 +62,15 @@ import {
   getEncryptedSubmissionData,
   transformAttachmentMetasToSignedUrls,
 } from '../submission.service'
-import { mapRouteError } from '../submission.utils'
+import { mapRouteError, sendRouteError } from '../submission.utils'
 
 import { ensureSubmitterIdIsWhitelisted } from './multirespondent-submission.ensures'
 import * as MultirespondentSubmissionMiddleware from './multirespondent-submission.middleware'
 import {
   checkFormIsMultirespondent,
+  createMultiRespondentFormPendingSubmission,
   createMultiRespondentFormSubmission,
+  getMultirespondentSubmission,
   getPendingStepRecipientEmailsFromSubmittedStepsMeta,
   performMultiRespondentPostSubmissionCreateActions,
   performMultiRespondentPostSubmissionUpdateActions,
@@ -66,8 +88,11 @@ import {
   createPublicMultirespondentSubmissionDto,
   getMrfCookieName,
 } from './multirespondent-submission.utils'
+import { clearMrfStepAuthCookie } from './step-auth'
+import * as stepToken from './step-token'
 
 const logger = createLoggerWithLabel(module)
+const Payment = getPaymentModel(mongoose)
 
 const appUrl =
   process.env.NODE_ENV === Environment.Dev
@@ -114,31 +139,60 @@ const submitMultirespondentForm = async (
 
   if (!hasEnsuredAll) {
     if (!res.headersSent) {
-      const { errorMessage, statusCode } = mapRouteError(
-        new SubmissionFailedError(),
-      )
-      return res.status(statusCode).json({ message: errorMessage })
+      return sendRouteError(res, mapRouteError(new SubmissionFailedError()))
     }
     return // required to stop submission processing
   }
 
   const encryptedPayload = req.formsg.encryptedPayload
 
+  // Handle submissions for payment-enabled (necessarily zero-step) forms:
+  // the submission is saved as a pending submission and only promoted to a
+  // real submission when the Stripe webhook confirms the payment.
+  if (
+    form.payments_field?.enabled &&
+    form.payments_channel?.channel === PaymentChannel.Stripe
+  ) {
+    // Kill switch: with the flag off the submission is blocked outright — a
+    // payment submission must never fall through to the non-payment path.
+    const isMrfPaymentsEnabled = gb?.isOn(featureFlags.mrfPayments) ?? false
+    if (!isMrfPaymentsEnabled) {
+      logger.warn({
+        message:
+          'Blocked MRF payment submission: mrf-payments feature flag is off',
+        meta: logMeta,
+      })
+      return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+        message:
+          'Payments are currently unavailable for this form. Please try again later, or contact the form admin.',
+      })
+    }
+    return _createPaymentSubmission({
+      req,
+      res,
+      form,
+      logMeta,
+      formId,
+    })
+  }
+
   const createMultiRespondentFormSubmissionResult =
     await createMultiRespondentFormSubmission({
       form,
       encryptedPayload,
+      verifiedContentPlaintext: req.formsg.verifiedContentPlaintext,
       logMeta,
+      growthbook: req.growthbook,
     })
 
   if (createMultiRespondentFormSubmissionResult.isErr()) {
     const error = createMultiRespondentFormSubmissionResult.error
 
-    const { errorMessage, statusCode } = mapRouteError(error)
-    return res.status(statusCode).json({ message: errorMessage })
+    return sendRouteError(res, mapRouteError(error))
   }
 
-  const submission = createMultiRespondentFormSubmissionResult.value
+  const { submission, snapshot } =
+    createMultiRespondentFormSubmissionResult.value
 
   // Send success back to client
   res.json({
@@ -150,6 +204,7 @@ const submitMultirespondentForm = async (
 
   await performMultiRespondentPostSubmissionCreateActions({
     submission,
+    snapshot,
     submissionId: submission._id.toString(),
     form,
     encryptedPayload,
@@ -160,6 +215,241 @@ const submitMultirespondentForm = async (
 }
 
 export const submitMultirespondentFormForTest = submitMultirespondentForm
+
+/**
+ * Payment path for zero-step multirespondent forms. Mirrors the encrypt-mode
+ * flow: create a Payment document and a pending submission, then a Stripe
+ * payment intent. Nothing observable (admin views, notifications) happens
+ * until the charge.succeeded webhook promotes the pending submission.
+ */
+const _createPaymentSubmission = async ({
+  req,
+  res,
+  form,
+  logMeta,
+  formId,
+}: {
+  req: SubmitMultirespondentFormHandlerRequest
+  res: Parameters<SubmitMultirespondentFormHandlerType>[1]
+  form: IPopulatedMultirespondentForm
+  formId: string
+  logMeta: CustomLoggerParams['meta']
+}) => {
+  const encryptedPayload = req.formsg.encryptedPayload
+  const paymentProducts = encryptedPayload.paymentProducts
+
+  const amount = getPaymentAmount(
+    form.payments_field,
+    encryptedPayload.payments,
+    paymentProducts,
+  )
+
+  const isPaymentTypeProducts =
+    form.payments_field.payment_type === PaymentType.Products
+
+  logger.info({
+    message: 'Incoming payments',
+    meta: {
+      ...logMeta,
+      paymentProducts,
+      paymentType: form.payments_field.payment_type,
+      amount,
+    },
+  })
+
+  // Step 0: Perform validation checks
+  if (!amount) {
+    logger.error({
+      message: 'Error when creating payment: amount is missing',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message:
+        "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+    })
+  }
+
+  const paymentMinAmount =
+    form.payments_field.global_min_amount_override ||
+    paymentConfig.minPaymentAmountCents
+
+  if (
+    amount < paymentMinAmount ||
+    amount > paymentConfig.maxPaymentAmountCents
+  ) {
+    logger.error({
+      message: 'Error when creating payment: amount is not within bounds',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message:
+        "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+    })
+  }
+
+  const paymentReceiptEmail =
+    encryptedPayload.paymentReceiptEmail?.toLowerCase()
+  if (!paymentReceiptEmail) {
+    logger.error({
+      message:
+        'Error when creating payment: payment receipt email not provided.',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+    })
+  }
+
+  const targetAccountId = form.payments_channel.target_account_id
+
+  // Step 1: Create payment without payment intent id and pending submission id.
+  const payment = new Payment({
+    formId,
+    targetAccountId,
+    amount,
+    email: paymentReceiptEmail,
+    responses: [],
+    ...(isPaymentTypeProducts ? { products: paymentProducts } : {}),
+    gstEnabled: form.payments_field.gst_enabled,
+    payment_fields_snapshot: form.payments_field,
+  })
+  const paymentId = payment.id
+
+  // Step 2: Create and save pending submission.
+  const createPendingSubmissionResult =
+    await createMultiRespondentFormPendingSubmission({
+      form,
+      encryptedPayload,
+      verifiedContentPlaintext: req.formsg.verifiedContentPlaintext,
+      paymentId,
+      logMeta,
+    })
+  if (createPendingSubmissionResult.isErr()) {
+    const error = createPendingSubmissionResult.error
+    // Mirror encrypt mode: a pending-save failure blocks the respondent with
+    // a 400 so they can retry, rather than mapRouteError's generic 500.
+    if (error instanceof SubmissionSaveError) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message:
+          'Could not save pending submission. For assistance, please contact the person who asked you to fill in this form.',
+      })
+    }
+    const { errorMessage, statusCode } = mapRouteError(error)
+    return res.status(statusCode).json({ message: errorMessage })
+  }
+  const pendingSubmission = createPendingSubmissionResult.value
+  const pendingSubmissionId = pendingSubmission.id
+
+  // Step 3: Create the payment intent via API call to stripe.
+  const metadata: StripePaymentMetadataDto = {
+    env: config.envSiteName,
+    formTitle: form.title,
+    formId,
+    submissionId: pendingSubmissionId,
+    paymentId,
+    paymentContactEmail: paymentReceiptEmail,
+  }
+
+  const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
+    amount,
+    currency: paymentConfig.defaultCurrency,
+    ...getStripePaymentMethod(form),
+    description: getPaymentIntentDescription(form, paymentProducts),
+    receipt_email: paymentReceiptEmail,
+    metadata,
+  }
+
+  let paymentIntent
+  try {
+    paymentIntent = await stripe.paymentIntents.create(
+      createPaymentIntentParams,
+      { stripeAccount: targetAccountId },
+    )
+  } catch (err) {
+    logger.error({
+      message: 'Error when creating payment intent',
+      meta: {
+        ...logMeta,
+        pendingSubmissionId,
+        createPaymentIntentParams,
+      },
+      error: err,
+    })
+    // Return a 502 error here since the issue was with Stripe.
+    return res.status(StatusCodes.BAD_GATEWAY).json({
+      message:
+        'There was a problem creating the payment intent. Please try again.',
+    })
+  }
+
+  const paymentIntentId = paymentIntent.id
+  logger.info({
+    message: 'Created payment intent from Stripe',
+    meta: {
+      ...logMeta,
+      pendingSubmissionId,
+      paymentIntentId,
+    },
+  })
+
+  // Step 4: Update payment document with payment intent id and pending
+  // submission id, and save it.
+  payment.paymentIntentId = paymentIntentId
+  payment.pendingSubmissionId = pendingSubmissionId
+  try {
+    await payment.save()
+  } catch (err) {
+    logger.error({
+      message: 'Error updating payment document with payment intent id',
+      meta: {
+        ...logMeta,
+        pendingSubmissionId,
+        paymentIntentId,
+      },
+      error: err,
+    })
+    // Cancel the payment intent if saving the document fails.
+    try {
+      await stripe.paymentIntents.cancel(paymentIntent.id, {
+        stripeAccount: targetAccountId,
+      })
+    } catch (stripeErr) {
+      logger.error({
+        message: 'Failed to cancel Stripe payment intent',
+        meta: {
+          ...logMeta,
+          pendingSubmissionId,
+          paymentIntentId,
+        },
+        error: stripeErr,
+      })
+    }
+    // Regardless of whether the cancellation succeeded or failed, block the
+    // submission so that user can try to resubmit
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message:
+        'There was a problem updating the payment document. Please try again.',
+    })
+  }
+
+  logger.info({
+    message: 'Saved payment document to DB',
+    meta: {
+      ...logMeta,
+      pendingSubmissionId,
+      paymentIntentId,
+      paymentId,
+    },
+  })
+
+  return res.json({
+    message: 'Form submission successful',
+    submissionId: pendingSubmissionId,
+    timestamp: (pendingSubmission.created || new Date()).getTime(),
+    paymentData: { paymentId },
+  })
+}
 
 const updateMultirespondentSubmission = async (
   req: UpdateMultirespondentSubmissionHandlerRequest,
@@ -173,13 +463,15 @@ const updateMultirespondentSubmission = async (
     formId,
   }
 
-  const { formDef: currentForm, snapshottedFormDef } = req.formsg
+  const {
+    formDef: currentForm,
+    snapshottedFormDef,
+    mrfSubmission,
+    stepAuth,
+  } = req.formsg
 
   if (!snapshottedFormDef) {
-    const { errorMessage, statusCode } = mapRouteError(
-      new SubmissionFailedError(),
-    )
-    return res.status(statusCode).json({ message: errorMessage })
+    return sendRouteError(res, mapRouteError(new SubmissionFailedError()))
   }
 
   setFormTags(currentForm)
@@ -204,10 +496,7 @@ const updateMultirespondentSubmission = async (
 
   if (!hasEnsuredAll) {
     if (!res.headersSent) {
-      const { errorMessage, statusCode } = mapRouteError(
-        new SubmissionFailedError(),
-      )
-      return res.status(statusCode).json({ message: errorMessage })
+      return sendRouteError(res, mapRouteError(new SubmissionFailedError()))
     }
     return // required to stop submission processing
   }
@@ -219,24 +508,41 @@ const updateMultirespondentSubmission = async (
       submissionId,
       snapshottedFormDef,
       encryptedPayload,
+      // Only advances from the step this request was checked against.
+      expectedPrevious: mrfSubmission && {
+        workflowStep: mrfSubmission.workflowStep,
+        stepTokenHash: mrfSubmission.stepTokenHash,
+      },
       logMeta,
+      growthbook: req.growthbook,
     })
 
   if (updateMultiRespondentFormSubmissionResult.isErr()) {
     const error = updateMultiRespondentFormSubmissionResult.error
 
     if (error instanceof SubmissionSaveError) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: error.message,
-        submissionId,
-      })
+      return sendRouteError(
+        res,
+        {
+          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+          errorMessage: error.message,
+          errorMessageKey:
+            'features.publicForm.backendErrors.submission.saveFailed',
+        },
+        { submissionId },
+      )
     }
 
-    const { errorMessage, statusCode } = mapRouteError(error)
-    return res.status(statusCode).json({ message: errorMessage })
+    return sendRouteError(res, mapRouteError(error))
   }
 
-  const submission = updateMultiRespondentFormSubmissionResult.value
+  const { submission, snapshot } =
+    updateMultiRespondentFormSubmissionResult.value
+
+  // The step is done, so its login cannot be reused.
+  if (stepAuth && stepAuth.kind !== 'open') {
+    clearMrfStepAuthCookie(res, stepAuth.context)
+  }
 
   // Send success back to client
   res.json({
@@ -250,6 +556,7 @@ const updateMultirespondentSubmission = async (
 
   await performMultiRespondentPostSubmissionUpdateActions({
     submission,
+    snapshot,
     submissionId,
     snapshottedFormDef,
     currentStepNumber,
@@ -269,8 +576,12 @@ export const handleMultirespondentSubmission = [
   ReceiverMiddleware.receiveMultirespondentSubmission,
   MultirespondentSubmissionMiddleware.validateMultirespondentSubmissionParams,
   MultirespondentSubmissionMiddleware.createFormsgAndRetrieveForm,
+  MultirespondentSubmissionMiddleware.ensureMrfStepLoginNotSuspended,
   MultirespondentSubmissionMiddleware.scanAndRetrieveAttachments,
   MultirespondentSubmissionMiddleware.validateMultirespondentSubmission,
+  MultirespondentSubmissionMiddleware.verifyMyInfoHashes,
+  MultirespondentSubmissionMiddleware.verifyLoginIdentityAnswers,
+  MultirespondentSubmissionMiddleware.validatePaymentSubmission,
   MultirespondentSubmissionMiddleware.encryptSubmission,
   MultirespondentSubmissionMiddleware.handleNdiResponses,
   submitMultirespondentForm,
@@ -282,8 +593,12 @@ export const handleUpdateMultirespondentSubmission = [
   ReceiverMiddleware.receiveMultirespondentSubmission,
   MultirespondentSubmissionMiddleware.validateUpdateMultirespondentSubmissionParams,
   MultirespondentSubmissionMiddleware.createFormsgAndRetrieveForm,
+  MultirespondentSubmissionMiddleware.ensureMrfStepLoginNotSuspended,
+  MultirespondentSubmissionMiddleware.verifyMrfStepAuth,
   MultirespondentSubmissionMiddleware.scanAndRetrieveAttachments,
+  MultirespondentSubmissionMiddleware.fillLoginIdentityResponses,
   MultirespondentSubmissionMiddleware.validateMultirespondentSubmission,
+  MultirespondentSubmissionMiddleware.verifyMyInfoHashes,
   MultirespondentSubmissionMiddleware.setCurrentWorkflowStep,
   MultirespondentSubmissionMiddleware.encryptSubmission,
   MultirespondentSubmissionMiddleware.handleNdiResponses,
@@ -301,7 +616,9 @@ export const handleUpdateMultirespondentSubmission = [
  */
 export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
   { formId: string; submissionId: string },
-  PublicMultirespondentSubmissionDto | ErrorDto
+  PublicMultirespondentSubmissionDto | ErrorDto,
+  unknown,
+  { stepToken?: unknown }
 > = async (req, res) => {
   const { formId, submissionId } = req.params
 
@@ -332,6 +649,21 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
       .andThen((submissionData) => {
         if (submissionData.submissionType !== SubmissionType.Multirespondent) {
           return errAsync(new InvalidSubmissionTypeError())
+        }
+        if (submissionData.stoppedAt) {
+          return errAsync(new MrfWorkflowStoppedError())
+        }
+        const presentedStepToken = req.query.stepToken
+        if (
+          typeof presentedStepToken === 'string' &&
+          presentedStepToken &&
+          submissionData.stepTokenHash &&
+          !stepToken.verify(presentedStepToken, submissionData.stepTokenHash) &&
+          submissionData.workflowEvents?.some(
+            ({ type }) => type === WorkflowEventType.SentBack,
+          )
+        ) {
+          return errAsync(new MrfStepLinkSupersededError())
         }
 
         // Remaining login duration in seconds.
@@ -378,10 +710,7 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
           error,
         })
 
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
+        return sendRouteError(res, mapRouteError(error))
       })
   )
 }
@@ -389,10 +718,10 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
 const sendPendingMrfSubmissionReminder: ControllerHandler<
   { formId: string; submissionId: string },
   unknown,
-  { submissionSecretKey: string }
+  { submissionSecretKey: string; stepToken?: string }
 > = async (req, res) => {
   const { formId, submissionId } = req.params
-  const { submissionSecretKey } = req.body
+  const { submissionSecretKey, stepToken } = req.body
   const authedUserId = (req.session as AuthedSessionData).user._id
 
   const logMeta = {
@@ -418,6 +747,13 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
           ),
         )
       }
+      return getMultirespondentSubmission(submissionId).map((submission) => ({
+        form,
+        user,
+        submission,
+      }))
+    })
+    .andThen(({ form, user, submission }) => {
       return getPendingStepRecipientEmailsFromSubmittedStepsMeta({
         submissionId,
       }).map(({ recipientEmails, reminderStepNumber }) => ({
@@ -425,34 +761,55 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
         reminderStepNumber,
         form,
         user,
+        submission,
       }))
     })
-    .andThen(({ recipientEmails, reminderStepNumber, form, user }) => {
-      return okAsync({
-        recipientEmails,
-        reminderStepNumber,
+    .andThen(
+      ({ recipientEmails, reminderStepNumber, form, user, submission }) =>
+        sendNextStepReminderEmail({
+          senderEmail: user.email,
+          submissionId,
+          emails: recipientEmails,
+          responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
+            form._id,
+            submissionId,
+            { key: submissionSecretKey, stepToken },
+          )}`,
+          formTitle: form.title,
+          formId,
+          reminderStepNumber,
+        }).map(() => ({
+          form,
+          user,
+          submission,
+          recipientEmails,
+          reminderStepNumber,
+        })),
+    )
+    .map(
+      async ({
         form,
         user,
-      })
-    })
-    .andThen(({ recipientEmails, reminderStepNumber, form, user }) => {
-      return sendNextStepReminderEmail({
-        senderEmail: user.email,
-        submissionId,
-        emails: recipientEmails,
-        responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
-          form._id,
-          submissionId,
-          { key: submissionSecretKey },
-        )}`,
-        formTitle: form.title,
-        formId,
+        submission,
+        recipientEmails,
         reminderStepNumber,
-      }).map((sendNextStepReminderEmailResult) => ({
-        sendNextStepReminderEmailResult,
-        form,
-      }))
-    })
+      }) => {
+        await recordWorkflowEvent({
+          submission,
+          type: WorkflowEventType.ReminderSent,
+          actor: user,
+          stepNumber: reminderStepNumber,
+          emails: recipientEmails,
+        }).mapErr((error) =>
+          logger.error({
+            message: 'Failed to record workflow reminder event',
+            meta: logMeta,
+            error,
+          }),
+        )
+        return { form }
+      },
+    )
     .map(({ form }) => {
       logger.info({
         message: 'Reminder sent successfully',
@@ -471,10 +828,7 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
       return
     })
     .mapErr((err) => {
-      const { errorMessage, statusCode } = mapRouteError(err)
-      return res.status(statusCode).json({
-        message: errorMessage,
-      })
+      return sendRouteError(res, mapRouteError(err))
     })
 }
 

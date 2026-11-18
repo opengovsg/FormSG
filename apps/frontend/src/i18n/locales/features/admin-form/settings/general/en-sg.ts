@@ -2,9 +2,9 @@ export const enSG = {
   title: 'General',
   status: {
     supplySingpassEServiceId:
-      'This form cannot be activated until a valid e-service ID is entered in the Singpass section.',
-    noEmailsInMRF:
-      'Email confirmation is not supported in multi-respondent forms. Please remove email confirmations from email fields before activating your form.',
+      'Add a valid Corppass e-service ID in the Singpass section before opening your form.',
+    supplyStepEServiceIds:
+      'Add a valid e-service ID to every Corppass step before opening your form.',
     description: {
       prefix: 'Your form is ',
       suffix: ' to new responses',
@@ -12,6 +12,12 @@ export const enSG = {
       closed: 'CLOSED',
     },
     ariaLabel: 'Toggle form status',
+    incompleteWorkflowModal: {
+      title: 'Finish building your workflow before opening your form.',
+      description: "These steps aren't finished yet:",
+      confirm: 'Go to workflow',
+      cancel: 'Cancel',
+    },
   },
   limit: {
     label: 'Set a response limit',
@@ -29,6 +35,21 @@ export const enSG = {
     },
     limitLessThanCurrent:
       'Submission limit must be greater than current submission count ({currentResponseCount})',
+  },
+  expiry: {
+    label: 'Set a response deadline',
+    input: {
+      label: 'Deadline date and time',
+      timeLabel: 'Deadline time',
+      description:
+        'Your form will stop accepting responses at the set date and time (SGT) and close shortly after.',
+    },
+    toast: {
+      success: 'Your form will stop accepting responses at {closeAt}.',
+      successRemoved: 'The response deadline on your form is removed.',
+    },
+    dateInThePast: 'Deadline must be in the future',
+    invalidTime: 'Please enter a valid time',
   },
   customisation: {
     closedFormMessage: 'Set message for closed form',

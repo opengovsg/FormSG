@@ -28,7 +28,6 @@ import {
   ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
 } from '~constants/localStorage'
 import { DASHBOARD_ROUTE } from '~constants/routes'
-import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { useToast } from '~hooks/useToast'
@@ -40,6 +39,7 @@ import { AvatarMenu, AvatarMenuDivider } from '~templates/AvatarMenu/AvatarMenu'
 import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
 import { useUser } from '~features/user/queries'
 import { TransferOwnershipModal } from '~features/user/transfer-ownership/TransferOwnershipModal'
+import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedbackContainer/adminFeedbackStore'
 
 import Menu from '../../components/Menu'
 
@@ -151,7 +151,10 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   }, [getWogadLogoutUrlMutation])
 
   const handleLogout = useCallback(() => {
-    sessionStorage.removeItem(ADMIN_FEEDBACK_SESSION_KEY)
+    // `logout` is an API call, not a page load, so the in-memory feedback store
+    // survives it. Clear it so the next admin in this tab does not inherit the
+    // previous admin's eligibility, triggerSource and formId.
+    useAdminFeedbackStore.getState().reset()
     logout()
     removeQuery()
     if (emergencyContactKey) {
@@ -161,6 +164,15 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
       toast({
         title: 'You have been logged out of FormSG.',
         description: 'To log out from SSO, visit https://sso.open.gov.sg',
+        status: 'success',
+      })
+    }
+    // v1 one.gov.sg logout is local-only (suite ADR-0003), so tell the user
+    // their IdP session is still live rather than silently leaving it open.
+    if (user?.grantSource === 'one') {
+      toast({
+        title: 'You have been logged out of FormSG.',
+        description: 'To log out from one.gov.sg, visit https://one.gov.sg',
         status: 'success',
       })
     }

@@ -42,6 +42,7 @@ export const useToast = (useToastProps?: UseToastProps): UseToastReturn => {
     const impl = ({
       duration = 4000,
       position = 'top',
+      containerStyle = { maxWidth: 'unset' },
       render,
       status,
       ...rest
@@ -49,6 +50,7 @@ export const useToast = (useToastProps?: UseToastProps): UseToastReturn => {
       toast({
         duration,
         position,
+        containerStyle,
         ...rest,
         render:
           render ??

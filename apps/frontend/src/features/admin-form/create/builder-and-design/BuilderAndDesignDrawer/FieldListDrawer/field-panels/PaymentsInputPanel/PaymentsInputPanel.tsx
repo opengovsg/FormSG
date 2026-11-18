@@ -10,7 +10,7 @@ import {
   useWatch,
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Link as ReactLink } from 'react-router-dom'
+import { Link as ReactLink, useParams } from 'react-router-dom'
 import { useDebounce } from 'react-use'
 import {
   Box,
@@ -34,8 +34,6 @@ import {
 import { centsToDollars, dollarsToCents } from 'formsg-shared/utils/payments'
 
 import { ADMINFORM_SETTINGS_PAYMENTS_SUBROUTE } from '~constants/routes'
-import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
-import { useSessionStorage } from '~hooks/useSessionStorage'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -45,6 +43,7 @@ import Toggle from '~components/Toggle'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedbackContainer/adminFeedbackStore'
 
 import { useCreatePageSidebar } from '../../../../../common'
 import { FieldListTabIndex } from '../../../../constants'
@@ -159,12 +158,12 @@ const ProductsPaymentSection = ({
 }
 
 const PaymentTypeSelector = ({
-  isEncryptMode,
+  isSelectorDisabled,
   control,
   paymentsMutation,
   showFixedPaymentSelection,
 }: {
-  isEncryptMode: boolean
+  isSelectorDisabled: boolean
   control: Control<FormPaymentsInput>
   paymentsMutation: ReturnType<typeof useMutateFormPage>['paymentsMutation']
   showFixedPaymentSelection: boolean
@@ -176,7 +175,7 @@ const PaymentTypeSelector = ({
     <PaymentInnerContainer>
       <FormControl
         isRequired
-        isDisabled={!isEncryptMode} // only encrypt mode forms can be payment forms
+        isDisabled={isSelectorDisabled} // only payment-capable forms can configure payments
         isReadOnly={paymentsMutation.isLoading}
       >
         <FormLabel>{t('paymentType.label')}</FormLabel>
@@ -220,10 +219,10 @@ const PaymentTypeSelector = ({
 
 const PaymentInputFields = ({
   isDisabled,
-  isEncryptMode,
+  isSelectorDisabled,
 }: {
   isDisabled: boolean
-  isEncryptMode: boolean
+  isSelectorDisabled: boolean
 }) => {
   const { t: tPayments } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.sidebar.fields.paymentsInputPanel',
@@ -242,9 +241,7 @@ const PaymentInputFields = ({
 
   const handleClose = () => setFieldListTabIndex(FieldListTabIndex.Basic)
 
-  const [, setisAdminFeedbackEligible] = useSessionStorage<boolean>(
-    ADMIN_FEEDBACK_SESSION_KEY,
-  )
+  const { formId } = useParams()
 
   // unpack payment data for paymentAmount if it exists
   const formDefaultValues =
@@ -318,14 +315,14 @@ const PaymentInputFields = ({
       }
     }
 
-    // update sessionStorage to enable admin feedback
-    setisAdminFeedbackEligible(true)
     return paymentsMutation.mutate(
       { ...paymentsData, enabled: true },
       {
         onSuccess: () => {
           setToInactive()
           handleClose()
+          // enable admin feedback after the panel closes
+          useAdminFeedbackStore.getState().setEligible('field-edit', formId)
         },
       },
     )
@@ -338,7 +335,7 @@ const PaymentInputFields = ({
   return (
     <PaymentContainer>
       <PaymentTypeSelector
-        isEncryptMode={isEncryptMode}
+        isSelectorDisabled={isSelectorDisabled}
         control={control}
         paymentsMutation={paymentsMutation}
         showFixedPaymentSelection={isFixed}
@@ -461,11 +458,27 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
   })
   const { data: form } = useAdminForm()
   const isMrfCutoverEnabled = useFeatureIsOn(featureFlags.mrfCutover)
+  const isMrfPaymentsEnabled = useFeatureIsOn(featureFlags.mrfPayments)
 
   const isEncryptMode = form?.responseMode === FormResponseMode.Encrypt
+  const isMrfMode = form?.responseMode === FormResponseMode.Multirespondent
+  // Multirespondent forms may only collect payments when they have no
+  // workflow steps; the payment field and workflow steps are mutually
+  // exclusive.
+  const hasWorkflowSteps = isMrfMode && (form.workflow?.length ?? 0) > 0
+  // A payment-enabled MRF sends no form-configured emails, so email
+  // notifications must be removed before payments can be enabled. Encrypt
+  // mode enforces the equivalent at the Stripe connection stage instead.
+  const hasMrfEmailNotifications =
+    isMrfMode &&
+    ((form.emails?.length ?? 0) > 0 || !!form.stepOneEmailNotificationFieldId)
+  const isPaymentCapable = isEncryptMode || (isMrfMode && isMrfPaymentsEnabled)
   const isStripeConnected =
-    isEncryptMode && form.payments_channel.channel === PaymentChannel.Stripe
-  const paymentsField = isEncryptMode ? form.payments_field : undefined
+    isPaymentCapable && form.payments_channel.channel === PaymentChannel.Stripe
+  const paymentsField =
+    isPaymentCapable || (isMrfMode && form.payments_field.enabled)
+      ? form.payments_field
+      : undefined
 
   const {
     paymentsData,
@@ -490,13 +503,17 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
     }
   }, [paymentsField, resetData, setData, setToEditingPayment, setToInactive])
 
-  const paymentDisabledMessage = !isEncryptMode ? (
+  const paymentDisabledMessage = !isPaymentCapable ? (
     <Text>
       {/* TODO [MRF-CUTOVER]: Remove cutover copy override after cutover. */}
       {isMrfCutoverEnabled
         ? t('disabled.cutoverLegacyOnly')
         : t('disabled.storageModeOnly')}
     </Text>
+  ) : hasWorkflowSteps ? (
+    <Text>{t('disabled.mrfWorkflowSteps')}</Text>
+  ) : hasMrfEmailNotifications ? (
+    <Text>{t('disabled.mrfEmailNotifications')}</Text>
   ) : !isStripeConnected ? (
     <Text>
       {t('disabled.stripeNotConnectedBefore')}{' '}
@@ -510,7 +527,7 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
   // payment eligibility will be dependent on whether paymentDisabledMessage is non empty
   const isPaymentDisabled = !!paymentDisabledMessage
 
-  if (isEncryptMode && !paymentsData) return null
+  if (isPaymentCapable && !paymentsData) return null
 
   return (
     <>
@@ -521,7 +538,9 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
       )}
       <PaymentInputFields
         isDisabled={isPaymentDisabled}
-        isEncryptMode={isEncryptMode}
+        isSelectorDisabled={
+          !isPaymentCapable || hasWorkflowSteps || hasMrfEmailNotifications
+        }
       />
     </>
   )

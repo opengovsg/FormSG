@@ -1,10 +1,10 @@
 import { useEffect, useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { FormControl, VStack } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { isEmpty } from 'lodash'
 
-import { viewports } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import Button from '../Button'
 import FormErrorMessage from '../FormControl/FormErrorMessage'
@@ -22,30 +22,15 @@ const Template: StoryFn<CheckboxProps> = (args) => {
 }
 
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 Default.args = {
   name: 'Default',
 }
 
-export const Mobile = Template.bind({})
-Mobile.args = {
-  name: 'Mobile',
-}
-Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
-}
-
-export const Tablet = Template.bind({})
-Tablet.args = {
-  name: 'Tablet',
-}
-Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
-  chromatic: { viewports: [viewports.md] },
+export const Indeterminate = Template.bind({})
+Indeterminate.args = {
+  name: 'Partially selected',
+  isIndeterminate: true,
 }
 
 const AllStates: StoryFn<CheckboxProps> = (args) => {
@@ -56,6 +41,12 @@ const AllStates: StoryFn<CheckboxProps> = (args) => {
         Really long unselected option that overflows and wraps to the next line
         because there is too much text. In fact, there's an entire paragraph so
         we can see what it looks like when there is too much text in the option.
+      </Checkbox>
+      <Checkbox {...args} isIndeterminate>
+        Partially selected
+      </Checkbox>
+      <Checkbox {...args} isIndeterminate isDisabled>
+        Partially selected disabled
       </Checkbox>
       <Checkbox {...args} isChecked>
         Selected
@@ -149,6 +140,7 @@ export const Playground: StoryFn = ({
     </form>
   )
 }
+Playground.tags = ['playground']
 
 Playground.args = {
   label: 'Checkbox label',

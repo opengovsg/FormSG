@@ -1,7 +1,9 @@
 import { useTranslation } from 'react-i18next'
+import { Container, Flex } from '@chakra-ui/react'
 
 import { FormActivationSvg } from '~features/admin-form/settings/components/FormActivationSvg'
 
+import { useResultsNavLayout } from '../../components/FormResultsNavbar'
 import { SecretKeyVerification } from '../../components/SecretKeyVerification'
 import { EmptyResponses } from '../common/EmptyResponses'
 
@@ -10,6 +12,7 @@ import { UnlockedResponses } from './UnlockedResponses'
 
 export const StorageResponsesTab = (): JSX.Element => {
   const { t } = useTranslation()
+  const { bleed: resultsNavBleed } = useResultsNavLayout()
   const { totalResponsesCount, secretKey } = useStorageResponsesContext()
 
   if (totalResponsesCount === 0) {
@@ -19,14 +22,23 @@ export const StorageResponsesTab = (): JSX.Element => {
   return secretKey ? (
     <UnlockedResponses />
   ) : (
-    <SecretKeyVerification
-      heroSvg={<FormActivationSvg />}
-      ctaText={t(
-        'features.adminForm.responses.responsesPage.storage.storageResponsesTab.secretKeyVerification.ctaText',
-      )}
-      label={t(
-        'features.adminForm.responses.responsesPage.storage.storageResponsesTab.secretKeyVerification.label',
-      )}
-    />
+    <Flex
+      flexDir="column"
+      align="center"
+      px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+      {...resultsNavBleed}
+    >
+      <Container p={0} maxW="42.5rem">
+        <SecretKeyVerification
+          heroSvg={<FormActivationSvg />}
+          ctaText={t(
+            'features.adminForm.responses.responsesPage.storage.storageResponsesTab.secretKeyVerification.ctaText',
+          )}
+          label={t(
+            'features.adminForm.responses.responsesPage.storage.storageResponsesTab.secretKeyVerification.label',
+          )}
+        />
+      </Container>
+    </Flex>
   )
 }

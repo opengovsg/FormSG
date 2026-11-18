@@ -1,11 +1,7 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { LANDING_PAYMENTS_ROUTE } from '~constants/routes'
-import {
-  getMobileViewParameters,
-  getTabletViewParameters,
-  StoryRouter,
-} from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { LandingPaymentsPage } from './LandingPaymentsPage'
 
@@ -20,16 +16,13 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
 } as Meta
 
 const Template: StoryFn = () => <LandingPaymentsPage />
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 
 export const Loading = Template.bind({})
-
-export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
-
-export const Tablet = Template.bind({})
-Tablet.parameters = getTabletViewParameters()

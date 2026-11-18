@@ -1,5 +1,6 @@
 import { CSSProperties, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { BiIdCard } from 'react-icons/bi'
 import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 import {
   Draggable,
@@ -9,6 +10,11 @@ import {
 
 import { FormResponseMode } from 'formsg-shared/types'
 import { AllowedMyInfoFieldOption, BasicField } from 'formsg-shared/types/field'
+import {
+  createLoginIdentityField,
+  LOGIN_IDENTITY_LABELS,
+  LoginIdentityAttribute,
+} from 'formsg-shared/utils/login-identity'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Badge from '~components/Badge'
@@ -17,6 +23,7 @@ import {
   BASICFIELD_TO_DRAWER_META,
   MYINFO_FIELD_TO_DRAWER_META,
 } from '~features/admin-form/create/constants'
+import { useUsesStepLoginRules } from '~features/admin-form/create/workflow/hooks/useUsesStepLoginRules'
 
 import { useCreateTabForm } from '../../useCreateTabForm'
 import {
@@ -110,6 +117,58 @@ export const DraggableBasicFieldListOption = ({
           </>
         )
       }}
+    </Draggable>
+  )
+}
+
+interface DraggableLoginIdentityFieldOptionProps extends Omit<
+  FieldOptionProps,
+  'isActive'
+> {
+  index: number
+  isDragDisabled?: boolean
+  onConvert?: () => void
+  attr: LoginIdentityAttribute
+}
+
+export const DraggableLoginIdentityFieldListOption = ({
+  isDragDisabled,
+  attr,
+  index,
+  isDisabled,
+  ...props
+}: DraggableLoginIdentityFieldOptionProps): JSX.Element => {
+  const isMobile = useIsMobile()
+
+  return (
+    <Draggable
+      index={index}
+      isDragDisabled={isDragDisabled || isDisabled || isMobile}
+      disableInteractiveElementBlocking
+      // Basic options already use the field types as their ids.
+      draggableId={`login-identity-${attr}`}
+    >
+      {(provided, snapshot) => (
+        <>
+          <LoginIdentityFieldOption
+            attr={attr}
+            isDisabled={isDisabled}
+            {...props}
+            {...provided.draggableProps}
+            {...provided.dragHandleProps}
+            style={getDraggableAnimationProps(provided, snapshot)}
+            ref={provided.innerRef}
+          />
+          {snapshot.isDragging && (
+            <LoginIdentityFieldOption
+              attr={attr}
+              isActive={snapshot.isDragging}
+              style={{ transform: 'none !important' }}
+              opacity={0.5}
+            />
+          )}
+        </>
+      )}
     </Draggable>
   )
 }
@@ -230,6 +289,58 @@ export const MyInfoFieldOption = forwardRef<MyInfoFieldOptionProps, 'button'>(
     )
   },
 )
+
+interface LoginIdentityFieldOptionProps extends FieldOptionProps {
+  onConvert?: () => void
+  attr: LoginIdentityAttribute
+}
+
+export const LoginIdentityFieldOption = forwardRef<
+  LoginIdentityFieldOptionProps,
+  'button'
+>(({ attr, isDisabled, onConvert, ...props }, ref) => {
+  const { t } = useTranslation()
+  const { data: form } = useCreateTabForm()
+  const numFields = form?.form_fields?.length ?? 0
+
+  const newFieldMeta = useMemo(() => createLoginIdentityField(attr), [attr])
+  const meta = BASICFIELD_TO_DRAWER_META[newFieldMeta.fieldType]
+  const isStepLoginEnabled = useUsesStepLoginRules()
+
+  const updateCreateState = useFieldBuilderStore(updateCreateStateSelector)
+
+  const handleClick = useCallback(() => {
+    if (isDisabled) return
+    if (onConvert) onConvert()
+    else updateCreateState(newFieldMeta, numFields)
+  }, [newFieldMeta, numFields, updateCreateState, isDisabled, onConvert])
+
+  return (
+    <FieldListOption
+      {...props}
+      isDisabled={isDisabled}
+      onClick={handleClick}
+      ref={ref}
+    >
+      <Icon
+        fontSize="1.5rem"
+        as={
+          isStepLoginEnabled && newFieldMeta.fieldType === BasicField.Nric
+            ? BiIdCard
+            : meta.icon
+        }
+      />
+      <Stack direction="row" spacing="0.5rem" align="center">
+        <Text textStyle="body-1">{LOGIN_IDENTITY_LABELS[attr]}</Text>
+        {form?.isSubmitterIdCollectionEnabled && (
+          <Badge colorScheme="success">
+            {t('features.adminForm.settings.tabs.newBadge')}
+          </Badge>
+        )}
+      </Stack>
+    </FieldListOption>
+  )
+})
 
 export const FieldListOption = forwardRef<FieldOptionProps, 'button'>(
   ({ isDisabled, isActive, children, ...props }, ref) => {

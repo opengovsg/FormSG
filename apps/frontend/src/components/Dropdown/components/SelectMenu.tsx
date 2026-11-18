@@ -3,6 +3,7 @@ import { List, ListItem } from '@chakra-ui/react'
 import { FloatingPortal } from '@floating-ui/react'
 
 import { VIRTUAL_LIST_OVERSCAN_HEIGHT } from '../constants'
+import { useDropdownMenuZIndex } from '../DropdownMenuLayer'
 import { useSelectContext } from '../SelectContext'
 import { itemToValue } from '../utils/itemUtils'
 
@@ -60,10 +61,12 @@ export const SelectMenu = (): JSX.Element => {
   } = useSelectContext()
 
   const { floatingRef, floatingStyles } = useSelectPopover()
+  const menuZIndex = useDropdownMenuZIndex()
 
   const listSx = {
     ...styles.list,
     ...(fullWidth ? { maxH: '100%' } : {}),
+    ...(menuZIndex ? { zIndex: menuZIndex } : {}),
   }
 
   return (

@@ -1,4 +1,8 @@
 import {
+  MYINFO_ATTRIBUTE_MAP,
+  SELECTABLE_MYINFO_CHILD_ATTRIBUTES,
+} from 'formsg-shared/constants/field/myinfo'
+import {
   BasicField,
   ChildrenCompoundFieldBase,
   DateFieldBase,
@@ -8,10 +12,10 @@ import {
   MyInfoChildAttributes,
   ShortTextFieldBase,
 } from 'formsg-shared/types/field'
+import { FormAuthType, FormResponseMode } from 'formsg-shared/types/form'
+import { getLoginIdentityAttrsForAuthType } from 'formsg-shared/utils/login-identity'
 
 import { MyInfoFieldMeta } from '~features/myinfo/types'
-
-import { MYINFO_FIELD_TO_DRAWER_META } from '../constants'
 
 export const BASIC_FIELDS_ORDERED = [
   BasicField.ShortText,
@@ -98,7 +102,6 @@ export const MYINFO_DATEFIELD_META: MyInfoFieldMeta<DateFieldBase> = {
 export const MYINFO_CHILDRENFIELD_META: MyInfoFieldMeta<ChildrenCompoundFieldBase> =
   {
     childrenSubFields: [MyInfoChildAttributes.ChildName],
-    allowMultiple: false,
   }
 
 export const CREATE_MYINFO_PERSONAL_FIELDS_ORDERED =
@@ -133,23 +136,56 @@ export const CREATE_MYINFO_CHILDREN_DROP_ID = 'create-myinfo-children'
 export const FIELD_LIST_DROP_ID = 'formFieldList'
 export const PENDING_CREATE_FIELD_ID = 'FIELD-PENDING-CREATION'
 
+// Stable tab keys, not positions: the drawer maps each to its visible index.
 export enum FieldListTabIndex {
   Basic = 0,
   MyInfo,
   Payments,
+  Corppass,
 }
 
+export type OpenFieldListTabState = { openFieldListTab: FieldListTabIndex }
+
+/** Router state that opens the field list on this tab, e.g. from Settings. */
+export const openFieldListTabState = (
+  tab: FieldListTabIndex,
+): OpenFieldListTabState => ({ openFieldListTab: tab })
+
+// Name is always collected, so it is not offered as a choice. Labels reuse the
+// sub-field descriptions shown to respondents so both pages read the same.
 export const CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS: {
   value: MyInfoChildAttributes
   label: string
-}[] = Object.values(MyInfoChildAttributes)
-  .filter((e) => e !== MyInfoChildAttributes.ChildName)
-  .map((value) => {
-    return {
-      value,
-      label: MYINFO_FIELD_TO_DRAWER_META[value].label,
-    }
-  })
+}[] = SELECTABLE_MYINFO_CHILD_ATTRIBUTES.filter(
+  (e) => e !== MyInfoChildAttributes.ChildName,
+).map((value) => {
+  return {
+    value,
+    label: MYINFO_ATTRIBUTE_MAP[value].description,
+  }
+})
+
+/**
+ * Child sub-field options offered for a given form. Record type distinguishes
+ * the respondent's own children from sponsored children, which are only
+ * fetched for Multirespondent forms while the mrf-children flag is on, so it
+ * is only offered there.
+ */
+export const getCreateMyInfoChildrenSubFieldsOptions = ({
+  responseMode,
+  isMrfChildrenEnabled,
+}: {
+  responseMode: FormResponseMode | undefined
+  isMrfChildrenEnabled: boolean
+}): typeof CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS => {
+  const offersChildType =
+    isMrfChildrenEnabled && responseMode === FormResponseMode.Multirespondent
+  return offersChildType
+    ? CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS
+    : CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS.filter(
+        (o) => o.value !== MyInfoChildAttributes.ChildType,
+      )
+}
 
 export const BASIC_FIELDS_FREE_TEXT = [
   BasicField.ShortText,
@@ -210,3 +246,12 @@ export const CREATE_FIELD_DATES_AND_NUMBER_DROP_ID =
   'create-fields-field-dates-and-number'
 export const CREATE_FIELD_PERSONAL_DROP_ID = 'create-fields-field-personal'
 export const CREATE_FIELD_OTHERS_DROP_ID = 'create-fields-field-others'
+// The identities each login fills. Drop handlers read the dragged identity by
+// its index in these lists.
+export const CREATE_MYINFO_IDENTITY_FIELDS_ORDERED =
+  getLoginIdentityAttrsForAuthType(FormAuthType.MyInfo)
+export const CREATE_CORPPASS_IDENTITY_FIELDS_ORDERED =
+  getLoginIdentityAttrsForAuthType(FormAuthType.CP)
+
+export const CREATE_MYINFO_IDENTITY_DROP_ID = 'create-myinfo-identity'
+export const CREATE_CORPPASS_IDENTITY_DROP_ID = 'create-corppass-identity'

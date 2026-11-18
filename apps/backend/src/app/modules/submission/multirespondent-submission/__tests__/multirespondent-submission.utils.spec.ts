@@ -1,25 +1,21 @@
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
+import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
 import { ObjectId } from 'bson'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants/form'
 import {
-  AddressAttributes,
-  AddressResponseV3,
-  AttachmentResponseV3,
   BasicField,
-  CheckboxResponseV3,
-  ChildBirthRecordsResponseV3,
-  EmailResponseV3,
   FieldResponsesV3,
+  FormAuthType,
   FormFieldDto,
   FormWorkflowStepConditional,
   FormWorkflowStepDto,
   LongTextResponseV3,
-  NumberResponseV3,
+  MyInfoAttribute,
+  MyInfoChildAttributes,
   ShortTextResponseV3,
-  SignatureFieldResponseV3,
   SignatureVectorArray,
   SubmissionType,
-  TableResponseV3,
+  WorkflowEventType,
   WorkflowStatus,
   WorkflowType,
 } from 'formsg-shared/types'
@@ -41,15 +37,20 @@ import {
   ITableFieldSchema,
   MultirespondentSubmissionData,
 } from 'src/types'
+import { ParsedClearFormFieldResponsesV4 } from 'src/types/api'
 
 import * as fieldValidation from '../../../../utils/field-validation'
-import { ValidateFieldErrorV3 } from '../../submission.errors'
+import { MyInfoHashDidNotMatchError } from '../../../myinfo/myinfo.errors'
+import { getMyInfoChildHashKey } from '../../../myinfo/myinfo.util'
+import { ValidateFieldErrorV4 } from '../../submission.errors'
 import {
+  adaptV4ResponsesForMyInfoHashCheck,
   buildMrfResponseJson,
   createMultirespondentSubmissionDto,
   createPublicMultirespondentSubmissionDto,
   extractRespondentCopyEmailDatas,
   getQuestionAnswerPairsForMultipleFields,
+  reconcileChildTypesWithChildTypeAnswers,
   retrieveWorkflowStepEmailAddresses,
   validateMrfFieldResponses,
 } from '../multirespondent-submission.utils'
@@ -281,6 +282,8 @@ describe('multirespondent-submission.utils', () => {
         },
       })
 
+      expect(actual).not.toHaveProperty('submittedSteps', expect.anything())
+
       const dropdownFf = actual.form_fields.find(
         (field) => field.fieldType === BasicField.Dropdown,
       )
@@ -292,6 +295,72 @@ describe('multirespondent-submission.utils', () => {
       )
       expect(staticWorkflowStep).toBeDefined()
       expect(staticWorkflowStep).not.toContainKey('emails')
+    })
+
+    it('should never expose encryptedStepToken in the public DTO', () => {
+      // Arrange
+      const submissionData = {
+        submissionType: SubmissionType.Multirespondent,
+        _id: new ObjectId(),
+        created: new Date(),
+        submissionPublicKey: 'some public key',
+        encryptedSubmissionSecretKey: 'some encrypted secret key',
+        encryptedContent: 'some encrypted content',
+        encryptedStepToken: 'some encrypted step token',
+        workflow: [],
+        workflowStep: 1,
+        form_fields: [],
+        form_logics: [],
+        attachmentMetadata: {},
+        version: 3,
+        mrfVersion: 3,
+      } as unknown as MultirespondentSubmissionData
+
+      // Act
+      const actual = createPublicMultirespondentSubmissionDto(
+        submissionData,
+        {},
+      )
+
+      // Assert
+      expect(actual.encryptedStepToken).toBeUndefined()
+      expect(JSON.stringify(actual)).not.toContain('encryptedStepToken')
+    })
+
+    it('should never expose workflow events in the public DTO', () => {
+      // Arrange
+      const submissionData = {
+        submissionType: SubmissionType.Multirespondent,
+        _id: new ObjectId(),
+        created: new Date(),
+        workflow: [],
+        workflowStep: 1,
+        form_fields: [],
+        form_logics: [],
+        attachmentMetadata: {},
+        version: 3,
+        mrfVersion: 3,
+        workflowEvents: [
+          {
+            type: WorkflowEventType.ReminderSent,
+            actorId: new ObjectId(),
+            actorEmail: 'admin@example.com',
+            stepNumber: 2,
+            emails: ['approver@example.com'],
+            created: new Date(),
+          },
+        ],
+      } as unknown as MultirespondentSubmissionData
+
+      // Act
+      const actual = createPublicMultirespondentSubmissionDto(
+        submissionData,
+        {},
+      )
+
+      // Assert
+      expect(actual.workflowEvents).toBeUndefined()
+      expect(JSON.stringify(actual)).not.toContain('admin@example.com')
     })
   })
 
@@ -357,7 +426,70 @@ describe('multirespondent-submission.utils', () => {
             submittedSteps[submittedSteps.length - 1].submittedAt,
           hasNextStepRecipientEmails: false,
         },
+        submittedSteps: [
+          {
+            isApproval: false,
+            submittedAt: submittedSteps[0].submittedAt,
+          },
+        ],
+        workflowEvents: [],
       })
+    })
+
+    it('should return workflow events to admins oldest first, without actor ids', () => {
+      // Arrange
+      const actorId = new ObjectId()
+      const submissionData = {
+        submissionType: SubmissionType.Multirespondent,
+        _id: new ObjectId(),
+        created: new Date(),
+        workflow: [],
+        workflowStep: 0,
+        form_fields: [],
+        form_logics: [],
+        attachmentMetadata: {},
+        version: 3,
+        mrfVersion: 3,
+        workflowEvents: [
+          {
+            type: WorkflowEventType.Stopped,
+            actorId,
+            actorEmail: 'admin@example.com',
+            stepNumber: 2,
+            emails: [],
+            created: new Date('2026-10-09T00:00:00.000Z'),
+          },
+          {
+            type: WorkflowEventType.ReminderSent,
+            actorId,
+            actorEmail: 'admin@example.com',
+            stepNumber: 2,
+            emails: ['approver@example.com'],
+            created: new Date('2026-10-08T00:00:00.000Z'),
+          },
+        ],
+      } as unknown as MultirespondentSubmissionData
+
+      // Act
+      const actual = createMultirespondentSubmissionDto(submissionData, {})
+
+      // Assert
+      expect(actual.workflowEvents).toEqual([
+        {
+          type: WorkflowEventType.ReminderSent,
+          actorEmail: 'admin@example.com',
+          stepNumber: 2,
+          emails: ['approver@example.com'],
+          created: '2026-10-08T00:00:00.000Z',
+        },
+        {
+          type: WorkflowEventType.Stopped,
+          actorEmail: 'admin@example.com',
+          stepNumber: 2,
+          emails: [],
+          created: '2026-10-09T00:00:00.000Z',
+        },
+      ])
     })
   })
 
@@ -366,46 +498,194 @@ describe('multirespondent-submission.utils', () => {
       jest.restoreAllMocks()
     })
 
-    it('should return error when children field is submitted', () => {
-      // Arrange
-      const mockFormId = 'mockFormId'
-      const field1Id = 'field1'
-      const mockVisibleFieldIds = new Set([field1Id])
-      const mockFormFields = [
-        generateDefaultField(BasicField.ShortText, {
-          _id: field1Id,
-        }),
-      ]
-      const mockResponses = {
-        [field1Id]: {
-          fieldType: BasicField.Children,
-          answer: {
-            child: [],
-            childFields: [],
-          },
-        } as ChildBirthRecordsResponseV3,
-      }
+    // Defaults for tests that are not exercising the Children gate.
+    const CHILDREN_GATE_CLOSED = {
+      workflowStep: 0,
+      stepAuthType: FormAuthType.NIL,
+      formAuthType: FormAuthType.NIL,
+      isMrfChildrenEnabled: false,
+    }
 
-      // Act
-      const result = validateMrfFieldResponses({
-        formId: mockFormId,
-        visibleFieldIds: mockVisibleFieldIds,
-        formFields: mockFormFields as FormFieldDto[],
-        responses: mockResponses,
+    describe('Children gate', () => {
+      const mockFormId = 'mockFormId'
+      const childrenFieldId = new ObjectId().toHexString()
+      const mockVisibleFieldIds = new Set([childrenFieldId])
+      const mockFormFields = [
+        generateDefaultField(BasicField.Children, {
+          _id: childrenFieldId,
+          childrenSubFields: [MyInfoChildAttributes.ChildName],
+          myInfo: { attr: MyInfoAttribute.ChildrenBirthRecords },
+        }),
+      ] as FormFieldDto[]
+      const mockResponses = {
+        [childrenFieldId]: {
+          fieldType: BasicField.Children,
+          question: 'Children',
+          answer: {
+            child0: {
+              value: {
+                [MyInfoChildAttributes.ChildName]: { value: 'Phua Chu King' },
+              },
+            },
+          },
+          provenance: {},
+        },
+      } as unknown as ParsedClearFormFieldResponsesV4
+
+      const actWithGate = (gate: {
+        workflowStep: number
+        stepAuthType: FormAuthType
+        formAuthType?: FormAuthType
+        isMrfChildrenEnabled: boolean
+      }) =>
+        validateMrfFieldResponses({
+          formId: mockFormId,
+          visibleFieldIds: mockVisibleFieldIds,
+          formFields: mockFormFields,
+          responses: mockResponses,
+          // Step 1's login is the form's.
+          formAuthType: gate.stepAuthType,
+          ...gate,
+        })
+
+      it('should return error when the mrf-children flag is off', () => {
+        const result = actWithGate({
+          workflowStep: 0,
+          stepAuthType: FormAuthType.MyInfo,
+          isMrfChildrenEnabled: false,
+        })
+
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(ValidateFieldErrorV4)
+        expect(result._unsafeUnwrapErr().message).toBe(
+          'Children field type is not supported for this MRF submission',
+        )
       })
 
-      // Assert
-      expect(result.isErr()).toBe(true)
-      expect(result._unsafeUnwrapErr()).toBeInstanceOf(ValidateFieldErrorV3)
-      expect(result._unsafeUnwrapErr().message).toBe(
-        'Children field type is not supported for MRF submisisons',
+      it('should return error when the submission is not the initial step and there is no previous response', () => {
+        const result = actWithGate({
+          workflowStep: 1,
+          stepAuthType: FormAuthType.NIL,
+          formAuthType: FormAuthType.MyInfo,
+          isMrfChildrenEnabled: true,
+        })
+
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(ValidateFieldErrorV4)
+      })
+
+      it('should accept an unchanged carried-forward children response on steps 2+', () => {
+        jest.spyOn(fieldValidation, 'validateFieldV4').mockReturnValue(ok(true))
+
+        const result = validateMrfFieldResponses({
+          formId: mockFormId,
+          visibleFieldIds: mockVisibleFieldIds,
+          formFields: mockFormFields,
+          responses: mockResponses,
+          // Semantically identical previous answer: steps 2+ rebuild the
+          // carried-forward answer from form state, so key order may differ.
+          previousResponses: JSON.parse(
+            JSON.stringify(mockResponses),
+          ) as ParsedClearFormFieldResponsesV4,
+          workflowStep: 1,
+          stepAuthType: FormAuthType.NIL,
+          formAuthType: FormAuthType.MyInfo,
+          isMrfChildrenEnabled: true,
+        })
+
+        expect(result.isOk()).toBe(true)
+      })
+
+      it('should return error for a changed children response on steps 2+', () => {
+        const tampered = JSON.parse(
+          JSON.stringify(mockResponses),
+        ) as ParsedClearFormFieldResponsesV4
+        ;(tampered[childrenFieldId].answer as any).child0.value[
+          MyInfoChildAttributes.ChildName
+        ].value = 'Phua Chu Kang'
+
+        const result = validateMrfFieldResponses({
+          formId: mockFormId,
+          visibleFieldIds: mockVisibleFieldIds,
+          formFields: mockFormFields,
+          responses: tampered,
+          previousResponses: mockResponses,
+          workflowStep: 1,
+          stepAuthType: FormAuthType.NIL,
+          formAuthType: FormAuthType.MyInfo,
+          isMrfChildrenEnabled: true,
+        })
+
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(ValidateFieldErrorV4)
+        expect(result._unsafeUnwrapErr().message).toBe(
+          'Children field type is not supported for this MRF submission',
+        )
+      })
+
+      it.each([
+        { hasMyInfoLogin: false, isAllowed: false },
+        { hasMyInfoLogin: true, isAllowed: true },
+      ])(
+        'should only carry forward a children answer on a non-MyInfo form with a later-step MyInfo login ($hasMyInfoLogin)',
+        ({ hasMyInfoLogin, isAllowed }) => {
+          jest
+            .spyOn(fieldValidation, 'validateFieldV4')
+            .mockReturnValue(ok(true))
+
+          const result = validateMrfFieldResponses({
+            formId: mockFormId,
+            visibleFieldIds: mockVisibleFieldIds,
+            formFields: mockFormFields,
+            responses: mockResponses,
+            previousResponses: mockResponses,
+            workflowStep: 2,
+            stepAuthType: FormAuthType.NIL,
+            formAuthType: FormAuthType.NIL,
+            hasMyInfoLogin,
+            isMrfChildrenEnabled: true,
+          })
+
+          expect(result.isOk()).toBe(isAllowed)
+        },
       )
+
+      it('should return error when the form is not MyInfo-authed', () => {
+        const result = actWithGate({
+          workflowStep: 0,
+          stepAuthType: FormAuthType.SP,
+          isMrfChildrenEnabled: true,
+        })
+
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(ValidateFieldErrorV4)
+      })
+
+      it('should accept a children response when flag is on, step is initial and form is MyInfo-authed', () => {
+        const validateFieldV4Mock = jest
+          .spyOn(fieldValidation, 'validateFieldV4')
+          .mockReturnValue(ok(true))
+
+        const result = actWithGate({
+          workflowStep: 0,
+          stepAuthType: FormAuthType.MyInfo,
+          isMrfChildrenEnabled: true,
+        })
+
+        expect(result.isOk()).toBe(true)
+        expect(validateFieldV4Mock).toHaveBeenCalledWith({
+          formId: mockFormId,
+          formField: mockFormFields[0],
+          response: mockResponses[childrenFieldId],
+          isVisible: true,
+        })
+      })
     })
 
-    it('should invoke validateFieldV3 with isVisible true when non-hidden and supported field type is submitted', () => {
+    it('should invoke validateFieldV4 with isVisible true when non-hidden and supported field type is submitted', () => {
       // Arrange
-      const validateFieldV3Mock = jest
-        .spyOn(fieldValidation, 'validateFieldV3')
+      const validateFieldV4Mock = jest
+        .spyOn(fieldValidation, 'validateFieldV4')
         .mockReturnValue(ok(true))
       const mockFormId = 'mockFormId'
       const field1Id = 'field1'
@@ -426,23 +706,24 @@ describe('multirespondent-submission.utils', () => {
         visibleFieldIds: mockVisibleFieldIds,
         formFields: mockFormFields as FormFieldDto[],
         responses: mockResponses,
+        ...CHILDREN_GATE_CLOSED,
       })
 
       // Assert
-      expect(validateFieldV3Mock).toHaveBeenCalledWith({
+      expect(validateFieldV4Mock).toHaveBeenCalledWith({
         formId: mockFormId,
         formField: mockFormFields[0],
         response: mockResponses.field1,
         isVisible: true,
       })
 
-      expect(validateFieldV3Mock).toHaveBeenCalledOnce()
+      expect(validateFieldV4Mock).toHaveBeenCalledOnce()
     })
 
-    it('should invoke validateFieldV3 with isVisible false when hidden and supported field type is submitted', () => {
+    it('should invoke validateFieldV4 with isVisible false when hidden and supported field type is submitted', () => {
       // Arrange
-      const validateFieldV3Mock = jest
-        .spyOn(fieldValidation, 'validateFieldV3')
+      const validateFieldV4Mock = jest
+        .spyOn(fieldValidation, 'validateFieldV4')
         .mockReturnValue(ok(true))
       const mockFormId = 'mockFormId'
       const field1Id = 'field1'
@@ -469,24 +750,394 @@ describe('multirespondent-submission.utils', () => {
         visibleFieldIds: mockVisibleFieldIds,
         formFields: mockFormFields as FormFieldDto[],
         responses: mockResponses,
+        ...CHILDREN_GATE_CLOSED,
       })
 
       // Assert
-      expect(validateFieldV3Mock).toHaveBeenCalledWith({
+      expect(validateFieldV4Mock).toHaveBeenCalledWith({
         formId: mockFormId,
         formField: mockFormFields[0],
         response: mockResponses.field1,
         isVisible: false,
       })
 
-      expect(validateFieldV3Mock).toHaveBeenCalledWith({
+      expect(validateFieldV4Mock).toHaveBeenCalledWith({
         formId: mockFormId,
         formField: mockFormFields[1],
         response: mockResponses.field2,
         isVisible: true,
       })
 
-      expect(validateFieldV3Mock).toHaveBeenCalledTimes(2)
+      expect(validateFieldV4Mock).toHaveBeenCalledTimes(2)
+    })
+
+    it('should thread previousResponses through to validateFieldV4 as prevResponse', () => {
+      // Regression test: the V4 migration dropped previousResponses, causing
+      // carried-forward verifiable fields (verified in an earlier MRF step,
+      // whose OTP signature has since expired) to be re-authenticated and
+      // rejected. Threading prevResponse lets checkIsResponseChangedV4 skip
+      // fields the current respondent did not change.
+      const validateFieldV4Mock = jest
+        .spyOn(fieldValidation, 'validateFieldV4')
+        .mockReturnValue(ok(true))
+      const mockFormId = 'mockFormId'
+      const emailFieldId = 'emailField'
+      const mockVisibleFieldIds = new Set([emailFieldId])
+      const mockFormFields = [
+        generateDefaultField(BasicField.Email, { _id: emailFieldId }),
+      ]
+      const carriedForwardAnswer = {
+        value: 'alice@example.com',
+        signature: 'stale-but-unchanged-signature',
+      }
+      const mockResponses = {
+        [emailFieldId]: {
+          fieldType: BasicField.Email,
+          question: 'Email',
+          answer: carriedForwardAnswer,
+          provenance: {},
+        },
+      } as unknown as ParsedClearFormFieldResponsesV4
+      const mockPreviousResponses = {
+        [emailFieldId]: {
+          fieldType: BasicField.Email,
+          question: 'Email',
+          answer: carriedForwardAnswer,
+          provenance: {},
+        },
+      } as unknown as ParsedClearFormFieldResponsesV4
+
+      // Act
+      validateMrfFieldResponses({
+        formId: mockFormId,
+        visibleFieldIds: mockVisibleFieldIds,
+        formFields: mockFormFields as FormFieldDto[],
+        responses: mockResponses,
+        previousResponses: mockPreviousResponses,
+        ...CHILDREN_GATE_CLOSED,
+      })
+
+      // Assert
+      expect(validateFieldV4Mock).toHaveBeenCalledWith({
+        formId: mockFormId,
+        formField: mockFormFields[0],
+        response: mockResponses[emailFieldId],
+        prevResponse: mockPreviousResponses[emailFieldId],
+        isVisible: true,
+      })
+    })
+  })
+
+  describe('adaptV4ResponsesForMyInfoHashCheck', () => {
+    const MYINFO_FIELD_ID = new ObjectId().toHexString()
+    const NON_MYINFO_FIELD_ID = new ObjectId().toHexString()
+
+    const makeField = (overrides: Record<string, unknown>) =>
+      ({
+        _id: MYINFO_FIELD_ID,
+        title: 'Name',
+        fieldType: BasicField.ShortText,
+        myInfo: { attr: 'name' },
+        ...overrides,
+      }) as unknown as FormFieldDto
+
+    const makeResponses = (
+      overrides: Record<string, unknown>,
+    ): ParsedClearFormFieldResponsesV4 =>
+      ({
+        [MYINFO_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'John Tan' },
+          question: 'Name',
+          provenance: {},
+          ...overrides,
+        },
+      }) as unknown as ParsedClearFormFieldResponsesV4
+
+    it('should adapt a MyInfo response with attr and fieldType sourced from the form definition', () => {
+      const adapted = adaptV4ResponsesForMyInfoHashCheck(
+        // Client-supplied myInfo meta and fieldType must be ignored; a
+        // respondent stripping or mislabelling them cannot skip the check.
+        makeResponses({ myInfo: undefined, fieldType: BasicField.LongText }),
+        [makeField({})],
+      )
+
+      expect(adapted).toEqual([
+        expect.objectContaining({
+          _id: MYINFO_FIELD_ID,
+          question: 'Name',
+          fieldType: BasicField.ShortText,
+          answer: 'John Tan',
+          myInfo: { attr: 'name' },
+          isVisible: true,
+        }),
+      ])
+    })
+
+    it('should convert V4 date answers to the format checkMyInfoHashes expects', () => {
+      const adapted = adaptV4ResponsesForMyInfoHashCheck(
+        makeResponses({
+          fieldType: BasicField.Date,
+          answer: { value: '25/12/1990' },
+        }),
+        [
+          makeField({
+            fieldType: BasicField.Date,
+            myInfo: { attr: 'dob' },
+            title: 'Date of Birth',
+          }),
+        ],
+      )
+
+      expect(adapted).toEqual([
+        expect.objectContaining({
+          fieldType: BasicField.Date,
+          answer: '25 Dec 1990',
+          myInfo: { attr: 'dob' },
+        }),
+      ])
+    })
+
+    it('should skip non-MyInfo fields and MyInfo fields without responses', () => {
+      const adapted = adaptV4ResponsesForMyInfoHashCheck(
+        {
+          [NON_MYINFO_FIELD_ID]: {
+            fieldType: BasicField.ShortText,
+            answer: { value: 'free text' },
+            question: 'Comments',
+            provenance: {},
+          },
+        } as unknown as ParsedClearFormFieldResponsesV4,
+        [
+          makeField({}), // MyInfo field, but no response submitted for it
+          makeField({
+            _id: NON_MYINFO_FIELD_ID,
+            myInfo: undefined,
+            title: 'Comments',
+          }),
+        ],
+      )
+
+      expect(adapted).toEqual([])
+    })
+
+    it('should adapt Children compound fields to the ProcessedChildrenResponse shape', () => {
+      const childrenSubFields = [
+        MyInfoChildAttributes.ChildName,
+        MyInfoChildAttributes.ChildBirthCertNo,
+      ]
+      const adapted = adaptV4ResponsesForMyInfoHashCheck(
+        makeResponses({
+          fieldType: BasicField.Children,
+          answer: {
+            child0: {
+              value: {
+                // Keyed in reverse of the field subfield order: the adapter
+                // must order by the field definition, name first, since
+                // handleMyInfoChildHashResponse reads the name from index 0.
+                [MyInfoChildAttributes.ChildBirthCertNo]: {
+                  value: 'T1234567X',
+                },
+                [MyInfoChildAttributes.ChildName]: {
+                  value: 'Phua Chu King',
+                },
+              },
+            },
+          },
+        }),
+        [
+          makeField({
+            fieldType: BasicField.Children,
+            title: 'Children',
+            childrenSubFields,
+            myInfo: { attr: MyInfoAttribute.ChildrenBirthRecords },
+          }),
+        ],
+      )
+
+      expect(adapted).toEqual([
+        expect.objectContaining({
+          _id: MYINFO_FIELD_ID,
+          fieldType: BasicField.Children,
+          answerArray: [['Phua Chu King', 'T1234567X']],
+          childSubFieldsArray: childrenSubFields,
+          myInfo: { attr: MyInfoAttribute.ChildrenBirthRecords },
+          isVisible: true,
+        }),
+      ])
+    })
+
+    it('should adapt missing or malformed Children subfield values to empty strings', () => {
+      const childrenSubFields = [
+        MyInfoChildAttributes.ChildName,
+        MyInfoChildAttributes.ChildBirthCertNo,
+      ]
+      const adapted = adaptV4ResponsesForMyInfoHashCheck(
+        makeResponses({
+          fieldType: BasicField.Children,
+          answer: {
+            child0: {
+              value: {
+                [MyInfoChildAttributes.ChildName]: { value: 'Phua Chu King' },
+                // Malformed: value is not a string.
+                [MyInfoChildAttributes.ChildBirthCertNo]: {
+                  value: { nested: 'junk' },
+                },
+              },
+            },
+          },
+        }),
+        [
+          makeField({
+            fieldType: BasicField.Children,
+            childrenSubFields,
+            myInfo: { attr: MyInfoAttribute.ChildrenBirthRecords },
+          }),
+        ],
+      )
+
+      expect(adapted).toEqual([
+        expect.objectContaining({
+          answerArray: [['Phua Chu King', '']],
+          childSubFieldsArray: childrenSubFields,
+        }),
+      ])
+    })
+
+    it('should fail closed with an empty answer when a MyInfo answer is malformed', () => {
+      const adapted = adaptV4ResponsesForMyInfoHashCheck(
+        makeResponses({ answer: { unexpected: 'shape' } }),
+        [makeField({})],
+      )
+
+      expect(adapted).toEqual([
+        expect.objectContaining({
+          _id: MYINFO_FIELD_ID,
+          answer: '',
+          myInfo: { attr: 'name' },
+        }),
+      ])
+    })
+  })
+
+  describe('reconcileChildTypesWithChildTypeAnswers', () => {
+    const CHILDREN_FIELD_ID = new ObjectId().toHexString()
+
+    const makeChildrenField = (childrenSubFields: MyInfoChildAttributes[]) =>
+      ({
+        _id: CHILDREN_FIELD_ID,
+        title: 'Children',
+        fieldType: BasicField.Children,
+        childrenSubFields,
+        myInfo: { attr: MyInfoAttribute.ChildrenBirthRecords },
+      }) as unknown as FormFieldDto
+
+    const makeResponses = (child0: Record<string, unknown>) =>
+      ({
+        [CHILDREN_FIELD_ID]: {
+          fieldType: BasicField.Children,
+          question: 'Children',
+          answer: { child0 },
+        },
+      }) as unknown as ParsedClearFormFieldResponsesV4
+
+    const childWith = (childType: string, type?: string) => ({
+      value: {
+        [MyInfoChildAttributes.ChildName]: { value: 'THRO RY' },
+        [MyInfoChildAttributes.ChildType]: { value: childType },
+      },
+      ...(type && { type }),
+    })
+
+    const WITH_CHILD_TYPE = makeChildrenField([
+      MyInfoChildAttributes.ChildName,
+      MyInfoChildAttributes.ChildType,
+    ])
+
+    // The Child type answer of child0 passed the MyInfo hash check.
+    const CHILD_TYPE_VERIFIED = new Set([
+      getMyInfoChildHashKey(
+        CHILDREN_FIELD_ID,
+        MyInfoChildAttributes.ChildType,
+        0,
+        'THRO RY',
+      ),
+    ])
+
+    const typeOf = (responses: ParsedClearFormFieldResponsesV4) =>
+      (
+        responses[CHILDREN_FIELD_ID].answer as {
+          child0: { type?: string }
+        }
+      ).child0.type
+
+    it('should accept a type that agrees with the verified Child type answer', () => {
+      const responses = makeResponses(childWith('SPONSORED', 'sponsored'))
+
+      const result = reconcileChildTypesWithChildTypeAnswers(
+        responses,
+        [WITH_CHILD_TYPE],
+        CHILD_TYPE_VERIFIED,
+      )
+
+      expect(result.isOk()).toBe(true)
+      expect(typeOf(responses)).toBe('sponsored')
+    })
+
+    it('should fill a missing type from the verified Child type answer', () => {
+      const responses = makeResponses(childWith('SPONSORED'))
+
+      const result = reconcileChildTypesWithChildTypeAnswers(
+        responses,
+        [WITH_CHILD_TYPE],
+        CHILD_TYPE_VERIFIED,
+      )
+
+      expect(result.isOk()).toBe(true)
+      expect(typeOf(responses)).toBe('sponsored')
+    })
+
+    it('should reject a type that disagrees with the verified Child type answer', () => {
+      const responses = makeResponses(childWith('SPONSORED', 'local'))
+
+      const result = reconcileChildTypesWithChildTypeAnswers(
+        responses,
+        [WITH_CHILD_TYPE],
+        CHILD_TYPE_VERIFIED,
+      )
+
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        MyInfoHashDidNotMatchError,
+      )
+    })
+
+    it('should leave type alone when the Child type answer was not verified', () => {
+      const responses = makeResponses(childWith('SPONSORED', 'local'))
+
+      const result = reconcileChildTypesWithChildTypeAnswers(
+        responses,
+        [WITH_CHILD_TYPE],
+        new Set(),
+      )
+
+      expect(result.isOk()).toBe(true)
+      expect(typeOf(responses)).toBe('local')
+    })
+
+    it('should leave type alone on a field without the Child type sub-field', () => {
+      const responses = makeResponses({
+        value: { [MyInfoChildAttributes.ChildName]: { value: 'THRO RY' } },
+        type: 'local',
+      })
+
+      const result = reconcileChildTypesWithChildTypeAnswers(
+        responses,
+        [makeChildrenField([MyInfoChildAttributes.ChildName])],
+        CHILD_TYPE_VERIFIED,
+      )
+
+      expect(result.isOk()).toBe(true)
+      expect(typeOf(responses)).toBe('local')
     })
   })
 
@@ -509,21 +1160,31 @@ describe('multirespondent-submission.utils', () => {
           fieldType: BasicField.Email,
         } as IEmailFieldSchema,
       ]
-      const responses: FieldResponsesV3 = {
+      const responses = {
         '1': {
           fieldType: BasicField.ShortText,
-          answer: 'Test answer',
-        } as ShortTextResponseV3,
-        '2': { fieldType: BasicField.Number, answer: '42' } as NumberResponseV3,
+          answer: { value: 'Test answer' },
+          question: 'Short Text',
+          provenance: {},
+        },
+        '2': {
+          fieldType: BasicField.Number,
+          answer: { value: '42' },
+          question: 'Number',
+          provenance: {},
+        },
         '3': {
           fieldType: BasicField.Email,
           answer: { value: 'test@example.com' },
-        } as EmailResponseV3,
-      }
+          question: 'Email',
+          provenance: {},
+        },
+      } as any
 
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        keepV4AttachmentPrefix: false,
       })
 
       expect(result).toEqual([
@@ -541,7 +1202,7 @@ describe('multirespondent-submission.utils', () => {
       ])
     })
 
-    it('should handle attachment fields correctly', () => {
+    it('should label attachments [attachment] by default', () => {
       const formFields: FormFieldSchema[] = [
         {
           _id: '1',
@@ -549,23 +1210,272 @@ describe('multirespondent-submission.utils', () => {
           fieldType: BasicField.Attachment,
         } as IAttachmentFieldSchema,
       ]
-      const responses: FieldResponsesV3 = {
+      const responses = {
         '1': {
           fieldType: BasicField.Attachment,
-          answer: { answer: 'file.pdf' },
-        } as AttachmentResponseV3,
-      }
+          answer: { value: 'file.pdf', hasBeenScanned: true },
+          question: 'File Upload',
+          provenance: {},
+        },
+      } as any
 
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        keepV4AttachmentPrefix: false,
+      })
+
+      expect(result).toEqual([
+        {
+          question: '[attachment] File Upload',
+          answer: 'file.pdf',
+          fieldType: BasicField.Attachment,
+        },
+      ])
+    })
+
+    it('should keep the [Attachment] label when keep-v4-attachment-prefix is on', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'File Upload',
+          fieldType: BasicField.Attachment,
+        } as IAttachmentFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.Attachment,
+          answer: { value: 'a.pdf', hasBeenScanned: true },
+          question: 'File Upload',
+          provenance: {},
+        },
+      } as any
+
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+        keepV4AttachmentPrefix: true,
       })
 
       expect(result).toEqual([
         {
           question: '[Attachment] File Upload',
-          answer: 'file.pdf',
+          answer: 'a.pdf',
           fieldType: BasicField.Attachment,
+        },
+      ])
+    })
+
+    it('should prefix [Myinfo] when the response carries provenance.myinfoVerified', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'Name',
+          fieldType: BasicField.ShortText,
+        } as IShortTextFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'PHUA CHU KANG' },
+          question: 'Name',
+          provenance: { myinfoVerified: true },
+        },
+      } as any
+
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+        keepV4AttachmentPrefix: false,
+      })
+
+      expect(result).toEqual([
+        {
+          question: '[Myinfo] Name',
+          answer: 'PHUA CHU KANG',
+          fieldType: BasicField.ShortText,
+        },
+      ])
+    })
+
+    it('should not prefix [Myinfo] when includeVerifiedPrefix is false', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'Name',
+          fieldType: BasicField.ShortText,
+        } as IShortTextFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'PHUA CHU KANG' },
+          question: 'Name',
+          provenance: { myinfoVerified: true },
+        },
+      } as any
+
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+        includeVerifiedPrefix: false,
+        keepV4AttachmentPrefix: false,
+      })
+
+      expect(result).toEqual([
+        {
+          question: 'Name',
+          answer: 'PHUA CHU KANG',
+          fieldType: BasicField.ShortText,
+        },
+      ])
+    })
+
+    it('should expand children fields into one pair per child attribute', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'Children',
+          fieldType: BasicField.Children,
+          childrenSubFields: [
+            MyInfoChildAttributes.ChildName,
+            MyInfoChildAttributes.ChildBirthCertNo,
+          ],
+        } as unknown as FormFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.Children,
+          answer: {
+            child0: {
+              value: {
+                // Keyed in reverse of the field subfield order: pairs must
+                // follow the field definition order, name first.
+                [MyInfoChildAttributes.ChildBirthCertNo]: {
+                  value: 'T1234567X',
+                },
+                [MyInfoChildAttributes.ChildName]: {
+                  value: 'Phua Chu King',
+                },
+              },
+            },
+          },
+          question: 'Children',
+          provenance: {},
+        },
+      } as any
+
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+        keepV4AttachmentPrefix: false,
+      })
+
+      // Question naming matches getAnswersForChild, used by email/storage
+      // modes, so MRF emails render children identically.
+      expect(result).toEqual([
+        {
+          question: 'Child 1 Name',
+          answer: 'Phua Chu King',
+          fieldType: BasicField.Children,
+        },
+        {
+          question: 'Child 1 Birth certificate number',
+          answer: 'T1234567X',
+          fieldType: BasicField.Children,
+        },
+      ])
+    })
+
+    it('should prefix children questions with [Myinfo] when the response is myinfoVerified', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'Children',
+          fieldType: BasicField.Children,
+          childrenSubFields: [
+            MyInfoChildAttributes.ChildName,
+            MyInfoChildAttributes.ChildBirthCertNo,
+          ],
+        } as unknown as FormFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.Children,
+          answer: {
+            child0: {
+              value: {
+                [MyInfoChildAttributes.ChildName]: {
+                  value: 'Phua Chu King',
+                },
+                [MyInfoChildAttributes.ChildBirthCertNo]: {
+                  value: 'T1234567X',
+                },
+              },
+            },
+          },
+          question: 'Children',
+          provenance: { myinfoVerified: true },
+        },
+      } as any
+
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+        keepV4AttachmentPrefix: false,
+      })
+
+      expect(result.map((pair) => pair.question)).toEqual([
+        '[Myinfo] Child 1 Name',
+        '[Myinfo] Child 1 Birth certificate number',
+      ])
+    })
+
+    it('should render a missing children subfield answer as an empty string', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'Children',
+          fieldType: BasicField.Children,
+          childrenSubFields: [
+            MyInfoChildAttributes.ChildName,
+            MyInfoChildAttributes.ChildVaxxStatus,
+          ],
+        } as unknown as FormFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.Children,
+          answer: {
+            child0: {
+              value: {
+                [MyInfoChildAttributes.ChildName]: {
+                  value: 'Phua Chu King',
+                },
+              },
+            },
+          },
+          question: 'Children',
+          provenance: {},
+        },
+      } as any
+
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+        keepV4AttachmentPrefix: false,
+      })
+
+      expect(result).toEqual([
+        {
+          question: 'Child 1 Name',
+          answer: 'Phua Chu King',
+          fieldType: BasicField.Children,
+        },
+        {
+          question: 'Child 1 Vaccination status',
+          answer: '',
+          fieldType: BasicField.Children,
         },
       ])
     })
@@ -591,26 +1501,31 @@ describe('multirespondent-submission.utils', () => {
           ],
         } as ITableFieldSchema,
       ]
-      const responses: FieldResponsesV3 = {
+      const responses = {
         '1': {
           fieldType: BasicField.Table,
-          answer: [
-            { col1: 'Alice', col2: '30' },
-            { col1: 'Bob', col2: '25' },
-          ],
-        } as TableResponseV3,
+          answer: {
+            row0: { rowNum: 0, value: { col1: 'Alice', col2: '30' } },
+            row1: { rowNum: 1, value: { col1: 'Bob', col2: '25' } },
+          },
+          question: 'Table of Name and Age',
+          provenance: {},
+        },
         '2': {
           fieldType: BasicField.Table,
-          answer: [
-            { col3: 'Swimming', col4: '5' },
-            { col3: 'Reading', col4: '10' },
-          ],
-        } as TableResponseV3,
-      }
+          answer: {
+            row0: { rowNum: 0, value: { col3: 'Swimming', col4: '5' } },
+            row1: { rowNum: 1, value: { col3: 'Reading', col4: '10' } },
+          },
+          question: 'Table of Hobbies',
+          provenance: {},
+        },
+      } as any
 
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        keepV4AttachmentPrefix: false,
       })
 
       expect(result).toEqual([
@@ -645,25 +1560,28 @@ describe('multirespondent-submission.utils', () => {
           fieldType: BasicField.Checkbox,
         } as ICheckboxFieldSchema,
       ]
-      const responses: FieldResponsesV3 = {
+      const responses = {
         '1': {
           fieldType: BasicField.Checkbox,
           answer: {
             value: ['Option 1', 'Option 2', CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
             othersInput: 'Custom Option',
           },
-        } as CheckboxResponseV3,
-      }
+          question: 'Checkbox',
+          provenance: {},
+        },
+      } as any
 
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        keepV4AttachmentPrefix: false,
       })
 
       expect(result).toEqual([
         {
           question: 'Checkbox',
-          answer: 'Option 1, Option 2, Others: Custom Option',
+          answer: 'Option 1, Option 2, Custom Option',
           fieldType: BasicField.Checkbox,
         },
       ])
@@ -677,25 +1595,26 @@ describe('multirespondent-submission.utils', () => {
           fieldType: BasicField.Address,
         } as IAddressCompoundFieldSchema,
       ]
-      const responses: FieldResponsesV3 = {
+      const responses = {
         '1': {
           fieldType: BasicField.Address,
           answer: {
-            addressSubFields: {
-              postalCode: '650161',
-              blockNumber: '161',
-              streetName: 'BUKIT BATOK STREET 11',
-              buildingName: '',
-              levelNumber: '1',
-              unitNumber: '1',
-            } as AddressAttributes,
+            postalCode: { value: '650161' },
+            blockNumber: { value: '161' },
+            streetName: { value: 'BUKIT BATOK STREET 11' },
+            buildingName: { value: '' },
+            levelNumber: { value: '1' },
+            unitNumber: { value: '1' },
           },
-        } as AddressResponseV3,
-      }
+          question: 'Address',
+          provenance: {},
+        },
+      } as any
 
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        keepV4AttachmentPrefix: false,
       })
 
       expect(result).toEqual([
@@ -721,20 +1640,23 @@ describe('multirespondent-submission.utils', () => {
         [[40, 40, 0.5]],
       ]
 
-      const responses: FieldResponsesV3 = {
+      const responses = {
         '1': {
           fieldType: BasicField.Signature,
           answer: {
             type: 'draw',
             value: MOCK_SIGNATURE_VALUE,
-          } as SignatureFieldResponseV3,
+          },
+          question: 'Signature',
+          provenance: {},
         },
-      }
+      } as any
 
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
         includeSignatureDataPngDataUri: true,
+        keepV4AttachmentPrefix: false,
       })
 
       const expectedSignatureDataPngDataUri =
@@ -742,7 +1664,7 @@ describe('multirespondent-submission.utils', () => {
 
       expect(result).toEqual([
         {
-          question: '[Signature] Signature',
+          question: '[signature] Signature',
           answer: 'Signature captured',
           fieldType: BasicField.Signature,
           signatureDataPngDataUri: expectedSignatureDataPngDataUri,
@@ -759,24 +1681,27 @@ describe('multirespondent-submission.utils', () => {
         } as ISignatureFieldSchema,
       ]
 
-      const responses: FieldResponsesV3 = {
+      const responses = {
         '1': {
           fieldType: BasicField.Signature,
           answer: {
             type: 'draw',
             value: [[[10, 20, 0.5]], [[40, 40, 0.5]]],
-          } as SignatureFieldResponseV3,
+          },
+          question: 'Signature',
+          provenance: {},
         },
-      }
+      } as any
 
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        keepV4AttachmentPrefix: false,
       })
 
       expect(result).toEqual([
         {
-          question: '[Signature] Signature',
+          question: '[signature] Signature',
           answer: 'Signature captured',
           fieldType: BasicField.Signature,
           signatureDataPngDataUri: undefined,
@@ -786,16 +1711,19 @@ describe('multirespondent-submission.utils', () => {
 
     it('should handle Ndi fields correctly', () => {
       const formFields: FormFieldSchema[] = []
-      const responses: FieldResponsesV3 = {
+      const responses = {
         'SingPass Validated NRIC': {
           fieldType: BasicField.Nric,
-          answer: 'S1234567A',
+          answer: { value: 'S1234567A' },
+          question: 'SingPass Validated NRIC',
+          provenance: {},
         },
-      }
+      } as any
 
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
+        keepV4AttachmentPrefix: false,
       })
 
       expect(result).toEqual([
@@ -834,13 +1762,17 @@ describe('multirespondent-submission.utils', () => {
         const mockResponsesA = {
           [mockConditionalFieldId]: {
             fieldType: BasicField.Dropdown,
-            answer: 'Option A',
+            answer: { value: 'Option A' },
+            question: 'Dropdown',
+            provenance: {},
           },
           [mockShortTextFieldId]: {
             fieldType: BasicField.ShortText,
-            answer: 'Some text response',
+            answer: { value: 'Some text response' },
+            question: 'Short Text',
+            provenance: {},
           },
-        } as FieldResponsesV3
+        } as any
 
         const mockWorkflowStep = {
           workflow_type: WorkflowType.Conditional,
@@ -859,13 +1791,17 @@ describe('multirespondent-submission.utils', () => {
         const mockResponsesB = {
           [mockConditionalFieldId]: {
             fieldType: BasicField.Dropdown,
-            answer: 'Option B',
+            answer: { value: 'Option B' },
+            question: 'Dropdown',
+            provenance: {},
           },
           [mockShortTextFieldId]: {
             fieldType: BasicField.ShortText,
-            answer: 'Some text response',
+            answer: { value: 'Some text response' },
+            question: 'Short Text',
+            provenance: {},
           },
-        } as FieldResponsesV3
+        } as any
 
         // Act & Assert for Option B
         const resultB = retrieveWorkflowStepEmailAddresses(
@@ -977,6 +1913,25 @@ describe('multirespondent-submission.utils', () => {
       })
     })
 
+    it('should return an empty array for a conditional step with no dropdown chosen', () => {
+      const mockForm = {
+        form_fields: [
+          generateDefaultField(BasicField.Dropdown, {
+            _id: 'someOtherField',
+            fieldOptions: ['Option A'],
+          }),
+        ],
+      } as IPopulatedForm
+
+      const result = retrieveWorkflowStepEmailAddresses(
+        mockForm,
+        { workflow_type: WorkflowType.Conditional } as FormWorkflowStepDto,
+        {} as FieldResponsesV4,
+      )
+
+      expect(result._unsafeUnwrap()).toEqual([])
+    })
+
     it('should return an empty array if the optionsToRecipientsMap does not contain an email mapping for the option selected', () => {
       // Arrange
       const mockConditionalFieldId = 'conditionalField'
@@ -1027,6 +1982,7 @@ describe('multirespondent-submission.utils', () => {
     const result = getQuestionAnswerPairsForMultipleFields({
       formFields,
       responses,
+      keepV4AttachmentPrefix: false,
     })
 
     expect(result).toEqual([])
@@ -1044,25 +2000,138 @@ describe('multirespondent-submission.utils', () => {
     const undefinedResult = getQuestionAnswerPairsForMultipleFields({
       formFields,
       responses: undefined as unknown as FieldResponsesV3,
+      keepV4AttachmentPrefix: false,
     })
     expect(undefinedResult).toEqual([])
 
     const nullResult = getQuestionAnswerPairsForMultipleFields({
       formFields,
       responses: null as unknown as FieldResponsesV3,
+      keepV4AttachmentPrefix: false,
     })
     expect(nullResult).toEqual([])
   })
 
   describe('buildMrfResponseJson', () => {
-    const BASE_ARGS = { responseId: 'abc123', timestamp: '1 Jan 2025' }
+    const BASE_ARGS = {
+      formId: 'form123',
+      responseId: 'abc123',
+      timestamp: '1 Jan 2025',
+      keepV4AttachmentPrefix: false,
+    }
 
-    it('should prepend Response ID and Timestamp as first two entries', () => {
+    it('should emit one entry per child attribute for children responses', () => {
+      const formFields = [
+        {
+          _id: '1',
+          title: 'Children',
+          fieldType: BasicField.Children,
+          childrenSubFields: [
+            MyInfoChildAttributes.ChildName,
+            MyInfoChildAttributes.ChildBirthCertNo,
+          ],
+        } as unknown as FormFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.Children,
+          question: 'Children',
+          provenance: {},
+          answer: {
+            child0: {
+              value: {
+                [MyInfoChildAttributes.ChildName]: {
+                  value: 'Phua Chu King',
+                },
+                [MyInfoChildAttributes.ChildBirthCertNo]: {
+                  value: 'T1234567X',
+                },
+              },
+            },
+          },
+        },
+      } as unknown as FieldResponsesV4
+
+      const json = buildMrfResponseJson({
+        ...BASE_ARGS,
+        formFields,
+        responses,
+      })
+
+      expect(JSON.parse(json)).toEqual(
+        expect.arrayContaining([
+          { question: 'Child 1 Name', answer: 'Phua Chu King' },
+          {
+            question: 'Child 1 Birth certificate number',
+            answer: 'T1234567X',
+          },
+        ]),
+      )
+    })
+
+    it('should carry raw question text for myinfoVerified responses, children included', () => {
+      const formFields = [
+        {
+          _id: '1',
+          title: 'Name',
+          fieldType: BasicField.ShortText,
+        } as unknown as FormFieldSchema,
+        {
+          _id: '2',
+          title: 'Children',
+          fieldType: BasicField.Children,
+          childrenSubFields: [MyInfoChildAttributes.ChildName],
+        } as unknown as FormFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.ShortText,
+          question: 'Name',
+          provenance: { myinfoVerified: true },
+          answer: { value: 'PHUA CHU KANG' },
+        },
+        '2': {
+          fieldType: BasicField.Children,
+          question: 'Children',
+          provenance: { myinfoVerified: true },
+          answer: {
+            child0: {
+              value: {
+                [MyInfoChildAttributes.ChildName]: {
+                  value: 'Phua Chu King',
+                },
+              },
+            },
+          },
+        },
+      } as unknown as FieldResponsesV4
+
+      const result = JSON.parse(
+        buildMrfResponseJson({ ...BASE_ARGS, formFields, responses }),
+      )
+
+      expect(result).toEqual(
+        expect.arrayContaining([
+          { question: 'Name', answer: 'PHUA CHU KANG' },
+          { question: 'Child 1 Name', answer: 'Phua Chu King' },
+        ]),
+      )
+      expect(JSON.stringify(result)).not.toContain('[Myinfo]')
+    })
+
+    it('should prepend Form ID as the first entry, before Response ID and Timestamp', () => {
       const result = JSON.parse(
         buildMrfResponseJson({ ...BASE_ARGS, formFields: [], responses: {} }),
       )
-      expect(result[0]).toEqual({ question: 'Response ID', answer: 'abc123' })
-      expect(result[1]).toEqual({ question: 'Timestamp', answer: '1 Jan 2025' })
+      expect(result[0]).toEqual({ question: 'Form ID', answer: 'form123' })
+    })
+
+    it('should include Response ID and Timestamp after Form ID', () => {
+      const result = JSON.parse(
+        buildMrfResponseJson({ ...BASE_ARGS, formFields: [], responses: {} }),
+      )
+      expect(result[1]).toEqual({ question: 'Response ID', answer: 'abc123' })
+      expect(result[2]).toEqual({ question: 'Timestamp', answer: '1 Jan 2025' })
     })
 
     it('should include question and answer for a basic field', () => {
@@ -1080,12 +2149,14 @@ describe('multirespondent-submission.utils', () => {
           responses: {
             [fieldId]: {
               fieldType: BasicField.ShortText,
-              answer: 'Alice',
-            } as ShortTextResponseV3,
-          },
+              answer: { value: 'Alice' },
+              question: 'Name',
+              provenance: {},
+            },
+          } as any,
         }),
       )
-      expect(result[2]).toEqual({ question: 'Name', answer: 'Alice' })
+      expect(result[3]).toEqual({ question: 'Name', answer: 'Alice' })
     })
 
     it('should output address sub-fields as separate flat entries', () => {
@@ -1104,40 +2175,40 @@ describe('multirespondent-submission.utils', () => {
             [fieldId]: {
               fieldType: BasicField.Address,
               answer: {
-                addressSubFields: {
-                  blockNumber: '161',
-                  streetName: 'BUKIT BATOK STREET 11',
-                  buildingName: '',
-                  levelNumber: '01',
-                  unitNumber: '02',
-                  postalCode: '650161',
-                } as AddressAttributes,
+                blockNumber: { value: '161' },
+                streetName: { value: 'BUKIT BATOK STREET 11' },
+                buildingName: { value: '' },
+                levelNumber: { value: '01' },
+                unitNumber: { value: '02' },
+                postalCode: { value: '650161' },
               },
-            } as AddressResponseV3,
-          },
+              question: 'Home Address',
+              provenance: {},
+            },
+          } as any,
         }),
       )
-      expect(result[2]).toEqual({
+      expect(result[3]).toEqual({
         question: 'Home Address - blockNumber',
         answer: '161',
       })
-      expect(result[3]).toEqual({
+      expect(result[4]).toEqual({
         question: 'Home Address - streetName',
         answer: 'BUKIT BATOK STREET 11',
       })
-      expect(result[4]).toEqual({
+      expect(result[5]).toEqual({
         question: 'Home Address - buildingName',
         answer: '',
       })
-      expect(result[5]).toEqual({
+      expect(result[6]).toEqual({
         question: 'Home Address - levelNumber',
         answer: '01',
       })
-      expect(result[6]).toEqual({
+      expect(result[7]).toEqual({
         question: 'Home Address - unitNumber',
         answer: '02',
       })
-      expect(result[7]).toEqual({
+      expect(result[8]).toEqual({
         question: 'Home Address - postalCode',
         answer: '650161',
       })
@@ -1159,11 +2230,13 @@ describe('multirespondent-submission.utils', () => {
             [fieldId]: {
               fieldType: BasicField.Email,
               answer: { value: 'alice@example.com', signature: 'sig' },
-            } as EmailResponseV3,
-          },
+              question: 'Email',
+              provenance: {},
+            },
+          } as any,
         }),
       )
-      expect(result[2]).toEqual({
+      expect(result[3]).toEqual({
         question: 'Email',
         answer: 'alice@example.com',
       })
@@ -1183,7 +2256,7 @@ describe('multirespondent-submission.utils', () => {
           responses: {},
         }),
       )
-      expect(result[2]).toEqual({ question: 'Unanswered', answer: '' })
+      expect(result[3]).toEqual({ question: 'Unanswered', answer: '' })
     })
 
     it('should exclude non-response fields (Section, Statement, Image)', () => {
@@ -1215,13 +2288,15 @@ describe('multirespondent-submission.utils', () => {
           responses: {
             '4': {
               fieldType: BasicField.ShortText,
-              answer: 'Alice',
-            } as ShortTextResponseV3,
-          },
+              answer: { value: 'Alice' },
+              question: 'Name',
+              provenance: {},
+            },
+          } as any,
         }),
       )
-      expect(result).toHaveLength(3) // Response ID + Timestamp + Name
-      expect(result[2]).toEqual({ question: 'Name', answer: 'Alice' })
+      expect(result).toHaveLength(4) // Form ID + Response ID + Timestamp + Name
+      expect(result[3]).toEqual({ question: 'Name', answer: 'Alice' })
     })
 
     it('should not include fieldType in output entries', () => {
@@ -1239,12 +2314,54 @@ describe('multirespondent-submission.utils', () => {
           responses: {
             [fieldId]: {
               fieldType: BasicField.ShortText,
-              answer: 'Alice',
-            } as ShortTextResponseV3,
-          },
+              answer: { value: 'Alice' },
+              question: 'Name',
+              provenance: {},
+            },
+          } as any,
         }),
       )
-      expect(result[2]).not.toHaveProperty('fieldType')
+      expect(result[3]).not.toHaveProperty('fieldType')
+    })
+
+    it('should label an unanswered attachment [attachment] like an answered one', () => {
+      const formFields = [
+        {
+          _id: '1',
+          title: 'Passport',
+          fieldType: BasicField.Attachment,
+        } as unknown as FormFieldSchema,
+      ]
+
+      const result = JSON.parse(
+        buildMrfResponseJson({ ...BASE_ARGS, formFields, responses: {} }),
+      )
+
+      expect(result).toContainEqual({
+        question: '[attachment] Passport',
+        answer: '',
+      })
+    })
+
+    it('should leave an unanswered attachment unlabelled when keep-v4-attachment-prefix is on', () => {
+      const formFields = [
+        {
+          _id: '1',
+          title: 'Passport',
+          fieldType: BasicField.Attachment,
+        } as unknown as FormFieldSchema,
+      ]
+
+      const result = JSON.parse(
+        buildMrfResponseJson({
+          ...BASE_ARGS,
+          keepV4AttachmentPrefix: true,
+          formFields,
+          responses: {},
+        }),
+      )
+
+      expect(result).toContainEqual({ question: 'Passport', answer: '' })
     })
   })
 })

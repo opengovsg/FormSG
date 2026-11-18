@@ -1,5 +1,6 @@
 import { enSG as emailNotifications } from './email-notifications'
 import { enSG as general } from './general'
+import { enSG as multiLanguage } from './multi-language'
 import { enSG as payments } from './payments'
 import { enSG as webhooks } from './webhooks'
 
@@ -7,8 +8,69 @@ export const enSG = {
   general,
   singpass: {
     title: 'Singpass',
+    loginTitle: 'Login',
+    submitterIdCollection: {
+      toggleLabel: 'Collect NRIC/FIN/UENs with form submissions',
+      addNricField: 'Add an NRIC/FIN Field',
+      convert: 'Switch to using fields',
+      learnMore: 'Learn more',
+      stopCollecting: 'Stop collecting',
+      makeTheSwitch: 'Make the switch',
+      closeFormToConvert: 'Close your form to convert.',
+      loginFieldsLockAuth:
+        'To change your Singpass authentication mode, remove the existing login-filled fields.',
+      removeIdentityFieldsFirst:
+        'Your form already collects NRIC/FIN/UENs through form fields. To use this setting instead, remove those fields first.',
+      autoConvertNotice:
+        'Your form will automatically switch by end-June 2027.',
+      otherFormsAutoConvertNotice:
+        'Forms that still collect these through settings will automatically switch to form fields by end-June 2027.',
+      preview: {
+        howYouCollect: 'Example',
+        automationWarning:
+          'If you use webhooks or automations that read FormSG emails, review the full changes and update your automations before switching.',
+        checkFullChanges: 'Check full changes to data',
+        responsesUnchanged:
+          'Past responses and NRIC limit settings stay the same.',
+      },
+      // Singpass converts to one field and Corppass to two, so each login has
+      // its own sentences.
+      singpass: {
+        goToFields: 'Go to Singpass fields',
+        switchHint: 'Switch to collecting NRIC/FIN using form fields.',
+        stopTitle: 'Stop collecting NRIC/FIN',
+        collectLaterDescription:
+          'Add this field from the Singpass tab in the form builder.',
+        stopDescription:
+          'The next time you want to collect NRIC/FIN, you’ll need to add it as a field in your form.',
+        movedToFields:
+          'NRIC/FIN collection has moved from settings to Singpass form fields.',
+        modalTitle: 'You’ll start collecting NRIC/FIN using form fields',
+        outputTitle: 'NRIC/FIN will appear differently in new responses',
+        collectionExplanation:
+          'This field will be added to the end of your form and prefilled from Myinfo.',
+      },
+      corppass: {
+        goToFields: 'Go to Corppass fields',
+        switchHint: 'Switch to collecting NRIC/FIN and UEN using form fields.',
+        stopTitle: 'Stop collecting NRIC/FIN and UEN',
+        collectLaterDescription:
+          'Add these fields from the Corppass tab in the form builder.',
+        stopDescription:
+          'The next time you want to collect NRIC/FIN and UEN, you’ll need to add them as fields in your form.',
+        movedToFields:
+          'NRIC/FIN and UEN collection has moved from settings to Corppass form fields.',
+        modalTitle:
+          'You’ll start collecting NRIC/FIN and UEN using form fields',
+        outputTitle:
+          'NRIC/FIN and UEN will appear differently in new responses',
+        collectionExplanation:
+          'These fields will be added to the end of your form and prefilled from Myinfo.',
+      },
+    },
   },
   tabs: {
+    navLabels: { emails: 'Emails', multiLanguage: 'Multi-lang' },
     newBadge: 'New',
     multiLanguage: 'Multi-language',
   },
@@ -110,4 +172,5 @@ export const enSG = {
   emailNotifications,
   webhooks,
   payments,
+  multiLanguage,
 }

@@ -1,11 +1,10 @@
 import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { Modal, ModalContent } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
-import { expect, screen, userEvent } from '@storybook/test'
+import { Meta, StoryFn } from '@storybook/react-vite'
+import { expect, screen, userEvent } from 'storybook/test'
 
-import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
-import { FormResponseMode } from 'formsg-shared/types/form/form'
+import { FormOrigin, FormResponseMode } from 'formsg-shared/types/form/form'
 
 import { fullScreenDecorator } from '~utils/storybook'
 import { ModalCloseButton } from '~components/Modal'
@@ -23,7 +22,8 @@ export default {
   decorators: [fullScreenDecorator],
   parameters: {
     layout: 'fullscreen',
-    chromatic: { pauseAnimationAtEnd: true },
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
 } as Meta
 
@@ -66,12 +66,8 @@ const StoryOriginScreen = ({
 const Template: StoryFn = () => <StoryOriginScreen />
 export const Default = Template.bind({})
 
-export const WithOtherSelected: StoryFn = () => (
-  <StoryOriginScreen
-    defaultValues={{
-      formOrigins: { value: [CLIENT_CHECKBOX_OTHERS_INPUT_VALUE] },
-    }}
-  />
+export const PaperSelected: StoryFn = () => (
+  <StoryOriginScreen defaultValues={{ formOrigin: FormOrigin.Paper }} />
 )
 
 export const ValidationError: StoryFn = () => <StoryOriginScreen />
@@ -84,7 +80,7 @@ ValidationError.play = async () => {
     ),
   )
   await expect(
-    await screen.findByText('Please select at least 1 option.', undefined, {
+    await screen.findByText('Please select an option.', undefined, {
       timeout: 3000,
     }),
   ).toBeInTheDocument()

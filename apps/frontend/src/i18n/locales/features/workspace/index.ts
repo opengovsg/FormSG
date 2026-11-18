@@ -47,31 +47,22 @@ export interface Workspace {
   feedback: {
     rating: {
       prompt: string
-      aria: {
-        up: string
-        down: string
-      }
-    }
-    callForComment: {
-      up: {
-        title: string
-        link: string
-      }
-      down: {
-        title: string
-        link: string
-      }
+      fieldTitle: string
     }
     comment: {
-      title: string
-      description: string
-      placeholder: {
-        up: string
-        down: string
+      label: {
+        low: string
+        mid: string
+        high: string
       }
+      placeholder: string
       aria: {
         close: string
       }
+    }
+    toast: {
+      success: string
+      submitError: string
     }
   }
   workspacePage: {

@@ -1,4 +1,5 @@
 import { Controller } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl, Text } from '@chakra-ui/react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
@@ -9,7 +10,10 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'
 import { TagInput } from '~components/TagInput'
 
+import { useIsWorkflowSavePermissive } from '../../../../../hooks/useIsWorkflowSavePermissive'
+
 import { useWorkflowTypeValidation } from './hooks'
+import { NESTED_CONTROL_PR } from './layout'
 import { RespondentOptionProps } from './types'
 
 export const StaticRespondentOption = ({
@@ -24,7 +28,9 @@ export const StaticRespondentOption = ({
   } = formMethods
   const staticTagInputErrorMessage = get(errors, 'emails.message')
 
+  const { t } = useTranslation()
   const workflowTypeValidation = useWorkflowTypeValidation()
+  const isSavePermissive = useIsWorkflowSavePermissive()
   return (
     <>
       <Radio
@@ -40,13 +46,14 @@ export const StaticRespondentOption = ({
           },
         }}
       >
-        <Text>Specific email(s)</Text>
+        <Text>Specific emails</Text>
         {selectedWorkflowType === WorkflowType.Static ? (
           <FormControl
             pt="0.5rem"
+            pr={NESTED_CONTROL_PR}
             isReadOnly={isLoading}
             id="emails"
-            isRequired
+            isRequired={!isSavePermissive}
             isInvalid={!!staticTagInputErrorMessage}
             key="emails"
           >
@@ -55,14 +62,18 @@ export const StaticRespondentOption = ({
               control={control}
               rules={{
                 validate: {
-                  required: (emails) =>
-                    !emails || emails.length === 0
+                  required: (emails) => {
+                    if (isSavePermissive) return true
+                    return !emails || emails.length === 0
                       ? 'You must enter at least one email to receive responses'
-                      : true,
+                      : true
+                  },
                   isEmails: (emails) =>
                     !emails ||
                     emails.every((email) => isEmail(email)) ||
-                    'Please enter valid email(s) (e.g. me@example.com) separated by commas, as invalid emails will not be saved',
+                    t(
+                      'features.adminForm.sidebar.workflow.staticRespondent.invalidEmails',
+                    ),
                 },
               }}
               render={({ field }) => (

@@ -4,11 +4,6 @@ import {
   forwardRef,
   IconProps,
 } from '@chakra-ui/react'
-import { useGrowthBook } from '@growthbook/growthbook-react'
-
-import { featureFlags } from 'formsg-shared/constants'
-
-import { OgpLogo } from '~assets/svgrs/brand/OgpLogo'
 
 import Spinner from '../Spinner'
 
@@ -42,23 +37,7 @@ export const Button = forwardRef<ButtonProps, 'button'>(
     },
     ref,
   ) => {
-    const gb = useGrowthBook()
-
-    // Ensures compatibility between Chakra size definitions and those supported by the SVG logo
-    const spinnerSize =
-      typeof spinnerFontSize === 'string' || typeof spinnerFontSize === 'number'
-        ? spinnerFontSize
-        : '1.5rem'
-
-    const spinner = gb?.isOn(featureFlags.ogpSpinner) ? (
-      <Spinner
-        fontSize={spinnerFontSize ?? '1.5rem'}
-        speed="1s"
-        element={<OgpLogo height={spinnerSize} fill="primary" />}
-      />
-    ) : (
-      <Spinner fontSize={spinnerFontSize ?? '1.5rem'} />
-    )
+    const spinner = <Spinner fontSize={spinnerFontSize ?? '1.5rem'} />
 
     // Chakra renders loadingText as a raw text node sibling to the spinner
     // when isLoading is true. Wrap in a span for the same reason as

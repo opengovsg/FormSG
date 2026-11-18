@@ -28,7 +28,7 @@ export interface ToggleProps extends Omit<SwitchProps, 'children'> {
    */
   label: string
   /**
-   * Whether to show the beta badge
+   * Whether to show a beta chip to the left of the label.
    * @default false
    */
   betaBadge?: boolean
@@ -70,7 +70,14 @@ type ToggleWithParts = ComponentWithAs<'input', ToggleProps> & {
 const BetaBadge = () => {
   const { t } = useTranslation()
   return (
-    <Badge colorScheme="primary" variant="subtle" color="secondary.500">
+    <Badge
+      colorScheme="primary"
+      variant="subtle"
+      color="secondary.500"
+      borderRadius="full"
+      ml="0.5rem"
+      flexShrink={0}
+    >
       {t('features.common.betaBadgeLabel')}
     </Badge>
   )
@@ -99,16 +106,9 @@ export const Toggle = forwardRef<ToggleProps, 'input'>(
           <Box __css={styles.textContainer}>
             <Flex alignItems="center">
               <FormLabel.Label sx={{ ...styles.label, ...labelStyles }}>
-                <Text>
-                  {label}
-                  {betaBadge ? (
-                    <>
-                      {' '}
-                      <BetaBadge />
-                    </>
-                  ) : null}
-                </Text>
+                <Text>{label}</Text>
               </FormLabel.Label>
+              {betaBadge ? <BetaBadge /> : null}
               {tooltipText && (
                 <Tooltip
                   placement={tooltipPlacement}

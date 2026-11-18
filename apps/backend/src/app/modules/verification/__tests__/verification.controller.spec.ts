@@ -28,7 +28,11 @@ import {
 import expressHandler from '../../../../../__tests__/unit/backend/helpers/jest-express'
 import config from '../../../config/config'
 import { DatabaseError, MalformedParametersError } from '../../core/core.errors'
-import { FormNotFoundError } from '../../form/form.errors'
+import {
+  FormDeletedError,
+  FormNotFoundError,
+  PrivateFormError,
+} from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import {
   MOCK_MYINFO_JWT,
@@ -38,12 +42,6 @@ import {
   MyInfoInvalidLoginCookieError,
   MyInfoMissingLoginCookieError,
 } from '../../myinfo/myinfo.errors'
-import { SGID_COOKIE_NAME } from '../../sgid/sgid.constants'
-import {
-  SgidInvalidJwtError,
-  SgidMissingJwtError,
-} from '../../sgid/sgid.errors'
-import { SgidService } from '../../sgid/sgid.service'
 import {
   MOCK_JWT,
   MOCK_JWT_PAYLOAD,
@@ -51,9 +49,11 @@ import {
 import { InvalidJwtError, MissingJwtError } from '../../spcp/spcp.errors'
 import { CpOidcServiceClass } from '../../spcp/spcp.oidc.service/spcp.oidc.service.cp'
 import { SpOidcServiceClass } from '../../spcp/spcp.oidc.service/spcp.oidc.service.sp'
+import * as MrfSubmissionService from '../../submission/multirespondent-submission/multirespondent-submission.service'
 import { MrfJwtPayload } from '../../submission/multirespondent-submission/multirespondent-submission.types'
 import { getMrfCookieName } from '../../submission/multirespondent-submission/multirespondent-submission.utils'
-import * as SubmissionService from '../../submission/submission.service'
+import * as StepAuth from '../../submission/multirespondent-submission/step-auth'
+import { SubmissionNotFoundError } from '../../submission/submission.errors'
 import * as VerificationController from '../verification.controller'
 import {
   FieldNotFoundInTransactionError,
@@ -94,10 +94,12 @@ jest.mock('../../myinfo/myinfo.util')
 const MockMyInfoUtil = jest.mocked(MyInfoUtils)
 jest.mock('../../myinfo/myinfo.service')
 const MockMyInfoService = jest.mocked(MyInfoService)
-jest.mock('../../sgid/sgid.service')
-const MockSgidService = jest.mocked(SgidService)
-jest.mock('../../submission/submission.service')
-const MockSubmissionService = jest.mocked(SubmissionService)
+jest.mock(
+  '../../submission/multirespondent-submission/multirespondent-submission.service',
+)
+const MockMrfSubmissionService = jest.mocked(MrfSubmissionService)
+jest.mock('../../submission/multirespondent-submission/step-auth')
+const MockStepAuth = jest.mocked(StepAuth)
 
 const mockSpOidcServiceClass = jest.mocked(
   MockSpOidcServiceClass.mock.instances[0],
@@ -107,6 +109,17 @@ const mockCpOidcServiceClass = jest.mocked(
 )
 
 describe('Verification controller', () => {
+  const VERIFICATION_BACKEND_ERROR_KEY_PREFIX =
+    'features.publicForm.backendErrors.verification'
+  const expectedVerificationError = (
+    key: string,
+    message: string,
+    messageParams?: Record<string, string | number>,
+  ) => ({
+    message,
+    messageKey: `${VERIFICATION_BACKEND_ERROR_KEY_PREFIX}.${key}`,
+    ...(messageParams ? { messageParams } : {}),
+  })
   const MOCK_FORM_ID = new ObjectId().toHexString()
   const MOCK_TRANSACTION_ID = new ObjectId().toHexString()
   const MOCK_FIELD_ID = new ObjectId().toHexString()
@@ -268,10 +281,6 @@ describe('Verification controller', () => {
       ...MOCK_FORM,
       authType: FormAuthType.CP,
     } as IPopulatedForm
-    const MOCK_SGID_FORM = {
-      ...MOCK_FORM,
-      authType: FormAuthType.SGID,
-    } as IPopulatedForm
     const MOCK_MYINFO_FORM = {
       ...MOCK_FORM,
       authType: FormAuthType.MyInfo,
@@ -293,6 +302,7 @@ describe('Verification controller', () => {
 
     beforeEach(async () => {
       MockFormService.retrieveFullFormById.mockReturnValue(okAsync(MOCK_FORM))
+      MockFormService.isFormPublic.mockReturnValue(ok(true))
 
       MockOtpUtils.generateOtpWithHash.mockReturnValue(
         okAsync({
@@ -327,10 +337,6 @@ describe('Verification controller', () => {
       expect(mockCpOidcServiceClass.extractJwt).not.toHaveBeenCalled()
       expect(mockSpOidcServiceClass.extractJwtPayload).not.toHaveBeenCalled()
       expect(mockCpOidcServiceClass.extractJwtPayload).not.toHaveBeenCalled()
-
-      expect(
-        MockSgidService.extractSgidSingpassJwtPayload,
-      ).not.toHaveBeenCalled()
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).not.toHaveBeenCalled()
       expect(MockMyInfoService.verifyLoginJwt).not.toHaveBeenCalled()
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
@@ -424,51 +430,6 @@ describe('Verification controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
 
-    it('should return 201 when SGID authentication is enabled and sgid jwt token is valid', async () => {
-      // Arrange
-      const MOCK_VALID_SGID_PAYLOAD = {
-        userName: MOCK_JWT_PAYLOAD.userName,
-        rememberMe: false,
-      }
-      const MOCK_SGID_REQ = expressHandler.mockRequest({
-        body: { answer: MOCK_ANSWER },
-        params: {
-          formId: MOCK_FORM_ID,
-          transactionId: MOCK_TRANSACTION_ID,
-          fieldId: MOCK_FIELD_ID,
-          otpPrefix: MOCK_OTP_PREFIX,
-        },
-      })
-      MOCK_SGID_REQ.cookies = { jwtSgid: {} }
-
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_SGID_FORM),
-      )
-      MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
-        ok(MOCK_VALID_SGID_PAYLOAD),
-      )
-
-      // Act
-      await VerificationController._handleGenerateOtp(
-        MOCK_SGID_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(
-        MockSgidService.extractSgidSingpassJwtPayload,
-      ).toHaveBeenCalledWith(MOCK_SGID_REQ.cookies[SGID_COOKIE_NAME])
-      expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        EXPECTED_PARAMS_FOR_SENDING_FORM_OTP,
-      )
-      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
-    })
-
     it('should return 201 when MyInfo authentication is enabled and MyInfo cookie is valid', async () => {
       // Arrange
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
@@ -493,7 +454,6 @@ describe('Verification controller', () => {
       )
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).toHaveBeenCalledWith(
         MOCK_FORM_REQ.cookies,
-        FormAuthType.MyInfo,
       )
       expect(MockMyInfoService.verifyLoginJwt).toHaveBeenCalledWith(
         MOCK_MYINFO_JWT,
@@ -538,9 +498,10 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValueOnce(
         errAsync(new TransactionExpiredError("don't eat expired food")),
       )
-      const expectedResponse = {
-        message: 'Your session has expired, please refresh and try again.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'sessionExpired',
+        'Your session has expired, please refresh and try again.',
+      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -594,10 +555,10 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValueOnce(
         errAsync(new MailSendError()),
       )
-      const expectedResponse = {
-        message:
-          'Sorry, we were unable to send the email out at this time. Please ensure that the email entered is correct. If this problem persists, please refresh and try again later.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'mailSend',
+        'Sorry, we were unable to send the email out at this time. Please ensure that the email entered is correct. If this problem persists, please refresh and try again later.',
+      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -623,10 +584,10 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValueOnce(
         errAsync(new InvalidNumberError()),
       )
-      const expectedResponse = {
-        message:
-          'This phone number does not seem to be valid. Please try again with a valid phone number.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'invalidNumber',
+        'This phone number does not seem to be valid. Please try again with a valid phone number.',
+      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -652,10 +613,10 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValueOnce(
         errAsync(new SmsLimitExceededError()),
       )
-      const expected = {
-        message:
-          'Sorry, this form is outdated. Please refresh your browser to get the latest version of the form',
-      }
+      const expected = expectedVerificationError(
+        'outdatedForm',
+        'Sorry, this form is outdated. Please refresh your browser to get the latest version of the form',
+      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -838,90 +799,6 @@ describe('Verification controller', () => {
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
 
-    it('should return 400 when SGID authentication is enabled but jwt token is missing in session', async () => {
-      // Arrange
-      const MOCK_SGID_REQ = expressHandler.mockRequest({
-        body: { answer: MOCK_ANSWER },
-        params: {
-          formId: MOCK_FORM_ID,
-          transactionId: MOCK_TRANSACTION_ID,
-          fieldId: MOCK_FIELD_ID,
-          otpPrefix: MOCK_OTP_PREFIX,
-        },
-      })
-      MOCK_SGID_REQ.cookies = {}
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_SGID_FORM),
-      )
-      MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
-        err(new SgidMissingJwtError()),
-      )
-      const expectedResponse = {
-        message: 'Sorry, something went wrong. Please refresh and try again.',
-      }
-
-      // Act
-      await VerificationController._handleGenerateOtp(
-        MOCK_SGID_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(
-        MockSgidService.extractSgidSingpassJwtPayload,
-      ).toHaveBeenCalledWith(MOCK_SGID_REQ.cookies[SGID_COOKIE_NAME])
-      expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
-      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
-    })
-
-    it('should return 400 when SGID authentication is enabled but jwt token is invalid', async () => {
-      // Arrange
-      const MOCK_SGID_REQ = expressHandler.mockRequest({
-        body: { answer: MOCK_ANSWER },
-        params: {
-          formId: MOCK_FORM_ID,
-          transactionId: MOCK_TRANSACTION_ID,
-          fieldId: MOCK_FIELD_ID,
-          otpPrefix: MOCK_OTP_PREFIX,
-        },
-      })
-      MOCK_SGID_REQ.cookies = {}
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_SGID_FORM),
-      )
-      MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
-        err(new SgidInvalidJwtError()),
-      )
-      const expectedResponse = {
-        message: 'Sorry, something went wrong. Please refresh and try again.',
-      }
-
-      // Act
-      await VerificationController._handleGenerateOtp(
-        MOCK_SGID_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(
-        MockSgidService.extractSgidSingpassJwtPayload,
-      ).toHaveBeenCalledWith(MOCK_SGID_REQ.cookies.jwt)
-      expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
-      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
-    })
-
     it('should return 400 when MyInfo authentication is enabled but MyInfo cookie is missing in session', async () => {
       // Arrange
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
@@ -947,7 +824,6 @@ describe('Verification controller', () => {
       )
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).toHaveBeenCalledWith(
         MOCK_FORM_REQ.cookies,
-        FormAuthType.MyInfo,
       )
       expect(MockMyInfoService.verifyLoginJwt).not.toHaveBeenCalled()
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
@@ -984,7 +860,6 @@ describe('Verification controller', () => {
       )
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).toHaveBeenCalledWith(
         MOCK_FORM_REQ.cookies,
-        FormAuthType.MyInfo,
       )
       expect(MockMyInfoService.verifyLoginJwt).toHaveBeenCalledWith(
         MOCK_MYINFO_JWT,
@@ -1018,6 +893,58 @@ describe('Verification controller', () => {
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+    })
+
+    it('should return 404 when form is private', async () => {
+      // Arrange
+      MockFormService.isFormPublic.mockReturnValueOnce(
+        err(new PrivateFormError('Form is private', MOCK_FORM.title)),
+      )
+      const expectedResponse = {
+        message: 'This form has been taken down, so OTPs cannot be requested',
+      }
+
+      // Act
+      await VerificationController._handleGenerateOtp(
+        MOCK_FORM_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
+      expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
+      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+    })
+
+    it('should return 410 when form is archived', async () => {
+      // Arrange
+      MockFormService.isFormPublic.mockReturnValueOnce(
+        err(new FormDeletedError()),
+      )
+      const expectedResponse = {
+        message: 'This form is no longer active, so OTPs cannot be requested',
+      }
+
+      // Act
+      await VerificationController._handleGenerateOtp(
+        MOCK_FORM_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
+      expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
+      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.GONE)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
 
@@ -1082,9 +1009,11 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValueOnce(
         errAsync(new WaitForOtpError()),
       )
-      const expectedResponse = {
-        message: `You must wait for ${WAIT_FOR_OTP_SECONDS} seconds between each OTP request.`,
-      }
+      const expectedResponse = expectedVerificationError(
+        'waitForOtp',
+        `You must wait for ${WAIT_FOR_OTP_SECONDS} seconds between each OTP request.`,
+        { waitForOtpSeconds: WAIT_FOR_OTP_SECONDS },
+      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -1180,10 +1109,6 @@ describe('Verification controller', () => {
       expect(mockCpOidcServiceClass.extractJwt).not.toHaveBeenCalled()
       expect(mockSpOidcServiceClass.extractJwtPayload).not.toHaveBeenCalled()
       expect(mockCpOidcServiceClass.extractJwtPayload).not.toHaveBeenCalled()
-
-      expect(
-        MockSgidService.extractSgidSingpassJwtPayload,
-      ).not.toHaveBeenCalled()
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).not.toHaveBeenCalled()
       expect(MockMyInfoService.verifyLoginJwt).not.toHaveBeenCalled()
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
@@ -1281,53 +1206,6 @@ describe('Verification controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
 
-    it('should return 201 when SGID authentication is enabled and sgid jwt token is valid for payment otp', async () => {
-      // Arrange
-      const MOCK_VALID_SGID_PAYLOAD = {
-        userName: MOCK_JWT_PAYLOAD.userName,
-        rememberMe: false,
-      }
-      const MOCK_SGID_REQ = expressHandler.mockRequest({
-        body: { answer: MOCK_ANSWER },
-        params: {
-          formId: MOCK_FORM_ID,
-          transactionId: MOCK_TRANSACTION_ID,
-          fieldId: PAYMENT_CONTACT_FIELD_ID,
-          otpPrefix: MOCK_OTP_PREFIX,
-        },
-      })
-      MOCK_SGID_REQ.cookies = { jwtSgid: {} }
-
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_SGID_FORM),
-      )
-
-      MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
-        ok(MOCK_VALID_SGID_PAYLOAD),
-      )
-
-      // Act
-      await VerificationController._handleGenerateOtp(
-        MOCK_SGID_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(
-        MockSgidService.extractSgidSingpassJwtPayload,
-      ).toHaveBeenCalledWith(MOCK_SGID_REQ.cookies[SGID_COOKIE_NAME])
-      expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        EXPECTED_PARAMS_FOR_SENDING_PAYMENT_OTP,
-      )
-
-      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
-    })
-
     it('should return 201 when MyInfo authentication is enabled and MyInfo cookie is valid for payment otp', async () => {
       // Arrange
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
@@ -1353,7 +1231,6 @@ describe('Verification controller', () => {
       )
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).toHaveBeenCalledWith(
         MOCK_PAYMENT_REQ.cookies,
-        FormAuthType.MyInfo,
       )
       expect(MockMyInfoService.verifyLoginJwt).toHaveBeenCalledWith(
         MOCK_MYINFO_JWT,
@@ -1399,9 +1276,10 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValueOnce(
         errAsync(new TransactionExpiredError("don't eat expired food")),
       )
-      const expectedResponse = {
-        message: 'Your session has expired, please refresh and try again.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'sessionExpired',
+        'Your session has expired, please refresh and try again.',
+      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -1455,10 +1333,10 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValueOnce(
         errAsync(new MailSendError()),
       )
-      const expectedResponse = {
-        message:
-          'Sorry, we were unable to send the email out at this time. Please ensure that the email entered is correct. If this problem persists, please refresh and try again later.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'mailSend',
+        'Sorry, we were unable to send the email out at this time. Please ensure that the email entered is correct. If this problem persists, please refresh and try again later.',
+      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -1484,10 +1362,10 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValueOnce(
         errAsync(new InvalidNumberError()),
       )
-      const expectedResponse = {
-        message:
-          'This phone number does not seem to be valid. Please try again with a valid phone number.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'invalidNumber',
+        'This phone number does not seem to be valid. Please try again with a valid phone number.',
+      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -1513,10 +1391,10 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValueOnce(
         errAsync(new SmsLimitExceededError()),
       )
-      const expected = {
-        message:
-          'Sorry, this form is outdated. Please refresh your browser to get the latest version of the form',
-      }
+      const expected = expectedVerificationError(
+        'outdatedForm',
+        'Sorry, this form is outdated. Please refresh your browser to get the latest version of the form',
+      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -1699,90 +1577,6 @@ describe('Verification controller', () => {
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
 
-    it('should return 400 when SGID authentication is enabled but jwt token is missing in session for payment otp', async () => {
-      // Arrange
-      const MOCK_SGID_REQ = expressHandler.mockRequest({
-        body: { answer: MOCK_ANSWER },
-        params: {
-          formId: MOCK_FORM_ID,
-          transactionId: MOCK_TRANSACTION_ID,
-          fieldId: PAYMENT_CONTACT_FIELD_ID,
-          otpPrefix: MOCK_OTP_PREFIX,
-        },
-      })
-      MOCK_SGID_REQ.cookies = {}
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_SGID_FORM),
-      )
-      MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
-        err(new SgidMissingJwtError()),
-      )
-      const expectedResponse = {
-        message: 'Sorry, something went wrong. Please refresh and try again.',
-      }
-
-      // Act
-      await VerificationController._handleGenerateOtp(
-        MOCK_SGID_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(
-        MockSgidService.extractSgidSingpassJwtPayload,
-      ).toHaveBeenCalledWith(MOCK_SGID_REQ.cookies[SGID_COOKIE_NAME])
-      expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
-      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
-    })
-
-    it('should return 400 when SGID authentication is enabled but jwt token is invalid for payment otp', async () => {
-      // Arrange
-      const MOCK_SGID_REQ = expressHandler.mockRequest({
-        body: { answer: MOCK_ANSWER },
-        params: {
-          formId: MOCK_FORM_ID,
-          transactionId: MOCK_TRANSACTION_ID,
-          fieldId: PAYMENT_CONTACT_FIELD_ID,
-          otpPrefix: MOCK_OTP_PREFIX,
-        },
-      })
-      MOCK_SGID_REQ.cookies = {}
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_SGID_FORM),
-      )
-      MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
-        err(new SgidInvalidJwtError()),
-      )
-      const expectedResponse = {
-        message: 'Sorry, something went wrong. Please refresh and try again.',
-      }
-
-      // Act
-      await VerificationController._handleGenerateOtp(
-        MOCK_SGID_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(
-        MockSgidService.extractSgidSingpassJwtPayload,
-      ).toHaveBeenCalledWith(MOCK_SGID_REQ.cookies.jwt)
-      expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
-      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
-    })
-
     it('should return 400 when MyInfo authentication is enabled but MyInfo cookie is missing in session for payment otp', async () => {
       // Arrange
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
@@ -1808,7 +1602,6 @@ describe('Verification controller', () => {
       )
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).toHaveBeenCalledWith(
         MOCK_PAYMENT_REQ.cookies,
-        FormAuthType.MyInfo,
       )
       expect(MockMyInfoService.verifyLoginJwt).not.toHaveBeenCalled()
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
@@ -1845,7 +1638,6 @@ describe('Verification controller', () => {
       )
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).toHaveBeenCalledWith(
         MOCK_PAYMENT_REQ.cookies,
-        FormAuthType.MyInfo,
       )
       expect(MockMyInfoService.verifyLoginJwt).toHaveBeenCalledWith(
         MOCK_MYINFO_JWT,
@@ -1943,9 +1735,11 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValueOnce(
         errAsync(new WaitForOtpError()),
       )
-      const expectedResponse = {
-        message: `You must wait for ${WAIT_FOR_OTP_SECONDS} seconds between each OTP request.`,
-      }
+      const expectedResponse = expectedVerificationError(
+        'waitForOtp',
+        `You must wait for ${WAIT_FOR_OTP_SECONDS} seconds between each OTP request.`,
+        { waitForOtpSeconds: WAIT_FOR_OTP_SECONDS },
+      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -2052,20 +1846,78 @@ describe('Verification controller', () => {
         },
       })
 
-      it('should return 201 when MRF JWT is valid and all checks pass', async () => {
-        // Arrange
-        MockSubmissionService.getSubmissionMetadata.mockReturnValueOnce(
-          okAsync({
-            number: Number(MOCK_PREVIOUS_SUBMISSION_ID),
-            refNo: MOCK_PREVIOUS_SUBMISSION_ID,
-            submissionTime: '1st Jan 2024, 12:00:00 pm',
-            payments: null,
-            mrf: {
-              workflowCurrentStepNumber: MOCK_WORKFLOW_STEP,
-            },
-          } as any),
+      // The submission the MRF JWT points at, pending the JWT's step
+      const MOCK_MRF_SUBMISSION = {
+        _id: MOCK_PREVIOUS_SUBMISSION_ID,
+        form: MOCK_FORM_ID,
+        workflowStep: MOCK_WORKFLOW_STEP - 1,
+        workflow: [],
+      }
+
+      beforeEach(() => {
+        MockMrfSubmissionService.getMultirespondentSubmission.mockReturnValue(
+          okAsync(MOCK_MRF_SUBMISSION as any),
+        )
+        // The pending step has no login of its own
+        MockStepAuth.resolveMrfStepAuth.mockReturnValue(ok({} as any))
+      })
+
+      // A saved workflow whose Step 2 has its own login
+      const MOCK_STEP_LOGIN_SUBMISSION = {
+        ...MOCK_MRF_SUBMISSION,
+        workflow: [{}, { auth: { auth_type: FormAuthType.MyInfo } }],
+      }
+
+      it('should not check a step login when the saved workflow has none', async () => {
+        await VerificationController._handleGenerateOtp(
+          MOCK_MRF_REQ,
+          mockRes,
+          jest.fn(),
         )
 
+        expect(MockStepAuth.resolveMrfStepAuth).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
+      })
+
+      it('should check the pending step login with the request cookies', async () => {
+        MockMrfSubmissionService.getMultirespondentSubmission.mockReturnValueOnce(
+          okAsync(MOCK_STEP_LOGIN_SUBMISSION as any),
+        )
+
+        await VerificationController._handleGenerateOtp(
+          MOCK_MRF_REQ,
+          mockRes,
+          jest.fn(),
+        )
+
+        expect(MockStepAuth.resolveMrfStepAuth).toHaveBeenCalledWith(
+          MOCK_FORM_ID,
+          MOCK_STEP_LOGIN_SUBMISSION,
+          { stepAuthCookies: MOCK_MRF_REQ.cookies },
+        )
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
+      })
+
+      it('should return 400 without sending an OTP when the step login is missing', async () => {
+        MockMrfSubmissionService.getMultirespondentSubmission.mockReturnValueOnce(
+          okAsync(MOCK_STEP_LOGIN_SUBMISSION as any),
+        )
+        MockStepAuth.resolveMrfStepAuth.mockReturnValueOnce(
+          err(new MissingJwtError()),
+        )
+
+        await VerificationController._handleGenerateOtp(
+          MOCK_MRF_REQ,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Same response as a missing Step 1 login
+        expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+      })
+
+      it('should return 201 when MRF JWT is valid and all checks pass', async () => {
         // Act
         await VerificationController._handleGenerateOtp(
           MOCK_MRF_REQ,
@@ -2078,12 +1930,11 @@ describe('Verification controller', () => {
           MOCK_FORM_ID,
         )
         expect(
-          MockSubmissionService.getSubmissionMetadata,
-        ).toHaveBeenCalledWith(
-          'multirespondent',
-          MOCK_FORM_ID,
-          MOCK_PREVIOUS_SUBMISSION_ID,
-        )
+          MockMrfSubmissionService.getMultirespondentSubmission,
+        ).toHaveBeenCalledTimes(1)
+        expect(
+          MockMrfSubmissionService.getMultirespondentSubmission,
+        ).toHaveBeenCalledWith(MOCK_PREVIOUS_SUBMISSION_ID)
         expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
         expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
           EXPECTED_PARAMS_FOR_SENDING_FORM_OTP,
@@ -2091,10 +1942,10 @@ describe('Verification controller', () => {
         expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
       })
 
-      it('should return 400 when submission metadata cannot be found for given formId and previousSubmissionId', async () => {
+      it('should return 400 when the submission cannot be found', async () => {
         // Arrange
-        MockSubmissionService.getSubmissionMetadata.mockReturnValueOnce(
-          okAsync(null), // Submission not found for this form
+        MockMrfSubmissionService.getMultirespondentSubmission.mockReturnValueOnce(
+          errAsync(new SubmissionNotFoundError()),
         )
         const expectedResponse = {
           message: 'Sorry, something went wrong. Please refresh and try again.',
@@ -2108,20 +1959,32 @@ describe('Verification controller', () => {
         )
 
         // Assert
-        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-          MOCK_FORM_ID,
-        )
-        expect(
-          MockSubmissionService.getSubmissionMetadata,
-        ).toHaveBeenCalledWith(
-          'multirespondent',
-          MOCK_FORM_ID,
-          MOCK_PREVIOUS_SUBMISSION_ID,
-        )
         expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
         expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
         expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
         expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+      })
+
+      it('should return 400 when the submission belongs to another form', async () => {
+        // Arrange
+        MockMrfSubmissionService.getMultirespondentSubmission.mockReturnValueOnce(
+          okAsync({
+            ...MOCK_MRF_SUBMISSION,
+            form: new ObjectId().toHexString(),
+          } as any),
+        )
+
+        // Act
+        await VerificationController._handleGenerateOtp(
+          MOCK_MRF_REQ,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert
+        expect(MockStepAuth.resolveMrfStepAuth).not.toHaveBeenCalled()
+        expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       })
 
       it('should return 400 when previousSubmissionId does not match JWT', async () => {
@@ -2145,19 +2008,6 @@ describe('Verification controller', () => {
             })]: MOCK_MRF_JWT,
           },
         })
-
-        MockSubmissionService.getSubmissionMetadata.mockReturnValueOnce(
-          okAsync({
-            number: Number(MOCK_PREVIOUS_SUBMISSION_ID),
-            refNo: MOCK_PREVIOUS_SUBMISSION_ID,
-            submissionTime: '1st Jan 2024, 12:00:00 pm',
-            payments: null,
-            mrf: {
-              workflowCurrentStepNumber: MOCK_WORKFLOW_STEP,
-            },
-          } as any),
-        )
-
         const expectedResponse = {
           message: 'Sorry, something went wrong. Please refresh and try again.',
         }
@@ -2170,16 +2020,9 @@ describe('Verification controller', () => {
         )
 
         // Assert
-        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-          MOCK_FORM_ID,
-        )
         expect(
-          MockSubmissionService.getSubmissionMetadata,
-        ).toHaveBeenCalledWith(
-          'multirespondent',
-          MOCK_FORM_ID,
-          MOCK_PREVIOUS_SUBMISSION_ID,
-        )
+          MockMrfSubmissionService.getMultirespondentSubmission,
+        ).toHaveBeenCalledWith(MOCK_PREVIOUS_SUBMISSION_ID)
         expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
         expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
         expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -2188,15 +2031,10 @@ describe('Verification controller', () => {
 
       it('should return 400 when workflow step does not match', async () => {
         // Arrange
-        MockSubmissionService.getSubmissionMetadata.mockReturnValueOnce(
+        MockMrfSubmissionService.getMultirespondentSubmission.mockReturnValueOnce(
           okAsync({
-            number: Number(MOCK_PREVIOUS_SUBMISSION_ID),
-            refNo: MOCK_PREVIOUS_SUBMISSION_ID,
-            submissionTime: '1st Jan 2024, 12:00:00 pm',
-            payments: null,
-            mrf: {
-              workflowCurrentStepNumber: 3, // Different workflow step
-            },
+            ...MOCK_MRF_SUBMISSION,
+            workflowStep: MOCK_WORKFLOW_STEP, // Already a step further
           } as any),
         )
         const expectedResponse = {
@@ -2211,16 +2049,6 @@ describe('Verification controller', () => {
         )
 
         // Assert
-        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-          MOCK_FORM_ID,
-        )
-        expect(
-          MockSubmissionService.getSubmissionMetadata,
-        ).toHaveBeenCalledWith(
-          'multirespondent',
-          MOCK_FORM_ID,
-          MOCK_PREVIOUS_SUBMISSION_ID,
-        )
         expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
         expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
         expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -2254,11 +2082,8 @@ describe('Verification controller', () => {
         )
 
         // Assert
-        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-          MOCK_FORM_ID,
-        )
         expect(
-          MockSubmissionService.getSubmissionMetadata,
+          MockMrfSubmissionService.getMultirespondentSubmission,
         ).not.toHaveBeenCalled()
         expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
         expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
@@ -2295,11 +2120,8 @@ describe('Verification controller', () => {
         )
 
         // Assert
-        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-          MOCK_FORM_ID,
-        )
         expect(
-          MockSubmissionService.getSubmissionMetadata,
+          MockMrfSubmissionService.getMultirespondentSubmission,
         ).not.toHaveBeenCalled()
         expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
         expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
@@ -2307,10 +2129,10 @@ describe('Verification controller', () => {
         expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
       })
 
-      it('should return 404 when submission is not found', async () => {
+      it('should return 500 when the submission read fails', async () => {
         // Arrange
-        MockSubmissionService.getSubmissionMetadata.mockReturnValueOnce(
-          errAsync(new DatabaseError('Submission not found')),
+        MockMrfSubmissionService.getMultirespondentSubmission.mockReturnValueOnce(
+          errAsync(new DatabaseError()),
         )
         const expectedResponse = {
           message: 'Sorry, something went wrong. Please refresh and try again.',
@@ -2324,16 +2146,6 @@ describe('Verification controller', () => {
         )
 
         // Assert
-        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-          MOCK_FORM_ID,
-        )
-        expect(
-          MockSubmissionService.getSubmissionMetadata,
-        ).toHaveBeenCalledWith(
-          'multirespondent',
-          MOCK_FORM_ID,
-          MOCK_PREVIOUS_SUBMISSION_ID,
-        )
         expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
         expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
         expect(mockRes.status).toHaveBeenCalledWith(
@@ -2408,9 +2220,12 @@ describe('Verification controller', () => {
         MockVerificationService.resetFieldForTransaction,
       ).toHaveBeenCalledWith(resetFieldForTransactionToHaveBeenCalledWith)
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: expect.any(String),
-      })
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expectedVerificationError(
+          'sessionExpired',
+          'Your session has expired, please refresh and try again.',
+        ),
+      )
     })
 
     it('should return 404 when form is not found', async () => {
@@ -2587,9 +2402,10 @@ describe('Verification controller', () => {
       MockVerificationService.verifyOtp.mockReturnValueOnce(
         errAsync(new TransactionExpiredError()),
       )
-      const expectedResponse = {
-        message: 'Your session has expired, please refresh and try again.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'sessionExpired',
+        'Your session has expired, please refresh and try again.',
+      )
 
       // Act
       await VerificationController._handleOtpVerification(
@@ -2720,9 +2536,10 @@ describe('Verification controller', () => {
       MockVerificationService.verifyOtp.mockReturnValueOnce(
         errAsync(new OtpExpiredError()),
       )
-      const expectedResponse = {
-        message: 'Your OTP has expired, please request for a new one.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'otpExpired',
+        'Your OTP has expired, please request for a new one.',
+      )
 
       // Act
       await VerificationController._handleOtpVerification(
@@ -2749,10 +2566,10 @@ describe('Verification controller', () => {
       MockVerificationService.verifyOtp.mockReturnValueOnce(
         errAsync(new OtpRetryExceededError()),
       )
-      const expectedResponse = {
-        message:
-          'You have entered too many invalid OTPs. Please request for a new OTP and try again.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'otpRetryExceeded',
+        'You have entered too many invalid OTPs. Please request for a new OTP and try again.',
+      )
 
       // Act
       await VerificationController._handleOtpVerification(
@@ -2779,9 +2596,10 @@ describe('Verification controller', () => {
       MockVerificationService.verifyOtp.mockReturnValueOnce(
         errAsync(new WrongOtpError()),
       )
-      const expectedResponse = {
-        message: 'Wrong OTP.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'wrongOtp',
+        'Wrong OTP.',
+      )
 
       // Act
       await VerificationController._handleOtpVerification(
@@ -2890,9 +2708,10 @@ describe('Verification controller', () => {
       MockVerificationService.verifyOtp.mockReturnValueOnce(
         errAsync(new TransactionExpiredError()),
       )
-      const expectedResponse = {
-        message: 'Your session has expired, please refresh and try again.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'sessionExpired',
+        'Your session has expired, please refresh and try again.',
+      )
 
       // Act
       await VerificationController._handleOtpVerification(
@@ -3023,9 +2842,10 @@ describe('Verification controller', () => {
       MockVerificationService.verifyOtp.mockReturnValueOnce(
         errAsync(new OtpExpiredError()),
       )
-      const expectedResponse = {
-        message: 'Your OTP has expired, please request for a new one.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'otpExpired',
+        'Your OTP has expired, please request for a new one.',
+      )
 
       // Act
       await VerificationController._handleOtpVerification(
@@ -3052,10 +2872,10 @@ describe('Verification controller', () => {
       MockVerificationService.verifyOtp.mockReturnValueOnce(
         errAsync(new OtpRetryExceededError()),
       )
-      const expectedResponse = {
-        message:
-          'You have entered too many invalid OTPs. Please request for a new OTP and try again.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'otpRetryExceeded',
+        'You have entered too many invalid OTPs. Please request for a new OTP and try again.',
+      )
 
       // Act
       await VerificationController._handleOtpVerification(
@@ -3082,9 +2902,10 @@ describe('Verification controller', () => {
       MockVerificationService.verifyOtp.mockReturnValueOnce(
         errAsync(new WrongOtpError()),
       )
-      const expectedResponse = {
-        message: 'Wrong OTP.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'wrongOtp',
+        'Wrong OTP.',
+      )
 
       // Act
       await VerificationController._handleOtpVerification(

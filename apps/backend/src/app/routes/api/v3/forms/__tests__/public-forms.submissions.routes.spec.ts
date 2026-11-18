@@ -7,8 +7,8 @@ import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
 import session, { Session } from 'supertest-session'
 
-import { aws } from 'src/app/config/config'
 import * as FeatureFlagsService from 'src/app/modules/feature-flags/feature-flags.service'
+import { s3Operations } from 'src/app/utils/aws-s3'
 import { FormFieldSchema } from 'src/types'
 
 import {
@@ -51,18 +51,6 @@ jest.mock('nodemailer', () => ({
   }),
 }))
 
-jest.mock('@opengovsg/myinfo-gov-client', () => ({
-  MyInfoGovClient: jest.fn().mockReturnValue({
-    extractUinFin: jest.fn(),
-  }),
-  MyInfoMode: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoMode,
-  MyInfoSource: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoSource,
-  MyInfoAddressType: jest.requireActual('@opengovsg/myinfo-gov-client')
-    .MyInfoAddressType,
-  MyInfoAttribute: jest.requireActual('@opengovsg/myinfo-gov-client')
-    .MyInfoAttribute,
-}))
-
 const app = setupApp('/forms', PublicFormsRouter)
 
 describe('public-form.submissions.routes', () => {
@@ -79,7 +67,7 @@ describe('public-form.submissions.routes', () => {
     jest.restoreAllMocks()
   })
 
-  afterAll(async () => await dbHandler.closeDatabase)
+  afterAll(async () => await dbHandler.closeDatabase())
 
   describe('SP, CP and MyInfo authentication', () => {
     describe('SingPass', () => {
@@ -137,6 +125,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -165,6 +155,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -197,6 +189,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -229,6 +223,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -302,6 +298,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -330,13 +328,14 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
 
       it('should return 401 when submission has invalid cookie', async () => {
         // Arrange
-        // Mock MyInfoGovClient to return error when decoding JWT
         jest.spyOn(jwt, 'verify').mockImplementationOnce(() => {
           throw new Error()
         })
@@ -361,6 +360,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -396,6 +397,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -456,6 +459,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -484,6 +489,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -513,6 +520,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -544,6 +553,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -697,9 +708,9 @@ describe('public-form.submissions.routes', () => {
       jest
         .spyOn(FeatureFlagsService, 'getFeatureFlag')
         .mockReturnValue(okAsync(true))
-      jest.spyOn(aws.s3, 'createPresignedPost').mockImplementationOnce(() => {
-        throw new Error('some error')
-      })
+      jest
+        .spyOn(s3Operations, 'createPresignedPost')
+        .mockRejectedValueOnce(new Error('some error'))
 
       const response = await request
         .post(`/forms/${form._id}/submissions/get-s3-presigned-post-data`)
@@ -1209,6 +1220,8 @@ describe('public-form.submissions.routes', () => {
           expect(response.body).toEqual({
             message:
               'Something went wrong with your login. Please try logging in and submitting again.',
+            messageKey:
+              'features.publicForm.backendErrors.submission.loginFailed',
             spcpSubmissionFailure: true,
           })
         })
@@ -1237,6 +1250,8 @@ describe('public-form.submissions.routes', () => {
           expect(response.body).toEqual({
             message:
               'Something went wrong with your login. Please try logging in and submitting again.',
+            messageKey:
+              'features.publicForm.backendErrors.submission.loginFailed',
             spcpSubmissionFailure: true,
           })
         })
@@ -1269,6 +1284,8 @@ describe('public-form.submissions.routes', () => {
           expect(response.body).toEqual({
             message:
               'Something went wrong with your login. Please try logging in and submitting again.',
+            messageKey:
+              'features.publicForm.backendErrors.submission.loginFailed',
             spcpSubmissionFailure: true,
           })
         })
@@ -1303,6 +1320,8 @@ describe('public-form.submissions.routes', () => {
           expect(response.body).toEqual({
             message:
               'Something went wrong with your login. Please try logging in and submitting again.',
+            messageKey:
+              'features.publicForm.backendErrors.submission.loginFailed',
             spcpSubmissionFailure: true,
           })
         })
@@ -1363,6 +1382,8 @@ describe('public-form.submissions.routes', () => {
           expect(response.body).toEqual({
             message:
               'Something went wrong with your login. Please try logging in and submitting again.',
+            messageKey:
+              'features.publicForm.backendErrors.submission.loginFailed',
             spcpSubmissionFailure: true,
           })
         })
@@ -1391,6 +1412,8 @@ describe('public-form.submissions.routes', () => {
           expect(response.body).toEqual({
             message:
               'Something went wrong with your login. Please try logging in and submitting again.',
+            messageKey:
+              'features.publicForm.backendErrors.submission.loginFailed',
             spcpSubmissionFailure: true,
           })
         })
@@ -1420,6 +1443,8 @@ describe('public-form.submissions.routes', () => {
           expect(response.body).toEqual({
             message:
               'Something went wrong with your login. Please try logging in and submitting again.',
+            messageKey:
+              'features.publicForm.backendErrors.submission.loginFailed',
             spcpSubmissionFailure: true,
           })
         })
@@ -1451,6 +1476,8 @@ describe('public-form.submissions.routes', () => {
           expect(response.body).toEqual({
             message:
               'Something went wrong with your login. Please try logging in and submitting again.',
+            messageKey:
+              'features.publicForm.backendErrors.submission.loginFailed',
             spcpSubmissionFailure: true,
           })
         })

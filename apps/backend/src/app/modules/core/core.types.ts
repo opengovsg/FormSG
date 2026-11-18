@@ -1,9 +1,12 @@
 import { RequestHandler } from 'express'
+import { I18nMessageParams } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 
 export type ErrorResponseData = {
   statusCode: StatusCodes
   errorMessage: string
+  errorMessageKey?: string
+  errorMessageParams?: I18nMessageParams
 }
 
 export type ControllerHandler<

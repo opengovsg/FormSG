@@ -5,7 +5,7 @@ export const FEATURE_REQUEST = 'https://go.gov.sg/formsg-featurerequest'
 export const REPORT_VULNERABILITY = 'https://go.gov.sg/report-vulnerability'
 export const OSS_README = 'https://go.gov.sg/formsg-thirdparty'
 
-export const SINGPASS_FAQ = 'https://www.singpass.gov.sg/main/html/faq.html'
+export const SINGPASS_FAQ = 'https://ask.gov.sg/singpass'
 
 // FormSG guide links
 export const FORM_GUIDE = 'https://go.gov.sg/formsg-guides'
@@ -22,6 +22,9 @@ export const GUIDE_SINGPASS_FEATURES =
   'https://go.gov.sg/formsg-guide-singpass-myinfo'
 export const GUIDE_SPCP_ESRVCID =
   'https://go.gov.sg/formsg-guide-singpass-myinfo'
+export const GUIDE_NRIC_FIELD = 'https://go.gov.sg/nric-field'
+export const GUIDE_NRIC_FIELD_RESPONSE_CHANGES =
+  'https://guide.form.gov.sg/faq/faq/migration-to-nric-fin-uen-field#will-my-responses-look-different-after-i-convert'
 export const GUIDE_ENABLE_SPCP =
   'https://go.gov.sg/formsg-guide-singpass-myinfo-enable'
 export const GUIDE_ATTACHMENT_SIZE_LIMIT =
@@ -73,7 +76,6 @@ export const LANDING_PAGE_EXAMPLE_FORMS = [
 export const OGP_ALL_PRODUCTS = 'https://www.open.gov.sg/products/overview'
 export const OGP_POSTMAN = 'https://go.gov.sg/formsg-guide-postman'
 export const OGP_PLUMBER = 'https://plumber.gov.sg/'
-export const OGP_SGID = 'https://go.gov.sg/sgid-formsg'
 
 export const OGP_FORMSG_REPO = 'https://github.com/opengovsg/formsg'
 

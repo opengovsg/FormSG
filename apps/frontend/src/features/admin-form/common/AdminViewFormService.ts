@@ -14,6 +14,7 @@ import { transformAllIsoStringsToDate } from '~utils/date'
 import {
   API_BASE_URL,
   ApiService,
+  getClientVersionHeader,
   processFetchResponse,
 } from '~services/ApiService'
 
@@ -24,7 +25,7 @@ import {
   filterHiddenInputs,
 } from '~features/public-form/utils'
 
-import { PREVIEW_MOCK_UINFIN } from '../preview/constants'
+import { getPreviewMockLoginId } from '../preview/constants'
 
 // endpoint exported for testing
 export const ADMIN_FORM_ENDPOINT = '/admin/forms'
@@ -59,7 +60,7 @@ export const previewForm = async (
       // and if server has not already sent back a mock authenticated state.
       if (data.form.authType !== FormAuthType.NIL && !data.spcpSession) {
         data.spcpSession = {
-          userName: PREVIEW_MOCK_UINFIN,
+          userName: getPreviewMockLoginId(data.form.authType),
         }
       }
 
@@ -90,7 +91,7 @@ export const viewFormTemplate = async (
       // and if server has not already sent back a mock authenticated state.
       if (data.form.authType !== FormAuthType.NIL && !data.spcpSession) {
         data.spcpSession = {
-          userName: PREVIEW_MOCK_UINFIN,
+          userName: getPreviewMockLoginId(data.form.authType),
         }
       }
 
@@ -207,16 +208,15 @@ export const submitEmailModeFormPreviewWithFetch = async ({
     formInputs: filteredInputs,
   })
 
-  const response = await fetch(
-    `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`,
-    {
-      method: 'POST',
-      body: formData,
-      headers: {
-        Accept: 'application/json',
-      },
+  const url = `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`
+  const response = await fetch(url, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      Accept: 'application/json',
+      ...getClientVersionHeader(url),
     },
-  )
+  })
   return processFetchResponse(response)
 }
 
@@ -231,17 +231,16 @@ export const submitStorageModeFormPreviewWithFetch = async ({
 }): Promise<SubmissionResponseDto> => {
   const emptyFormData = {}
 
-  const response = await fetch(
-    `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/storage`,
-    {
-      method: 'POST',
-      body: JSON.stringify(emptyFormData),
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
+  const url = `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/storage`
+  const response = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(emptyFormData),
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      ...getClientVersionHeader(url),
     },
-  )
+  })
   return processFetchResponse(response)
 }
 

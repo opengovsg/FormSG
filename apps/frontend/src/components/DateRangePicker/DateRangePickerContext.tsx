@@ -7,6 +7,7 @@ import {
   RefObject,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -27,6 +28,9 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import { DateRangeValue } from '~components/Calendar'
 
 import { DateRangePickerProps } from './DateRangePicker'
+
+const toDayKey = (date: Date | null | undefined) =>
+  date && isValid(date) ? format(date, 'yyyy-MM-dd') : ''
 
 interface DateRangePickerContextReturn {
   isMobile: boolean
@@ -135,6 +139,36 @@ const useProvideDateRangePicker = ({
       ? format(endDate, displayFormat, { locale })
       : '',
   )
+
+  const valueStartKey = toDayKey(value?.[0])
+  const valueEndKey = toDayKey(value?.[1])
+
+  useEffect(() => {
+    if (!value) return
+    const shownStartKey = toDayKey(
+      parse(startInputDisplay, dateFormat, new Date()),
+    )
+    const shownEndKey = toDayKey(parse(endInputDisplay, dateFormat, new Date()))
+    if (shownStartKey === valueStartKey && shownEndKey === valueEndKey) return
+    const [nextStart, nextEnd] = value
+    setStartInputDisplay(
+      valueStartKey && nextStart
+        ? format(nextStart, displayFormat, { locale })
+        : '',
+    )
+    setEndInputDisplay(
+      valueEndKey && nextEnd ? format(nextEnd, displayFormat, { locale }) : '',
+    )
+  }, [
+    value,
+    valueStartKey,
+    valueEndKey,
+    startInputDisplay,
+    endInputDisplay,
+    dateFormat,
+    displayFormat,
+    locale,
+  ])
 
   const handleUpdateInputs = useCallback(
     (nextRange: DateRangeValue) => {

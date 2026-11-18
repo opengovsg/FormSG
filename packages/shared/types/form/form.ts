@@ -79,8 +79,6 @@ export enum FormAuthType {
   SP = 'SP',
   CP = 'CP',
   MyInfo = 'MyInfo',
-  SGID = 'SGID',
-  SGID_MyInfo = 'SGID_MyInfo',
 }
 
 export enum Language {
@@ -101,9 +99,18 @@ export type FormSupportedLanguages = {
   selectedLanguage?: Language | null
 }
 
+export type FormWebhookFormat = 'v1' | 'v4'
+
+export const FORMAT_FOR_PLUMBER_WEBHOOKS: FormWebhookFormat = 'v4'
+
 export type FormWebhook = {
   url: string
   isRetryEnabled: boolean
+  /**
+   * MRF only. Present iff set by the admin, or pinned when a generic URL was first set.
+   * Plumber always receives V4; generic consumers resolve an absent format to V1.
+   */
+  webhookFormat?: FormWebhookFormat
 }
 
 export enum FormResponseMode {
@@ -115,6 +122,7 @@ export enum FormResponseMode {
 export enum FormOrigin {
   Paper = 'paper',
   DigitalNew = 'digitalNew',
+  DigitalExisting = 'digitalExisting',
   DigitalEmail = 'digitalEmail',
   DigitalDocument = 'digitalDocument',
   DigitalSpreadsheet = 'digitalSpreadsheet',
@@ -184,7 +192,51 @@ export type FormBusinessField = {
   gstRegNo?: string
 }
 
+export enum SavedViewSortDirection {
+  Ascending = 'asc',
+  Descending = 'desc',
+}
+
+/**
+ * A named snapshot of the responses table's filter, sort and column choices.
+ *
+ * Column and field references are stored as ids and resolved when the view is
+ * applied, so a view survives its fields being deleted. An omitted list means
+ * "no constraint", which keeps older views showing fields added since.
+ */
+/** Rows whose value in the column contains `text`, ignoring case. */
+export interface SavedViewTextFilter {
+  columnId: string
+  text: string
+}
+
+export interface SavedViewValuesFilter {
+  columnId: string
+  values: string[]
+}
+
+export type SavedViewColumnFilter = SavedViewTextFilter | SavedViewValuesFilter
+
+export interface FormSavedView {
+  _id: string
+  name: string
+  filter?: {
+    startDate?: DateString
+    endDate?: DateString
+    /** Every filter must match, so each one narrows the rows. */
+    columnFilters?: SavedViewColumnFilter[]
+  }
+  sort?: {
+    columnId: string
+    direction: SavedViewSortDirection
+  }
+  columnIds?: string[]
+}
+
+export type FormSavedViewInput = Omit<FormSavedView, '_id'>
+
 export interface FormBase {
+  savedViews?: FormSavedView[]
   title: string
   admin: UserDto['_id']
 
@@ -207,6 +259,12 @@ export interface FormBase {
 
   inactiveMessage: string
   submissionLimit: number | null
+  /**
+   * Instant at which the form stops accepting responses, or `null` if it has no
+   * scheduled closure. Nullable rather than optional so that `null` is the only
+   * representation of "no closure" on the wire.
+   */
+  closeAt: DateString | null
   isListed: boolean
 
   esrvcId?: string
@@ -243,17 +301,20 @@ export interface WhitelistedSubmitterIdsWithReferenceOid extends WhitelistedSubm
   encryptedWhitelistedSubmitterIds: string // Object id of the encrypted whitelist
 }
 
-export interface StorageFormBase extends FormBase {
-  responseMode: FormResponseMode.Encrypt
-  publicKey: string
-  emails: string[]
+export interface PaymentFormBase extends FormBase {
   payments_channel: FormPaymentsChannel
   payments_field: FormPaymentsField
   business?: FormBusinessField
+}
+
+export interface StorageFormBase extends PaymentFormBase {
+  responseMode: FormResponseMode.Encrypt
+  publicKey: string
+  emails: string[]
   whitelistedSubmitterIds?: WhitelistedSubmitterIds | null
 }
 
-export interface MultirespondentFormBase extends FormBase {
+export interface MultirespondentFormBase extends PaymentFormBase {
   responseMode: FormResponseMode.Multirespondent
   publicKey: string
   workflow: FormWorkflow
@@ -261,6 +322,7 @@ export interface MultirespondentFormBase extends FormBase {
   stepsToNotify: FormWorkflowStepDto['_id'][]
   stepOneEmailNotificationFieldId?: string
   hasStatusTracker: boolean
+  hasUsedGuidedMode?: boolean
   whitelistedSubmitterIds?: WhitelistedSubmitterIds | null
 }
 

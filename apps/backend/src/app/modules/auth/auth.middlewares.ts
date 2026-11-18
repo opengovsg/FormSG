@@ -1,6 +1,7 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { AuthedSessionData } from 'express-session'
+import { OTP_REGEX } from 'formsg-shared/constants'
 import { StatusCodes } from 'http-status-codes'
 
 import { GrowthbookFeature } from '../../config/features/growthbook.config'
@@ -16,6 +17,7 @@ import { getUserByApiKey } from './auth.service'
 import {
   getUserIdFromSession,
   isCronPaymentAuthValid,
+  isCronScheduledClosureAuthValid,
   isUserInSession,
   mapRouteError,
   mapRoutePublicApiError,
@@ -111,7 +113,8 @@ export const validateVerifyOtpParams = celebrate({
       .lowercase(),
     otp: Joi.string()
       .required()
-      .regex(/^\d{6}$/)
+      .uppercase()
+      .regex(OTP_REGEX)
       .message('Please enter a valid OTP'),
   }),
 })
@@ -122,6 +125,20 @@ export const withCronPaymentSecretAuthentication: ControllerHandler = (
   next,
 ) => {
   if (isCronPaymentAuthValid(req.headers)) {
+    return next()
+  }
+
+  return res
+    .status(StatusCodes.UNAUTHORIZED)
+    .json({ message: 'Request is unauthorized.' })
+}
+
+export const withCronScheduledClosureSecretAuthentication: ControllerHandler = (
+  req,
+  res,
+  next,
+) => {
+  if (isCronScheduledClosureAuthValid(req.headers)) {
     return next()
   }
 

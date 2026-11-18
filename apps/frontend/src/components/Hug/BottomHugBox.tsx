@@ -7,7 +7,10 @@ const BottomHugBox = ({ children }: { children: JSX.Element }) => {
       bottom="1.5rem"
       left="50%"
       transform="translateX(-50%)"
-      zIndex="2"
+      // Must sit above docked page chrome (e.g. the field list drawer's sticky
+      // section headers, which use zIndex="docked"), but below overlay/modal so
+      // real dialogs still cover it.
+      zIndex="sticky"
     >
       <Flex
         px="1.5rem"

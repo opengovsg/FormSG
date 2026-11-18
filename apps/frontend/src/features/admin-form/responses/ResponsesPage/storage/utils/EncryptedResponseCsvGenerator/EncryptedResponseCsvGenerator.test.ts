@@ -3,16 +3,31 @@ import { stringify } from 'csv-string'
 import { formatInTimeZone } from 'date-fns-tz'
 import { SetOptional } from 'type-fest'
 
+import { SavedViewSortDirection } from 'formsg-shared/types'
 import { WorkflowStatus } from 'formsg-shared/types/submission'
 import { answerKey } from 'formsg-shared/utils/address'
 
-import { MRF_RESPONSE_TIMESTAMP_LABEL } from '~features/admin-form/responses/constants'
+import {
+  CSV_DOWNLOAD_STATUS_COLUMN_ID,
+  CSV_MRF_PENDING_RESPONSE_AT_COLUMN_ID,
+  CSV_MRF_WORKFLOW_STATUS_COLUMN_ID,
+  CSV_PAYMENT_COLUMN_IDS,
+} from '~features/admin-form/responses/constants'
 
 import { CsvRecordData, DecryptedSubmissionData } from '../../types'
 import {
   DisplayedResponseWithoutAnswer,
   Response,
 } from '../csv-response-classes'
+import {
+  CsvExportView,
+  EXPORT_PAID_AMOUNT_COLUMN_ID,
+  EXPORT_PAYER_EMAIL_COLUMN_ID,
+  EXPORT_PENDING_RESPONSE_AT_COLUMN_ID,
+  EXPORT_RESPONSE_ID_COLUMN_ID,
+  EXPORT_TIMESTAMP_COLUMN_ID,
+  EXPORT_WORKFLOW_STATUS_COLUMN_ID,
+} from '../csvExportView'
 import { getDecryptedResponseInstance } from '../getDecryptedResponseInstance'
 
 import { EncryptedResponseCsvGenerator } from './EncryptedResponseCsvGenerator'
@@ -106,7 +121,6 @@ describe('EncryptedResponseCsvGenerator', () => {
     generator = new EncryptedResponseCsvGenerator(
       mockExpectedNumberOfRecords,
       mockNumOfMetaDataRows,
-      false,
     )
   })
 
@@ -369,7 +383,7 @@ describe('EncryptedResponseCsvGenerator', () => {
     describe('mrf form submissions', () => {
       it('should include header and data columns for mrf metadata', () => {
         // Arrange
-        const mrfGenerator = new EncryptedResponseCsvGenerator(1, 0, true)
+        const mrfGenerator = new EncryptedResponseCsvGenerator(1, 0)
         const mockDecryptedRecord = [generateRecord(1)]
         const mockRecord = {
           record: mockDecryptedRecord,
@@ -393,7 +407,7 @@ describe('EncryptedResponseCsvGenerator', () => {
         expect(mrfGenerator.records.length).toEqual(2 + BOM_LENGTH)
         const expectedHeaderRow = stringify([
           'Response ID',
-          MRF_RESPONSE_TIMESTAMP_LABEL,
+          'Timestamp',
           mockDecryptedRecord[0].question,
         ])
         const expectedSubmissionRow = stringify([
@@ -405,6 +419,222 @@ describe('EncryptedResponseCsvGenerator', () => {
           UTF8_BYTE_ORDER_MARK,
           expectedHeaderRow,
           expectedSubmissionRow,
+        ])
+      })
+    })
+
+    describe('mode-migrated form submissions', () => {
+      it('should share one column per field id between encrypt and mrf rows, leaving mrf metadata cells empty for encrypt rows', () => {
+        // Arrange
+        // On a mode-migrated form, a pre-migration encrypt row and an MRF row
+        // answer the same field (same field id). The MRF row additionally
+        // carries the workflow-status/pending-at pseudo-fields that
+        // CsvRecord.materializeSubmissionData injects (reserved ids).
+        const mrfGenerator = new EncryptedResponseCsvGenerator(2, 0)
+        const sharedField = generateRecord(1)
+        const workflowStatusColumn: CsvRecordData = {
+          _id: '000000000000000000010001',
+          fieldType: 'textfield',
+          question: 'Workflow status',
+          answer: 'Rejected',
+        }
+        const pendingAtColumn: CsvRecordData = {
+          _id: '000000000000000000010002',
+          fieldType: 'textfield',
+          question: 'Pending response at',
+          answer: '',
+        }
+        const mrfRecord = {
+          record: [workflowStatusColumn, pendingAtColumn, sharedField],
+          created: mockCreatedLater,
+          submissionId: 'mockMrfSubmissionId',
+        }
+        const encryptRecord = {
+          record: [
+            { ...sharedField, answer: 'preMigrationAnswer' } as CsvRecordData,
+          ],
+          created: mockCreatedEarly,
+          submissionId: 'mockEncryptSubmissionId',
+        }
+        mrfGenerator.addRecord(encryptRecord)
+        mrfGenerator.addRecord(mrfRecord)
+
+        // Act
+        mrfGenerator.process()
+
+        // Assert
+        // One shared column for the field; empty mrf metadata cells for the
+        // encrypt row. The mrf metadata columns keep their canonical
+        // position ahead of response columns even though the first-added
+        // (encrypt) record did not carry them.
+        const expectedHeaderRow = stringify([
+          'Response ID',
+          'Timestamp',
+          workflowStatusColumn.question,
+          pendingAtColumn.question,
+          sharedField.question,
+        ])
+        const expectedEncryptRow = stringify([
+          encryptRecord.submissionId,
+          getFormattedDate(encryptRecord.created),
+          '',
+          '',
+          'preMigrationAnswer',
+        ])
+        const expectedMrfRow = stringify([
+          mrfRecord.submissionId,
+          getFormattedDate(mrfRecord.created),
+          workflowStatusColumn.answer,
+          pendingAtColumn.answer,
+          sharedField.answer,
+        ])
+        expect(mrfGenerator.records).toEqual([
+          UTF8_BYTE_ORDER_MARK,
+          expectedHeaderRow,
+          expectedEncryptRow,
+          expectedMrfRow,
+        ])
+      })
+
+      it('should order mrf metadata columns right after download status, ahead of response and payment columns', () => {
+        // Arrange
+        // The reported bug: an encrypt row decrypted first seeds the header
+        // map with download status, response and payment columns only, so a
+        // later mrf row's workflow columns landed at the very end.
+        const mrfGenerator = new EncryptedResponseCsvGenerator(2, 0)
+        const downloadStatusColumn: CsvRecordData = {
+          _id: '000000000000000000000000',
+          fieldType: 'textfield',
+          question: 'Download Status',
+          answer: 'Success',
+        }
+        const paymentColumn: CsvRecordData = {
+          _id: '000000000000000000000002',
+          fieldType: 'textfield',
+          question: 'Payment amount',
+          answer: '1.00',
+        }
+        const workflowStatusColumn: CsvRecordData = {
+          _id: '000000000000000000010001',
+          fieldType: 'textfield',
+          question: 'Workflow status',
+          answer: 'Rejected',
+        }
+        const pendingAtColumn: CsvRecordData = {
+          _id: '000000000000000000010002',
+          fieldType: 'textfield',
+          question: 'Pending response at',
+          answer: '',
+        }
+        const sharedField = generateRecord(1)
+        const encryptRecord = {
+          record: [downloadStatusColumn, sharedField, paymentColumn],
+          created: mockCreatedEarly,
+          submissionId: 'mockEncryptSubmissionId',
+        }
+        const mrfRecord = {
+          record: [
+            downloadStatusColumn,
+            workflowStatusColumn,
+            pendingAtColumn,
+            sharedField,
+          ],
+          created: mockCreatedLater,
+          submissionId: 'mockMrfSubmissionId',
+        }
+        mrfGenerator.addRecord(encryptRecord)
+        mrfGenerator.addRecord(mrfRecord)
+
+        // Act
+        mrfGenerator.process()
+
+        // Assert
+        const expectedHeaderRow = stringify([
+          'Response ID',
+          'Timestamp',
+          downloadStatusColumn.question,
+          workflowStatusColumn.question,
+          pendingAtColumn.question,
+          sharedField.question,
+          paymentColumn.question,
+        ])
+        expect(mrfGenerator.records[1]).toEqual(expectedHeaderRow)
+      })
+
+      it('should fill payment columns for a payment-bearing encrypt row and leave them empty for a payment-less mrf row', () => {
+        // Arrange
+        // Payment-enabled storage-mode forms are migration-eligible, so a
+        // pre-migration encrypt row can carry the payment pseudo-fields that
+        // CsvRecord.materializeSubmissionData injects (reserved ids). An MRF
+        // row without a payment must leave those cells empty.
+        const mrfGenerator = new EncryptedResponseCsvGenerator(2, 0)
+        const sharedField = generateRecord(1)
+        const paymentStatusColumn: CsvRecordData = {
+          _id: '000000000000000000000004',
+          fieldType: 'textfield',
+          question: 'Payment status',
+          answer: 'Succeeded',
+        }
+        const paymentAmountColumn: CsvRecordData = {
+          _id: '000000000000000000000002',
+          fieldType: 'textfield',
+          question: 'Payment amount',
+          answer: 'S$31.41',
+        }
+        const workflowStatusColumn: CsvRecordData = {
+          _id: '000000000000000000010001',
+          fieldType: 'textfield',
+          question: 'Workflow status',
+          answer: 'Completed',
+        }
+        const encryptRecord = {
+          record: [sharedField, paymentStatusColumn, paymentAmountColumn],
+          created: mockCreatedEarly,
+          submissionId: 'mockEncryptSubmissionId',
+        }
+        const mrfRecord = {
+          record: [workflowStatusColumn, sharedField],
+          created: mockCreatedLater,
+          submissionId: 'mockMrfSubmissionId',
+        }
+        mrfGenerator.addRecord(encryptRecord)
+        mrfGenerator.addRecord(mrfRecord)
+
+        // Act
+        mrfGenerator.process()
+
+        // Assert
+        // The workflow status column keeps its canonical position ahead of
+        // the response and payment columns.
+        const expectedHeaderRow = stringify([
+          'Response ID',
+          'Timestamp',
+          workflowStatusColumn.question,
+          sharedField.question,
+          paymentStatusColumn.question,
+          paymentAmountColumn.question,
+        ])
+        const expectedEncryptRow = stringify([
+          encryptRecord.submissionId,
+          getFormattedDate(encryptRecord.created),
+          '',
+          sharedField.answer,
+          paymentStatusColumn.answer,
+          paymentAmountColumn.answer,
+        ])
+        const expectedMrfRow = stringify([
+          mrfRecord.submissionId,
+          getFormattedDate(mrfRecord.created),
+          workflowStatusColumn.answer,
+          sharedField.answer,
+          '',
+          '',
+        ])
+        expect(mrfGenerator.records).toEqual([
+          UTF8_BYTE_ORDER_MARK,
+          expectedHeaderRow,
+          expectedEncryptRow,
+          expectedMrfRow,
         ])
       })
     })
@@ -946,5 +1176,310 @@ describe('EncryptedResponseCsvGenerator', () => {
         ])
       })
     })
+  })
+})
+
+describe('the view carried over from the responses table', () => {
+  const ANSWERS = ['Delta', 'alpha', 'Charlie']
+  const DATES = [
+    '2019-11-05T13:12:14',
+    '2019-12-05T13:12:14',
+    '2019-10-05T13:12:14',
+  ]
+
+  const build = (
+    view?: ConstructorParameters<typeof EncryptedResponseCsvGenerator>[2],
+  ) => {
+    const generator = new EncryptedResponseCsvGenerator(3, 0, view)
+    ANSWERS.forEach((answer, index) => {
+      generator.addRecord({
+        record: [
+          {
+            _id: 'sortable',
+            question: 'Name',
+            fieldType: 'textfield',
+            answer,
+          },
+          {
+            _id: 'hideable',
+            question: 'Secret',
+            fieldType: 'textfield',
+            answer: `secret-${index}`,
+          },
+        ],
+        created: DATES[index],
+        submissionId: `submission-${index}`,
+      } as DecryptedSubmissionData)
+    })
+    return generator
+  }
+
+  const answersInOrder = (
+    generator: EncryptedResponseCsvGenerator,
+  ): string[] => {
+    generator.sort()
+    return generator.unprocessed.map((up) => up.record['sortable'].getAnswer())
+  }
+
+  it('orders oldest to newest when the table was not sorted', () => {
+    expect(answersInOrder(build())).toEqual(['Charlie', 'Delta', 'alpha'])
+  })
+
+  it('orders by the sorted column, ignoring case', () => {
+    expect(
+      answersInOrder(
+        build({
+          sortColumnId: 'sortable',
+          sortDirection: SavedViewSortDirection.Ascending,
+        }),
+      ),
+    ).toEqual(['alpha', 'Charlie', 'Delta'])
+  })
+
+  it('reverses on a descending sort', () => {
+    expect(
+      answersInOrder(
+        build({
+          sortColumnId: 'sortable',
+          sortDirection: SavedViewSortDirection.Descending,
+        }),
+      ),
+    ).toEqual(['Delta', 'Charlie', 'alpha'])
+  })
+
+  it('orders by date when the sorted column is the timestamp', () => {
+    expect(
+      answersInOrder(
+        build({
+          sortColumnId: EXPORT_TIMESTAMP_COLUMN_ID,
+          sortDirection: SavedViewSortDirection.Descending,
+        }),
+      ),
+    ).toEqual(['alpha', 'Delta', 'Charlie'])
+  })
+
+  it('drops a hidden column from the header and from every row', () => {
+    const generator = build({ hiddenColumnIds: ['hideable'] })
+    generator.process()
+
+    const header = generator.records[0 + BOM_LENGTH]
+    expect(header).toContain('Name')
+    expect(header).not.toContain('Secret')
+    generator.records.slice(1 + BOM_LENGTH).forEach((row) => {
+      expect(row).not.toContain('secret-')
+    })
+  })
+
+  it('keeps every column when none are hidden', () => {
+    const generator = build()
+    generator.process()
+
+    expect(generator.records[0 + BOM_LENGTH]).toContain('Secret')
+  })
+
+  it('keeps only the records every column filter matches', () => {
+    const generator = build({
+      columnFilters: [{ columnId: 'sortable', text: 'alpha' }],
+    })
+
+    expect(generator.length()).toBe(1)
+    expect(generator.unprocessed[0].record['sortable'].getAnswer()).toBe(
+      'alpha',
+    )
+  })
+
+  it('matches a column filter without regard to case', () => {
+    expect(
+      build({
+        columnFilters: [{ columnId: 'sortable', text: 'ALPHA' }],
+      }).length(),
+    ).toBe(1)
+  })
+
+  it('filters on the response id', () => {
+    expect(
+      build({
+        columnFilters: [
+          { columnId: EXPORT_RESPONSE_ID_COLUMN_ID, text: 'submission-2' },
+        ],
+      }).length(),
+    ).toBe(1)
+  })
+
+  it('looks only in the filtered column', () => {
+    expect(
+      build({
+        columnFilters: [{ columnId: 'sortable', text: 'secret-1' }],
+      }).length(),
+    ).toBe(0)
+    expect(
+      build({
+        columnFilters: [{ columnId: 'hideable', text: 'secret-1' }],
+      }).length(),
+    ).toBe(1)
+  })
+
+  it('needs every column filter to match', () => {
+    expect(
+      build({
+        columnFilters: [
+          { columnId: 'sortable', text: 'alpha' },
+          { columnId: 'hideable', text: 'secret-2' },
+        ],
+      }).length(),
+    ).toBe(0)
+  })
+
+  it('keeps every record for a filter on a column only the table reads', () => {
+    expect(
+      build({
+        columnFilters: [
+          { columnId: EXPORT_WORKFLOW_STATUS_COLUMN_ID, text: 'pending' },
+        ],
+      }).length(),
+    ).toBe(3)
+  })
+
+  it('keeps every record with no column filters', () => {
+    expect(build({ columnFilters: [] }).length()).toBe(3)
+  })
+})
+
+describe('the reserved columns carried over from the responses table', () => {
+  const WORKFLOW_TABLE_COLUMN_IDS = [
+    EXPORT_RESPONSE_ID_COLUMN_ID,
+    EXPORT_WORKFLOW_STATUS_COLUMN_ID,
+    EXPORT_PENDING_RESPONSE_AT_COLUMN_ID,
+    EXPORT_TIMESTAMP_COLUMN_ID,
+    'field',
+  ]
+
+  const reserved = (_id: string, question: string, answer: string) =>
+    ({ _id, question, answer, fieldType: 'textfield' }) as CsvRecordData
+
+  const exportCsv = (view: CsvExportView): string[][] => {
+    const generator = new EncryptedResponseCsvGenerator(1, 0, view)
+    generator.addRecord({
+      record: [
+        reserved(CSV_DOWNLOAD_STATUS_COLUMN_ID, 'Download Status', 'Success'),
+        reserved(CSV_MRF_WORKFLOW_STATUS_COLUMN_ID, 'Workflow status', 'Done'),
+        reserved(CSV_MRF_PENDING_RESPONSE_AT_COLUMN_ID, 'Pending at', '-'),
+        reserved(CSV_PAYMENT_COLUMN_IDS.status, 'Payment status', 'Paid'),
+        reserved(CSV_PAYMENT_COLUMN_IDS.email, 'Payer', 'a@b.com'),
+        reserved(CSV_PAYMENT_COLUMN_IDS.amount, 'Payment amount', 'S$1.00'),
+        reserved('field', 'Name', 'Alice'),
+      ],
+      created: '2019-11-05T13:12:14',
+      submissionId: 'submission-0',
+    } as DecryptedSubmissionData)
+    generator.process()
+    return generator.records
+      .slice(BOM_LENGTH)
+      .map((line) => line.trim().split(','))
+  }
+
+  const headerOf = (view: CsvExportView) => exportCsv(view)[0]
+
+  it('drops the response id when the table hides it', () => {
+    const [header, row] = exportCsv({
+      hiddenColumnIds: [EXPORT_RESPONSE_ID_COLUMN_ID],
+      tableColumnIds: WORKFLOW_TABLE_COLUMN_IDS,
+    })
+
+    expect(header).not.toContain('Response ID')
+    expect(row).not.toContain('submission-0')
+    expect(header).toHaveLength(row.length)
+  })
+
+  it('drops the timestamp when the table hides it', () => {
+    const [header, row] = exportCsv({
+      hiddenColumnIds: [EXPORT_TIMESTAMP_COLUMN_ID],
+      tableColumnIds: WORKFLOW_TABLE_COLUMN_IDS,
+    })
+
+    expect(header).not.toContain('Timestamp')
+    expect(header).toHaveLength(row.length)
+  })
+
+  it('drops the workflow columns when the table hides them', () => {
+    const [header, row] = exportCsv({
+      hiddenColumnIds: [
+        EXPORT_WORKFLOW_STATUS_COLUMN_ID,
+        EXPORT_PENDING_RESPONSE_AT_COLUMN_ID,
+      ],
+      tableColumnIds: WORKFLOW_TABLE_COLUMN_IDS,
+    })
+
+    expect(header).not.toContain('Workflow status')
+    expect(header).not.toContain('Pending at')
+    expect(row).not.toContain('Done')
+    expect(header).toHaveLength(row.length)
+  })
+
+  it('drops the workflow columns when the table does not have them', () => {
+    const header = headerOf({
+      tableColumnIds: [
+        EXPORT_RESPONSE_ID_COLUMN_ID,
+        EXPORT_TIMESTAMP_COLUMN_ID,
+      ],
+    })
+
+    expect(header).toContain('Response ID')
+    expect(header).toContain('Timestamp')
+    expect(header).not.toContain('Workflow status')
+    expect(header).not.toContain('Pending at')
+  })
+
+  it('drops a payment column when the table hides its counterpart', () => {
+    const header = headerOf({
+      hiddenColumnIds: [EXPORT_PAYER_EMAIL_COLUMN_ID],
+      tableColumnIds: [
+        EXPORT_RESPONSE_ID_COLUMN_ID,
+        EXPORT_TIMESTAMP_COLUMN_ID,
+        EXPORT_PAYER_EMAIL_COLUMN_ID,
+        EXPORT_PAID_AMOUNT_COLUMN_ID,
+      ],
+    })
+
+    expect(header).not.toContain('Payer')
+    expect(header).toContain('Payment amount')
+  })
+
+  it('keeps the columns the table has no counterpart for', () => {
+    const header = headerOf({
+      hiddenColumnIds: WORKFLOW_TABLE_COLUMN_IDS,
+      tableColumnIds: WORKFLOW_TABLE_COLUMN_IDS,
+    })
+
+    expect(header).toEqual(['Download Status', 'Payment status'])
+  })
+
+  it('keeps every reserved column when the table did not list its columns', () => {
+    expect(headerOf({})).toEqual([
+      'Response ID',
+      'Timestamp',
+      'Download Status',
+      'Workflow status',
+      'Pending at',
+      'Payment status',
+      'Payer',
+      'Payment amount',
+      'Name',
+    ])
+  })
+
+  it('labels the timestamp column Timestamp on every form', () => {
+    // Admins' downstream imports were built against the storage-mode header,
+    // so a form with a workflow must not relabel it.
+    const header = headerOf({})
+
+    expect(header).toContain('Timestamp')
+    expect(header).not.toContain('Response timestamp')
+  })
+
+  it('keeps a form field the table does not have', () => {
+    expect(
+      headerOf({ tableColumnIds: [EXPORT_RESPONSE_ID_COLUMN_ID] }),
+    ).toContain('Name')
   })
 })

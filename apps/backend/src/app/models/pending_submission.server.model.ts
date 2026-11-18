@@ -6,6 +6,8 @@ import {
   IEmailSubmissionSchema,
   IEncryptedSubmissionSchema,
   IEncryptSubmissionModel,
+  IMultirespondentSubmissionModel,
+  IMultirespondentSubmissionSchema,
   ISubmissionModel,
   ISubmissionSchema,
 } from 'src/types'
@@ -13,12 +15,15 @@ import {
 import {
   EmailSubmissionSchema,
   EncryptSubmissionSchema,
+  MultirespondentSubmissionSchema,
   SubmissionSchema,
 } from './submission.server.model'
 
 export const PENDING_SUBMISSION_SCHEMA_ID = 'PendingSubmission'
 const EMAIL_PENDING_SUBMISSION_SCHEMA_ID = 'EmailPendingSubmission'
 const ENCRYPT_PENDING_SUBMISSION_SCHEMA_ID = 'EncryptPendingSubmission'
+const MULTIRESPONDENT_PENDING_SUBMISSION_SCHEMA_ID =
+  'MultirespondentPendingSubmission'
 
 const compilePendingSubmissionModel = (db: Mongoose): ISubmissionModel => {
   const PendingSubmission = db.model<ISubmissionSchema, ISubmissionModel>(
@@ -34,6 +39,11 @@ const compilePendingSubmissionModel = (db: Mongoose): ISubmissionModel => {
     ENCRYPT_PENDING_SUBMISSION_SCHEMA_ID,
     EncryptSubmissionSchema,
     SubmissionType.Encrypt,
+  )
+  PendingSubmission.discriminator(
+    MULTIRESPONDENT_PENDING_SUBMISSION_SCHEMA_ID,
+    MultirespondentSubmissionSchema,
+    SubmissionType.Multirespondent,
   )
   return PendingSubmission
 }
@@ -64,5 +74,15 @@ export const getEncryptPendingSubmissionModel = (
   return db.model<IEncryptedSubmissionSchema, IEncryptSubmissionModel>(
     ENCRYPT_PENDING_SUBMISSION_SCHEMA_ID,
   )
+}
+
+export const getMultirespondentPendingSubmissionModel = (
+  db: Mongoose,
+): IMultirespondentSubmissionModel => {
+  getPendingSubmissionModel(db)
+  return db.model<
+    IMultirespondentSubmissionSchema,
+    IMultirespondentSubmissionModel
+  >(MULTIRESPONDENT_PENDING_SUBMISSION_SCHEMA_ID)
 }
 export default getPendingSubmissionModel

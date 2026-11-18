@@ -18,6 +18,18 @@ export class FormInvalidResponseModeError extends ApplicationError {
   }
 }
 
+/**
+ * The form is open to new responses, and the requested change is one that
+ * cannot be made while respondents may be part-way through it.
+ */
+export class FormOpenToResponsesError extends ApplicationError {
+  constructor(
+    message = 'This form must be closed to new responses before it can be changed',
+  ) {
+    super(message, undefined, ErrorCodes.FORM_OPEN_TO_RESPONSES)
+  }
+}
+
 export class FormDeletedError extends ApplicationError {
   constructor(message = 'This form is no longer active') {
     super(message, undefined, ErrorCodes.FORM_DELETED)

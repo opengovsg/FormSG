@@ -1,1 +1,4 @@
 export { FormResultsNavbar } from './FormResultsNavbar'
+export { useResultsNavLayout } from './useResultsNavLayout'
+export type { ResultsTabEntry } from './useResultsTabs'
+export { useResultsTabs } from './useResultsTabs'

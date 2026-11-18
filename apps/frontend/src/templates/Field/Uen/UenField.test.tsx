@@ -1,4 +1,4 @@
-import { composeStories } from '@storybook/react'
+import { composeStories } from '@storybook/react-vite'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
@@ -7,6 +7,20 @@ import { REQUIRED_ERROR } from '~constants/validation'
 import * as stories from './UenField.stories'
 
 const { ValidationRequired, ValidationOptional } = composeStories(stories)
+
+let mockUenHiddenEntityTypes: string[] | undefined
+
+vi.mock('~features/env/queries', () => ({
+  useEnv: () => ({
+    data: mockUenHiddenEntityTypes
+      ? { uenHiddenEntityTypes: mockUenHiddenEntityTypes }
+      : undefined,
+  }),
+}))
+
+afterEach(() => {
+  mockUenHiddenEntityTypes = undefined
+})
 
 describe('validation required', () => {
   it('renders error when field is not filled before submitting', async () => {
@@ -112,5 +126,32 @@ describe('uen validation', () => {
     // Should show error message.
     const error = screen.getByText('Please enter a valid UEN')
     expect(error).not.toBeNull()
+  })
+
+  const submitOptionalUen = async (uen: string) => {
+    const user = userEvent.setup()
+    const schema = ValidationOptional.args?.schema
+    render(<ValidationOptional />)
+    const input = screen.getByLabelText(
+      `${schema!.questionNumber}. ${schema!.title}`,
+    )
+    await user.type(input, uen)
+    await user.click(screen.getByText('Submit'))
+  }
+
+  it('accepts a UEN whose entity type the server lists as hidden', async () => {
+    mockUenHiddenEntityTypes = ['QQ']
+
+    await submitOptionalUen('T20QQ0001F')
+
+    expect(
+      screen.getByText('You have submitted: T20QQ0001F'),
+    ).toBeInTheDocument()
+  })
+
+  it('rejects that UEN when the server lists no hidden entity types', async () => {
+    await submitOptionalUen('T20QQ0001F')
+
+    expect(screen.getByText('Please enter a valid UEN')).toBeInTheDocument()
   })
 })

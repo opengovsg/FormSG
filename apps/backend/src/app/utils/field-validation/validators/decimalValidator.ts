@@ -1,10 +1,11 @@
-import { BasicField, DecimalResponseV3 } from 'formsg-shared/types'
+import { StringAnswerV4 } from '@opengovsg/formsg-sdk'
+import { BasicField } from 'formsg-shared/types'
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import isFloat from 'validator/lib/isFloat'
 import isInt from 'validator/lib/isInt'
 
-import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
+import { ParsedClearFormFieldResponseV4 } from '../../../../types/api'
 import {
   IDecimalFieldSchema,
   OmitUnusedValidatorProps,
@@ -15,10 +16,7 @@ import {
 } from '../../../../types/field/utils/validation'
 import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
-import {
-  notEmptySingleAnswerResponse,
-  notEmptySingleAnswerResponseV3,
-} from './common'
+import { notEmptySingleAnswerResponse } from './common'
 
 type DecimalValidator = ResponseValidator<ProcessedSingleAnswerResponse>
 type DecimalValidatorConstructor = (
@@ -87,33 +85,44 @@ export const constructDecimalValidator: DecimalValidatorConstructor = (
     chain(decimalLeadingPatternValidator),
   )
 
-const isDecimalFieldV3: ResponseValidator<
-  ParsedClearFormFieldResponseV3,
-  DecimalResponseV3
+// V4
+
+type DecimalResponseV4 = ParsedClearFormFieldResponseV4 & {
+  fieldType: BasicField.Decimal
+  answer: StringAnswerV4
+}
+
+const isDecimalFieldV4: ResponseValidator<
+  ParsedClearFormFieldResponseV4,
+  DecimalResponseV4
 > = (response) => {
   if (response.fieldType !== BasicField.Decimal) {
     return left(
-      'DecimalValidatorV3.fieldTypeMismatch:\tfield type is not decimal',
+      'DecimalValidatorV4.fieldTypeMismatch:\tfield type is not decimal',
+    )
+  }
+  return right(response as DecimalResponseV4)
+}
+
+const notEmptyDecimalAnswerV4: ResponseValidator<DecimalResponseV4> = (
+  response,
+) => {
+  if (!response.answer.value || response.answer.value.trim().length === 0) {
+    return left(
+      'DecimalValidatorV4.notEmpty:\tanswer is an undefined or empty string',
     )
   }
   return right(response)
 }
 
-/**
- * Returns a validation function
- * to check if decimal is within the specified custom range.
- */
-const makeDecimalFloatRangeValidatorV3: ResponseValidatorConstructor<
+const makeDecimalFloatRangeValidatorV4: ResponseValidatorConstructor<
   OmitUnusedValidatorProps<IDecimalFieldSchema>,
-  DecimalResponseV3
+  DecimalResponseV4
 > = (decimalField) => (response) => {
-  const { customMin, customMax } = decimalField.ValidationOptions // defaults to customMin: null, customMax: null
-  const { answer } = response
+  const { customMin, customMax } = decimalField.ValidationOptions
+  const { value } = response.answer
 
   const isFloatOptions: IIsFloatOptions = {}
-  // Necessary to add 'min' and 'max' property manually as
-  // isFloatOptions tests for presence of property
-  // See https://github.com/validatorjs/validator.js/blob/302d2957c924b515cb22f7e87b5e84fee8636d6e/src/lib/isFloat.js#L13
 
   if (customMin || customMin === 0) {
     isFloatOptions['min'] = customMin
@@ -122,41 +131,33 @@ const makeDecimalFloatRangeValidatorV3: ResponseValidatorConstructor<
     isFloatOptions['max'] = customMax
   }
 
-  // isFloat validates range correctly for floats up to 15 decimal places
-  // (1.999999999999999 >= 2) is False
-  // (1.9999999999999999 >= 2) is True
-  return isFloat(answer, isFloatOptions)
+  return isFloat(value, isFloatOptions)
     ? right(response)
-    : left(`DecimalValidatorV3:\t answer is not a valid float`)
+    : left(`DecimalValidatorV4:\t answer is not a valid float`)
 }
 
-/**
- * Returns a validator to check if
- * decimal has correct leading pattern
- */
-const decimalLeadingPatternValidatorV3: ResponseValidator<DecimalResponseV3> = (
+const decimalLeadingPatternValidatorV4: ResponseValidator<DecimalResponseV4> = (
   response,
 ) => {
-  const { answer } = response
+  const { value } = response.answer
 
-  // leading number cannot be empty (".1") and no leading zeroes ("001")
-  const isLeadingPatternValid = isInt(answer.split('.')[0], {
+  const isLeadingPatternValid = isInt(value.split('.')[0], {
     allow_leading_zeroes: false,
   })
 
   return isLeadingPatternValid
     ? right(response)
-    : left(`DecimalValidatorV3:\t answer has invalid leading pattern`)
+    : left(`DecimalValidatorV4:\t answer has invalid leading pattern`)
 }
 
-export const constructDecimalValidatorV3: ResponseValidatorConstructor<
+export const constructDecimalValidatorV4: ResponseValidatorConstructor<
   OmitUnusedValidatorProps<IDecimalFieldSchema>,
-  ParsedClearFormFieldResponseV3,
-  DecimalResponseV3
+  ParsedClearFormFieldResponseV4,
+  DecimalResponseV4
 > = (decimalField) =>
   flow(
-    isDecimalFieldV3,
-    chain(notEmptySingleAnswerResponseV3),
-    chain(makeDecimalFloatRangeValidatorV3(decimalField)),
-    chain(decimalLeadingPatternValidatorV3),
+    isDecimalFieldV4,
+    chain(notEmptyDecimalAnswerV4),
+    chain(makeDecimalFloatRangeValidatorV4(decimalField)),
+    chain(decimalLeadingPatternValidatorV4),
   )

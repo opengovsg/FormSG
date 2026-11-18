@@ -1,5 +1,6 @@
 import { datadogLogs } from '@datadog/browser-logs'
 
+import { FormSavedView, FormSavedViewInput } from 'formsg-shared/types'
 import {
   FormSubmissionMetadataQueryDto,
   SubmissionCountQueryDto,
@@ -27,6 +28,33 @@ import {
   processDecryptedContent,
   processDecryptedContentV4,
 } from './ResponsesPage/storage/utils/processDecryptedContent'
+
+export const createFormSavedView = async (
+  formId: string,
+  savedView: FormSavedViewInput,
+): Promise<FormSavedView[]> =>
+  ApiService.post<FormSavedView[]>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/saved-views`,
+    savedView,
+  ).then(({ data }) => data)
+
+export const updateFormSavedView = async (
+  formId: string,
+  savedViewId: string,
+  savedView: FormSavedViewInput,
+): Promise<FormSavedView[]> =>
+  ApiService.put<FormSavedView[]>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/saved-views/${savedViewId}`,
+    savedView,
+  ).then(({ data }) => data)
+
+export const deleteFormSavedView = async (
+  formId: string,
+  savedViewId: string,
+): Promise<FormSavedView[]> =>
+  ApiService.delete<FormSavedView[]>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/saved-views/${savedViewId}`,
+  ).then(({ data }) => data)
 
 /**
  * Counts the number of submissions for a given form
@@ -100,7 +128,7 @@ export const getDecryptedSubmissionById = async ({
     submissionId,
   })
 
-  let processedContent, submissionSecretKey, mrfVersion
+  let processedContent, submissionSecretKey, mrfVersion, stepToken
   switch (encryptedSubmission.submissionType) {
     case SubmissionType.Encrypt: {
       const decryptedContent = formsgSdk.crypto.decrypt(secretKey, {
@@ -126,6 +154,7 @@ export const getDecryptedSubmissionById = async ({
             encryptedSubmission.encryptedSubmissionSecretKey,
           verifiedContent: encryptedSubmission.verifiedContent,
           version: encryptedSubmission.version,
+          encryptedStepToken: encryptedSubmission.encryptedStepToken,
         },
         formFieldsMeta,
       )
@@ -143,11 +172,13 @@ export const getDecryptedSubmissionById = async ({
 
       processedContent = processDecryptedContentV4(
         encryptedSubmission.form_fields,
+        encryptedSubmission.form_logics,
         decryptedV4.responses,
         decryptedV4.verified,
       )
       submissionSecretKey = decryptedV4.submissionSecretKey
       mrfVersion = encryptedSubmission.mrfVersion
+      stepToken = decryptedV4.stepToken
       break
     }
   }
@@ -164,21 +195,46 @@ export const getDecryptedSubmissionById = async ({
     refNo: encryptedSubmission.refNo,
     submissionTime: encryptedSubmission.submissionTime,
     submissionSecretKey,
-    payment:
-      encryptedSubmission.submissionType === SubmissionType.Encrypt
-        ? encryptedSubmission.payment
-        : undefined,
+    payment: encryptedSubmission.payment,
     mrf:
       encryptedSubmission.submissionType === SubmissionType.Multirespondent
         ? encryptedSubmission.mrfMeta
         : undefined,
     responses,
     mrfVersion,
+    stepToken,
+    workflowHistory:
+      encryptedSubmission.submissionType === SubmissionType.Multirespondent
+        ? {
+            submittedSteps: encryptedSubmission.submittedSteps ?? [],
+            authType: encryptedSubmission.authType,
+            workflow: encryptedSubmission.workflow,
+            workflowEvents: encryptedSubmission.workflowEvents ?? [],
+          }
+        : undefined,
   }
 }
 
+export const stopWorkflow = ({
+  formId,
+  submissionId,
+  emails,
+}: {
+  formId: string
+  submissionId: string
+  emails: string[]
+}): Promise<{ stoppedAt: string }> =>
+  ApiService.post<{ stoppedAt: string }>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}/stop`,
+    { emails },
+  ).then(({ data }) => data)
+
 type DecryptedContent = NonNullable<ReturnType<typeof formsgSdk.crypto.decrypt>>
 export type DecryptedSubmission = Pick<DecryptedContent, 'responses'>
+
+export type IdentifiedDecryptedSubmission = DecryptedSubmission & {
+  submissionId: string
+}
 
 export const getAllDecryptedSubmission = async ({
   formId,
@@ -188,6 +244,7 @@ export const getAllDecryptedSubmission = async ({
   downloadAttachments,
   isSortByLatest,
   limit,
+  onSubmissionDecrypted,
 }: {
   formId: string
   secretKey: string
@@ -196,7 +253,8 @@ export const getAllDecryptedSubmission = async ({
   downloadAttachments: boolean
   isSortByLatest: boolean
   limit: number
-}): Promise<DecryptedSubmission[]> => {
+  onSubmissionDecrypted?: (submission: IdentifiedDecryptedSubmission) => void
+}): Promise<IdentifiedDecryptedSubmission[]> => {
   const numWorkers = window.navigator.hardwareConcurrency ?? 1
   const workerPool: CleanableDecryptionWorkerApi[] = []
   let currentSubmissionIndex = 0
@@ -213,7 +271,7 @@ export const getAllDecryptedSubmission = async ({
     limit,
   })
 
-  const decryptSubmissionPromises: Promise<DecryptedSubmission>[] = []
+  const decryptSubmissionPromises: Promise<IdentifiedDecryptedSubmission>[] = []
 
   const reader = submissionsStream.getReader()
   let read: (result: ReadableStreamReadResult<string>) => void
@@ -235,7 +293,12 @@ export const getAllDecryptedSubmission = async ({
             if (!result.isParseSuccessful || !result.isDecryptionSuccessful) {
               throw new Error('One or more responses failed to decrypt.')
             }
-            return { responses: result.decryptedResponses }
+            const submission = {
+              submissionId: result.parsedSubmission._id,
+              responses: result.decryptedResponses,
+            }
+            onSubmissionDecrypted?.(submission)
+            return submission
           }),
       )
       currentSubmissionIndex++
@@ -250,3 +313,52 @@ export const getAllDecryptedSubmission = async ({
   })
   return decryptionResults
 }
+
+export const addAssignees = ({
+  formId,
+  submissionId,
+  emails,
+  submissionSecretKey,
+  stepToken,
+  expectedStepNumber,
+}: {
+  formId: string
+  submissionId: string
+  emails: string[]
+  submissionSecretKey: string
+  stepToken?: string
+  /** The pending step shown to the admin; the server rejects a stale page. */
+  expectedStepNumber: number
+}): Promise<{ stepNumber: number; emails: string[] }> =>
+  ApiService.post<{ stepNumber: number; emails: string[] }>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}/assignees`,
+    { emails, submissionSecretKey, stepToken, expectedStepNumber },
+  ).then(({ data }) => data)
+
+export const sendBackWorkflow = ({
+  formId,
+  submissionId,
+  targetStepNumber,
+  expectedStepNumber,
+  submissionSecretKey,
+  remarks,
+  stepOneRecipientEmail,
+}: {
+  formId: string
+  submissionId: string
+  targetStepNumber: number
+  expectedStepNumber: number
+  submissionSecretKey: string
+  remarks?: string
+  stepOneRecipientEmail?: string
+}): Promise<{ stepNumber: number; emails: string[] }> =>
+  ApiService.post<{ stepNumber: number; emails: string[] }>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}/send-back`,
+    {
+      targetStepNumber,
+      expectedStepNumber,
+      submissionSecretKey,
+      remarks,
+      stepOneRecipientEmail,
+    },
+  ).then(({ data }) => data)

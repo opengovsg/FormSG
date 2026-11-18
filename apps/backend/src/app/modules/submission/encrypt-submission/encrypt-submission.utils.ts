@@ -16,6 +16,7 @@ import Stripe from 'stripe'
 import {
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
+  IPopulatedMultirespondentForm,
   ISubmissionSchema,
   StorageModeSubmissionData,
 } from '../../../../types'
@@ -102,7 +103,7 @@ export const getPaymentAmount = (
  * @param paymentProducts
  */
 export const getPaymentIntentDescription = (
-  form: IPopulatedEncryptedForm,
+  form: IPopulatedEncryptedForm | IPopulatedMultirespondentForm,
   paymentProducts?: StorageModeSubmissionContentDto['paymentProducts'],
 ) => {
   const formPaymentFields = form.payments_field
@@ -165,7 +166,7 @@ export const formatMyInfoStorageResponseData = (
 }
 
 export const getStripePaymentMethod = (
-  form: IPopulatedEncryptedForm,
+  form: IPopulatedEncryptedForm | IPopulatedMultirespondentForm,
 ): Omit<Stripe.PaymentIntentCreateParams, 'amount' | 'currency'> => {
   const isPaynowOnly =
     form.payments_channel.payment_methods?.includes(PaymentMethodType.Paynow) &&

@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
   BasicField,
@@ -20,11 +20,7 @@ import {
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 
-import {
-  getMobileViewParameters,
-  StoryRouter,
-  viewports,
-} from '~utils/storybook'
+import { getMobileViewGlobals, StoryRouter } from '~utils/storybook'
 
 import { SettingsEmailsPage } from './SettingsEmailsPage'
 
@@ -95,8 +91,6 @@ export default {
   component: SettingsEmailsPage,
   decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
     msw: { handlers: { default: buildMswRoutes() } },
   },
 } as Meta
@@ -378,14 +372,11 @@ NoEmailsAddedForm.parameters = {
 export const Mobile = Template.bind({})
 Mobile.parameters = {
   ...NoEmailsAddedForm,
-  ...getMobileViewParameters(),
 }
+Mobile.globals = getMobileViewGlobals()
 
 export const Tablet = Template.bind({})
 Tablet.parameters = {
   ...NoEmailsAddedForm,
-  viewport: {
-    defaultViewport: 'tablet',
-  },
-  chromatic: { viewports: [viewports.md] },
 }
+Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }

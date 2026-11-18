@@ -451,7 +451,7 @@ describe('FormService', () => {
       existsSpy.mockRestore()
     })
 
-    it('should send the mrf query based if form is mrf and isSingleSubmission setting is enabled', async () => {
+    it('should count both step-one and pre-migration storage responses if form is mrf and isSingleSubmission setting is enabled', async () => {
       const existsSpy = jest.spyOn(Submission, 'exists').mockResolvedValue(null)
 
       const form = {
@@ -466,13 +466,19 @@ describe('FormService', () => {
           singleCheckSubmitterId,
         )
 
-      expect(existsSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          form: singleCheckFormId,
-          submissionType: SubmissionType.Multirespondent,
-          'submittedSteps.0.submitterId': singleCheckSubmitterId,
-        }),
-      )
+      expect(existsSpy).toHaveBeenCalledWith({
+        form: singleCheckFormId,
+        $or: [
+          {
+            submissionType: SubmissionType.Multirespondent,
+            'submittedSteps.0.submitterId': singleCheckSubmitterId,
+          },
+          {
+            submissionType: SubmissionType.Encrypt,
+            submitterId: singleCheckSubmitterId,
+          },
+        ],
+      })
       expect(result.isOk()).toBe(true)
       expect(result._unsafeUnwrap()).toBe(false)
 
@@ -981,6 +987,51 @@ describe('FormService', () => {
         const updated = await Form.findById(form._id)
         expect(updated!.status).toBe('PRIVATE')
       })
+
+      it('should count pre-migration encrypt submissions towards the submission limit', async () => {
+        // Arrange
+        // A mode-migrated multirespondent form retains its pre-migration
+        // encrypt submissions; both types count towards the limit.
+        const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          responseMode: FormResponseMode.Multirespondent,
+          status: FormStatus.Public,
+          submissionLimit: 5,
+        })
+        const validForm = new Form(formParams)
+        const form = (await validForm.save()) as IPopulatedForm
+
+        const encryptSubmissionPromises = times(3, () =>
+          Submission.create({
+            form: form._id,
+            myInfoFields: [],
+            submissionType: SubmissionType.Encrypt,
+            encryptedContent: 'mockEncryptedContent',
+            version: 1,
+            created: new Date('2020-01-01'),
+          }),
+        )
+        const mrfSubmissionPromises = times(2, () =>
+          Submission.create(mockMultirespondentSubmissionForForm(form._id)),
+        )
+        await Promise.all([
+          ...encryptSubmissionPromises,
+          ...mrfSubmissionPromises,
+        ])
+
+        // Act
+        const actual =
+          await FormService.checkFormSubmissionLimitAndDeactivateForm(form)
+
+        // Assert
+        expect(actual._unsafeUnwrapErr()).toEqual(
+          new PrivateFormError(
+            'Submission made after form submission limit was reached',
+            form.title,
+          ),
+        )
+        const updated = await Form.findById(form._id)
+        expect(updated!.status).toBe('PRIVATE')
+      })
     })
   })
 
@@ -998,6 +1049,74 @@ describe('FormService', () => {
 
       // Assert
       expect(actual._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should return PrivateFormError when a public form is past its scheduled expiry', async () => {
+      const form = {
+        _id: new ObjectId(),
+        status: FormStatus.Public,
+        closeAt: new Date(Date.now() - 60 * 1000),
+        inactiveMessage: 'test inactive message',
+      } as unknown as IPopulatedForm
+
+      const actual = FormService.isFormPublic(form)
+
+      expect(actual._unsafeUnwrapErr()).toEqual(
+        new PrivateFormError(form.inactiveMessage, form.title),
+      )
+    })
+
+    it('should return PrivateFormError when the expiry is exactly now', async () => {
+      // The deadline is inclusive: 2359 means closed at 2359.
+      const now = new Date()
+      jest.useFakeTimers().setSystemTime(now)
+      const form = {
+        _id: new ObjectId(),
+        status: FormStatus.Public,
+        closeAt: now,
+        inactiveMessage: 'test inactive message',
+      } as unknown as IPopulatedForm
+
+      const actual = FormService.isFormPublic(form)
+
+      jest.useRealTimers()
+      expect(actual.isErr()).toEqual(true)
+    })
+
+    it('should return true when a public form has a future expiry', async () => {
+      const form = {
+        _id: new ObjectId(),
+        status: FormStatus.Public,
+        closeAt: new Date(Date.now() + 60 * 60 * 1000),
+      } as unknown as IPopulatedForm
+
+      const actual = FormService.isFormPublic(form)
+
+      expect(actual._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should return true when a public form has no expiry set', async () => {
+      const form = {
+        _id: new ObjectId(),
+        status: FormStatus.Public,
+        closeAt: null,
+      } as unknown as IPopulatedForm
+
+      const actual = FormService.isFormPublic(form)
+
+      expect(actual._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should still report a deleted form as deleted even when past its expiry', async () => {
+      const form = {
+        _id: new ObjectId(),
+        status: FormStatus.Archived,
+        closeAt: new Date(Date.now() - 60 * 1000),
+      } as unknown as IPopulatedForm
+
+      const actual = FormService.isFormPublic(form)
+
+      expect(actual._unsafeUnwrapErr()).toEqual(new FormDeletedError())
     })
 
     it('should return FormDeletedError when form has been deleted', async () => {

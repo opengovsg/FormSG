@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 import { FieldError, useForm } from 'react-hook-form'
 import { FormControl, VStack } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { get, isEmpty } from 'lodash'
 
-import { viewports } from '~utils/storybook'
+import { viewportModes } from '~utils/storybook'
 
 import Button from '../Button'
 import FormErrorMessage from '../FormControl/FormErrorMessage'
@@ -22,6 +22,7 @@ const Template: StoryFn<RadioProps> = (args) => (
 )
 
 export const Default = Template.bind({})
+Default.parameters = { argos: { modes: viewportModes('tablet', 'mobile') } }
 Default.args = {
   name: 'Default',
 }
@@ -30,28 +31,6 @@ export const Disabled = Template.bind({})
 Disabled.args = {
   name: 'Disabled',
   isDisabled: true,
-}
-
-export const Mobile = Template.bind({})
-Mobile.args = {
-  name: 'Mobile',
-}
-Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
-}
-
-export const Tablet = Template.bind({})
-Tablet.args = {
-  name: 'Tablet',
-}
-Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
-  chromatic: { viewports: [viewports.md] },
 }
 
 const AllStates: StoryFn<RadioProps> = (args) => {
@@ -166,6 +145,7 @@ const PlaygroundTemplate: StoryFn = ({
 }
 
 export const Playground = PlaygroundTemplate.bind({})
+Playground.tags = ['playground']
 Playground.args = {
   label: 'Radio without others',
   hasOthers: false,
@@ -173,6 +153,7 @@ Playground.args = {
 }
 
 export const PlaygroundWithOthers = PlaygroundTemplate.bind({})
+PlaygroundWithOthers.tags = ['playground']
 PlaygroundWithOthers.args = {
   label: 'Radio with others',
   hasOthers: true,

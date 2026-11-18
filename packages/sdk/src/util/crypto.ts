@@ -1,5 +1,4 @@
 import nacl from 'tweetnacl'
-import { decodeBase64, encodeBase64, encodeUTF8 } from 'tweetnacl-util'
 
 import {
   EncryptedAttachmentContent,
@@ -7,6 +6,8 @@ import {
   EncryptedFileContent,
   Keypair,
 } from '../types'
+
+import { decodeBase64, encodeBase64, encodeUTF8 } from './encoding'
 
 /**
  * Helper method to generate a new keypair for encryption.
@@ -121,6 +122,6 @@ export const generateUUID = (): string => {
     (
       +c ^
       (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))
-    ).toString(16),
+    ).toString(16)
   )
 }

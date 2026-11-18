@@ -19,6 +19,8 @@ export interface ResponsesResponsesPage {
         }
         confirmationScreen: {
           downloadTitle: string
+          csvTitle: string
+          csvAppliesTableView: string
           responsesText: string
           pdfsText: string
           attachmentsText: string
@@ -60,6 +62,46 @@ export interface ResponsesResponsesPage {
         }
       }
       submissionSearchbarPlaceholder: string
+      searchResponsesPlaceholder: string
+      filterMenu: {
+        dateRange: string
+        columns: string
+        filterApplied: string
+        filterPlaceholder: string
+        clearFilter: string
+        clearAllFilters: string
+      }
+      views: {
+        countUnavailable: string
+        loadingCount: string
+        allResponses: string
+        saveAsNewView: string
+        saveView: string
+        viewLimitReached: string
+        viewName: string
+        viewNamePlaceholder: string
+        viewNameRequired: string
+        viewNameMinLength: string
+        viewNameMaxLength: string
+        deleteView: string
+        deleteViewTitle: string
+        deleteViewDescription: string
+        deleteViewSuccess: string
+        saveViewSuccess: string
+      }
+      sortMenu: {
+        column: string
+        direction: string
+        responseNumber: string
+        ascending: string
+        descending: string
+      }
+      toolbar: {
+        filter: string
+        sort: string
+        columns: string
+        all: string
+      }
       downloadButton: {
         label: string
         navigateAwayPrompt: {
@@ -75,8 +117,10 @@ export interface ResponsesResponsesPage {
         }
       }
       unlockedResponses: {
-        resultsFound: string
-        responsesToDate: string
+        noMatchingResponses: string
+        recentOnly: string
+        recentOnlyWithView: string
+        showMore: string
       }
     }
     storageResponsesTab: {

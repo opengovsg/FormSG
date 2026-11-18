@@ -22,7 +22,7 @@ import { clone, omit, times } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
 import path from 'path'
-import { PassThrough, Readable, Transform } from 'stream'
+import { PassThrough, Transform } from 'stream'
 
 import { aws } from 'src/app/config/config'
 import getPendingSubmissionModel from 'src/app/models/pending_submission.server.model'
@@ -37,7 +37,7 @@ import {
 import { InvalidSubmissionIdError } from 'src/app/modules/feedback/feedback.errors'
 import * as SubmissionService from 'src/app/modules/submission/submission.service'
 import MailService from 'src/app/services/mail/mail.service'
-import { CreatePresignedPostError } from 'src/app/utils/aws-s3'
+import { CreatePresignedPostError, s3Operations } from 'src/app/utils/aws-s3'
 import { createQueryWithDateParam } from 'src/app/utils/date'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import {
@@ -49,6 +49,7 @@ import {
   StorageModeSubmissionCursorData,
   StorageModeSubmissionData,
 } from 'src/types'
+import { ParsedClearAttachmentFieldResponseV4 } from 'src/types/api'
 
 import { PaymentNotFoundError } from '../../payments/payments.errors'
 import * as PaymentsService from '../../payments/payments.service'
@@ -56,6 +57,7 @@ import {
   AttachmentSizeLimitExceededError,
   AttachmentTooLargeError,
   DownloadCleanFileFailedError,
+  GuardDutyFileAlreadyScannedError,
   GuardDutyInvalidFileKeyError,
   InvalidFieldIdError,
   InvalidFileExtensionError,
@@ -67,10 +69,12 @@ import {
   VirusScanFailedError,
 } from '../submission.errors'
 import {
+  CLEAN_FILE_DOWNLOAD_RETRY_DELAY_MS,
   downloadCleanFile,
   getQuarantinePresignedPostData,
   transformAttachmentMetasToSignedUrls,
   triggerGuardDutyScanning,
+  triggerGuardDutyScanThenDownloadCleanFileChainV4,
 } from '../submission.service'
 import {
   buildMrfMetadata,
@@ -242,10 +246,13 @@ describe('submission.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(expectedSubmissionCount)
     })
 
-    it('should return correct form counts when submission type is provided', async () => {
+    it('should count both encrypt and multirespondent submissions for storage mode forms', async () => {
       // Arrange
-      const expectedSubmissionCount = 4
-      const subEncryptPromise = times(expectedSubmissionCount, () =>
+      // A storage mode form reverted from multirespondent mode retains its
+      // multirespondent submissions; only email submissions stay excluded.
+      const encryptSubmissionCount = 4
+      const expectedSubmissionCount = encryptSubmissionCount + 1
+      const subEncryptPromise = times(encryptSubmissionCount, () =>
         Submission.create({
           submissionType: SubmissionType.Encrypt,
           form: MOCK_FORM_ID,
@@ -279,11 +286,66 @@ describe('submission.service', () => {
 
       const actualResult = await SubmissionService.getFormSubmissionsCount({
         formId: MOCK_FORM_ID.toHexString(),
-        submissionType: SubmissionType.Encrypt,
+        formResponseMode: FormResponseMode.Encrypt,
       })
 
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(expectedSubmissionCount)
+    })
+
+    it('should count both encrypt and multirespondent submissions for multirespondent forms', async () => {
+      // Arrange
+      // A mode-migrated multirespondent form holds encrypt submissions
+      // alongside multirespondent ones; the count must span both while
+      // still excluding email submissions.
+      const encryptSubmissionCount = 4
+      const multirespondentSubmissionCount = 3
+      const subEncryptPromise = times(encryptSubmissionCount, () =>
+        Submission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: MOCK_FORM_ID,
+          version: 1,
+          encryptedContent: 'some random encrypted content',
+        }),
+      )
+      const subEmailPromise = Submission.create({
+        submissionType: SubmissionType.Email,
+        form: MOCK_FORM_ID,
+        responseHash: 'hash',
+        responseSalt: 'salt',
+        recipientEmails: [],
+      })
+      const subMultirespondentPromise = times(
+        multirespondentSubmissionCount,
+        () =>
+          Submission.create({
+            submissionType: SubmissionType.Multirespondent,
+            form: MOCK_FORM_ID,
+            workflowStep: 0,
+            version: 3,
+            encryptedContent: 'some random encrypted content',
+            encryptedSubmissionSecretKey:
+              'some random encrypted submission secret key',
+            submissionPublicKey: 'some random submission public key',
+          }),
+      )
+      await Promise.all([
+        ...subEncryptPromise,
+        subEmailPromise,
+        ...subMultirespondentPromise,
+      ])
+
+      // Act
+      const actualResult = await SubmissionService.getFormSubmissionsCount({
+        formId: MOCK_FORM_ID.toHexString(),
+        formResponseMode: FormResponseMode.Multirespondent,
+      })
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(
+        encryptSubmissionCount + multirespondentSubmissionCount,
+      )
     })
 
     it('should return correct form counts in range when date range is provided', async () => {
@@ -1067,8 +1129,12 @@ describe('submission.service', () => {
         },
       }
       const getMetaSpy = jest
-        .spyOn(EncryptSubmission, 'findSingleMetadata')
+        .spyOn(Submission, 'findEncryptedOrMultirespondentSingleMetadata')
         .mockResolvedValueOnce(expectedMetadata)
+      // A storage mode form reverted from multirespondent mode retains its
+      // multirespondent submissions, so the encrypt discriminator must not be
+      // used.
+      const encryptMetaSpy = jest.spyOn(EncryptSubmission, 'findSingleMetadata')
 
       // Act
       const actualResult = await SubmissionService.getSubmissionMetadata(
@@ -1081,6 +1147,38 @@ describe('submission.service', () => {
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(expectedMetadata)
       expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, mockSubmissionId)
+      expect(encryptMetaSpy).not.toHaveBeenCalled()
+    })
+
+    it('should look up multirespondent form metadata across both submission types via the base model', async () => {
+      // Arrange
+      const mockSubmissionId = new ObjectId().toHexString()
+      const expectedMetadata: SubmissionMetadata = {
+        number: 1,
+        refNo: mockSubmissionId as SubmissionId,
+        submissionTime: 'some submission time',
+        payments: null,
+      }
+      const mixedMetaSpy = jest
+        .spyOn(Submission, 'findEncryptedOrMultirespondentSingleMetadata')
+        .mockResolvedValueOnce(expectedMetadata)
+      const mrfMetaSpy = jest.spyOn(
+        MultirespondentSubmission,
+        'findSingleMetadata',
+      )
+
+      // Act
+      const actualResult = await SubmissionService.getSubmissionMetadata(
+        FormResponseMode.Multirespondent,
+        MOCK_FORM_ID,
+        mockSubmissionId,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedMetadata)
+      expect(mixedMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, mockSubmissionId)
+      expect(mrfMetaSpy).not.toHaveBeenCalled()
     })
 
     it('should return null when given submissionId is not valid', async () => {
@@ -1103,7 +1201,7 @@ describe('submission.service', () => {
       // Arrange
       const mockSubmissionId = new ObjectId().toHexString()
       const getMetaSpy = jest
-        .spyOn(EncryptSubmission, 'findSingleMetadata')
+        .spyOn(Submission, 'findEncryptedOrMultirespondentSingleMetadata')
         .mockResolvedValueOnce(null)
 
       // Act
@@ -1124,7 +1222,7 @@ describe('submission.service', () => {
       const mockSubmissionId = new ObjectId().toHexString()
       const mockErrorString = 'some database error message'
       const getMetaSpy = jest
-        .spyOn(EncryptSubmission, 'findSingleMetadata')
+        .spyOn(Submission, 'findEncryptedOrMultirespondentSingleMetadata')
         .mockRejectedValueOnce(new Error(mockErrorString))
 
       // Act
@@ -1159,8 +1257,14 @@ describe('submission.service', () => {
         count: 1,
       }
       const getMetaSpy = jest
-        .spyOn(EncryptSubmission, 'findAllMetadataByFormId')
+        .spyOn(Submission, 'findAllEncryptedOrMultirespondentMetadataByFormId')
         .mockResolvedValueOnce(expectedResult)
+      // See getSubmissionMetadata: the encrypt discriminator would hide
+      // multirespondent rows on a reverted storage mode form.
+      const encryptMetaSpy = jest.spyOn(
+        EncryptSubmission,
+        'findAllMetadataByFormId',
+      )
 
       // Act
       const actualResult = await SubmissionService.getSubmissionMetadataList(
@@ -1173,6 +1277,67 @@ describe('submission.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(expectedResult)
       expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, {
         page: undefined,
+      })
+      expect(encryptMetaSpy).not.toHaveBeenCalled()
+    })
+
+    it('should list multirespondent form metadata across both submission types via the base model', async () => {
+      // Arrange
+      const expectedResult = {
+        metadata: [
+          {
+            number: 2,
+            refNo: new ObjectId().toHexString(),
+            submissionTime: 'some submission time',
+          },
+        ] as SubmissionMetadata[],
+        count: 2,
+      }
+      const mixedMetaSpy = jest
+        .spyOn(Submission, 'findAllEncryptedOrMultirespondentMetadataByFormId')
+        .mockResolvedValueOnce(expectedResult)
+      const mrfMetaSpy = jest.spyOn(
+        MultirespondentSubmission,
+        'findAllMetadataByFormId',
+      )
+
+      // Act
+      const actualResult = await SubmissionService.getSubmissionMetadataList(
+        FormResponseMode.Multirespondent,
+        MOCK_FORM_ID,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedResult)
+      expect(mixedMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, {
+        page: undefined,
+      })
+      expect(mrfMetaSpy).not.toHaveBeenCalled()
+    })
+
+    it('should filter multirespondent form metadata by the date range', async () => {
+      // Arrange
+      const mixedMetaSpy = jest
+        .spyOn(Submission, 'findAllEncryptedOrMultirespondentMetadataByFormId')
+        .mockResolvedValueOnce({ metadata: [], count: 0 })
+      const dateRange = { startDate: '2026-10-06', endDate: '2026-10-08' }
+
+      // Act
+      const actualResult = await SubmissionService.getSubmissionMetadataList(
+        FormResponseMode.Multirespondent,
+        MOCK_FORM_ID,
+        1,
+        10,
+        dateRange,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(mixedMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, {
+        page: 1,
+        pageSize: 10,
+        ...dateRange,
       })
     })
 
@@ -1190,7 +1355,7 @@ describe('submission.service', () => {
         count: 1,
       }
       const getMetaSpy = jest
-        .spyOn(EncryptSubmission, 'findAllMetadataByFormId')
+        .spyOn(Submission, 'findAllEncryptedOrMultirespondentMetadataByFormId')
         .mockResolvedValueOnce(expectedResult)
 
       // Act
@@ -1212,7 +1377,7 @@ describe('submission.service', () => {
       // Arrange
       const mockErrorString = 'some database error message'
       const getMetaSpy = jest
-        .spyOn(EncryptSubmission, 'findAllMetadataByFormId')
+        .spyOn(Submission, 'findAllEncryptedOrMultirespondentMetadataByFormId')
         .mockRejectedValueOnce(new Error(mockErrorString))
 
       // Act
@@ -1247,15 +1412,20 @@ describe('submission.service', () => {
       } as StorageModeSubmissionData
 
       const getSubmissionSpy = jest
-        .spyOn(EncryptSubmission, 'findEncryptedSubmissionById')
+        .spyOn(Submission, 'findEncryptedOrMultirespondentSubmissionById')
         .mockResolvedValueOnce(expected)
+      // See getSubmissionMetadata: the encrypt discriminator would hide
+      // multirespondent rows on a reverted storage mode form.
+      const encryptLookupSpy = jest.spyOn(
+        EncryptSubmission,
+        'findEncryptedSubmissionById',
+      )
       const mockFormId = new ObjectId().toHexString()
       const mockSubmissionId = new ObjectId().toHexString()
 
       // Act
       const actualResult = await SubmissionService.getEncryptedSubmissionData(
         FormResponseMode.Encrypt,
-
         mockFormId,
         mockSubmissionId,
       )
@@ -1267,13 +1437,14 @@ describe('submission.service', () => {
         mockFormId,
         mockSubmissionId,
       )
+      expect(encryptLookupSpy).not.toHaveBeenCalled()
     })
 
     it('should return SubmissionNotFoundError when submissionId does not exist in the database', async () => {
       // Arrange
       // Return null submission.
       const getSubmissionSpy = jest
-        .spyOn(EncryptSubmission, 'findEncryptedSubmissionById')
+        .spyOn(Submission, 'findEncryptedOrMultirespondentSubmissionById')
         .mockResolvedValueOnce(null)
       const mockFormId = new ObjectId().toHexString()
       const mockSubmissionId = new ObjectId().toHexString()
@@ -1304,7 +1475,7 @@ describe('submission.service', () => {
       // Return error when querying for submission.
       const mockErrorString = 'some error'
       const getSubmissionSpy = jest
-        .spyOn(EncryptSubmission, 'findEncryptedSubmissionById')
+        .spyOn(Submission, 'findEncryptedOrMultirespondentSubmissionById')
         .mockRejectedValueOnce(new Error(mockErrorString))
       const mockFormId = new ObjectId().toHexString()
       const mockSubmissionId = new ObjectId().toHexString()
@@ -1327,16 +1498,87 @@ describe('submission.service', () => {
         mockSubmissionId,
       )
     })
+
+    it('should look up multirespondent forms across both submission types via the base model', async () => {
+      // Arrange
+      // A mode-migrated multirespondent form can hold a pre-migration encrypt
+      // submission; the multirespondent read path must still find it.
+      const expected = {
+        submissionType: SubmissionType.Encrypt,
+        encryptedContent: 'mock encrypted content',
+        verifiedContent: 'mock verified content',
+        attachmentMetadata: new Map(),
+        created: new Date(),
+        version: 1,
+      } as unknown as StorageModeSubmissionData
+
+      const mixedLookupSpy = jest
+        .spyOn(Submission, 'findEncryptedOrMultirespondentSubmissionById')
+        .mockResolvedValueOnce(expected)
+      const mrfLookupSpy = jest.spyOn(
+        MultirespondentSubmission,
+        'findEncryptedSubmissionById',
+      )
+      const mockFormId = new ObjectId().toHexString()
+      const mockSubmissionId = new ObjectId().toHexString()
+
+      // Act
+      const actualResult = await SubmissionService.getEncryptedSubmissionData(
+        FormResponseMode.Multirespondent,
+        mockFormId,
+        mockSubmissionId,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expected)
+      expect(mixedLookupSpy).toHaveBeenCalledWith(mockFormId, mockSubmissionId)
+      expect(mrfLookupSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return SubmissionNotFoundError when the mixed-type lookup finds nothing', async () => {
+      // Arrange
+      jest
+        .spyOn(Submission, 'findEncryptedOrMultirespondentSubmissionById')
+        .mockResolvedValueOnce(null)
+      const mockFormId = new ObjectId().toHexString()
+      const mockSubmissionId = new ObjectId().toHexString()
+
+      // Act
+      const actualResult = await SubmissionService.getEncryptedSubmissionData(
+        FormResponseMode.Multirespondent,
+        mockFormId,
+        mockSubmissionId,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new SubmissionNotFoundError(
+          'Unable to find encrypted submission from database',
+        ),
+      )
+    })
   })
 
   describe('getSubmissionCursor', () => {
-    it('should return cursor successfully when date range is not provided', async () => {
+    it('should stream storage mode forms across both submission types via the base model', async () => {
       // Arrange
+      // A storage mode form reverted from multirespondent mode retains its
+      // multirespondent submissions; the encrypt discriminator cursor would
+      // silently omit them from the download stream.
+      const encryptCursorSpy = jest.spyOn(
+        EncryptSubmission,
+        'getSubmissionCursorByFormId',
+      )
       const mockCursor = jest.fn() as unknown as ReturnType<
-        typeof EncryptSubmission.getSubmissionCursorByFormId
+        typeof Submission.getEncryptedOrMultirespondentSubmissionCursorByFormId
       >
       const getSubmissionSpy = jest
-        .spyOn(EncryptSubmission, 'getSubmissionCursorByFormId')
+        .spyOn(
+          Submission,
+          'getEncryptedOrMultirespondentSubmissionCursorByFormId',
+        )
         .mockReturnValueOnce(mockCursor)
       const mockFormId = new ObjectId().toHexString()
 
@@ -1354,6 +1596,46 @@ describe('submission.service', () => {
         undefined,
         undefined,
       )
+      expect(encryptCursorSpy).not.toHaveBeenCalled()
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(mockCursor)
+    })
+
+    it('should stream multirespondent forms across both submission types via the base model', async () => {
+      // Arrange
+      // A mode-migrated multirespondent form can hold pre-migration encrypt
+      // submissions; a single-discriminator cursor would silently omit them
+      // from the download stream.
+      const mockCursor = jest.fn() as unknown as ReturnType<
+        typeof Submission.getEncryptedOrMultirespondentSubmissionCursorByFormId
+      >
+      const mixedCursorSpy = jest
+        .spyOn(
+          Submission,
+          'getEncryptedOrMultirespondentSubmissionCursorByFormId',
+        )
+        .mockReturnValueOnce(mockCursor)
+      const mrfCursorSpy = jest.spyOn(
+        MultirespondentSubmission,
+        'getSubmissionCursorByFormId',
+      )
+      const mockFormId = new ObjectId().toHexString()
+
+      // Act
+      const actualResult = SubmissionService.getSubmissionCursor(
+        FormResponseMode.Multirespondent,
+        mockFormId,
+      )
+
+      // Assert
+      expect(mixedCursorSpy).toHaveBeenCalledTimes(1)
+      expect(mixedCursorSpy).toHaveBeenCalledWith(
+        mockFormId,
+        {},
+        undefined,
+        undefined,
+      )
+      expect(mrfCursorSpy).not.toHaveBeenCalled()
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(mockCursor)
     })
@@ -1361,10 +1643,13 @@ describe('submission.service', () => {
     it('should return cursor successfully when date range is provided', async () => {
       // Arrange
       const mockCursor = jest.fn() as unknown as ReturnType<
-        typeof EncryptSubmission.getSubmissionCursorByFormId
+        typeof Submission.getEncryptedOrMultirespondentSubmissionCursorByFormId
       >
       const getSubmissionSpy = jest
-        .spyOn(EncryptSubmission, 'getSubmissionCursorByFormId')
+        .spyOn(
+          Submission,
+          'getEncryptedOrMultirespondentSubmissionCursorByFormId',
+        )
         .mockReturnValueOnce(mockCursor)
       const mockFormId = new ObjectId().toHexString()
       const mockDateRange = {
@@ -1394,8 +1679,8 @@ describe('submission.service', () => {
     it('should return MalformedParametersError when start date is invalid', async () => {
       // Arrange
       const getSubmissionSpy = jest.spyOn(
-        EncryptSubmission,
-        'getSubmissionCursorByFormId',
+        Submission,
+        'getEncryptedOrMultirespondentSubmissionCursorByFormId',
       )
 
       const mockFormId = new ObjectId().toHexString()
@@ -1422,8 +1707,8 @@ describe('submission.service', () => {
     it('should return MalformedParametersError when end date is invalid', async () => {
       // Arrange
       const getSubmissionSpy = jest.spyOn(
-        EncryptSubmission,
-        'getSubmissionCursorByFormId',
+        Submission,
+        'getEncryptedOrMultirespondentSubmissionCursorByFormId',
       )
 
       const mockFormId = new ObjectId().toHexString()
@@ -1449,11 +1734,15 @@ describe('submission.service', () => {
 
     it('should return cursor successfully when isSortByLatest and limit are provided', () => {
       // Arrange
+      // Multirespondent forms stream via the base-model mixed-type cursor.
       const mockCursor = jest.fn() as unknown as ReturnType<
-        typeof MultirespondentSubmission.getSubmissionCursorByFormId
+        typeof Submission.getEncryptedOrMultirespondentSubmissionCursorByFormId
       >
       const getSubmissionSpy = jest
-        .spyOn(MultirespondentSubmission, 'getSubmissionCursorByFormId')
+        .spyOn(
+          Submission,
+          'getEncryptedOrMultirespondentSubmissionCursorByFormId',
+        )
         .mockReturnValueOnce(mockCursor)
       const mockFormId = new ObjectId().toHexString()
       const mockDateRange = {
@@ -1487,8 +1776,8 @@ describe('submission.service', () => {
     it('should return MalformedParametersError when limit is invalid ie, negative', () => {
       // Arrange
       const getSubmissionSpy = jest.spyOn(
-        EncryptSubmission,
-        'getSubmissionCursorByFormId',
+        Submission,
+        'getEncryptedOrMultirespondentSubmissionCursorByFormId',
       )
       const mockFormId = new ObjectId().toHexString()
       const mockDateRange = {
@@ -1569,15 +1858,9 @@ describe('submission.service', () => {
       const actualTransformedData: any[] = []
 
       const awsSpy = jest
-        .spyOn(aws.s3, 'getSignedUrl')
-        // @ts-ignore
-        .mockImplementationOnce((_operation, _params, callback) =>
-          callback(null, mockFirstS3Url),
-        )
-        // @ts-ignore
-        .mockImplementationOnce((_operation, _params, callback) =>
-          callback(null, mockSecondS3Url),
-        )
+        .spyOn(s3Operations, 'getSignedUrl')
+        .mockResolvedValueOnce(mockFirstS3Url)
+        .mockResolvedValueOnce(mockSecondS3Url)
 
       // Act
       // Build pipeline.
@@ -1596,6 +1879,7 @@ describe('submission.service', () => {
       // Emit events.
       mockInput.emit('data', clone(MOCK_SUB_CURSOR_DATA_1))
       mockInput.emit('data', clone(MOCK_SUB_CURSOR_DATA_2))
+      await flushPromises()
 
       // Assert
       // Data from end of pipe should have their attachment metadatas replaced
@@ -1615,27 +1899,19 @@ describe('submission.service', () => {
       // Check external service calls.
       expect(awsSpy).toHaveBeenNthCalledWith(
         1,
-        'getObject',
         {
           Bucket: aws.attachmentS3Bucket,
           Key: MOCK_SUB_CURSOR_DATA_1.attachmentMetadata!['mockId1'],
-          Expires: expectedExpiry,
         },
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        expect.any(Function),
+        expectedExpiry,
       )
       expect(awsSpy).toHaveBeenNthCalledWith(
         2,
-        'getObject',
         {
           Bucket: aws.attachmentS3Bucket,
           Key: MOCK_SUB_CURSOR_DATA_2.attachmentMetadata!['mockId2'],
-          Expires: expectedExpiry,
         },
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        expect.any(Function),
+        expectedExpiry,
       )
     })
 
@@ -1644,7 +1920,7 @@ describe('submission.service', () => {
       const mockInput = new PassThrough()
       const expectedExpiry = 400
       const actualTransformedData: any[] = []
-      const awsSpy = jest.spyOn(aws.s3, 'getSignedUrl')
+      const awsSpy = jest.spyOn(s3Operations, 'getSignedUrl')
 
       // Act
       // Build pipeline.
@@ -1672,7 +1948,7 @@ describe('submission.service', () => {
     it('should return empty data.attachmentMetadata when nothing to transform', async () => {
       // Arrange
       const mockInput = new PassThrough()
-      const awsSpy = jest.spyOn(aws.s3, 'getSignedUrl')
+      const awsSpy = jest.spyOn(s3Operations, 'getSignedUrl')
       const expectedExpiry = 1
 
       const actualTransformedData: any[] = []
@@ -1704,7 +1980,7 @@ describe('submission.service', () => {
       const mockInput = new PassThrough()
       const expectedExpiry = 400
       const actualTransformedData: any[] = []
-      const awsSpy = jest.spyOn(aws.s3, 'getSignedUrl')
+      const awsSpy = jest.spyOn(s3Operations, 'getSignedUrl')
 
       // Act
       // Build pipeline.
@@ -1734,11 +2010,8 @@ describe('submission.service', () => {
       const expectedExpiry = 1000
       // Mock AWS S3 error.
       const awsSpy = jest
-        .spyOn(aws.s3, 'getSignedUrl')
-        // @ts-ignore
-        .mockImplementationOnce((_operation, _params, callback) => {
-          return callback(expectedError)
-        })
+        .spyOn(s3Operations, 'getSignedUrl')
+        .mockRejectedValueOnce(expectedError)
       const mockInput = new PassThrough()
 
       // Act
@@ -1762,15 +2035,11 @@ describe('submission.service', () => {
       // Should reject since error is returned from callback.
       await expect(streamPromise).rejects.toEqual(expectedError)
       expect(awsSpy).toHaveBeenCalledWith(
-        'getObject',
         {
           Bucket: aws.attachmentS3Bucket,
           Key: MOCK_SUB_CURSOR_DATA_2.attachmentMetadata!['mockId2'],
-          Expires: expectedExpiry,
         },
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        expect.any(Function),
+        expectedExpiry,
       )
     })
   })
@@ -2420,10 +2689,10 @@ describe('submission.service', () => {
       // Arrange
       // Mock promise implementation.
       jest
-        .spyOn(aws.s3, 'getSignedUrlPromise')
-        .mockImplementation((_operation, params) => {
+        .spyOn(s3Operations, 'getSignedUrl')
+        .mockImplementation((params, expiresIn) => {
           return Promise.resolve(
-            `https://some-fake-url/${params.Key}/${params.Expires}`,
+            `https://some-fake-url/${params.Key}/${expiresIn}`,
           )
         })
 
@@ -2445,7 +2714,7 @@ describe('submission.service', () => {
     it('should return empty object when given attachmentMetadata is undefined', async () => {
       // Arrange
       // Mock promise implementation.
-      const awsSpy = jest.spyOn(aws.s3, 'getSignedUrlPromise')
+      const awsSpy = jest.spyOn(s3Operations, 'getSignedUrl')
 
       // Act
       const actualResult = await transformAttachmentMetasToSignedUrls(
@@ -2463,7 +2732,7 @@ describe('submission.service', () => {
     it('should return empty object when given attachmentMetadata is empty map', async () => {
       // Arrange
       // Mock promise implementation.
-      const awsSpy = jest.spyOn(aws.s3, 'getSignedUrlPromise')
+      const awsSpy = jest.spyOn(s3Operations, 'getSignedUrl')
 
       // Act
       const actualResult = await transformAttachmentMetasToSignedUrls(
@@ -2481,7 +2750,7 @@ describe('submission.service', () => {
     it('should return CreatePresignedPostError when error occurs during the signed url creation process', async () => {
       // Arrange
       jest
-        .spyOn(aws.s3, 'getSignedUrlPromise')
+        .spyOn(s3Operations, 'getSignedUrl')
         .mockResolvedValueOnce('this passed')
         .mockRejectedValueOnce(new Error('now this fails'))
 
@@ -2515,21 +2784,16 @@ describe('submission.service', () => {
 
     it('should return presigned post data', async () => {
       // Arrange
-      const awsSpy = jest.spyOn(aws.s3, 'createPresignedPost')
-      const expectedCalledWithSubset = {
-        Bucket: aws.guarddutyQuarantineS3Bucket,
-        Fields: { key: expect.stringMatching(REGEX_UUID) },
-        Expires: 1 * 60, // expires in 1 minutes
-      }
-
-      const expectedPresignedPostDataGuardDuty = expect.objectContaining({
+      const expectedPresignedPostDataGuardDuty = {
         url: `${aws.endPoint}/${aws.guarddutyQuarantineS3Bucket}`,
-        fields: expect.objectContaining({
-          key: expect.stringMatching(REGEX_UUID),
+        fields: {
+          key: 'mock-key',
           bucket: aws.guarddutyQuarantineS3Bucket,
-          'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
-        }),
-      })
+        },
+      }
+      const awsSpy = jest
+        .spyOn(s3Operations, 'createPresignedPost')
+        .mockResolvedValue(expectedPresignedPostDataGuardDuty)
 
       // Act
       const actualResult = await getQuarantinePresignedPostData(
@@ -2542,45 +2806,41 @@ describe('submission.service', () => {
       expect(awsSpy.mock.calls).toEqual([
         [
           {
-            ...expectedCalledWithSubset,
             Bucket: aws.guarddutyQuarantineS3Bucket,
-            Fields: { key: uuid1 },
+            Key: uuid1,
+            Expires: 1 * 60, // expires in 1 minutes
             Conditions: [['content-length-range', 1, 1]],
+            Fields: {},
           },
-          expect.any(Function), // anonymous error handling function
         ],
         [
           {
-            ...expectedCalledWithSubset,
             Bucket: aws.guarddutyQuarantineS3Bucket,
-            Fields: { key: uuid2 },
+            Key: uuid2,
+            Expires: 1 * 60, // expires in 1 minutes
             Conditions: [['content-length-range', 1, 2]],
+            Fields: {},
           },
-          expect.any(Function), // anonymous error handling function
         ],
       ])
       const actualResultValue = actualResult._unsafeUnwrap()
-      expect(actualResultValue).toEqual(
-        expect.objectContaining([
-          {
-            id: fieldId1,
-            presignedPostData: expectedPresignedPostDataGuardDuty,
-          },
-          {
-            id: fieldId2,
-            presignedPostData: expectedPresignedPostDataGuardDuty,
-          },
-        ]),
-      )
+      expect(actualResultValue).toEqual([
+        {
+          id: fieldId1,
+          presignedPostData: expectedPresignedPostDataGuardDuty,
+        },
+        {
+          id: fieldId2,
+          presignedPostData: expectedPresignedPostDataGuardDuty,
+        },
+      ])
     })
 
-    it('should return CreatePresignedPostError when aws.s3.createPresignedPost throws error', async () => {
+    it('should return CreatePresignedPostError when s3Operations.createPresignedPost rejects', async () => {
       // Arrange
       const awsSpy = jest
-        .spyOn(aws.s3, 'createPresignedPost')
-        .mockImplementationOnce(() => {
-          throw new Error('some error')
-        })
+        .spyOn(s3Operations, 'createPresignedPost')
+        .mockRejectedValue(new Error('some error'))
 
       // Act
       const actualResult = await getQuarantinePresignedPostData(
@@ -2593,20 +2853,18 @@ describe('submission.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new CreatePresignedPostError(),
       )
-      expect(awsSpy).toHaveBeenCalledWith(
-        {
-          Bucket: aws.guarddutyQuarantineS3Bucket,
-          Fields: { key: expect.stringMatching(REGEX_UUID) },
-          Expires: 1 * 60, // expires in 1 minutes
-          Conditions: [['content-length-range', 1, 1]],
-        },
-        expect.any(Function), // anonymous error handling function
-      )
+      expect(awsSpy).toHaveBeenCalledWith({
+        Bucket: aws.guarddutyQuarantineS3Bucket,
+        Key: expect.stringMatching(REGEX_UUID),
+        Expires: 1 * 60, // expires in 1 minutes
+        Conditions: [['content-length-range', 1, 1]],
+        Fields: {},
+      })
     })
 
     it('should return InvalidFieldIdError when ids are not valid mongodb object ids', async () => {
       // Arrange
-      const awsSpy = jest.spyOn(aws.s3, 'createPresignedPost')
+      const awsSpy = jest.spyOn(s3Operations, 'createPresignedPost')
 
       // Act
       const actualResult = await getQuarantinePresignedPostData([
@@ -2900,7 +3158,7 @@ describe('submission.service', () => {
       )
     })
 
-    it('should return errAsync if lambda returns an errored response (e.g. file not found) when a valid file key is used', async () => {
+    it('should return GuardDutyFileAlreadyScannedError if lambda cannot find the file for a valid file key (e.g. replayed request)', async () => {
       // Arrange
       const failurePayload = {
         statusCode: 404,
@@ -2923,9 +3181,7 @@ describe('submission.service', () => {
       expect(awsSpy).toHaveBeenCalledOnce()
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new GuardDutyInvalidFileKeyError(
-          'GUARDDUTY Invalid file key - file key is not found in the quarantine bucket. The file must be uploaded first.',
-        ),
+        new GuardDutyFileAlreadyScannedError(),
       )
     })
 
@@ -2961,7 +3217,7 @@ describe('submission.service', () => {
     const MOCK_VALID_UUID = '0f3d2e22-d2aa-44f8-965a-27e46102936e'
     it('should return errAsync(InvalidFileKeyError) if cleanFileKey is invalid', async () => {
       // Arrange
-      const awsSpy = jest.spyOn(aws.s3, 'getObject')
+      const awsSpy = jest.spyOn(s3Operations, 'getObject')
 
       // Act
       // empty string for version id to simulate failure
@@ -2977,15 +3233,85 @@ describe('submission.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidFileKeyError())
     })
 
-    it('should return errAsync(DownloadCleanFileFailedError) if file download failed', async () => {
+    // Run the retry backoff instantly so tests don't wait on real timers.
+    const runDownloadCleanFile = async (
+      ...args: Parameters<typeof downloadCleanFile>
+    ) => {
+      jest.useFakeTimers()
+      try {
+        const resultPromise = downloadCleanFile(...args)
+        await jest.advanceTimersByTimeAsync(CLEAN_FILE_DOWNLOAD_RETRY_DELAY_MS)
+        return await resultPromise
+      } finally {
+        jest.useRealTimers()
+      }
+    }
+
+    it('should return errAsync(DownloadCleanFileFailedError) if file download failed after retrying once', async () => {
       // Arrange
-      const awsSpy = jest.spyOn(aws.s3, 'getObject')
+      const awsSpy = jest
+        .spyOn(s3Operations, 'getObject')
+        .mockRejectedValueOnce(new Error('download failed'))
+        .mockRejectedValueOnce(new Error('download failed again'))
 
       // Act
       // empty string for version id to simulate failure
-      const actualResult = await downloadCleanFile(
+      const actualResult = await runDownloadCleanFile(
         MOCK_VALID_UUID,
         '',
+        'mock-bucket-name',
+      )
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledTimes(2)
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new DownloadCleanFileFailedError(),
+      )
+    })
+
+    it('should return okAsync(buffer) if the first download fails transiently and the retry succeeds', async () => {
+      // Arrange
+      const content = 'Mock file content after retry'
+      const dnsError = Object.assign(
+        new Error('getaddrinfo EAI_AGAIN s3.ap-southeast-1.amazonaws.com'),
+        { code: 'EAI_AGAIN' },
+      )
+      const awsSpy = jest
+        .spyOn(s3Operations, 'getObject')
+        .mockRejectedValueOnce(dnsError)
+        .mockResolvedValueOnce({
+          Body: {
+            transformToByteArray: () => Promise.resolve(Buffer.from(content)),
+          },
+        } as never)
+
+      // Act
+      const actualResult = await runDownloadCleanFile(
+        MOCK_VALID_UUID,
+        'your-version-id',
+        'mock-bucket-name',
+      )
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledTimes(2)
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap().toString()).toEqual(content)
+    })
+
+    it('should not retry and return errAsync(DownloadCleanFileFailedError) on an S3 4xx error', async () => {
+      // Arrange
+      const noSuchKeyError = Object.assign(new Error('NoSuchKey'), {
+        $metadata: { httpStatusCode: 404 },
+      })
+      const awsSpy = jest
+        .spyOn(s3Operations, 'getObject')
+        .mockRejectedValueOnce(noSuchKeyError)
+
+      // Act
+      const actualResult = await runDownloadCleanFile(
+        MOCK_VALID_UUID,
+        'your-version-id',
         'mock-bucket-name',
       )
 
@@ -2997,25 +3323,39 @@ describe('submission.service', () => {
       )
     })
 
+    it('should return errAsync(DownloadCleanFileFailedError) if file download has no body', async () => {
+      // Arrange
+      const awsSpy = jest
+        .spyOn(s3Operations, 'getObject')
+        .mockResolvedValueOnce({})
+        .mockResolvedValueOnce({})
+
+      // Act
+      const actualResult = await runDownloadCleanFile(
+        MOCK_VALID_UUID,
+        'your-version-id',
+        'mock-bucket-name',
+      )
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledTimes(2)
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new DownloadCleanFileFailedError(),
+      )
+    })
+
     it('should return okAsync(buffer) if file has been successfully downloaded from the clean bucket', async () => {
       // Arrange
       const content = 'Mock file with a lot of text content!'
-      // Define a custom mock function for getObject
-      const mockGetObject = jest.fn().mockReturnValue({
-        createReadStream: () => {
-          // Create a readable stream with the desired content
-          const readStream = new Readable({
-            read() {
-              this.push(content)
-              this.push(null) // Indicates the end of the stream
-            },
-          })
-          return readStream
+      const mockGetObject = jest.fn().mockResolvedValue({
+        Body: {
+          transformToByteArray: () => Promise.resolve(Buffer.from(content)),
         },
       })
 
       const awsSpy = jest
-        .spyOn(aws.s3, 'getObject')
+        .spyOn(s3Operations, 'getObject')
         .mockImplementationOnce(mockGetObject)
 
       const versionId = 'your-version-id'
@@ -3034,11 +3374,88 @@ describe('submission.service', () => {
       expect(actualResult._unsafeUnwrap().toString()).toEqual(content)
     })
   })
+
+  describe('triggerGuardDutyScanThenDownloadCleanFileChainV4', () => {
+    // Regression guard for the MRF V4 wiring: after a clean scan the real
+    // uploaded filename must land in `answer.value`, not just `answer.filename`.
+    // Downstream sinks — email/PDF Q&A, response JSON, the V4->V3 webhook
+    // adapter, the encrypted-at-rest answer, and the admin CSV/attachment
+    // download name — all read `answer.value`. Previously it stayed as the
+    // quarantine bucket key (a bare UUID), which dropped the filename and its
+    // extension. This mirrors the V3 chain's `answer: response.filename`.
+    const MOCK_QUARANTINE_KEY = '1b90195b-ce8a-4590-810b-04ebaef8e4dd'
+    const MOCK_CLEAN_FILE_KEY = '0f3d2e22-d2aa-44f8-965a-27e46102936e'
+    const MOCK_FILENAME = 'my report.pdf'
+    const MOCK_CLEAN_CONTENT = 'clean file contents'
+
+    afterEach(() => jest.restoreAllMocks())
+
+    const makeV4AttachmentResponse = () =>
+      ({
+        fieldType: BasicField.Attachment,
+        question: 'Upload file',
+        answer: {
+          value: MOCK_QUARANTINE_KEY,
+          hasBeenScanned: false,
+          filename: MOCK_FILENAME,
+          content: Buffer.from(''),
+        },
+      }) as unknown as ParsedClearAttachmentFieldResponseV4
+
+    const mockCleanScanAndDownload = () => {
+      // Lambda returns a clean-bucket key (must be a valid UUID for downloadCleanFile).
+      jest.spyOn(aws.guarddutyLambda, 'invoke').mockImplementationOnce(() => {
+        return Promise.resolve({
+          Payload: JSON.stringify({
+            statusCode: 200,
+            body: JSON.stringify({
+              cleanFileKey: MOCK_CLEAN_FILE_KEY,
+              destinationVersionId: 'version-id',
+            }),
+          }),
+        })
+      })
+      // S3 v3 exposes a transformed response body rather than getObject().createReadStream().
+      const mockGetObject = jest.fn().mockResolvedValue({
+        Body: {
+          transformToByteArray: () =>
+            Promise.resolve(Buffer.from(MOCK_CLEAN_CONTENT)),
+        },
+      })
+      jest
+        .spyOn(s3Operations, 'getObject')
+        .mockImplementationOnce(mockGetObject)
+    }
+
+    it('should promote the real filename (with extension) into answer.value after a clean scan', async () => {
+      // Arrange
+      mockCleanScanAndDownload()
+
+      // Act
+      const actualResult =
+        await triggerGuardDutyScanThenDownloadCleanFileChainV4(
+          makeV4AttachmentResponse(),
+          MOCK_FORM_ID,
+        )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      const scanned = actualResult._unsafeUnwrap()
+      // The canonical, durable answer field must carry the filename — not the
+      // quarantine bucket key that was used only to trigger the scan.
+      expect(scanned.answer.value).toEqual(MOCK_FILENAME)
+      expect(scanned.answer.value).not.toEqual(MOCK_QUARANTINE_KEY)
+      expect(scanned.answer.filename).toEqual(MOCK_FILENAME)
+      expect(scanned.answer.content.toString()).toEqual(MOCK_CLEAN_CONTENT)
+    })
+  })
 })
 
 /**
  * Helper function to create a transform stream that converts Buffers to strings.
  */
+const flushPromises = () => new Promise((resolve) => setImmediate(resolve))
+
 const stringify = () =>
   new Transform({
     objectMode: true,

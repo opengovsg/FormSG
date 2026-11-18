@@ -1,5 +1,5 @@
 import React from 'react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { FormColorTheme, PaymentType } from 'formsg-shared/types'
 
@@ -41,10 +41,10 @@ export default {
     }),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
-    msw: DEFAULT_MSW_HANDLERS,
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
+    msw: { handlers: { default: DEFAULT_MSW_HANDLERS } },
   },
 } as Meta
 
@@ -97,10 +97,14 @@ export const CompleteWithoutReceipt = Template(
   />,
 ).bind({})
 CompleteWithoutReceipt.parameters = {
-  msw: [
-    ...DEFAULT_MSW_HANDLERS,
-    getPaymentReceiptStatusResponse({ delay: 'infinite' }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...DEFAULT_MSW_HANDLERS,
+        getPaymentReceiptStatusResponse({ delay: 'infinite' }),
+      ],
+    },
+  },
 }
 
 export const CompleteWithReceipt = Template(
@@ -121,5 +125,9 @@ export const CompleteWithReceipt = Template(
   />,
 ).bind({})
 CompleteWithReceipt.parameters = {
-  msw: [...DEFAULT_MSW_HANDLERS, getPaymentReceiptStatusResponse()],
+  msw: {
+    handlers: {
+      default: [...DEFAULT_MSW_HANDLERS, getPaymentReceiptStatusResponse()],
+    },
+  },
 }

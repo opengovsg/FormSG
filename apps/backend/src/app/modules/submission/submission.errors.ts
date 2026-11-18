@@ -46,6 +46,48 @@ export class MrfWorkflowOverflowError extends ApplicationError {
   }
 }
 
+export class MrfWorkflowStoppedError extends ApplicationError {
+  constructor(message = 'This workflow has been stopped.') {
+    super(message, undefined, ErrorCodes.SUBMISSION_MRF_WORKFLOW_STOPPED)
+  }
+}
+
+export class MrfWorkflowActionsUnavailableError extends ApplicationError {
+  constructor(
+    message = 'Workflow actions are not available for this response.',
+  ) {
+    super(
+      message,
+      undefined,
+      ErrorCodes.SUBMISSION_MRF_WORKFLOW_ACTIONS_UNAVAILABLE,
+    )
+  }
+}
+
+export class MrfAssigneeAlreadyAssignedError extends ApplicationError {
+  constructor(emails: string[]) {
+    super(
+      `${emails.join(', ')} ${emails.length === 1 ? 'is' : 'are'} already assigned to this step.`,
+      undefined,
+      ErrorCodes.SUBMISSION_MRF_ASSIGNEE_ALREADY_ASSIGNED,
+    )
+  }
+}
+
+export class MrfSendBackInvalidStepError extends ApplicationError {
+  constructor(
+    message = 'A workflow can only be sent back to a step after the first and before the pending step.',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_MRF_SEND_BACK_INVALID_STEP)
+  }
+}
+
+export class MrfWorkflowNotPendingError extends ApplicationError {
+  constructor(message = 'This workflow is no longer pending.') {
+    super(message, undefined, ErrorCodes.SUBMISSION_MRF_WORKFLOW_NOT_PENDING)
+  }
+}
+
 /**
  * A custom error class returned when given submission has invalid encryption encoding
  */
@@ -76,12 +118,12 @@ export class ValidateFieldError extends ApplicationError {
 /**
  * A custom error class returned when given submission has field level response validation failure
  */
-export class ValidateFieldErrorV3 extends ApplicationError {
+export class ValidateFieldErrorV4 extends ApplicationError {
   constructor(
-    message = 'Error when validating V3 field response',
+    message = 'Error when validating V4 field response',
     status = 400,
   ) {
-    super(message, status, ErrorCodes.SUBMISSION_VALIDATE_FIELD_V3)
+    super(message, status, ErrorCodes.SUBMISSION_VALIDATE_FIELD_V4)
   }
 }
 
@@ -179,6 +221,21 @@ export class GuardDutyInvalidFileKeyError extends ApplicationError {
     message = 'GUARDDUTY Invalid file key. File keys should be valid UUIDs.',
   ) {
     super(message, undefined, ErrorCodes.SUBMISSION_GD_INVALID_FILE_KEY)
+  }
+}
+
+/**
+ * The attachment's quarantine bucket key is a valid UUID but the object is no
+ * longer in the quarantine bucket. In practice this is almost always a
+ * network-level replay of a submission request whose attachments were already
+ * scanned and moved to the clean bucket, so the message nudges the respondent
+ * to check for an existing acknowledgement instead of resubmitting.
+ */
+export class GuardDutyFileAlreadyScannedError extends ApplicationError {
+  constructor(
+    message = 'Your submission may have already been received. Please check for an acknowledgement or confirmation email before submitting again.',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_GD_FILE_ALREADY_SCANNED)
   }
 }
 
@@ -295,6 +352,16 @@ export class MrfReminderInvalidWorkflowStepError extends ApplicationError {
   }
 }
 
+export class MrfReminderLimitReachedError extends ApplicationError {
+  constructor(limit: number) {
+    super(
+      `This step has already been sent the maximum of ${limit} reminders.`,
+      undefined,
+      ErrorCodes.SUBMISSION_MRF_REMINDER_LIMIT_REACHED,
+    )
+  }
+}
+
 export class MrfReminderRecipientEmailsEmptyError extends ApplicationError {
   constructor(
     message = 'Unable to send reminder as no recipient emails found.',
@@ -330,5 +397,50 @@ export class SubmissionEncryptionMismatchError extends ApplicationError {
     message = 'Round-trip encryption-decryption mismatch. Submission not saved.',
   ) {
     super(message, undefined, ErrorCodes.SUBMISSION_ENCRYPTION_MISMATCH)
+  }
+}
+
+export class MrfStepLinkSupersededError extends ApplicationError {
+  constructor(
+    message = 'This link is no longer in use. If you were asked to make changes, use the link in the latest email you received for this form.',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_MRF_STEP_LINK_SUPERSEDED)
+  }
+}
+
+/**
+ * Thrown when the step the request was checked against is no longer the
+ * pending step: the submission advanced, completed or was rejected meanwhile.
+ */
+export class MrfSubmissionStaleError extends ApplicationError {
+  constructor(
+    message = 'This response has already been updated. Reload to continue.',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_MRF_STALE)
+  }
+}
+
+/**
+ * Thrown when an MRF submission currently has a step token to gate write permissions.
+ * token but the submitted step is missing this token or the provided token does not
+ * match the pending step's stored hash.
+ */
+export class StepTokenVerificationError extends ApplicationError {
+  constructor(
+    message = 'You cannot submit this form because the link is invalid. Please check the link and try again.',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_MRF_STEP_TOKEN_INVALID)
+  }
+}
+
+/**
+ * Returned while the mrf-step-login-kill-switch flag blocks forms and
+ * submissions that use a later-step login.
+ */
+export class MrfStepLoginSuspendedError extends ApplicationError {
+  constructor(
+    message = 'This form is temporarily unavailable. Please try again later, or contact the form admin.',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_MRF_STEP_LOGIN_SUSPENDED)
   }
 }

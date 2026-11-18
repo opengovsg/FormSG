@@ -15,6 +15,7 @@ import {
   FormField,
   FormFieldDto,
   FormLogoState,
+  FormPaymentsField,
   FormPermission,
   FormResponseMode,
   FormStartPage,
@@ -29,6 +30,7 @@ import {
   WhitelistedSubmitterIdsWithReferenceOid,
   WorkflowType,
 } from 'formsg-shared/types'
+import { getAuthEsrvcId } from 'formsg-shared/utils/step-login'
 import { cloneDeep, map, merge, omit, orderBy, pick } from 'lodash'
 import mongoose, { Types } from 'mongoose'
 
@@ -45,6 +47,7 @@ import {
   IFormDocument,
   IFormSchema,
   ILogicSchema,
+  IMultirespondentFormSchema,
   IPopulatedUser,
 } from 'src/types'
 
@@ -107,6 +110,7 @@ const FORM_DEFAULTS = {
   form_fields: [],
   form_logics: [],
   permissionList: [],
+  savedViews: [],
   supportedLanguages: [],
   webhook: {
     url: '',
@@ -114,6 +118,7 @@ const FORM_DEFAULTS = {
   },
   status: 'PRIVATE',
   submissionLimit: null,
+  closeAt: null,
   goLinkSuffix: '',
   noSmsLimit: false,
 }
@@ -188,6 +193,65 @@ describe('Form Model', () => {
         ])
         const expectedObject = merge({}, FORM_DEFAULTS, MOCK_FORM_PARAMS)
         expect(actualSavedObject).toEqual(expectedObject)
+      })
+
+      it('should keep saved view column filters, without old search fields', async () => {
+        // Arrange
+        const formParams = merge({}, MOCK_FORM_PARAMS, {
+          savedViews: [
+            {
+              name: 'Pending in Bedok',
+              filter: {
+                columnFilters: [
+                  { columnId: 'status', text: 'pending' },
+                  { columnId: 'address', text: 'bedok' },
+                ],
+                searchText: 'from an older schema',
+              },
+            },
+          ],
+        })
+
+        // Act
+        const saved = await new Form(formParams).save()
+        const found = await Form.findById(saved._id).lean()
+
+        // Assert
+        expect(found?.savedViews?.[0].filter).toEqual({
+          columnFilters: [
+            { columnId: 'status', text: 'pending' },
+            { columnId: 'address', text: 'bedok' },
+          ],
+        })
+      })
+
+      it('should keep saved view column filters that list values', async () => {
+        // Arrange
+        const formParams = merge({}, MOCK_FORM_PARAMS, {
+          savedViews: [
+            {
+              name: 'Approved only',
+              filter: {
+                columnFilters: [
+                  { columnId: 'status', values: ['Approved'] },
+                  { columnId: 'stage', values: [] },
+                ],
+              },
+            },
+          ],
+        })
+
+        // Act
+        const saved = await new Form(formParams).save()
+        const found = await Form.findById(saved._id).lean()
+
+        // Assert
+        expect(found?.savedViews?.[0].filter).toEqual({
+          columnFilters: [
+            { columnId: 'status', values: ['Approved'] },
+            { columnId: 'stage', values: [] },
+          ],
+        })
       })
 
       it('should create and save successfully with valid esrvcId', async () => {
@@ -732,20 +796,6 @@ describe('Form Model', () => {
         )
       })
 
-      // Ensure that encrypted sgID forms can be created since they could not before
-      it('should set authType to SGID when given authType is SGID', async () => {
-        // Arrange
-        const encryptFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
-          authType: FormAuthType.SGID,
-        })
-
-        // Act
-        const sgidForm = await EncryptedForm.create(encryptFormParams)
-
-        // Assert
-        await expect(sgidForm.authType).toBe(FormAuthType.SGID)
-      })
-
       // Ensure that encrypted MyInfo forms can be created since they could not before
       it('should set authType to MyInfo when given authType is MyInfo', async () => {
         // Arrange
@@ -758,20 +808,6 @@ describe('Form Model', () => {
 
         // Assert
         await expect(myInfoForm.authType).toBe(FormAuthType.MyInfo)
-      })
-
-      // Ensure that encrypted SGID MyInfo forms can be created since they could not before
-      it('should set authType to SGID MyInfo when given authType is SGID MyInfo', async () => {
-        // Arrange
-        const encryptFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
-          authType: FormAuthType.SGID_MyInfo,
-        })
-
-        // Act
-        const sgidMyInfoForm = await EncryptedForm.create(encryptFormParams)
-
-        // Assert
-        await expect(sgidMyInfoForm.authType).toBe(FormAuthType.SGID_MyInfo)
       })
 
       it('should save with default payments settings', async () => {
@@ -941,6 +977,7 @@ describe('Form Model', () => {
           },
         },
         FORM_DEFAULTS,
+        PAYMENTS_DEFAULTS,
       )
 
       it('should create and save successfully with a workflow', async () => {
@@ -990,25 +1027,253 @@ describe('Form Model', () => {
         expect(actualSavedObject).toEqual(expectedObject)
       })
 
-      it('should reject when a workflow contains missing keys', async () => {
-        // Arrange
-        const invalidFormObj = {
-          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
-          workflow: [
-            {
-              _id: new ObjectId(),
-              workflow_type: WorkflowType.Dynamic,
-              // Missing "field"
-            },
-          ],
+      it.each<[string, WorkflowType]>([
+        ['field', WorkflowType.Dynamic],
+        ['conditional_field', WorkflowType.Conditional],
+      ])(
+        'should save a %s step that has no %s chosen yet',
+        async (omittedKey, workflowType) => {
+          const form = new MultirespondentForm({
+            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+            workflow: [
+              {
+                _id: new ObjectId(),
+                workflow_type: workflowType,
+                edit: [new ObjectId()],
+              },
+            ],
+          })
+
+          const saved = await form.save()
+
+          const persistedStep = (
+            saved.toObject() as { workflow?: Record<string, unknown>[] }
+          ).workflow?.[0] as Record<string, unknown>
+          expect(persistedStep.workflow_type).toEqual(workflowType)
+          expect(persistedStep).not.toHaveProperty(omittedKey)
+        },
+      )
+
+      describe('payment invariants', () => {
+        const ENABLED_PAYMENTS_FIELD = {
+          enabled: true,
+          payment_type: PaymentType.Variable,
+          min_amount: 100,
+          max_amount: 1000,
         }
 
-        const invalidForm = new MultirespondentForm(invalidFormObj)
+        it('should save successfully with payments enabled on a zero-step form', async () => {
+          // Arrange
+          const validForm = new MultirespondentForm({
+            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+            workflow: [],
+            payments_field: ENABLED_PAYMENTS_FIELD,
+          })
 
-        // Act + Assert
-        await expect(invalidForm.save()).rejects.toThrow(
-          mongoose.Error.ValidationError,
-        )
+          // Act
+          const saved = await validForm.save()
+
+          // Assert
+          expect(saved._id).toBeDefined()
+          expect(saved.payments_field.enabled).toBe(true)
+        })
+
+        it('should reject payments enabled with workflow steps', async () => {
+          // Arrange
+          const invalidForm = new MultirespondentForm({
+            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+            workflow: [
+              {
+                _id: new ObjectId(),
+                workflow_type: WorkflowType.Static,
+                emails: ['test@open.gov.sg'],
+                edit: [],
+              },
+            ],
+            payments_field: ENABLED_PAYMENTS_FIELD,
+          })
+
+          // Act + Assert
+          await expect(invalidForm.save()).rejects.toThrow(
+            'Payments cannot be enabled on a multirespondent form with workflow steps',
+          )
+        })
+
+        it('should reject payments enabled with email notifications', async () => {
+          // Arrange
+          const invalidForm = new MultirespondentForm({
+            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+            workflow: [],
+            emails: ['notify@open.gov.sg'],
+            payments_field: ENABLED_PAYMENTS_FIELD,
+          })
+
+          // Act + Assert
+          await expect(invalidForm.save()).rejects.toThrow(
+            'Payments cannot be enabled on a multirespondent form with email notifications',
+          )
+        })
+
+        it('should reject payments enabled with a respondent email notification field', async () => {
+          // Arrange
+          const invalidForm = new MultirespondentForm({
+            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+            workflow: [],
+            stepOneEmailNotificationFieldId: new ObjectId().toHexString(),
+            payments_field: ENABLED_PAYMENTS_FIELD,
+          })
+
+          // Act + Assert
+          await expect(invalidForm.save()).rejects.toThrow(
+            'Payments cannot be enabled on a multirespondent form with a respondent email notification',
+          )
+        })
+
+        it('should reject payments enabled with single submission enforcement', async () => {
+          // Arrange
+          const invalidForm = new MultirespondentForm({
+            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+            workflow: [],
+            isSingleSubmission: true,
+            payments_field: ENABLED_PAYMENTS_FIELD,
+          })
+
+          // Act + Assert
+          await expect(invalidForm.save()).rejects.toThrow(
+            'Payments cannot be enabled on a multirespondent form with single submission enforcement',
+          )
+        })
+
+        it('should reject adding a workflow step to a saved payment-enabled form', async () => {
+          // Arrange
+          const form = (await new MultirespondentForm({
+            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+            workflow: [],
+            payments_field: ENABLED_PAYMENTS_FIELD,
+          }).save()) as IMultirespondentFormSchema
+          form.workflow.push({
+            _id: new ObjectId().toHexString(),
+            workflow_type: WorkflowType.Static,
+            emails: ['test@open.gov.sg'],
+            edit: [],
+          })
+
+          // Act + Assert
+          await expect(form.save()).rejects.toThrow(
+            'Payments cannot be enabled on a multirespondent form with workflow steps',
+          )
+        })
+      })
+
+      describe('payment account methods', () => {
+        const MOCK_STRIPE_ACCOUNT = {
+          accountId: 'acct_mockAccountId',
+          publishableKey: 'pk_mockPublishableKey',
+        }
+
+        it('addPaymentAccountId should connect Stripe when channel is unconnected', async () => {
+          // Arrange
+          const form = await new MultirespondentForm({
+            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+            workflow: [],
+          }).save()
+
+          // Act
+          const updated = await form.addPaymentAccountId(MOCK_STRIPE_ACCOUNT)
+
+          // Assert
+          expect(updated.payments_channel).toEqual(
+            expect.objectContaining({
+              channel: PaymentChannel.Stripe,
+              target_account_id: MOCK_STRIPE_ACCOUNT.accountId,
+              publishable_key: MOCK_STRIPE_ACCOUNT.publishableKey,
+              payment_methods: [],
+            }),
+          )
+        })
+
+        it('addPaymentAccountId should not overwrite an already connected channel', async () => {
+          // Arrange
+          const form = await new MultirespondentForm({
+            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+            workflow: [],
+          }).save()
+          await form.addPaymentAccountId(MOCK_STRIPE_ACCOUNT)
+
+          // Act
+          const updated = await form.addPaymentAccountId({
+            accountId: 'acct_anotherAccountId',
+            publishableKey: 'pk_anotherPublishableKey',
+          })
+
+          // Assert
+          expect(updated.payments_channel.target_account_id).toEqual(
+            MOCK_STRIPE_ACCOUNT.accountId,
+          )
+          expect(updated.payments_channel.publishable_key).toEqual(
+            MOCK_STRIPE_ACCOUNT.publishableKey,
+          )
+        })
+
+        it('removePaymentAccount should reset the channel and disable payments', async () => {
+          // Arrange
+          const form = await new MultirespondentForm({
+            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+            workflow: [],
+            payments_field: {
+              enabled: true,
+              payment_type: PaymentType.Variable,
+              min_amount: 100,
+              max_amount: 1000,
+            },
+          }).save()
+          await form.addPaymentAccountId(MOCK_STRIPE_ACCOUNT)
+
+          // Act
+          const updated = await form.removePaymentAccount()
+
+          // Assert
+          expect(updated.payments_channel).toEqual(
+            expect.objectContaining({
+              channel: PaymentChannel.Unconnected,
+              target_account_id: '',
+              publishable_key: '',
+              payment_methods: [],
+            }),
+          )
+          expect(updated.payments_field.enabled).toBe(false)
+        })
+      })
+    })
+
+    describe('webhook.webhookFormat', () => {
+      const saveWithWebhook = async (webhook: Record<string, unknown>) => {
+        const form = await new MultirespondentForm({
+          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+          webhook,
+        }).save()
+
+        const reread = await Form.findById(form._id).lean()
+        return (reread as unknown as { webhook?: Record<string, unknown> })
+          .webhook
+      }
+
+      it.each(['v1', 'v4'])('stores %p and reads it back', async (format) => {
+        await expect(
+          saveWithWebhook({ url: '', webhookFormat: format }),
+        ).resolves.toEqual(expect.objectContaining({ webhookFormat: format }))
+      })
+
+      it('rejects a value outside the enum', async () => {
+        await expect(
+          saveWithWebhook({ url: '', webhookFormat: 'v2' }),
+        ).rejects.toThrow(mongoose.Error.ValidationError)
+      })
+
+      it('leaves the term absent when it is not written', async () => {
+        await expect(
+          saveWithWebhook({ url: '', isRetryEnabled: true }),
+        ).resolves.not.toHaveProperty('webhookFormat')
       })
     })
 
@@ -1025,7 +1290,7 @@ describe('Form Model', () => {
           isForceConvertToStorageMode: true,
         })
         const MOCK_PUBLIC_KEY = 'mockPublicKey'
-        emailFormToReplace.authType = FormAuthType.SGID
+        emailFormToReplace.authType = FormAuthType.CP
         emailFormToReplace.isSingleSubmission = true
         emailFormToReplace.form_fields = [
           generateDefaultField(BasicField.Date),
@@ -1352,6 +1617,133 @@ describe('Form Model', () => {
   })
 
   describe('Statics', () => {
+    describe('updatePaymentsById on multirespondent forms', () => {
+      const ENABLED_PAYMENTS_FIELD = {
+        enabled: true,
+        payment_type: PaymentType.Variable,
+        min_amount: 100,
+        max_amount: 1000,
+      } as FormPaymentsField
+
+      const MOCK_WORKFLOW_STEP = {
+        _id: new ObjectId(),
+        workflow_type: WorkflowType.Static,
+        emails: ['step@open.gov.sg'],
+        edit: [],
+      }
+
+      it('should enable payments on an eligible zero-step form', async () => {
+        // Arrange
+        const form = await MultirespondentForm.create({
+          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+          workflow: [],
+        })
+
+        // Act
+        const updated = await MultirespondentForm.updatePaymentsById(
+          form._id,
+          ENABLED_PAYMENTS_FIELD,
+        )
+
+        // Assert
+        expect(updated?.payments_field.enabled).toBe(true)
+      })
+
+      it('should return null when enabling payments on a form with workflow steps', async () => {
+        // Arrange
+        const form = await MultirespondentForm.create({
+          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+          workflow: [MOCK_WORKFLOW_STEP],
+        })
+
+        // Act
+        const updated = await MultirespondentForm.updatePaymentsById(
+          form._id,
+          ENABLED_PAYMENTS_FIELD,
+        )
+
+        // Assert
+        expect(updated).toBeNull()
+        const reloaded = await MultirespondentForm.findById(form._id)
+        expect(
+          (reloaded as IMultirespondentFormSchema)?.payments_field.enabled,
+        ).toBe(false)
+      })
+
+      it('should return null when enabling payments on a form with email notifications', async () => {
+        // Arrange
+        const form = await MultirespondentForm.create({
+          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+          workflow: [],
+          emails: ['notify@open.gov.sg'],
+        })
+
+        // Act
+        const updated = await MultirespondentForm.updatePaymentsById(
+          form._id,
+          ENABLED_PAYMENTS_FIELD,
+        )
+
+        // Assert
+        expect(updated).toBeNull()
+      })
+
+      it('should return null when enabling payments on a form with a respondent email notification', async () => {
+        // Arrange
+        const form = await MultirespondentForm.create({
+          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+          workflow: [],
+          stepOneEmailNotificationFieldId: new ObjectId().toHexString(),
+        })
+
+        // Act
+        const updated = await MultirespondentForm.updatePaymentsById(
+          form._id,
+          ENABLED_PAYMENTS_FIELD,
+        )
+
+        // Assert
+        expect(updated).toBeNull()
+      })
+
+      it('should return null when enabling payments on a form with single submission enabled', async () => {
+        // Arrange
+        const form = await MultirespondentForm.create({
+          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+          workflow: [],
+          isSingleSubmission: true,
+        })
+
+        // Act
+        const updated = await MultirespondentForm.updatePaymentsById(
+          form._id,
+          ENABLED_PAYMENTS_FIELD,
+        )
+
+        // Assert
+        expect(updated).toBeNull()
+      })
+
+      it('should update a disabled payment config regardless of workflow steps', async () => {
+        // Arrange: a Stripe-connectable MRF that still has a workflow may
+        // hold a draft (disabled) payment config.
+        const form = await MultirespondentForm.create({
+          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+          workflow: [MOCK_WORKFLOW_STEP],
+        })
+
+        // Act
+        const updated = await MultirespondentForm.updatePaymentsById(form._id, {
+          ...ENABLED_PAYMENTS_FIELD,
+          enabled: false,
+        })
+
+        // Assert
+        expect(updated).not.toBeNull()
+        expect(updated?.payments_field.enabled).toBe(false)
+      })
+    })
+
     describe('deactivateById', () => {
       it('should correctly deactivate form for valid ID', async () => {
         const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
@@ -2083,6 +2475,132 @@ describe('Form Model', () => {
         // Assert
         expect(actual).toEqual(null)
         await expect(Form.countDocuments()).resolves.toEqual(0)
+      })
+    })
+
+    describe('updatePaymentsById', () => {
+      const PAYMENTS_ENABLED = {
+        enabled: true,
+        description: 'some description',
+        name: 'some name',
+        amount_cents: 5000,
+        payment_type: PaymentType.Fixed,
+      } as FormPaymentsField
+
+      it('should enable payments on a storage mode form with no emails', async () => {
+        // Arrange
+        const form = await EncryptedForm.create({
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          emails: [],
+        })
+
+        // Act
+        const actual = await EncryptedForm.updatePaymentsById(
+          form._id,
+          PAYMENTS_ENABLED,
+        )
+
+        // Assert
+        expect(actual?.payments_field?.enabled).toEqual(true)
+      })
+
+      it('should enable payments on a legacy storage mode form with no emails field at all', async () => {
+        // Arrange: pre-migration documents may lack `emails` entirely, and
+        // storage mode forms never have `workflow`; the filter must treat
+        // missing paths the same as empty arrays.
+        const form = await EncryptedForm.create(MOCK_ENCRYPTED_FORM_PARAMS)
+        await EncryptedForm.collection.updateOne(
+          { _id: form._id },
+          { $unset: { emails: 1 } },
+        )
+
+        // Act
+        const actual = await EncryptedForm.updatePaymentsById(
+          form._id,
+          PAYMENTS_ENABLED,
+        )
+
+        // Assert
+        expect(actual?.payments_field?.enabled).toEqual(true)
+      })
+
+      it('should return null when enabling payments on a form with emails', async () => {
+        // Arrange: emails may have been added concurrently after the service
+        // layer's in-memory guard passed.
+        const form = await EncryptedForm.create({
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          emails: [MOCK_ADMIN_EMAIL],
+        })
+
+        // Act
+        const actual = await EncryptedForm.updatePaymentsById(
+          form._id,
+          PAYMENTS_ENABLED,
+        )
+
+        // Assert
+        expect(actual).toEqual(null)
+        const untouchedForm = await EncryptedForm.findById(form._id)
+        expect(untouchedForm?.payments_field?.enabled).toEqual(false)
+      })
+
+      it('should return null when enabling payments on a form with single submission enabled', async () => {
+        // Arrange
+        const form = await EncryptedForm.create({
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          emails: [],
+          isSingleSubmission: true,
+        })
+
+        // Act
+        const actual = await EncryptedForm.updatePaymentsById(
+          form._id,
+          PAYMENTS_ENABLED,
+        )
+
+        // Assert
+        expect(actual).toEqual(null)
+      })
+
+      it('should return null when enabling payments on a multirespondent form with workflow steps', async () => {
+        // Arrange
+        const form = await MultirespondentForm.create({
+          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+          workflow: [
+            {
+              workflow_type: WorkflowType.Static,
+              emails: [],
+              edit: [],
+            },
+          ],
+        })
+
+        // Act
+        const actual = await MultirespondentForm.updatePaymentsById(
+          form._id,
+          PAYMENTS_ENABLED,
+        )
+
+        // Assert
+        expect(actual).toEqual(null)
+      })
+
+      it('should allow disabling payments regardless of emails or single submission', async () => {
+        // Arrange
+        const form = await EncryptedForm.create({
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          emails: [MOCK_ADMIN_EMAIL],
+          isSingleSubmission: true,
+        })
+
+        // Act
+        const actual = await EncryptedForm.updatePaymentsById(form._id, {
+          ...PAYMENTS_ENABLED,
+          enabled: false,
+        })
+
+        // Assert
+        expect(actual?.payments_field?.enabled).toEqual(false)
       })
     })
 
@@ -3167,6 +3685,47 @@ describe('Form Model', () => {
             MOCK_ALL_FORM_PARAMS.inactiveMessage,
           )
         })
+
+        it('should keep later step logins but drop their e-service IDs', () => {
+          const workflowWithAuth = [
+            MOCK_WORKFLOW[0],
+            {
+              ...MOCK_WORKFLOW[1],
+              auth: { auth_type: FormAuthType.CP, esrvc_id: 'SOURCE-ESRVC' },
+            },
+            {
+              ...MOCK_WORKFLOW[2],
+              auth: { auth_type: FormAuthType.MyInfo },
+            },
+          ]
+          const sourceForm = new MultirespondentForm({
+            title: 'Test Form',
+            admin: MOCK_ADMIN_OBJ_ID,
+            responseMode: FormResponseMode.Multirespondent,
+            publicKey: 'initial public key',
+            workflow: workflowWithAuth,
+            form_fields: MOCK_FORM_FIELDS,
+          })
+
+          const duplicatedForm = sourceForm.getDuplicateParams({
+            admin: 'duplicated admin',
+            title: 'duplicated mrf form title',
+            responseMode: FormResponseMode.Multirespondent,
+          })
+
+          const duplicatedWorkflow = JSON.parse(
+            JSON.stringify(duplicatedForm.workflow),
+          )
+          expect(duplicatedWorkflow.map((step: any) => step.auth)).toEqual([
+            undefined,
+            { auth_type: FormAuthType.CP },
+            { auth_type: FormAuthType.MyInfo },
+          ])
+          // The source form keeps its own e-service ID
+          expect(getAuthEsrvcId(sourceForm.workflow[1].auth)).toBe(
+            'SOURCE-ESRVC',
+          )
+        })
       })
     })
 
@@ -3253,6 +3812,7 @@ describe('Form Model', () => {
         const fieldToDuplicate = generateDefaultField(BasicField.Checkbox)
 
         validForm.form_fields = [fieldToDuplicate]
+        await validForm.save()
         const fieldId = fieldToDuplicate._id
 
         // Act
@@ -3288,6 +3848,7 @@ describe('Form Model', () => {
         const dummyField = generateDefaultField(BasicField.Mobile)
 
         validForm.form_fields = [fieldToDuplicate, dummyField]
+        await validForm.save()
         const fieldId = fieldToDuplicate._id
 
         // Act

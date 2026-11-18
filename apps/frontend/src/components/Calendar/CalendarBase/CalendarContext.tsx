@@ -14,6 +14,7 @@ import {
   differenceInCalendarMonths,
   isFirstDayOfMonth,
   isSameDay,
+  startOfDay,
 } from 'date-fns'
 import { Props as DayzedProps, RenderProps, useDayzed } from 'dayzed'
 import { inRange } from 'lodash'
@@ -58,6 +59,10 @@ type PassthroughProps = {
    * Handler for when date is selected.
    */
   onSelectDate: (d: Date) => void
+  /**
+   * Handler for when "Today" is clicked. Defaults to onSelectDate.
+   */
+  onSelectToday?: (d: Date) => void
   /**
    * Function to determine whether a date should be made
    * unavailable.
@@ -127,6 +132,7 @@ export const useCalendar = (): CalendarContextProps => {
 const useProvideCalendar = ({
   selectedDates,
   onSelectDate,
+  onSelectToday,
   isDateUnavailable,
   monthsToDisplay = 1,
   onMouseEnterHighlight,
@@ -183,7 +189,11 @@ const useProvideCalendar = ({
       ) as HTMLButtonElement | null
       elementToFocus?.focus()
     })
-  }, [classNameId])
+    const todayDate = startOfDay(today)
+    if (isDateUnavailable?.(todayDate)) return
+    const selectToday = onSelectToday ?? onSelectDate
+    selectToday(todayDate)
+  }, [classNameId, isDateUnavailable, onSelectDate, onSelectToday])
 
   const updateMonthYear = useCallback(
     (newDate: Date) => {

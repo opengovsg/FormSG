@@ -1,3 +1,4 @@
+import { featureFlags } from 'formsg-shared/constants'
 import { StatusCodes } from 'http-status-codes'
 
 import { ISnsNotification } from '../../../types'
@@ -92,12 +93,15 @@ export const handleSns: ControllerHandler<
           bounceDoc,
           form,
         ).unwrapOr([])
-      notificationRecipients.smsRecipients =
-        await BounceService.sendSmsBounceNotification(
-          bounceDoc,
-          form,
-          possibleSmsRecipients,
-        ).unwrapOr([])
+      notificationRecipients.smsRecipients = req.growthbook?.isOn(
+        featureFlags.disableBouncedSubmissionSms,
+      )
+        ? []
+        : await BounceService.sendSmsBounceNotification(
+            bounceDoc,
+            form,
+            possibleSmsRecipients,
+          ).unwrapOr([])
       bounceDoc.setNotificationState(
         notificationRecipients.emailRecipients,
         notificationRecipients.smsRecipients,

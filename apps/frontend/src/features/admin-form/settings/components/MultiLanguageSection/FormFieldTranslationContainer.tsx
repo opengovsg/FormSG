@@ -1,4 +1,5 @@
 import { FormState } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Divider, Flex, Text } from '@chakra-ui/react'
 
 import { FormField, Language } from 'formsg-shared/types'
@@ -22,6 +23,8 @@ export const FormFieldTranslationContainer = ({
   unicodeLocale,
   formState,
 }: FormFieldTranslationContainerProps) => {
+  const { t } = useTranslation()
+
   if (!formFieldData) return null
 
   const hasDescription =
@@ -50,7 +53,7 @@ export const FormFieldTranslationContainer = ({
           fontWeight="600"
           mb="1rem"
         >
-          Question
+          {t('features.adminForm.settings.multiLanguage.sections.question')}
         </Text>
         <TranslationContainer
           language={capitalisedLanguage}
@@ -69,7 +72,9 @@ export const FormFieldTranslationContainer = ({
               fontWeight="600"
               mb="1rem"
             >
-              Description
+              {t(
+                'features.adminForm.settings.multiLanguage.sections.description',
+              )}
             </Text>
             <TranslationContainer
               language={capitalisedLanguage}

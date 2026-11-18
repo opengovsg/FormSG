@@ -239,9 +239,11 @@ AdminFormsFormRouter.post(
   AdminFormController.handleCreateFormField,
 )
 
-AdminFormsFormRouter.route('/:formId([a-fA-F0-9]{24})/workflow').post(
-  AdminFormController.handleCreateWorkflowStep,
-)
+AdminFormsFormRouter.route('/:formId([a-fA-F0-9]{24})/workflow')
+  .post(AdminFormController.handleCreateWorkflowStep)
+  // Deleting the workflow, which is also what deleting step 1 means — a
+  // workflow without its first step has no entry point.
+  .delete(AdminFormController.handleDeleteWorkflow)
 
 AdminFormsFormRouter.route(
   '/:formId([a-fA-F0-9]{24})/workflow/:stepNumber(\\d+)',

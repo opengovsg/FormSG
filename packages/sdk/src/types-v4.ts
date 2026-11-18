@@ -1,9 +1,23 @@
-import { FieldType } from './types'
+import {
+  DecryptedAttachments,
+  DecryptParamsV3,
+  EncryptedAttachmentRecords,
+  EncryptedContent,
+  FieldType,
+} from './types'
 
 // TODO: provenance shape may be updated when it is implemented
 export type ResponseProvenance = {
   submittedAt?: string
   stepNumber?: number
+  /**
+   * Server-stamped after the submitted answer was verified: a MyInfo answer
+   * against the hashes saved at prefill time, or an NRIC/UEN identity answer
+   * against the Singpass/Corppass login. Never client-supplied; absent when
+   * no verification happened (e.g. user-filled child records). Submissions
+   * made before this covered all MyInfo fields carry it on Children only.
+   */
+  myinfoVerified?: boolean
 }
 
 export type PreviousAnswer = {
@@ -68,6 +82,7 @@ export type FieldResponseV4 = {
   fieldType: FieldType
   answer: AnswerV4
   question: string
+  subFields?: Record<string, SubFieldMeta>
   provenance: ResponseProvenance
   previousAnswers?: PreviousAnswer[]
   myInfo?: MyInfoMetaV4
@@ -80,6 +95,7 @@ type BaseFieldResponseV4 = {
   previousAnswers?: PreviousAnswer[]
   myInfo?: MyInfoMetaV4
   question: string
+  subFields?: Record<string, SubFieldMeta>
 }
 
 export type StringFieldResponseV4 = BaseFieldResponseV4 & {
@@ -158,7 +174,11 @@ export type FormFieldV4 =
 
 export type FormFieldsV4 = Record<string, FormFieldV4>
 
+/** Labels for components of a field, keyed by their stable IDs. */
+export type SubFieldMeta = { question: string }
+
 export type FormFieldMeta = {
+  subFields?: Record<string, SubFieldMeta>
   question: string
   myInfo?: { attr: string }
 }
@@ -172,9 +192,30 @@ export type AdaptV3ToV4Options = {
 
 // --------------- Decrypted content V4 ---------------
 
+export interface DecryptParamsV4 extends DecryptParamsV3 {
+  /** Original question titles from the submission snapshot. */
+  formFields?: Record<string, Pick<FormFieldMeta, 'question' | 'subFields'>>
+  attachmentDownloadUrls?: EncryptedAttachmentRecords
+}
+
+/** Admin submission decryption can include a step token; webhooks never do. */
+export interface DecryptParamsV4WithStepToken extends DecryptParamsV4 {
+  encryptedStepToken?: EncryptedContent
+}
+
 export type DecryptedContentV4 = {
   submissionSecretKey: string
   responses: FieldResponsesV4
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   verified?: Record<string, any>
+}
+
+/** Admin submission decryption can return a step token; webhooks never do. */
+export type DecryptedContentV4WithStepToken = DecryptedContentV4 & {
+  stepToken?: string
+}
+
+export type DecryptedContentAndAttachmentsV4 = {
+  content: DecryptedContentV4
+  attachments: DecryptedAttachments
 }

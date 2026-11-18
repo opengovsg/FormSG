@@ -1,13 +1,9 @@
 import { types as basicTypes } from 'formsg-shared/constants/field/basic'
-import {
-  BasicField,
-  GenericStringAnswerResponseFieldV3,
-  TableRow,
-} from 'formsg-shared/types'
+import { BasicField, TableRow } from 'formsg-shared/types'
 import { isStringArray } from 'formsg-shared/utils/is-string-array'
 import { get } from 'lodash'
 
-import { ParsedClearFormFieldResponseV3 } from 'src/types/api'
+import { ParsedClearFormFieldResponseV4 } from 'src/types/api'
 
 import { IEmailFieldSchema } from '../../../types'
 import {
@@ -129,20 +125,33 @@ export const isPossibleEmailFieldSchema = (
   return get(field, 'fieldType') === BasicField.Email
 }
 
-/**
- *
- * Checks if the fieldType has an answer that is a generic string type, does not include enums that evaluate to string.
- * @param fieldType the fieldType to check
- */
-export const isGenericStringAnswerResponseV3 = (
-  response: ParsedClearFormFieldResponseV3,
+// V4 field types whose answer is StringAnswerV4 ({ value: string }).
+// Matches StringFieldResponseV4 in packages/sdk/src/types-v4.ts. Section is
+// included here because V4 models Section as a StringAnswerV4.
+const GENERIC_STRING_ANSWER_FIELD_TYPES_V4: string[] = [
+  BasicField.Section,
+  BasicField.Number,
+  BasicField.Decimal,
+  BasicField.ShortText,
+  BasicField.LongText,
+  BasicField.HomeNo,
+  BasicField.Dropdown,
+  BasicField.Rating,
+  BasicField.Nric,
+  BasicField.Uen,
+  BasicField.Date,
+  BasicField.CountryRegion,
+]
+
+export const isGenericStringAnswerResponseV4 = (
+  response: ParsedClearFormFieldResponseV4,
 ): boolean => {
-  const genericStringAnswerFieldTypesV3: string[] = Object.values(
-    GenericStringAnswerResponseFieldV3,
-  )
   return (
-    genericStringAnswerFieldTypesV3.includes(response.fieldType) &&
+    GENERIC_STRING_ANSWER_FIELD_TYPES_V4.includes(response.fieldType) &&
     'answer' in response &&
-    typeof response.answer === 'string'
+    response.answer !== null &&
+    typeof response.answer === 'object' &&
+    'value' in response.answer &&
+    typeof (response.answer as { value: unknown }).value === 'string'
   )
 }

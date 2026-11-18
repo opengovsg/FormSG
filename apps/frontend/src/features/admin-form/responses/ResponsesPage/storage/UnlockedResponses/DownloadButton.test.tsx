@@ -1,0 +1,297 @@
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { ChakraProvider } from '@chakra-ui/react'
+import { act, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+
+import {
+  AnalyticsEventType,
+  DateString,
+  FormSavedView,
+  Language,
+  SavedViewSortDirection,
+} from 'formsg-shared/types'
+
+import i18n from '~/i18n/i18n'
+
+import { theme } from '~theme/index'
+
+import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedbackContainer/adminFeedbackStore'
+
+import { DownloadButton } from './DownloadButton'
+import { ResponsesViewState } from './savedViews'
+
+const FORM_ID = '0123456789abcdef01234567'
+
+const mockLogAnalyticsEvent = vi.fn()
+const mockMutate = vi.fn()
+let mockOnSuccess: (result: {
+  successCount: number
+  expectedCount: number
+  errorCount: number
+}) => void = () => undefined
+let mockIsDelightful = true
+let mockContext: Record<string, unknown> = {}
+
+vi.mock('~features/analytics/AnalyticsEventService', () => ({
+  logAnalyticsEvent: (...args: unknown[]) => mockLogAnalyticsEvent(...args),
+}))
+
+vi.mock('~features/admin-form/responses/hooks', () => ({
+  useIsDelightfulDashboard: () => mockIsDelightful,
+}))
+
+vi.mock('./UnlockedResponsesProvider', () => ({
+  useUnlockedResponses: () => mockContext,
+}))
+
+vi.mock('../StorageResponsesContext', () => ({
+  useStorageResponsesContext: () => ({
+    downloadParams: { responsesCount: 12 },
+    dateRangeResponsesCount: 12,
+  }),
+}))
+
+vi.mock('../useDecryptionWorkers', () => ({
+  default: ({
+    mutateProps,
+  }: {
+    mutateProps: { onSuccess: typeof mockOnSuccess }
+  }) => {
+    mockOnSuccess = mutateProps.onSuccess
+    return {
+      handleBulkDownloadMutation: { mutate: mockMutate, isLoading: false },
+      abortDecryption: vi.fn(),
+    }
+  },
+}))
+
+vi.mock('~templates/NavigationPrompt', () => ({
+  NavigationPrompt: () => null,
+}))
+
+vi.mock('./DownloadWithAttachmentModal', () => ({
+  DownloadWithAttachmentModal: ({
+    isOpen,
+    onDownload,
+  }: {
+    isOpen: boolean
+    onDownload: () => void
+  }) =>
+    isOpen ? <button onClick={onDownload}>Confirm download</button> : null,
+}))
+
+const COLUMN_OPTIONS = [
+  { id: 'a', label: 'A' },
+  { id: 'b', label: 'B' },
+]
+
+const VIEW: FormSavedView = {
+  _id: 'aaaaaaaaaaaaaaaaaaaaaaaa',
+  name: 'Pending approvals',
+  filter: { columnFilters: [{ columnId: 'a', text: 'pending' }] },
+}
+
+const VIEW_STATE: ResponsesViewState = {
+  dateRange: [],
+  columnFilters: [{ columnId: 'a', text: 'pending' }],
+  hiddenColumnIds: [],
+  sortColumnId: undefined,
+  sortDirection: SavedViewSortDirection.Descending,
+}
+
+const renderButton = ({
+  isDelightful = true,
+  selectedViewId = 'all-responses',
+  currentViewState = VIEW_STATE,
+}: {
+  isDelightful?: boolean
+  selectedViewId?: string
+  currentViewState?: ResponsesViewState
+} = {}) => {
+  mockIsDelightful = isDelightful
+  mockContext = {
+    visibleSubmissionIds: undefined,
+    isFullyLoaded: false,
+    columnFilters: currentViewState.columnFilters,
+    sortColumnId: currentViewState.sortColumnId,
+    sortDirection: currentViewState.sortDirection,
+    hiddenColumnIds: currentViewState.hiddenColumnIds,
+    columnOptions: COLUMN_OPTIONS,
+    isShowingRecentOnly: false,
+    savedViews: [VIEW],
+    selectedViewId,
+    currentViewState,
+  }
+  render(
+    <ChakraProvider theme={theme}>
+      <MemoryRouter initialEntries={[`/admin/form/${FORM_ID}/results`]}>
+        <Routes>
+          <Route
+            path="/admin/form/:formId/results"
+            element={<DownloadButton />}
+          />
+        </Routes>
+      </MemoryRouter>
+    </ChakraProvider>,
+  )
+}
+
+const startDownload = async (formatLabel: RegExp) => {
+  const user = userEvent.setup()
+  await user.click(screen.getByRole('button', { name: /download/i }))
+  await user.click(await screen.findByRole('checkbox', { name: formatLabel }))
+  await user.click(screen.getByRole('button', { name: /start download|next/i }))
+  const confirm = screen.queryByRole('button', { name: 'Confirm download' })
+  if (confirm) await user.click(confirm)
+}
+
+describe('DownloadButton analytics events', () => {
+  beforeAll(() => i18n.changeLanguage(Language.ENGLISH))
+  beforeEach(() => vi.clearAllMocks())
+
+  it('logs a v1 CSV download with no saved view', async () => {
+    renderButton({ isDelightful: false, selectedViewId: VIEW._id })
+
+    await startDownload(/csv/i)
+
+    expect(mockLogAnalyticsEvent).toHaveBeenCalledWith(FORM_ID, {
+      type: AnalyticsEventType.ResultsDownload,
+      content: {
+        dashboardVersion: 'v1',
+        formats: ['csv'],
+        scope: 'bulk',
+        responsesCount: 12,
+      },
+    })
+    expect(mockMutate).toHaveBeenCalled()
+  })
+
+  it('logs a v2 download from an unchanged saved view', async () => {
+    renderButton({ selectedViewId: VIEW._id })
+
+    await startDownload(/pdf/i)
+
+    expect(mockLogAnalyticsEvent).toHaveBeenCalledWith(FORM_ID, {
+      type: AnalyticsEventType.ResultsDownload,
+      content: {
+        dashboardVersion: 'v2',
+        formats: ['pdf'],
+        scope: 'bulk',
+        columnFilters: [{ columnId: 'a', type: 'text' }],
+        savedViewId: VIEW._id,
+        isSavedViewModified: false,
+        responsesCount: 12,
+      },
+    })
+  })
+
+  it('marks a v2 download from an edited saved view as modified', async () => {
+    renderButton({
+      selectedViewId: VIEW._id,
+      currentViewState: { ...VIEW_STATE, hiddenColumnIds: ['b'] },
+    })
+
+    await startDownload(/pdf/i)
+
+    expect(mockLogAnalyticsEvent).toHaveBeenCalledWith(
+      FORM_ID,
+      expect.objectContaining({
+        content: expect.objectContaining({
+          savedViewId: VIEW._id,
+          isSavedViewModified: true,
+        }),
+      }),
+    )
+  })
+
+  it('logs a v2 download from All responses without a saved view', async () => {
+    renderButton()
+
+    await startDownload(/pdf/i)
+
+    expect(mockLogAnalyticsEvent).toHaveBeenCalledWith(
+      FORM_ID,
+      expect.objectContaining({
+        content: expect.not.objectContaining({
+          savedViewId: expect.anything(),
+        }),
+      }),
+    )
+  })
+
+  it('logs the date range and column filters of a v2 download', async () => {
+    renderButton({
+      currentViewState: {
+        ...VIEW_STATE,
+        dateRange: ['2026-01-01', '2026-01-31'] as DateString[],
+        columnFilters: [
+          { columnId: 'a', text: 'pending' },
+          { columnId: 'b', values: ['Yes', 'No'] },
+        ],
+      },
+    })
+
+    await startDownload(/pdf/i)
+
+    expect(mockLogAnalyticsEvent).toHaveBeenCalledWith(
+      FORM_ID,
+      expect.objectContaining({
+        content: expect.objectContaining({
+          dateRange: { startDate: '2026-01-01', endDate: '2026-01-31' },
+          columnFilters: [
+            { columnId: 'a', type: 'text' },
+            { columnId: 'b', type: 'values' },
+          ],
+        }),
+      }),
+    )
+  })
+})
+
+describe('DownloadButton CSAT trigger', () => {
+  beforeAll(() => i18n.changeLanguage(Language.ENGLISH))
+  beforeEach(() => useAdminFeedbackStore.getState().reset())
+
+  const finishDownload = (successCount: number, errorCount = 0) =>
+    act(() =>
+      mockOnSuccess({
+        successCount,
+        expectedCount: successCount + errorCount,
+        errorCount,
+      }),
+    )
+
+  it.each([
+    [false, 'download-v1'],
+    [true, 'download-v2'],
+  ])(
+    'asks for CSAT after a full download (v2: %s)',
+    (isDelightful, triggerSource) => {
+      renderButton({ isDelightful })
+
+      finishDownload(12)
+
+      expect(useAdminFeedbackStore.getState()).toMatchObject({
+        isEligible: true,
+        triggerSource,
+        formId: FORM_ID,
+      })
+    },
+  )
+
+  it('does not ask after a partly failed download', () => {
+    renderButton()
+
+    finishDownload(10, 2)
+
+    expect(useAdminFeedbackStore.getState().isEligible).toBe(false)
+  })
+
+  it('does not ask when nothing was decrypted', () => {
+    renderButton()
+
+    finishDownload(0)
+
+    expect(useAdminFeedbackStore.getState().isEligible).toBe(false)
+  })
+})

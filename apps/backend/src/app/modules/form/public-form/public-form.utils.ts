@@ -1,14 +1,88 @@
+import {
+  CorppassAttribute,
+  FormAuthType,
+  FormFieldDto,
+  MyInfoAttribute,
+} from 'formsg-shared/types'
+import {
+  getLoginIdentityAttr,
+  getLoginIdentityAttrsForAuthType,
+  isLoginIdentityFieldOwned,
+  LoginIdentityAttribute,
+} from 'formsg-shared/utils/login-identity'
+import {
+  getStepFields,
+  hasLaterStepLogin,
+} from 'formsg-shared/utils/step-login'
 import { StatusCodes } from 'http-status-codes'
+import { FlattenMaps } from 'mongoose'
 
-import { MapRouteError } from 'src/types'
+import {
+  IFieldSchema,
+  IMultirespondentFormSchema,
+  IPopulatedForm,
+  MapRouteError,
+} from 'src/types'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import { ErrorResponseData } from '../../core/core.types'
+import {
+  MyInfoFapiAuthRequestError,
+  MyInfoFapiConfigError,
+} from '../../myinfo/fapi/myinfo.fapi.errors'
+import { getUniqueMyInfoAttrsForFields } from '../../myinfo/myinfo.util'
 import { CreateRedirectUrlError } from '../../spcp/spcp.errors'
 import * as FormErrors from '../form.errors'
+import { isFormMultirespondent } from '../form.utils'
 
 const logger = createLoggerWithLabel(module)
+
+/**
+ * Whether each workflow step's Myinfo fields belong to that step. Only forms
+ * with a later-step login split them; others let Step 1 fill everything.
+ */
+const hasStepScopedMyInfo = (
+  form: IPopulatedForm,
+): form is IPopulatedForm & IMultirespondentFormSchema =>
+  isFormMultirespondent(form) && hasLaterStepLogin(form.workflow)
+
+/**
+ * Fields Step 1's form-level login may prefill. When a later step has its own
+ * login, each step's MyInfo fields belong to that step; otherwise Step 1 fills
+ * everything.
+ */
+export const getStepOneMyInfoFields = (
+  form: IPopulatedForm,
+): FlattenMaps<IFieldSchema[]> => {
+  const formFields = form.toJSON().form_fields
+  return hasStepScopedMyInfo(form)
+    ? getStepFields(formFields, form.workflow, 0)
+    : formFields
+}
+
+/**
+ * Puts prefilled fields back into the complete field list. Step 1's login
+ * prefills only its own fields, but the respondent still sees every field,
+ * section and statement.
+ */
+export const mergePrefilledFields = <F extends { _id: unknown }>(
+  allFields: readonly F[],
+  prefilledFields: readonly F[],
+): F[] => {
+  const prefilledById = new Map(
+    prefilledFields.map((field) => [String(field._id), field]),
+  )
+  return allFields.map((field) => prefilledById.get(String(field._id)) ?? field)
+}
+
+/** MyInfo attributes Step 1's login requests: the fields it may prefill. */
+export const getStepOneMyInfoAttrs = (
+  form: IPopulatedForm,
+): MyInfoAttribute[] =>
+  hasStepScopedMyInfo(form)
+    ? getUniqueMyInfoAttrsForFields(getStepOneMyInfoFields(form))
+    : form.getUniqueMyInfoAttrs()
 
 /**
  * Handler to map ApplicationErrors to their correct status code and error
@@ -87,6 +161,8 @@ export const mapFormAuthError: MapRouteError = (
       }
     case DatabaseError:
     case CreateRedirectUrlError:
+    case MyInfoFapiAuthRequestError:
+    case MyInfoFapiConfigError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage,
@@ -105,3 +181,43 @@ export const mapFormAuthError: MapRouteError = (
       }
   }
 }
+
+export type LoginIdentityValues = Partial<
+  Record<LoginIdentityAttribute, string>
+>
+
+/**
+ * The identities a Step 1 login provides, from the same session values the
+ * Collect NRIC/FIN/UENs setting records.
+ */
+export const getLoginIdentityValues = (
+  authType: FormAuthType,
+  session: { userName?: string; userInfo?: string } | undefined,
+): LoginIdentityValues => {
+  if (!session?.userName) return {}
+  // Corppass sessions carry the UEN as userName and the UID as userInfo.
+  return Object.fromEntries(
+    getLoginIdentityAttrsForAuthType(authType).map((attr) => [
+      attr,
+      attr === CorppassAttribute.Uid ? session.userInfo : session.userName,
+    ]),
+  )
+}
+
+/**
+ * Fills owned login identity fields from the login and makes them read-only.
+ * The server checks what the respondent sends back against the login.
+ */
+export const prefillLoginIdentityFields = <F extends FormFieldDto>(
+  formFields: readonly F[],
+  values: LoginIdentityValues,
+  workflow?: readonly { edit: readonly unknown[] }[],
+): F[] =>
+  formFields.map((field) => {
+    const attr = getLoginIdentityAttr(field)
+    const fieldValue =
+      attr && isLoginIdentityFieldOwned(field, workflow)
+        ? values[attr]
+        : undefined
+    return fieldValue ? { ...field, fieldValue, disabled: true } : field
+  })

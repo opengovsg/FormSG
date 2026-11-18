@@ -9,7 +9,11 @@ import { resolveRedirectionUrl } from '../../../utils/urls'
 import { ControllerHandler } from '../../core/core.types'
 import * as UserService from '../../user/user.service'
 import * as AuthService from '../auth.service'
-import { isEmailInDomainWhitelist, mapRouteError } from '../auth.utils'
+import {
+  isEmailInDomainWhitelist,
+  mapRouteError,
+  regenerateSession,
+} from '../auth.utils'
 
 import {
   SSO_CODE_VERIFIER_COOKIE_NAME,
@@ -46,11 +50,11 @@ export const login: ControllerHandler<
       })
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .clearCookie(SSO_CODE_VERIFIER_COOKIE_NAME)
         .json({
           message:
             'Generating SSO authentication url failed. Please try again later.',
         })
-        .clearCookie(SSO_CODE_VERIFIER_COOKIE_NAME)
     })
 }
 
@@ -129,18 +133,20 @@ export const handleLoginCallback: ControllerHandler<
         UserService.retrieveUser(userEmail, agency._id),
       )
     })
-    .map((user) => {
-      // Add user info to session.
-      const { _id } = user.toObject() as AuthedSessionData['user']
-      req.session.user = { _id, grantSource: 'sso' }
-      logger.info({
-        message: `Successfully logged in user ${user._id}`,
-        meta: logMeta,
-      })
-      return res.redirect(
-        resolveRedirectionUrl(`/login/sso?status=${StatusCodes.OK}`),
-      )
-    })
+    .andThen((user) =>
+      regenerateSession(req).map(() => {
+        // Add user info to session.
+        const { _id } = user.toObject() as AuthedSessionData['user']
+        req.session.user = { _id, grantSource: 'sso' }
+        logger.info({
+          message: `Successfully logged in user ${user._id}`,
+          meta: logMeta,
+        })
+        return res.redirect(
+          resolveRedirectionUrl(`/login/sso?status=${StatusCodes.OK}`),
+        )
+      }),
+    )
     .mapErr((error) => {
       const message = 'Error occurred when trying to log in via SSO'
       logger.warn({

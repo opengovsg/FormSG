@@ -117,6 +117,17 @@ export const customFormat = format.printf((info) => {
 })
 
 /**
+ * Keys whose values must never be serialised into our logs, at any depth.
+ * Axios attaches the entire outgoing request to the errors it throws, and we
+ * copy every own property off an error below. Non-2xx response
+ * from the SP/CP token endpoint logs `config.data` verbatim (form-encoded token
+ * request, `client_assertion` JWT). `headers` and `request` are also redacted
+ * to redact cookies, authorization headers and the raw request body.
+ */
+const REDACTED_KEYS = new Set(['config', 'headers', 'request'])
+const REDACTED_VALUE = '[REDACTED]'
+
+/**
  * This is required as JSON.stringify(new Error()) returns an empty object. This
  * function converts the error in `info.error` into a readable JSON stack trace.
  *
@@ -124,6 +135,13 @@ export const customFormat = format.printf((info) => {
  * https://github.com/winstonjs/winston/issues/1243#issuecomment-463548194.
  */
 function jsonErrorReplacer(this: any, key: string, value: any) {
+  // Checked before the Error branch below: the object that branch returns is
+  // itself traversed by JSON.stringify, so redacting by key name here covers
+  // properties nested at any depth of the flattened error.
+  if (REDACTED_KEYS.has(key)) {
+    return REDACTED_VALUE
+  }
+
   if (value instanceof Error) {
     return Object.getOwnPropertyNames(value).reduce((all, valKey) => {
       if (valKey === 'stack') {

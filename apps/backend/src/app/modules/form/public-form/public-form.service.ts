@@ -8,10 +8,6 @@ import getFormModel from '../../../models/form.server.model'
 import getFormFeedbackModel from '../../../models/form_feedback.server.model'
 import { DatabaseError } from '../../core/core.errors'
 import { MYINFO_LOGIN_COOKIE_NAME } from '../../myinfo/myinfo.constants'
-import {
-  SGID_COOKIE_NAME,
-  SGID_MYINFO_LOGIN_COOKIE_NAME,
-} from '../../sgid/sgid.constants'
 import { JwtName } from '../../spcp/spcp.types'
 import { FormNotFoundError } from '../form.errors'
 
@@ -72,23 +68,14 @@ export const insertFormFeedback = ({
 
 /**
  * Returns the cookie name based on auth type
- * Valid AuthTypes are SP / CP / MyInfo / SGID
+ * Valid AuthTypes are SP / CP / MyInfo
  */
 export const getCookieNameByAuthType = (
-  authType:
-    | FormAuthType.SP
-    | FormAuthType.CP
-    | FormAuthType.MyInfo
-    | FormAuthType.SGID
-    | FormAuthType.SGID_MyInfo,
+  authType: FormAuthType.SP | FormAuthType.CP | FormAuthType.MyInfo,
 ): string => {
   switch (authType) {
-    case FormAuthType.SGID_MyInfo:
-      return SGID_MYINFO_LOGIN_COOKIE_NAME
     case FormAuthType.MyInfo:
       return MYINFO_LOGIN_COOKIE_NAME
-    case FormAuthType.SGID:
-      return SGID_COOKIE_NAME
     default:
       return JwtName[authType]
   }

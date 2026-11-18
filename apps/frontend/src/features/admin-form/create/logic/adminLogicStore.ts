@@ -16,10 +16,15 @@ type AdminLogicStore = {
       }
     | { state: AdminEditLogicState.EditingLogic; logicId: LogicDto['_id'] }
     | null
+  pendingSwitchTo: LogicDto['_id'] | null
+  requestSwitchTo: (target: LogicDto['_id']) => void
+  cancelPendingSwitch: () => void
+  completeSave: () => void
 }
 
 const INITIAL_STATE = {
   createOrEditData: null,
+  pendingSwitchTo: null,
 }
 
 export const isCreatingStateSelector = (state: AdminLogicStore) =>
@@ -41,9 +46,22 @@ export const setToEditingSelector = (state: AdminLogicStore) =>
 export const setToInactiveSelector = (state: AdminLogicStore) =>
   state.setToInactive
 
+export const pendingSwitchToSelector = (state: AdminLogicStore) =>
+  state.pendingSwitchTo
+
+export const requestSwitchToSelector = (state: AdminLogicStore) =>
+  state.requestSwitchTo
+
+export const cancelPendingSwitchSelector = (state: AdminLogicStore) =>
+  state.cancelPendingSwitch
+
+export const completeSaveSelector = (state: AdminLogicStore) =>
+  state.completeSave
+
 export const useAdminLogicStore = create<AdminLogicStore>()(
-  devtools((set) => ({
+  devtools((set, get) => ({
     createOrEditData: null,
+    pendingSwitchTo: null,
     setToCreating: () =>
       set({
         createOrEditData: {
@@ -59,5 +77,22 @@ export const useAdminLogicStore = create<AdminLogicStore>()(
       }),
     setToInactive: () => set({ createOrEditData: null }),
     reset: () => set(INITIAL_STATE),
+    requestSwitchTo: (target) => set({ pendingSwitchTo: target }),
+    cancelPendingSwitch: () => set({ pendingSwitchTo: null }),
+    // Complete a pending switch if one was requested, else collapse the card.
+    completeSave: () => {
+      const pending = get().pendingSwitchTo
+      if (pending !== null) {
+        set({
+          createOrEditData: {
+            state: AdminEditLogicState.EditingLogic,
+            logicId: pending,
+          },
+          pendingSwitchTo: null,
+        })
+      } else {
+        set({ createOrEditData: null })
+      }
+    },
   })),
 )

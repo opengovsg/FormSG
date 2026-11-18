@@ -1,6 +1,6 @@
 import { MemoryRouter } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { fullScreenDecorator } from '~utils/storybook'
 
@@ -15,8 +15,8 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    // Prevent flaky tests due to modal animating in.
-    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
   },
 } as Meta
 

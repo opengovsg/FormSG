@@ -1,4 +1,3 @@
-import { MyInfoMode } from '@opengovsg/myinfo-gov-client'
 import convict, { Path, Schema } from 'convict'
 import { url } from 'convict-format-with-validator'
 
@@ -38,15 +37,13 @@ type ISpcpConfig = {
 }
 
 type IMyInfoConfig = {
-  spEsrvcId: string // Needed for MyInfo
-  myInfoClientMode: MyInfoMode
-  myInfoKey: string
-  myInfoCert: string
-  myInfoKeyPath: string
-  myInfoCertPath: string
-  myInfoClientId: string
-  myInfoClientSecret: string
   myInfoJwtSecret: string
+  myInfoFapiIssuer: string
+  myInfoFapiClientId: string
+  myInfoFapiRpJwksPublic: string
+  myInfoFapiRpJwksSecret: string
+  myInfoFapiRpJwksPublicPath: string
+  myInfoFapiRpJwksSecretPath: string
 }
 
 // Config of MyInfo is coupled to that of Singpass
@@ -101,59 +98,47 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     default: 6 * HOUR_IN_MILLIS,
     env: 'CP_COOKIE_MAX_AGE',
   },
-  spEsrvcId: {
-    doc: 'e-service ID registered with National Digital Identity office for SingPass authentication. Needed for MyInfo.',
-    format: String,
-    default: null,
-    env: 'SINGPASS_ESRVC_ID',
-  },
-  myInfoClientMode: {
-    doc: 'Configures MyInfoGovClient. Set this to either `stg` or `prod` to fetch MyInfo data from the corresponding endpoints.',
-    format: Object.values(MyInfoMode),
-    default: MyInfoMode.Production,
-    env: 'MYINFO_CLIENT_CONFIG',
-  },
-  myInfoKey: {
-    doc: 'MyInfo private key, which is used to decrypt data and sign requests when communicating with MyInfo.',
-    format: validateIacStringParam,
-    default: null,
-    env: 'MYINFO_FORMSG_KEY',
-  },
-  myInfoCert: {
-    doc: "MyInfo's public certificate, which is used to verify their signature.",
-    format: validateIacStringParam,
-    default: null,
-    env: 'MYINFO_CERT',
-  },
-  myInfoKeyPath: {
-    doc: 'Path to MyInfo private key',
-    format: validateNonIacStringParam,
-    default: null,
-    env: 'MYINFO_FORMSG_KEY_PATH',
-  },
-  myInfoCertPath: {
-    doc: 'Path to MyInfo public certificate',
-    format: validateNonIacStringParam,
-    default: null,
-    env: 'MYINFO_CERT_PATH',
-  },
-  myInfoClientId: {
-    doc: 'OAuth2 client ID registered with MyInfo.',
-    format: String,
-    default: null,
-    env: 'MYINFO_CLIENT_ID',
-  },
-  myInfoClientSecret: {
-    doc: 'OAuth2 client secret registered with MyInfo.',
-    format: String,
-    default: null,
-    env: 'MYINFO_CLIENT_SECRET',
-  },
   myInfoJwtSecret: {
     doc: 'Secret for signing MyInfo JWT.',
     format: String,
     default: null,
     env: 'MYINFO_JWT_SECRET',
+  },
+  myInfoFapiIssuer: {
+    doc: "Issuer identifier of Singpass' MyInfo FAPI 2.0 authorization server. Discovery is performed against <issuer>/.well-known/openid-configuration.",
+    format: String,
+    default: null,
+    env: 'MYINFO_FAPI_ISSUER',
+  },
+  myInfoFapiClientId: {
+    doc: "The Relying Party's client ID as registered in the Singpass Developer Portal for MyInfo FAPI 2.0.",
+    format: String,
+    default: null,
+    env: 'MYINFO_FAPI_CLIENT_ID',
+  },
+  myInfoFapiRpJwksPublic: {
+    doc: "The Relying Party's public JSON Web Key Set for MyInfo FAPI 2.0. Hosted at /mi/fapi/.well-known/jwks.json.",
+    format: validateIacStringParam,
+    default: null,
+    env: 'MYINFO_FAPI_RP_JWKS_PUBLIC',
+  },
+  myInfoFapiRpJwksSecret: {
+    doc: "The Relying Party's secret JSON Web Key Set for MyInfo FAPI 2.0. Signs client assertions and decrypts ID tokens and userinfo.",
+    format: validateIacStringParam,
+    default: null,
+    env: 'MYINFO_FAPI_RP_JWKS_SECRET',
+  },
+  myInfoFapiRpJwksPublicPath: {
+    doc: "Path to the Relying Party's public JSON Web Key Set for MyInfo FAPI 2.0.",
+    format: validateNonIacStringParam,
+    default: null,
+    env: 'MYINFO_FAPI_RP_JWKS_PUBLIC_PATH',
+  },
+  myInfoFapiRpJwksSecretPath: {
+    doc: "Path to the Relying Party's secret JSON Web Key Set for MyInfo FAPI 2.0.",
+    format: validateNonIacStringParam,
+    default: null,
+    env: 'MYINFO_FAPI_RP_JWKS_SECRET_PATH',
   },
   spOidcNdiDiscoveryEndpoint: {
     doc: "NDI's Singpass OIDC Discovery Endpoint",

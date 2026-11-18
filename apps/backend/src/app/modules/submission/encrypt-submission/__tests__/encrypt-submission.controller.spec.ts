@@ -7,9 +7,12 @@ import {
 } from 'formsg-shared/constants/errors'
 import {
   BasicField,
+  CorppassAttribute,
   ErrorCode,
   FormAuthType,
   MyInfoAttribute,
+  PaymentChannel,
+  PaymentType,
 } from 'formsg-shared/types'
 import { merge } from 'lodash'
 import mongoose from 'mongoose'
@@ -19,7 +22,6 @@ import { getEncryptSubmissionModel } from 'src/app/models/submission.server.mode
 import * as FormService from 'src/app/modules/form/form.service'
 import { MyInfoService } from 'src/app/modules/myinfo/myinfo.service'
 import * as MyInfoUtil from 'src/app/modules/myinfo/myinfo.util'
-import { SgidService } from 'src/app/modules/sgid/sgid.service'
 import * as OidcService from 'src/app/modules/spcp/spcp.oidc.service/index'
 import { OidcServiceType } from 'src/app/modules/spcp/spcp.oidc.service/spcp.oidc.service.types'
 import * as EncryptSubmissionService from 'src/app/modules/submission/encrypt-submission/encrypt-submission.service'
@@ -33,7 +35,7 @@ import {
   FormFieldSchema,
   IAttachmentInfo,
   IPopulatedEncryptedForm,
-  SgidFieldTitle,
+  SPCPFieldTitle,
 } from 'src/types'
 import { EncryptSubmissionDto, FormCompleteDto } from 'src/types/api'
 
@@ -64,7 +66,6 @@ jest.mock('src/app/utils/pipeline-middleware', () => {
 jest.mock('src/app/modules/spcp/spcp.oidc.service')
 jest.mock('src/app/modules/myinfo/myinfo.util')
 jest.mock('src/app/modules/myinfo/myinfo.service')
-jest.mock('src/app/modules/sgid/sgid.service')
 jest.mock('src/app/services/mail/mail.service')
 jest.mock('src/app/modules/verified-content/verified-content.service', () => {
   const originalModule = jest.requireActual(
@@ -81,7 +82,6 @@ jest.mock('src/app/modules/verified-content/verified-content.service', () => {
 })
 
 const MockOidcService = jest.mocked(OidcService)
-const MockSgidService = jest.mocked(SgidService)
 const MockMyInfoUtil = jest.mocked(MyInfoUtil)
 const MockMyInfoService = jest.mocked(MyInfoService)
 const MockMailService = jest.mocked(MailService)
@@ -289,7 +289,6 @@ describe('encrypt-submission.controller', () => {
       const mockFormId = new ObjectId()
       const mockSpAuthTypeAndIsSingleSubmissionEnabledForm = {
         _id: mockFormId,
-        id: mockFormId.toHexString(),
         title: 'some form',
         authType: FormAuthType.SP,
         isSingleSubmission: true,
@@ -299,7 +298,7 @@ describe('encrypt-submission.controller', () => {
 
       const mockReq = merge(
         expressHandler.mockRequest({
-          params: { formId: 'some id' },
+          params: { formId: String(mockFormId) },
           body: {
             responses: [],
           },
@@ -327,13 +326,13 @@ describe('encrypt-submission.controller', () => {
       expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][1]).toEqual(
         generateHashedSubmitterId(
           MOCK_JWT_PAYLOAD.userName.toUpperCase(),
-          mockSpAuthTypeAndIsSingleSubmissionEnabledForm.id,
+          String(mockFormId),
         ),
       )
       expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][2].submitterId).toEqual(
         generateHashedSubmitterId(
           MOCK_JWT_PAYLOAD.userName.toUpperCase(),
-          mockSpAuthTypeAndIsSingleSubmissionEnabledForm.id,
+          String(mockFormId),
         ),
       )
     })
@@ -361,7 +360,6 @@ describe('encrypt-submission.controller', () => {
       const mockFormId = new ObjectId()
       const mockCpAuthTypeAndIsSingleSubmissionEnabledForm = {
         _id: mockFormId,
-        id: mockFormId.toHexString(),
         title: 'some form',
         authType: FormAuthType.CP,
         isSingleSubmission: true,
@@ -371,7 +369,7 @@ describe('encrypt-submission.controller', () => {
 
       const mockReq = merge(
         expressHandler.mockRequest({
-          params: { formId: 'some id' },
+          params: { formId: String(mockFormId) },
           body: {
             responses: [],
           },
@@ -399,13 +397,13 @@ describe('encrypt-submission.controller', () => {
       expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][1]).toEqual(
         generateHashedSubmitterId(
           MOCK_JWT_PAYLOAD.userName.toUpperCase(),
-          mockCpAuthTypeAndIsSingleSubmissionEnabledForm.id,
+          String(mockFormId),
         ),
       )
       expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][2].submitterId).toEqual(
         generateHashedSubmitterId(
           MOCK_JWT_PAYLOAD.userName.toUpperCase(),
-          mockCpAuthTypeAndIsSingleSubmissionEnabledForm.id,
+          String(mockFormId),
         ),
       )
     })
@@ -872,9 +870,6 @@ describe('encrypt-submission.controller', () => {
       exp: 1,
     }
     beforeEach(() => {
-      MockSgidService.extractSgidSingpassJwtPayload.mockReturnValue(
-        ok(MOCK_JWT_PAYLOAD),
-      )
       MockMyInfoUtil.extractMyInfoLoginJwt.mockReturnValue(ok('jwt'))
       MockMyInfoService.verifyLoginJwt.mockReturnValue(
         ok(MOCK_MYINFO_LOGIN_COOKIE_PAYLOAD),
@@ -1080,7 +1075,17 @@ describe('encrypt-submission.controller', () => {
         _id: mockFormId,
         title: 'some form',
         authType: FormAuthType.CP,
-        form_fields: [] as FormFieldSchema[],
+        // Identity fields record the identity as answers, not verified content.
+        form_fields: [
+          {
+            fieldType: BasicField.Nric,
+            corppass: { attr: CorppassAttribute.Uid },
+          },
+          {
+            fieldType: BasicField.Uen,
+            corppass: { attr: CorppassAttribute.Uen },
+          },
+        ] as FormFieldSchema[],
         getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
         isSubmitterIdCollectionEnabled: false,
       } as IPopulatedEncryptedForm
@@ -1189,90 +1194,7 @@ describe('encrypt-submission.controller', () => {
           answer: MOCK_NRIC,
           fieldType: BasicField.Nric,
           isVisible: true,
-          question: SgidFieldTitle.SgidNric,
-        }),
-      )
-    })
-
-    it('should include nric in email fields to be included in notification email and store nric in verifiedContent if form isSubmitterIdCollectionEnabled is true for SgId authType', async () => {
-      // Arrange
-      const mockFormId = new ObjectId()
-      const mockSgidAuthTypeAndSubmitterIdCollectionEnabledForm = {
-        _id: mockFormId,
-        title: 'some form',
-        authType: FormAuthType.SGID,
-        isSubmitterIdCollectionEnabled: true,
-        form_fields: [] as FormFieldSchema[],
-        emails: ['test@example.com'],
-        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
-      } as IPopulatedEncryptedForm
-
-      const MOCK_REQ = merge(
-        expressHandler.mockRequest({
-          params: { formId: 'some id' },
-          body: {
-            responses: [],
-          },
-        }),
-        {
-          formsg: {
-            encryptedPayload: {
-              encryptedContent: 'encryptedContent',
-              version: 1,
-            },
-            formDef: {
-              authType: FormAuthType.SGID,
-            },
-            encryptedFormDef:
-              mockSgidAuthTypeAndSubmitterIdCollectionEnabledForm,
-          } as unknown as EncryptSubmissionDto,
-        } as unknown as FormCompleteDto,
-      ) as unknown as SubmitEncryptModeFormHandlerRequest
-      const mockRes = expressHandler.mockResponse()
-
-      const expectedGetVerifiedContentArg = {
-        uinFin: MOCK_NRIC,
-        userInfo: undefined,
-      }
-      const expectedVerifiedContent = { sgidUinFin: MOCK_NRIC }
-
-      const performEncryptPostSubmissionActionsSpy = jest.spyOn(
-        EncryptSubmissionService,
-        'performEncryptPostSubmissionActions',
-      )
-
-      // Act
-      await submitEncryptModeFormForTest(MOCK_REQ, mockRes)
-
-      // Assert
-
-      // that verified content is generated since submitter login id is collected
-      expect(
-        MockVerifiedContentService.getVerifiedContent,
-      ).toHaveBeenCalledWith({
-        type: mockSgidAuthTypeAndSubmitterIdCollectionEnabledForm.authType,
-        data: expectedGetVerifiedContentArg,
-      })
-
-      // that the saved submission is contains the correct verified content
-      const savedSubmission = await EncryptSubmission.findOne()
-
-      expect(savedSubmission).toBeDefined()
-      expect(savedSubmission).not.toBeNull()
-      expect(savedSubmission?.verifiedContent).toEqual(
-        JSON.stringify(expectedVerifiedContent),
-      )
-
-      // email fields for generating email notification include nric
-      expect(performEncryptPostSubmissionActionsSpy).toHaveBeenCalledTimes(1)
-      expect(
-        performEncryptPostSubmissionActionsSpy.mock.calls[0][0].emailFields[0],
-      ).toEqual(
-        expect.objectContaining({
-          answer: MOCK_NRIC,
-          fieldType: BasicField.Nric,
-          isVisible: true,
-          question: SgidFieldTitle.SgidNric,
+          question: SPCPFieldTitle.SpNric,
         }),
       )
     })
@@ -1375,6 +1297,59 @@ describe('encrypt-submission.controller', () => {
         performEncryptPostSubmissionActionsSpy.mock.calls[0][0]
           .respondentEmails,
       ).toEqual(mockRespondentEmails)
+    })
+  })
+
+  describe('payment submissions', () => {
+    it('should return message key when payment settings are invalid', async () => {
+      const mockReq = merge(
+        expressHandler.mockRequest({
+          params: { formId: new ObjectId().toHexString() },
+          body: { responses: [] },
+        }),
+        {
+          formsg: {
+            filteredResponses: [],
+            respondentEmails: [],
+            responseMetadata: {},
+            encryptedPayload: {
+              encryptedContent: 'encryptedContent',
+              version: 1,
+              payments: {},
+              paymentReceiptEmail: 'test@example.com',
+            },
+            formDef: {
+              _id: new ObjectId(),
+            },
+            encryptedFormDef: {
+              _id: new ObjectId(),
+              authType: FormAuthType.NIL,
+              isSubmitterIdCollectionEnabled: false,
+              getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+              payments_field: {
+                enabled: true,
+                payment_type: PaymentType.Fixed,
+                gst_enabled: false,
+              },
+              payments_channel: {
+                channel: PaymentChannel.Stripe,
+                target_account_id: 'acct_mock',
+              },
+            },
+          } as unknown as FormCompleteDto,
+        },
+      ) as unknown as SubmitEncryptModeFormHandlerRequest
+      const mockRes = expressHandler.mockResponse()
+
+      await submitEncryptModeFormForTest(mockReq, mockRes)
+
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message:
+          "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+        messageKey:
+          'features.publicForm.backendErrors.submission.payment.invalidSettings',
+      })
     })
   })
 })

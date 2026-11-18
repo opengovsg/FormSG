@@ -1,11 +1,11 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { FormAuthType } from 'formsg-shared/types'
 
 import { getPreviewFormResponse } from '~/mocks/msw/handlers/admin-form/preview-form'
 
 import { ADMINFORM_BUILD_SUBROUTE } from '~constants/routes'
-import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
+import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { PreviewFormProvider } from '~features/admin-form/preview/PreviewFormProvider'
 
@@ -15,7 +15,9 @@ export default {
   title: 'Features/AdminForm/PreviewFormBanner',
   parameters: {
     layout: 'fullscreen',
-    msw: [getPreviewFormResponse()],
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
+    msw: { handlers: { default: [getPreviewFormResponse()] } },
   },
   component: PreviewFormBannerComponent,
   decorators: [
@@ -34,19 +36,21 @@ export default {
 const Template: StoryFn = () => <PreviewFormBannerComponent />
 
 export const Desktop = Template.bind({})
-
-export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
+Desktop.parameters = { argos: { modes: viewportModes('mobile') } }
 
 export const WithAuthenticatedForm = Template.bind({})
 WithAuthenticatedForm.parameters = {
-  msw: [
-    getPreviewFormResponse({
-      overrides: {
-        form: {
-          authType: FormAuthType.SP,
-        },
-      },
-    }),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getPreviewFormResponse({
+          overrides: {
+            form: {
+              authType: FormAuthType.SP,
+            },
+          },
+        }),
+      ],
+    },
+  },
 }

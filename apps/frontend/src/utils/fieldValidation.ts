@@ -22,6 +22,7 @@ import {
   BasicField,
   CheckboxFieldBase,
   ChildrenCompoundFieldBase,
+  CorppassAttribute,
   DateFieldBase,
   DateSelectedValidation,
   DecimalFieldBase,
@@ -71,7 +72,7 @@ import {
   VerifiableFieldValues,
 } from '~templates/Field/types'
 
-import { CorppassUnauthorizedSubmitterIdCollectionEnabled } from '~features/public-form/PublicFormPage.stories'
+import { useEnv } from '~features/env/queries'
 import { VerifiableFieldBase } from '~features/verifiable-fields/types'
 
 import {
@@ -665,6 +666,8 @@ export const useTextValidationRules = (
   }, [schema, disableRequiredValidation, t])
 }
 
+const NO_HIDDEN_ENTITY_TYPES: string[] = []
+
 export const useUenValidationRules = (
   schema: UenFieldBase,
   disableRequiredValidation?: boolean,
@@ -672,6 +675,8 @@ export const useUenValidationRules = (
   const { t } = useTranslation('translation', {
     keyPrefix: I18N_KEY_PREFIX,
   })
+  const { data: { uenHiddenEntityTypes = NO_HIDDEN_ENTITY_TYPES } = {} } =
+    useEnv()
 
   return useMemo(() => {
     return {
@@ -682,12 +687,14 @@ export const useUenValidationRules = (
           t,
         ),
         validUen: (val?: string) => {
+          // Corppass supplies the entity's ID, which can be a non-UEN ID.
+          if (schema.corppass?.attr === CorppassAttribute.Uen) return true
           if (!val) return true
-          return isUenValid(val) || t('validUen')
+          return isUenValid(val, uenHiddenEntityTypes) || t('validUen')
         },
       },
     }
-  }, [schema, disableRequiredValidation, t])
+  }, [schema, disableRequiredValidation, t, uenHiddenEntityTypes])
 }
 
 export const useNricValidationRules = (
@@ -707,6 +714,8 @@ export const useNricValidationRules = (
           t,
         ),
         validNric: (val?: string) => {
+          // Corppass supplies the representative's identifier, which can be foreign.
+          if (schema.corppass?.attr === CorppassAttribute.Uid) return true
           if (!val) return true
           return isNricValid(val) || isMFinSeriesValid(val) || t('validNric')
         },

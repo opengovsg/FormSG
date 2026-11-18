@@ -25,7 +25,7 @@ export const getAdminFormIssue = ({
   return http.get<{ formId: string }, never, FormIssueMetaDto>(
     '/api/v3/admin/forms/:formId/issues',
     async () => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(generateFormIssueMeta(), { status: 200 })
     },
   )

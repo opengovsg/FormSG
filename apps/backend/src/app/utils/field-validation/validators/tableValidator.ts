@@ -1,15 +1,15 @@
+import { TableAnswerV4 } from '@opengovsg/formsg-sdk'
 import {
   BasicField,
   DropdownFieldBase,
   FormFieldWithId,
   ShortTextFieldBase,
-  TableFieldBase,
-  TableResponseV3,
+  TableFieldDto,
 } from 'formsg-shared/types'
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
+import { ParsedClearFormFieldResponseV4 } from '../../../../types/api'
 import {
   ITableFieldSchema,
   OmitUnusedValidatorProps,
@@ -23,7 +23,7 @@ import {
   ProcessedTableResponse,
 } from '../../../modules/submission/submission.types'
 import { createAnswerFieldFromColumn } from '../answerField.factory'
-import { validateField, validateFieldV3 } from '..'
+import { validateField, validateFieldV4 } from '..'
 
 const ALLOWED_COLUMN_TYPES = [BasicField.ShortText, BasicField.Dropdown]
 
@@ -160,61 +160,73 @@ export const constructTableValidator: TableValidatorConstructor = (
   )
 
 interface TableValidatorData {
-  tableField: TableFieldBase
+  tableField: TableFieldDto
   formId: string
   isVisible: boolean
   isDisabled: boolean
 }
-export const isTableFieldV3: ResponseValidator<
-  ParsedClearFormFieldResponseV3,
-  TableResponseV3
-> = (response) => {
-  if (response.fieldType !== BasicField.Table) {
-    return left('TableValidatorV3.fieldTypeMismatch:\tfield type is not table')
-  }
-  return right(response)
+// V4
+// V4 table: answer = { [rowId]: { rowNum: number, value: { [colId]: string|number } } }
+
+type TableResponseV4 = ParsedClearFormFieldResponseV4 & {
+  fieldType: BasicField.Table
+  answer: TableAnswerV4
 }
 
-const makeMinimumRowsValidatorV3: ResponseValidatorConstructor<
+const isTableFieldV4: ResponseValidator<
+  ParsedClearFormFieldResponseV4,
+  TableResponseV4
+> = (response) => {
+  if (response.fieldType !== BasicField.Table) {
+    return left('TableValidatorV4.fieldTypeMismatch:\tfield type is not table')
+  }
+  return right(response as TableResponseV4)
+}
+
+// Helper to get the table answer as TableAnswerV4 (avoids AnswerV4 intersection issues)
+const getTableAnswerV4 = (response: TableResponseV4): TableAnswerV4 =>
+  response.answer as unknown as TableAnswerV4
+
+const makeMinimumRowsValidatorV4: ResponseValidatorConstructor<
   TableValidatorData,
-  TableResponseV3
+  TableResponseV4
 > =
   ({ tableField }) =>
   (response) => {
-    const answerRows = response.answer
+    const answerRows = Object.values(getTableAnswerV4(response))
     const { minimumRows } = tableField
 
     return answerRows.length >= (minimumRows || 0)
       ? right(response)
       : left(
-          `TableValidatorV3:\tanswer has less than the minimum number of rows`,
+          `TableValidatorV4:\tanswer has less than the minimum number of rows`,
         )
   }
 
-const makeAddMoreRowsValidatorV3: ResponseValidatorConstructor<
+const makeAddMoreRowsValidatorV4: ResponseValidatorConstructor<
   TableValidatorData,
-  TableResponseV3
+  TableResponseV4
 > =
   ({ tableField }) =>
   (response) => {
-    const answerRows = response.answer
+    const answerRows = Object.values(getTableAnswerV4(response))
     const { minimumRows, addMoreRows } = tableField
 
     if (addMoreRows) return right(response)
     return answerRows.length === (minimumRows || 0)
       ? right(response)
       : left(
-          `TableValidatorV3:\tanswer has extra rows even though addMoreRows is false`,
+          `TableValidatorV4:\tanswer has extra rows even though addMoreRows is false`,
         )
   }
 
-const makeMaximumRowsValidatorV3: ResponseValidatorConstructor<
+const makeMaximumRowsValidatorV4: ResponseValidatorConstructor<
   TableValidatorData,
-  TableResponseV3
+  TableResponseV4
 > =
   ({ tableField }) =>
   (response) => {
-    const answerRows = response.answer
+    const answerRows = Object.values(getTableAnswerV4(response))
     const { maximumRows } = tableField
 
     if (!maximumRows) return right(response)
@@ -222,29 +234,31 @@ const makeMaximumRowsValidatorV3: ResponseValidatorConstructor<
     return answerRows.length <= maximumRows
       ? right(response)
       : left(
-          `TableValidatorV3:\tanswer has more than the maximum number of rows`,
+          `TableValidatorV4:\tanswer has more than the maximum number of rows`,
         )
   }
 
-const makeRowLengthValidatorV3: ResponseValidatorConstructor<
+const makeRowLengthValidatorV4: ResponseValidatorConstructor<
   TableValidatorData,
-  TableResponseV3
+  TableResponseV4
 > =
   ({ tableField }) =>
   (response) => {
-    const answerRows = response.answer
+    const answerRows = Object.values(getTableAnswerV4(response))
     const { columns } = tableField
 
-    return answerRows.every((row) => Object.keys(row).length === columns.length)
+    return answerRows.every(
+      (row) => Object.keys(row.value).length === columns.length,
+    )
       ? right(response)
       : left(
-          `TableValidatorV3:\tanswer has rows with incorrect number of answers`,
+          `TableValidatorV4:\tanswer has rows with incorrect number of answers`,
         )
   }
 
-const makeColumnTypeValidatorV3: ResponseValidatorConstructor<
+const makeColumnTypeValidatorV4: ResponseValidatorConstructor<
   TableValidatorData,
-  TableResponseV3
+  TableResponseV4
 > =
   ({ tableField }) =>
   (response) => {
@@ -253,24 +267,33 @@ const makeColumnTypeValidatorV3: ResponseValidatorConstructor<
       ALLOWED_COLUMN_TYPES.includes(column.columnType),
     )
       ? right(response)
-      : left(`TableValidatorV3:\tanswer has columns with non-allowed types`)
+      : left(`TableValidatorV4:\tanswer has columns with non-allowed types`)
   }
 
-const makeTableCellValidatorV3: ResponseValidatorConstructor<
+const makeTableCellValidatorV4: ResponseValidatorConstructor<
   TableValidatorData,
-  TableResponseV3
+  TableResponseV4
 > =
   ({ tableField, formId, isVisible, isDisabled }) =>
   (response) => {
-    const answerRows = response.answer
+    // Sort rows by rowNum for consistent ordering
+    const answerRows = Object.values(getTableAnswerV4(response)).sort(
+      (a, b) => a.rowNum - b.rowNum,
+    )
     const { columns } = tableField
 
     return answerRows.every((row) => {
-      return Object.values(row).every((answer, i) => {
-        const col = columns[i]
-        const answerResponse = {
-          answer,
+      // Iterate columns in canonical order and look up each cell by columnId.
+      // Do not rely on Object.values(row.value) preserving column order.
+      return columns.every((col) => {
+        const answer = String(row.value[col._id])
+        // Each cell is validated as a standalone V4 single-answer response
+        // of the column's field type.
+        const answerResponse: ParsedClearFormFieldResponseV4 = {
           fieldType: col.columnType,
+          answer: { value: answer },
+          question: col.title,
+          provenance: {},
         }
 
         if (col.columnType === BasicField.Dropdown) {
@@ -282,7 +305,7 @@ const makeTableCellValidatorV3: ResponseValidatorConstructor<
             _id: '',
           } as FormFieldWithId<DropdownFieldBase>
 
-          return validateFieldV3({
+          return validateFieldV4({
             formId,
             formField,
             response: answerResponse,
@@ -297,7 +320,7 @@ const makeTableCellValidatorV3: ResponseValidatorConstructor<
             _id: '',
           } as FormFieldWithId<ShortTextFieldBase>
 
-          return validateFieldV3({
+          return validateFieldV4({
             formId,
             formField,
             response: answerResponse,
@@ -309,20 +332,20 @@ const makeTableCellValidatorV3: ResponseValidatorConstructor<
       })
     })
       ? right(response)
-      : left(`TableValidatorV3:\tanswer failed field validation`)
+      : left(`TableValidatorV4:\tanswer failed field validation`)
   }
 
-export const constructTableValidatorV3: ResponseValidatorConstructor<
+export const constructTableValidatorV4: ResponseValidatorConstructor<
   TableValidatorData,
-  ParsedClearFormFieldResponseV3,
-  TableResponseV3
+  ParsedClearFormFieldResponseV4,
+  TableResponseV4
 > = (tableFieldProperties) =>
   flow(
-    isTableFieldV3,
-    chain(makeMinimumRowsValidatorV3(tableFieldProperties)),
-    chain(makeAddMoreRowsValidatorV3(tableFieldProperties)),
-    chain(makeMaximumRowsValidatorV3(tableFieldProperties)),
-    chain(makeRowLengthValidatorV3(tableFieldProperties)),
-    chain(makeColumnTypeValidatorV3(tableFieldProperties)),
-    chain(makeTableCellValidatorV3(tableFieldProperties)),
+    isTableFieldV4,
+    chain(makeMinimumRowsValidatorV4(tableFieldProperties)),
+    chain(makeAddMoreRowsValidatorV4(tableFieldProperties)),
+    chain(makeMaximumRowsValidatorV4(tableFieldProperties)),
+    chain(makeRowLengthValidatorV4(tableFieldProperties)),
+    chain(makeColumnTypeValidatorV4(tableFieldProperties)),
+    chain(makeTableCellValidatorV4(tableFieldProperties)),
   )

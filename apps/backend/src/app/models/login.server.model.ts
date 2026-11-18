@@ -6,6 +6,7 @@ import {
   ILoginModel,
   ILoginSchema,
   IPopulatedForm,
+  LoginAuth,
 } from '../../types'
 
 import { AGENCY_SCHEMA_ID } from './agency.server.model'
@@ -51,8 +52,10 @@ const LoginSchema = new Schema<ILoginSchema, ILoginModel>(
 
 LoginSchema.statics.addLoginFromForm = function (
   form: IPopulatedForm,
+  // A later MRF step's Corppass login is billed to the step's own e-service ID.
+  { authType, esrvcId }: Partial<LoginAuth> = form,
 ): Promise<ILoginSchema> {
-  if (!form.authType || !form.esrvcId) {
+  if (!authType || !esrvcId) {
     return Promise.reject(
       new Error('Form does not contain authType or e-service ID'),
     )
@@ -61,8 +64,8 @@ LoginSchema.statics.addLoginFromForm = function (
     form: form._id,
     admin: form.admin._id,
     agency: form.admin.agency._id,
-    authType: form.authType,
-    esrvcId: form.esrvcId,
+    authType,
+    esrvcId,
   })
 }
 

@@ -11,6 +11,7 @@ import {
 } from '../spcp.errors'
 import { CpOidcClient } from '../spcp.oidc.client'
 import {
+  CodeVerifierCookieName,
   CorppassJwtPayloadFromCookie,
   ExtractedCorppassNDIPayload,
   ExtractedNDIPayload,
@@ -30,6 +31,7 @@ const logger = createLoggerWithLabel(module)
 export class CpOidcServiceClass extends SpcpOidcServiceClass {
   authType = FormAuthType.CP
   jwtName = JwtName.CP
+  codeVerifierCookieName = CodeVerifierCookieName.CP
 
   oidcClient: CpOidcClient
   oidcProps: CpOidcProps
@@ -94,11 +96,13 @@ export class CpOidcServiceClass extends SpcpOidcServiceClass {
    * Method to exchange auth code for decrypted and verified idToken and then extract NRIC and entityId
    * Used for Corppass forms
    * @param code authorisation code
+   * @param codeVerifier PKCE code verifier matching the code_challenge sent in the authorisation request
    * @returns okAsync(ExtractedCorppassNDIPayload)
    * @returns errAsync(InvalidIdTokenError) if failed to retrieve NRIC or entityId
    */
   exchangeAuthCodeAndRetrieveData(
     code: string,
+    codeVerifier?: string,
   ): ResultAsync<ExtractedCorppassNDIPayload, InvalidIdTokenError> {
     const logMeta = {
       action: 'exchangeAuthCodeAndRetrieveData',
@@ -106,7 +110,7 @@ export class CpOidcServiceClass extends SpcpOidcServiceClass {
 
     return ResultAsync.fromPromise(
       this.oidcClient
-        .exchangeAuthCodeAndDecodeVerifyToken(code)
+        .exchangeAuthCodeAndDecodeVerifyToken(code, codeVerifier)
         .then((decodedVerifiedToken) => {
           return {
             userInfo:

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BiTrash } from 'react-icons/bi'
 import { Box, Flex, Stack } from '@chakra-ui/react'
 
@@ -12,29 +13,39 @@ export interface SaveActionGroupProps {
   submitButtonLabel?: string
   isLoading: boolean
   ariaLabelName: string
+  isSubmitDisabled?: boolean
 }
 
 export const SaveActionGroup = ({
-  submitButtonLabel = 'Save changes',
+  submitButtonLabel,
   handleCancel,
   handleDelete,
   handleSubmit,
   isLoading,
   ariaLabelName,
+  isSubmitDisabled,
 }: SaveActionGroupProps): JSX.Element => {
+  const { t } = useTranslation()
   const isMobile = useIsMobile()
 
   return (
     <Flex
       justify="space-between"
-      align="center"
+      align={{ base: 'stretch', md: 'center' }}
+      direction={{ base: 'column', md: 'row' }}
+      gap={{ base: '0.5rem', md: '0' }}
       px={{ base: '1.5rem', md: '2rem' }}
     >
       {handleDelete ? (
         <IconButton
+          order={{ base: 1, md: 0 }}
+          alignSelf={{ base: 'stretch', md: 'auto' }}
+          w={isMobile ? '100%' : undefined}
           variant="clear"
           colorScheme="danger"
-          aria-label={`Delete ${ariaLabelName}`}
+          aria-label={t('features.adminForm.sidebar.logic.aria.delete', {
+            name: ariaLabelName,
+          })}
           icon={<BiTrash />}
           onClick={handleDelete}
           isDisabled={isLoading}
@@ -43,16 +54,18 @@ export const SaveActionGroup = ({
         <Box />
       )}
       <Stack
-        spacing="1rem"
+        spacing={{ base: '0.5rem', md: '1rem' }}
         direction={{ base: 'column', md: 'row-reverse' }}
         w="100%"
       >
         <Button
-          isDisabled={isLoading}
+          isDisabled={isLoading || isSubmitDisabled}
           onClick={handleSubmit}
           isFullWidth={isMobile}
+          data-testid="save-action-group-submit"
         >
-          {submitButtonLabel}
+          {submitButtonLabel ??
+            t('features.adminForm.sidebar.logic.saveChangesBtn')}
         </Button>
         <Button
           variant="clear"
@@ -61,7 +74,7 @@ export const SaveActionGroup = ({
           onClick={handleCancel}
           isFullWidth={isMobile}
         >
-          Cancel
+          {t('features.adminForm.sidebar.logic.cancelBtn')}
         </Button>
       </Stack>
     </Flex>

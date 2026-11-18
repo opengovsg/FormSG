@@ -1,11 +1,16 @@
-import { useCallback, useLayoutEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Stack } from '@chakra-ui/react'
 import { merge } from 'lodash'
 
 import { LogicConditionState } from 'formsg-shared/types'
 
 import {
+  cancelPendingSwitchSelector,
+  completeSaveSelector,
+  isCreatingStateSelector,
+  pendingSwitchToSelector,
   setToInactiveSelector,
   useAdminLogicStore,
 } from '../../../adminLogicStore'
@@ -32,6 +37,7 @@ export const useEditLogicBlock = ({
   onSubmit,
 }: UseEditLogicBlockProps) => {
   const setToInactive = useAdminLogicStore(setToInactiveSelector)
+  const cancelPendingSwitch = useAdminLogicStore(cancelPendingSwitchSelector)
   const { logicableFields, idToFieldMap, formFields } = useAdminFormLogic()
 
   const formMethods = useForm<EditLogicInputs>({
@@ -79,7 +85,12 @@ export const useEditLogicBlock = ({
     [logicConditionBlocks.length, remove],
   )
 
-  const handleSubmit = formMethods.handleSubmit((inputs) => onSubmit(inputs))
+  // An invalid submit cancels any pending switch so the card stays open; the
+  // Save-button path never has a pending switch, so that cancel is a no-op there.
+  const handleSubmit = formMethods.handleSubmit(
+    (inputs) => onSubmit(inputs),
+    cancelPendingSwitch,
+  )
 
   return {
     formMethods,
@@ -108,6 +119,7 @@ export const EditLogicBlock = ({
   submitButtonLabel,
   handleOpenDeleteModal,
 }: EditLogicBlockProps) => {
+  const { t } = useTranslation()
   const {
     formMethods,
     logicConditionBlocks,
@@ -120,6 +132,52 @@ export const EditLogicBlock = ({
     idToFieldMap,
     formFields,
   } = useEditLogicBlock({ defaultValues, onSubmit })
+
+  const pendingSwitchTo = useAdminLogicStore(pendingSwitchToSelector)
+  const completeSave = useAdminLogicStore(completeSaveSelector)
+  const isCreatingState = useAdminLogicStore(isCreatingStateSelector)
+
+  // RATIONALE: Returned formState is wrapped with a Proxy to improve
+  // render performance, we must ead it before a render in order to enable
+  // the state update.
+  const { isDirty } = formMethods.formState
+
+  // Guards the auto-save effect against re-entry: the mutation's isLoading
+  // only flips true on the render after mutate() is called, and handleSubmit's
+  // validation is promise-based, so a second card click landing in that window
+  // would pass the isLoading check and submit again (double-saving an existing
+  // block, or creating a new block twice). Set synchronously before submitting;
+  // cleared when the pending switch resolves (pendingSwitchTo returns to null
+  // on cancel, or this card unmounts on success).
+  const hasSubmittedForPendingSwitch = useRef(false)
+
+  // Auto-save when another logic block is clicked while this one is open.
+  // InactiveLogicBlock sets pendingSwitchTo; this effect is dormant until it
+  // does. Shared by both the edit (ActiveLogicBlock) and create (NewLogicBlock)
+  // paths.
+  useEffect(() => {
+    if (pendingSwitchTo === null) {
+      hasSubmittedForPendingSwitch.current = false
+      return
+    }
+
+    // A save is already in flight; its onSuccess completes the switch.
+    // Submitting again would double-save and collapse the target.
+    if (isLoading || hasSubmittedForPendingSwitch.current) return
+
+    // A new block has nothing persisted yet, so it must always run validation
+    // (like the Add logic button): an incomplete new block blocks the switch.
+    // An existing block that wasn't touched can switch directly without a
+    // redundant save.
+    if (!isCreatingState && !isDirty) {
+      completeSave()
+      return
+    }
+
+    hasSubmittedForPendingSwitch.current = true
+    handleSubmit()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingSwitchTo])
 
   return (
     <EditConditionWrapper ref={wrapperRef}>
@@ -159,7 +217,7 @@ export const EditLogicBlock = ({
         handleDelete={handleOpenDeleteModal}
         handleCancel={setToInactive}
         submitButtonLabel={submitButtonLabel}
-        ariaLabelName="logic"
+        ariaLabelName={t('features.adminForm.sidebar.logic.aria.logicName')}
       />
     </EditConditionWrapper>
   )

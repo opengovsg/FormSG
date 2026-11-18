@@ -1,5 +1,6 @@
 import { ChangeEventHandler, ReactNode, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { BiMinus } from 'react-icons/bi'
 import {
   Box,
   Checkbox as ChakraCheckbox,
@@ -7,6 +8,7 @@ import {
   ComponentWithAs,
   forwardRef,
   Icon,
+  IconProps,
   useMergeRefs,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
@@ -36,6 +38,17 @@ type CheckboxWithOthers = ComponentWithAs<'input', CheckboxProps> & {
   OthersWrapper: typeof OthersWrapper
 }
 
+const CheckboxIcon = ({
+  isIndeterminate,
+  isChecked,
+  ...props
+}: IconProps & { isIndeterminate?: boolean; isChecked?: boolean }) =>
+  isIndeterminate ? (
+    <Icon as={BiMinus} {...props} aria-hidden="true" />
+  ) : (
+    <Icon as={BxCheckAnimated} {...props} isChecked={isChecked} />
+  )
+
 export const Checkbox = forwardRef<CheckboxProps, 'input'>(
   ({ children, colorScheme = 'primary', isHighContrast, ...props }, ref) => {
     // Passing all props for cleanliness but the size prop is the most relevant
@@ -43,8 +56,7 @@ export const Checkbox = forwardRef<CheckboxProps, 'input'>(
     return (
       <ChakraCheckbox
         icon={
-          <Icon
-            as={BxCheckAnimated}
+          <CheckboxIcon
             __css={iconStyles}
             aria-label={`Checkbox icon, ${props.isChecked ? '' : 'un'}checked`}
             // This prop needs to be passed explicitly for animations

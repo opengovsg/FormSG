@@ -1,11 +1,12 @@
-import { BasicField, SignatureResponseV3 } from 'formsg-shared/types'
+import { SignatureAnswerV4 } from '@opengovsg/formsg-sdk'
+import { BasicField } from 'formsg-shared/types'
 import { left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
 import { ProcessedSignatureResponse } from 'src/app/modules/submission/submission.types'
 import { ISignatureFieldSchema, OmitUnusedValidatorProps } from 'src/types'
 
-import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
+import { ParsedClearFormFieldResponseV4 } from '../../../../types/api'
 import {
   ResponseValidator,
   ResponseValidatorConstructor,
@@ -24,22 +25,28 @@ const signatureAnswerValidator: SignatureValidator = (response) => {
 export const constructSignatureValidator: SignatureValidatorConstructor = () =>
   flow(signatureAnswerValidator)
 
-// v3
+// V4
+// V4 signature: answer = { value: [number, number, number][][], type: 'draw' }
 
-const isSignatureResponseV3: ResponseValidator<
-  ParsedClearFormFieldResponseV3,
-  SignatureResponseV3
+type SignatureResponseV4 = ParsedClearFormFieldResponseV4 & {
+  fieldType: BasicField.Signature
+  answer: SignatureAnswerV4
+}
+
+const isSignatureResponseV4: ResponseValidator<
+  ParsedClearFormFieldResponseV4,
+  SignatureResponseV4
 > = (response) => {
   if (response.fieldType !== BasicField.Signature) {
     return left(
-      `SignatureValidatorV3.fieldTypeMismatch:\tfieldType is not signature`,
+      `SignatureValidatorV4.fieldTypeMismatch:\tfieldType is not signature`,
     )
   }
-  return right(response)
+  return right(response as SignatureResponseV4)
 }
 
-export const constructSignatureValidatorV3: ResponseValidatorConstructor<
+export const constructSignatureValidatorV4: ResponseValidatorConstructor<
   OmitUnusedValidatorProps<ISignatureFieldSchema>,
-  ParsedClearFormFieldResponseV3,
-  SignatureResponseV3
-> = () => flow(isSignatureResponseV3)
+  ParsedClearFormFieldResponseV4,
+  SignatureResponseV4
+> = () => flow(isSignatureResponseV4)

@@ -4,7 +4,7 @@ import { Session } from 'supertest-session'
 import MailService from 'src/app/services/mail/mail.service'
 import * as OtpUtils from 'src/app/utils/otp'
 
-const MOCK_VALID_OTP = '123456'
+const MOCK_VALID_OTP = 'A1B2C3D4'
 const MOCK_OTP_PREFIX = 'ABC'
 const ADMIN_LOGIN_SESSION_COOKIE_NAME = 'formsg.connect.sid'
 

@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 
 import {
   FormColorTheme,
@@ -15,11 +15,7 @@ import {
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 
-import {
-  getMobileViewParameters,
-  StoryRouter,
-  viewports,
-} from '~utils/storybook'
+import { getMobileViewGlobals, StoryRouter } from '~utils/storybook'
 
 import { SettingsMultiLangPage } from './SettingsMultiLangPage'
 
@@ -44,8 +40,6 @@ export default {
     }),
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
     msw: { handlers: { default: buildMswRoutes() } },
   },
 } as Meta
@@ -187,14 +181,7 @@ Loading.parameters = {
 }
 
 export const Mobile = Template.bind({})
-Mobile.parameters = {
-  ...getMobileViewParameters(),
-}
+Mobile.globals = getMobileViewGlobals()
 
 export const Tablet = Template.bind({})
-Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
-  chromatic: { viewports: [viewports.md] },
-}
+Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }

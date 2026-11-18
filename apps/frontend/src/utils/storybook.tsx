@@ -7,11 +7,9 @@ import {
   RouterProvider,
 } from 'react-router-dom'
 import { Box, BoxProps, Center, useDisclosure } from '@chakra-ui/react'
-import { Decorator } from '@storybook/react'
+import { Decorator } from '@storybook/react-vite'
 import dayjs from 'dayjs'
 import mockdate from 'mockdate'
-
-import { theme } from '~/theme'
 
 import { AuthContext } from '~contexts/AuthContext'
 import {
@@ -191,45 +189,29 @@ export const StoryRouter =
     return <RouterProvider router={router} />
   }
 
-/**
- * Helper function to convert theme breakpoint into viewport width in px for
- * Chromatic viewpoint snapshots.
- * @param breakpoint the theme breakpoint to convert
- * @returns the number pixel width of the given breakpoint.
- */
-const breakpointToViewportWidth = (
-  breakpoint: keyof typeof theme.breakpoints,
-) => {
-  const rem = 16
-  return parseInt(theme.breakpoints[breakpoint]) * rem
+/** Assign to `Story.globals`: Storybook ignores globals under parameters. */
+export const getMobileViewGlobals = () => {
+  return { viewport: { value: 'mobile1', isRotated: false } }
+}
+
+/** Assign to `Story.globals`: Storybook ignores globals under parameters. */
+export const getTabletViewGlobals = () => {
+  return { viewport: { value: 'tablet', isRotated: false } }
+}
+
+type ViewportMode = 'tablet' | 'mobile'
+
+const VIEWPORT_MODES: Record<ViewportMode, { viewport: string }> = {
+  tablet: { viewport: 'tablet' },
+  mobile: { viewport: 'mobile1' },
 }
 
 /**
- * Viewports mapping viewport key to their width in (pixel) number.
- * Used for Chromatic viewpoint snapshots which requires the numbers in pixels.
+ * Argos modes that capture a story at the default (desktop) size and again at
+ * each given viewport, instead of a separate story per viewport. Set it as
+ * `parameters.argos.modes`; the viewport keys are defined in the preview.
  */
-export const viewports = {
-  xs: breakpointToViewportWidth('xs'),
-  sm: breakpointToViewportWidth('sm'),
-  md: breakpointToViewportWidth('md'),
-  lg: breakpointToViewportWidth('lg'),
-  xl: breakpointToViewportWidth('xl'),
-}
-
-export const getMobileViewParameters = () => {
-  return {
-    viewport: {
-      defaultViewport: 'mobile1',
-    },
-    chromatic: { viewports: [viewports.xs] },
-  }
-}
-
-export const getTabletViewParameters = () => {
-  return {
-    viewport: {
-      defaultViewport: 'tablet',
-    },
-    chromatic: { viewports: [viewports.md] },
-  }
-}
+export const viewportModes = (...viewports: ViewportMode[]) => ({
+  desktop: {},
+  ...Object.fromEntries(viewports.map((v) => [v, VIEWPORT_MODES[v]])),
+})

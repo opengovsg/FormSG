@@ -8,8 +8,11 @@ import {
   FormMetadata,
   FormResponseMode,
   FormStatus,
+  PaymentChannel,
+  PaymentType,
   PublicMultirespondentSubmissionDto,
   SubmissionType,
+  WorkflowEventType,
   WorkflowType,
 } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
@@ -53,6 +56,8 @@ import {
 } from '../multirespondent-submission.controller'
 import * as MultiRespondentSubmissionService from '../multirespondent-submission.service'
 import * as MultirespondentSubmissionUtils from '../multirespondent-submission.utils'
+import * as StepToken from '../step-token'
+import { SnapshotWriteError } from '../webhook/submission-snapshot.errors'
 
 jest.mock('src/app/modules/datadog/datadog.utils')
 
@@ -96,6 +101,18 @@ const mockSubmissionId = new ObjectId().toHexString()
 const mockMrfSubmission = {
   _id: mockSubmissionId,
 } as IMultirespondentSubmissionSchema & { _id: Types.ObjectId }
+const SUBMISSION_BACKEND_ERROR_KEY_PREFIX =
+  'features.publicForm.backendErrors.submission'
+
+const expectedSubmissionError = (
+  key: string,
+  message: string,
+  extraBody: Record<string, unknown> = {},
+) => ({
+  message,
+  messageKey: `${SUBMISSION_BACKEND_ERROR_KEY_PREFIX}.${key}`,
+  ...extraBody,
+})
 
 describe('multirespondent-submision.controller', () => {
   beforeEach(() => {
@@ -109,9 +126,9 @@ describe('multirespondent-submision.controller', () => {
       .mockReturnValue(ok(mockMrfForm))
 
     MockMultiRespondentSubmissionService.createMultiRespondentFormSubmission =
-      jest.fn().mockReturnValue(okAsync(mockMrfSubmission))
+      jest.fn().mockReturnValue(okAsync({ submission: mockMrfSubmission }))
     MockMultiRespondentSubmissionService.updateMultiRespondentFormSubmission =
-      jest.fn().mockReturnValue(okAsync(mockMrfSubmission))
+      jest.fn().mockReturnValue(okAsync({ submission: mockMrfSubmission }))
     MockMultiRespondentSubmissionService.performMultiRespondentPostSubmissionCreateActions =
       jest.fn().mockReturnValue(okAsync(true))
     MockMultiRespondentSubmissionService.performMultiRespondentPostSubmissionUpdateActions =
@@ -232,6 +249,137 @@ describe('multirespondent-submision.controller', () => {
         {},
       )
     })
+
+    it('returns 400 when the workflow has been stopped', async () => {
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: mockFormId, submissionId: mockSubmissionId },
+        session: { cookie: { maxAge: 1000 } },
+        body: {} as any,
+      })
+      const mockRes = expressHandler.mockResponse()
+      MockFormService.retrieveFullFormById = jest.fn().mockReturnValue(
+        okAsync({
+          _id: mockFormId,
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'Mock Form',
+          status: FormStatus.Public,
+        }),
+      )
+      MockSubmissionService.getEncryptedSubmissionData.mockReturnValue(
+        okAsync({
+          submissionType: SubmissionType.Multirespondent,
+          workflowStep: 0,
+          workflow: [],
+          stoppedAt: new Date('2026-10-07T08:00:00.000Z'),
+        } as unknown as MultirespondentSubmissionData),
+      )
+
+      await handleGetMultirespondentSubmissionForRespondent(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining('This workflow has been stopped'),
+        }),
+      )
+      expect(mockRes.cookie).not.toHaveBeenCalled()
+    })
+
+    describe('with a step link token', () => {
+      const sentBack = {
+        type: WorkflowEventType.SentBack,
+        stepNumber: 2,
+        fromStepNumber: 3,
+        actorEmail: 'admin@example.com',
+        emails: [],
+        created: new Date('2026-10-07T09:00:00.000Z'),
+      }
+      const loadWithStepToken = async (
+        stepToken?: string,
+        workflowEvents: unknown[] = [sentBack],
+      ) => {
+        const mockReq = expressHandler.mockRequest({
+          params: { formId: mockFormId, submissionId: mockSubmissionId },
+          query: stepToken === undefined ? {} : { stepToken },
+          session: { cookie: { maxAge: 1000 } },
+          body: {} as any,
+        })
+        const mockRes = expressHandler.mockResponse()
+        MockFormService.retrieveFullFormById = jest.fn().mockReturnValue(
+          okAsync({
+            _id: mockFormId,
+            responseMode: FormResponseMode.Multirespondent,
+            title: 'Mock Form',
+            status: FormStatus.Public,
+          }),
+        )
+        MockSubmissionService.getEncryptedSubmissionData.mockReturnValue(
+          okAsync({
+            _id: mockSubmissionId,
+            submissionType: SubmissionType.Multirespondent,
+            form_fields: [],
+            form_logics: [],
+            workflow: [],
+            submittedSteps: [],
+            workflowStep: 0,
+            version: 1,
+            mrfVersion: 1,
+            created: new Date('2026-10-07T08:00:00.000Z'),
+            stepTokenHash: StepToken.hash('current-token'),
+            workflowEvents,
+          } as unknown as MultirespondentSubmissionData),
+        )
+
+        await handleGetMultirespondentSubmissionForRespondent(
+          mockReq,
+          mockRes,
+          jest.fn(),
+        )
+        return mockRes
+      }
+
+      it('loads with the current link', async () => {
+        const mockRes = await loadWithStepToken('current-token')
+
+        expect(mockRes.status).not.toHaveBeenCalledWith(403)
+        expect(mockRes.json).toHaveBeenCalledWith(
+          expect.objectContaining({ refNo: mockSubmissionId }),
+        )
+      })
+
+      it('loads without a token, as before step links', async () => {
+        const mockRes = await loadWithStepToken()
+
+        expect(mockRes.json).toHaveBeenCalledWith(
+          expect.objectContaining({ refNo: mockSubmissionId }),
+        )
+      })
+
+      it('returns 403 for a link a send back replaced', async () => {
+        const mockRes = await loadWithStepToken('old-token')
+
+        expect(mockRes.status).toHaveBeenCalledWith(403)
+        expect(mockRes.json).toHaveBeenCalledWith(
+          expect.objectContaining({
+            message: expect.stringContaining('no longer in use'),
+          }),
+        )
+        expect(mockRes.cookie).not.toHaveBeenCalled()
+      })
+
+      it('loads an old link when the response was never sent back', async () => {
+        const mockRes = await loadWithStepToken('old-token', [])
+
+        expect(mockRes.status).not.toHaveBeenCalledWith(403)
+        expect(mockRes.json).toHaveBeenCalledWith(
+          expect.objectContaining({ refNo: mockSubmissionId }),
+        )
+      })
+    })
   })
 
   describe('submitMultirespondentForm', () => {
@@ -346,10 +494,12 @@ describe('multirespondent-submision.controller', () => {
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(400)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message:
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expectedSubmissionError(
+          'files.uploadFailed',
           'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
-      })
+        ),
+      )
     })
 
     it('returns 404 not found when form has reached submission limit', async () => {
@@ -443,9 +593,52 @@ describe('multirespondent-submision.controller', () => {
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(500)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: submissionSaveError.message,
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expectedSubmissionError('saveFailed', submissionSaveError.message),
+      )
+    })
+
+    it('returns 500 when the snapshot write fails', async () => {
+      // Arrange
+      MockMultiRespondentSubmissionService.createMultiRespondentFormSubmission =
+        jest.fn().mockReturnValue(errAsync(new SnapshotWriteError()))
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {} as any,
       })
+      const mockSubmitMrfReq = merge(mockReq, {
+        formsg: {
+          formDef: {
+            _id: mockFormId,
+            authType: FormAuthType.NIL,
+            getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+          },
+          encryptedPayload: {
+            encryptedContent: 'encryptedContent',
+            version: 1,
+            submissionPublicKey: 'submissionPublicKey',
+            encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+            responses: {},
+            workflowStep: 0,
+          },
+        } as any,
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await submitMultirespondentFormForTest(mockSubmitMrfReq, mockRes)
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      )
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expectedSubmissionError('saveFailed', new SnapshotWriteError().message),
+      )
     })
 
     it('returns 200 ok when step has invalid workflow type', async () => {
@@ -524,6 +717,118 @@ describe('multirespondent-submision.controller', () => {
 
       // Assert
       expect(mockRes.status).not.toHaveBeenCalled() // default is 200 ok
+    })
+
+    describe('payment-enabled forms', () => {
+      const buildPaymentSubmitReq = (growthbook?: {
+        isOn: jest.Mock
+      }): Parameters<typeof submitMultirespondentFormForTest>[0] => {
+        const mockReq = expressHandler.mockRequest({
+          params: {
+            formId: mockFormId,
+            submissionId: mockSubmissionId,
+          },
+          body: {} as any,
+        })
+        return merge(mockReq, {
+          growthbook,
+          formsg: {
+            formDef: {
+              _id: mockFormId,
+              authType: FormAuthType.NIL,
+              getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+              payments_field: { enabled: true },
+              payments_channel: { channel: PaymentChannel.Stripe },
+            },
+            encryptedPayload: {
+              encryptedContent: 'encryptedContent',
+              version: 1,
+              submissionPublicKey: 'submissionPublicKey',
+              encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+              responses: {},
+              workflowStep: 0,
+            },
+          } as any,
+        })
+      }
+
+      it('returns 422 and creates nothing when the mrf-payments flag is off', async () => {
+        // Arrange
+        const mockSubmitMrfReq = buildPaymentSubmitReq({
+          isOn: jest.fn().mockReturnValue(false),
+        })
+        const mockRes = expressHandler.mockResponse()
+
+        // Act
+        await submitMultirespondentFormForTest(mockSubmitMrfReq, mockRes)
+
+        // Assert
+        expect(mockRes.status).toHaveBeenCalledWith(
+          StatusCodes.UNPROCESSABLE_ENTITY,
+        )
+        expect(
+          MockMultiRespondentSubmissionService.createMultiRespondentFormSubmission,
+        ).not.toHaveBeenCalled()
+      })
+
+      it('returns 422 when growthbook is unavailable (kill switch defaults closed)', async () => {
+        // Arrange
+        const mockSubmitMrfReq = buildPaymentSubmitReq(undefined)
+        const mockRes = expressHandler.mockResponse()
+
+        // Act
+        await submitMultirespondentFormForTest(mockSubmitMrfReq, mockRes)
+
+        // Assert
+        expect(mockRes.status).toHaveBeenCalledWith(
+          StatusCodes.UNPROCESSABLE_ENTITY,
+        )
+        expect(
+          MockMultiRespondentSubmissionService.createMultiRespondentFormSubmission,
+        ).not.toHaveBeenCalled()
+      })
+
+      it('returns 400 bad request when the pending submission fails to save, mirroring encrypt mode', async () => {
+        // Arrange
+        const mockSubmitMrfReq = buildPaymentSubmitReq({
+          isOn: jest.fn().mockReturnValue(true),
+        })
+        merge(mockSubmitMrfReq, {
+          formsg: {
+            formDef: {
+              title: 'mock payment form',
+              payments_field: {
+                enabled: true,
+                payment_type: PaymentType.Fixed,
+                amount_cents: 1000,
+              },
+              payments_channel: {
+                channel: PaymentChannel.Stripe,
+                target_account_id: 'acct_mock123',
+              },
+            },
+            encryptedPayload: {
+              paymentReceiptEmail: 'respondent@example.com',
+            },
+          },
+        })
+        MockMultiRespondentSubmissionService.createMultiRespondentFormPendingSubmission =
+          jest.fn().mockReturnValue(errAsync(new SubmissionSaveError()))
+        const mockRes = expressHandler.mockResponse()
+
+        // Act
+        await submitMultirespondentFormForTest(mockSubmitMrfReq, mockRes)
+
+        // Assert
+        expect(
+          MockMultiRespondentSubmissionService.createMultiRespondentFormPendingSubmission,
+        ).toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+        expect(mockRes.json).toHaveBeenCalledWith({
+          message:
+            'Could not save pending submission. For assistance, please contact the person who asked you to fill in this form.',
+        })
+      })
     })
   })
 
@@ -704,10 +1009,12 @@ describe('multirespondent-submision.controller', () => {
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(400)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message:
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expectedSubmissionError(
+          'files.uploadFailed',
           'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
-      })
+        ),
+      )
     })
 
     it('returns 404 not found when form has reached submission limit', async () => {
@@ -830,10 +1137,72 @@ describe('multirespondent-submision.controller', () => {
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(500)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: submissionSaveError.message,
-        submissionId: mockSubmissionId,
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expectedSubmissionError('saveFailed', submissionSaveError.message, {
+          submissionId: mockSubmissionId,
+        }),
+      )
+    })
+
+    it('returns 500 when the snapshot write fails', async () => {
+      // Arrange
+      MockMultiRespondentSubmissionService.updateMultiRespondentFormSubmission =
+        jest.fn().mockReturnValue(errAsync(new SnapshotWriteError()))
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {} as any,
       })
+      const mockSubmitMrfReq = merge(mockReq, {
+        formsg: {
+          formDef: {
+            _id: mockFormId,
+            authType: FormAuthType.NIL,
+            getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+          },
+          snapshottedFormDef: {
+            _id: mockFormId,
+            form_fields: [],
+            form_logics: [],
+            workflow: [],
+            emails: [],
+            stepOneEmailNotificationFieldId: '',
+            stepsToNotify: [],
+            hasRespondentCopy: false,
+            title: 'Mock snapshotted form def',
+            webhook: {
+              url: 'https://plumber.gov.sg/webhook',
+              isRetryEnabled: true,
+            },
+          } as SnapshottedFormDef,
+          encryptedPayload: {
+            encryptedContent: 'encryptedContent',
+            version: 1,
+            submissionPublicKey: 'submissionPublicKey',
+            encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+            responses: {},
+            workflowStep: 1,
+          },
+        } as any,
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await updateMultirespondentSubmissionForTest(mockSubmitMrfReq, mockRes)
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      )
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expectedSubmissionError('saveFailed', new SnapshotWriteError().message),
+      )
+      // The post-submission actions must not fire for an aborted save.
+      expect(
+        MockMultiRespondentSubmissionService.performMultiRespondentPostSubmissionUpdateActions,
+      ).not.toHaveBeenCalled()
     })
 
     it('returns 404 not found when submission id not found', async () => {
@@ -1029,6 +1398,16 @@ describe('multirespondent-submision.controller', () => {
           title: 'Mock Form',
         }),
       )
+
+      MockMultiRespondentSubmissionService.getMultirespondentSubmission = jest
+        .fn()
+        .mockReturnValue(
+          okAsync({
+            _id: mockSubmissionId,
+            form: mockFormId,
+            created: new Date('2025-01-01T00:00:00.000Z'),
+          } as unknown as IMultirespondentSubmissionSchema),
+        )
     })
 
     it('returns 401 when findUserById returns MissingUserError', async () => {
@@ -1158,6 +1537,44 @@ describe('multirespondent-submision.controller', () => {
       })
     })
 
+    it('resends the SAME step token in the reminder link without rotating it', async () => {
+      // Arrange: the admin has unwrapped encryptedStepToken client-side and
+      // passes the RAW token back in the body.
+      const RAW_STEP_TOKEN = 'raw-step-token-abc'
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: mockFormId, submissionId: mockSubmissionId },
+        body: {
+          submissionSecretKey: 'mockSubmissionSecretKey',
+          stepToken: RAW_STEP_TOKEN,
+        },
+        session: { user: { _id: MOCK_USER._id } },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const mockNext = jest.fn()
+
+      MockMultiRespondentSubmissionService.getPendingStepRecipientEmailsFromSubmittedStepsMeta =
+        jest.fn().mockReturnValue(
+          okAsync({
+            recipientEmails: ['test@example.com'],
+            reminderStepNumber: 1,
+          }),
+        )
+      MockMultiRespondentSubmissionService.sendNextStepReminderEmail = jest
+        .fn()
+        .mockReturnValue(okAsync(true))
+
+      // Act
+      await sendPendingMrfSubmissionReminderForTest(mockReq, mockRes, mockNext)
+
+      // Assert: the reminder link carries the exact same token (no rotation).
+      const call =
+        MockMultiRespondentSubmissionService.sendNextStepReminderEmail.mock
+          .calls[0][0]
+      expect(call.responseUrl).toContain(
+        `&token=${encodeURIComponent(RAW_STEP_TOKEN)}`,
+      )
+    })
+
     it('returns 404 when retrieveFormById encounters FormNotFoundError', async () => {
       // Arrange
       const formNotFoundError = new FormNotFoundError('Form not found')
@@ -1191,6 +1608,7 @@ describe('multirespondent-submision.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(404)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: formNotFoundError.message,
+        messageKey: 'features.publicForm.errors.notFound',
       })
     })
 
@@ -1443,6 +1861,7 @@ describe('multirespondent-submision.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: mailSendError.message,
+        messageKey: `${SUBMISSION_BACKEND_ERROR_KEY_PREFIX}.generic`,
       })
     })
   })

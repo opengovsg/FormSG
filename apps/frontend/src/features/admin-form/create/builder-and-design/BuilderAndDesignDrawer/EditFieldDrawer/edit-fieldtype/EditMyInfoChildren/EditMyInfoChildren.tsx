@@ -1,17 +1,20 @@
+import { useMemo } from 'react'
 import { Controller } from 'react-hook-form'
+import { Trans, useTranslation } from 'react-i18next'
 import { BiCheck, BiData, BiX } from 'react-icons/bi'
-import { Box, FormControl, HStack, Icon, Text, VStack } from '@chakra-ui/react'
+import { Box, HStack, Icon, Text, VStack } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { extend } from 'lodash'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { MyInfoChildAttributes } from 'formsg-shared/types'
 
 import { SINGPASS_FAQ } from '~constants/links'
 import { MultiSelect } from '~components/Dropdown'
-import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
-import { Toggle } from '~components/Toggle/Toggle'
 
-import { CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS } from '~features/admin-form/create/builder-and-design/constants'
+import { getCreateMyInfoChildrenSubFieldsOptions } from '~features/admin-form/create/builder-and-design/constants'
+import { useCreateTabForm } from '~features/admin-form/create/builder-and-design/useCreateTabForm'
 
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
@@ -31,7 +34,7 @@ const VerifiedIcon = ({ isVerified }: { isVerified: boolean }): JSX.Element => {
   )
 }
 
-const EDIT_MYINFO_CHILDREN = ['allowMultiple', 'childrenSubFields'] as const
+const EDIT_MYINFO_CHILDREN = ['childrenSubFields'] as const
 
 type EditMyInfoChildrenProps = EditFieldProps<ChildrenCompoundFieldMyInfo>
 type EditMyInfoChildrenInputs = Pick<
@@ -42,29 +45,36 @@ type EditMyInfoChildrenInputs = Pick<
 export const EditMyInfoChildren = ({
   field,
 }: EditMyInfoChildrenProps): JSX.Element => {
+  const { t } = useTranslation()
   const extendedField = extendWithMyInfo(field)
-  const {
-    control,
-    register,
-    buttonText,
-    handleUpdateField,
-    isLoading,
-    handleCancel,
-  } = useEditFieldForm<EditMyInfoChildrenInputs, ChildrenCompoundFieldMyInfo>({
-    field,
-    transform: {
-      // MyInfo fields are not editable (except for Child compound field),
-      // so omit any transformation and output the original field
-      input: (inputField) => inputField,
-      output: (formOutput, originalField) =>
-        extend({}, originalField, formOutput),
-    },
-  })
+  const { data: form } = useCreateTabForm()
+  const isMrfChildrenEnabled = useFeatureIsOn(featureFlags.mrfChildren)
+  const subFieldOptions = useMemo(
+    () =>
+      getCreateMyInfoChildrenSubFieldsOptions({
+        responseMode: form?.responseMode,
+        isMrfChildrenEnabled,
+      }),
+    [form?.responseMode, isMrfChildrenEnabled],
+  )
+  const { control, buttonText, handleUpdateField, isLoading, handleCancel } =
+    useEditFieldForm<EditMyInfoChildrenInputs, ChildrenCompoundFieldMyInfo>({
+      field,
+      transform: {
+        // MyInfo fields are not editable (except for Child compound field),
+        // so omit any transformation and output the original field
+        input: (inputField) => inputField,
+        output: (formOutput, originalField) =>
+          extend({}, originalField, formOutput),
+      },
+    })
 
   return (
     <CreatePageDrawerContentContainer>
       <VStack align="flex-start">
-        <Text textStyle="subhead-1">Data source</Text>
+        <Text textStyle="subhead-1">
+          {t('features.adminForm.sidebar.fields.myInfoPreview.dataSource')}
+        </Text>
         {extendedField.dataSource.map((dataSource, idx) => (
           <HStack key={idx} align="flex-start">
             <Icon fontSize="1.5rem" as={BiData}></Icon>
@@ -73,39 +83,53 @@ export const EditMyInfoChildren = ({
         ))}
       </VStack>
       <VStack align="flex-start">
-        <Text textStyle="subhead-1">Verified for</Text>
+        <Text textStyle="subhead-1">
+          {t('features.adminForm.sidebar.fields.myInfoPreview.verifiedFor')}
+        </Text>
         {/* NOTE: Not creating an array from the keys then enumerating because order has to be enforced in UI.
          *  This allows the object to be created with arbitrary ordered keys.
          */}
         <HStack>
           <VerifiedIcon isVerified={extendedField.verifiedFor.singaporeans} />
-          <Text>Singaporeans</Text>
+          <Text>
+            {t('features.adminForm.sidebar.fields.myInfoPreview.singaporeans')}
+          </Text>
         </HStack>
         <HStack>
           <VerifiedIcon isVerified={extendedField.verifiedFor.pr} />
-          <Text>Permanent Residents</Text>
+          <Text>
+            {t(
+              'features.adminForm.sidebar.fields.myInfoPreview.permanentResidents',
+            )}
+          </Text>
         </HStack>
         <HStack>
           <VerifiedIcon
             isVerified={extendedField.verifiedFor.singpassforeigners}
           />
           <Text>
-            Foreigners with{' '}
-            <Link isExternal href={SINGPASS_FAQ}>
-              Singpass
-            </Link>
+            <Trans
+              i18nKey="features.adminForm.sidebar.fields.myInfoPreview.foreignersWithSingpass"
+              components={{
+                singpassLink: <Link isExternal href={SINGPASS_FAQ} />,
+              }}
+            />
           </Text>
         </HStack>
       </VStack>
       <VStack align="flex-start">
-        <Text textStyle="subhead-1">Collect the following child data</Text>
+        <Text textStyle="subhead-1">
+          {t(
+            'features.adminForm.sidebar.fields.myInfoPreview.children.collectChildData',
+          )}
+        </Text>
         <Box alignSelf="stretch">
           <Controller
             control={control}
             name="childrenSubFields"
             render={({ field: { value, onChange, ...rest } }) => (
               <MultiSelect
-                items={CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS}
+                items={subFieldOptions}
                 values={
                   (value ?? [MyInfoChildAttributes.ChildName]) as string[]
                 }
@@ -125,15 +149,9 @@ export const EditMyInfoChildren = ({
         </Box>
       </VStack>
       <VStack align="flex-start">
-        <FormControl isReadOnly={isLoading}>
-          <Toggle
-            {...register('allowMultiple')}
-            label="Allow respondent to add multiple children"
-          />
-        </FormControl>
-      </VStack>
-      <VStack align="flex-start">
-        <Text textStyle="subhead-1">Field details</Text>
+        <Text textStyle="subhead-1">
+          {t('features.adminForm.sidebar.fields.myInfoPreview.fieldDetails')}
+        </Text>
         <Text>{extendedField.details}</Text>
       </VStack>
       <FormFieldDrawerActions

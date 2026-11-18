@@ -3,6 +3,7 @@ import { RegisterOptions, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Flex, FormControl } from '@chakra-ui/react'
 
+import { OTP_LENGTH, OTP_REGEX } from 'formsg-shared/constants'
 import { UserDto } from 'formsg-shared/types/user'
 
 import Button from '~components/Button'
@@ -82,14 +83,14 @@ const useVerificationBox = ({
         'features.user.emergencyContact.verification.errors.required',
       ),
       pattern: {
-        value: /^[0-9\b]+$/,
+        value: new RegExp(OTP_REGEX.source, 'i'),
         message: t(
-          'features.user.emergencyContact.verification.errors.numbersOnly',
+          'features.user.emergencyContact.verification.errors.invalid',
+          {
+            otpLength: OTP_LENGTH,
+          },
         ),
       },
-      validate: (value) =>
-        value.length === 6 ||
-        t('features.user.emergencyContact.verification.errors.invalid'),
     }
   }, [t])
 
@@ -148,8 +149,10 @@ export const VerificationBox = (props: VerificationBoxProps): JSX.Element => {
               <Input
                 data-testid="otp-input"
                 type="text"
-                maxLength={6}
-                inputMode="numeric"
+                inputMode="text"
+                autoCapitalize="characters"
+                spellCheck={false}
+                maxLength={OTP_LENGTH}
                 autoComplete="one-time-code"
                 autoFocus
                 {...otpInputRegister('otp', otpValidationRules)}

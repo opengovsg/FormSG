@@ -1,6 +1,12 @@
-import { WorkflowStatus } from 'formsg-shared/types'
+import { FormResponseMode, WorkflowStatus } from 'formsg-shared/types'
 
-import { getPendingResponseAtString } from './mrfSubmissionView'
+import {
+  getPendingResponseAtString,
+  getWorkflowStatusText,
+  hasWorkflowSteps,
+  hasWorkflowSubmission,
+} from './mrfSubmissionView'
+import { matchesSearchQuery, normaliseSearchQuery } from './responseSearch'
 
 const noneString = '-'
 
@@ -57,5 +63,114 @@ describe('getPendingResponseAtString', () => {
       workflowNumTotalSteps: 2,
     })
     expect(result).toBe('Step 2 of 2')
+  })
+})
+
+describe('hasWorkflowSteps', () => {
+  const form = (partial: object) =>
+    partial as Parameters<typeof hasWorkflowSteps>[0]
+
+  it('is true only for a multi-respondent form with steps', () => {
+    expect(
+      hasWorkflowSteps(
+        form({
+          responseMode: FormResponseMode.Multirespondent,
+          workflow: [{}],
+        }),
+      ),
+    ).toBe(true)
+  })
+
+  it('is false for a multi-respondent form with no steps', () => {
+    expect(
+      hasWorkflowSteps(
+        form({ responseMode: FormResponseMode.Multirespondent, workflow: [] }),
+      ),
+    ).toBe(false)
+  })
+
+  it('is false for a multi-respondent form with no workflow', () => {
+    expect(
+      hasWorkflowSteps(
+        form({ responseMode: FormResponseMode.Multirespondent }),
+      ),
+    ).toBe(false)
+  })
+
+  it('is false for a storage form and for no form at all', () => {
+    expect(
+      hasWorkflowSteps(form({ responseMode: FormResponseMode.Encrypt })),
+    ).toBe(false)
+    expect(hasWorkflowSteps(undefined)).toBe(false)
+  })
+})
+
+describe('hasWorkflowSubmission', () => {
+  const withSteps = (workflowNumTotalSteps: number) => ({
+    mrf: {
+      workflowCurrentStepNumber: 1,
+      workflowNumTotalSteps,
+      workflowStatus: undefined,
+      lastSubmittedAt: undefined,
+      hasNextStepRecipientEmails: false,
+    },
+  })
+
+  it('is true once any submission was made under a workflow', () => {
+    expect(hasWorkflowSubmission([withSteps(0), withSteps(2)])).toBe(true)
+  })
+
+  it('is false when every submission predates the workflow', () => {
+    expect(hasWorkflowSubmission([withSteps(0), withSteps(0)])).toBe(false)
+  })
+
+  it('is false with no submissions, or none carrying workflow metadata', () => {
+    expect(hasWorkflowSubmission([])).toBe(false)
+    expect(hasWorkflowSubmission([{ mrf: undefined }])).toBe(false)
+  })
+})
+
+describe('getWorkflowStatusText', () => {
+  test.each([
+    [WorkflowStatus.PENDING, 'Pending'],
+    [WorkflowStatus.COMPLETED, 'Completed'],
+    [WorkflowStatus.APPROVED, 'Approved'],
+    [WorkflowStatus.REJECTED, 'Not approved'],
+  ])('reads %s as %s', (workflowStatus, text) => {
+    expect(getWorkflowStatusText({ workflowStatus })).toBe(text)
+  })
+
+  test('reads a stopped workflow as Stopped, whatever its status', () => {
+    expect(
+      getWorkflowStatusText({
+        workflowStatus: WorkflowStatus.PENDING,
+        stoppedAt: '2026-10-16T00:00:00.000Z',
+      }),
+    ).toBe('Stopped')
+  })
+
+  test('reads a missing or unknown status as empty instead of throwing', () => {
+    expect(getWorkflowStatusText(undefined)).toBe('')
+    expect(getWorkflowStatusText({ workflowStatus: undefined })).toBe('')
+    expect(
+      getWorkflowStatusText({ workflowStatus: 'other' as WorkflowStatus }),
+    ).toBe('')
+  })
+
+  test('lets the table search match a row by its status', () => {
+    const query = normaliseSearchQuery('  pending ')
+
+    expect(
+      matchesSearchQuery(
+        [getWorkflowStatusText({ workflowStatus: WorkflowStatus.PENDING })],
+        query,
+      ),
+    ).toBe(true)
+    expect(
+      matchesSearchQuery(
+        [getWorkflowStatusText({ workflowStatus: WorkflowStatus.COMPLETED })],
+        query,
+      ),
+    ).toBe(false)
   })
 })

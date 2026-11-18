@@ -88,10 +88,72 @@ describe('admin-form.settings.routes', () => {
       // Assert
       const expectedResponse = JSON.parse(
         // Should get updated with new settings
-        JSON.stringify(merge(formToUpdate.getSettings(), settingsToUpdate)),
+        JSON.stringify(
+          merge(formToUpdate.getSettings(), settingsToUpdate, {
+            webhook: { webhookFormat: 'v1' },
+          }),
+        ),
       )
       expect(response.status).toEqual(200)
       expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 200 and persist closeAt when given a valid ISO date', async () => {
+      // Arrange
+      const { form: formToUpdate, user } = await dbHandler.insertEmailForm()
+      const session = await createAuthedSession(user.email, request)
+
+      const closeAt = '2026-12-31T15:59:00.000Z'
+      expect(formToUpdate.closeAt).toBeNull()
+
+      // Act
+      const response = await session
+        .patch(`/admin/forms/${formToUpdate._id}/settings`)
+        .send({ closeAt } as SettingsUpdateDto)
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body.closeAt).toEqual(closeAt)
+    })
+
+    it('should return 200 and clear closeAt when given null', async () => {
+      // Arrange
+      const { form: formToUpdate, user } = await dbHandler.insertEmailForm()
+      const session = await createAuthedSession(user.email, request)
+      await session
+        .patch(`/admin/forms/${formToUpdate._id}/settings`)
+        .send({ closeAt: '2026-12-31T15:59:00.000Z' } as SettingsUpdateDto)
+
+      // Act
+      const response = await session
+        .patch(`/admin/forms/${formToUpdate._id}/settings`)
+        .send({ closeAt: null } as SettingsUpdateDto)
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body.closeAt).toBeNull()
+    })
+
+    it('should return 400 when closeAt is not an ISO date', async () => {
+      // Arrange
+      const { form, user } = await dbHandler.insertEmailForm()
+      const session = await createAuthedSession(user.email, request)
+
+      // Act
+      const response = await session
+        .patch(`/admin/forms/${form._id}/settings`)
+        .send({ closeAt: 'not-a-date' })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'closeAt',
+            message: '"closeAt" must be in iso format',
+          },
+        }),
+      )
     })
 
     it('should return 400 when patching with empty form settings', async () => {
@@ -303,7 +365,7 @@ describe('admin-form.settings.routes', () => {
       const expectedResponse = jsonParseStringify({
         message: `User ${fakeUser.email.toLowerCase()} not authorized to perform write operation on Form ${
           form._id
-        } with title: ${form.title}.`,
+        }.`,
       })
 
       // Act
@@ -440,7 +502,7 @@ describe('admin-form.settings.routes', () => {
       const expectedResponse = jsonParseStringify({
         message: `User ${fakeUser.email.toLowerCase()} not authorized to perform read operation on Form ${
           form._id
-        } with title: ${form.title}.`,
+        }.`,
       })
 
       // Act
@@ -531,6 +593,53 @@ describe('admin-form.settings.routes', () => {
       // Assert
       expect(response.status).toEqual(500)
       expect(response.body).toEqual(expectedResponse)
+    })
+  })
+
+  describe('PUT /admin/forms/:formId/form-origins', () => {
+    it('saves the origin on a form that has none', async () => {
+      const { form, user } = await dbHandler.insertEncryptForm()
+      const session = await createAuthedSession(user.email, request)
+
+      const response = await session
+        .put(`/admin/forms/${form._id}/form-origins`)
+        .send({ formOrigins: { value: ['paper'] } })
+
+      expect(response.status).toEqual(200)
+      const saved = await session.get(`/admin/forms/${form._id}`)
+      expect(saved.body.form.metadata.formOrigins).toEqual({
+        value: ['paper'],
+      })
+    })
+
+    it('rejects an answer that is not a form origin', async () => {
+      const { form, user } = await dbHandler.insertEncryptForm()
+      const session = await createAuthedSession(user.email, request)
+
+      const response = await session
+        .put(`/admin/forms/${form._id}/form-origins`)
+        .send({ formOrigins: { value: ['notAnOrigin'] } })
+
+      expect(response.status).toEqual(400)
+      const saved = await session.get(`/admin/forms/${form._id}`)
+      expect(saved.body.form.metadata?.formOrigins).toBeUndefined()
+    })
+
+    it("keeps the form's other metadata when saving the origin", async () => {
+      const { form, user } = await dbHandler.insertEncryptForm({
+        formOptions: { metadata: { mfb_vision_prompt_count: 2 } },
+      })
+      const session = await createAuthedSession(user.email, request)
+
+      await session
+        .put(`/admin/forms/${form._id}/form-origins`)
+        .send({ formOrigins: { value: ['digitalExisting'] } })
+
+      const saved = await session.get(`/admin/forms/${form._id}`)
+      expect(saved.body.form.metadata).toEqual({
+        mfb_vision_prompt_count: 2,
+        formOrigins: { value: ['digitalExisting'] },
+      })
     })
   })
 })

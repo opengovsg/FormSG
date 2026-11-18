@@ -1,4 +1,3 @@
-import { MyInfoMode } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
 import fs from 'fs'
 import _ from 'lodash'
@@ -21,12 +20,6 @@ export const MOCK_SERVICE_PARAMS: ISpcpMyInfo = {
   spCookieMaxAgePreserved: 2,
   spcpCookieDomain: 'spcpCookieDomain',
   cpCookieMaxAge: 3,
-  spEsrvcId: 'spEsrvcId', // Needed for MyInfo
-  myInfoClientMode: MyInfoMode.Dev,
-  myInfoKeyPath: 'myInfoKeyPath',
-  myInfoCertPath: 'myInfoCertPath',
-  myInfoClientId: 'myInfoClientId',
-  myInfoClientSecret: 'myInfoClientSecret',
   spOidcNdiDiscoveryEndpoint: 'spOidcNdiDiscoveryEndpoint',
   spOidcNdiJwksEndpoint: 'spOidcNdiJwksEndpoint',
   spOidcRpClientId: 'spOidcRpClientId',
@@ -109,6 +102,13 @@ export const MOCK_COOKIE_SETTINGS = {
   path: 'path',
 }
 
+export const MOCK_CODE_VERIFIER_COOKIE_OPTIONS = {
+  httpOnly: true as const,
+  secure: true,
+  sameSite: 'lax' as const,
+  ...MOCK_COOKIE_SETTINGS,
+}
+
 export const MOCK_COOKIES = {
   [JwtName.SP]: 'mockSpJwt',
   [JwtName.CP]: 'mockCpJwt',
@@ -121,6 +121,8 @@ export const MOCK_DECODED_QUERY =
 
 export const MOCK_SP_OIDC_AUTHORISATION_CODE = 'abcdefg'
 export const MOCK_CP_OIDC_AUTHORISATION_CODE = 'defhijk'
+export const MOCK_OIDC_CODE_VERIFIER = 'mockCodeVerifier'
+export const MOCK_OIDC_CODE_CHALLENGE = 'mockCodeChallenge'
 export const MOCK_OIDC_STATE = `${MOCK_DESTINATION}-${MOCK_REMEMBER_ME}`
 export const MOCK_NRIC = 'S1234567C'
 export const MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD = {

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Box } from '@chakra-ui/react'
 
 import { FormAuthType, FormResponseMode } from 'formsg-shared/types'
+import { isSubmitterIdCollected } from 'formsg-shared/utils/login-identity'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
@@ -22,12 +23,11 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     isLoading,
     handleSubmitForm,
     submissionData,
-    encryptedPreviousSubmission,
     previousSubmission,
     previousAttachments,
+    currentWorkflowStep,
+    mrfStepAuthTarget,
   } = usePublicFormContext()
-
-  const { workflowStep } = encryptedPreviousSubmission ?? {}
 
   const renderFields = useMemo(() => {
     if (isLoading) {
@@ -43,16 +43,21 @@ export const FormFieldsContainer = (): JSX.Element | null => {
       )
     }
 
+    // A later MRF step only asks for login when it has its own; form.authType
+    // is then that step's login, not Step 1's.
     if (
       isAuthRequired &&
       form.authType !== FormAuthType.NIL &&
       (form.responseMode !== FormResponseMode.Multirespondent ||
-        !previousSubmission)
+        !previousSubmission ||
+        !!mrfStepAuthTarget)
     ) {
       return (
         <FormAuth
           authType={form.authType}
-          isSubmitterIdCollectionEnabled={form.isSubmitterIdCollectionEnabled}
+          isSubmitterIdCollectionEnabled={
+            mrfStepAuthTarget ? undefined : isSubmitterIdCollected(form)
+          }
           hasSingleSubmissionValidationError={
             hasSingleSubmissionValidationError
           }
@@ -63,19 +68,10 @@ export const FormFieldsContainer = (): JSX.Element | null => {
 
     return (
       <FormFields
-        previousResponses={previousSubmission?.responses}
         previousAttachments={previousAttachments}
         formFields={form.form_fields}
         formLogics={form.form_logics}
-        workflowStep={
-          form.responseMode === FormResponseMode.Multirespondent
-            ? form.workflow[
-                // If no submission, then the workflowStep will be undefined.
-                // Require explicit undefined check here since both 0 and undefined are falsy but mean different things here.
-                workflowStep === undefined ? 0 : workflowStep + 1
-              ]
-            : undefined
-        }
+        workflowStep={currentWorkflowStep}
         colorTheme={form.startPage.colorTheme}
         onSubmit={handleSubmitForm}
       />
@@ -84,9 +80,10 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     isLoading,
     form,
     isAuthRequired,
-    previousSubmission?.responses,
+    previousSubmission,
     previousAttachments,
-    workflowStep,
+    currentWorkflowStep,
+    mrfStepAuthTarget,
     handleSubmitForm,
     hasSingleSubmissionValidationError,
     hasRespondentNotWhitelistedError,

@@ -35,7 +35,7 @@ export const getTemplateFormResponse = ({
           }
         },
       ) as PreviewFormViewDto
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json(response)
     },
   )
@@ -53,7 +53,7 @@ export const getTemplateFormErrorResponse = ({
   return http.get<{ formId: string }>(
     `/api/v3/admin/forms/:formId/${ADMINFORM_USETEMPLATE_ROUTE}`,
     async () => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json({ message }, { status })
     },
   )

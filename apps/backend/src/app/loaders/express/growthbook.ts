@@ -8,7 +8,7 @@ import { growthbookConfig } from '../../config/features/growthbook.config'
 
 const growthbookMiddleware: RequestHandler = async (req, res, next) => {
   req.growthbook = new GrowthBook({
-    apiHost: `${config.isDev ? GROWTHBOOK_DEV_PROXY : config.app.appUrl}${GROWTHBOOK_API_HOST_PATH}`,
+    apiHost: `${config.isDev ? GROWTHBOOK_DEV_PROXY : growthbookConfig.growthbookApiHost || config.app.appUrl}${GROWTHBOOK_API_HOST_PATH}`,
     clientKey: growthbookConfig.growthbookClientKey,
     enableDevMode: config.isDev,
   })

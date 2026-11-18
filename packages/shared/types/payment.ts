@@ -24,6 +24,11 @@ export enum PaymentMethodType {
 }
 
 export enum PaymentType {
+  /**
+   * @deprecated Fixed-amount payments are legacy and not offered on new
+   * surfaces (including multirespondent forms). Existing encrypt-mode forms
+   * with Fixed configs continue to work.
+   */
   Fixed = 'Fixed',
   Variable = 'Variable',
   Products = 'Products',

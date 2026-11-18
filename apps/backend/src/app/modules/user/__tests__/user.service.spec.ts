@@ -27,7 +27,7 @@ describe('user.service', () => {
   // Obtained from Twilio's
   // https://www.twilio.com/blog/2018/04/twilio-test-credentials-magic-numbers.html
   const MOCK_CONTACT = '+15005550006'
-  const MOCK_OTP = '123456'
+  const MOCK_OTP = 'A1B2C3D4'
   const USER_ID = new ObjectId()
   const ALLOWED_DOMAIN = 'test.gov.sg'
 

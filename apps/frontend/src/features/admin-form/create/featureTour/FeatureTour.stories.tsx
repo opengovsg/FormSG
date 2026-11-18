@@ -1,10 +1,13 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
+import { expect, screen, waitFor } from 'storybook/test'
 
 import { AdminFormDto } from 'formsg-shared/types/form'
 
 import {
   createFormBuilderMocks,
   getAdminFormCollaborators,
+  getAdminFormSettings,
+  getAdminFormSubmissions,
 } from '~/mocks/msw/handlers/admin-form'
 import { getUser } from '~/mocks/msw/handlers/user'
 
@@ -20,6 +23,8 @@ const buildMswRoutes = (
     ...createFormBuilderMocks(overrides, delay),
     getUser(),
     getAdminFormCollaborators(),
+    getAdminFormSettings(),
+    getAdminFormSubmissions(),
   ]
 }
 
@@ -28,15 +33,19 @@ export default {
   // component: To be implemented,
   decorators: [AdminFormCreatePageDecorator],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    // Pass a very short delay to avoid bug where Chromatic takes a snapshot before
-    // the story has loaded
-    chromatic: { pauseAnimationAtEnd: true, delay: 200 },
     layout: 'fullscreen',
-    msw: buildMswRoutes(),
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
+    msw: { handlers: { default: buildMswRoutes() } },
   },
 } as Meta
 
 const Template: StoryFn = () => <CreatePage />
 
 export const AdminFormBuilderFeatureTour = Template.bind({})
+// The tour starts once the user and form have loaded.
+AdminFormBuilderFeatureTour.play = async () => {
+  const next = await screen.findByRole('button', { name: 'Next' })
+  // The tooltip is in the DOM before it is positioned and shown.
+  await waitFor(() => expect(next).toBeVisible())
+}

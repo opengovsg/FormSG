@@ -1,7 +1,13 @@
-import { Meta, StoryFn } from '@storybook/react'
-import { expect, screen, userEvent, waitFor, within } from '@storybook/test'
+import { Box } from '@chakra-ui/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
+import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
 
-import { PaymentChannel, PaymentType, UserId } from 'formsg-shared/types'
+import {
+  BasicField,
+  PaymentChannel,
+  PaymentType,
+  UserId,
+} from 'formsg-shared/types'
 import {
   AdminFormDto,
   FormAuthType,
@@ -25,11 +31,12 @@ import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 import {
   ADMIN_FORM_CREATE_PAGE_FORM_ID,
   AdminFormCreatePageDecorator,
-  getMobileViewParameters,
-  getTabletViewParameters,
+  getMobileViewGlobals,
+  getTabletViewGlobals,
   LoggedInDecorator,
   mockDateDecorator,
   ViewedFeatureTourDecorator,
+  viewportModes,
 } from '~utils/storybook'
 
 import { CreatePage } from '~features/admin-form/create/CreatePage'
@@ -69,16 +76,19 @@ export default {
   // component: To be implemented,
   decorators: [
     ViewedFeatureTourDecorator,
-    AdminFormCreatePageDecorator,
+    (Story, context) =>
+      context.parameters.sideNavViewport ? (
+        <Box h="100vh">{AdminFormCreatePageDecorator(Story, context)}</Box>
+      ) : (
+        AdminFormCreatePageDecorator(Story, context)
+      ),
     LoggedInDecorator,
     mockDateDecorator,
   ],
   parameters: {
-    // Required so skeleton "animation" does not hide content.
-    // Pass a very short delay to avoid bug where Chromatic takes a snapshot before
-    // the story has loaded
-    chromatic: { pauseAnimationAtEnd: true, delay: 200 },
     layout: 'fullscreen',
+    // Pages fill the viewport; fit-to-content would crop them.
+    argos: { fitToContent: false },
     msw: { handlers: { default: buildMswRoutes() } },
     mockdate: new Date('2022-12-25T06:22:27.219Z'),
     userId: 'adminFormTestUserId',
@@ -86,7 +96,36 @@ export default {
 } as Meta
 
 const Template: StoryFn = () => <CreatePage />
+
+const MOCK_IMAGE_FIELD_COUNT = MOCK_FORM_FIELDS.filter(
+  (field) => field.fieldType === BasicField.Image,
+).length
+
+// The mock Image fields point at URLs that 404. Until each request fails,
+// ImageField shows a 10rem skeleton, taller than the error box that replaces
+// it. Chakra's Image loads through `new Image()`, so Argos's image
+// stabilization never sees the request, and Argos sizes the full-page capture
+// before it shoots: a capture mid-load came out taller, with blank space at the
+// bottom and fixed overlays pushed down.
+const waitForImageFieldsToSettle: StoryFn['play'] = async ({
+  canvasElement,
+}) => {
+  const canvas = within(canvasElement)
+  // The form's 40-odd fields render before the images are even requested,
+  // which outlasts waitFor's 1s default under parallel test load.
+  await waitFor(
+    () =>
+      expect(
+        canvas.getAllByText('This image could not be displayed'),
+      ).toHaveLength(MOCK_IMAGE_FIELD_COUNT),
+    { timeout: 10000 },
+  )
+}
+
 export const DesktopEmpty = Template.bind({})
+DesktopEmpty.parameters = {
+  argos: { modes: viewportModes('tablet', 'mobile') },
+}
 export const DesktopAllFields = Template.bind({})
 DesktopAllFields.parameters = {
   msw: {
@@ -99,6 +138,7 @@ DesktopAllFields.parameters = {
     },
   },
 }
+DesktopAllFields.play = waitForImageFieldsToSettle
 
 export const DesktopFieldsWithAcceptDeny = Template.bind({})
 DesktopFieldsWithAcceptDeny.parameters = {
@@ -110,42 +150,42 @@ DesktopFieldsWithAcceptDeny.parameters = {
     },
   },
 }
-DesktopFieldsWithAcceptDeny.decorators = [
-  (Story) => {
-    const store = useMagicFormBuilderStore.getState()
-    store.recentlyCreatedFieldIds = {
+// The store is a module singleton shared by every story the page renders, so
+// clear it afterwards or later stories open with the accept/deny prompt.
+DesktopFieldsWithAcceptDeny.beforeEach = () => {
+  useMagicFormBuilderStore.setState({
+    recentlyCreatedFieldIds: {
       [ADMIN_FORM_CREATE_PAGE_FORM_ID]: new Set(
         MOCK_FORM_FIELDS.slice(0, 5).map((field) => field._id),
       ),
-    }
-
-    return <Story />
-  },
-]
+    },
+  })
+  return () =>
+    useMagicFormBuilderStore.setState({ recentlyCreatedFieldIds: {} })
+}
+DesktopFieldsWithAcceptDeny.play = waitForImageFieldsToSettle
 
 export const DesktopLoading = Template.bind({})
 DesktopLoading.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: {
     handlers: {
       default: buildMswRoutes({}, 'infinite'),
     },
   },
 }
-
-export const TabletEmpty = Template.bind({})
-TabletEmpty.parameters = getTabletViewParameters()
 export const TabletAllFields = Template.bind({})
 TabletAllFields.parameters = {
-  ...getTabletViewParameters(),
   msw: {
     handlers: {
       default: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
     },
   },
 }
+TabletAllFields.globals = getTabletViewGlobals()
+TabletAllFields.play = waitForImageFieldsToSettle
 export const TabletLoading = Template.bind({})
 TabletLoading.parameters = {
-  ...getTabletViewParameters(),
   mockdate: new Date('2024-09-11T13:00:00.000Z'),
   msw: {
     handlers: {
@@ -153,40 +193,36 @@ TabletLoading.parameters = {
     },
   },
 }
-
-export const MobileEmpty = Template.bind({})
-MobileEmpty.parameters = getMobileViewParameters()
+TabletLoading.globals = getTabletViewGlobals()
 export const MobileAllFields = Template.bind({})
 MobileAllFields.parameters = {
-  ...getMobileViewParameters(),
   msw: {
     handlers: {
       default: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
     },
   },
 }
-export const MobileLoading = Template.bind({})
-MobileLoading.parameters = {
-  ...getMobileViewParameters(),
-  msw: {
-    handlers: {
-      default: buildMswRoutes({}, 'infinite'),
-    },
-  },
-}
+MobileAllFields.globals = getMobileViewGlobals()
+MobileAllFields.play = waitForImageFieldsToSettle
 
 export const AllFieldsFieldsHiddenByLogic = Template.bind({})
 AllFieldsFieldsHiddenByLogic.parameters = {
-  msw: buildMswRoutes({
-    form_fields: MOCK_FORM_FIELDS_WITH_MYINFO,
-    form_logics: MOCK_FORM_LOGICS,
-    authType: FormAuthType.MyInfo,
-    responseMode: FormResponseMode.Email,
-  }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        form_fields: MOCK_FORM_FIELDS_WITH_MYINFO,
+        form_logics: MOCK_FORM_LOGICS,
+        authType: FormAuthType.MyInfo,
+        responseMode: FormResponseMode.Email,
+      }),
+    },
+  },
 }
+AllFieldsFieldsHiddenByLogic.play = waitForImageFieldsToSettle
 
 export const FormWithWebhook = Template.bind({})
 FormWithWebhook.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: {
     handlers: {
       default: [
@@ -204,14 +240,9 @@ FormWithWebhook.parameters = {
   },
 }
 
-export const FormWithWebhookMobile = Template.bind({})
-FormWithWebhookMobile.parameters = {
-  ...FormWithWebhook.parameters,
-  ...getMobileViewParameters(),
-}
-
 export const FormWithPayment = Template.bind({})
 FormWithPayment.parameters = {
+  argos: { modes: viewportModes('mobile') },
   msw: {
     handlers: {
       default: buildMswRoutes({
@@ -233,17 +264,15 @@ FormWithPayment.parameters = {
   },
 }
 
-export const FormWithPaymentMobile = Template.bind({})
-FormWithPaymentMobile.parameters = {
-  ...FormWithPayment.parameters,
-  ...getMobileViewParameters(),
-}
-
 export const AdminFormBuilderWithAdditionalRowsTableField = Template.bind({})
 AdminFormBuilderWithAdditionalRowsTableField.parameters = {
-  msw: buildMswRoutes({
-    form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
-  }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
+      }),
+    },
+  },
   viewport: {
     value: 'lg', // Forces to desktop view so that the edit drawer opens when the table field is clicked
   },
@@ -305,7 +334,7 @@ AdminFormBuilderWithAdditionalRowsTableField.play = async ({
         // Find the HighlightableFlex by looking for the field container that contains the table field
         // The HighlightableFlex is the clickable wrapper around the field with role="button"
         const highlightableFlex = canvas.getByRole('button', {
-          name: (content, element) => {
+          name: (content) => {
             // Look for a button that contains the table field title
             // The HighlightableFlex wraps the entire field including its title
             return content.includes('Table field for test')
@@ -358,4 +387,11 @@ AdminFormBuilderWithAdditionalRowsTableField.play = async ({
       expect(rows).toHaveLength(1)
     })
   })
+}
+
+export const LabelledNavigation = Template.bind({})
+LabelledNavigation.parameters = {
+  ...DesktopEmpty.parameters,
+  sideNavViewport: true,
+  argos: { modes: viewportModes('tablet', 'mobile') },
 }

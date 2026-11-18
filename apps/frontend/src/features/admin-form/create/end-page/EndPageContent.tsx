@@ -5,7 +5,6 @@ import {
   FormAuthType,
   FormColorTheme,
   FormLogoState,
-  FormResponseMode,
 } from 'formsg-shared/types'
 
 import { EndPageBlock } from '~components/FormEndPage/EndPageBlock'
@@ -13,8 +12,9 @@ import { PaymentsThankYouSvgr } from '~components/FormEndPage/PaymentsThankYouSv
 import { ThankYouSvgr } from '~components/FormEndPage/ThankYouSvgr'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { PREVIEW_MOCK_UINFIN } from '~features/admin-form/preview/constants'
+import { getPreviewMockLoginId } from '~features/admin-form/preview/constants'
 import { useEnv } from '~features/env/queries'
+import { isFormPaymentsEnabled } from '~features/form/utils/isFormPaymentsEnabled'
 import {
   FormBannerLogo,
   useFormBannerLogo,
@@ -49,9 +49,7 @@ export const EndPageContent = (): JSX.Element => {
     showDefaultLogoIfNoLogo: true,
   })
 
-  const isPaymentEnabled =
-    form?.responseMode === FormResponseMode.Encrypt &&
-    form.payments_field.enabled
+  const isPaymentEnabled = isFormPaymentsEnabled(form)
 
   const backgroundColor = isPaymentEnabled ? 'transparent' : 'white'
 
@@ -90,7 +88,7 @@ export const EndPageContent = (): JSX.Element => {
           onLogout={undefined}
           loggedInId={
             form && form.authType !== FormAuthType.NIL
-              ? PREVIEW_MOCK_UINFIN
+              ? getPreviewMockLoginId(form.authType)
               : undefined
           }
         />

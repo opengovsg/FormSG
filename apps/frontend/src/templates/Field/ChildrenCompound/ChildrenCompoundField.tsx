@@ -4,46 +4,39 @@ import {
   FieldArrayWithId,
   FieldError,
   useFieldArray,
-  UseFieldArrayRemove,
   useFormContext,
   UseFormReturn,
   useFormState,
 } from 'react-hook-form'
-import { BiPlus, BiTrash } from 'react-icons/bi'
 import {
   Box,
-  Divider,
   Flex,
   FormControl,
-  HStack,
   Input as ChakraInput,
   Spacer,
-  Text,
   VisuallyHidden,
   VStack,
 } from '@chakra-ui/react'
 import { get } from 'lodash'
-import simplur from 'simplur'
 
 import { DATE_DISPLAY_FORMAT } from 'formsg-shared/constants/dates'
 import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
 import {
   FormColorTheme,
-  MyInfoAttribute,
   MyInfoChildAttributes,
   MyInfoChildData,
+  MyInfoChildrenScope,
   MyInfoChildVaxxStatus,
 } from 'formsg-shared/types'
 import { formatMyinfoDate } from 'formsg-shared/utils/dates'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 import { createChildrenValidationRules } from '~utils/fieldValidation'
-import { Button } from '~components/Button/Button'
 import { DatePicker } from '~components/DatePicker'
 import { SingleSelect } from '~components/Dropdown/SingleSelect'
+import { ComboboxItem } from '~components/Dropdown/types'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import { FormLabel } from '~components/FormControl/FormLabel/FormLabel'
-import { IconButton } from '~components/IconButton/IconButton'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import {
@@ -57,11 +50,18 @@ export interface ChildrenCompoundFieldProps extends BaseFieldProps {
   myInfoChildrenBirthRecords?: MyInfoChildData
 }
 
+const ARIA_CHILDREN_DESCRIPTION =
+  `This is a children field. There is 1 child. ` +
+  `Each child has multiple fields to fill. ` +
+  `You can fill the child by selecting the child's name from the child name dropdown.`
+
 /**
  * Compound field for child information.
  * This is "compound" because it can contain multiple subfields.
  * The internal data representation is an array of arrays, where each
- * subarray contains strings that represent the subfield array inputs.
+ * subarray contains strings that represent the subfield array inputs. The outer
+ * array holds one child, but stays an array so stored multi-child responses keep
+ * their shape.
  *
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
@@ -86,12 +86,10 @@ export const ChildrenCompoundField = ({
     | undefined
   const childError: FieldError[] | undefined = error ? error[0] : undefined
 
-  const { fields, append, remove } = useFieldArray<ChildrenCompoundFieldInputs>(
-    {
-      control: formContext.control,
-      name: `${schema._id}.child`,
-    },
-  )
+  const { fields, append } = useFieldArray<ChildrenCompoundFieldInputs>({
+    control: formContext.control,
+    name: `${schema._id}.child`,
+  })
 
   useEffect(() => {
     if (schema.childrenSubFields) {
@@ -102,25 +100,15 @@ export const ChildrenCompoundField = ({
     }
   }, [schema.childrenSubFields, formContext, schema._id])
 
-  // Initialize with a single child section
+  // Initialize with a single child section, even when disabled: on an MRF,
+  // disabled just means "not editable in this step", and a field owned by a
+  // later step must still render its (disabled, empty) subfields under the
+  // title like every other field type does.
   useEffect(() => {
     if (!fields || !fields.length) {
       append([''], { shouldFocus: false })
     }
   }, [fields, append])
-
-  const ariaChildrenDescription = useMemo(() => {
-    let description = simplur`This is a children field. There [is|are] ${fields.length} child[|ren].`
-    description += `Each child has multiple fields to fill.`
-    description += `You can fill the child by selecting the child's name from the child name dropdown.`
-    if (schema.allowMultiple) {
-      description += ` You can add another child if you'd like by clicking the "Add another child" button below`
-    }
-
-    return description
-  }, [fields.length, schema.allowMultiple])
-
-  const numChild = fields.length ?? 0
 
   return (
     <FieldContainer
@@ -129,7 +117,7 @@ export const ChildrenCompoundField = ({
       errorKey={childrenInputName}
     >
       <VisuallyHidden id={`children-desc-${schema._id}`}>
-        {ariaChildrenDescription}
+        {ARIA_CHILDREN_DESCRIPTION}
       </VisuallyHidden>
       <VStack
         spacing={6}
@@ -147,10 +135,8 @@ export const ChildrenCompoundField = ({
                   currChildBodyIdx,
                   schema,
                   disableRequiredValidation,
-                  fields,
                   field,
                   colorTheme,
-                  remove,
                   myInfoChildrenBirthRecords,
                   isSubmitting,
                   formContext,
@@ -160,26 +146,6 @@ export const ChildrenCompoundField = ({
             ))}
           </VStack>
         </>
-        {schema.allowMultiple ? (
-          <HStack>
-            <Button
-              isDisabled={isSubmitting}
-              alignSelf="start"
-              leftIcon={<BiPlus />}
-              aria-label="Add another child"
-              onClick={() => {
-                append([''])
-              }}
-            >
-              Add another child
-            </Button>
-            <Spacer />
-            <Text
-              textStyle="body-2"
-              color="secondary.400"
-            >{simplur`${numChild} child[|ren] added`}</Text>
-          </HStack>
-        ) : null}
       </VStack>
     </FieldContainer>
   )
@@ -189,14 +155,8 @@ interface ChildrenBodyProps {
   currChildBodyIdx: number
   schema: ChildrenCompoundFieldSchema
   disableRequiredValidation?: boolean
-  fields: FieldArrayWithId<
-    ChildrenCompoundFieldInputs,
-    `${string}.child`,
-    'id'
-  >[]
   field: FieldArrayWithId<ChildrenCompoundFieldInputs, `${string}.child`, 'id'>
   colorTheme: FormColorTheme
-  remove: UseFieldArrayRemove
   myInfoChildrenBirthRecords?: MyInfoChildData
   isSubmitting: boolean
 
@@ -207,20 +167,28 @@ interface ChildrenBodyProps {
 
 const CHILD_NAME_INDEX = 0
 
+// Dropdown values for MyInfo records carry a prefix so that they can never be
+// mistaken for a child's name.
+const RECORD_VALUE_PREFIX = 'record:'
+const toRecordValue = (recordIdx: number) =>
+  `${RECORD_VALUE_PREFIX}${recordIdx}`
+const fromRecordValue = (value: string): number =>
+  value.startsWith(RECORD_VALUE_PREFIX)
+    ? Number(value.slice(RECORD_VALUE_PREFIX.length))
+    : -1
+
 const ChildrenBody = ({
   currChildBodyIdx,
   schema,
   disableRequiredValidation,
-  fields,
   field,
   colorTheme,
-  remove,
   myInfoChildrenBirthRecords,
   isSubmitting,
   formContext,
   error,
 }: ChildrenBodyProps): JSX.Element => {
-  const { register, getValues, setValue, watch, control } = formContext
+  const { register, setValue, watch, control } = formContext
 
   const childNamePath = useMemo(
     () => `${schema._id}.child.${currChildBodyIdx}.0`,
@@ -232,52 +200,65 @@ const ChildrenBody = ({
     [schema, disableRequiredValidation],
   )
 
+  const recordIndexPath =
+    `${schema._id}.childRecordIndices.${currChildBodyIdx}` as const
+  const childTypePath = `${schema._id}.childTypes.${currChildBodyIdx}` as const
+
   const childName = watch(childNamePath) as unknown as string
+  const pickedRecordIndex = watch(recordIndexPath) as unknown as
+    | number
+    | undefined
 
-  const allChildren = useMemo<string[]>(() => {
-    if (myInfoChildrenBirthRecords === undefined) {
-      return []
-    }
-    return myInfoChildrenBirthRecords[MyInfoAttribute.ChildName] ?? []
-  }, [myInfoChildrenBirthRecords])
+  const recordNames = useMemo<string[]>(
+    () => myInfoChildrenBirthRecords?.[MyInfoChildAttributes.ChildName] ?? [],
+    [myInfoChildrenBirthRecords],
+  )
 
-  // useCallback to re-compute names because for some reason watch doesn't
-  // work on this nested field in react-hook-form.
-  const allSelectedNames = useCallback((): string[] => {
-    const child = getValues(`${schema._id}.child`)
-    // Really important to note that sometimes react-hook-form stores our "array"
-    // as a object with key=index and values=array entry.
-    const childValues = child ? Object.values(child) : []
-    const childNames = childValues.map((arr) => arr[0])
-    return childNames
-  }, [getValues, schema._id])
+  // Scope a record was retrieved under, defaulting to local.
+  const getRecordScope = useCallback(
+    (recordIdx: number): MyInfoChildrenScope =>
+      myInfoChildrenBirthRecords?.scopes?.[recordIdx] ??
+      MyInfoChildrenScope.Local,
+    [myInfoChildrenBirthRecords],
+  )
 
-  // useCallback to re-compute names, again because of buggy allSelectedNames
-  const namesNotSelected = useCallback((): string[] => {
-    if (myInfoChildrenBirthRecords === undefined) {
-      return []
-    }
-    const temp = new Set(allSelectedNames())
-    // We want all child names that haven't already been selected.
-    // O(n^2) but n is small so it should be okay.
-    return allChildren.filter((name) => !temp.has(name))
-  }, [myInfoChildrenBirthRecords, allChildren, allSelectedNames])
+  // The MyInfo record the selected child came from. Names are not unique, so
+  // the record is identified by the position picked in the dropdown.
+  const indexOfChild =
+    pickedRecordIndex !== undefined &&
+    recordNames[pickedRecordIndex] === childName
+      ? pickedRecordIndex
+      : -1
 
-  const childNameValues = useMemo(() => {
-    return [childName, ...namesNotSelected()].filter((name) => {
-      if (name === '' || name === undefined) {
-        return false
-      } else return true
-    })
-  }, [childName, namesNotSelected])
-
-  const indexOfChild: number = useMemo(() => {
-    return (
-      myInfoChildrenBirthRecords?.[MyInfoChildAttributes.ChildName]?.indexOf(
-        childName,
-      ) ?? -1
+  // One item per record, so that same-named records stay distinct. Records
+  // without a name are children above 21.
+  const childNameItems = useMemo<ComboboxItem[]>(() => {
+    const items: ComboboxItem[] = recordNames.flatMap((name, idx) =>
+      name ? [{ value: toRecordValue(idx), label: name }] : [],
     )
-  }, [myInfoChildrenBirthRecords, childName])
+    // A name with no record to point at (e.g. carried forward to a later MRF
+    // step, which has no MyInfo data) is still shown as the selection.
+    if (childName && indexOfChild < 0) items.push(childName)
+    return items
+  }, [recordNames, childName, indexOfChild])
+
+  const onChildRecordChange = useCallback(
+    (value: string, onChange: (name: string) => void) => {
+      const recordIdx = fromRecordValue(value)
+      const name = recordNames[recordIdx]
+      if (name === undefined) {
+        // Cleared, or re-selected a name that has no record.
+        onChange(value)
+        setValue(recordIndexPath, undefined)
+        setValue(childTypePath, undefined)
+        return
+      }
+      onChange(name)
+      setValue(recordIndexPath, recordIdx)
+      setValue(childTypePath, getRecordScope(recordIdx))
+    },
+    [recordNames, setValue, recordIndexPath, childTypePath, getRecordScope],
+  )
 
   const getChildAttr = useCallback(
     (attr: MyInfoChildAttributes): string => {
@@ -325,25 +306,34 @@ const ChildrenBody = ({
             <FormControl
               key={field.id}
               isRequired
+              isDisabled={schema.disabled}
               isInvalid={!!error?.[CHILD_NAME_INDEX]}
             >
               <Controller
                 control={control}
                 name={childNamePath}
                 rules={{
-                  required: REQUIRED_ERROR,
+                  required: schema.disabled ? false : REQUIRED_ERROR,
                 }}
                 render={({
                   field: { value, onChange, onBlur, ref, ...rest },
                 }) => (
                   <SingleSelect
                     {...rest}
-                    placeholder={"Select your child's name"}
+                    placeholder={
+                      schema.disabled ? undefined : "Select your child's name"
+                    }
                     colorScheme={`theme-${colorTheme}`}
-                    items={childNameValues}
-                    value={value as unknown as string}
-                    isDisabled={isSubmitting}
-                    onChange={onChange}
+                    items={childNameItems}
+                    value={
+                      indexOfChild >= 0
+                        ? toRecordValue(indexOfChild)
+                        : ((value as unknown as string) ?? '')
+                    }
+                    isDisabled={isSubmitting || schema.disabled}
+                    onChange={(selected) =>
+                      onChildRecordChange(selected, onChange)
+                    }
                   />
                 )}
               />
@@ -352,19 +342,6 @@ const ChildrenBody = ({
               </FormErrorMessage>
             </FormControl>
           </Box>
-          <IconButton
-            variant="clear"
-            colorScheme="danger"
-            icon={<BiTrash />}
-            aria-label="Remove child"
-            alignSelf="end"
-            isDisabled={fields.length <= 1}
-            onClick={() => {
-              if (fields.length > 1) {
-                remove(fields.length - 1)
-              }
-            }}
-          />
         </Flex>
       </VStack>
       {schema.childrenSubFields
@@ -384,8 +361,12 @@ const ChildrenBody = ({
               ? formatMyinfoDate(myInfoValue)
               : myInfoValue
 
+          // A picked record owns every subfield, including ones MyInfo left
+          // blank: those are cleared (dropping the previous record's value)
+          // rather than left for the respondent to fill in.
+          const isFromRecord = indexOfChild >= 0
           const value = watch(fieldPath) as unknown as string
-          if (myInfoFormattedValue && value !== myInfoFormattedValue) {
+          if (isFromRecord && (value ?? '') !== myInfoFormattedValue) {
             // We need to do this as the underlying data is not updated
             // by the field's value, but rather by onChange, which we did
             // not trigger via prefill.
@@ -393,7 +374,11 @@ const ChildrenBody = ({
             // @ts-expect-error type inference issue
             setValue(fieldPath, myInfoFormattedValue, { shouldValidate: true })
           }
-          const isDisabled = isSubmitting || !!myInfoValue
+          // schema.disabled: whole-field read-only (MRF carry-forward on
+          // steps 2+, where there is no MyInfo session to prefill from).
+          // isFromRecord: subfields locked to the picked MyInfo record. A
+          // blank one stays required, so the child cannot be submitted.
+          const isDisabled = isSubmitting || isFromRecord || schema.disabled
           switch (subField) {
             case MyInfoChildAttributes.ChildBirthCertNo: {
               return (
@@ -419,7 +404,8 @@ const ChildrenBody = ({
             case MyInfoChildAttributes.ChildVaxxStatus:
             case MyInfoChildAttributes.ChildGender:
             case MyInfoChildAttributes.ChildRace:
-            case MyInfoChildAttributes.ChildSecondaryRace: {
+            case MyInfoChildAttributes.ChildSecondaryRace:
+            case MyInfoChildAttributes.ChildType: {
               return (
                 <FormControl
                   key={key}
@@ -489,14 +475,6 @@ const ChildrenBody = ({
               return <div>Unsupported child subfield</div>
           }
         })}
-      {/* No divider on last child */}
-      {currChildBodyIdx < fields.length - 1 ? (
-        <>
-          <Spacer h="36px" />
-          <Divider />
-          <Spacer h="36px" />
-        </>
-      ) : null}
     </VStack>
   )
 }

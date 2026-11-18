@@ -50,6 +50,7 @@ export const useDupeFormWizardContext = (
     setCurrentStep,
     isMrfCutoverEnabled,
     isPaperTrackingSetUpPageEnabled,
+    isLegacySetup,
     proceedCtaLabel,
     goToStorageModeDetails,
     goToMrfDetails,
@@ -114,7 +115,7 @@ export const useDupeFormWizardContext = (
     title,
     responseMode,
     emails,
-    formOrigins,
+    formOrigin,
   }: CreateFormWizardInputProps) => {
     if (!sourceFormId) {
       return
@@ -123,7 +124,7 @@ export const useDupeFormWizardContext = (
     const metadata = buildFormClientMetadata({
       isPaperTrackingSetUpPageEnabled,
       isMrfCutoverEnabled,
-      formOrigins,
+      formOrigin,
       formResponseMode: responseMode,
     })
 
@@ -238,6 +239,7 @@ export const useDupeFormWizardContext = (
     handleProceedFromDetails,
     goToFormDetails,
     isPaperTrackingSetUpPageEnabled,
+    isLegacySetup,
     proceedCtaLabel,
     handleEmailFeedbackSubmit,
     handleCreateEmailModeForm,

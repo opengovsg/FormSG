@@ -39,7 +39,7 @@ export const getPaymentInfoResponse = ({
   return http.get<{ paymentId: string }, never, PartialDeep<GetPaymentInfoDto>>(
     '/api/v3/payments/:paymentId/getinfo',
     async () => {
-      await MswDelay(delay)
+      await MswDelay(delay ?? 0)
       return HttpResponse.json({
         ...BASE_PAYMENT_INFO,
         ...overrides,
@@ -58,7 +58,7 @@ export const getPaymentReceiptStatusResponse = ({
     never,
     PaymentReceiptStatusDto
   >('/api/v3/payments/:formId/:paymentId/receipt/status', async () => {
-    await MswDelay(delay)
+    await MswDelay(delay ?? 0)
     return HttpResponse.json({ isReady: true, paymentDate: null })
   })
 }

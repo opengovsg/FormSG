@@ -24,20 +24,31 @@ const isValidStoredQuery = (
   return queryId === (storedQuery as StoredRedirectionQuery)._id
 }
 
-export const useFetchPrefillQuery = () => {
+/**
+ * @param enabled false makes this instance a no-op, leaving the restore to
+ * another instance
+ * @returns whether a stored query is about to be restored into the url
+ */
+export const useFetchPrefillQuery = ({
+  enabled = true,
+}: { enabled?: boolean } = {}): boolean => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [storedQuery, , removeStoredQuery] = useSessionStorage<
     StoredRedirectionQuery | undefined
   >(STORED_QUERY_KEY)
 
+  const previouslyStoredId = searchParams.get(REDIRECTED_QUERY_KEY)
+  const isRestoring =
+    enabled &&
+    !!previouslyStoredId &&
+    isValidStoredQuery(previouslyStoredId, storedQuery)
+
   useEffect(() => {
-    const previouslyStoredId = searchParams.get(REDIRECTED_QUERY_KEY)
-    if (
-      previouslyStoredId &&
-      isValidStoredQuery(previouslyStoredId, storedQuery)
-    ) {
+    if (isRestoring && storedQuery) {
       setSearchParams(JSON.parse(storedQuery.queryString))
       removeStoredQuery()
     }
-  }, [removeStoredQuery, searchParams, setSearchParams, storedQuery])
+  }, [isRestoring, removeStoredQuery, setSearchParams, storedQuery])
+
+  return isRestoring
 }

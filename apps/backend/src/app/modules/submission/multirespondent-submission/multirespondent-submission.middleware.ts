@@ -1,4 +1,4 @@
-import type { FieldResponsesV4, FormFieldMeta } from '@opengovsg/formsg-sdk'
+import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
 import {
   adaptV3ToV4,
   adaptV4ToV3,
@@ -10,14 +10,22 @@ import { NextFunction } from 'express'
 import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
+  FieldResponsesV3,
   FormAuthType,
   FormDto,
   FormFieldDto,
   FormResponseMode,
+  isPaymentsProducts,
   SubmissionType,
 } from 'formsg-shared/types'
+import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'
+import {
+  formUsesAuthType,
+  getStepAuthType,
+  hasLaterStepLogin,
+} from 'formsg-shared/utils/step-login'
 import { StatusCodes } from 'http-status-codes'
-import _ from 'lodash'
+import { uniq } from 'lodash'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
@@ -27,15 +35,16 @@ import {
 } from 'src/types'
 
 import {
-  ParsedClearAttachmentResponseV3,
-  ParsedClearFormFieldResponsesV3,
-  ParsedClearFormFieldResponseV3,
+  ParsedClearAttachmentFieldResponseV4,
+  ParsedClearFormFieldResponsesV4,
+  ParsedClearFormFieldResponseV4,
 } from '../../../../types/api'
 import {
   MultirespondentFormLoadedDto,
   SnapshottedFormDef,
 } from '../../../../types/api/multirespondent_submission'
 import { isDev } from '../../../config/config'
+import { paymentConfig } from '../../../config/features/payment.config'
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
@@ -43,25 +52,34 @@ import {
   getVisibleFieldIdsV3,
 } from '../../../utils/logic-adaptor'
 import { createReqMeta } from '../../../utils/request'
-import { isFieldResponseV3Equal } from '../../../utils/response-v3'
+import { isFieldResponseV4Equal } from '../../../utils/response-v4'
 import { DatabaseError } from '../../core/core.errors'
 import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
+import { JoiPaymentProduct } from '../../form/admin-form/admin-form.payments.constants'
 import { assertFormAvailable } from '../../form/admin-form/admin-form.utils'
 import * as FormService from '../../form/form.service'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
+import * as PaymentsService from '../../payments/payments.service'
+import { MissingJwtError } from '../../spcp/spcp.errors'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
-import { createNdiResponsesV3FromRecord } from '../../spcp/spcp.util'
+import { createNdiResponsesV4FromRecord } from '../../spcp/spcp.util'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import { VerifiedContentV3 } from '../../verified-content/verified-content.types'
 import { FormsgReqBodyExistsError } from '../encrypt-submission/encrypt-submission.errors'
 import { CreateFormsgAndRetrieveFormMiddlewareHandlerType } from '../encrypt-submission/encrypt-submission.types'
 import {
+  checkLoginIdentityAnswers,
+  getLoginIdentityValuesFromCookies,
+} from '../login-identity-answers'
+import {
   InvalidSubmissionTypeError,
   MissingSubmitterIdError,
+  MrfStepLoginSuspendedError,
   MrfWorkflowOverflowError,
+  MrfWorkflowStoppedError,
   ProcessingError,
-  SubmissionEncryptionMismatchError,
+  StepTokenVerificationError,
   SubmissionEncryptionVerificationError,
   SubmissionNotFoundError,
 } from '../submission.errors'
@@ -69,8 +87,9 @@ import * as SubmissionService from '../submission.service'
 import {
   generateHashedSubmitterId,
   getEncryptedAttachmentsMapFromAttachmentsMap,
-  isAttachmentResponseV3,
+  isAttachmentResponseV4,
   mapRouteError,
+  sendRouteError,
 } from '../submission.utils'
 
 import {
@@ -83,9 +102,25 @@ import {
   MultirespondentSubmissionMiddlewareHandlerType,
   ProcessedMultirespondentSubmissionHandlerRequest,
   ProcessedMultirespondentSubmissionHandlerType,
-  StrippedAttachmentResponseV3,
+  StrippedAttachmentResponseV4,
 } from './multirespondent-submission.types'
-import { validateMrfFieldResponses } from './multirespondent-submission.utils'
+import {
+  adaptV4ResponsesForMyInfoHashCheck,
+  MRF_VERSION_V4,
+  reconcileChildTypesWithChildTypeAnswers,
+  stampMyInfoVerifiedOnResponses,
+  validateMrfFieldResponses,
+} from './multirespondent-submission.utils'
+import { resolveMrfMyInfoReadOnlyFields } from './myinfo-read-only-fields'
+import {
+  clearMrfStepAuthCookie,
+  getLoginIdentityValue,
+  isMrfStepLoginSuspended,
+  ResolvedMrfStepAuth,
+  resolveMrfStepAuth,
+  verifyMrfStepAuthCookie,
+} from './step-auth'
+import * as stepToken from './step-token'
 
 const logger = createLoggerWithLabel(module)
 
@@ -94,8 +129,13 @@ const multirespondentSubmissionBodySchema = Joi.object({
     /^[a-fA-F0-9]{24}$/,
     Joi.object({
       fieldType: Joi.string().valid(...Object.values(BasicField)),
-      //TODO(MRF/FRM-1592): Improve this validation, should match ParsedClearFormFieldResponseV3
       answer: Joi.required(),
+      question: Joi.any().strip(),
+      // Provenance is server-owned: strip every client-supplied key. In
+      // particular myinfoVerified is stamped after the MyInfo hash check and
+      // must never be client-suppliable.
+      provenance: Joi.object({}).default({}).options({ stripUnknown: true }),
+      myInfo: Joi.object({ attr: Joi.string().required() }).optional(),
     }),
   ),
   responseMetadata: Joi.object({
@@ -106,21 +146,46 @@ const multirespondentSubmissionBodySchema = Joi.object({
   respondentEmails: Joi.array().items(Joi.string()),
 })
 
+// Payment fields are only accepted on submission creation: a payment-enabled
+// form is necessarily zero-step, so there are no later steps to update.
+const submitMultirespondentSubmissionBodySchema =
+  multirespondentSubmissionBodySchema.keys({
+    paymentProducts: Joi.array().items(
+      Joi.object().keys({
+        data: JoiPaymentProduct.required(),
+        selected: Joi.boolean(),
+        quantity: Joi.number().integer().positive().required(),
+      }),
+    ),
+    paymentReceiptEmail: Joi.string(),
+    payments: Joi.object({
+      amount_cents: Joi.number()
+        .integer()
+        .positive()
+        .max(paymentConfig.maxPaymentAmountCents),
+    }),
+  })
+
 export const validateMultirespondentSubmissionParams = celebrate({
-  [Segments.BODY]: multirespondentSubmissionBodySchema,
+  [Segments.BODY]: submitMultirespondentSubmissionBodySchema,
+})
+
+const multirespondentSubmissionKeySchema = Joi.object({
+  submissionSecretKey: Joi.string().required(),
+  // RATIONALE: step token is optional for backwards compatibility with
+  // in-flight submissions.
+  stepToken: Joi.string().optional(),
 })
 
 const updateMultirespondentSubmissionBodySchema =
-  multirespondentSubmissionBodySchema.append({
-    submissionSecretKey: Joi.string().required(),
-  })
+  multirespondentSubmissionBodySchema.concat(multirespondentSubmissionKeySchema)
 
 export const validateUpdateMultirespondentSubmissionParams = celebrate({
   [Segments.BODY]: updateMultirespondentSubmissionBodySchema,
 })
 
 export const validateMultirespondentRemindBody = celebrate({
-  [Segments.BODY]: Joi.object({ submissionSecretKey: Joi.string().required() }),
+  [Segments.BODY]: multirespondentSubmissionKeySchema,
 })
 
 const retrieveMultirespondentSubmissionIfExists = (
@@ -196,8 +261,7 @@ export const createFormsgAndRetrieveForm = (
             meta: logMeta,
             error,
           })
-          const { statusCode, errorMessage } = mapRouteError(error)
-          return res.status(statusCode).json({ message: errorMessage })
+          return sendRouteError(res, mapRouteError(error))
         })
         .map((mrfSubmission) => {
           formsg.mrfSubmission = mrfSubmission
@@ -212,8 +276,7 @@ export const createFormsgAndRetrieveForm = (
                 meta: logMeta,
                 error,
               })
-              const { errorMessage, statusCode } = mapRouteError(error)
-              return res.status(statusCode).json({ message: errorMessage })
+              return sendRouteError(res, mapRouteError(error))
             })
             .andThen((latestFormDef) => {
               // Step 4a: Check form is multirespondent form
@@ -225,10 +288,7 @@ export const createFormsgAndRetrieveForm = (
                     meta: logMeta,
                     error,
                   })
-                  const { statusCode, errorMessage } = mapRouteError(error)
-                  return res.status(statusCode).json({
-                    message: errorMessage,
-                  })
+                  return sendRouteError(res, mapRouteError(error))
                 },
               )
             })
@@ -243,7 +303,7 @@ export const createFormsgAndRetrieveForm = (
                 )
               }
             })
-            .map(() => {
+            .map(async () => {
               const formDef = formsg.formDef
               // Step 5: Check that the form def has a public key
               if (!formDef.publicKey) {
@@ -257,14 +317,161 @@ export const createFormsgAndRetrieveForm = (
               // Step 6: Set req.formsg
               req.formsg = formsg
 
+              // Step 7: Inject growthbook attributes to selectively whitelist.
+              const existingAttributes = req.growthbook?.getAttributes() ?? {}
+              await req.growthbook?.setAttributes({
+                ...existingAttributes,
+                formId,
+                adminEmail: formsg.formDef.admin.email,
+              })
+
               return next()
             })
         })
     })
 }
 
-type IdTaggedParsedClearAttachmentResponseV3 =
-  ParsedClearAttachmentResponseV3 & { id: string }
+/**
+ * Blocks submissions on a workflow with a later-step login while the kill
+ * switch is on. A new submission checks the live form and an update checks its
+ * saved workflow, so in-flight submissions are blocked too.
+ */
+export const ensureMrfStepLoginNotSuspended = (
+  req: ProcessedMultirespondentSubmissionHandlerRequest,
+  res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
+  next: NextFunction,
+) => {
+  const { formDef, mrfSubmission } = req.formsg
+  const workflow = mrfSubmission?.workflow ?? formDef.workflow
+  if (!hasLaterStepLogin(workflow) || !isMrfStepLoginSuspended(req.growthbook))
+    return next()
+  logger.warn({
+    message: 'Blocked MRF submission: mrf-step-login-kill-switch is on',
+    meta: {
+      action: 'ensureMrfStepLoginNotSuspended',
+      formId: String(formDef._id),
+      submissionId: mrfSubmission ? String(mrfSubmission._id) : undefined,
+      ...createReqMeta(req),
+    },
+  })
+  return sendRouteError(res, mapRouteError(new MrfStepLoginSuspendedError()))
+}
+
+/**
+ * Authenticates the respondent for the pending step of a submission whose
+ * saved workflow uses step login, before any response is processed. The
+ * snapshot decides, never the live form or the rollout flag, so a protected
+ * step is never treated as unprotected.
+ */
+export const verifyMrfStepAuth = (
+  req: ProcessedMultirespondentSubmissionHandlerRequest,
+  res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
+  next: NextFunction,
+) => {
+  const { formDef, mrfSubmission } = req.formsg
+  if (!mrfSubmission || !hasLaterStepLogin(mrfSubmission.workflow))
+    return next()
+  const logMeta = {
+    action: 'verifyMrfStepAuth',
+    formId: String(formDef._id),
+    submissionId: String(mrfSubmission._id),
+    ...createReqMeta(req),
+  }
+
+  const resolvedResult = resolveMrfStepAuth(
+    String(formDef._id),
+    mrfSubmission,
+    { stepToken: req.body.stepToken },
+  )
+  if (resolvedResult.isErr()) {
+    logger.warn({
+      message: 'Failed to resolve MRF step login',
+      meta: logMeta,
+      error: resolvedResult.error,
+    })
+    return sendRouteError(res, mapRouteError(resolvedResult.error))
+  }
+  const resolved = resolvedResult.value
+  if (resolved.kind === 'open') {
+    req.formsg.stepAuth = resolved
+    return next()
+  }
+
+  const sessionResult = verifyMrfStepAuthCookie(
+    req.cookies ?? {},
+    resolved.context,
+  )
+  if (sessionResult.isErr()) {
+    logger.warn({
+      message: 'MRF step respondent is not logged in for this step',
+      meta: logMeta,
+      error: sessionResult.error,
+    })
+    if (!(sessionResult.error instanceof MissingJwtError)) {
+      clearMrfStepAuthCookie(res, resolved.context)
+    }
+    return sendRouteError(res, mapRouteError(sessionResult.error), {
+      spcpSubmissionFailure: true,
+    })
+  }
+  req.formsg.stepAuth = {
+    ...resolved,
+    kind: 'verified',
+    session: sessionResult.value,
+  }
+  return next()
+}
+
+/**
+ * Fills this step's login identity answers from its verified login, before
+ * logic and validation. Submitted, omitted, URL-prefilled and draft values
+ * never replace them. They are ordinary answers with no verified content;
+ * verifyStepMyInfoHashes adds them to the read-only list and stamps their
+ * provenance, so every output marks them `[Myinfo]`.
+ */
+export const fillLoginIdentityResponses = (
+  req: ProcessedMultirespondentSubmissionHandlerRequest,
+  res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
+  next: NextFunction,
+) => {
+  const { stepAuth } = req.formsg
+  if (!stepAuth) return next()
+
+  const session = stepAuth.kind === 'verified' ? stepAuth.session : undefined
+  const filled: string[] = []
+  for (const field of stepAuth.stepFields) {
+    if (!isLoginIdentityField(field)) continue
+    const fieldId = String(field._id)
+    const value = session ? getLoginIdentityValue(field, session) : undefined
+    if (!value) {
+      // Fail closed rather than accept a typed identity.
+      if (field.required || !session) {
+        logger.error({
+          message: 'MRF step login did not provide a required identity',
+          meta: {
+            action: 'fillLoginIdentityResponses',
+            formId: req.params.formId,
+            submissionId: req.params.submissionId,
+            fieldId,
+          },
+        })
+        return sendRouteError(res, mapRouteError(new MissingSubmitterIdError()))
+      }
+      delete req.body.responses[fieldId]
+      continue
+    }
+    req.body.responses[fieldId] = {
+      fieldType: field.fieldType,
+      answer: { value },
+    } as ParsedClearFormFieldResponseV4
+    filled.push(fieldId)
+  }
+  req.formsg.loginFilledFieldIds = filled
+  return next()
+}
+
+type IdTaggedParsedClearAttachmentResponseV4 =
+  ParsedClearAttachmentFieldResponseV4 & { id: string }
 
 /**
  * Asynchronous virus scanning for storage submissions v2.1+. This is used for non-dev environments.
@@ -272,10 +479,10 @@ type IdTaggedParsedClearAttachmentResponseV3 =
  * @returns all responses with clean attachments and their filename populated for any attachment fields.
  */
 const asyncVirusScanning = (
-  responses: IdTaggedParsedClearAttachmentResponseV3[],
+  responses: IdTaggedParsedClearAttachmentResponseV4[],
   formId: string,
 ): ResultAsync<
-  IdTaggedParsedClearAttachmentResponseV3,
+  IdTaggedParsedClearAttachmentResponseV4,
   SubmissionService.TriggerGuardDutyScanThenDownloadCleanFileChainError
 >[] => {
   return responses.map((response) => {
@@ -283,13 +490,17 @@ const asyncVirusScanning = (
     // for us to compare the reliability of the services
 
     // use guardduty scan results
-    return SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChain(
-      response.answer,
+    const { id, ...attachmentResponse } = response
+    return SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChainV4(
+      attachmentResponse,
       formId,
-    ).map((attachmentResponse) => ({
-      ...response,
-      answer: attachmentResponse,
-    }))
+    ).map(
+      (scannedResponse) =>
+        ({
+          ...scannedResponse,
+          id,
+        }) as IdTaggedParsedClearAttachmentResponseV4,
+    )
   })
 }
 
@@ -299,27 +510,33 @@ const asyncVirusScanning = (
  * @returns all responses with clean attachments and their filename populated for any attachment fields.
  */
 const devModeSyncVirusScanning = async (
-  responses: IdTaggedParsedClearAttachmentResponseV3[],
+  responses: IdTaggedParsedClearAttachmentResponseV4[],
   formId: string,
 ): Promise<
   Result<
-    IdTaggedParsedClearAttachmentResponseV3,
+    IdTaggedParsedClearAttachmentResponseV4,
     SubmissionService.TriggerGuardDutyScanThenDownloadCleanFileChainError
   >[]
 > => {
   const results = []
   for (const response of responses) {
     // await to pause for...of loop until the virus scanning and downloading of clean file is completed.
-    const attachmentResponse =
-      await SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChain(
-        response.answer,
+    const { id, ...attachmentResponse } = response
+    const scannedResult =
+      await SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChainV4(
+        attachmentResponse,
         formId,
       )
-    if (attachmentResponse.isErr()) {
-      results.push(err(attachmentResponse.error))
+    if (scannedResult.isErr()) {
+      results.push(err(scannedResult.error))
       break
     }
-    results.push(ok({ ...response, answer: attachmentResponse.value }))
+    results.push(
+      ok({
+        ...scannedResult.value,
+        id,
+      } as IdTaggedParsedClearAttachmentResponseV4),
+    )
   }
   return results
 }
@@ -338,7 +555,7 @@ export const scanAndRetrieveAttachments = async (
   }
 
   // Step 1: Extract attachment responses into an array to prepare for virus scanning.
-  const attachmentResponsesToRetrieve: IdTaggedParsedClearAttachmentResponseV3[] =
+  const attachmentResponsesToRetrieve: IdTaggedParsedClearAttachmentResponseV4[] =
     Object.keys(req.body.responses)
       .map((id) => {
         const response = req.body.responses[id]
@@ -349,10 +566,13 @@ export const scanAndRetrieveAttachments = async (
         ) {
           return null
         }
-        return { id, ...response }
+        return {
+          id,
+          ...response,
+        } as unknown as IdTaggedParsedClearAttachmentResponseV4
       })
       .filter(
-        (value): value is IdTaggedParsedClearAttachmentResponseV3 =>
+        (value): value is IdTaggedParsedClearAttachmentResponseV4 =>
           value !== null,
       )
 
@@ -384,12 +604,7 @@ export const scanAndRetrieveAttachments = async (
       error: scanAndRetrieveFilesResult.error,
     })
 
-    const { statusCode, errorMessage } = mapRouteError(
-      scanAndRetrieveFilesResult.error,
-    )
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
+    return sendRouteError(res, mapRouteError(scanAndRetrieveFilesResult.error))
   }
 
   logger.info({
@@ -399,16 +614,18 @@ export const scanAndRetrieveAttachments = async (
 
   // Step 3: Update responses with new values.
   for (const idTaggedAttachmentResponse of scanAndRetrieveFilesResult.value) {
-    const { id, ...attachmentResponse } = idTaggedAttachmentResponse
+    const { id, ...attachmentResponseRaw } = idTaggedAttachmentResponse
+    const attachmentResponse =
+      attachmentResponseRaw as ParsedClearAttachmentFieldResponseV4
     // TODO: FRM-1839 Skip scanning if attachment has already been scanned
     attachmentResponse.answer.hasBeenScanned = true
     // Store the md5 hash in the DB as well for comparison later on.
     attachmentResponse.answer.md5Hash = crypto
       .createHash('md5')
       .update(Buffer.from(attachmentResponse.answer.content))
-      .digest()
-      .toString()
-    req.body.responses[id] = attachmentResponse
+      .digest('hex')
+    req.body.responses[id] =
+      attachmentResponse as unknown as FieldResponsesV4[string]
   }
 
   return next()
@@ -459,8 +676,21 @@ export const validateMultirespondentSubmission = async (
   return (
     // Step 0: Prepare by retrieving relevant reference data
     ok(mrfSubmission)
+      // Step 0a: Verify write permissions by verifying step bearer token if exists
+      .andThen((mrfSubmission) => {
+        if (mrfSubmission?.stepTokenHash) {
+          const presentedToken = req.body.stepToken
+          if (
+            !presentedToken ||
+            !stepToken.verify(presentedToken, mrfSubmission.stepTokenHash)
+          ) {
+            return err(new StepTokenVerificationError())
+          }
+        }
+        return ok(mrfSubmission)
+      })
       .andThen((mrfSubmission) =>
-        // Step 0a: If its an existing submission, use the reference data from
+        // Step 0b: If its an existing submission, use the reference data from
         // the submission rather than the form
         mrfSubmission
           ? ok({
@@ -492,7 +722,7 @@ export const validateMultirespondentSubmission = async (
           form_fields,
           form_logics,
         }) => {
-          // Step 0b: Determine editable fields based on the workflow step, if it exists.
+          // Step 0c: Determine editable fields based on the workflow step, if it exists.
           const editableFieldIds = (
             workflow[workflowStep]
               ? workflow[workflowStep].edit
@@ -505,14 +735,26 @@ export const validateMultirespondentSubmission = async (
             form_logics,
           } as Pick<FormDto, '_id' | 'form_fields' | 'form_logics'>
 
+          // Convert V4 responses to V3 for logic evaluation (logic engine uses V3 format)
+          const responsesV3ForLogic = adaptV4ToV3(
+            req.body.responses as FieldResponsesV4,
+          ) as unknown as FieldResponsesV3
+
           // Step 0c: Get visible fields based on evaluation of logic
           return getVisibleFieldIdsV3(
-            req.body.responses,
+            responsesV3ForLogic,
             formPropertiesForLogicComputation,
-          ).andThen((visibleFieldIds) =>
+          ).andThen((visibleFieldIds) => {
+            // Login identities feed logic for every step field, but are only
+            // kept where logic shows the field.
+            for (const fieldId of req.formsg.loginFilledFieldIds ?? []) {
+              if (!visibleFieldIds.has(fieldId)) {
+                delete req.body.responses[fieldId]
+              }
+            }
             // Step 1: Check prevent submission logic
-            getLogicUnitPreventingSubmitV3(
-              req.body.responses,
+            return getLogicUnitPreventingSubmitV3(
+              responsesV3ForLogic,
               formPropertiesForLogicComputation,
               visibleFieldIds,
             )
@@ -573,91 +815,117 @@ export const validateMultirespondentSubmission = async (
                 }
 
                 /**
-                 * Since the incoming client responses are in V3,
-                 * if previous submission was encrypted in V4 format, convert to V3
-                 * to facilitate comparison.
+                 * Since the incoming client responses are in V4,
+                 * if previous submission was encrypted in V3 format, convert to V4
+                 * to facilitate comparison. Comparison (isFieldResponseV4Equal)
+                 * only inspects fieldType + answer, so we skip the formFields
+                 * meta — question text and myInfo on the adapted response are
+                 * unused; downstream consumers source both from the form field.
                  */
                 const previousResponses = (() => {
                   const responses = previousSubmissionDecryptedContent.responses
-                  if (isFieldResponsesV4(responses)) {
-                    return adaptV4ToV3(
-                      responses as FieldResponsesV4,
-                    ) as ParsedClearFormFieldResponsesV3
+                  if (
+                    !isFieldResponsesV4(responses as Record<string, unknown>)
+                  ) {
+                    // Response is in V3 format, adapt to V4
+                    return adaptV3ToV4(responses, {
+                      formFields: {},
+                      provenance: {},
+                    }) as ParsedClearFormFieldResponsesV4
                   }
-                  // Response is in v3 format, return as is
-                  return responses as ParsedClearFormFieldResponsesV3
+                  // Response is in V4 format, return as is
+                  return responses as unknown as ParsedClearFormFieldResponsesV4
                 })()
 
                 const previousNonEditableFieldIdsWithResponses = Object.keys(
                   previousResponses,
                 ).filter((fieldId) => !editableFieldIds.includes(fieldId))
 
-                for (const fieldId of previousNonEditableFieldIdsWithResponses) {
+                const reinsertedFieldIds =
+                  previousNonEditableFieldIdsWithResponses.filter(
+                    (fieldId) => !req.body.responses[fieldId],
+                  )
+                for (const fieldId of reinsertedFieldIds) {
                   // ensure that respondents cannot alter a non-editable field by omitting the field in the submission by re-inserting the previous fields that are non-editable
-                  if (!req.body.responses[fieldId]) {
-                    req.body.responses[fieldId] = previousResponses[fieldId]
-                  }
+                  req.body.responses[fieldId] = previousResponses[fieldId]
                 }
 
-                return Result.combine(
-                  nonEditableFieldIdsWithResponses.map((fieldId) => {
-                    const incomingResField = req.body.responses[fieldId]
-                    const prevResField = previousResponses[fieldId]
-
-                    if (
-                      prevResField.fieldType === BasicField.ShortText ||
-                      prevResField.fieldType === BasicField.LongText
-                    ) {
-                      // NOTE: LEGACY ISSUE
-                      // Since text fields were saved without trimming prior to https://github.com/opengovsg/FormSG/pull/7937.
-                      // Without this, isFieldResponseV3Equal fails since the prevResField was not trimmed,
-                      // causing a mismatch between the newly trimmed incomingResField.
-                      prevResField.answer = prevResField.answer.trim()
+                return getVisibleFieldIdsV3(
+                  adaptV4ToV3(
+                    req.body.responses as FieldResponsesV4,
+                  ) as unknown as FieldResponsesV3,
+                  formPropertiesForLogicComputation,
+                )
+                  .map((mergedVisibleFieldIds) => {
+                    for (const fieldId of reinsertedFieldIds) {
+                      if (!mergedVisibleFieldIds.has(fieldId)) {
+                        delete req.body.responses[fieldId]
+                      }
                     }
+                  })
+                  .andThen(() =>
+                    Result.combine(
+                      nonEditableFieldIdsWithResponses.map((fieldId) => {
+                        const incomingResField = req.body.responses[fieldId]
+                        const prevResField = previousResponses[fieldId]
 
-                    const resp = isFieldResponseV3Equal(
-                      incomingResField,
-                      prevResField,
-                    )
+                        const resp = isFieldResponseV4Equal(
+                          incomingResField as FieldResponsesV4[string],
+                          prevResField as FieldResponsesV4[string],
+                        )
 
-                    if (!resp) {
-                      logger.info({
-                        message:
-                          'Submitted response on a non-editable field which did not match previous response',
-                        meta: {
-                          ...logMeta,
-                          incomingResFieldType: incomingResField.fieldType,
-                          prevResFieldType: prevResField.fieldType,
-                        },
-                      })
+                        if (!resp) {
+                          logger.info({
+                            message:
+                              'Submitted response on a non-editable field which did not match previous response',
+                            meta: {
+                              ...logMeta,
+                              incomingResFieldType: incomingResField.fieldType,
+                              prevResFieldType: prevResField.fieldType,
+                            },
+                          })
 
-                      return err(
-                        new ProcessingError(
-                          'Submitted response on a non-editable field which did not match previous response',
-                        ),
-                      )
-                    }
+                          return err(
+                            new ProcessingError(
+                              'Submitted response on a non-editable field which did not match previous response',
+                            ),
+                          )
+                        }
 
-                    /**
-                     * Files are verified to have the same md5 hash, so we can safely assume that the files are the same.
-                     * We should also ignore attachment names from submissions as handleDuplicatesInAttachments may rename files
-                     */
-                    if (
-                      incomingResField.fieldType === BasicField.Attachment &&
-                      prevResField.fieldType === BasicField.Attachment
-                    ) {
-                      incomingResField.answer.answer =
-                        prevResField.answer.answer
+                        /**
+                         * Provenance is server-owned and stripped from client
+                         * payloads, so a re-submitted non-editable field would
+                         * otherwise lose it on every workflow step after the one
+                         * that stamped it (e.g. myinfoVerified from the step-1
+                         * MyInfo hash check). Carry it forward from the stored
+                         * copy.
+                         */
+                        if (prevResField.provenance) {
+                          incomingResField.provenance = prevResField.provenance
+                        }
 
-                      incomingResField.answer.filename =
-                        prevResField.answer.answer
-                    }
+                        /**
+                         * Files are verified to have the same md5 hash, so we can safely assume that the files are the same.
+                         * We should also ignore attachment names from submissions as handleDuplicatesInAttachments may rename files
+                         */
+                        if (
+                          incomingResField.fieldType ===
+                            BasicField.Attachment &&
+                          prevResField.fieldType === BasicField.Attachment
+                        ) {
+                          ;(
+                            incomingResField.answer as { value: string }
+                          ).value = (
+                            prevResField.answer as { value: string }
+                          ).value
+                        }
 
-                    return ok(undefined)
-                  }),
-                ).map(() => {
-                  return previousResponses
-                })
+                        return ok(undefined)
+                      }),
+                    ).map(() => {
+                      return previousResponses
+                    }),
+                  )
               })
               .andThen((previousResponses) => {
                 return validateMrfFieldResponses({
@@ -666,9 +934,25 @@ export const validateMultirespondentSubmission = async (
                   formFields: form_fields,
                   responses: req.body.responses,
                   previousResponses,
+                  workflowStep,
+                  stepAuthType: getStepAuthType(
+                    req.formsg.formDef,
+                    workflow,
+                    workflowStep,
+                  ),
+                  formAuthType: req.formsg.formDef.authType,
+                  hasMyInfoLogin: formUsesAuthType(
+                    { authType: req.formsg.formDef.authType, workflow },
+                    FormAuthType.MyInfo,
+                  ),
+                  stepFieldIds: new Set(editableFieldIds),
+                  // Fail closed: without a growthbook instance, Children
+                  // responses are rejected.
+                  isMrfChildrenEnabled:
+                    req.growthbook?.isOn(featureFlags.mrfChildren) ?? false,
                 })
-              }),
-          )
+              })
+          })
         },
       )
       .map(() => next())
@@ -679,12 +963,64 @@ export const validateMultirespondentSubmission = async (
           error,
         })
 
+        return sendRouteError(res, mapRouteError(error))
+      })
+  )
+}
+
+/**
+ * Middleware to validate payment content against the form definition,
+ * mirroring EncryptSubmissionMiddleware.validatePaymentSubmission. Without
+ * this, the charge is computed from the client's paymentProducts payload,
+ * so a respondent could tamper prices, quantities, or duplicates.
+ */
+export const validatePaymentSubmission = async (
+  req: MultirespondentSubmissionMiddlewareHandlerRequest,
+  res: Parameters<MultirespondentSubmissionMiddlewareHandlerType>[1],
+  next: NextFunction,
+) => {
+  const formDef = req.formsg.formDef.toObject()
+
+  const logMeta = {
+    action: 'validatePaymentSubmission',
+    formId: String(formDef._id),
+    ...createReqMeta(req),
+  }
+
+  const formDefProducts = formDef?.payments_field?.products
+  const submittedPaymentProducts = req.body.paymentProducts
+  if (submittedPaymentProducts) {
+    if (!isPaymentsProducts(formDefProducts)) {
+      // Payment definition does not allow for payment by product
+
+      logger.error({
+        message: 'Invalid form definition for payment by product',
+        meta: logMeta,
+      })
+
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message:
+          'The payment settings in this form have been updated. Please refresh and try again.',
+      })
+    }
+    return PaymentsService.validatePaymentProducts(
+      formDefProducts,
+      submittedPaymentProducts,
+    )
+      .map(() => next())
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error validating payment submission',
+          meta: logMeta,
+          error,
+        })
         const { statusCode, errorMessage } = mapRouteError(error)
         return res.status(statusCode).json({
           message: errorMessage,
         })
       })
-  )
+  }
+  return next()
 }
 
 export const setCurrentWorkflowStep = async (
@@ -723,6 +1059,9 @@ export const setCurrentWorkflowStep = async (
         if (submissionData.submissionType !== SubmissionType.Multirespondent) {
           return errAsync(new InvalidSubmissionTypeError())
         }
+        if (submissionData.stoppedAt) {
+          return errAsync(new MrfWorkflowStoppedError())
+        }
         // Increment previous submission's workflow step by 1 to get workflow step of current submission
         req.body.workflowStep = submissionData.workflowStep + 1
         // If the workflow step is greater than the submission's snapshot workflow length, this is an overflow.
@@ -743,12 +1082,232 @@ export const setCurrentWorkflowStep = async (
           error,
         })
 
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
+        return sendRouteError(res, mapRouteError(error))
       })
   )
+}
+
+/**
+ * Verifies the submitted MyInfo prefill answers against the hashes saved at
+ * prefill time, mirroring encrypt mode's validateStorageSubmission. Without
+ * this check a respondent could tamper with non-editable MyInfo-verified
+ * answers client-side.
+ *
+ * Must run before encryptSubmission, which snapshots the responses into the
+ * stored encryptedContent. Step 1 checks the form-level MyInfo login; a later
+ * step with its own MyInfo login checks only its fields against the hashes
+ * scoped to that step's login session.
+ *
+ * On success, records the verification outcome as response provenance:
+ * answers whose hash keys were verified get provenance.myinfoVerified
+ * stamped before the responses are encrypted for storage.
+ */
+export const verifyMyInfoHashes = async (
+  req: ProcessedMultirespondentSubmissionHandlerRequest,
+  res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
+  next: NextFunction,
+) => {
+  const { formId } = req.params
+  const { formDef, mrfSubmission, stepAuth } = req.formsg
+  const logMeta = {
+    action: 'verifyMyInfoHashes',
+    formId,
+    ...createReqMeta(req),
+  }
+
+  if (mrfSubmission) {
+    return stepAuth
+      ? verifyStepMyInfoHashes(req, res, next, logMeta, stepAuth)
+      : next()
+  }
+  if (formDef.authType !== FormAuthType.MyInfo) {
+    return next()
+  }
+
+  return extractMyInfoLoginJwt(req.cookies)
+    .andThen(MyInfoService.verifyLoginJwt)
+    .asyncAndThen(({ uinFin }) =>
+      MyInfoService.fetchMyInfoHashes(uinFin, formId).andThen((hashes) =>
+        MyInfoService.checkMyInfoHashes(
+          adaptV4ResponsesForMyInfoHashCheck(
+            req.body.responses ?? {},
+            formDef.form_fields,
+          ),
+          hashes,
+        ),
+      ),
+    )
+    .andThen((verifiedKeys) =>
+      reconcileChildTypesWithChildTypeAnswers(
+        req.body.responses ?? {},
+        formDef.form_fields,
+        verifiedKeys,
+      ).map(() => verifiedKeys),
+    )
+    .map((verifiedKeys) => {
+      req.formsg.myInfoReadOnlyFields = resolveMrfMyInfoReadOnlyFields({
+        verifiedKeys,
+        responses: req.body.responses ?? {},
+      })
+      // Children fields are MyInfo-prefilled and non-editable, so record
+      // the successful verification on the stored response's provenance.
+      stampMyInfoVerifiedOnResponses(req.body.responses ?? {}, verifiedKeys)
+      return next()
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error verifying MyInfo hashes',
+        meta: logMeta,
+        error,
+      })
+      return sendRouteError(res, mapRouteError(error), {
+        spcpSubmissionFailure: true,
+      })
+    })
+}
+
+/**
+ * A later step checks only its own MyInfo answers, against the hashes saved
+ * for its login session. Verified MyInfo answers and login-filled identities
+ * join the stored read-only list, which only grows, and get provenance.myinfoVerified
+ */
+const verifyStepMyInfoHashes = (
+  req: ProcessedMultirespondentSubmissionHandlerRequest,
+  res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
+  next: NextFunction,
+  logMeta: { action: string } & Record<string, unknown>,
+  stepAuth: ResolvedMrfStepAuth,
+) => {
+  const { formId } = req.params
+  const { mrfSubmission, loginFilledFieldIds = [] } = req.formsg
+  if (stepAuth.kind !== 'verified') return next()
+  const { session } = stepAuth
+
+  const withReadOnly = (verifiedFieldIds: string[]) => {
+    req.formsg.myInfoReadOnlyFields = uniq([
+      ...(mrfSubmission?.myInfoReadOnlyFields ?? []),
+      ...verifiedFieldIds,
+      ...loginFilledFieldIds,
+    ])
+    // Email outputs read provenance
+    stampMyInfoVerifiedOnResponses(
+      req.body.responses ?? {},
+      new Set(loginFilledFieldIds),
+    )
+    return next()
+  }
+  if (session.authType !== FormAuthType.MyInfo) return withReadOnly([])
+
+  // Stored fields carry ObjectIds; response keys are strings.
+  const stepFieldIds = new Set(
+    stepAuth.stepFields.map(({ _id }) => String(_id)),
+  )
+  const stepResponses = Object.fromEntries(
+    Object.entries(req.body.responses ?? {}).filter(([id]) =>
+      stepFieldIds.has(id),
+    ),
+  )
+  // Identities come from the login session, so only profile answers have hashes.
+  const hashCheckFields = stepAuth.stepFields.filter(
+    (field) => !isLoginIdentityField(field),
+  )
+  const hashCheckResponses = adaptV4ResponsesForMyInfoHashCheck(
+    stepResponses,
+    hashCheckFields,
+  )
+  // A step without prefilled read-only answers saved nothing to check.
+  if (hashCheckResponses.length === 0) return withReadOnly([])
+
+  return MyInfoService.fetchMyInfoHashes(session.uinFin, formId, {
+    authSessionId: session.myInfoAuthSessionId,
+    workflowStep: stepAuth.workflowStep,
+  })
+    .andThen((hashes) =>
+      MyInfoService.checkMyInfoHashes(hashCheckResponses, hashes),
+    )
+    .andThen((verifiedKeys) =>
+      reconcileChildTypesWithChildTypeAnswers(
+        stepResponses,
+        hashCheckFields,
+        verifiedKeys,
+      ).map(() => verifiedKeys),
+    )
+    .map((verifiedKeys) => {
+      stampMyInfoVerifiedOnResponses(stepResponses, verifiedKeys)
+      return withReadOnly(
+        resolveMrfMyInfoReadOnlyFields({
+          verifiedKeys,
+          responses: stepResponses,
+        }),
+      )
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error verifying MRF step MyInfo hashes',
+        meta: { ...logMeta, workflowStep: stepAuth.workflowStep },
+        error,
+      })
+      return sendRouteError(res, mapRouteError(error), {
+        spcpSubmissionFailure: true,
+      })
+    })
+}
+
+/**
+ * Checks Step 1 login identity answers against the login, like
+ * verifyMyInfoHashes. Verified fields join myInfoReadOnlyFields and get
+ * provenance.myinfoVerified stamped, so every output marks them `[Myinfo]`
+ * (read-time surfaces read the list; email outputs read provenance). Must run
+ * before encryptSubmission.
+ */
+export const verifyLoginIdentityAnswers = async (
+  req: ProcessedMultirespondentSubmissionHandlerRequest,
+  res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
+  next: NextFunction,
+) => {
+  const { formId } = req.params
+  const { formDef } = req.formsg
+  const formFields = formDef.form_fields ?? []
+
+  if (!formFields.some(isLoginIdentityField)) return next()
+
+  const logMeta = {
+    action: 'verifyLoginIdentityAnswers',
+    formId,
+    ...createReqMeta(req),
+  }
+  const responses = req.body.responses ?? {}
+
+  return getLoginIdentityValuesFromCookies(formDef.authType, req.cookies)
+    .andThen((values) =>
+      checkLoginIdentityAnswers(
+        formFields,
+        (fieldId) =>
+          (responses[fieldId]?.answer as { value?: unknown } | undefined)
+            ?.value,
+        values,
+      ),
+    )
+    .map((verifiedFieldIds) => {
+      req.formsg.myInfoReadOnlyFields = [
+        ...(req.formsg.myInfoReadOnlyFields ?? []),
+        ...verifiedFieldIds,
+      ]
+      // Email outputs read provenance, not the read-only list, so record the
+      // verification there too — same '[Myinfo]' product marker either way.
+      stampMyInfoVerifiedOnResponses(responses, new Set(verifiedFieldIds))
+      return next()
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error verifying login identity answers',
+        meta: logMeta,
+        error,
+      })
+      return sendRouteError(res, mapRouteError(error), {
+        spcpSubmissionFailure: true,
+      })
+    })
 }
 
 /**
@@ -760,13 +1319,6 @@ export const encryptSubmission = async (
   next: NextFunction,
 ) => {
   const formDef = req.formsg.formDef
-
-  void req.growthbook?.setAttributes({
-    ...req.growthbook.getAttributes(),
-    formId: req.params.formId,
-    formCreated: formDef.created?.toISOString(),
-  })
-
   const formPublicKey = formDef.publicKey
   const responses = req.body.responses
 
@@ -774,7 +1326,7 @@ export const encryptSubmission = async (
 
   const strippedAttachmentResponses: Record<
     string,
-    ParsedClearFormFieldResponseV3 | StrippedAttachmentResponseV3
+    ParsedClearFormFieldResponseV4 | StrippedAttachmentResponseV4
   > = {}
 
   const unencryptedAttachments: IAttachmentInfo[] = []
@@ -782,65 +1334,42 @@ export const encryptSubmission = async (
   // Populate attachment map
   for (const id of Object.keys(responses)) {
     const response = responses[id]
-    if (response.fieldType !== BasicField.Attachment) {
+    if (!isAttachmentResponseV4(response)) {
       strippedAttachmentResponses[id] = response
       continue
     }
     attachmentsMap[id] = response.answer.content
-    strippedAttachmentResponses[id] = {
-      ...response,
-      answer: { ...response.answer, filename: undefined, content: undefined },
-    }
+    const attachmentRes = response as ParsedClearAttachmentFieldResponseV4
+    const strippedAttachment = {
+      ...attachmentRes,
+      answer: {
+        value: attachmentRes.answer.value,
+        hasBeenScanned: attachmentRes.answer.hasBeenScanned,
+        md5Hash: attachmentRes.answer.md5Hash,
+        filename: undefined,
+        content: undefined,
+      },
+    } as unknown as StrippedAttachmentResponseV4
+    strippedAttachmentResponses[id] = strippedAttachment
 
     // collect unencrypted attachments to include in email notifications
-    if (isAttachmentResponseV3(response)) {
-      unencryptedAttachments.push({
-        filename: response.answer.filename,
-        content: response.answer.content,
-        fieldId: id,
-      })
-    }
+    unencryptedAttachments.push({
+      filename: response.answer.filename,
+      content: response.answer.content,
+      fieldId: id,
+    })
   }
 
   if (req.formsg) {
     req.formsg.unencryptedAttachments = unencryptedAttachments
   }
 
-  const useV4Encryption =
-    (req.growthbook?.isOn(featureFlags.answerObjectEncryption) &&
-      !formDef.webhook?.url) ??
-    false
+  const mrfVersion = MRF_VERSION_V4
+  const useV4Encryption = mrfVersion === 2
 
-  let responsesToEncrypt:
-    | Record<
-        string,
-        ParsedClearFormFieldResponseV3 | StrippedAttachmentResponseV3
-      >
-    | FieldResponsesV4 = strippedAttachmentResponses
-
-  if (useV4Encryption) {
-    logger.info({
-      message: 'Using V4 encryption for submission',
-      meta: {
-        action: 'encryptSubmission',
-        formId: req.params.formId,
-        submissionId: req.params.submissionId,
-      },
-    })
-    // Build FormFieldMeta map from form definition for question text
-    const formFieldMeta: Record<string, FormFieldMeta> = {}
-    for (const field of formDef.form_fields) {
-      formFieldMeta[field._id] = {
-        question: field.title,
-        ...(field.myInfo?.attr && { myInfo: { attr: field.myInfo.attr } }),
-      }
-    }
-
-    responsesToEncrypt = adaptV3ToV4(strippedAttachmentResponses, {
-      formFields: formFieldMeta,
-      provenance: {},
-    })
-  }
+  const responsesToEncrypt = useV4Encryption
+    ? strippedAttachmentResponses
+    : adaptV4ToV3(strippedAttachmentResponses as unknown as FieldResponsesV4)
 
   const {
     encryptedContent,
@@ -850,7 +1379,6 @@ export const encryptSubmission = async (
   } = formsgSdk.cryptoV3.encrypt(responsesToEncrypt, formPublicKey)
 
   // Verify the encrypted content can be decrypted using the generated submission secret key before saving
-  // Perform a diff check between original & recently decrypted responses to ensure round trip encryption-decryption
   const decryptionVerification = formsgSdk.cryptoV3.decryptFromSubmissionKey(
     submissionSecretKey,
     { encryptedContent, version: req.body.version },
@@ -864,45 +1392,10 @@ export const encryptSubmission = async (
         formId: req.params.formId,
         submissionId: req.params.submissionId,
         version: req.body.version,
-        mrfVersion: useV4Encryption ? 2 : 1,
+        mrfVersion,
         ...createReqMeta(req),
       },
       error,
-    })
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: 'An error occurred while processing your submission',
-    })
-  }
-
-  const decryptedResponsesV3 = isFieldResponsesV4(
-    decryptionVerification.responses,
-  )
-    ? adaptV4ToV3(decryptionVerification.responses as FieldResponsesV4)
-    : decryptionVerification.responses
-
-  // cryptoV3.encrypt serializes via JSON.stringify, which drops `undefined` object keys.
-  const normalizedOriginalResponses = JSON.parse(
-    JSON.stringify(strippedAttachmentResponses),
-  ) as typeof strippedAttachmentResponses
-
-  const responseMismatch = !_.isEqual(
-    normalizedOriginalResponses,
-    decryptedResponsesV3,
-  )
-
-  if (responseMismatch) {
-    const mismatchError = new SubmissionEncryptionMismatchError()
-    logger.error({
-      message: mismatchError.message,
-      meta: {
-        action: 'encryptSubmission',
-        formId: req.params.formId,
-        submissionId: req.params.submissionId,
-        version: req.body.version,
-        mrfVersion: useV4Encryption ? 2 : 1,
-        ...createReqMeta(req),
-      },
-      error: mismatchError,
     })
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: 'An error occurred while processing your submission',
@@ -916,6 +1409,13 @@ export const encryptSubmission = async (
       req.body.version,
     )
 
+  const rawStepToken = stepToken.generate()
+  const mintedStepToken = {
+    stepToken: rawStepToken,
+    stepTokenHash: stepToken.hash(rawStepToken),
+    encryptedStepToken: stepToken.wrap(rawStepToken, formPublicKey),
+  }
+
   req.formsg.encryptedPayload = {
     attachments: encryptedAttachments,
     responseMetadata: req.body.responseMetadata,
@@ -923,14 +1423,15 @@ export const encryptSubmission = async (
     encryptedSubmissionSecretKey,
     encryptedContent,
     submissionSecretKey,
+    myInfoReadOnlyFields: req.formsg.myInfoReadOnlyFields,
     version: req.body.version,
     workflowStep: req.body.workflowStep,
-    responses,
-    /**
-     * MRF Version: 1 — V3 encrypted responses
-     * MRF Version: 2 — V4 encrypted responses (with provenance)
-     */
-    mrfVersion: useV4Encryption ? 2 : 1,
+    responses: responses as FieldResponsesV4,
+    mrfVersion,
+    ...mintedStepToken,
+    paymentReceiptEmail: req.body.paymentReceiptEmail,
+    paymentProducts: req.body.paymentProducts,
+    payments: req.body.payments,
   }
 
   return next()
@@ -966,11 +1467,10 @@ export const handleNdiResponses = async (
   const isSingpassAuthType =
     authType === FormAuthType.CP || authType === FormAuthType.MyInfo
 
-  // 1. Handle Ndi data for current step
-  if (
-    isSingpassAuthType &&
-    stepNumber === 1 // TODO: update to handle when subsequent steps are Singpass-enabled
-  ) {
+  // 1. Handle Ndi data for current step. Only Step 1's form-level login writes
+  // verified content; a later step's login fills ordinary answers instead and
+  // carries earlier verified content forward below.
+  if (isSingpassAuthType && stepNumber === 1) {
     let userName
     let userInfo
     let jwtPayloadResult
@@ -988,7 +1488,7 @@ export const handleNdiResponses = async (
         break
       }
       case FormAuthType.MyInfo: {
-        jwtPayloadResult = await extractMyInfoLoginJwt(req.cookies, authType)
+        jwtPayloadResult = await extractMyInfoLoginJwt(req.cookies)
           .andThen(MyInfoService.verifyLoginJwt)
           .map(({ uinFin }) => {
             return uinFin
@@ -1007,14 +1507,12 @@ export const handleNdiResponses = async (
     }
 
     if (jwtPayloadResult?.isErr()) {
-      const { statusCode, errorMessage } = mapRouteError(jwtPayloadResult.error)
       logger.error({
         message: `Failed to verify ${authType} JWT with auth client`,
         meta: logMeta,
         error: jwtPayloadResult.error,
       })
-      return res.status(statusCode).json({
-        message: errorMessage,
+      return sendRouteError(res, mapRouteError(jwtPayloadResult.error), {
         spcpSubmissionFailure: true,
       })
     } else {
@@ -1035,18 +1533,18 @@ export const handleNdiResponses = async (
           error,
         })
 
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .json({ message: 'Invalid data was found. Please submit again.' })
+        return sendRouteError(res, {
+          statusCode: StatusCodes.BAD_REQUEST,
+          errorMessage: 'Invalid data was found. Please submit again.',
+          errorMessageKey:
+            'features.publicForm.backendErrors.submission.validation.invalidData',
+        })
       }
 
       const submitterId = userName?.toUpperCase()
       if (!submitterId) {
         const missingSubmitterIdError = new MissingSubmitterIdError()
-        const { statusCode, errorMessage } = mapRouteError(
-          missingSubmitterIdError,
-        )
-        return res.status(statusCode).json({ message: errorMessage })
+        return sendRouteError(res, mapRouteError(missingSubmitterIdError))
       }
       const hashedSubmitterId = generateHashedSubmitterId(submitterId, formId)
       req.formsg.encryptedPayload.hashedSubmitterId = hashedSubmitterId
@@ -1084,14 +1582,17 @@ export const handleNdiResponses = async (
         meta: logMeta,
       })
 
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: 'Invalid data was found. Please submit again.' })
+      return sendRouteError(res, {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: 'Invalid data was found. Please submit again.',
+        errorMessageKey:
+          'features.publicForm.backendErrors.submission.validation.invalidData',
+      })
     }
   }
 
   // 3. Add collected Ndi data to responses for email payload
-  const emailNdiResponses = createNdiResponsesV3FromRecord(ndiResponses)
+  const emailNdiResponses = createNdiResponsesV4FromRecord(ndiResponses)
   responses = { ...responses, ...emailNdiResponses }
   req.formsg.encryptedPayload.responses = responses
 
@@ -1111,12 +1612,17 @@ export const handleNdiResponses = async (
         error,
       })
 
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: 'Invalid data was found. Please submit again.' })
+      return sendRouteError(res, {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: 'Invalid data was found. Please submit again.',
+        errorMessageKey:
+          'features.publicForm.backendErrors.submission.validation.invalidData',
+      })
     } else {
       req.formsg.encryptedPayload.verifiedContent =
         encryptVerifiedContentResult.value
+      // RATIONALE: Required when sending V1 webhooks, where the snapshot producer converts and encrypts with the form public key.
+      req.formsg.verifiedContentPlaintext = ndiResponses
     }
   }
 
