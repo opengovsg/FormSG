@@ -61,14 +61,14 @@ export const enSG: Payments = {
         'to set up a Stripe account. If your agency already has a Stripe account, you can connect it to this form.',
     },
     bulkTransactionText: {
-      bulkTransactionRate: 'Bulk transaction rates',
+      bulkTransactionRate: 'Discounted rates',
       useBulkTransactionRates:
         'To request discounted rates for your form, contact',
       contactForAssistance: 'for assistance.',
       defaultTransactionRatesWarning:
         'Without this step, you will be charged the default transaction rates.',
       acknowledgeWarningText:
-        'I understand that I will be paying default transaction rates, unless I have requested bulk transaction rates and received confirmation',
+        'I understand that I will be paying the default transaction rates, unless I have requested discounted rates and received confirmation.',
     },
   },
   afterConnectionInfo: {
