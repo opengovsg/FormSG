@@ -6,6 +6,7 @@ import { stripe } from 'src/app/loaders/stripe'
 import {
   PaymentIntentNotConfirmableError,
   StripeCardConfirmationError,
+  StripeFetchError,
 } from '../stripe.errors'
 import * as StripeService from '../stripe.service'
 
@@ -161,5 +162,26 @@ describe('stripe.service: confirmPaymentIntentWithPaymentMethod', () => {
     const error = result._unsafeUnwrapErr()
     expect(error).toBeInstanceOf(StripeCardConfirmationError)
     expect(error.message).toBe('Your card was declined.')
+  })
+
+  it('should not surface raw Stripe messages for non-card confirmation errors', async () => {
+    jest
+      .spyOn(stripe.paymentIntents, 'retrieve')
+      .mockResolvedValueOnce(mockPaymentIntent('requires_payment_method'))
+    jest
+      .spyOn(stripe.paymentMethods, 'retrieve')
+      .mockResolvedValueOnce(mockPaymentMethod('card', 'visa'))
+    jest.spyOn(stripe.paymentIntents, 'confirm').mockRejectedValueOnce(
+      new Stripe.errors.StripeInvalidRequestError({
+        type: 'invalid_request_error',
+        message: 'Received unknown parameter: some_parameter',
+      } as Stripe.errors.StripeInvalidRequestError['raw']),
+    )
+
+    const result = await confirm()
+
+    const error = result._unsafeUnwrapErr()
+    expect(error).toBeInstanceOf(StripeFetchError)
+    expect(error.message).not.toContain('unknown parameter')
   })
 })
