@@ -2,6 +2,7 @@ import { memo, useMemo } from 'react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants'
+import { FormResponseMode } from 'formsg-shared/types'
 import {
   BasicField,
   FieldCreateDto,
@@ -14,6 +15,7 @@ import {
   LoginIdentityFieldBase,
 } from 'formsg-shared/utils/login-identity'
 
+import { useCreateTabForm } from '~features/admin-form/create/builder-and-design/useCreateTabForm'
 import {
   BASICFIELD_TO_DRAWER_META,
   MYINFO_FIELD_TO_DRAWER_META,
@@ -122,6 +124,7 @@ interface MemoFieldDrawerContentProps {
 export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
   ({ field, ...props }) => {
     const { user } = useUser()
+    const { data: form } = useCreateTabForm()
     const isStorageChildrenEnabled = useFeatureIsOn(
       featureFlags.storageChildren,
     )
@@ -133,7 +136,9 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
     if (isMyInfo(field)) {
       if (
         field?.myInfo?.attr === MyInfoAttribute.ChildrenBirthRecords &&
-        (user?.betaFlags?.children || isStorageChildrenEnabled)
+        (user?.betaFlags?.children ||
+          (form?.responseMode === FormResponseMode.Encrypt &&
+            isStorageChildrenEnabled))
       ) {
         return (
           <EditMyInfoChildren
