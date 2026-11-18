@@ -75,8 +75,8 @@ export const enSG: ResponsesResponsesPage = {
       submissionSearchbarPlaceholder: 'Search by response ID',
       searchResponsesPlaceholder: 'Search responses...',
       filterMenu: {
-        dateRange: 'Date range',
-        columns: 'Filter by column',
+        dateRange: 'By date range',
+        columns: 'By column',
         filterApplied: 'Filter applied',
         filterPlaceholder: 'Contains...',
         clearFilter: 'Clear filter',
