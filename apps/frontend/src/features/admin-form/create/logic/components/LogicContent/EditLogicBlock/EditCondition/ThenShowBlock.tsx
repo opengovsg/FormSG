@@ -14,6 +14,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import InlineMessage from '~components/InlineMessage'
 import Textarea from '~components/Textarea'
 
+import { sortFieldIdsByFormOrder } from '~features/admin-form/create/common/sortFieldIdsByFormOrder'
 import { useAddFieldPicker } from '~features/admin-form/create/common/useAddFieldPicker'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { EditLogicInputs } from '~features/admin-form/create/logic/types'
@@ -300,7 +301,7 @@ const ThenLogicInput = ({
             isDisabled={!logicTypeValue || isLoading}
             placeholder={null}
             items={withAddFieldItem(thenValueItems)}
-            values={value ?? []}
+            values={sortFieldIdsByFormOrder(value ?? [], formFields ?? [])}
             isSelectedItemFullWidth
             onChange={withAddFieldAction(onChange)}
             {...rest}
