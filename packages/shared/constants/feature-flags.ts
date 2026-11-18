@@ -32,6 +32,7 @@ export const featureFlags = {
     'attachments-multi-upload-and-one-zip' as const,
   attachmentsRestrictFileTypes: 'attachments-restrict-file-types' as const,
   paymentServerConfirmation: 'payment-server-confirmation' as const,
+  paymentFormMcc: 'payment-form-mcc' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {
