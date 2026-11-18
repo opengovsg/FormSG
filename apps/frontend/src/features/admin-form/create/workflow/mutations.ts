@@ -20,11 +20,16 @@ import { useAdminFormWorkflow } from './hooks/useAdminFormWorkflow'
 import { useUsesStepLoginRules } from './hooks/useUsesStepLoginRules'
 import { isWorkflowEmailValidationError } from './utils/isWorkflowEmailValidationError'
 import {
+  setGuidedWrapUpSelector,
+  useAdminWorkflowStore,
+} from './adminWorkflowStore'
+import {
   createWorkflowStep,
   deleteWorkflow,
   deleteWorkflowStep,
   updateWorkflowStep,
 } from './FormWorkflowService'
+import { GuidedWrapUp } from './types'
 import { isWorkflowFeedbackEligible } from './workflow.utils'
 
 /** A login change can also change the form's fields and its settings. */
@@ -50,6 +55,7 @@ export const useWorkflowMutations = () => {
   const toast = useToast({ status: 'success', isClosable: true })
   // Same gate as the delete modals and the API's step login rules.
   const usesStepLoginRules = useUsesStepLoginRules()
+  const setGuidedWrapUp = useAdminWorkflowStore(setGuidedWrapUpSelector)
 
   // Under step login rules a workflow write may also change Step 1's login
   // and delete login fields, so refetch the form and its settings.
@@ -142,6 +148,7 @@ export const useWorkflowMutations = () => {
           return { ...prev, workflow: updatedWorkflow }
         })
         invalidateFormQueries()
+        setGuidedWrapUp(GuidedWrapUp.None)
         toast({
           description: 'The workflow was successfully deleted.',
         })

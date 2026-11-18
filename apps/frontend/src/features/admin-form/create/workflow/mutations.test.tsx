@@ -6,7 +6,9 @@ import { FormResponseMode } from 'formsg-shared/types'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 
+import { useAdminWorkflowStore } from './adminWorkflowStore'
 import { useWorkflowMutations } from './mutations'
+import { GuidedWrapUp } from './types'
 
 const FORM_ID = 'form-id'
 const usesStepLoginRules = { value: false }
@@ -23,6 +25,7 @@ vi.mock('./hooks/useAdminFormWorkflow', () => ({
 }))
 vi.mock('./FormWorkflowService', () => ({
   deleteWorkflowStep: vi.fn().mockResolvedValue([]),
+  deleteWorkflow: vi.fn().mockResolvedValue([]),
 }))
 
 const renderMutations = () => {
@@ -62,5 +65,18 @@ describe('useWorkflowMutations', () => {
     )
 
     expect(invalidate).not.toHaveBeenCalled()
+  })
+
+  it('restarts the guided wrap-up once the workflow is deleted', async () => {
+    useAdminWorkflowStore.getState().setGuidedWrapUp(GuidedWrapUp.Done)
+    const { result } = renderMutations()
+
+    await act(() =>
+      result.current.deleteWorkflowMutation.mutateAsync(undefined),
+    )
+
+    expect(useAdminWorkflowStore.getState().guidedWrapUp).toBe(
+      GuidedWrapUp.None,
+    )
   })
 })
