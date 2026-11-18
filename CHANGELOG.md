@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.74.2](https://github.com/opengovsg/formsg/compare/v9.74.1...v9.74.2) (2026-11-18)
+
+
+### Bug Fixes
+
+* **e2e:** update encrypt-submission helpers for #10599 (#10602) ([#10599](https://github.com/opengovsg/formsg/commit/ca64732c7f4138e8a66530a7e72e6bbef20557f9))
+* **results:** v1 header like v2, even Filter gaps, Workflow status All (#10605) ([#10605](https://github.com/opengovsg/formsg/commit/f29a1415da5b2bcea53a2b6ef8d80f23e57e30be))
+* **workflow:** restart the guided wrap-up when the workflow is deleted (#10606) ([#10606](https://github.com/opengovsg/formsg/commit/0565a8f3dca8e9ed3d3cbe9229e00d3826480577))
+
+
+### Chores
+
+* **flags:** drop three registry keys nothing reads (#10589) ([#10589](https://github.com/opengovsg/formsg/commit/ee13d4bad5aa57a3f33b5f3fe72914dc2a10db09))
+* **flags:** remove 12 launched UI feature flags (#10599) ([#10599](https://github.com/opengovsg/formsg/commit/441129100beb5e3846548b49421022fcc3d0a11d))
+
 ## [9.74.1](https://github.com/opengovsg/formsg/compare/v9.74.0...v9.74.1) (2026-11-17)
 
 
