@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { BiChevronRight, BiX } from 'react-icons/bi'
 import { useDebounce } from 'react-use'
 import {
+  Divider,
   Flex,
   Icon,
   InputGroup,
@@ -217,7 +218,9 @@ export const ColumnValuesFilterRow = ({
   onClose,
   onFilter,
 }: ColumnValuesFilterRowProps): JSX.Element => {
+  const { t } = useTranslation()
   const selected = values ?? filterValues
+  const isAllSelected = selected.length === filterValues.length
 
   const handleToggle = (value: string, isChecked: boolean) =>
     onFilter(
@@ -235,6 +238,16 @@ export const ColumnValuesFilterRow = ({
       onClose={onClose}
     >
       <Stack role="group" aria-label={label} spacing="0.5rem">
+        <Checkbox
+          isChecked={isAllSelected}
+          isIndeterminate={selected.length > 0 && !isAllSelected}
+          onChange={() => onFilter(isAllSelected ? [] : filterValues)}
+        >
+          {t(
+            'features.adminForm.responses.responsesPage.storage.unlockedResponses.toolbar.all',
+          )}
+        </Checkbox>
+        <Divider />
         {filterValues.map((value) => (
           <Checkbox
             key={value}

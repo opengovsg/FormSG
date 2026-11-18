@@ -180,10 +180,55 @@ describe('a column in the Filter menu with a fixed set of values', () => {
 
     const checkboxes = await screen.findAllByRole('checkbox')
     expect(checkboxes).toEqual(
-      STATUSES.map((name) => screen.getByRole('checkbox', { name })),
+      ['All', ...STATUSES].map((name) =>
+        screen.getByRole('checkbox', { name }),
+      ),
     )
     checkboxes.forEach((box) => expect(box).toBeChecked())
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+    expect(screen.queryByText('Filter applied')).not.toBeInTheDocument()
+  })
+
+  it('shows All checked with no filter, and partly checked once a value is unchecked', async () => {
+    renderValuesRow({ onFilter: vi.fn() })
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole('button', { name: /status/i }))
+    const all = await screen.findByRole('checkbox', { name: 'All' })
+    expect(all).toBeChecked()
+
+    await user.click(screen.getByRole('checkbox', { name: 'Approved' }))
+
+    expect(all).toBePartiallyChecked()
+  })
+
+  it('unchecks every value from All, filtering to none', async () => {
+    const onFilter = vi.fn()
+    renderValuesRow({ onFilter })
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole('button', { name: /status/i }))
+    await user.click(await screen.findByRole('checkbox', { name: 'All' }))
+
+    expect(onFilter).toHaveBeenLastCalledWith([])
+    STATUSES.forEach((name) =>
+      expect(screen.getByRole('checkbox', { name })).not.toBeChecked(),
+    )
+    expect(screen.getByText('Filter applied')).toBeInTheDocument()
+  })
+
+  it('checks every value from All when some are unchecked, clearing the filter', async () => {
+    const onFilter = vi.fn()
+    renderValuesRow({ initialValues: ['Approved'], onFilter })
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole('button', { name: /status/i }))
+    await user.click(await screen.findByRole('checkbox', { name: 'All' }))
+
+    expect(onFilter).toHaveBeenLastCalledWith(STATUSES)
+    STATUSES.forEach((name) =>
+      expect(screen.getByRole('checkbox', { name })).toBeChecked(),
+    )
     expect(screen.queryByText('Filter applied')).not.toBeInTheDocument()
   })
 
