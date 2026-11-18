@@ -16,6 +16,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { sortFieldIdsByFormOrder } from '~features/admin-form/create/common/sortFieldIdsByFormOrder'
 import { useAddFieldPicker } from '~features/admin-form/create/common/useAddFieldPicker'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { getLogicFieldLabel } from '~features/admin-form/create/logic/components/LogicContent/utils/getLogicFieldLabel'
@@ -180,7 +181,7 @@ export const QuestionsBlock = ({
                 )}
                 items={withAddFieldItem(fieldItems)}
                 isSelectedItemFullWidth
-                values={value}
+                values={sortFieldIdsByFormOrder(value, formFields)}
                 onChange={handleFieldsChange}
                 {...field}
               />
