@@ -1123,7 +1123,7 @@ export const confirmPaymentIntentWithPaymentMethod = ({
         meta: logMeta,
         error,
       })
-      return new StripeFetchError(String(error))
+      return new StripeFetchError()
     },
   ).andThen((paymentIntent) => {
     if (CONFIRMATION_PASSTHROUGH_STATUSES.includes(paymentIntent.status)) {
@@ -1140,7 +1140,7 @@ export const confirmPaymentIntentWithPaymentMethod = ({
           meta: logMeta,
           error,
         })
-        return new StripeFetchError(String(error))
+        return new StripeFetchError()
       },
     ).andThen((paymentMethod) => {
       const cardBrand =
@@ -1178,7 +1178,10 @@ export const confirmPaymentIntentWithPaymentMethod = ({
           if (error instanceof Stripe.errors.StripeCardError) {
             return new StripeCardConfirmationError(error.message)
           }
-          return new StripeFetchError(String(error))
+          // Non-card Stripe errors (e.g. invalid request parameters) describe
+          // the integration, not the respondent's input; keep their detail in
+          // the logs and return the sanitized default message.
+          return new StripeFetchError()
         },
       )
     })
