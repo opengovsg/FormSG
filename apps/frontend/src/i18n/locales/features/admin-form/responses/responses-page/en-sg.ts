@@ -102,7 +102,7 @@ export const enSG: ResponsesResponsesPage = {
         saveViewSuccess: 'Your view has been successfully saved.',
       },
       sortMenu: {
-        column: 'Column',
+        column: 'By column',
         direction: 'Direction',
         responseNumber: 'Response #',
         ascending: 'Ascending',
