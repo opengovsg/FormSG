@@ -13,6 +13,8 @@ import {
 
 import { LogicDto, LogicType } from 'formsg-shared/types/form'
 
+import { sortFieldIdsByFormOrder } from '~features/admin-form/create/common/sortFieldIdsByFormOrder'
+
 import {
   createOrEditDataSelector,
   requestSwitchToSelector,
@@ -33,7 +35,7 @@ export const InactiveLogicBlock = ({
   logic,
 }: InactiveLogicBlockProps): JSX.Element | null => {
   const { t } = useTranslation()
-  const { idToFieldMap } = useAdminFormLogic()
+  const { idToFieldMap, formFields = [] } = useAdminFormLogic()
   const setToEditing = useAdminLogicStore(setToEditingSelector)
   const stateData = useAdminLogicStore(createOrEditDataSelector)
   const requestSwitchTo = useAdminLogicStore(requestSwitchToSelector)
@@ -46,6 +48,7 @@ export const InactiveLogicBlock = ({
         const allInvalid = logic.show.every(
           (fieldId) => !(fieldId in idToFieldMap),
         )
+        const showFieldIds = sortFieldIdsByFormOrder(logic.show, formFields)
         return (
           <>
             <Text>
@@ -62,7 +65,7 @@ export const InactiveLogicBlock = ({
                   }}
                 />
               ) : (
-                logic.show.map((fieldId, index) => (
+                showFieldIds.map((fieldId, index) => (
                   <FieldLogicBadge
                     key={index}
                     field={idToFieldMap[fieldId]}
@@ -91,7 +94,7 @@ export const InactiveLogicBlock = ({
           </>
         )
     }
-  }, [logic, idToFieldMap, t])
+  }, [logic, idToFieldMap, formFields, t])
 
   const handleClick = useCallback(() => {
     if (stateData) {
