@@ -37,6 +37,7 @@ import {
   LogicDto,
   LogicType,
   MultirespondentFormSettings,
+  PaymentCardBrands,
   PaymentChannel,
   PaymentType,
   PublicMultirespondentFormDto,
@@ -257,6 +258,19 @@ export const formPaymentsChannelSchema = {
     type: [String],
     default: [],
   },
+  mcc_by_card_brand: Object.fromEntries(
+    PaymentCardBrands.map((brand) => [
+      brand,
+      {
+        type: String,
+        validate: [
+          (value: string | null | undefined) =>
+            value == null || /^\d{4}$/.test(value),
+          `mcc_by_card_brand.${brand} must be a four-digit merchant category code.`,
+        ],
+      },
+    ]),
+  ),
 }
 
 export const formBusinessSchema = {

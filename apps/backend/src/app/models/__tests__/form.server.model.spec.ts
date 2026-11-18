@@ -881,6 +881,42 @@ describe('Form Model', () => {
         )
       })
 
+      it('should save merchant category codes configured per card brand', async () => {
+        // Arrange
+        const validFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          payments_channel: {
+            mcc_by_card_brand: { mastercard: '5411' },
+          },
+        })
+
+        // Act
+        const validForm = new Form(validFormParams)
+        const saved = await validForm.save()
+
+        // Assert
+        const savedForm = saved.toObject() as unknown as IEncryptedForm
+        expect(
+          savedForm.payments_channel?.mcc_by_card_brand?.mastercard,
+        ).toEqual('5411')
+      })
+
+      it('should reject a merchant category code that is not four digits', async () => {
+        // Arrange
+        const invalidFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          payments_channel: {
+            mcc_by_card_brand: { mastercard: '54a1' },
+          },
+        })
+
+        // Act
+        const invalidForm = new Form(invalidFormParams)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrow(
+          'mcc_by_card_brand.mastercard must be a four-digit merchant category code.',
+        )
+      })
+
       it('should reject when amount is negative', async () => {
         // Arrange
         const invalidFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
