@@ -32,7 +32,7 @@ export const enSG: Payments = {
       toEnable: 'To enable payment fields,',
       removeAdminEmail: 'Remove all recipients from email notifications',
       turnOffPdfResponses:
-        'Turn off "Include PDF responses" in all email fields',
+        'Turn off "Include a copy of their responses" in all Email fields',
       disableSingleSubmission: 'Disable only one submission per NRIC/FIN/UEN',
     },
     adminEmailsPresent: {
@@ -46,7 +46,7 @@ export const enSG: Payments = {
     pdfResponseEnabled: {
       toEnable: 'To enable payment fields,',
       disablePdfResponses:
-        'turn off "Include PDF Responses" in all email fields.',
+        'turn off "Include a copy of their responses" in all Email fields.',
     },
   },
   beforeConnectionInstructions: {
