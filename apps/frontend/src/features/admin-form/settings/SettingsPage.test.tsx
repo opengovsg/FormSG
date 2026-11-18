@@ -4,16 +4,17 @@ import userEvent from '@testing-library/user-event'
 
 import { render } from '~/test-utils'
 
+import { SettingsLink } from '../create/builder-and-design/BuilderAndDesignDrawer/FieldListDrawer/field-panels/LoginIdentityFieldSection'
+
 import { SettingsPage } from './SettingsPage'
 
 const state = vi.hoisted(() => ({
-  labels: true,
   mobile: true,
   multiLang: true,
   emailNavLabel: 'Emails',
 }))
 vi.mock('@growthbook/growthbook-react', () => ({
-  useFeatureIsOn: () => state.labels,
+  useFeatureIsOn: () => true,
 }))
 vi.mock('~hooks/useIsMobile', () => ({ useIsMobile: () => state.mobile }))
 vi.mock('~features/user/queries', () => ({
@@ -24,6 +25,7 @@ vi.mock('~features/user/queries', () => ({
 }))
 vi.mock('../common/queries', () => ({
   useAdminFormCollaborators: () => ({ hasEditAccess: true, isLoading: false }),
+  useAdminForm: () => ({ data: undefined }),
 }))
 vi.mock('./queries', () => ({
   useAdminFormSettings: () => ({ isLoading: false }),
@@ -50,7 +52,7 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: () => ({
       general: { title: 'General' },
-      singpass: { title: 'Singpass' },
+      singpass: { title: 'Singpass', loginTitle: 'Login' },
       emailNotifications: { title: 'Email notifications' },
       webhooks: { title: 'Webhooks' },
       payments: { title: 'Payments' },
@@ -79,7 +81,6 @@ const setup = () =>
 
 describe('Settings labelled navigation', () => {
   beforeEach(() => {
-    state.labels = true
     state.mobile = true
     state.multiLang = true
     state.emailNavLabel = 'Emails'
@@ -134,7 +135,7 @@ describe('Settings labelled navigation', () => {
     expect(
       screen.getByText('/admin/form/test/settings/general'),
     ).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: 'Singpass' })).toHaveFocus()
+    expect(screen.getByRole('tab', { name: 'Login' })).toHaveFocus()
     await userEvent.keyboard('{Enter}')
     expect(
       screen.getByText('/admin/form/test/settings/singpass'),
@@ -148,13 +149,29 @@ describe('Settings labelled navigation', () => {
     ).not.toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Emails' })).toBeInTheDocument()
   })
-  it('preserves the control labels and mobile navigation when the flag is off', () => {
-    state.labels = false
-    setup()
-    expect(screen.getByText('Email notifications')).toBeInTheDocument()
-    expect(screen.getByText('Multi-language')).toBeInTheDocument()
-    expect(
-      screen.queryByRole('button', { name: 'Collapse sidebar' }),
-    ).not.toBeInTheDocument()
-  })
+})
+
+it('opens Singpass settings from the Create palette Settings link', async () => {
+  render(
+    <MemoryRouter initialEntries={['/admin/form/test']}>
+      <Location />
+      <Routes>
+        <Route path="/admin/form/:formId">
+          <Route index element={<SettingsLink>Settings</SettingsLink>} />
+          <Route path="settings" element={<SettingsPage />}>
+            <Route path=":settingsTab" element={<SettingsPage />} />
+          </Route>
+        </Route>
+      </Routes>
+    </MemoryRouter>,
+  )
+  await userEvent.click(screen.getByRole('link', { name: 'Settings' }))
+  expect(
+    screen.getByText('/admin/form/test/settings/singpass'),
+  ).toBeInTheDocument()
+  expect(screen.getByRole('tab', { name: 'Login' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  )
+  expect(screen.getByText('Singpass content')).toBeInTheDocument()
 })

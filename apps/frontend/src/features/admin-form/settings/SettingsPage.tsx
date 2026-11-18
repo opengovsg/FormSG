@@ -3,23 +3,12 @@ import { useTranslation } from 'react-i18next'
 import { BiCodeBlock, BiCog, BiDollar, BiKey, BiMailSend } from 'react-icons/bi'
 import { IconType } from 'react-icons/lib'
 import { useNavigate, useParams } from 'react-router-dom'
-import {
-  Box,
-  Flex,
-  Spacer,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
-} from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
-
-import { featureFlags } from 'formsg-shared/constants'
+import { Box, TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/react'
 
 import { LanguageTranslation } from '~assets/icons/LanguageTranslation'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
-import { useDraggable } from '~hooks/useDraggable'
 
+import { useUsesStepLoginRules } from '~features/admin-form/create/workflow/hooks/useUsesStepLoginRules'
 import { useUser } from '~features/user/queries'
 
 import {
@@ -30,7 +19,6 @@ import {
 import { useSideNavCollapse } from '../common/AdminFormSideNav/useSideNavCollapse'
 import { useAdminFormCollaborators } from '../common/queries'
 
-import { SettingsTab } from './components/SettingsTab'
 import { useAdminFormSettings } from './queries'
 import { SettingsAuthPage } from './SettingsAuthPage'
 import { SettingsEmailsPage } from './SettingsEmailsPage'
@@ -45,19 +33,18 @@ interface TabEntry {
   icon: IconType
   component: () => JSX.Element
   path: string
-  showRedDot?: boolean
 }
 
 export const SettingsPage = (): JSX.Element => {
   const { formId, settingsTab } = useParams()
-  const showNavLabels = useFeatureIsOn(featureFlags.sidebarNavLabels)
+  const usesStepLoginRules = useUsesStepLoginRules()
   const { isCollapsed, isMobile, toggle } = useSideNavCollapse()
   const { isLoading: isFormSettingLoading } = useAdminFormSettings()
   const { user, isLoading: isUserLoading } = useUser()
   const { t } = useTranslation()
   const {
     general: { title: generalTitle },
-    singpass: { title: singpassTitle },
+    singpass: { title: singpassTitle, loginTitle },
     emailNotifications: { title: emailNotificationsTitle },
     webhooks: { title: webhooksTitle },
     payments: { title: paymentsTitle },
@@ -97,7 +84,7 @@ export const SettingsPage = (): JSX.Element => {
       path: 'general',
     },
     {
-      label: singpassTitle,
+      label: usesStepLoginRules ? loginTitle : singpassTitle,
       icon: BiKey,
       component: SettingsAuthPage,
       path: 'singpass',
@@ -124,8 +111,6 @@ export const SettingsPage = (): JSX.Element => {
     multiLangTab,
   ].filter(Boolean) as TabEntry[]
 
-  const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
-
   const tabIndex = tabConfig.findIndex(
     (tab) => tab.path === (settingsTab ?? 'general').toLowerCase(),
   )
@@ -134,27 +119,12 @@ export const SettingsPage = (): JSX.Element => {
     navigate(`${ADMINFORM_ROUTE}/${formId}/settings/${tabConfig[index].path}`)
   }
 
-  const tabPanels = (
-    <TabPanels
-      maxW="42.5rem"
-      mx={showNavLabels ? 'auto' : undefined}
-      minW={0}
-      mt={showNavLabels ? 0 : { md: '1rem' }}
-    >
-      {tabConfig.map((tab) => (
-        <TabPanel key={tab.label}>
-          <tab.component />
-        </TabPanel>
-      ))}
-    </TabPanels>
-  )
-
   return (
     <Box
-      overflow={showNavLabels ? 'hidden' : 'auto'}
-      display={showNavLabels ? 'flex' : undefined}
-      flexDirection={showNavLabels ? 'column' : undefined}
-      minH={showNavLabels ? 0 : undefined}
+      overflow="hidden"
+      display="flex"
+      flexDirection="column"
+      minH={0}
       /**
        * HACK: Chromium browsers have a bug where sibling elements with `position: sticky` will not
        * be correctly calculated during a reflow. This causes the sibling to not have the correct
@@ -171,98 +141,58 @@ export const SettingsPage = (): JSX.Element => {
         isManual
         orientation="vertical"
         variant="line"
-        py={showNavLabels ? 0 : { base: '2.5rem', lg: '3.125rem' }}
-        px={showNavLabels ? 0 : { base: '1.5rem', md: '1.75rem', lg: '2rem' }}
-        flex={showNavLabels ? 1 : undefined}
-        minH={showNavLabels ? 0 : undefined}
+        p={0}
+        flex={1}
+        minH={0}
         index={tabIndex === -1 ? 0 : tabIndex}
         onChange={(index) => {
           handleTabChange(index)
         }}
       >
-        {showNavLabels ? (
-          isCollapsed ? (
-            <SideNavCollapseControl
-              isCollapsed
-              onClick={toggle}
-              trackingLabel="settings.sidebar.toggle_collapse"
-            />
-          ) : (
-            <AdminFormSideNav
-              footer={
-                isMobile ? (
-                  <SideNavCollapseControl
-                    isCollapsed={false}
-                    trackingLabel="settings.sidebar.toggle_collapse"
-                    onClick={toggle}
-                  />
-                ) : undefined
-              }
-            >
-              <TabList border={0} m={0} p={0} overflow="visible" gap="1rem">
-                {tabConfig.map((tab) => (
-                  <AdminFormSideNavTab
-                    key={tab.path}
-                    label={tab.navLabel ?? tab.label}
-                    icon={<tab.icon fontSize="1.5rem" />}
-                  />
-                ))}
-              </TabList>
-            </AdminFormSideNav>
-          )
+        {isCollapsed ? (
+          <SideNavCollapseControl
+            isCollapsed
+            onClick={toggle}
+            trackingLabel="settings.sidebar.toggle_collapse"
+          />
         ) : (
-          <Flex
-            h="max-content"
-            flex={1}
-            flexShrink={0}
-            ref={ref}
-            onMouseDown={onMouseDown}
-            position="sticky"
-            zIndex={0}
-            top={{ base: '2.5rem', lg: '3.125rem' }}
-            borderTopColor="neutral.300"
-            w={{ base: 'auto', lg: '21rem' }}
-            __css={{
-              scrollbarWidth: 0,
-              /* Scrollbar for Chrome, Safari, Opera and Microsoft Edge */
-              '&::-webkit-scrollbar': {
-                width: 0,
-                height: 0,
-              },
-            }}
+          <AdminFormSideNav
+            footer={
+              isMobile ? (
+                <SideNavCollapseControl
+                  isCollapsed={false}
+                  trackingLabel="settings.sidebar.toggle_collapse"
+                  onClick={toggle}
+                />
+              ) : undefined
+            }
           >
-            <TabList
-              overflowX="initial"
-              display="inline-flex"
-              w="max-content"
-              mr={{ base: '1.5rem', md: '4rem', lg: '2rem' }}
-              mb="calc(0.5rem - 2px)"
-            >
+            <TabList border={0} m={0} p={0} overflow="visible" gap="1rem">
               {tabConfig.map((tab) => (
-                <SettingsTab
-                  key={tab.label}
-                  label={tab.label}
-                  icon={tab.icon}
-                  showNewBadge={tab.showRedDot}
+                <AdminFormSideNavTab
+                  key={tab.path}
+                  label={tab.navLabel ?? tab.label}
+                  icon={<tab.icon fontSize="1.5rem" />}
                 />
               ))}
             </TabList>
-          </Flex>
+          </AdminFormSideNav>
         )}
-        {showNavLabels ? (
-          <Box
-            flex={1}
-            minW={0}
-            overflowY="auto"
-            px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
-            py={{ base: '2.5rem', lg: '3.125rem' }}
-          >
-            {tabPanels}
-          </Box>
-        ) : (
-          tabPanels
-        )}
-        {!showNavLabels && <Spacer />}
+        <Box
+          flex={1}
+          minW={0}
+          overflowY="auto"
+          px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+          py={{ base: '2.5rem', lg: '3.125rem' }}
+        >
+          <TabPanels maxW="42.5rem" mx="auto" minW={0} mt={0}>
+            {tabConfig.map((tab) => (
+              <TabPanel key={tab.label}>
+                <tab.component />
+              </TabPanel>
+            ))}
+          </TabPanels>
+        </Box>
       </Tabs>
     </Box>
   )

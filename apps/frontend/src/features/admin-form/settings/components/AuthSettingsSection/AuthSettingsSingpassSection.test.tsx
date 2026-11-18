@@ -17,6 +17,10 @@ vi.mock('@growthbook/growthbook-react', () => ({
   useFeatureIsOn: () => true,
   useGrowthBook: () => undefined,
 }))
+vi.mock(
+  '~features/admin-form/create/workflow/hooks/useUsesStepLoginRules',
+  () => ({ useUsesStepLoginRules: () => true }),
+)
 vi.mock('../../mutations', () => ({
   useMutateFormSettings: () => ({
     mutateIsSubmitterIdCollectionEnabled: {
@@ -71,9 +75,7 @@ describe('focus after stopping collection', () => {
     fireEvent.click(screen.getByRole('checkbox'))
     fireEvent.click(screen.getByRole('button', { name: 'stopCollecting' }))
     await waitFor(() =>
-      expect(
-        screen.getByRole('link', { name: 'corppass.goToFields' }),
-      ).toHaveFocus(),
+      expect(screen.getByRole('link', { name: 'addNricField' })).toHaveFocus(),
     )
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
@@ -84,13 +86,11 @@ describe('focus after stopping collection', () => {
     })
     otherAction.focus()
     fireEvent.click(otherAction)
-    await screen.findByRole('link', { name: 'corppass.goToFields' })
+    await screen.findByRole('link', { name: 'addNricField' })
     expect(otherAction).toHaveFocus()
   })
   it('does not steal focus when opening an already-switched form', () => {
     render(<Harness initiallyEnabled={false} />)
-    expect(
-      screen.getByRole('link', { name: 'corppass.goToFields' }),
-    ).not.toHaveFocus()
+    expect(screen.getByRole('link', { name: 'addNricField' })).not.toHaveFocus()
   })
 })

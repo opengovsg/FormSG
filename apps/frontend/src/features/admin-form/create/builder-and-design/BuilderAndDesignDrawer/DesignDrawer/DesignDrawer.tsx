@@ -18,10 +18,8 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { cloneDeep, get, isEmpty } from 'lodash'
 
-import { featureFlags } from 'formsg-shared/constants'
 import {
   FormColorTheme,
   FormLogoState,
@@ -125,10 +123,6 @@ export const DesignInput = (): JSX.Element | null => {
     defaultValues: startPageData,
   })
 
-  const showDesignDrawerFormTitle = useFeatureIsOn(
-    featureFlags.designDrawerFormTitle,
-  )
-
   // Update dirty state of builder so confirmation modal can be shown
   useEffect(() => {
     setIsDirty(isDirty)
@@ -194,7 +188,7 @@ export const DesignInput = (): JSX.Element | null => {
 
   const handleSaveTitleThenClose = useCallback(
     (title: string, originalStartPageData: FormStartPageInput) => {
-      if (!showDesignDrawerFormTitle || !dirtyFields.title) {
+      if (!dirtyFields.title) {
         handleCloseDrawer()
         return
       }
@@ -216,7 +210,6 @@ export const DesignInput = (): JSX.Element | null => {
       handleCloseDrawer,
       reset,
       setError,
-      showDesignDrawerFormTitle,
       startPageData?.title,
       titleMutation,
     ],
@@ -379,7 +372,7 @@ export const DesignInput = (): JSX.Element | null => {
         <FormErrorMessage>{errors.colorTheme?.message}</FormErrorMessage>
       </FormControl>
 
-      {showDesignDrawerFormTitle && <DesignFormTitleInput control={control} />}
+      <DesignFormTitleInput control={control} />
 
       <FormControl
         isReadOnly={startPageMutation.isLoading}

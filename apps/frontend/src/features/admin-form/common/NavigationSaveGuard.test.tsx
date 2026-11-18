@@ -71,3 +71,16 @@ describe('NavigationSaveGuard', () => {
     expect(router.state.location.pathname).toBe('/')
   })
 })
+
+it('stays on the current page when saving fails', async () => {
+  const save = vi.fn().mockResolvedValue(false)
+  useNavigationDraft.setState({
+    draft: { owner: Symbol('failed-save'), dirty: true, saving: false, save },
+  })
+  const { router } = renderGuard(false)
+  act(() => screen.getByText('Leave').click())
+  await waitFor(() => expect(save).toHaveBeenCalledTimes(1))
+  expect(router.state.location.pathname).toBe('/')
+  expect(screen.queryByText('Next page')).not.toBeInTheDocument()
+  useNavigationDraft.setState({ draft: null })
+})

@@ -5,35 +5,47 @@ import {
   useCallback,
   useState,
 } from 'react'
-import { Box } from '@chakra-ui/react'
+import { useTranslation } from 'react-i18next'
+import { Box, FormLabel } from '@chakra-ui/react'
 
 import { FormAuthType, FormSettings, FormStatus } from 'formsg-shared/types'
 
 import Radio from '~components/Radio'
 
+import { useUsesStepLoginRules } from '~features/admin-form/create/workflow/hooks/useUsesStepLoginRules'
+
 import { useMutateFormSettings } from '../../mutations'
 import { isEsrvcidRequired } from '../utils'
 
-import { FORM_SINGPASS_AUTHTYPES } from './constants'
+import {
+  getLoginOptionsKeepingLegacySingpass,
+  LOGIN_OPTION_COPY,
+  LOGIN_PROVIDERS,
+} from './constants'
 import { EsrvcIdBox } from './EsrvcIdBox'
+import { LoginOptionLabel } from './LoginOptionLabel'
 
 export interface SingpassAuthOptionsRadioProps {
   settings: FormSettings
   isDisabled: boolean
 }
 
-type RadioOptionsType = [FormAuthType, string][]
-
-const baseRadioOptions: RadioOptionsType = Object.entries(
-  FORM_SINGPASS_AUTHTYPES,
-) as [FormAuthType, string][]
-
 export const SingpassAuthOptionsRadio = ({
   settings,
   isDisabled,
 }: SingpassAuthOptionsRadioProps): JSX.Element => {
+  const { t } = useTranslation()
+  const usesStepLoginRules = useUsesStepLoginRules()
   const { mutateFormAuthType } = useMutateFormSettings()
   const [focusedValue, setFocusedValue] = useState<FormAuthType>()
+  const [opensAsLegacySingpass] = useState(
+    settings.authType === FormAuthType.SP,
+  )
+  const loginOptions = usesStepLoginRules
+    ? getLoginOptionsKeepingLegacySingpass(
+        opensAsLegacySingpass ? FormAuthType.SP : settings.authType,
+      )
+    : LOGIN_PROVIDERS
 
   const isFormPublic = settings.status === FormStatus.Public
 
@@ -78,24 +90,43 @@ export const SingpassAuthOptionsRadio = ({
   )
 
   return (
-    <Radio.RadioGroup
-      style={{ opacity: isDisabled ? 0.8 : 1 }}
-      value={settings.authType}
-      onKeyDown={handleEnterKeyDown}
-      onChange={(e: FormAuthType) => setFocusedValue(e)}
-    >
-      {baseRadioOptions.map(([authType, text]) => (
-        <Fragment key={authType}>
-          <Box onClick={handleOptionClick(authType)}>
-            <Radio value={authType} isDisabled={checkIsDisabled()}>
-              {text}
-            </Radio>
-          </Box>
-          {isEsrvcidRequired(authType) && authType === settings.authType ? (
-            <EsrvcIdBox settings={settings} isDisabled={isEsrvcIdBoxDisabled} />
-          ) : null}
-        </Fragment>
-      ))}
-    </Radio.RadioGroup>
+    <>
+      {usesStepLoginRules ? (
+        <FormLabel id="form-login-label" mb="1rem">
+          {t('features.adminForm.sidebar.workflow.stepLogin.formQuestion')}
+        </FormLabel>
+      ) : null}
+      <Radio.RadioGroup
+        aria-labelledby={usesStepLoginRules ? 'form-login-label' : undefined}
+        style={{ opacity: isDisabled ? 0.8 : 1 }}
+        value={settings.authType}
+        onKeyDown={handleEnterKeyDown}
+        onChange={(e: FormAuthType) => setFocusedValue(e)}
+      >
+        {loginOptions.map((authType) => (
+          <Fragment key={authType}>
+            <Box onClick={handleOptionClick(authType)}>
+              <Radio
+                value={authType}
+                allowDeselect={!usesStepLoginRules}
+                isDisabled={checkIsDisabled()}
+              >
+                {usesStepLoginRules ? (
+                  <LoginOptionLabel authType={authType} />
+                ) : (
+                  t(LOGIN_OPTION_COPY[authType].labelKey)
+                )}
+              </Radio>
+            </Box>
+            {isEsrvcidRequired(authType) && authType === settings.authType ? (
+              <EsrvcIdBox
+                settings={settings}
+                isDisabled={isEsrvcIdBoxDisabled}
+              />
+            ) : null}
+          </Fragment>
+        ))}
+      </Radio.RadioGroup>
+    </>
   )
 }

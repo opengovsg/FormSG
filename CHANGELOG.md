@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.74.1](https://github.com/opengovsg/formsg/compare/v9.74.0...v9.74.1) (2026-11-17)
+
+
+### Bug Fixes
+
+* **workflow:** show Fields to fill on a step card with no fields (#10596) ([#10596](https://github.com/opengovsg/formsg/commit/785474406e4e8533baba1f650e93164923ce7333))
+
+
+### Chores
+
+* **flags:** remove four never-launched feature flags (#10587) ([#10587](https://github.com/opengovsg/formsg/commit/7d2af386feaa18889a022352cf8ec3e2fc9b4441))
+
+## [9.74.0](https://github.com/opengovsg/formsg/compare/v9.73.0...v9.74.0) (2026-11-17)
+
+
+### Features
+
+* **login:** pick login from one radio and show Login first in workflow steps (#10588) ([#10588](https://github.com/opengovsg/formsg/commit/5b8107ecdd18053ee0e4f4245ab1db1082af3487))
+* **paper-forms-tracking:** v4.1 ask a form's origin when it's opened from the dashboard (#10591) ([#10591](https://github.com/opengovsg/formsg/commit/131c3df23ff7cfc8cedbc8c98b9ec18916235bfc))
+
+
+### Bug Fixes
+
+* **preview:** show Myinfo fields as a Singaporean sees them (#10571) ([#10571](https://github.com/opengovsg/formsg/commit/884171af86b60135a25c9ef79dcc1cd70fec4d0d))
+
+
+### CI
+
+* **deploy:** give the prod deploy job 2 hour AWS credentials (#10585) ([#10585](https://github.com/opengovsg/formsg/commit/a53b05c10af7d7668396d91dfc633ca5b9597a5c))
+* **render:** load UAT GrowthBook flags on PR previews (#10590) ([#10590](https://github.com/opengovsg/formsg/commit/d443e6c5e89983cf1a57360b9e007913bf56201c))
+
 ## [9.73.0](https://github.com/opengovsg/formsg/compare/v9.72.0...v9.73.0) (2026-11-16)
 
 

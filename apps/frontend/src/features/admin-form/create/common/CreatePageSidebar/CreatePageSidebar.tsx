@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiExtension, BiGitMerge, BiQuestionMark } from 'react-icons/bi'
-import { Divider, Stack } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
+import { Stack } from '@chakra-ui/react'
 
-import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode, SeenFlags } from 'formsg-shared/types'
 
 import { MultiParty, PhHandsClapping } from '~assets/icons'
@@ -44,8 +42,6 @@ import { DrawerTabIcon } from './DrawerTabIcon'
 export const CreatePageSidebar = (): JSX.Element | null => {
   const { t } = useTranslation()
   const { isMobile, isCollapsed, toggle } = useSideNavCollapse()
-  const showNavLabels = useFeatureIsOn(featureFlags.sidebarNavLabels)
-  const showIntegrationTab = useFeatureIsOn(featureFlags.suiteLauncher)
 
   const { data } = useAdminForm()
   const { user, isLoading: isUserLoading } = useUser()
@@ -85,7 +81,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     const observer = new ResizeObserver(report)
     observer.observe(sidebar)
     return () => observer.disconnect()
-  }, [isCollapsed, reportSidebarWidth, showNavLabels])
+  }, [isCollapsed, reportSidebarWidth])
 
   const handleDrawerBuilderClick = useCallback(() => {
     // Always show create field drawer when sidebar icon is tapped on mobile.
@@ -135,11 +131,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
   const workflowTab = isMrf ? (
     <DrawerTabIcon
       label={t('features.adminForm.sidebar.workflow.title')}
-      navLabel={
-        showNavLabels
-          ? t('features.adminForm.sidebar.navLabels.workflow')
-          : undefined
-      }
+      navLabel={t('features.adminForm.sidebar.navLabels.workflow')}
       trackingLabel="create_builder.drawer_tab.add_workflow"
       icon={<MultiParty fontSize="1.5rem" />}
       onClick={handleDrawerWorkflowClick}
@@ -181,30 +173,24 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     </Stack>
   )
 
-  const Sidebar = showNavLabels ? AdminFormSideNav : Stack
-
   return (
-    <Sidebar
+    <AdminFormSideNav
       ref={sidebarRef}
-      {...(showNavLabels ? { footer: sidebarFooter } : {})}
+      footer={sidebarFooter}
       bg="white"
       pos="sticky"
       top={0}
-      px={showNavLabels ? '0.75rem' : '0.5rem'}
+      px="0.75rem"
       py="1rem"
       borderRight="1px solid"
       borderColor="neutral.300"
       direction="column"
       justifyContent="space-between"
     >
-      <Stack spacing={showNavLabels ? '1rem' : '0.5rem'}>
+      <Stack spacing="1rem">
         <DrawerTabIcon
           label={t('features.adminForm.sidebar.fields.builder.addFields')}
-          navLabel={
-            showNavLabels
-              ? t('features.adminForm.sidebar.navLabels.fields')
-              : undefined
-          }
+          navLabel={t('features.adminForm.sidebar.navLabels.fields')}
           trackingLabel="create_builder.drawer_tab.add_fields"
           icon={<BxsWidget fontSize="1.5rem" />}
           onClick={handleDrawerBuilderClick}
@@ -213,26 +199,17 @@ export const CreatePageSidebar = (): JSX.Element | null => {
         />
         <DrawerTabIcon
           label={t('features.adminForm.sidebar.headerAndInstructions.title')}
-          navLabel={
-            showNavLabels
-              ? t('features.adminForm.sidebar.navLabels.header')
-              : undefined
-          }
+          navLabel={t('features.adminForm.sidebar.navLabels.header')}
           trackingLabel="create_builder.drawer_tab.edit_header"
           icon={<BxsDockTop fontSize="1.5rem" />}
           onClick={handleDrawerDesignClick}
           isActive={activeTab === DrawerTabs.Design}
           id={FEATURE_TOUR_IDS[1].id}
         />
-        {/* Treatment slots Workflow into the middle, after Header. */}
-        {showNavLabels && workflowTab}
+        {workflowTab}
         <DrawerTabIcon
           label={t('features.adminForm.sidebar.logic.addLogicBtn')}
-          navLabel={
-            showNavLabels
-              ? t('features.adminForm.sidebar.navLabels.logic')
-              : undefined
-          }
+          navLabel={t('features.adminForm.sidebar.navLabels.logic')}
           trackingLabel="create_builder.drawer_tab.add_logic"
           icon={<BiGitMerge fontSize="1.5rem" />}
           onClick={handleDrawerLogicClick}
@@ -241,40 +218,22 @@ export const CreatePageSidebar = (): JSX.Element | null => {
         />
         <DrawerTabIcon
           label={t('features.adminForm.sidebar.thankYou.thankYouPage.title')}
-          navLabel={
-            showNavLabels
-              ? t('features.adminForm.sidebar.navLabels.thankYou')
-              : undefined
-          }
+          navLabel={t('features.adminForm.sidebar.navLabels.thankYou')}
           trackingLabel="create_builder.drawer_tab.edit_thank_you_page"
           icon={<PhHandsClapping fontSize="1.5rem" />}
           onClick={handleDrawerEndpageClick}
           isActive={activeTab === DrawerTabs.EndPage}
           id={FEATURE_TOUR_IDS[3].id}
         />
-        {showIntegrationTab && (
-          <DrawerTabIcon
-            label={t('features.adminForm.sidebar.integration.title')}
-            navLabel={
-              showNavLabels
-                ? t('features.adminForm.sidebar.integration.title')
-                : undefined
-            }
-            trackingLabel="create_builder.drawer_tab.integration"
-            icon={<BiExtension fontSize="1.5rem" />}
-            onClick={handleDrawerIntegrationClick}
-            isActive={activeTab === DrawerTabs.Integration}
-          />
-        )}
-        {/* Control keeps production's layout: Workflow at the bottom, below a divider. */}
-        {!showNavLabels && isMrf && (
-          <>
-            <Divider />
-            {workflowTab}
-          </>
-        )}
+        <DrawerTabIcon
+          label={t('features.adminForm.sidebar.integration.title')}
+          navLabel={t('features.adminForm.sidebar.integration.title')}
+          trackingLabel="create_builder.drawer_tab.integration"
+          icon={<BiExtension fontSize="1.5rem" />}
+          onClick={handleDrawerIntegrationClick}
+          isActive={activeTab === DrawerTabs.Integration}
+        />
       </Stack>
-      {!showNavLabels && sidebarFooter}
-    </Sidebar>
+    </AdminFormSideNav>
   )
 }

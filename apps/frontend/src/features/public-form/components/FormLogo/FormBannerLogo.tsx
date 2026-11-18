@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { BiImage } from 'react-icons/bi'
 import {
   Box,
-  Divider,
   Flex,
   Grid,
   Icon,
@@ -12,12 +11,8 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
-import { useFeatureValue } from '@growthbook/growthbook-react'
 
-import { featureFlags } from 'formsg-shared/constants'
 import { FormColorTheme } from 'formsg-shared/types'
-
-import { OgpLogoFull } from '~assets/svgrs/brand/OgpFullLogo'
 
 import { FormLogoutButton } from './FormLogoutButton'
 
@@ -84,8 +79,6 @@ export const FormBannerLogo = ({
     }
   }, [fallbackType, logoImgSrc])
 
-  const enableOgpHeader = useFeatureValue(featureFlags.ogpHeader, false)
-
   if (!hasLogo && !isLoading) return null
 
   return (
@@ -103,14 +96,6 @@ export const FormBannerLogo = ({
             maxH="4rem"
           />
         </Flex>
-        {enableOgpHeader && (
-          <>
-            <Divider orientation="vertical" />
-            <Box ml={3}>
-              <OgpLogoFull fontStyle={'3rem'} height={`3rem`} />
-            </Box>
-          </>
-        )}
       </Flex>
       <FormLogoutButton
         colorScheme={`theme-${colorTheme}`}

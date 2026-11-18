@@ -146,6 +146,9 @@ export const InactiveStepBlock = ({
   const { t } = useTranslation()
   const {
     cardRadius,
+    cardHoverBorderColor,
+    cardHoverBg,
+    iconHoverColor,
     sectionLabelTextStyle,
     iconRestColor,
     iconTransitionDuration,
@@ -222,19 +225,16 @@ export const InactiveStepBlock = ({
     ))
   }, [idToFieldMap, step.edit])
 
-  const fieldsSection =
-    step.edit.length === 0 && isLoginShown ? null : (
-      <Stack>
-        <Text textStyle={sectionLabelTextStyle}>
-          {t(
-            'features.adminForm.sidebar.workflow.respondentBlock.fieldsToFill',
-          )}
-        </Text>
-        <Stack direction="column" spacing="0.25rem">
-          {questionBadges}
-        </Stack>
+  const fieldsSection = (
+    <Stack>
+      <Text textStyle={sectionLabelTextStyle}>
+        {t('features.adminForm.sidebar.workflow.respondentBlock.fieldsToFill')}
+      </Text>
+      <Stack direction="column" spacing="0.25rem">
+        {questionBadges}
       </Stack>
-    )
+    </Stack>
+  )
   const stepAuthType = form
     ? getStepAuthType(form, formWorkflow, stepNumber)
     : FormAuthType.NIL
@@ -274,7 +274,7 @@ export const InactiveStepBlock = ({
         transitionProperty="common"
         transitionDuration="normal"
         cursor="pointer"
-        _groupHover={{ borderColor: 'primary.500', bg: 'primary.100' }}
+        _groupHover={{ borderColor: cardHoverBorderColor, bg: cardHoverBg }}
         onClick={handleClick}
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
@@ -323,7 +323,7 @@ export const InactiveStepBlock = ({
         color={iconRestColor}
         transitionProperty="common"
         transitionDuration={iconTransitionDuration}
-        _groupHover={{ color: 'primary.500' }}
+        _groupHover={{ color: iconHoverColor }}
       />
     </Box>
   )

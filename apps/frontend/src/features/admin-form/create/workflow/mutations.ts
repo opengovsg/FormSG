@@ -18,6 +18,7 @@ import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedb
 
 import { useAdminFormWorkflow } from './hooks/useAdminFormWorkflow'
 import { useUsesStepLoginRules } from './hooks/useUsesStepLoginRules'
+import { isWorkflowEmailValidationError } from './utils/isWorkflowEmailValidationError'
 import {
   createWorkflowStep,
   deleteWorkflow,
@@ -68,6 +69,13 @@ export const useWorkflowMutations = () => {
     [toast],
   )
 
+  const toastUnlessEmailValidationError = useCallback(
+    (error: Error) => {
+      if (!isWorkflowEmailValidationError(error)) handleError(error)
+    },
+    [handleError],
+  )
+
   const createStepMutation = useMutation(
     (createStepBody: FormWorkflowStepWriteDto) =>
       createWorkflowStep(formId, createStepBody),
@@ -90,7 +98,7 @@ export const useWorkflowMutations = () => {
           useAdminFeedbackStore.getState().setEligible('workflow', formId)
         }
       },
-      onError: handleError,
+      onError: toastUnlessEmailValidationError,
     },
   )
 
@@ -169,7 +177,7 @@ export const useWorkflowMutations = () => {
           useAdminFeedbackStore.getState().setEligible('workflow', formId)
         }
       },
-      onError: handleError,
+      onError: toastUnlessEmailValidationError,
     },
   )
 

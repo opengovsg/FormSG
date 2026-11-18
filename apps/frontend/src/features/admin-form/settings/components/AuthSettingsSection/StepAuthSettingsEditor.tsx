@@ -239,9 +239,10 @@ export const StepAuthSettingsEditor = ({
       <AuthSwitchConfirmation {...loginSwitch.confirmationProps} />
       <Stack spacing="1.5rem" px="2rem">
         <StepLoginControls
-          isTitleToggle
+          isHeading
           idPrefix={`settings-step-${stepIndex}-login`}
           authType={authType}
+          savedAuthType={getStepAuthType(settings, form.workflow, stepIndex)}
           esrvcId={esrvcId}
           onAuthTypeChange={(next) => loginSwitch.requestSwitch(next)}
           onEsrvcIdChange={(value) => {
@@ -251,7 +252,9 @@ export const StepAuthSettingsEditor = ({
           }}
           isDisabled={isPublic || isLoading || loginSaved}
           isLoading={isLoading}
-          notice={isPublic ? t(`${COPY_KEY}.closeFormToEdit`) : undefined}
+          disabledReason={
+            isPublic ? t(`${COPY_KEY}.closeFormToEdit`) : undefined
+          }
         />
         {stepIndex === 0 && authType !== FormAuthType.NIL ? (
           <StepOneLoginRestrictions

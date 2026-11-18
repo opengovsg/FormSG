@@ -12,6 +12,7 @@ import { getStepFields } from 'formsg-shared/utils/step-login'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { useIsMrfStepLoginEnabled } from '~features/admin-form/create/workflow/hooks/useIsMrfStepLoginEnabled'
+import { useUsesStepLoginRules } from '~features/admin-form/create/workflow/hooks/useUsesStepLoginRules'
 import { isLaterStepLoginAvailable } from '~features/admin-form/create/workflow/utils/stepLoginAvailability'
 import { getNextQuestionNumber } from '~features/form/utils'
 import { isMyInfo } from '~features/myinfo/utils'
@@ -31,6 +32,7 @@ export const AuthSettingsSection = ({
 }: AuthSettingsSectionProps): JSX.Element => {
   const { data: form } = useAdminForm()
   const isStepLoginFlagOn = useIsMrfStepLoginEnabled()
+  const usesStepLoginRules = useUsesStepLoginRules()
 
   const isFormPublic = settings.status === FormStatus.Public
   const isMrf = form?.responseMode === FormResponseMode.Multirespondent
@@ -62,11 +64,13 @@ export const AuthSettingsSection = ({
   // Step 1's login and restrictions, saved to the form-level settings.
   const stepOneSettings = (
     <>
-      <FormSingpassAuthToggle
-        settings={settings}
-        isDisabled={isFormPublic || hasLoginFields}
-      />
-      {settings.authType !== FormAuthType.NIL ? (
+      {usesStepLoginRules ? null : (
+        <FormSingpassAuthToggle
+          settings={settings}
+          isDisabled={isFormPublic || hasLoginFields}
+        />
+      )}
+      {usesStepLoginRules || settings.authType !== FormAuthType.NIL ? (
         <AuthSettingsSingpassSection
           settings={settings}
           isFormPublic={isFormPublic}

@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import { Link as ReactLink } from 'react-router-dom'
 import { Box, Text } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { Droppable } from '@hello-pangea/dnd'
@@ -8,7 +7,6 @@ import { featureFlags } from 'formsg-shared/constants'
 import { FormAuthType, FormResponseMode } from 'formsg-shared/types'
 
 import { GUIDE_MYINFO_BUILDER_FIELD } from '~constants/links'
-import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 
@@ -36,6 +34,7 @@ import { FieldSection } from './FieldSection'
 import {
   LoginFieldLimitText,
   LoginIdentityFieldSection,
+  SettingsLink,
 } from './LoginIdentityFieldSection'
 import { useFormUsesLogin } from './useFormUsesLogin'
 import { useLoginFieldLimit } from './useLoginFieldLimit'
@@ -242,9 +241,7 @@ const MyInfoText = ({
     return (
       <Text>
         {t('singpassDisabledBefore')}{' '}
-        <Link as={ReactLink} to={ADMINFORM_SETTINGS_SINGPASS_SUBROUTE}>
-          {t('singpassDisabledSettings')}
-        </Link>{' '}
+        <SettingsLink>{t('singpassDisabledSettings')}</SettingsLink>{' '}
         {t('singpassDisabledAfter')}
       </Text>
     )
