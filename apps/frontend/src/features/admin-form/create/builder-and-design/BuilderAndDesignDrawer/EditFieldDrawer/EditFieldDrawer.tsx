@@ -126,6 +126,7 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
     const isStorageChildrenEnabled = useFeatureIsOn(
       featureFlags.storageChildren,
     )
+    const isMrfChildrenEnabled = useFeatureIsOn(featureFlags.mrfChildren)
     if (isLoginIdentityField(field)) {
       return (
         <EditLoginIdentity {...props} field={field as LoginIdentityFieldBase} />
@@ -134,8 +135,10 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
     if (isMyInfo(field)) {
       if (
         field?.myInfo?.attr === MyInfoAttribute.ChildrenBirthRecords &&
-        form?.responseMode === FormResponseMode.Encrypt &&
-        isStorageChildrenEnabled
+        ((form?.responseMode === FormResponseMode.Encrypt &&
+          isStorageChildrenEnabled) ||
+          (form?.responseMode === FormResponseMode.Multirespondent &&
+            isMrfChildrenEnabled))
       ) {
         return (
           <EditMyInfoChildren
