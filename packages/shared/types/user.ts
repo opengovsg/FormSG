@@ -20,7 +20,7 @@ export const UserBase = z.object({
   betaFlags: z
     .object({
       payment: z.boolean().optional(),
-      children: z.boolean().optional(),
+      children: z.boolean().optional(), // Previously used for MyInfo children beta, not currently used
       postmanSms: z.boolean().optional(),
       mrfEmailNotifications: z.boolean().optional(), // Previously used for MRF email notifications, not currently used
       mrfAdminSubmissionKey: z.boolean().optional(),

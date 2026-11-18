@@ -71,23 +71,6 @@ const withCutover = (Story: StoryFn) => (
 export const MrfCutoverOn = Template.bind({})
 MrfCutoverOn.decorators = [withCutover]
 
-export const MrfCutoverOnChildrenBeta = Template.bind({})
-MrfCutoverOnChildrenBeta.decorators = [withCutover]
-MrfCutoverOnChildrenBeta.parameters = {
-  msw: {
-    handlers: {
-      default: [
-        getUser({
-          delay: 0,
-          mockUser: { ...MOCK_USER, betaFlags: { children: true } },
-        }),
-        getPreviewFormResponse({ delay: 0 }),
-        getDashboardResponse(),
-      ],
-    },
-  },
-}
-
 export const MrfCutoverOnWebhookV1Beta = Template.bind({})
 MrfCutoverOnWebhookV1Beta.decorators = [withCutover]
 MrfCutoverOnWebhookV1Beta.parameters = {
@@ -118,10 +101,7 @@ MrfCutoverOnAllExceptions.parameters = {
           delay: 0,
           mockUser: {
             ...MOCK_USER,
-            betaFlags: {
-              children: true,
-              createStorageModeForV1Webhook: true,
-            },
+            betaFlags: { createStorageModeForV1Webhook: true },
           },
         }),
         getPreviewFormResponse({ delay: 0 }),

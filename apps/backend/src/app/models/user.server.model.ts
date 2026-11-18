@@ -73,7 +73,7 @@ const compileUserModel = (db: Mongoose) => {
       },
       betaFlags: {
         payment: Boolean,
-        children: Boolean,
+        children: Boolean, // Previously used for MyInfo children beta, not currently used
         postmanSms: Boolean,
         mrfEmailNotifications: Boolean, // Previously used for MRF email notifications, not currently used
         mrfAdminSubmissionKey: Boolean,

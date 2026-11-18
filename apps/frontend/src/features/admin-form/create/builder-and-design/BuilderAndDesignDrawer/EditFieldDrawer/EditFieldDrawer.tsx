@@ -1,5 +1,8 @@
 import { memo, useMemo } from 'react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from 'formsg-shared/constants'
+import { FormResponseMode } from 'formsg-shared/types'
 import {
   BasicField,
   FieldCreateDto,
@@ -12,12 +15,12 @@ import {
   LoginIdentityFieldBase,
 } from 'formsg-shared/utils/login-identity'
 
+import { useCreateTabForm } from '~features/admin-form/create/builder-and-design/useCreateTabForm'
 import {
   BASICFIELD_TO_DRAWER_META,
   MYINFO_FIELD_TO_DRAWER_META,
 } from '~features/admin-form/create/constants'
 import { isMyInfo } from '~features/myinfo/utils'
-import { useUser } from '~features/user/queries'
 
 import { useBuilderFields } from '../../BuilderAndDesignContent/useBuilderFields'
 import {
@@ -119,7 +122,11 @@ interface MemoFieldDrawerContentProps {
 
 export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
   ({ field, ...props }) => {
-    const { user } = useUser()
+    const { data: form } = useCreateTabForm()
+    const isStorageChildrenEnabled = useFeatureIsOn(
+      featureFlags.storageChildren,
+    )
+    const isMrfChildrenEnabled = useFeatureIsOn(featureFlags.mrfChildren)
     if (isLoginIdentityField(field)) {
       return (
         <EditLoginIdentity {...props} field={field as LoginIdentityFieldBase} />
@@ -128,7 +135,10 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
     if (isMyInfo(field)) {
       if (
         field?.myInfo?.attr === MyInfoAttribute.ChildrenBirthRecords &&
-        user?.betaFlags?.children
+        ((form?.responseMode === FormResponseMode.Encrypt &&
+          isStorageChildrenEnabled) ||
+          (form?.responseMode === FormResponseMode.Multirespondent &&
+            isMrfChildrenEnabled))
       ) {
         return (
           <EditMyInfoChildren
