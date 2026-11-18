@@ -117,8 +117,6 @@ export interface ResponsesResponsesPage {
         }
       }
       unlockedResponses: {
-        resultsFound: string
-        responsesToDate: string
         noMatchingResponses: string
         recentOnly: string
         recentOnlyWithView: string

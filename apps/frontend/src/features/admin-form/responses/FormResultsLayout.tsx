@@ -6,24 +6,20 @@ import {
   ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX,
   ADMINFORM_RESULTS_SUBROUTE,
   ADMINFORM_ROUTE,
-  RESULTS_RESPONSES_SUBROUTE,
 } from '~constants/routes'
 
 import { useSideNavCollapse } from '../common/AdminFormSideNav/useSideNavCollapse'
 
 import {
-  DashboardVersionToggle,
   FormResultsNavbar,
   useResultsTabs,
 } from './components/FormResultsNavbar'
-import { useIsDelightfulDashboard } from './hooks/useIsDelightfulDashboard'
 
 export const FormResultsLayout = (): JSX.Element => {
   const { formId } = useParams()
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const tabs = useResultsTabs()
-  const isDelightfulDashboard = useIsDelightfulDashboard()
   const { isCollapsed, isMobile, toggle } = useSideNavCollapse()
 
   const checkTabActive = useCallback(
@@ -46,25 +42,6 @@ export const FormResultsLayout = (): JSX.Element => {
   if (!formId) throw new Error('No formId provided')
 
   const tabIndex = tabs.findIndex((tab) => checkTabActive(tab.path))
-  // The version only changes the responses table, so the toggle has nothing
-  // to switch on the Feedback and Charts tabs.
-  const isResponsesTab = checkTabActive(RESULTS_RESPONSES_SUBROUTE)
-
-  // V2 keeps its toggle in the same flex row as the saved view tabs.
-  const versionToggle =
-    isResponsesTab && !isDelightfulDashboard ? (
-      <Box
-        position="absolute"
-        top={{ base: '2.5rem', lg: '3.125rem' }}
-        right={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
-        h="1.5rem"
-        display="flex"
-        alignItems="center"
-        zIndex={1}
-      >
-        <DashboardVersionToggle />
-      </Box>
-    ) : null
 
   return (
     <Box
@@ -98,7 +75,6 @@ export const FormResultsLayout = (): JSX.Element => {
           overflowY="auto"
           px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
         >
-          {versionToggle}
           {/* Keep vertical spacing inside the scroller so sticky table
               headers can reach its top edge. */}
           <Box py={{ base: '2.5rem', lg: '3.125rem' }}>

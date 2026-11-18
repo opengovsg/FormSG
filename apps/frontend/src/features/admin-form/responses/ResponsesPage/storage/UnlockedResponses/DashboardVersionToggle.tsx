@@ -11,8 +11,7 @@ import { Switch } from '~components/Toggle/Switch'
 
 import { logAnalyticsEvent } from '~features/analytics/AnalyticsEventService'
 
-import { useResultsDashboardVersion } from '../../hooks/useIsDelightfulDashboard'
-import { useStorageResponsesContext } from '../../ResponsesPage/storage'
+import { useResultsDashboardVersion } from '../../../hooks/useIsDelightfulDashboard'
 
 const versionIcon = (label: string) => {
   const VersionIcon = (props: SVGProps<SVGSVGElement>) => (
@@ -40,11 +39,8 @@ export const DashboardVersionToggle = (): JSX.Element | null => {
   const isEnabled = useFeatureIsOn(featureFlags.delightfulDashboard)
   const { formId } = useParams()
   const [version, setVersion] = useResultsDashboardVersion()
-  // The version only changes the unlocked table, so the toggle stays hidden
-  // until the secret key is in.
-  const { secretKey } = useStorageResponsesContext()
 
-  if (!isEnabled || !secretKey) return null
+  if (!isEnabled) return null
 
   return (
     <Flex align="center" gap="0.5rem" flexShrink={0}>

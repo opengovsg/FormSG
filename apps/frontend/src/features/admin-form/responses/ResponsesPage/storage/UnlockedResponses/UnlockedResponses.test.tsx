@@ -17,8 +17,10 @@ vi.mock('~features/admin-form/responses/hooks', () => ({
   useIsDelightfulDashboard: () => true,
 }))
 vi.mock('../../../components/FormResultsNavbar', () => ({
-  DashboardVersionToggle: () => null,
   useResultsNavLayout: () => ({ contentPr: '1rem' }),
+}))
+vi.mock('./DashboardVersionToggle', () => ({
+  DashboardVersionToggle: () => null,
 }))
 vi.mock('./UnlockedResponsesProvider', () => ({
   ALL_RESPONSES_VIEW_ID: 'all-responses',

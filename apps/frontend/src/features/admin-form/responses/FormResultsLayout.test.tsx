@@ -12,9 +12,6 @@ vi.mock('@growthbook/growthbook-react', () => ({
   useFeatureIsOn: () => true,
 }))
 vi.mock('~hooks/useIsMobile', () => ({ useIsMobile: () => state.mobile }))
-vi.mock('./components/FormResultsNavbar/DashboardVersionToggle', () => ({
-  DashboardVersionToggle: () => null,
-}))
 vi.mock('./components/FormResultsNavbar/useResultsTabs', () => ({
   useResultsTabs: () => [
     { label: 'Responses', path: '', icon: BiCog },
