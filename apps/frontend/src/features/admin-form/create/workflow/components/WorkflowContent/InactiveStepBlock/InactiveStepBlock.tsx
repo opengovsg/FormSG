@@ -25,6 +25,7 @@ import {
 } from 'formsg-shared/utils/step-login'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { sortFieldIdsByFormOrder } from '~features/admin-form/create/common/sortFieldIdsByFormOrder'
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 import { FormFieldWithQuestionNo } from '~features/form/types'
@@ -153,7 +154,7 @@ export const InactiveStepBlock = ({
     iconRestColor,
     iconTransitionDuration,
   } = useWorkflowSurfaces()
-  const { idToFieldMap, formWorkflow } = useAdminFormWorkflow()
+  const { idToFieldMap, formWorkflow, formFields = [] } = useAdminFormWorkflow()
   const { data: form } = useAdminForm()
   const isLoginShown = useIsStepLoginShown(stepNumber)
   const setToEditing = useAdminWorkflowStore(setToEditingSelector)
@@ -213,17 +214,19 @@ export const InactiveStepBlock = ({
       )
     }
 
-    return step.edit.map((fieldId, index) => (
-      <FieldLogicBadge
-        key={index}
-        field={idToFieldMap[fieldId]}
-        defaults={{
-          variant: 'info',
-          message: 'This field was deleted, please select another field',
-        }}
-      />
-    ))
-  }, [idToFieldMap, step.edit])
+    return sortFieldIdsByFormOrder(step.edit, formFields).map(
+      (fieldId, index) => (
+        <FieldLogicBadge
+          key={index}
+          field={idToFieldMap[fieldId]}
+          defaults={{
+            variant: 'info',
+            message: 'This field was deleted, please select another field',
+          }}
+        />
+      ),
+    )
+  }, [idToFieldMap, step.edit, formFields])
 
   const fieldsSection = (
     <Stack>

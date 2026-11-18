@@ -424,6 +424,22 @@ Step2AllFieldsDeleted.parameters = {
   },
 }
 
+export const Step1FieldsPickedOutOfOrder = Template.bind({})
+Step1FieldsPickedOutOfOrder.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        status: FormStatus.Private,
+        workflow: [
+          { ...workflow_step_1, edit: [form_field_2._id, form_field_1._id] },
+          workflow_step_2,
+        ],
+      }),
+    },
+  },
+}
+
 export const Step2ValidConditionalRecipientSelected = Template.bind({})
 Step2ValidConditionalRecipientSelected.parameters = {
   msw: {

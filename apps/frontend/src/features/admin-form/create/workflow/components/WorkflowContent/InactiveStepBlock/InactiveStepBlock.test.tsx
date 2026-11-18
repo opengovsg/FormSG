@@ -4,7 +4,8 @@ import { act, render, screen } from '@testing-library/react'
 import { useAdminWorkflowStore } from '../../../adminWorkflowStore'
 import * as pageStories from '../../../CreatePageWorkflowTab.stories'
 
-const { Step2NoEmails, WithWorkflow } = composeStories(pageStories)
+const { Step1FieldsPickedOutOfOrder, Step2NoEmails, WithWorkflow } =
+  composeStories(pageStories)
 
 const NO_EMAILS = /no emails added/i
 
@@ -39,5 +40,21 @@ describe('inactive step respondent badges', () => {
       await screen.findByText('test_1@tech.gov.sg', {}, { timeout: 10000 }),
     ).toBeInTheDocument()
     expect(screen.queryByText(NO_EMAILS)).not.toBeInTheDocument()
+  })
+
+  it('lists the fields in question order, not the order they were picked', async () => {
+    await act(async () => {
+      render(<Step1FieldsPickedOutOfOrder />)
+    })
+
+    const first = await screen.findByText(
+      /do you want to upload an attachment/i,
+      {},
+      { timeout: 10000 },
+    )
+    const second = screen.getByText(/are you really sure/i)
+    expect(first.compareDocumentPosition(second)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    )
   })
 })
