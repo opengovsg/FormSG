@@ -32,6 +32,7 @@ export const featureFlags = {
   paymentInfoFormat: 'payment-info-format' as const,
   paymentEmailLookup: 'payment-email-lookup' as const,
   paymentServerConfirmation: 'payment-server-confirmation' as const,
+  paymentFormMcc: 'payment-form-mcc' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {

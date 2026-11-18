@@ -1102,7 +1102,7 @@ export const confirmPaymentIntentWithPaymentMethod = ({
   paymentIntentId: string
   paymentMethodId: string
   stripeAccount: string
-  mccByCardBrand: Record<string, string>
+  mccByCardBrand: Partial<Record<string, string>>
   returnUrl: string
 }): ResultAsync<
   Stripe.PaymentIntent,
