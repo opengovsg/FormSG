@@ -25,7 +25,6 @@ import {
   CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
 } from '~features/admin-form/create/builder-and-design/constants'
 import { MYINFO_FIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
-import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../../../builder-and-design/useCreateTabForm'
 import { DraggableMyInfoFieldListOption } from '../FieldListOption'
@@ -47,7 +46,6 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
   })
   const { data: form, isLoading } = useCreateTabForm()
 
-  const { user } = useUser()
   const isMrfChildrenEnabled = useFeatureIsOn(featureFlags.mrfChildren)
   const isStorageChildrenEnabled = useFeatureIsOn(featureFlags.storageChildren)
   const offeredIdentityAttrs = useOfferedLoginIdentityAttrs(
@@ -55,13 +53,10 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
     searchValue,
   )
 
-  // Storage forms show children to beta admins or via storage-children. MRF
-  // forms still need the beta flag and the mrf-children feature flag.
   const showChildrenSection =
     (form?.responseMode === FormResponseMode.Encrypt &&
-      (user?.betaFlags?.children || isStorageChildrenEnabled)) ||
+      isStorageChildrenEnabled) ||
     (form?.responseMode === FormResponseMode.Multirespondent &&
-      user?.betaFlags?.children &&
       isMrfChildrenEnabled)
 
   const { isAtLimit } = useLoginFieldLimit()

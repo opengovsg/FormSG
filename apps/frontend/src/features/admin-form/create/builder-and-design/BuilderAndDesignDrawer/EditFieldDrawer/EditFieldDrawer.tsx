@@ -21,7 +21,6 @@ import {
   MYINFO_FIELD_TO_DRAWER_META,
 } from '~features/admin-form/create/constants'
 import { isMyInfo } from '~features/myinfo/utils'
-import { useUser } from '~features/user/queries'
 
 import { useBuilderFields } from '../../BuilderAndDesignContent/useBuilderFields'
 import {
@@ -123,7 +122,6 @@ interface MemoFieldDrawerContentProps {
 
 export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
   ({ field, ...props }) => {
-    const { user } = useUser()
     const { data: form } = useCreateTabForm()
     const isStorageChildrenEnabled = useFeatureIsOn(
       featureFlags.storageChildren,
@@ -136,9 +134,8 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
     if (isMyInfo(field)) {
       if (
         field?.myInfo?.attr === MyInfoAttribute.ChildrenBirthRecords &&
-        (user?.betaFlags?.children ||
-          (form?.responseMode === FormResponseMode.Encrypt &&
-            isStorageChildrenEnabled))
+        form?.responseMode === FormResponseMode.Encrypt &&
+        isStorageChildrenEnabled
       ) {
         return (
           <EditMyInfoChildren
