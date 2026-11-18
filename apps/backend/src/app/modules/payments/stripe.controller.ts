@@ -11,7 +11,6 @@ import {
   ErrorDto,
   GetPaymentInfoDto,
   IncompletePaymentsDto,
-  PaymentServerConfirmationFeatureValue,
   ReconciliationEventsReportLine,
   ReconciliationReport,
 } from 'formsg-shared/types'
@@ -221,11 +220,11 @@ export const getPaymentInfo: ControllerHandler<
                 featureFlags.paymentInfoFormat,
                 true,
               ) ?? true
-            const cardOptionsByAccount =
-              req.growthbook?.getFeatureValue<PaymentServerConfirmationFeatureValue>(
+            const useServerConfirmation =
+              req.growthbook?.getFeatureValue<boolean>(
                 featureFlags.paymentServerConfirmation,
-                {},
-              ) ?? {}
+                false,
+              ) ?? false
             return res.status(StatusCodes.OK).json({
               ...((paymentIsActionable || fullInfoFormat) &&
               paymentIntent.client_secret
@@ -233,9 +232,7 @@ export const getPaymentInfo: ControllerHandler<
                 : {}),
               status: paymentIntent.status,
               description: paymentIntent.description,
-              use_server_confirmation: Boolean(
-                cardOptionsByAccount[stripeAccount],
-              ),
+              use_server_confirmation: useServerConfirmation,
               publishableKey: form.payments_channel.publishable_key,
               submissionId: payment.pendingSubmissionId,
               products: payment.products,
@@ -263,12 +260,12 @@ export const validateConfirmPaymentParams = celebrate({
 
 /**
  * Handler for POST /payments/:paymentId/confirm
- * Confirms the payment intent for this payment on the server, applying card
- * payment method options configured for the form's target account.
+ * Confirms the payment intent for this payment on the server with the given
+ * payment method.
  *
  * @returns 200 with the resulting payment intent status
  * @returns 400 if the payment method was declined or invalid
- * @returns 404 if the payment does not exist or server confirmation is not enabled for its account
+ * @returns 404 if the payment does not exist or server confirmation is disabled
  * @returns 409 if the payment intent can no longer be confirmed
  * @returns 500 if an unexpected error occurs
  */
@@ -310,16 +307,15 @@ export const handleConfirmPayment: ControllerHandler<
             return errAsync(new PaymentAccountInformationError())
           }
 
-          const cardOptionsByAccount =
-            req.growthbook?.getFeatureValue<PaymentServerConfirmationFeatureValue>(
+          const useServerConfirmation =
+            req.growthbook?.getFeatureValue<boolean>(
               featureFlags.paymentServerConfirmation,
-              {},
-            ) ?? {}
-          const mccByCardBrand = cardOptionsByAccount[stripeAccount]
-          if (!mccByCardBrand) {
+              false,
+            ) ?? false
+          if (!useServerConfirmation) {
             logger.warn({
               message:
-                'Server-side confirmation requested for an account without configuration',
+                'Server-side confirmation requested while the feature is disabled',
               meta: logMeta,
             })
             return errAsync(new PaymentServerConfirmationUnavailableError())
@@ -329,7 +325,9 @@ export const handleConfirmPayment: ControllerHandler<
             paymentIntentId: payment.paymentIntentId,
             paymentMethodId,
             stripeAccount,
-            mccByCardBrand,
+            // Card-brand-specific MCCs arrive in a later stage, read from the
+            // form itself; until then no payment method options are applied.
+            mccByCardBrand: {},
             returnUrl: `${config.app.appUrl}/${form._id}/payment/${paymentId}`,
           })
         }),
