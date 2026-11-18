@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.75.0](https://github.com/opengovsg/formsg/compare/v9.74.2...v9.75.0) (2026-11-18)
+
+
+### Features
+
+* **myinfo:** gate children fields by GrowthBook flags, remove beta flag (#10603) ([#10603](https://github.com/opengovsg/formsg/commit/112316833d3dac2276d98e727c312208157d2dc0))
+
 ## [9.74.2](https://github.com/opengovsg/formsg/compare/v9.74.1...v9.74.2) (2026-11-18)
 
 
