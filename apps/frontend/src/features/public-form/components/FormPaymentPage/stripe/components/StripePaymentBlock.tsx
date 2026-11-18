@@ -65,12 +65,6 @@ const StripeCheckoutForm = ({
   const confirmOnServer = async () => {
     if (!stripe || !elements || !paymentId) return
 
-    const submitResult = await elements.submit()
-    if (submitResult.error) {
-      setStripeMessage(submitResult.error.message ?? '')
-      return
-    }
-
     const paymentMethodResult = await stripe.createPaymentMethod({ elements })
     if (paymentMethodResult.error) {
       setStripeMessage(paymentMethodResult.error.message ?? '')
@@ -104,23 +98,34 @@ const StripeCheckoutForm = ({
   const confirmOnClient = async () => {
     if (!stripe || !elements) return
 
-    const result = await stripe.confirmPayment({
-      //`Elements` instance that was used to create the Payment Element
-      elements,
-      confirmParams: {
-        // 1. Responders should return back to the same payment page to view the receipt
-        // 2. Your customer will be redirected to your `return_url`. For some payment
-        //    methods like iDEAL, your customer will be redirected to an intermediate
-        //    site first to authorize the payment, then redirected to the `return_url`.
-        return_url: window.location.href,
-      },
+    const confirmParams = {
+      // 1. Responders should return back to the same payment page to view the receipt
+      // 2. Your customer will be redirected to your `return_url`. For some payment
+      //    methods like iDEAL, your customer will be redirected to an intermediate
+      //    site first to authorize the payment, then redirected to the `return_url`.
+      return_url: window.location.href,
+    }
 
-      // The default is `redirect?: 'always'` and this will introduce
-      // a bad UX of triggering a page reload of the same page.
-      // By setting if_required we can control when it reloads,
-      // which is after the payment had completed successfully.
-      redirect: 'if_required',
-    })
+    // The default is `redirect?: 'always'` and this will introduce
+    // a bad UX of triggering a page reload of the same page.
+    // By setting if_required we can control when it reloads,
+    // which is after the payment had completed successfully.
+    const result =
+      paymentInfoData.use_server_confirmation && paymentInfoData.client_secret
+        ? // The Elements group runs in deferred mode when server confirmation
+          // is enabled, so the intent's secret is supplied at confirm time
+          // instead of at Elements creation.
+          await stripe.confirmPayment({
+            elements,
+            clientSecret: paymentInfoData.client_secret,
+            confirmParams,
+            redirect: 'if_required',
+          })
+        : await stripe.confirmPayment({
+            elements,
+            confirmParams,
+            redirect: 'if_required',
+          })
 
     if (result.error && result.error.message) {
       setStripeMessage(result.error.message)
@@ -146,16 +151,31 @@ const StripeCheckoutForm = ({
     setIsStripeProcessing(true)
     setStripeMessage('')
 
-    if (
-      paymentInfoData.use_server_confirmation &&
-      paymentMethodType === 'card' &&
-      paymentId
-    ) {
-      await confirmOnServer()
-    } else {
-      await confirmOnClient()
+    try {
+      if (paymentInfoData.use_server_confirmation) {
+        // Deferred mode requires validating collected details before any
+        // payment method creation or confirmation call.
+        const submitResult = await elements.submit()
+        if (submitResult.error) {
+          setStripeMessage(submitResult.error.message ?? '')
+          return
+        }
+      }
+
+      if (
+        paymentInfoData.use_server_confirmation &&
+        paymentMethodType === 'card' &&
+        paymentId
+      ) {
+        await confirmOnServer()
+      } else {
+        await confirmOnClient()
+      }
+    } catch (error) {
+      setStripeMessage(error instanceof Error ? error.message : String(error))
+    } finally {
+      setIsStripeProcessing(false)
     }
-    setIsStripeProcessing(false)
   }
 
   return (
