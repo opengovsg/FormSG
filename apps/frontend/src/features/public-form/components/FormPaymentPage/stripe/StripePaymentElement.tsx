@@ -184,7 +184,16 @@ const StripePaymentContainer = ({
               <PaymentStack>
                 <Elements
                   stripe={stripePromise}
-                  options={{ clientSecret: paymentInfoData.client_secret }}
+                  options={
+                    paymentInfoData.use_server_confirmation
+                      ? {
+                          mode: 'payment',
+                          amount: paymentInfoData.amount,
+                          currency: 'sgd',
+                          paymentMethodCreation: 'manual',
+                        }
+                      : { clientSecret: paymentInfoData.client_secret }
+                  }
                 >
                   <StripePaymentBlock
                     paymentInfoData={paymentInfoData}
