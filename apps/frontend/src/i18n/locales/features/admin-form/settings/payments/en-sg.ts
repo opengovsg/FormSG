@@ -63,11 +63,10 @@ export const enSG: Payments = {
     bulkTransactionText: {
       bulkTransactionRate: 'Bulk transaction rates',
       useBulkTransactionRates:
-        'To request bulk transaction rates for your payments, use',
-      thisForm: 'this form',
-      contactForAssistance: 'to contact us for assistance.',
+        'To request discounted rates for your form, contact',
+      contactForAssistance: 'for assistance.',
       defaultTransactionRatesWarning:
-        'Without this step, you will be charged default transaction rates.',
+        'Without this step, you will be charged the default transaction rates.',
       acknowledgeWarningText:
         'I understand that I will be paying default transaction rates, unless I have requested bulk transaction rates and received confirmation',
     },
