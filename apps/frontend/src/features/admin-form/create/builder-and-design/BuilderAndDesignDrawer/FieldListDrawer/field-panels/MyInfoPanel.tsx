@@ -49,18 +49,20 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
 
   const { user } = useUser()
   const isMrfChildrenEnabled = useFeatureIsOn(featureFlags.mrfChildren)
+  const isStorageChildrenEnabled = useFeatureIsOn(featureFlags.storageChildren)
   const offeredIdentityAttrs = useOfferedLoginIdentityAttrs(
     CREATE_MYINFO_IDENTITY_FIELDS_ORDERED,
     searchValue,
   )
 
-  // Children fields remain admin-beta-gated everywhere; on MRF forms they
-  // additionally require the mrf-children feature flag (default off).
+  // Storage forms show children to beta admins or via storage-children. MRF
+  // forms still need the beta flag and the mrf-children feature flag.
   const showChildrenSection =
-    user?.betaFlags?.children &&
-    (form?.responseMode === FormResponseMode.Encrypt ||
-      (form?.responseMode === FormResponseMode.Multirespondent &&
-        isMrfChildrenEnabled))
+    (form?.responseMode === FormResponseMode.Encrypt &&
+      (user?.betaFlags?.children || isStorageChildrenEnabled)) ||
+    (form?.responseMode === FormResponseMode.Multirespondent &&
+      user?.betaFlags?.children &&
+      isMrfChildrenEnabled)
 
   const { isAtLimit } = useLoginFieldLimit()
   const { usesLogin } = useFormUsesLogin()

@@ -1,5 +1,7 @@
 import { memo, useMemo } from 'react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
   FieldCreateDto,
@@ -120,6 +122,9 @@ interface MemoFieldDrawerContentProps {
 export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
   ({ field, ...props }) => {
     const { user } = useUser()
+    const isStorageChildrenEnabled = useFeatureIsOn(
+      featureFlags.storageChildren,
+    )
     if (isLoginIdentityField(field)) {
       return (
         <EditLoginIdentity {...props} field={field as LoginIdentityFieldBase} />
@@ -128,7 +133,7 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
     if (isMyInfo(field)) {
       if (
         field?.myInfo?.attr === MyInfoAttribute.ChildrenBirthRecords &&
-        user?.betaFlags?.children
+        (user?.betaFlags?.children || isStorageChildrenEnabled)
       ) {
         return (
           <EditMyInfoChildren
