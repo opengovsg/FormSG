@@ -1103,6 +1103,9 @@ export const copyPendingSubmissionToSubmissions = (
     })
 }
 
+const isMultiAttachmentResponse = (response: ParsedClearFormFieldResponse) =>
+  'answerArray' in response
+
 /**
  * Validates that the attachments in a submission do not violate form-level
  * constraints e.g. form-wide attachment size limit.
@@ -1125,7 +1128,13 @@ export const validateAttachments = (
     return errAsync(new AttachmentTooLargeError())
   }
   return ResultAsync.fromPromise(
-    getInvalidFileExtensions(attachments),
+    getInvalidFileExtensions(
+      mapAttachmentsFromResponses(
+        parsedResponses.filter(
+          (response) => !isMultiAttachmentResponse(response),
+        ),
+      ),
+    ),
     (error) => {
       logger.error({
         message: 'Error while validating attachment file extensions',

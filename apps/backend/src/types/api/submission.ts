@@ -58,6 +58,9 @@ type AttachmentResponseV4 = Extract<
 export type ParsedClearAttachmentAnswerV4 = AttachmentAnswerV4 & {
   filename: string
   content: Buffer
+  // A multi-file answer's files, read from its zip by the server. The SDK
+  // doesn't need to know them, as consumers get the zip.
+  filenames?: string[]
 }
 
 export type ParsedClearAttachmentFieldResponseV4 = Omit<

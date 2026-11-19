@@ -12,6 +12,9 @@ export type AttachmentAnswerV4 = {
   value: string
   hasBeenScanned?: boolean
   md5Hash?: string
+  // A multi-file answer's `value` names its zip, and this lists the files in
+  // it. The server reads them from the zip.
+  filenames?: string[]
 }
 export type TableRowV4 = {
   rowNum: number

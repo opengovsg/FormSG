@@ -18,6 +18,7 @@ export const enSG: Fields = {
     dragAndDrop: ' or drag and drop here',
     dragActive: 'Drop the file here',
     maxFileSize: 'Maximum file size: {readableMaxSize}',
+    maxAttachmentSize: 'Maximum attachment size: {readableMaxSize}',
     fileConstraintsText: 'Files should not be more than 10 pages long.',
     ariaLabelRemove: 'Click to remove file',
     ariaLabelReplace: 'Click to replace file',
@@ -29,6 +30,11 @@ export const enSG: Fields = {
       fileInvalidType:
         "Your file's extension ending in *{fileExt} is not allowed",
       tooManyFiles: 'You can only upload a single file in this input',
+      tooManyAttachments: 'You can attach up to {maxFiles} files',
+      duplicateFilename:
+        'You have already attached a file named {fileName}. Rename it to attach it too.',
+      totalSizeTooLarge:
+        'You have exceeded the file size limit, please upload files below {readableMaxSize} in total',
       zipFileInvalidType:
         'The following file extensions in your zip file are not valid: {stringOfInvalidExtensions}',
       zipParsing: 'An error has occurred whilst parsing your zip file',

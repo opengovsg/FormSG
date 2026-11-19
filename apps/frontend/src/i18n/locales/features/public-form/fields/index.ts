@@ -22,6 +22,7 @@ export interface Fields {
     dragAndDrop: string
     dragActive: string
     maxFileSize: string
+    maxAttachmentSize: string
     fileConstraintsText: string
     ariaLabelRemove: string
     ariaLabelReplace: string
@@ -30,6 +31,9 @@ export interface Fields {
       fileTooLarge: string
       fileInvalidType: string
       tooManyFiles: string
+      tooManyAttachments: string
+      duplicateFilename: string
+      totalSizeTooLarge: string
       zipFileInvalidType: string
       zipParsing: string
       imageProcessingError: string

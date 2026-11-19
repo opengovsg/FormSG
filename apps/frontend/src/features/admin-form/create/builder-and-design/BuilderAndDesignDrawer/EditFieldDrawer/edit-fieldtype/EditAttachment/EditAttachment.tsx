@@ -2,8 +2,10 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { FormControl, Skeleton } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { extend, pick } from 'lodash'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types'
 import {
   AttachmentFieldBase,
@@ -43,6 +45,7 @@ const EDIT_ATTACHMENT_FIELD_KEYS = [
   'description',
   'required',
   'attachmentSize',
+  'allowMultiple',
 ] as const
 
 type EditAttachmentKeys = (typeof EDIT_ATTACHMENT_FIELD_KEYS)[number]
@@ -75,6 +78,7 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
     isLoading,
     handleCancel,
     trigger,
+    watch,
   } = useEditFieldForm<EditAttachmentInputs, AttachmentFieldBase>({
     field,
     transform: {
@@ -82,6 +86,20 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
       output: transformAttachmentEditFormToField,
     },
   })
+
+  const isAttachmentsV2Enabled = useFeatureIsOn(featureFlags.attachmentsV2)
+  const canTurnOnMultiple =
+    isAttachmentsV2Enabled &&
+    !!form &&
+    form.responseMode !== FormResponseMode.Email
+  const canAllowMultiple = canTurnOnMultiple || !!field.allowMultiple
+  const allowMultiple = watch('allowMultiple')
+  const savedField = form?.form_fields.find((ff) => ff._id === field._id)
+  const wasSavedMultiple =
+    savedField?.fieldType === BasicField.Attachment &&
+    !!savedField.allowMultiple
+  const isTurningOnMultipleWithWebhook =
+    allowMultiple && !wasSavedMultiple && !!form?.webhook.url
 
   const requiredValidationRule = useMemo(
     () =>
@@ -175,13 +193,32 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
       <FormControl isReadOnly={isLoading}>
         <Toggle {...register('required')} label="Required" />
       </FormControl>
+      {canAllowMultiple ? (
+        <FormControl isReadOnly={isLoading}>
+          <Toggle
+            {...register('allowMultiple')}
+            label={t(
+              'features.adminForm.sidebar.fields.attachment.allowMultiple',
+            )}
+          />
+        </FormControl>
+      ) : null}
+      {isTurningOnMultipleWithWebhook ? (
+        <InlineMessage variant="warning">
+          {t('features.adminForm.sidebar.fields.attachment.webhookWarning')}
+        </InlineMessage>
+      ) : null}
       <FormControl
         id="attachmentSize"
         isReadOnly={isLoading}
         isInvalid={!!errors.attachmentSize}
       >
         <FormLabel isRequired>
-          {t('features.adminForm.sidebar.fields.attachment.maximumSize')}
+          {allowMultiple
+            ? t(
+                'features.adminForm.sidebar.fields.attachment.maximumSizeMultiple',
+              )
+            : t('features.adminForm.sidebar.fields.attachment.maximumSize')}
         </FormLabel>
         <Skeleton isLoaded={!!form}>
           <Controller

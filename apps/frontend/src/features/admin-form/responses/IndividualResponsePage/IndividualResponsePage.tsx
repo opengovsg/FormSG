@@ -193,16 +193,21 @@ const IndividualResponseContent = ({
         ? secretKey
         : data.submissionSecretKey
 
-  const attachmentDownloadUrls = useMemo(() => {
+  const { attachmentDownloadUrls, attachmentCount } = useMemo(() => {
     const attachmentDownloadUrls = new Map()
-    data?.responses.forEach(({ questionNumber, downloadUrl, answer }) => {
+    let attachmentCount = 0
+    data?.responses.forEach((response) => {
+      const { questionNumber, downloadUrl, answer } = response
+      const fileCount = response.answerArray?.length || 1
       if (!questionNumber || !downloadUrl || !answer) return
       attachmentDownloadUrls.set(questionNumber, {
         url: downloadUrl,
         filename: answer,
+        isMultiple: 'answerArray' in response,
       })
+      attachmentCount += fileCount
     })
-    return attachmentDownloadUrls
+    return { attachmentDownloadUrls, attachmentCount }
   }, [data?.responses])
 
   const { downloadAttachmentsAsZipMutation } = useMutateDownloadAttachments()
@@ -354,7 +359,7 @@ const IndividualResponseContent = ({
             >
               {t(
                 'features.adminForm.responses.individualResponse.downloadAttachmentsAsZip',
-                { attachmentSize: attachmentDownloadUrls.size },
+                { attachmentSize: attachmentCount },
               )}
             </Button>
           </Skeleton>

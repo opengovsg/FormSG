@@ -94,6 +94,6 @@ export const enSG: ResponsesIndividualResponse = {
     paymentDataItemPdfDownloadLabel: 'Download as PDF',
   },
   decryptedAttachment: {
-    aria: 'Download file',
+    aria: 'Download {fileName}',
   },
 }
