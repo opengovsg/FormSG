@@ -67,6 +67,7 @@ describe('admin-forms.analytics-events.routes', () => {
         responsesCount: 42,
         dateRange: { startDate: '2026-01-01', endDate: '2026-01-31' },
         columnFilters: [{ columnId: 'a', type: 'values' }],
+        downloadVersion: 'v1',
       }
 
       const response = await post(form._id, {
@@ -83,6 +84,34 @@ describe('admin-forms.analytics-events.routes', () => {
           admin: defaultUser._id,
           content,
           created: expect.any(Date),
+        }),
+      ])
+    })
+
+    it('should return 204 and store a download finished event', async () => {
+      const content = {
+        downloadVersion: 'v2',
+        formats: ['attachments'],
+        outcome: 'partial',
+        durationMs: 1200,
+        expectedCount: 3,
+        successCount: 2,
+        errorCount: 1,
+        failedDownloadCount: 1,
+        zipBytes: 4096,
+      }
+
+      const response = await post(form._id, {
+        type: AnalyticsEventType.ResultsDownloadFinished,
+        content,
+      })
+
+      expect(response.status).toEqual(204)
+      const events = await AnalyticsEventModel.find().lean()
+      expect(events).toEqual([
+        expect.objectContaining({
+          type: AnalyticsEventType.ResultsDownloadFinished,
+          content,
         }),
       ])
     })
