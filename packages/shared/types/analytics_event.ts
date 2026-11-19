@@ -1,5 +1,6 @@
 export enum AnalyticsEventType {
   ResultsDownload = 'results.download',
+  ResultsDownloadFinished = 'results.download.finished',
   ResultsSavedViewCreated = 'results.saved_view.created',
   ResultsSavedViewUpdated = 'results.saved_view.updated',
   ResultsSavedViewApplied = 'results.saved_view.applied',
@@ -15,6 +16,14 @@ export type ResultsDownloadFormat = 'csv' | 'attachments' | 'pdf'
 
 export type ResultsDownloadScope = 'bulk' | 'single'
 
+export type ResultsDownloadVersion = 'v1' | 'v2'
+
+export type ResultsDownloadOutcome =
+  | 'success'
+  | 'partial'
+  | 'failed'
+  | 'cancelled'
+
 export type ResultsDownloadColumnFilter = {
   columnId: string
   type: 'text' | 'values'
@@ -29,6 +38,19 @@ export type ResultsDownloadContent = {
   responsesCount?: number
   dateRange?: { startDate: string; endDate: string }
   columnFilters?: ResultsDownloadColumnFilter[]
+  downloadVersion?: ResultsDownloadVersion
+}
+
+export type ResultsDownloadFinishedContent = {
+  downloadVersion: ResultsDownloadVersion
+  formats: ResultsDownloadFormat[]
+  outcome: ResultsDownloadOutcome
+  durationMs: number
+  expectedCount?: number
+  successCount?: number
+  errorCount?: number
+  failedDownloadCount?: number
+  zipBytes?: number
 }
 
 export type ResultsSavedViewContent = {
@@ -58,6 +80,10 @@ export type AnalyticsEventInput =
   | {
       type: AnalyticsEventType.ResultsDownload
       content: ResultsDownloadContent
+    }
+  | {
+      type: AnalyticsEventType.ResultsDownloadFinished
+      content: ResultsDownloadFinishedContent
     }
   | {
       type:
