@@ -564,6 +564,7 @@ const updateMultirespondentSubmission = async (
     logMeta,
     attachments: req.formsg.unencryptedAttachments,
     growthbook: req.growthbook,
+    isEmailJsonEnabled: currentForm.isEmailJsonEnabled,
   })
 }
 

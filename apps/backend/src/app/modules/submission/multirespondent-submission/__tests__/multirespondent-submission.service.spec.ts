@@ -600,6 +600,7 @@ describe('multirespondent-submission.service', () => {
             } as MultirespondentSubmissionDto,
             logMeta: {} as any,
             attachments: MOCK_SUBMISSION_ATTACHMENTS,
+            isEmailJsonEnabled: true,
           })
 
           // Assert
@@ -693,6 +694,7 @@ describe('multirespondent-submission.service', () => {
             } as MultirespondentSubmissionDto,
             logMeta: {} as any,
             attachments: MOCK_SUBMISSION_ATTACHMENTS,
+            isEmailJsonEnabled: true,
           })
 
           // Assert
@@ -1250,6 +1252,7 @@ describe('multirespondent-submission.service', () => {
           } as MultirespondentSubmissionDto,
           logMeta: {} as any,
           attachments: MOCK_SUBMISSION_ATTACHMENTS,
+          isEmailJsonEnabled: true,
         })
 
         // Assert
@@ -1378,6 +1381,7 @@ describe('multirespondent-submission.service', () => {
           } as MultirespondentSubmissionDto,
           logMeta: {} as any,
           attachments: MOCK_SUBMISSION_ATTACHMENTS,
+          isEmailJsonEnabled: true,
         })
 
         // Assert
@@ -1504,6 +1508,7 @@ describe('multirespondent-submission.service', () => {
           } as MultirespondentSubmissionDto,
           logMeta: {} as any,
           attachments: MOCK_SUBMISSION_ATTACHMENTS,
+          isEmailJsonEnabled: true,
         })
 
         // Assert
@@ -1637,6 +1642,7 @@ describe('multirespondent-submission.service', () => {
           workflowStep: currentStepNumber,
         } as MultirespondentSubmissionDto,
         logMeta: {} as any,
+        isEmailJsonEnabled: true,
       })
       // Assert
       // next workflow step email is sent only
@@ -1777,6 +1783,7 @@ describe('multirespondent-submission.service', () => {
           workflowStep: currentWorkflowStep,
         } as MultirespondentSubmissionDto,
         logMeta: {} as any,
+        isEmailJsonEnabled: true,
       })
       // Assert
       // approval email is sent instead of completion email
@@ -1930,6 +1937,7 @@ describe('multirespondent-submission.service', () => {
           workflowStep: currentWorkflowStep,
         } as MultirespondentSubmissionDto,
         logMeta: {} as any,
+        isEmailJsonEnabled: true,
       })
       // Assert
       // approval email is sent instead of completion email
@@ -2076,6 +2084,7 @@ describe('multirespondent-submission.service', () => {
           workflowStep: threeStepApprovalWorkflow.length - 1, // last step
         } as MultirespondentSubmissionDto,
         logMeta: {} as any,
+        isEmailJsonEnabled: true,
       })
       // Assert
       // approval email is sent instead of completion email
@@ -2219,6 +2228,7 @@ describe('multirespondent-submission.service', () => {
           workflowStep: currentStepNumber,
         } as MultirespondentSubmissionDto,
         logMeta: {} as any,
+        isEmailJsonEnabled: true,
       })
       // Assert
       // approval email is sent instead of completion email
@@ -2381,6 +2391,7 @@ describe('multirespondent-submission.service', () => {
           workflowStep: currentStepNumber,
         } as MultirespondentSubmissionDto,
         logMeta: {} as any,
+        isEmailJsonEnabled: true,
       })
       // Assert
       // approval email is sent instead of completion email
@@ -2527,6 +2538,7 @@ describe('multirespondent-submission.service', () => {
           workflowStep: threeStepApprovalWorkflow.length - 1, // last step
         } as MultirespondentSubmissionDto,
         logMeta: {} as any,
+        isEmailJsonEnabled: true,
       })
       // Assert
       // approval email is sent instead of completion email
@@ -2793,6 +2805,7 @@ describe('multirespondent-submission.service', () => {
           workflowStep: currentStepNumber,
         } as MultirespondentSubmissionDto,
         logMeta: {} as any,
+        isEmailJsonEnabled: true,
       })
 
       // Assert
@@ -2901,6 +2914,7 @@ describe('multirespondent-submission.service', () => {
           workflowStep: currentStepNumber,
         } as MultirespondentSubmissionDto,
         logMeta: {} as any,
+        isEmailJsonEnabled: true,
       })
 
       // Assert
@@ -2959,6 +2973,7 @@ describe('multirespondent-submission.service', () => {
             workflowStep: lastStepIndex,
           } as MultirespondentSubmissionDto,
           logMeta: {} as any,
+          isEmailJsonEnabled: true,
         })
 
         expect(sendMrfWorkflowCompletionEmailSpy).toHaveBeenCalledTimes(1)
@@ -3024,6 +3039,7 @@ describe('multirespondent-submission.service', () => {
             workflowStep: 2,
           } as MultirespondentSubmissionDto,
           logMeta: {} as any,
+          isEmailJsonEnabled: true,
         })
 
         expect(
@@ -3114,6 +3130,7 @@ describe('multirespondent-submission.service', () => {
           workflowStep: workflow.length - 1,
         } as MultirespondentSubmissionDto,
         logMeta: {} as any,
+        isEmailJsonEnabled: true,
       })
 
       // Assert
@@ -3189,6 +3206,7 @@ describe('multirespondent-submission.service', () => {
         } as MultirespondentSubmissionDto,
         logMeta: {} as any,
         attachments: MOCK_SUBMISSION_ATTACHMENTS,
+        isEmailJsonEnabled: true,
       })
 
       // Assert
@@ -3265,6 +3283,7 @@ describe('multirespondent-submission.service', () => {
           workflowStep: workflow.length - 1,
         } as MultirespondentSubmissionDto,
         logMeta: {} as any,
+        isEmailJsonEnabled: true,
       })
 
       // Assert
@@ -3361,6 +3380,7 @@ describe('multirespondent-submission.service', () => {
           workflowStep: workflow.length - 1,
         } as MultirespondentSubmissionDto,
         logMeta: {} as any,
+        isEmailJsonEnabled: true,
       })
 
       // Assert
@@ -5084,6 +5104,7 @@ describe('multirespondent-submission.service', () => {
           encryptedPayload: buildV4Payload({ workflowStep: 1 }),
           logMeta: {} as any,
           growthbook,
+          isEmailJsonEnabled: true,
         })
         await flushPromises()
 
@@ -5360,6 +5381,7 @@ describe('multirespondent-submission.service', () => {
         encryptedPayload: buildV4Payload({ workflowStep: 1 }),
         logMeta: {} as any,
         growthbook: growthbookWithFlags({ enableMrfWebhooks: true }),
+        isEmailJsonEnabled: true,
       })
       await flushPromises()
 
@@ -5407,6 +5429,7 @@ describe('multirespondent-submission.service', () => {
         encryptedPayload: buildV4Payload(),
         logMeta: {} as any,
         growthbook: growthbookWithFlags({ enableMrfWebhooks: true }),
+        isEmailJsonEnabled: true,
       })
       await flushPromises()
 
@@ -5466,6 +5489,7 @@ describe('multirespondent-submission.service', () => {
         encryptedPayload: buildV4Payload({ workflowStep: 1 }),
         logMeta: {} as any,
         growthbook: growthbookWithFlags({ enableMrfWebhooks: true }),
+        isEmailJsonEnabled: true,
       })
       await flushPromises()
 
@@ -5737,6 +5761,60 @@ describe('multirespondent-submission.service', () => {
       // Assert
       expect(webhookSpy).not.toHaveBeenCalled()
       expect(actualResult.isOk()).toBeTrue()
+    })
+  })
+
+  describe('JSON for email notifications setting', () => {
+    it('should leave the JSON out of the workflow completion email when the admin has turned it off', async () => {
+      // Arrange
+      const sendMrfWorkflowCompletionEmailSpy = jest
+        .spyOn(MailService, 'sendMrfWorkflowCompletionEmail')
+        .mockReturnValue(okAsync(true))
+      const growthbookWithJsonSettingFlagOn = {
+        getAttributes: jest.fn(() => ({})),
+        setAttributes: jest.fn(),
+        isOn: jest.fn(
+          (flag: string) => flag === featureFlags.settingsIntegrationsJson,
+        ),
+        getFeatureValue: jest.fn((_flag: string, def: unknown) => def),
+      } as never
+
+      // Act
+      await performMultiRespondentPostSubmissionCreateActions({
+        submission: {
+          id: mockSubmissionId,
+        } as unknown as IMultirespondentSubmissionSchema,
+        submissionId: mockSubmissionId,
+        form: {
+          _id: mockFormId,
+          title: 'Test Form',
+          form_fields: [],
+          stepsToNotify: [],
+          workflow: [],
+          emails: ['admin@example.com'],
+          isEmailJsonEnabled: false,
+          admin: {
+            agency: {
+              fullName: 'Government Technology Agency',
+            },
+          },
+        } as unknown as IPopulatedMultirespondentForm,
+        encryptedPayload: {
+          encryptedContent: 'encryptedContent',
+          version: 1,
+          submissionPublicKey: 'submissionPublicKey',
+          encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+          responses: {},
+        } as MultirespondentSubmissionDto,
+        logMeta: {} as any,
+        growthbook: growthbookWithJsonSettingFlagOn,
+      })
+
+      // Assert
+      expect(sendMrfWorkflowCompletionEmailSpy).toHaveBeenCalledTimes(1)
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].responseJson,
+      ).toBeUndefined()
     })
   })
 })
