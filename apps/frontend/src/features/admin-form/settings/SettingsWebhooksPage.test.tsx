@@ -16,6 +16,7 @@ import {
 import * as stories from './SettingsWebhooksPage.stories'
 
 const {
+  IntegrationsEmailMode,
   IntegrationsStorageMode,
   MultiStepV4Webhook,
   V4Webhook,
@@ -602,5 +603,18 @@ describe('JSON for email notifications', () => {
     await userEvent.click(toggle)
 
     await waitFor(() => expect(toggle).not.toBeChecked())
+  })
+
+  it('leaves email mode forms with only the storage mode message', async () => {
+    await act(async () => {
+      render(<IntegrationsEmailMode />)
+    })
+    // The heading only becomes visible once settings have loaded
+    await screen.findByRole('heading', { name: UNSUPPORTED_MSG })
+    expect(
+      screen.queryByRole('checkbox', {
+        name: 'Enable JSON for email notifications',
+      }),
+    ).not.toBeInTheDocument()
   })
 })

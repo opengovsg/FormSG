@@ -358,5 +358,10 @@ export const IntegrationsStorageMode = Template.bind({})
 IntegrationsStorageMode.decorators = [withIntegrationsJson]
 IntegrationsStorageMode.parameters = StorageModeEmpty.parameters
 
+export const IntegrationsEmailMode = Template.bind({})
+IntegrationsEmailMode.decorators = [withIntegrationsJson]
+
 export const IntegrationsWebhooksUnsupported = Template.bind({})
 IntegrationsWebhooksUnsupported.decorators = [withIntegrationsJson]
+IntegrationsWebhooksUnsupported.parameters =
+  UnsupportedMultirespondentMode.parameters

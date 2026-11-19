@@ -45,8 +45,11 @@ export const SettingsWebhooksPage = (): JSX.Element => {
   const isPlumberConnected = PLUMBER_WEBHOOK_URL_REGEX.test(
     settings?.webhook.url ?? '',
   )
-  // Plumber and the JSON toggle show whatever state the webhooks part is in
-  const otherIntegrations = isIntegrationsOn ? (
+  // Plumber and the JSON toggle show whatever state the webhooks part is in,
+  // except on email mode forms, which can no longer take submissions
+  const showOtherIntegrations =
+    isIntegrationsOn && settings?.responseMode !== FormResponseMode.Email
+  const otherIntegrations = showOtherIntegrations ? (
     <>
       {/* Hover, press and focus follow the design system's Tile */}
       <PlumberTile
