@@ -31,8 +31,7 @@ import carouselImage3 from './carouselImages/image-carousel-3.png'
 import carouselImage4 from './carouselImages/image-carousel-4.png'
 import carouselImage5 from './carouselImages/image-carousel-5.png'
 import { ImageCarousel } from './ConditionalRoutingImageCarousel'
-import { ConditionalRoutingConfig } from './ConditionalRoutingOption'
-import { FieldItem } from './types'
+import { ConditionalRoutingConfig } from './DropdownRecipientsMapping'
 
 const NUM_STEPS = 2
 
@@ -373,7 +372,6 @@ const StepReplaceModalContent = ({
 export interface ConditionalRoutingOptionModalProps {
   isOpen: boolean
   onClose: () => void
-  conditionalFieldItems: FieldItem[]
   isLoading: boolean
   control: UseFormReturn<ConditionalRoutingConfig>['control']
   errors: FieldErrors<ConditionalRoutingConfig>
