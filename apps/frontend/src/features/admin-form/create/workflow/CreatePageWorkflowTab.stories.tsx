@@ -676,7 +676,6 @@ StepLoginMixedProviders.parameters = {
   },
 }
 
-/** Closed form: every decision uses the existing permissive draft-save rules. */
 export const GuidedLoginTabs = Template.bind({})
 GuidedLoginTabs.decorators = StepLoginMixedProviders.decorators
 GuidedLoginTabs.parameters = StepLoginMixedProviders.parameters

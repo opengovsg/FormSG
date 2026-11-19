@@ -15,19 +15,20 @@ export interface GuidedStepNavigation<Section extends string> {
   goBack: () => void
 }
 
-/** Manual navigation does not overwrite the paused guided position. */
 export const useGuidedStepNavigation = <Section extends string>({
   sections,
   isEnabled,
 }: UseGuidedStepNavigationInput<Section>): GuidedStepNavigation<Section> => {
   const [progress, setProgress] = useState({
-    current: sections[0],
-    guided: sections[0],
-    reached: sections[0],
+    manualSection: sections[0],
+    guidedSection: sections[0],
+    reachedSection: sections[0],
   })
   const activeIndex = Math.max(
     0,
-    sections.indexOf(isEnabled ? progress.guided : progress.current),
+    sections.indexOf(
+      isEnabled ? progress.guidedSection : progress.manualSection,
+    ),
   )
   const activeSection = sections[activeIndex]
 
@@ -37,12 +38,12 @@ export const useGuidedStepNavigation = <Section extends string>({
       if (index < 0) return
       const next = sections[index]
       setProgress((previous) => ({
-        current: next,
-        guided: isEnabled ? next : previous.guided,
-        reached:
-          isEnabled && index > sections.indexOf(previous.reached)
+        manualSection: next,
+        guidedSection: isEnabled ? next : previous.guidedSection,
+        reachedSection:
+          isEnabled && index > sections.indexOf(previous.reachedSection)
             ? next
-            : previous.reached,
+            : previous.reachedSection,
       }))
     },
     [sections, isEnabled],
@@ -51,10 +52,11 @@ export const useGuidedStepNavigation = <Section extends string>({
     (section: string) => {
       const index = sections.findIndex((candidate) => candidate === section)
       return (
-        index >= 0 && index <= Math.max(0, sections.indexOf(progress.reached))
+        index >= 0 &&
+        index <= Math.max(0, sections.indexOf(progress.reachedSection))
       )
     },
-    [sections, progress.reached],
+    [sections, progress.reachedSection],
   )
   const advance = useCallback(() => {
     const next = sections[activeIndex + 1]

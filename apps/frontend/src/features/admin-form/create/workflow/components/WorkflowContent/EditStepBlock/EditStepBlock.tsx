@@ -273,20 +273,21 @@ export const EditStepBlock = ({
     ],
     [isLoginShown, isFirstStep],
   )
-  // Flag-off guidance retains the existing stacked Approvals-before-Fields flow.
+  const stackedSectionOrder = useMemo<StepTab[]>(
+    () => [
+      ...(isLoginShown ? (['login'] as const) : []),
+      ...(!isFirstStep ? (['approvals'] as const) : []),
+      'fields',
+    ],
+    [isLoginShown, isFirstStep],
+  )
   const sectionOrder = useMemo<readonly [StepSection, ...StepSection[]]>(
     () => [
       'name',
       'people',
-      ...(hasGuidedTabs
-        ? tabOrder
-        : [
-            ...(isLoginShown ? (['login'] as const) : []),
-            ...(!isFirstStep ? (['approvals'] as const) : []),
-            'fields' as const,
-          ]),
+      ...(hasGuidedTabs ? tabOrder : stackedSectionOrder),
     ],
-    [hasGuidedTabs, tabOrder, isLoginShown, isFirstStep],
+    [hasGuidedTabs, tabOrder, stackedSectionOrder],
   )
   const reveal = useGuidedStepNavigation({
     sections: sectionOrder,
