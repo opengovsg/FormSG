@@ -245,11 +245,13 @@ export const performEncryptPostSubmissionActions = ({
       ).andThen(() => okAsync(form))
     })
     .andThen((form) => {
-      // Add formId and adminEmail to growthbook attributes to allow for targeting in growthbook feature flags
+      // Add formId, adminEmail and adminAgency to growthbook attributes to
+      // allow for targeting in growthbook feature flags, as the admin app does
       void growthbook?.setAttributes({
         ...growthbook?.getAttributes(),
         formId: form._id.toString(),
         adminEmail: form.admin.email,
+        adminAgency: form.admin.agency?.shortName,
       })
       const respondentCopyEmailData: AutoReplyMailData[] = respondentEmails
         ? respondentEmails?.map((val) => {
