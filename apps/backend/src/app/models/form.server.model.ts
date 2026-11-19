@@ -136,6 +136,7 @@ import WorkflowStepSchema, {
   ESRVC_ID_SCHEMA,
   WorkflowStepConditionalSchema,
   WorkflowStepDynamicSchema,
+  WorkflowStepMixedSchema,
   WorkflowStepStaticSchema,
 } from './form_workflow_step.server.schema'
 import {
@@ -619,6 +620,10 @@ MultirespondentFormWorkflowPath.discriminator(
 MultirespondentFormWorkflowPath.discriminator(
   WorkflowType.Conditional,
   WorkflowStepConditionalSchema,
+)
+MultirespondentFormWorkflowPath.discriminator(
+  WorkflowType.Mixed,
+  WorkflowStepMixedSchema,
 )
 
 // Payments on multirespondent forms are only supported when the form behaves

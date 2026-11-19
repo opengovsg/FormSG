@@ -2036,6 +2036,59 @@ describe('multirespondent-submission.utils', () => {
       // Assert
       expect(result._unsafeUnwrap()).toEqual([])
     })
+
+    it('should return each recipient of a mixed step once, keeping the first spelling', () => {
+      const mockForm = {
+        form_fields: [
+          generateDefaultField(BasicField.Email, { _id: 'emailA' }),
+          generateDefaultField(BasicField.Email, { _id: 'emailB' }),
+          generateDefaultField(BasicField.Dropdown, {
+            _id: 'dropdownA',
+            fieldOptions: ['Finance'],
+            optionsToRecipientsMap: {
+              Finance: ['finance@example.com', 'applicant@example.com'],
+            },
+          }),
+          generateDefaultField(BasicField.Dropdown, {
+            _id: 'dropdownB',
+            fieldOptions: ['Legal'],
+            optionsToRecipientsMap: { Legal: ['legal@example.com'] },
+          }),
+        ],
+      } as IPopulatedForm
+      const mockResponses = {
+        emailA: {
+          fieldType: BasicField.Email,
+          answer: { value: 'Applicant@example.com' },
+        },
+        emailB: {
+          fieldType: BasicField.Email,
+          answer: { value: 'LEAD@example.com' },
+        },
+        dropdownA: {
+          fieldType: BasicField.Dropdown,
+          answer: { value: 'Finance' },
+        },
+      } as unknown as FieldResponsesV4
+      const mockWorkflowStep = {
+        workflow_type: WorkflowType.Mixed,
+        emails: ['lead@example.com'],
+        email_fields: ['emailA', 'emailB'],
+        dropdown_fields: ['dropdownA', 'dropdownB'],
+      } as FormWorkflowStepDto
+
+      const result = retrieveWorkflowStepEmailAddresses(
+        mockForm,
+        mockWorkflowStep,
+        mockResponses,
+      )
+
+      expect(result._unsafeUnwrap()).toEqual([
+        'lead@example.com',
+        'Applicant@example.com',
+        'finance@example.com',
+      ])
+    })
   })
 
   it('should return an empty array when formFields is not iterable', () => {

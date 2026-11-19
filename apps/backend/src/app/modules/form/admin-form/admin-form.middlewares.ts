@@ -142,7 +142,7 @@ export const createWorkflowStepValidator = celebrate({
   [Segments.BODY]: Joi.object({
     workflow_type: Joi.string().valid(...Object.values(WorkflowType)),
     emails: Joi.when('workflow_type', {
-      is: WorkflowType.Static,
+      is: Joi.valid(WorkflowType.Static, WorkflowType.Mixed),
       then: Joi.array().items(Joi.string().email()).required(),
     }),
     field: Joi.when('workflow_type', {
@@ -150,6 +150,16 @@ export const createWorkflowStepValidator = celebrate({
       then: Joi.string().optional(),
     }),
     edit: Joi.array().items(Joi.string()).required(),
+    email_fields: Joi.when('workflow_type', {
+      is: WorkflowType.Mixed,
+      then: Joi.array().items(Joi.string()).required(),
+      otherwise: Joi.forbidden(),
+    }),
+    dropdown_fields: Joi.when('workflow_type', {
+      is: WorkflowType.Mixed,
+      then: Joi.array().items(Joi.string()).required(),
+      otherwise: Joi.forbidden(),
+    }),
     approval_field: Joi.string().optional(),
     is_approval_enabled: Joi.boolean().optional(),
     conditional_field: Joi.when('workflow_type', {
@@ -173,7 +183,7 @@ export const updateWorkflowStepValidator = celebrate({
     _id: Joi.string().required(),
     workflow_type: Joi.string().valid(...Object.values(WorkflowType)),
     emails: Joi.when('workflow_type', {
-      is: WorkflowType.Static,
+      is: Joi.valid(WorkflowType.Static, WorkflowType.Mixed),
       then: Joi.array().items(Joi.string().email()).required(),
     }),
     field: Joi.when('workflow_type', {
@@ -181,6 +191,16 @@ export const updateWorkflowStepValidator = celebrate({
       then: Joi.string().optional(),
     }),
     edit: Joi.array().items(Joi.string().hex().length(24)).required(),
+    email_fields: Joi.when('workflow_type', {
+      is: WorkflowType.Mixed,
+      then: Joi.array().items(Joi.string().hex().length(24)).required(),
+      otherwise: Joi.forbidden(),
+    }),
+    dropdown_fields: Joi.when('workflow_type', {
+      is: WorkflowType.Mixed,
+      then: Joi.array().items(Joi.string().hex().length(24)).required(),
+      otherwise: Joi.forbidden(),
+    }),
     approval_field: Joi.string().optional(),
     is_approval_enabled: Joi.boolean().optional(),
     conditional_field: Joi.when('workflow_type', {

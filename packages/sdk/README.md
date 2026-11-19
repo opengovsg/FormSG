@@ -386,6 +386,8 @@ Each delivery for the same submission:
 }
 ```
 
+A step's `workflow_type` says who receives it: `static` (typed addresses in `emails`), `dynamic` (the Email field in `field`), `conditional` (the Dropdown field in `conditional_field`), or `mixed` (any of `emails`, `email_fields` and `dropdown_fields` together).
+
 Each entry in `submittedSteps` describes one completed step:
 
 | Key                       | Meaning                                                               |
