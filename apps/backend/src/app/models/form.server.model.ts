@@ -154,6 +154,7 @@ const FORM_SCHEMA_COMMON_DUPLICATE_PARAMS = [
   'endPage',
   'authType',
   'isSaveDraftEnabled',
+  'isEmailJsonEnabled',
   'isSubmitterIdCollectionEnabled',
   'isSingleSubmission',
   'inactiveMessage',

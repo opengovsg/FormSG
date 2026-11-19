@@ -1284,6 +1284,21 @@ export const handleTransferFormOwnership = [
  * @returns 422 when user of given id cannnot be found in the database, or when form parameters are invalid
  * @returns 500 when database error occurs
  */
+// TODO (settings-integrations-json): remove when GA. Matches frontend
+// targeting for the signed-in admin, so admins who see the JSON toggle get
+// new forms that start with it off.
+const isEmailJsonSettingOnFor = (
+  growthbook: GrowthBook | undefined,
+  user: IPopulatedUser,
+): boolean => {
+  void growthbook?.setAttributes({
+    ...growthbook.getAttributes(),
+    adminEmail: user.email,
+    adminAgency: user.agency?.shortName,
+  })
+  return growthbook?.isOn(featureFlags.settingsIntegrationsJson) ?? false
+}
+
 export const createForm: ControllerHandler<
   unknown,
   DeserializeTransform<FormDto> | ErrorDto,
@@ -1296,7 +1311,7 @@ export const createForm: ControllerHandler<
 
   return (
     // Step 1: Retrieve currently logged in user.
-    UserService.findUserById(sessionUserId)
+    UserService.getPopulatedUserById(sessionUserId)
       // Step 2: Create form with given params and set admin to logged in user.
       .andThen((user) => {
         // Step 2a: For multirespondent forms, add user's email to emails array if not provided
@@ -1313,6 +1328,7 @@ export const createForm: ControllerHandler<
             admin: user._id,
           },
           workspaceId,
+          isEmailJsonSettingOnFor(req.growthbook, user),
         )
       })
       .map((createdForm) => {
