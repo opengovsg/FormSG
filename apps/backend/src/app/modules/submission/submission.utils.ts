@@ -1097,6 +1097,14 @@ export const isKeepV4AttachmentPrefixOn = (growthbook?: GrowthBook): boolean =>
 export const isKeepV4TableOn = (growthbook?: GrowthBook): boolean =>
   growthbook?.isOn(featureFlags.keepV4Table) ?? false
 
+/**
+ * Ops fallback: when on, MRF emails keep printing dates as `01/01/2025`
+ * instead of `01 Jan 2025`. Off by default.
+ */
+// TODO (keep-v4-date): remove once no admin relies on the old date format
+export const isKeepV4DateOn = (growthbook?: GrowthBook): boolean =>
+  growthbook?.isOn(featureFlags.keepV4Date) ?? false
+
 export const isAdminEmailPdfEnabled = ({
   growthbook,
   formFields,

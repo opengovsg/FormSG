@@ -2,6 +2,7 @@ import type {
   ChildrenAnswerV4,
   FieldResponsesV4,
   FieldResponseV4,
+  StringAnswerV4,
   TableAnswerV4,
 } from '@opengovsg/formsg-sdk'
 import {
@@ -31,7 +32,10 @@ import {
 import { handleAddressResponseDisplay } from 'formsg-shared/utils/address'
 import { toTableInput } from 'formsg-shared/utils/flatten-v4-to-v1'
 import { applyMyInfoPrefixToFormFields } from 'formsg-shared/utils/myinfo-prefix'
-import { computeTableAnswerValue } from 'formsg-shared/utils/response-value-rules'
+import {
+  computeDateAnswerValue,
+  computeTableAnswerValue,
+} from 'formsg-shared/utils/response-value-rules'
 import { SIGNATURE_CAPTURED_STRING } from 'formsg-shared/utils/signature'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
@@ -655,6 +659,7 @@ const getQuestionAnswerPairsForOneField = ({
   includeVerifiedPrefix = true,
   keepV4AttachmentPrefix,
   keepV4Table,
+  keepV4Date,
 }: {
   formField: FormFieldSchema | FormFieldDto
   response: FieldResponseV4
@@ -662,6 +667,7 @@ const getQuestionAnswerPairsForOneField = ({
   includeVerifiedPrefix?: boolean
   keepV4AttachmentPrefix: boolean
   keepV4Table: boolean
+  keepV4Date: boolean
 }): QuestionAnswerPair[] => {
   // V4 responses embed question text in response.question
   let questionTitle = response.question || formField.title
@@ -693,6 +699,11 @@ const getQuestionAnswerPairsForOneField = ({
           fieldType,
         },
       ]
+    }
+    case BasicField.Date: {
+      const { value } = response.answer as StringAnswerV4
+      answer = keepV4Date ? value : computeDateAnswerValue(value).answer
+      break
     }
     case BasicField.Address: {
       const addressAnswer = response.answer as {
@@ -879,6 +890,7 @@ export const getQuestionAnswerPairsForMultipleFields = ({
   includeVerifiedPrefix = true,
   keepV4AttachmentPrefix,
   keepV4Table,
+  keepV4Date,
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV4
@@ -886,6 +898,7 @@ export const getQuestionAnswerPairsForMultipleFields = ({
   includeVerifiedPrefix?: boolean
   keepV4AttachmentPrefix: boolean
   keepV4Table: boolean
+  keepV4Date: boolean
 }): QuestionAnswerPair[] => {
   const questionAnswerPairs: QuestionAnswerPair[] = []
   if (!formFields || !responses) {
@@ -904,6 +917,7 @@ export const getQuestionAnswerPairsForMultipleFields = ({
         includeVerifiedPrefix,
         keepV4AttachmentPrefix,
         keepV4Table,
+        keepV4Date,
       })
 
     questionAnswerPairs.push(...questionAnswerPairsForCurrentFormField)
@@ -957,6 +971,7 @@ export const buildMrfResponseJson = ({
   timestamp,
   keepV4AttachmentPrefix,
   keepV4Table,
+  keepV4Date,
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV4
@@ -966,6 +981,7 @@ export const buildMrfResponseJson = ({
   delimiter?: string
   keepV4AttachmentPrefix: boolean
   keepV4Table: boolean
+  keepV4Date: boolean
 }): string => {
   const entries: { question: string; answer: string }[] = [
     ...(formId !== undefined ? [{ question: 'Form ID', answer: formId }] : []),
@@ -1024,6 +1040,7 @@ export const buildMrfResponseJson = ({
       includeVerifiedPrefix: false,
       keepV4AttachmentPrefix,
       keepV4Table,
+      keepV4Date,
     })
     for (const p of pairs) {
       entries.push({ question: p.question, answer: p.answer })
@@ -1053,11 +1070,13 @@ export const getResponsesDataFromMrfResponses = ({
   responses,
   keepV4AttachmentPrefix,
   keepV4Table,
+  keepV4Date,
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV4
   keepV4AttachmentPrefix: boolean
   keepV4Table: boolean
+  keepV4Date: boolean
 }): EmailRespondentConfirmationField[] => {
   if (!formFields || !responses) return []
 
@@ -1067,6 +1086,7 @@ export const getResponsesDataFromMrfResponses = ({
     includeSignatureDataPngDataUri: true,
     keepV4AttachmentPrefix,
     keepV4Table,
+    keepV4Date,
   })
 
   return questionAnswerPairs.map((questionAnswerPair) => {
