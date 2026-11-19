@@ -1,6 +1,6 @@
 import { RequiredDeep } from 'type-fest'
 
-import { Pagination } from './components'
+import { EmailSourceInput, Pagination } from './components'
 import { ValidationConstants } from './constants'
 import {
   App,
@@ -86,6 +86,7 @@ interface Translation {
       workspaceValidation?: WorkspaceValidation
     }
     components: {
+      emailSourceInput?: EmailSourceInput
       pagination?: Pagination
     }
     constants: {

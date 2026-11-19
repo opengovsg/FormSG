@@ -1,8 +1,9 @@
+import { ComponentProps } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { FormControl, Stack, Text } from '@chakra-ui/react'
+import { Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 
-import { UserDto } from 'formsg-shared/types'
+import { FormWorkflowStep, UserDto, WorkflowType } from 'formsg-shared/types'
 
 import { textStyles } from '~theme/textStyles'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -13,13 +14,27 @@ import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants
 import { EditStepInputs } from '~features/admin-form/create/workflow/types'
 
 import { useAdminFormWorkflow } from '../../../../hooks/useAdminFormWorkflow'
+import { useIsWorkflowEmailSourceInput } from '../../../../hooks/useIsWorkflowEmailSourceInput'
 import { useIsSpotlightActiveSection } from '../../../Spotlight'
+import { StepRespondentBadges } from '../../InactiveStepBlock/StepRespondentBadges'
 import { isFirstStepByStepNumber } from '../../utils/isFirstStepByStepNumber'
 import { EditStepBlockContainer } from '../EditStepBlockContainer'
 
 import { ConditionalRoutingOption } from './Components/ConditionalRoutingOption'
 import { DynamicRespondentOption } from './Components/DynamicRespondentOption'
 import { StaticRespondentOption } from './Components/StaticRespondentOption'
+import {
+  RESPONDENT_SOURCE_INPUT_NAME,
+  RespondentSourceInput,
+} from './RespondentSourceInput'
+
+const ReadOnlyHybridRespondents = (
+  props: ComponentProps<typeof StepRespondentBadges>,
+): JSX.Element => (
+  <Flex gap="0.5rem" wrap="wrap">
+    <StepRespondentBadges {...props} />
+  </Flex>
+)
 
 interface RespondentBlockProps {
   stepNumber: number
@@ -39,9 +54,13 @@ export const RespondentBlock = ({
     watch,
   } = formMethods
 
-  const { emailFormFields = [], dropdownFormFields = [] } =
-    useAdminFormWorkflow()
+  const {
+    emailFormFields = [],
+    dropdownFormFields = [],
+    idToFieldMap = {},
+  } = useAdminFormWorkflow()
   const isActiveSection = useIsSpotlightActiveSection()
+  const isSourceInput = useIsWorkflowEmailSourceInput()
 
   const emailFieldItems = emailFormFields.map(
     ({ _id, questionNumber, title, fieldType }) => ({
@@ -70,9 +89,12 @@ export const RespondentBlock = ({
         </Stack>
       ) : (
         <FormControl
+          id={isSourceInput ? RESPONDENT_SOURCE_INPUT_NAME : undefined}
           isReadOnly={isLoading}
           isRequired
-          isInvalid={!!errors.workflow_type}
+          isInvalid={
+            !!errors.workflow_type || (isSourceInput && !!errors.emails)
+          }
         >
           <FormLabel style={textStyles.h4}>
             {t('features.adminForm.sidebar.workflow.respondentBlock.select')}
@@ -82,29 +104,47 @@ export const RespondentBlock = ({
               {t('features.adminForm.sidebar.workflow.guidedHints.respondent')}
             </Text>
           ) : null}
-          <Stack spacing="0.25rem">
-            {/* Ordered by how often admins pick each one. */}
-            <Radio.RadioGroup value={selectedWorkflowType}>
-              <StaticRespondentOption
-                selectedWorkflowType={selectedWorkflowType}
-                formMethods={formMethods}
-                isLoading={isLoading}
-              />
-              <DynamicRespondentOption
-                selectedWorkflowType={selectedWorkflowType}
-                emailFieldItems={emailFieldItems}
-                formMethods={formMethods}
-                isLoading={isLoading}
-              />
-              <ConditionalRoutingOption
-                selectedWorkflowType={selectedWorkflowType}
-                conditionalFormFields={dropdownFormFields}
-                formMethods={formMethods}
-                isLoading={isLoading}
-              />
-            </Radio.RadioGroup>
-          </Stack>
-          <FormErrorMessage>{errors.workflow_type?.message}</FormErrorMessage>
+          {isSourceInput ? (
+            <RespondentSourceInput
+              formMethods={formMethods}
+              isLoading={isLoading}
+              emailFieldItems={emailFieldItems}
+              dropdownFormFields={dropdownFormFields}
+            />
+          ) : selectedWorkflowType === WorkflowType.Hybrid ? (
+            <ReadOnlyHybridRespondents
+              step={formMethods.getValues() as FormWorkflowStep}
+              idToFieldMap={idToFieldMap}
+            />
+          ) : (
+            <>
+              <Stack spacing="0.25rem">
+                {/* Ordered by how often admins pick each one. */}
+                <Radio.RadioGroup value={selectedWorkflowType}>
+                  <StaticRespondentOption
+                    selectedWorkflowType={selectedWorkflowType}
+                    formMethods={formMethods}
+                    isLoading={isLoading}
+                  />
+                  <DynamicRespondentOption
+                    selectedWorkflowType={selectedWorkflowType}
+                    emailFieldItems={emailFieldItems}
+                    formMethods={formMethods}
+                    isLoading={isLoading}
+                  />
+                  <ConditionalRoutingOption
+                    selectedWorkflowType={selectedWorkflowType}
+                    conditionalFormFields={dropdownFormFields}
+                    formMethods={formMethods}
+                    isLoading={isLoading}
+                  />
+                </Radio.RadioGroup>
+              </Stack>
+              <FormErrorMessage>
+                {errors.workflow_type?.message}
+              </FormErrorMessage>
+            </>
+          )}
         </FormControl>
       )}
     </EditStepBlockContainer>

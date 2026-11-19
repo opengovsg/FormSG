@@ -23,6 +23,9 @@ export interface Workflow {
     fieldsToFill: string
     clickToEdit: string
   }
+  respondentSource: {
+    required: string
+  }
   staticRespondent: {
     invalidEmails: string
   }
