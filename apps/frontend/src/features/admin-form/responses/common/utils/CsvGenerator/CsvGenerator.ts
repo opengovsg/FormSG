@@ -57,14 +57,17 @@ export class CsvGenerator {
     this.records.splice(1, this.numOfMetaDataRows, ...metaData)
   }
 
+  toBlob(): Blob {
+    return new Blob(this.records, {
+      type: 'text/csv;charset=utf-8',
+    })
+  }
+
   /**
    * Download CSV file to disk
    */
   triggerFileDownload(fileName: string): void {
-    const blob = new Blob(this.records, {
-      type: 'text/csv;charset=utf-8',
-    })
-    FileSaver.saveAs(blob, fileName)
+    FileSaver.saveAs(this.toBlob(), fileName)
   }
 
   /**

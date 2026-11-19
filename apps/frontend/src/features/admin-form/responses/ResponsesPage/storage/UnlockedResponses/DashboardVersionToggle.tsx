@@ -1,4 +1,3 @@
-import { SVGProps } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { Badge, Flex } from '@chakra-ui/react'
@@ -11,28 +10,8 @@ import { Switch } from '~components/Toggle/Switch'
 
 import { logAnalyticsEvent } from '~features/analytics/AnalyticsEventService'
 
+import { V1Icon, V2Icon } from '../../../components/versionIcons'
 import { useResultsDashboardVersion } from '../../../hooks/useIsDelightfulDashboard'
-
-const versionIcon = (label: string) => {
-  const VersionIcon = (props: SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 24 24" {...props}>
-      <text
-        x="12"
-        y="16"
-        textAnchor="middle"
-        fontSize="11"
-        fontWeight="700"
-        fill="currentColor"
-      >
-        {label}
-      </text>
-    </svg>
-  )
-  return VersionIcon
-}
-
-const V1Icon = versionIcon('V1')
-const V2Icon = versionIcon('V2')
 
 export const DashboardVersionToggle = (): JSX.Element | null => {
   const { t } = useTranslation()
