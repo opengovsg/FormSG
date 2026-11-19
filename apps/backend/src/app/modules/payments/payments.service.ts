@@ -247,6 +247,7 @@ export const performPaymentPostSubmissionActions = (
                   submission,
                   responses: payment.responses,
                   emailFields: [], // TODO [EMAIL-CONFIRMATION-BUG]: Email confirmation email to email fields does not work for payment forms, this is an existing issue to be fixed.
+                  growthbook,
                 })
                   .andThen(() =>
                     // If successfully sent email confirmations, delete response data from payment document.
