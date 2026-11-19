@@ -30,6 +30,7 @@ import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 interface TabEntry {
   label: string
   navLabel?: string
+  badgeText?: string
   icon: IconType
   component: () => JSX.Element
   path: string
@@ -70,6 +71,7 @@ export const SettingsPage = (): JSX.Element => {
       ? {
           label: multiLanguage,
           navLabel: navLabels.multiLanguage,
+          badgeText: t('features.common.betaBadgeLabel'),
           icon: LanguageTranslation,
           component: SettingsMultiLangPage,
           path: 'language',
@@ -172,6 +174,7 @@ export const SettingsPage = (): JSX.Element => {
                 <AdminFormSideNavTab
                   key={tab.path}
                   label={tab.navLabel ?? tab.label}
+                  badgeText={tab.badgeText}
                   icon={<tab.icon fontSize="1.5rem" />}
                 />
               ))}
