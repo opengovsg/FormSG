@@ -902,6 +902,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         default: true,
       },
 
+      // Defaults to true so forms saved before this setting existed keep
+      // the JSON they have always had.
+      isEmailJsonEnabled: {
+        type: Boolean,
+        default: true,
+      },
+
       savedViews: {
         type: [SavedViewSchema],
         default: [],

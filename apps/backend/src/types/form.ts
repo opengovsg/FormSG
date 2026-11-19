@@ -62,6 +62,7 @@ type FormDefaultableKey =
   | 'isSaveDraftEnabled'
   | 'hasCaptcha'
   | 'hasIssueNotification'
+  | 'isEmailJsonEnabled'
   | 'hasRespondentCopy'
   | 'authType'
   | 'isSubmitterIdCollectionEnabled'
@@ -311,6 +312,7 @@ interface IFormBaseDocument<T extends IFormSchema> {
   isSaveDraftEnabled: NonNullable<T['isSaveDraftEnabled']>
   hasCaptcha: NonNullable<T['hasCaptcha']>
   hasIssueNotification: NonNullable<T['hasIssueNotification']>
+  isEmailJsonEnabled: NonNullable<T['isEmailJsonEnabled']>
   hasRespondentCopy: NonNullable<T['hasRespondentCopy']>
   authType: NonNullable<T['authType']>
   isSubmitterIdCollectionEnabled: NonNullable<

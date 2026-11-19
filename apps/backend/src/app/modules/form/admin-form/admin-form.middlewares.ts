@@ -34,6 +34,7 @@ export const updateSettingsValidator = celebrate({
     isSaveDraftEnabled: Joi.boolean(),
     hasCaptcha: Joi.boolean(),
     hasIssueNotification: Joi.boolean(),
+    isEmailJsonEnabled: Joi.boolean(),
     inactiveMessage: Joi.string(),
     status: Joi.string().valid(...Object.values(FormStatus)),
     submissionLimit: Joi.number().allow(null),

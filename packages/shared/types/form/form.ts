@@ -250,6 +250,8 @@ export interface FormBase {
   isSaveDraftEnabled: boolean
   hasCaptcha: boolean
   hasIssueNotification: boolean
+  // Whether admin notification and workflow emails end with the response JSON
+  isEmailJsonEnabled: boolean
   authType: FormAuthType
   isSubmitterIdCollectionEnabled: boolean
   isSingleSubmission: boolean
