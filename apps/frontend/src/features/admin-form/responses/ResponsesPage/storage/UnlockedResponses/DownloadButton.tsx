@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiDownload } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
@@ -16,7 +16,12 @@ import {
 import { datadogLogs } from '@datadog/browser-logs'
 import simplur from 'simplur'
 
-import { AnalyticsEventType, ResultsDownloadFormat } from 'formsg-shared/types'
+import {
+  AnalyticsEventType,
+  ResultsDownloadFormat,
+  ResultsDownloadOutcome,
+  ResultsDownloadVersion,
+} from 'formsg-shared/types'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
@@ -28,7 +33,10 @@ import Menu from '~components/Menu'
 import { NavigationPrompt } from '~templates/NavigationPrompt'
 
 import { CSV_BUFFER_MAX_RESPONSES } from '~features/admin-form/responses/constants'
-import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
+import {
+  useIsDelightfulDashboard,
+  useIsOneZipDownload,
+} from '~features/admin-form/responses/hooks'
 import { logAnalyticsEvent } from '~features/analytics/AnalyticsEventService'
 import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedbackContainer/adminFeedbackStore'
 
@@ -57,6 +65,12 @@ const toDownloadFormats = ({
   ...(isDownloadAttachments ? (['attachments'] as const) : []),
   ...(isDownloadPdf ? (['pdf'] as const) : []),
 ]
+
+const toDownloadOutcome = (result?: DownloadResult): ResultsDownloadOutcome => {
+  if (!result) return 'failed'
+  if (!result.errorCount && !result.failedDownloads?.length) return 'success'
+  return result.successCount ? 'partial' : 'failed'
+}
 
 const DownloadSelectorCheckbox = ({
   optionText,
@@ -153,6 +167,9 @@ export const DownloadButton = ({
 }): JSX.Element => {
   const { formId } = useParams()
   const isDelightfulDashboard = useIsDelightfulDashboard()
+  const downloadVersion: ResultsDownloadVersion = useIsOneZipDownload()
+    ? 'v2'
+    : 'v1'
   const {
     visibleSubmissionIds,
     isFullyLoaded,
@@ -282,6 +299,35 @@ export const DownloadButton = ({
     resetDownloadProgress()
   }, [resetDownloadProgress])
 
+  const trackedDownloadRef = useRef<{
+    startTime: number
+    downloadVersion: ResultsDownloadVersion
+    formats: ResultsDownloadFormat[]
+  }>()
+  const trackDownloadFinished = useCallback(
+    (outcome: ResultsDownloadOutcome, result?: DownloadResult) => {
+      if (!trackedDownloadRef.current) return
+      const { startTime, ...content } = trackedDownloadRef.current
+      trackedDownloadRef.current = undefined
+      logAnalyticsEvent(formId, {
+        type: AnalyticsEventType.ResultsDownloadFinished,
+        content: {
+          ...content,
+          outcome,
+          durationMs: Math.round(performance.now() - startTime),
+          ...(result && {
+            expectedCount: result.expectedCount,
+            successCount: result.successCount,
+            errorCount: result.errorCount,
+            failedDownloadCount: result.failedDownloads?.length ?? 0,
+            zipBytes: result.zipBytes,
+          }),
+        },
+      })
+    },
+    [formId],
+  )
+
   const { handleBulkDownloadMutation, abortDecryption } = useDecryptionWorkers({
     onDecryptionProgress: setDownloadCount,
     onPdfGenerationProgress: setPdfGenerationCount,
@@ -336,6 +382,7 @@ export const DownloadButton = ({
         })
       },
       onSettled: (decryptResult) => {
+        trackDownloadFinished(toDownloadOutcome(decryptResult), decryptResult)
         setDownloadMetadata(decryptResult)
         resetDownloadProgress()
         resetDownloadOptions()
@@ -348,11 +395,13 @@ export const DownloadButton = ({
     const selectedSavedView = isDelightfulDashboard
       ? savedViews.find(({ _id }) => _id === selectedViewId)
       : undefined
+    const formats = toDownloadFormats(downloadOptions)
     logAnalyticsEvent(formId, {
       type: AnalyticsEventType.ResultsDownload,
       content: {
         dashboardVersion: isDelightfulDashboard ? 'v2' : 'v1',
-        formats: toDownloadFormats(downloadOptions),
+        downloadVersion,
+        formats,
         scope: 'bulk',
         ...(currentViewState.dateRange.length === 2
           ? {
@@ -393,6 +442,11 @@ export const DownloadButton = ({
         isDownloadPdf: downloadOptions.isDownloadPdf,
       },
     })
+    trackedDownloadRef.current = {
+      startTime: performance.now(),
+      downloadVersion,
+      formats,
+    }
     return handleBulkDownloadMutation.mutate({
       ...downloadParams,
       ...(exportSubmissionIds
@@ -406,6 +460,7 @@ export const DownloadButton = ({
   }, [
     downloadParams,
     isDelightfulDashboard,
+    downloadVersion,
     savedViews,
     formId,
     downloadOptions,
@@ -419,10 +474,16 @@ export const DownloadButton = ({
   ])
 
   const resetDownload = useCallback(() => {
+    trackDownloadFinished('cancelled')
     resetDownloadProgress()
     abortDecryption()
     onProgressModalClose()
-  }, [abortDecryption, onProgressModalClose, resetDownloadProgress])
+  }, [
+    abortDecryption,
+    onProgressModalClose,
+    resetDownloadProgress,
+    trackDownloadFinished,
+  ])
 
   const handleModalClose = useCallback(() => {
     resetDownload()

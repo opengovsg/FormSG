@@ -22,6 +22,11 @@ const logger = createLoggerWithLabel(module)
 const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
 
 const dashboardVersion = Joi.string().valid('v1', 'v2')
+const downloadVersion = Joi.string().valid('v1', 'v2')
+const downloadFormats = Joi.array()
+  .items(Joi.string().valid('csv', 'attachments', 'pdf'))
+  .min(1)
+  .unique()
 const objectId = Joi.string().hex().length(24)
 const columnId = Joi.string().max(100)
 const isoDay = Joi.date().format('YYYY-MM-DD').raw()
@@ -39,11 +44,7 @@ const joiAnalyticsEventBody = Joi.alternatives().try(
     [AnalyticsEventType.ResultsDownload],
     Joi.object({
       dashboardVersion: dashboardVersion.required(),
-      formats: Joi.array()
-        .items(Joi.string().valid('csv', 'attachments', 'pdf'))
-        .min(1)
-        .unique()
-        .required(),
+      formats: downloadFormats.required(),
       scope: Joi.string().valid('bulk', 'single').required(),
       savedViewId: objectId.optional(),
       isSavedViewModified: Joi.boolean().optional(),
@@ -61,6 +62,23 @@ const joiAnalyticsEventBody = Joi.alternatives().try(
         )
         .max(100)
         .optional(),
+      downloadVersion: downloadVersion.optional(),
+    }),
+  ),
+  joiEvent(
+    [AnalyticsEventType.ResultsDownloadFinished],
+    Joi.object({
+      downloadVersion: downloadVersion.required(),
+      formats: downloadFormats.required(),
+      outcome: Joi.string()
+        .valid('success', 'partial', 'failed', 'cancelled')
+        .required(),
+      durationMs: Joi.number().min(0).required(),
+      expectedCount: Joi.number().integer().min(0).optional(),
+      successCount: Joi.number().integer().min(0).optional(),
+      errorCount: Joi.number().integer().min(0).optional(),
+      failedDownloadCount: Joi.number().integer().min(0).optional(),
+      zipBytes: Joi.number().integer().min(0).optional(),
     }),
   ),
   joiEvent(
