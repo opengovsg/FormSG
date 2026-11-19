@@ -206,6 +206,8 @@ const useDecryptionWorkers = ({
         formId: adminForm._id,
         formTitle: adminForm.title,
         downloadAttachments,
+        isDownloadCsv,
+        isDownloadPdf,
         num_workers: numWorkers,
         expectedNumSubmissions: expectedResponsesCount,
         adminId: user?._id,
