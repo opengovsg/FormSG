@@ -43,6 +43,7 @@ import { ProcessedFieldResponse } from '../submission.types'
 import {
   extractEmailConfirmationData,
   isAdminEmailPdfEnabled,
+  shouldIncludeEmailJson,
 } from '../submission.utils'
 
 import { SaveEncryptSubmissionParams } from './encrypt-submission.types'
@@ -303,6 +304,11 @@ export const performEncryptPostSubmissionActions = ({
       const includeFormIdInResponseJson: boolean =
         growthbook?.getFeatureValue(featureFlags.formIdJson, false) ?? false
 
+      const includeResponseJson = shouldIncludeEmailJson({
+        growthbook,
+        isEmailJsonEnabled: form.isEmailJsonEnabled,
+      })
+
       return pdfAttachmentResult.andThen((pdfAttachment) => {
         return ResultAsync.combine([
           MailService.sendSubmissionToAdmin({
@@ -315,7 +321,9 @@ export const performEncryptPostSubmissionActions = ({
             },
             submissionAttachments,
             formData,
-            dataCollationData: formattedDataCollationData,
+            dataCollationData: includeResponseJson
+              ? formattedDataCollationData
+              : undefined,
             pdfAttachment: checkIfAdminPdfIsRequired(
               isPaymentEnabled,
               form.form_fields,
