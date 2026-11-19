@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.76.0](https://github.com/opengovsg/formsg/compare/v9.75.1...v9.76.0) (2026-11-19)
+
+
+### Features
+
+* **mrf:** format email tables like Storage behind keep-v4-table (#10623) ([#10623](https://github.com/opengovsg/formsg/commit/00504c99cb0f7970acc7d9ceb8895441dea9ce07))
+
+
+### Bug Fixes
+
+* **forms:** require login on email mode feedback routes (#10565) ([#10565](https://github.com/opengovsg/formsg/commit/3bd37a45da129b1d010eb53b6f9c2de7dfa67415))
+* **mrf:** format email dates like Storage behind keep-v4-date (#10624) ([#10624](https://github.com/opengovsg/formsg/commit/7d9722ab58dc1bc8df17b4889e985846eb3d10dd))
+
+
+### Tests
+
+* **payments:** fix payments controller tests broken by the previous payment lookup flag (#10618) ([#10618](https://github.com/opengovsg/formsg/commit/0b17dcd13e08b52b6c917d092e43b01ac1bca548))
+
 ## [9.75.1](https://github.com/opengovsg/formsg/compare/v9.75.0...v9.75.1) (2026-11-19)
 
 
