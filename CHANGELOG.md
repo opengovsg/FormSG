@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.75.1](https://github.com/opengovsg/formsg/compare/v9.75.0...v9.75.1) (2026-11-19)
+
+
+### Bug Fixes
+
+* **corppass:** explain Entity ID in UEN field details (#10611) ([#10611](https://github.com/opengovsg/formsg/commit/bb34c7881c5bdc874359c674a67c7cf8002f7f33))
+* **create:** list workflow and logic fields in question order (#10607) ([#10607](https://github.com/opengovsg/formsg/commit/7d71dff878b8d7830ad04d6c2d22eacc2ecaf21a))
+* **responses:** make filter and sort menu headings consistent (#10610) ([#10610](https://github.com/opengovsg/formsg/commit/7ca6c05ba7bbf6886c0e88d90727377888d25d32))
+* **results:** save the v1/v2 dashboard choice per form (#10604) ([#10604](https://github.com/opengovsg/formsg/commit/db3f830ddad5164f84c3744afd20fc007ad39215))
+
+
+### Refactors
+
+* **payments:** serve payment page state from the payment info response (#10614) ([#10614](https://github.com/opengovsg/formsg/commit/04dffdec483e6366378e6a9b11d8c889474c75f2))
+
 ## [9.75.0](https://github.com/opengovsg/formsg/compare/v9.74.2...v9.75.0) (2026-11-18)
 
 
