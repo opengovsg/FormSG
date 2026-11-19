@@ -113,6 +113,7 @@ export type DownloadResult = {
   errorCount: number
   unverifiedCount?: number
   failedDownloads?: FailedDownload[]
+  zipBytes?: number
 }
 
 export type CanceledResult = {

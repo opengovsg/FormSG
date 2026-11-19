@@ -29,7 +29,9 @@ let mockOnSuccess: (result: {
   expectedCount: number
   errorCount: number
 }) => void = () => undefined
+let mockOnSettled: (result?: Record<string, unknown>) => void = () => undefined
 let mockIsDelightful = true
+let mockIsOneZip = false
 let mockContext: Record<string, unknown> = {}
 
 vi.mock('~features/analytics/AnalyticsEventService', () => ({
@@ -38,6 +40,7 @@ vi.mock('~features/analytics/AnalyticsEventService', () => ({
 
 vi.mock('~features/admin-form/responses/hooks', () => ({
   useIsDelightfulDashboard: () => mockIsDelightful,
+  useIsOneZipDownload: () => mockIsOneZip,
 }))
 
 vi.mock('./UnlockedResponsesProvider', () => ({
@@ -55,9 +58,13 @@ vi.mock('../useDecryptionWorkers', () => ({
   default: ({
     mutateProps,
   }: {
-    mutateProps: { onSuccess: typeof mockOnSuccess }
+    mutateProps: {
+      onSuccess: typeof mockOnSuccess
+      onSettled: typeof mockOnSettled
+    }
   }) => {
     mockOnSuccess = mutateProps.onSuccess
+    mockOnSettled = mutateProps.onSettled
     return {
       handleBulkDownloadMutation: { mutate: mockMutate, isLoading: false },
       abortDecryption: vi.fn(),
@@ -101,14 +108,17 @@ const VIEW_STATE: ResponsesViewState = {
 
 const renderButton = ({
   isDelightful = true,
+  isOneZip = false,
   selectedViewId = 'all-responses',
   currentViewState = VIEW_STATE,
 }: {
   isDelightful?: boolean
+  isOneZip?: boolean
   selectedViewId?: string
   currentViewState?: ResponsesViewState
 } = {}) => {
   mockIsDelightful = isDelightful
+  mockIsOneZip = isOneZip
   mockContext = {
     visibleSubmissionIds: undefined,
     isFullyLoaded: false,
@@ -158,6 +168,7 @@ describe('DownloadButton analytics events', () => {
       type: AnalyticsEventType.ResultsDownload,
       content: {
         dashboardVersion: 'v1',
+        downloadVersion: 'v1',
         formats: ['csv'],
         scope: 'bulk',
         responsesCount: 12,
@@ -175,6 +186,7 @@ describe('DownloadButton analytics events', () => {
       type: AnalyticsEventType.ResultsDownload,
       content: {
         dashboardVersion: 'v2',
+        downloadVersion: 'v1',
         formats: ['pdf'],
         scope: 'bulk',
         columnFilters: [{ columnId: 'a', type: 'text' }],
@@ -245,6 +257,50 @@ describe('DownloadButton analytics events', () => {
         }),
       }),
     )
+  })
+})
+
+describe('DownloadButton finished event', () => {
+  beforeAll(() => i18n.changeLanguage(Language.ENGLISH))
+  beforeEach(() => vi.clearAllMocks())
+
+  it('logs how a one-zip download ended, once', async () => {
+    renderButton({ isOneZip: true })
+    await startDownload(/pdf/i)
+
+    act(() =>
+      mockOnSettled({
+        expectedCount: 12,
+        successCount: 11,
+        errorCount: 1,
+        failedDownloads: [{ refNo: 'a', name: 'b.pdf', reason: 'pdf' }],
+        zipBytes: 2048,
+      }),
+    )
+    act(() => mockOnSettled())
+
+    const finished = mockLogAnalyticsEvent.mock.calls.filter(
+      ([, event]) => event.type === AnalyticsEventType.ResultsDownloadFinished,
+    )
+    expect(finished).toEqual([
+      [
+        FORM_ID,
+        {
+          type: AnalyticsEventType.ResultsDownloadFinished,
+          content: {
+            downloadVersion: 'v2',
+            formats: ['pdf'],
+            outcome: 'partial',
+            durationMs: expect.any(Number),
+            expectedCount: 12,
+            successCount: 11,
+            errorCount: 1,
+            failedDownloadCount: 1,
+            zipBytes: 2048,
+          },
+        },
+      ],
+    ])
   })
 })
 

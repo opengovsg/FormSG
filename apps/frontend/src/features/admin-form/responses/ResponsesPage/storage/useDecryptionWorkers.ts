@@ -713,10 +713,11 @@ const useDecryptionWorkers = ({
                       duration: performance.now() - downloadStartTime,
                     },
                   })
+                  const zipResult = { ...result, zipBytes: zipMeta.zipBytes }
                   resolve(
                     failedDownloads.length
-                      ? { ...result, failedDownloads }
-                      : result,
+                      ? { ...zipResult, failedDownloads }
+                      : zipResult,
                   )
                 },
                 (err) => {
