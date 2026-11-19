@@ -15,6 +15,7 @@ export interface AttachmentFieldBase extends FieldBase {
   fieldType: BasicField.Attachment
   attachmentSize: AttachmentSize
   allowMultiple?: boolean
+  allowedFileTypes?: string[]
 }
 
 export type AttachmentSizeMapType = {

@@ -157,6 +157,62 @@ describe('Attachment validation', () => {
     })
   })
 
+  describe('Validation of file types', () => {
+    it('should allow a file of a type the field allows, in any case', () => {
+      const formField = generateDefaultField(BasicField.Attachment, {
+        attachmentSize: AttachmentSize.OneMb,
+        allowedFileTypes: ['.pdf'],
+      })
+      const response = generateNewAttachmentResponse({
+        filename: 'Report.PDF',
+      })
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+    })
+
+    it('should disallow a file of a type the field does not allow', () => {
+      const formField = generateDefaultField(BasicField.Attachment, {
+        attachmentSize: AttachmentSize.OneMb,
+        allowedFileTypes: ['.pdf'],
+      })
+      const response = generateNewAttachmentResponse({
+        filename: 'photo.jpg',
+      })
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
+    })
+
+    it('should check each file in a multi-file answer, not its zip', () => {
+      const formField = generateDefaultField(BasicField.Attachment, {
+        attachmentSize: AttachmentSize.OneMb,
+        allowMultiple: true,
+        allowedFileTypes: ['.pdf'],
+      })
+      const makeResponse = (answerArray: string[]) =>
+        generateNewAttachmentResponse({
+          answer: 'Question 1.zip',
+          filename: 'Question 1.zip',
+          answerArray,
+        })
+      expect(
+        validateField(
+          formId,
+          formField,
+          makeResponse(['a.pdf', 'b.pdf']),
+        ).isOk(),
+      ).toBe(true)
+      expect(
+        validateField(
+          formId,
+          formField,
+          makeResponse(['a.pdf', 'b.jpg']),
+        ).isErr(),
+      ).toBe(true)
+    })
+  })
+
   describe('check for responses on hidden fields', () => {
     it('should disallow responses submitted for hidden fields when response contains file content', () => {
       const formField = generateDefaultField(BasicField.Attachment, {
@@ -223,6 +279,7 @@ describe('Attachment field validation V4', () => {
   const makeAttachmentResponseV4 = (answer: {
     value: string
     filename: string
+    filenames?: string[]
     content: Buffer
     hasBeenScanned: boolean
   }): ParsedClearFormFieldResponseV4 =>
@@ -447,6 +504,55 @@ describe('Attachment field validation V4', () => {
       })
       expect(validateResult.isOk()).toBe(true)
       expect(validateResult._unsafeUnwrap()).toEqual(true)
+    })
+  })
+
+  describe('Validation of file types', () => {
+    const validate = (answer: {
+      value: string
+      filename: string
+      filenames?: string[]
+    }) =>
+      validateFieldV4({
+        formId,
+        formField: generateDefaultFieldV4(BasicField.Attachment, {
+          attachmentSize: AttachmentSize.OneMb,
+          allowedFileTypes: ['.pdf'],
+        }),
+        response: makeAttachmentResponseV4({
+          ...answer,
+          content: Buffer.alloc(1),
+          hasBeenScanned: false,
+        }),
+        isVisible: true,
+      })
+
+    it('should disallow a file of a type the field does not allow', () => {
+      expect(validate({ value: 'a.pdf', filename: 'a.pdf' }).isOk()).toBe(true)
+      expect(
+        validate({
+          value: 'photo.jpg',
+          filename: 'photo.jpg',
+        })._unsafeUnwrapErr(),
+      ).toEqual(new ValidateFieldErrorV4('Invalid answer submitted'))
+    })
+
+    it('should check each file in a multi-file answer, not its zip', () => {
+      const zipName = 'Question 1.zip'
+      expect(
+        validate({
+          value: zipName,
+          filename: zipName,
+          filenames: ['a.pdf'],
+        }).isOk(),
+      ).toBe(true)
+      expect(
+        validate({
+          value: zipName,
+          filename: zipName,
+          filenames: ['a.pdf', 'b.jpg'],
+        }).isErr(),
+      ).toBe(true)
     })
   })
 

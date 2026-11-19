@@ -1,4 +1,5 @@
 import { AttachmentSize, FormResponseMode } from 'formsg-shared/types'
+import { validateAllowedFileTypes } from 'formsg-shared/utils/file-validation'
 import { Schema } from 'mongoose'
 
 import { IAttachmentFieldSchema } from '../../../types/field'
@@ -24,6 +25,14 @@ const createAttachmentFieldSchema = () => {
           )
         },
         message: 'Email mode forms do not support multiple attachments',
+      },
+    },
+    allowedFileTypes: {
+      type: [String],
+      default: undefined,
+      validate: {
+        validator: validateAllowedFileTypes,
+        message: 'There are one or more duplicate or invalid file types.',
       },
     },
   })

@@ -5,6 +5,7 @@ import { datadogLogs } from '@datadog/browser-logs'
 import imageCompression from 'browser-image-compression'
 
 import { MB } from 'formsg-shared/constants/file'
+import { VALID_EXTENSIONS } from 'formsg-shared/utils/file-validation'
 
 import { PublicFormContext } from '~features/public-form/PublicFormContext'
 
@@ -21,9 +22,9 @@ export type PreparedFile =
   | { kind: 'error'; errorMessage: string }
 
 export const useAttachmentFileChecks = ({
-  accept,
+  allowedFileTypes,
   maxSize,
-}: Pick<DropzoneProps, 'accept' | 'maxSize'>) => {
+}: Pick<DropzoneProps, 'maxSize'> & { allowedFileTypes?: string[] }) => {
   const { t } = useTranslation()
   const publicFormId = useContext(PublicFormContext)?.formId
 
@@ -37,10 +38,18 @@ export const useAttachmentFileChecks = ({
       const [firstError] = errors
       switch (firstError.code) {
         case 'file-invalid-type':
-          return t(
-            `features.publicForm.components.fields.attachment.error.fileInvalidType`,
-            { fileExt: getFileExtension(file.name) },
-          )
+          return allowedFileTypes
+            ? t(
+                'features.publicForm.components.fields.attachment.error.fileTypeNotAllowed',
+                {
+                  fileExt: getFileExtension(file.name),
+                  allowedFileTypes: allowedFileTypes.join(', '),
+                },
+              )
+            : t(
+                `features.publicForm.components.fields.attachment.error.fileInvalidType`,
+                { fileExt: getFileExtension(file.name) },
+              )
         case 'too-many-files':
           return t(
             `features.publicForm.components.fields.attachment.error.tooManyFiles`,
@@ -49,7 +58,7 @@ export const useAttachmentFileChecks = ({
           return firstError.message
       }
     },
-    [t],
+    [allowedFileTypes, t],
   )
 
   const prepareFile = useCallback(
@@ -58,7 +67,7 @@ export const useAttachmentFileChecks = ({
         try {
           const invalidFilesInZip = await getInvalidFileExtensionsInZip(
             file,
-            accept,
+            VALID_EXTENSIONS,
           )
           if (invalidFilesInZip.length !== 0) {
             return {
@@ -115,7 +124,7 @@ export const useAttachmentFileChecks = ({
 
       return { kind: 'ok', file }
     },
-    [accept, maxSize, publicFormId, t],
+    [maxSize, publicFormId, t],
   )
 
   const fileValidator = useCallback<NonNullable<DropzoneProps['validator']>>(

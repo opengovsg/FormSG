@@ -31,6 +31,7 @@ export interface MultiAttachmentProps extends UseFormControlProps<HTMLElement> {
   value: File[]
   name: string
   accept?: DropzoneProps['accept']
+  allowedFileTypes?: string[]
   maxTotalSize?: number
   maxFiles: number
   colorScheme?: ThemeColorScheme
@@ -46,6 +47,7 @@ export const MultiAttachment = forwardRef<MultiAttachmentProps, 'div'>(
       maxTotalSize,
       maxFiles,
       accept,
+      allowedFileTypes,
       value: files,
       name,
       colorScheme,
@@ -65,7 +67,7 @@ export const MultiAttachment = forwardRef<MultiAttachmentProps, 'div'>(
       getRejectionErrorMessage,
       prepareFile,
       fileValidator,
-    } = useAttachmentFileChecks({ accept, maxSize: maxTotalSize })
+    } = useAttachmentFileChecks({ allowedFileTypes, maxSize: maxTotalSize })
     const [isAddingFiles, setIsAddingFiles] = useState(false)
 
     const handleFileDrop = useCallback<NonNullable<DropzoneProps['onDrop']>>(
@@ -134,7 +136,7 @@ export const MultiAttachment = forwardRef<MultiAttachmentProps, 'div'>(
 
     const { getRootProps, getInputProps, isDragActive, rootRef } = useDropzone({
       multiple: true,
-      accept,
+      accept: allowedFileTypes ?? accept,
       disabled: inputProps.disabled || isAddingFiles,
       validator: fileValidator,
       noClick: inputProps.readOnly,

@@ -231,6 +231,16 @@ export interface Fields {
     maximumSizeMultiple: string
     allowMultiple: string
     webhookWarning: string
+    restrictFileTypes: {
+      title: string
+      inputLabel: string
+      placeholder: string
+      error: {
+        duplicate: string
+        empty: string
+        invalid: string
+      }
+    }
     error: {
       exceedSize: string
     }
