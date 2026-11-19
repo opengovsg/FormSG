@@ -86,9 +86,10 @@ export type PaymentReceiptStatusDto = {
 }
 
 export type GetPaymentInfoDto = {
-  client_secret: string
+  client_secret?: string
+  status: Stripe.PaymentIntent.Status
+  description: string | null
   publishableKey: string
-  payment_intent_id: string
   submissionId: string
   products: Payment['products']
   amount: Payment['amount']

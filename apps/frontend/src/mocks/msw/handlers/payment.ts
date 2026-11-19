@@ -9,8 +9,9 @@ import {
 
 const BASE_PAYMENT_INFO = {
   client_secret: 'sample_client_secret',
+  status: 'requires_payment_method' as const,
+  description: null,
   publishableKey: 'sample_pub_key',
-  payment_intent_id: 'sample_piid',
   submissionId: 'sample_responseid',
   products: [],
   amount: 1000,
