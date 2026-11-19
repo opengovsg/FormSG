@@ -82,8 +82,10 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
   const isFieldUsedForConditionalRouting = useMemo(() => {
     return formWorkflow?.some(
       (workflow) =>
-        workflow.workflow_type === WorkflowType.Conditional &&
-        workflow.conditional_field === field._id,
+        (workflow.workflow_type === WorkflowType.Conditional &&
+          workflow.conditional_field === field._id) ||
+        (workflow.workflow_type === WorkflowType.Mixed &&
+          workflow.dropdown_fields.some((id) => id === field._id)),
     )
   }, [formWorkflow, field._id])
 

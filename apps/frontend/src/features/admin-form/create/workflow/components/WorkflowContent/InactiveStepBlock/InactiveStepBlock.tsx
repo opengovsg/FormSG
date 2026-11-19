@@ -10,15 +10,8 @@ import {
   Text,
   useDisclosure,
 } from '@chakra-ui/react'
-import { Dictionary } from 'lodash'
 
-import { BasicField, FormField } from 'formsg-shared/types'
-import {
-  FormAuthType,
-  FormWorkflowStepDto,
-  WorkflowType,
-} from 'formsg-shared/types/form'
-import { checkIsOptionsMismatched } from 'formsg-shared/utils/options-recipients-map-validation'
+import { FormAuthType, FormWorkflowStepDto } from 'formsg-shared/types/form'
 import {
   getStepAuthType,
   isWorkflowStepAuthType,
@@ -28,7 +21,6 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 import { sortFieldIdsByFormOrder } from '~features/admin-form/create/common/sortFieldIdsByFormOrder'
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
-import { FormFieldWithQuestionNo } from '~features/form/types'
 
 import {
   createOrEditDataSelector,
@@ -46,98 +38,13 @@ import { StepLabel } from '../StepLabel'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { InactiveApprovalsBlock } from './InactiveApprovalsBlock'
-
-const MISSING_FIELD_MESSAGE = 'This field is missing'
-const NO_EMAILS_MESSAGE = 'No emails added'
+import { StepRespondentBadges } from './StepRespondentBadges'
 
 const STEP_LOGIN_COPY_KEY = 'features.adminForm.sidebar.workflow.stepLogin'
 
 interface InactiveStepBlockProps {
   stepNumber: number
   step: FormWorkflowStepDto
-}
-
-interface RespondentBadgeProps {
-  step: FormWorkflowStepDto
-  idToFieldMap: Dictionary<FormFieldWithQuestionNo<FormField>>
-}
-
-const SubsequentStepRespondentBadges = ({
-  step,
-  idToFieldMap,
-}: RespondentBadgeProps): JSX.Element => {
-  switch (step.workflow_type) {
-    case WorkflowType.Static:
-      if (step.emails.length === 0) {
-        return (
-          <FieldLogicBadge
-            defaults={{ variant: 'error', message: NO_EMAILS_MESSAGE }}
-          />
-        )
-      }
-      return (
-        <>
-          {step.emails.map((email) => (
-            <LogicBadge key={email}>{email}</LogicBadge>
-          ))}
-        </>
-      )
-    case WorkflowType.Dynamic:
-      return (
-        <FieldLogicBadge
-          field={idToFieldMap[step.field]}
-          defaults={{ variant: 'error', message: MISSING_FIELD_MESSAGE }}
-        />
-      )
-    case WorkflowType.Conditional: {
-      const selectedConditionalField = idToFieldMap[step.conditional_field]
-      if (
-        !selectedConditionalField ||
-        selectedConditionalField.fieldType !== BasicField.Dropdown
-      ) {
-        return (
-          <FieldLogicBadge
-            field={selectedConditionalField}
-            defaults={{ variant: 'error', message: MISSING_FIELD_MESSAGE }}
-          />
-        )
-      }
-      const selectedConditionalFieldOptions =
-        selectedConditionalField.fieldOptions
-      const optionsToRecipientsMapOptions = Object.keys(
-        selectedConditionalField.optionsToRecipientsMap || {},
-      )
-      const isOptionsMismatched = checkIsOptionsMismatched(
-        optionsToRecipientsMapOptions,
-        selectedConditionalFieldOptions,
-      )
-      return (
-        <Stack direction="column" spacing="0.5rem">
-          <FieldLogicBadge
-            field={
-              step.conditional_field
-                ? idToFieldMap[step.conditional_field]
-                : undefined
-            }
-            defaults={{ variant: 'error', message: MISSING_FIELD_MESSAGE }}
-          />
-          {isOptionsMismatched ? (
-            <FieldLogicBadge
-              defaults={{
-                variant: 'error',
-                message: 'Please update your CSV options and emails',
-              }}
-            />
-          ) : null}
-        </Stack>
-      )
-    }
-    default: {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _: never = step
-      throw new Error('Unexpected workflow type encountered')
-    }
-  }
 }
 
 export const InactiveStepBlock = ({
@@ -302,10 +209,7 @@ export const InactiveStepBlock = ({
                 rowGap={{ md: '0.5rem' }}
                 wrap="wrap"
               >
-                <SubsequentStepRespondentBadges
-                  step={step}
-                  idToFieldMap={idToFieldMap}
-                />
+                <StepRespondentBadges step={step} idToFieldMap={idToFieldMap} />
               </Flex>
             )}
           </Stack>
