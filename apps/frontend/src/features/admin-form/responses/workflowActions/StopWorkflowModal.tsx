@@ -5,8 +5,8 @@ import isEmail from 'validator/lib/isEmail'
 
 import { MultirespondentFormSettings } from 'formsg-shared/types/form'
 
+import { EmailListInput } from '~components/EmailListInput'
 import FormLabel from '~components/FormControl/FormLabel'
-import { TagInput } from '~components/TagInput'
 
 import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 
@@ -58,13 +58,12 @@ export const StopWorkflowModal = ({
     >
       <FormControl isInvalid={!!error}>
         <FormLabel>{t(`${I18N_PREFIX}.label`)}</FormLabel>
-        <TagInput
+        <EmailListInput
           value={emails}
           onChange={(values) =>
             setEmails(values.filter((value) => value.trim() !== ''))
           }
           placeholder={emails.length > 0 ? undefined : 'me@example.com'}
-          tagValidation={isEmail}
         />
         {error ? (
           <FormErrorMessage>{error}</FormErrorMessage>

@@ -8,14 +8,13 @@ import {
 import { useTranslation } from 'react-i18next'
 import { Box, FormControl, FormErrorMessage, Skeleton } from '@chakra-ui/react'
 import { get, isEmpty, noop } from 'lodash'
-import isEmail from 'validator/lib/isEmail'
 
 import { BasicField } from 'formsg-shared/types'
 
 import { useOptionalAdminEmailValidationRules } from '~utils/formValidation'
 import { MultiSelect, SingleSelect } from '~components/Dropdown'
+import { EmailListInput } from '~components/EmailListInput'
 import FormLabel from '~components/FormControl/FormLabel'
-import { TagInput } from '~components/TagInput'
 
 import { useAddFieldPicker } from '~features/admin-form/create/common/useAddFieldPicker'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
@@ -37,7 +36,7 @@ export interface MrfEmailRecipientControlProps {
   isDisabled: boolean
   isHighContrast: boolean
   otherPartiesPlaceholder?: string
-  onOtherPartiesBlur: () => void
+  onOtherPartiesBlur?: () => void
   onSelectBlur?: () => void
 }
 
@@ -86,13 +85,12 @@ const OtherPartiesRecipientControl = ({
           optionalAdminEmailValidationRules as RegisterOptions<MrfEmailRecipientsFormData>
         }
         render={({ field }) => (
-          <TagInput
+          <EmailListInput
             placeholder={isDisabled ? undefined : otherPartiesPlaceholder}
             {...field}
             value={field.value as string[]}
             isDisabled={isDisabled}
             onBlur={onOtherPartiesBlur}
-            tagValidation={isEmail}
           />
         )}
       />

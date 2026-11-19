@@ -1,9 +1,7 @@
-import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Box, Text } from '@chakra-ui/react'
-import { isEqual, uniq } from 'lodash'
-import isEmail from 'validator/lib/isEmail'
+import { isEqual } from 'lodash'
 
 import { MultirespondentFormSettings } from 'formsg-shared/types/form'
 
@@ -41,14 +39,9 @@ const MrfEmailNotificationsForm = ({
 
   const workflowStepCount = formWorkflow?.length ?? 0
 
-  const filterInvalidEmails = useCallback((emails: string[]) => {
-    if (!emails) return []
-    return emails.filter((email) => isEmail(email))
-  }, [])
-
   const { stepsToNotify, emails, stepOneEmailNotificationFieldId } = settings
 
-  const { handleSubmit, control, setValue, getValues } =
+  const { handleSubmit, control, getValues } =
     useForm<MrfEmailRecipientsFormData>({
       defaultValues: {
         [WORKFLOW_EMAIL_MULTISELECT_NAME]: stepsToNotify,
@@ -98,10 +91,6 @@ const MrfEmailNotificationsForm = ({
   }
 
   const handleOtherPartiesEmailInputBlur = () => {
-    const uniqueValidEmails = uniq(
-      filterInvalidEmails(getValues(OTHER_PARTIES_EMAIL_INPUT_NAME)),
-    )
-    setValue(OTHER_PARTIES_EMAIL_INPUT_NAME, uniqueValidEmails)
     handleSubmit(onSubmit)()
   }
 
