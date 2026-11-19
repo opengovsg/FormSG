@@ -982,6 +982,13 @@ export const buildMrfResponseJson = ({
 
     const response = responses[field._id.toString()]
 
+    if (!response && field.fieldType === BasicField.Table && !keepV4Table) {
+      for (const p of getTableQuestionAnswerPairs(field, undefined)) {
+        entries.push({ question: p.question, answer: p.answer })
+      }
+      continue
+    }
+
     if (!response) {
       // Label an unanswered attachment too, so its key matches an answered one
       const isLabelledAttachment =

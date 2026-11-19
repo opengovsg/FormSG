@@ -2388,5 +2388,43 @@ describe('multirespondent-submission.utils', () => {
 
       expect(result).toContainEqual({ question: 'Passport', answer: '' })
     })
+
+    it.each([
+      {
+        keepV4Table: false,
+        entries: [
+          { question: '[table] Hobbies (Hobby, Years)', answer: ',' },
+          { question: '[table] Hobbies (Hobby, Years)', answer: ',' },
+        ],
+      },
+      { keepV4Table: true, entries: [{ question: 'Hobbies', answer: '' }] },
+    ])(
+      'should key an unanswered table like Storage unless keep-v4-table is on ($keepV4Table)',
+      ({ keepV4Table, entries }) => {
+        const formFields = [
+          {
+            _id: '1',
+            title: 'Hobbies',
+            fieldType: BasicField.Table,
+            minimumRows: 2,
+            columns: [
+              { _id: 'col1', title: 'Hobby' },
+              { _id: 'col2', title: 'Years' },
+            ],
+          } as unknown as FormFieldSchema,
+        ]
+
+        const result = JSON.parse(
+          buildMrfResponseJson({
+            ...BASE_ARGS,
+            keepV4Table,
+            formFields,
+            responses: {},
+          }),
+        )
+
+        expect(result.slice(3)).toEqual(entries)
+      },
+    )
   })
 })
