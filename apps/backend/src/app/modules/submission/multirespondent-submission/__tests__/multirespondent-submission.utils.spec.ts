@@ -1185,6 +1185,7 @@ describe('multirespondent-submission.utils', () => {
         formFields,
         responses,
         keepV4AttachmentPrefix: false,
+        keepV4Table: false,
       })
 
       expect(result).toEqual([
@@ -1223,6 +1224,7 @@ describe('multirespondent-submission.utils', () => {
         formFields,
         responses,
         keepV4AttachmentPrefix: false,
+        keepV4Table: false,
       })
 
       expect(result).toEqual([
@@ -1255,6 +1257,7 @@ describe('multirespondent-submission.utils', () => {
         formFields,
         responses,
         keepV4AttachmentPrefix: true,
+        keepV4Table: false,
       })
 
       expect(result).toEqual([
@@ -1287,6 +1290,7 @@ describe('multirespondent-submission.utils', () => {
         formFields,
         responses,
         keepV4AttachmentPrefix: false,
+        keepV4Table: false,
       })
 
       expect(result).toEqual([
@@ -1320,6 +1324,7 @@ describe('multirespondent-submission.utils', () => {
         responses,
         includeVerifiedPrefix: false,
         keepV4AttachmentPrefix: false,
+        keepV4Table: false,
       })
 
       expect(result).toEqual([
@@ -1369,6 +1374,7 @@ describe('multirespondent-submission.utils', () => {
         formFields,
         responses,
         keepV4AttachmentPrefix: false,
+        keepV4Table: false,
       })
 
       // Question naming matches getAnswersForChild, used by email/storage
@@ -1423,6 +1429,7 @@ describe('multirespondent-submission.utils', () => {
         formFields,
         responses,
         keepV4AttachmentPrefix: false,
+        keepV4Table: false,
       })
 
       expect(result.map((pair) => pair.question)).toEqual([
@@ -1464,6 +1471,7 @@ describe('multirespondent-submission.utils', () => {
         formFields,
         responses,
         keepV4AttachmentPrefix: false,
+        keepV4Table: false,
       })
 
       expect(result).toEqual([
@@ -1480,77 +1488,85 @@ describe('multirespondent-submission.utils', () => {
       ])
     })
 
-    it('should handle table fields correctly', () => {
-      const formFields: FormFieldSchema[] = [
-        {
-          _id: '1',
-          title: 'Table of Name and Age',
-          fieldType: BasicField.Table,
-          columns: [
-            { _id: 'col1', title: 'Name' },
-            { _id: 'col2', title: 'Age' },
-          ],
-        } as ITableFieldSchema,
-        {
-          _id: '2',
-          title: 'Table of Hobbies',
-          fieldType: BasicField.Table,
-          columns: [
-            { _id: 'col3', title: 'Hobby' },
-            { _id: 'col4', title: 'Years' },
-          ],
-        } as ITableFieldSchema,
-      ]
-      const responses = {
-        '1': {
-          fieldType: BasicField.Table,
-          answer: {
-            row0: { rowNum: 0, value: { col1: 'Alice', col2: '30' } },
-            row1: { rowNum: 1, value: { col1: 'Bob', col2: '25' } },
+    it.each([
+      {
+        keepV4Table: false,
+        rows: [
+          ['[table] Table of Name and Age (Name, Age)', 'Alice,30'],
+          ['[table] Table of Name and Age (Name, Age)', 'Bob,25'],
+          ['[table] Table of Hobbies (Hobby, Years)', 'Swimming,5'],
+          ['[table] Table of Hobbies (Hobby, Years)', 'Reading,10'],
+        ],
+      },
+      {
+        keepV4Table: true,
+        rows: [
+          ['[Table] Table of Name and Age (Name; Age)', 'Alice; 30'],
+          ['[Table] Table of Name and Age (Name; Age)', 'Bob; 25'],
+          ['[Table] Table of Hobbies (Hobby; Years)', 'Swimming; 5'],
+          ['[Table] Table of Hobbies (Hobby; Years)', 'Reading; 10'],
+        ],
+      },
+    ])(
+      'should handle table fields correctly (keep-v4-table $keepV4Table)',
+      ({ keepV4Table, rows }) => {
+        const formFields: FormFieldSchema[] = [
+          {
+            _id: '1',
+            title: 'Table of Name and Age',
+            fieldType: BasicField.Table,
+            columns: [
+              { _id: 'col1', title: 'Name' },
+              { _id: 'col2', title: 'Age' },
+            ],
+          } as ITableFieldSchema,
+          {
+            _id: '2',
+            title: 'Table of Hobbies',
+            fieldType: BasicField.Table,
+            columns: [
+              { _id: 'col3', title: 'Hobby' },
+              { _id: 'col4', title: 'Years' },
+            ],
+          } as ITableFieldSchema,
+        ]
+        const responses = {
+          '1': {
+            fieldType: BasicField.Table,
+            answer: {
+              row0: { rowNum: 0, value: { col1: 'Alice', col2: '30' } },
+              row1: { rowNum: 1, value: { col1: 'Bob', col2: '25' } },
+            },
+            question: 'Table of Name and Age',
+            provenance: {},
           },
-          question: 'Table of Name and Age',
-          provenance: {},
-        },
-        '2': {
-          fieldType: BasicField.Table,
-          answer: {
-            row0: { rowNum: 0, value: { col3: 'Swimming', col4: '5' } },
-            row1: { rowNum: 1, value: { col3: 'Reading', col4: '10' } },
+          '2': {
+            fieldType: BasicField.Table,
+            answer: {
+              row0: { rowNum: 0, value: { col3: 'Swimming', col4: '5' } },
+              row1: { rowNum: 1, value: { col3: 'Reading', col4: '10' } },
+            },
+            question: 'Table of Hobbies',
+            provenance: {},
           },
-          question: 'Table of Hobbies',
-          provenance: {},
-        },
-      } as any
+        } as any
 
-      const result = getQuestionAnswerPairsForMultipleFields({
-        formFields,
-        responses,
-        keepV4AttachmentPrefix: false,
-      })
+        const result = getQuestionAnswerPairsForMultipleFields({
+          formFields,
+          responses,
+          keepV4AttachmentPrefix: false,
+          keepV4Table,
+        })
 
-      expect(result).toEqual([
-        {
-          question: '[Table] Table of Name and Age (Name; Age)',
-          answer: 'Alice; 30',
-          fieldType: BasicField.Table,
-        },
-        {
-          question: '[Table] Table of Name and Age (Name; Age)',
-          answer: 'Bob; 25',
-          fieldType: BasicField.Table,
-        },
-        {
-          question: '[Table] Table of Hobbies (Hobby; Years)',
-          answer: 'Swimming; 5',
-          fieldType: BasicField.Table,
-        },
-        {
-          question: '[Table] Table of Hobbies (Hobby; Years)',
-          answer: 'Reading; 10',
-          fieldType: BasicField.Table,
-        },
-      ])
-    })
+        expect(result).toEqual(
+          rows.map(([question, answer]) => ({
+            question,
+            answer,
+            fieldType: BasicField.Table,
+          })),
+        )
+      },
+    )
 
     it('should handle checkbox fields correctly', () => {
       const formFields: FormFieldSchema[] = [
@@ -1576,6 +1592,7 @@ describe('multirespondent-submission.utils', () => {
         formFields,
         responses,
         keepV4AttachmentPrefix: false,
+        keepV4Table: false,
       })
 
       expect(result).toEqual([
@@ -1615,6 +1632,7 @@ describe('multirespondent-submission.utils', () => {
         formFields,
         responses,
         keepV4AttachmentPrefix: false,
+        keepV4Table: false,
       })
 
       expect(result).toEqual([
@@ -1657,6 +1675,7 @@ describe('multirespondent-submission.utils', () => {
         responses,
         includeSignatureDataPngDataUri: true,
         keepV4AttachmentPrefix: false,
+        keepV4Table: false,
       })
 
       const expectedSignatureDataPngDataUri =
@@ -1697,6 +1716,7 @@ describe('multirespondent-submission.utils', () => {
         formFields,
         responses,
         keepV4AttachmentPrefix: false,
+        keepV4Table: false,
       })
 
       expect(result).toEqual([
@@ -1724,6 +1744,7 @@ describe('multirespondent-submission.utils', () => {
         formFields,
         responses,
         keepV4AttachmentPrefix: false,
+        keepV4Table: false,
       })
 
       expect(result).toEqual([
@@ -1983,6 +2004,7 @@ describe('multirespondent-submission.utils', () => {
       formFields,
       responses,
       keepV4AttachmentPrefix: false,
+      keepV4Table: false,
     })
 
     expect(result).toEqual([])
@@ -2001,6 +2023,7 @@ describe('multirespondent-submission.utils', () => {
       formFields,
       responses: undefined as unknown as FieldResponsesV3,
       keepV4AttachmentPrefix: false,
+      keepV4Table: false,
     })
     expect(undefinedResult).toEqual([])
 
@@ -2008,6 +2031,7 @@ describe('multirespondent-submission.utils', () => {
       formFields,
       responses: null as unknown as FieldResponsesV3,
       keepV4AttachmentPrefix: false,
+      keepV4Table: false,
     })
     expect(nullResult).toEqual([])
   })
@@ -2018,6 +2042,7 @@ describe('multirespondent-submission.utils', () => {
       responseId: 'abc123',
       timestamp: '1 Jan 2025',
       keepV4AttachmentPrefix: false,
+      keepV4Table: false,
     }
 
     it('should emit one entry per child attribute for children responses', () => {

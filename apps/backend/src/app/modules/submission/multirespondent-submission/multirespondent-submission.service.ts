@@ -93,6 +93,7 @@ import {
   getMrfSubmissionWorkflowStatus,
   isAdminEmailPdfEnabled,
   isKeepV4AttachmentPrefixOn,
+  isKeepV4TableOn,
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
@@ -340,6 +341,7 @@ const sendNextStepEmail = ({
     formFields: form.form_fields,
     responses,
     keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
+    keepV4Table: isKeepV4TableOn(growthbook),
   })
 
   return (
@@ -713,6 +715,7 @@ const sendMrfOutcomeEmails = ({
           formFields: form.form_fields,
           responses,
           keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
+          keepV4Table: isKeepV4TableOn(growthbook),
         })
 
         // TODO (formid-json): remove when Form ID in response JSON is GA
@@ -727,6 +730,7 @@ const sendMrfOutcomeEmails = ({
           timestamp: latestSubmissionTimestamp,
           delimiter: getFormDelimiter(form.metadata),
           keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
+          keepV4Table: isKeepV4TableOn(growthbook),
         })
 
         const emailAttachments = []
@@ -853,6 +857,7 @@ const sendMrfRespondentCopyEmails = ({
     formFields: form.form_fields,
     responses,
     keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
+    keepV4Table: isKeepV4TableOn(growthbook),
   })
 
   return pdfResult
@@ -1482,6 +1487,7 @@ const generatePdfAttachmentIfRequired = ({
     formFields: form.form_fields,
     responses,
     keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
+    keepV4Table: isKeepV4TableOn(growthbook),
   })
 
   const autoReplyData = {

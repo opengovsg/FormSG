@@ -1089,6 +1089,14 @@ export const buildMrfMetadata = ({
 export const isKeepV4AttachmentPrefixOn = (growthbook?: GrowthBook): boolean =>
   growthbook?.isOn(featureFlags.keepV4AttachmentPrefix) ?? false
 
+/**
+ * Ops fallback: when on, MRF emails keep the old `[Table] ` label, `; `
+ * separators and bare title for an unanswered table. Off by default.
+ */
+// TODO (keep-v4-table): remove once no admin relies on the old table format
+export const isKeepV4TableOn = (growthbook?: GrowthBook): boolean =>
+  growthbook?.isOn(featureFlags.keepV4Table) ?? false
+
 export const isAdminEmailPdfEnabled = ({
   growthbook,
   formFields,
