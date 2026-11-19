@@ -2,7 +2,9 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiExtension, BiGitMerge, BiQuestionMark } from 'react-icons/bi'
 import { Stack } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode, SeenFlags } from 'formsg-shared/types'
 
 import { MultiParty, PhHandsClapping } from '~assets/icons'
@@ -64,6 +66,11 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     handleIntegrationClick,
     reportSidebarWidth,
   } = useCreatePageSidebar()
+  // TODO (settings-integrations-json): remove the flag when GA. With it on,
+  // integrations live in the Integrations settings tab instead.
+  const isIntegrationsInSettings = useFeatureIsOn(
+    featureFlags.settingsIntegrationsJson,
+  )
 
   const sidebarRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
@@ -225,14 +232,16 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           isActive={activeTab === DrawerTabs.EndPage}
           id={FEATURE_TOUR_IDS[3].id}
         />
-        <DrawerTabIcon
-          label={t('features.adminForm.sidebar.integration.title')}
-          navLabel={t('features.adminForm.sidebar.integration.title')}
-          trackingLabel="create_builder.drawer_tab.integration"
-          icon={<BiExtension fontSize="1.5rem" />}
-          onClick={handleDrawerIntegrationClick}
-          isActive={activeTab === DrawerTabs.Integration}
-        />
+        {!isIntegrationsInSettings && (
+          <DrawerTabIcon
+            label={t('features.adminForm.sidebar.integration.title')}
+            navLabel={t('features.adminForm.sidebar.integration.title')}
+            trackingLabel="create_builder.drawer_tab.integration"
+            icon={<BiExtension fontSize="1.5rem" />}
+            onClick={handleDrawerIntegrationClick}
+            isActive={activeTab === DrawerTabs.Integration}
+          />
+        )}
       </Stack>
     </AdminFormSideNav>
   )

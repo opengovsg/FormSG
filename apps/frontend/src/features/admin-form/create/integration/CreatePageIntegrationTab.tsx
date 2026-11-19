@@ -116,6 +116,8 @@ export interface ProductTileProps extends HTMLChakraProps<'a'> {
    * image fails to load.
    */
   logoUrl?: string
+  /** Whether an arrow slides in on hover. Defaults to true. */
+  hasArrow?: boolean
 }
 
 // Ported from opengovsg/suite, restyled to the logic/workflow block convention
@@ -126,6 +128,7 @@ export const ProductTile = ({
   domain,
   description,
   logoUrl,
+  hasArrow = true,
   ...props
 }: ProductTileProps): JSX.Element => {
   return (
@@ -161,16 +164,18 @@ export const ProductTile = ({
           </Text>
         ) : null}
       </Box>
-      <Icon
-        as={BiRightArrowAlt}
-        aria-hidden
-        alignSelf="center"
-        fontSize="1.5rem"
-        opacity={0}
-        transform="translateX(-0.25rem)"
-        transition="opacity 0.2s ease-out, transform 0.2s ease-out"
-        _groupHover={{ opacity: 1, transform: 'translateX(0)' }}
-      />
+      {hasArrow ? (
+        <Icon
+          as={BiRightArrowAlt}
+          aria-hidden
+          alignSelf="center"
+          fontSize="1.5rem"
+          opacity={0}
+          transform="translateX(-0.25rem)"
+          transition="opacity 0.2s ease-out, transform 0.2s ease-out"
+          _groupHover={{ opacity: 1, transform: 'translateX(0)' }}
+        />
+      ) : null}
     </chakra.a>
   )
 }
@@ -256,6 +261,14 @@ const generatePlumberTile = (id: string): LauncherTile => {
     description: 'Automate workflows with AI',
     logoUrl: 'https://file.go.gov.sg/plumber-logo.png',
   }
+}
+
+/** The Plumber tile for the form being edited, styled by the caller. */
+export const PlumberTile = (
+  props: Omit<ProductTileProps, keyof LauncherTile>,
+): JSX.Element => {
+  const { formId } = useParams()
+  return <ProductTile {...props} {...generatePlumberTile(formId ?? '')} />
 }
 
 export const CreatePageIntegrationTab = (): JSX.Element => {

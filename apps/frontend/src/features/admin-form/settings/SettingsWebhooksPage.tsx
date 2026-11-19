@@ -8,6 +8,8 @@ import {
 } from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types/form'
 
+import { PlumberTile } from '~features/admin-form/create/integration/CreatePageIntegrationTab'
+
 import { CategoryHeader } from './components/CategoryHeader'
 import { EmailJsonToggle } from './components/EmailJsonToggle'
 import { WebhooksSection } from './components/WebhooksSection'
@@ -43,9 +45,22 @@ export const SettingsWebhooksPage = (): JSX.Element => {
   const isPlumberConnected = PLUMBER_WEBHOOK_URL_REGEX.test(
     settings?.webhook.url ?? '',
   )
-  // The JSON toggle shows whatever state the webhooks part is in
-  const emailJsonSetting = isIntegrationsOn ? (
+  // Plumber and the JSON toggle show whatever state the webhooks part is in
+  const otherIntegrations = isIntegrationsOn ? (
     <>
+      {/* Hover, press and focus follow the design system's Tile */}
+      <PlumberTile
+        mt="2.5rem"
+        target="_blank"
+        rel="noopener noreferrer"
+        hasArrow={false}
+        _hover={{ bg: 'primary.100' }}
+        _active={{ bg: 'primary.200' }}
+        _focusVisible={{
+          outline: 'none',
+          boxShadow: '0 0 0 2px var(--chakra-colors-primary-500)',
+        }}
+      />
       <Divider my="2.5rem" />
       <EmailJsonToggle />
     </>
@@ -56,7 +71,7 @@ export const SettingsWebhooksPage = (): JSX.Element => {
     return (
       <Skeleton isLoaded={!isLoading}>
         <WebhooksPlumberConnectedMsg />
-        {emailJsonSetting}
+        {otherIntegrations}
       </Skeleton>
     )
   }
@@ -66,7 +81,7 @@ export const SettingsWebhooksPage = (): JSX.Element => {
     return (
       <Skeleton isLoaded={!isLoading}>
         <WebhooksUnsupportedMsg />
-        {emailJsonSetting}
+        {otherIntegrations}
       </Skeleton>
     )
   }
@@ -79,7 +94,7 @@ export const SettingsWebhooksPage = (): JSX.Element => {
           : t('features.adminForm.settings.webhooks.title')}
       </CategoryHeader>
       <WebhooksSection />
-      {emailJsonSetting}
+      {otherIntegrations}
     </Skeleton>
   )
 }
