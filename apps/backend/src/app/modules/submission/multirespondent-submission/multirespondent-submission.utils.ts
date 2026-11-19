@@ -2,6 +2,7 @@ import type {
   ChildrenAnswerV4,
   FieldResponsesV4,
   FieldResponseV4,
+  TableAnswerV4,
 } from '@opengovsg/formsg-sdk'
 import {
   ATTACHMENT_QUESTION_PREFIX,
@@ -24,10 +25,13 @@ import {
   PublicMultirespondentSubmissionDto,
   SubmissionPaymentDto,
   SubmissionType,
+  TableFieldDto,
   WorkflowType,
 } from 'formsg-shared/types'
 import { handleAddressResponseDisplay } from 'formsg-shared/utils/address'
+import { toTableInput } from 'formsg-shared/utils/flatten-v4-to-v1'
 import { applyMyInfoPrefixToFormFields } from 'formsg-shared/utils/myinfo-prefix'
+import { computeTableAnswerValue } from 'formsg-shared/utils/response-value-rules'
 import { SIGNATURE_CAPTURED_STRING } from 'formsg-shared/utils/signature'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
@@ -41,6 +45,7 @@ import {
   FormFieldSchema,
   IMultirespondentSubmissionSchema,
   ISubmissionSchema,
+  ITableFieldSchema,
   MultirespondentSubmissionData,
 } from '../../../../types'
 import {
@@ -59,7 +64,10 @@ import { MyInfoKey } from '../../myinfo/myinfo.types'
 import { getMyInfoChildHashKey } from '../../myinfo/myinfo.util'
 import { startsWithSPCPFieldTitle } from '../../spcp/spcp.util'
 import { toWorkflowEventDtos } from '../../workflow-event/workflow-event.service'
-import { MYINFO_PREFIX } from '../email-submission/email-submission.constants'
+import {
+  MYINFO_PREFIX,
+  TABLE_PREFIX,
+} from '../email-submission/email-submission.constants'
 import {
   InvalidWorkflowTypeError,
   ProcessingError,
@@ -610,6 +618,26 @@ export type QuestionAnswerPair = {
 // TODO (keep-v4-attachment-prefix): remove with the flag
 const LEGACY_ATTACHMENT_QUESTION_PREFIX = '[Attachment] '
 
+const getTableQuestionAnswerPairs = (
+  formField: TableFieldDto | ITableFieldSchema,
+  answer: TableAnswerV4 | undefined,
+): QuestionAnswerPair[] => {
+  const { question, answerArray } = computeTableAnswerValue({
+    title: formField.title,
+    columns: formField.columns.map(({ _id, title }) => ({
+      _id: String(_id),
+      title,
+    })),
+    minimumRows: formField.minimumRows,
+    input: toTableInput(answer),
+  })
+  return answerArray.map((row) => ({
+    question: `${TABLE_PREFIX}${question}`,
+    answer: row.join(','),
+    fieldType: BasicField.Table,
+  }))
+}
+
 /**
  * Given a single form field and its response (V4), extracts question-answer pairs.
  * Used for email body/pdf outputs and individualResponsePage displays
@@ -626,12 +654,14 @@ const getQuestionAnswerPairsForOneField = ({
   includeSignatureDataPngDataUri,
   includeVerifiedPrefix = true,
   keepV4AttachmentPrefix,
+  keepV4Table,
 }: {
   formField: FormFieldSchema | FormFieldDto
   response: FieldResponseV4
   includeSignatureDataPngDataUri: boolean
   includeVerifiedPrefix?: boolean
   keepV4AttachmentPrefix: boolean
+  keepV4Table: boolean
 }): QuestionAnswerPair[] => {
   // V4 responses embed question text in response.question
   let questionTitle = response.question || formField.title
@@ -698,6 +728,13 @@ const getQuestionAnswerPairsForOneField = ({
     }
     case BasicField.Table: {
       if (formField.fieldType !== BasicField.Table) break
+      if (!keepV4Table) {
+        return getTableQuestionAnswerPairs(
+          formField,
+          response.answer as TableAnswerV4,
+        )
+      }
+      // TODO (keep-v4-table): remove with the flag
       const tableAnswer = response.answer as Record<
         string,
         { rowNum: number; value: Record<string, string | number> }
@@ -841,12 +878,14 @@ export const getQuestionAnswerPairsForMultipleFields = ({
   includeSignatureDataPngDataUri = false,
   includeVerifiedPrefix = true,
   keepV4AttachmentPrefix,
+  keepV4Table,
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV4
   includeSignatureDataPngDataUri?: boolean
   includeVerifiedPrefix?: boolean
   keepV4AttachmentPrefix: boolean
+  keepV4Table: boolean
 }): QuestionAnswerPair[] => {
   const questionAnswerPairs: QuestionAnswerPair[] = []
   if (!formFields || !responses) {
@@ -864,6 +903,7 @@ export const getQuestionAnswerPairsForMultipleFields = ({
         includeSignatureDataPngDataUri,
         includeVerifiedPrefix,
         keepV4AttachmentPrefix,
+        keepV4Table,
       })
 
     questionAnswerPairs.push(...questionAnswerPairsForCurrentFormField)
@@ -916,6 +956,7 @@ export const buildMrfResponseJson = ({
   responseId,
   timestamp,
   keepV4AttachmentPrefix,
+  keepV4Table,
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV4
@@ -924,6 +965,7 @@ export const buildMrfResponseJson = ({
   timestamp: string
   delimiter?: string
   keepV4AttachmentPrefix: boolean
+  keepV4Table: boolean
 }): string => {
   const entries: { question: string; answer: string }[] = [
     ...(formId !== undefined ? [{ question: 'Form ID', answer: formId }] : []),
@@ -939,6 +981,13 @@ export const buildMrfResponseJson = ({
     if (NON_RESPONSE_FIELD_TYPES.has(field.fieldType)) continue
 
     const response = responses[field._id.toString()]
+
+    if (!response && field.fieldType === BasicField.Table && !keepV4Table) {
+      for (const p of getTableQuestionAnswerPairs(field, undefined)) {
+        entries.push({ question: p.question, answer: p.answer })
+      }
+      continue
+    }
 
     if (!response) {
       // Label an unanswered attachment too, so its key matches an answered one
@@ -974,6 +1023,7 @@ export const buildMrfResponseJson = ({
       // for machine consumers and should carry the raw question text.
       includeVerifiedPrefix: false,
       keepV4AttachmentPrefix,
+      keepV4Table,
     })
     for (const p of pairs) {
       entries.push({ question: p.question, answer: p.answer })
@@ -1002,10 +1052,12 @@ export const getResponsesDataFromMrfResponses = ({
   formFields,
   responses,
   keepV4AttachmentPrefix,
+  keepV4Table,
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV4
   keepV4AttachmentPrefix: boolean
+  keepV4Table: boolean
 }): EmailRespondentConfirmationField[] => {
   if (!formFields || !responses) return []
 
@@ -1014,6 +1066,7 @@ export const getResponsesDataFromMrfResponses = ({
     responses,
     includeSignatureDataPngDataUri: true,
     keepV4AttachmentPrefix,
+    keepV4Table,
   })
 
   return questionAnswerPairs.map((questionAnswerPair) => {

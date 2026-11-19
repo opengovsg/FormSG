@@ -74,7 +74,9 @@ const toRadioInput = (answer?: RadioAnswerV4): RadioAnswerInput | undefined => {
     : { value: answer.value }
 }
 
-const toTableInput = (answer?: TableAnswerV4): TableAnswerInput | undefined => {
+export const toTableInput = (
+  answer?: TableAnswerV4,
+): TableAnswerInput | undefined => {
   if (answer === undefined) return undefined
   // RATIONALE: V4 keys rows by an opaque id and stores display order in `rowNum`.
   // Sort by `rowNum` before the rule sees the rows.

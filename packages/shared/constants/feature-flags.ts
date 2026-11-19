@@ -29,6 +29,7 @@ export const featureFlags = {
   escapeHatch: 'mrf-cutover-escape-hatch' as const,
   disableBouncedSubmissionSms: 'disable-bounced-submission-sms' as const,
   keepV4AttachmentPrefix: 'keep-v4-attachment-prefix' as const,
+  keepV4Table: 'keep-v4-table' as const,
   paymentInfoFormat: 'payment-info-format' as const,
   paymentEmailLookup: 'payment-email-lookup' as const,
 }
