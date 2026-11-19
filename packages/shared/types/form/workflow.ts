@@ -5,6 +5,7 @@ export enum WorkflowType {
   Static = 'static',
   Dynamic = 'dynamic',
   Conditional = 'conditional',
+  Mixed = 'mixed',
 }
 
 /** Logins a workflow step after Step 1 may require. SP is deprecated. */
@@ -62,15 +63,29 @@ export interface FormWorkflowStepConditional extends FormWorkflowStepBase {
   conditional_field: FormFieldDto['_id']
 }
 
+export interface FormWorkflowStepMixed extends FormWorkflowStepBase {
+  workflow_type: WorkflowType.Mixed
+  emails: string[]
+  email_fields: FormFieldDto['_id'][]
+  dropdown_fields: FormFieldDto['_id'][]
+}
+
+export type FormWorkflowStepMixedNoEmails = Omit<
+  FormWorkflowStepMixed,
+  'emails'
+>
+
 export type FormWorkflowStep =
   | FormWorkflowStepStatic
   | FormWorkflowStepDynamic
   | FormWorkflowStepConditional
+  | FormWorkflowStepMixed
 
 export type StrippedFormWorkflowStep =
   | FormWorkflowStepStaticNoEmails
   | FormWorkflowStepDynamic
   | FormWorkflowStepConditional
+  | FormWorkflowStepMixedNoEmails
 
 export type FormWorkflow = Array<FormWorkflowStep>
 
@@ -93,6 +108,7 @@ export type FormWorkflowStepWriteDto = (
   | WithWriteAuth<FormWorkflowStepStatic>
   | WithWriteAuth<FormWorkflowStepDynamic>
   | WithWriteAuth<FormWorkflowStepConditional>
+  | WithWriteAuth<FormWorkflowStepMixed>
 ) & { _id?: string }
 
 // Additional props to be added for DTOs

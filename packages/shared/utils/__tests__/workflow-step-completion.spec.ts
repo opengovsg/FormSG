@@ -156,6 +156,47 @@ describe('isStepComplete', () => {
     expect(isStepComplete(step, fields, 1)).toBe(expected)
   })
 
+  it.each<[string, string[], string[], string[], FormFieldDto[], boolean]>([
+    ['no source', [], [], [], withEmailField, false],
+    ['only typed emails', [EMAIL], [], [], formFields, true],
+    [
+      'an email field and a mapped dropdown',
+      [],
+      [OTHER_FIELD_ID],
+      [DROPDOWN_ID],
+      [...withEmailField, makeDropdown({ a: [EMAIL], b: [EMAIL] })],
+      true,
+    ],
+    [
+      'one email field is not an email field',
+      [EMAIL],
+      [OTHER_FIELD_ID, FIELD_ID],
+      [],
+      withEmailField,
+      false,
+    ],
+    [
+      'one dropdown has an unmapped option',
+      [EMAIL],
+      [],
+      [DROPDOWN_ID],
+      withDropdown({ a: [EMAIL] }),
+      false,
+    ],
+  ])(
+    'mixed: %s -> %s',
+    (_name, emails, emailFields, dropdownFields, fields, expected) => {
+      const step = {
+        workflow_type: WorkflowType.Mixed,
+        edit: [FIELD_ID],
+        emails,
+        email_fields: emailFields,
+        dropdown_fields: dropdownFields,
+      } as FormWorkflowStep
+      expect(isStepComplete(step, fields, 1)).toBe(expected)
+    },
+  )
+
   it.each<[string, Partial<FormWorkflowStep>, number, boolean]>([
     [
       'unreachable approval field',
