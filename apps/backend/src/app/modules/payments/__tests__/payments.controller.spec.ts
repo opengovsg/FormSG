@@ -27,6 +27,7 @@ describe('payments.controller', () => {
   afterAll(async () => await dbHandler.closeDatabase())
   beforeEach(() => jest.clearAllMocks())
   describe('handleGetPreviousPayment', () => {
+    const lookupEnabled = { getFeatureValue: jest.fn(() => true) }
     beforeEach(async () => {
       await dbHandler.clearCollection(Payment.collection.name)
     })
@@ -52,6 +53,7 @@ describe('payments.controller', () => {
       const mockReq = expressHandler.mockRequest({
         params: { formId: payment.formId },
         body: { email },
+        others: { growthbook: lookupEnabled },
       })
 
       const mockRes = expressHandler.mockResponse()
@@ -64,6 +66,42 @@ describe('payments.controller', () => {
       )
       expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(mockRes.send).toHaveBeenCalledOnce()
+    })
+    it('should return 404 without looking up payments when the lookup flag is off', async () => {
+      const email = 'formsg@tech.gov.sg'
+      const payment = await Payment.create({
+        formId: MOCK_FORM_ID,
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
+        pendingSubmissionId: new ObjectId(),
+        amount: 12345,
+        status: PaymentStatus.Succeeded,
+        paymentIntentId: 'pi_MOCK_PAYMENT_INTENT',
+        email,
+        completedPayment: {
+          receiptUrl: 'http://form.gov.sg',
+          paymentDate: new Date(),
+          submissionId: new ObjectId().toHexString(),
+          transactionFee: 0,
+        },
+        gstEnabled: false,
+      })
+
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: payment.formId },
+        body: { email },
+        others: { growthbook: { getFeatureValue: jest.fn(() => false) } },
+      })
+
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await PaymentsController.handleGetPreviousPaymentId(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+      expect(mockRes.sendStatus).toHaveBeenCalledWith(404)
+      expect(mockRes.status).not.toHaveBeenCalled()
     })
     it('should return 200 and the latest payment record id if there are multiple successful payments', async () => {
       const email = 'formsg@tech.gov.sg'
@@ -108,6 +146,7 @@ describe('payments.controller', () => {
       const mockReq = expressHandler.mockRequest({
         params: { formId: MOCK_FORM_ID },
         body: { email },
+        others: { growthbook: lookupEnabled },
       })
 
       const mockRes = expressHandler.mockResponse()
@@ -144,6 +183,7 @@ describe('payments.controller', () => {
       const mockReq = expressHandler.mockRequest({
         params: { formId: MOCK_FORM_ID },
         body: { email },
+        others: { growthbook: lookupEnabled },
       })
 
       const mockRes = expressHandler.mockResponse()
@@ -177,6 +217,7 @@ describe('payments.controller', () => {
       const mockReq = expressHandler.mockRequest({
         params: { formId: payment.formId },
         body: { email: 'another@email.com' },
+        others: { growthbook: lookupEnabled },
       })
 
       const mockRes = expressHandler.mockResponse()
@@ -211,6 +252,7 @@ describe('payments.controller', () => {
       const mockReq = expressHandler.mockRequest({
         params: { formId: new ObjectId().toHexString() },
         body: { email: payment.email },
+        others: { growthbook: lookupEnabled },
       })
 
       const mockRes = expressHandler.mockResponse()
@@ -245,6 +287,7 @@ describe('payments.controller', () => {
       const mockReq = expressHandler.mockRequest({
         params: { formId: new ObjectId().toHexString() },
         body: { email: payment.email },
+        others: { growthbook: lookupEnabled },
       })
 
       const mockRes = expressHandler.mockResponse()
