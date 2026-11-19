@@ -1,6 +1,7 @@
 import { Router } from 'express'
 
 import { rateLimitConfig } from '../../../../config/config'
+import { withUserAuthentication } from '../../../../modules/auth/auth.middlewares'
 import * as EncryptSubmissionController from '../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
 import * as MultirespondentSubmissionController from '../../../../modules/submission/multirespondent-submission/multirespondent-submission.controller'
 import * as MrfStepAuthController from '../../../../modules/submission/multirespondent-submission/step-auth.controller'
@@ -36,6 +37,7 @@ PublicFormsSubmissionsRouter.route(
   '/submissions/storage/email-mode-feedback',
 ).post(
   limitRate({ max: rateLimitConfig.submissions }),
+  withUserAuthentication,
   authAndInjectFeedbackFormUrl,
   EncryptSubmissionController.handleStorageSubmission,
 )

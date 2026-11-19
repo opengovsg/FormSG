@@ -1,5 +1,6 @@
 import { Router } from 'express'
 
+import { withUserAuthentication } from '../../../../modules/auth/auth.middlewares'
 import * as PublicFormController from '../../../../modules/form/public-form/public-form.controller'
 import * as WogaaController from '../../../../modules/wogaa/wogaa.controller'
 
@@ -45,11 +46,13 @@ PublicFormsFormRouter.route('/:formId([a-fA-F0-9]{24})/sample-submission').get(
  * @route GET /admin-use-email-feedback
  *
  * @returns 200 with form when form exists and is public
+ * @returns 401 when user is not logged in
  * @returns 404 when form is private or form with given ID does not exist
  * @returns 410 when form is archived
  * @returns 500 when database error occurs
  */
 PublicFormsFormRouter.route('/admin-use-email-feedback').get(
+  withUserAuthentication,
   authAndInjectFeedbackFormUrl,
   PublicFormController.handleGetPublicForm,
 )

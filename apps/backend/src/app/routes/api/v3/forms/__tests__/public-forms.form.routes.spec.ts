@@ -288,6 +288,19 @@ describe('public-form.form.routes', () => {
     })
   })
 
+  describe('GET /admin-use-email-feedback', () => {
+    it('should return 401 when user is not logged in', async () => {
+      // Act
+      const actualResponse = await request.get(
+        '/forms/admin-use-email-feedback',
+      )
+
+      // Assert
+      expect(actualResponse.status).toEqual(401)
+      expect(actualResponse.body).toEqual({ message: 'User is unauthorized.' })
+    })
+  })
+
   describe('GET /:formId/sample-submission', () => {
     it('should return 200 with public form when form has a valid formId', async () => {
       // Arrange

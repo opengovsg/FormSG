@@ -69,6 +69,19 @@ describe('public-form.submissions.routes', () => {
 
   afterAll(async () => await dbHandler.closeDatabase())
 
+  describe('POST /forms/submissions/storage/email-mode-feedback', () => {
+    it('should return 401 when user is not logged in', async () => {
+      // Act
+      const response = await request
+        .post('/forms/submissions/storage/email-mode-feedback')
+        .send({})
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+  })
+
   describe('SP, CP and MyInfo authentication', () => {
     describe('SingPass', () => {
       it('should return 200 when submission is valid', async () => {
