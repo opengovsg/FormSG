@@ -33,6 +33,7 @@ export interface Workflow {
     select: string
   }
   conditionalRouting: {
+    csvNeededFor: string
     title: string
     addEmailsToOptions: string
     validation: {

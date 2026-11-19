@@ -31,6 +31,7 @@ export const enSG: Workflow = {
     select: 'Select a field',
   },
   conditionalRouting: {
+    csvNeededFor: 'Update the CSV options and emails for {fields}',
     title: 'Emails assigned to options in a Dropdown field',
     addEmailsToOptions: 'Assign emails to options',
     validation: {

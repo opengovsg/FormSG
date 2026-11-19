@@ -86,6 +86,23 @@ describe('buildWorkflowStep', () => {
     expect(step).toHaveProperty('emails', [])
   })
 
+  it('should keep every source of a hybrid step', () => {
+    const sources = {
+      emails: ['ops@agency.gov.sg'],
+      email_fields: ['f1', 'f2'],
+      dropdown_fields: ['d1'],
+    }
+    const step = buildWorkflowStep(
+      baseInputs({ workflow_type: WorkflowType.Hybrid, ...sources }),
+      false,
+    )
+
+    expect(step).toMatchObject({
+      workflow_type: WorkflowType.Hybrid,
+      ...sources,
+    })
+  })
+
   describe('step login', () => {
     it('should send a null auth for a later step with no login', () => {
       const step = buildWorkflowStep(baseInputs({ auth: null }), false)

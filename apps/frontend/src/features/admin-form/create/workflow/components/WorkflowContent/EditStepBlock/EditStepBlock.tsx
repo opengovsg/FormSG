@@ -180,6 +180,15 @@ export const buildWorkflowStep = (
           : {}),
       } as WriteStep
     }
+    case WorkflowType.Hybrid: {
+      return {
+        ...workflowStepBase,
+        workflow_type: WorkflowType.Hybrid,
+        emails: inputs.emails ?? [],
+        email_fields: inputs.email_fields ?? [],
+        dropdown_fields: inputs.dropdown_fields ?? [],
+      }
+    }
     default: {
       const exhaustiveCheck: never = workflowType
       return exhaustiveCheck
