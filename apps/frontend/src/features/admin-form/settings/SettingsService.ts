@@ -140,6 +140,15 @@ export const updateFormIssueNotification: UpdateFormFn<
   })
 }
 
+export const updateFormEmailJson: UpdateFormFn<'isEmailJsonEnabled'> = async (
+  formId,
+  newIsEmailJsonEnabled,
+) => {
+  return updateFormSettings(formId, {
+    isEmailJsonEnabled: newIsEmailJsonEnabled,
+  })
+}
+
 export const updateFormInactiveMessage: UpdateFormFn<
   'inactiveMessage'
 > = async (formId, newMessage) => {

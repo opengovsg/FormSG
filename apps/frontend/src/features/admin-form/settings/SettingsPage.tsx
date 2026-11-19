@@ -4,6 +4,9 @@ import { BiCodeBlock, BiCog, BiDollar, BiKey, BiMailSend } from 'react-icons/bi'
 import { IconType } from 'react-icons/lib'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Box, TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
+
+import { featureFlags } from 'formsg-shared/constants'
 
 import { LanguageTranslation } from '~assets/icons/LanguageTranslation'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
@@ -42,11 +45,12 @@ export const SettingsPage = (): JSX.Element => {
   const { isLoading: isFormSettingLoading } = useAdminFormSettings()
   const { user, isLoading: isUserLoading } = useUser()
   const { t } = useTranslation()
+  const isIntegrationsOn = useFeatureIsOn(featureFlags.settingsIntegrationsJson)
   const {
     general: { title: generalTitle },
     singpass: { title: singpassTitle, loginTitle },
     emailNotifications: { title: emailNotificationsTitle },
-    webhooks: { title: webhooksTitle },
+    webhooks: { title: webhooksTitle, integrationsTitle },
     payments: { title: paymentsTitle },
     tabs: { multiLanguage, navLabels },
   } = t('features.adminForm.settings', { returnObjects: true })
@@ -97,7 +101,8 @@ export const SettingsPage = (): JSX.Element => {
       path: 'email-notifications',
     },
     {
-      label: webhooksTitle,
+      // TODO (settings-integrations-json): remove the flag when GA
+      label: isIntegrationsOn ? integrationsTitle : webhooksTitle,
       icon: BiCodeBlock,
       component: SettingsWebhooksPage,
       path: 'webhooks',

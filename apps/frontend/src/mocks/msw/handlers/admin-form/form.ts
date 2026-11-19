@@ -950,6 +950,7 @@ export const createMockForm = (
         responseMode: FormResponseMode.Email,
         emails: ['test@example.com'],
         hasCaptcha: false,
+        isEmailJsonEnabled: true,
         authType: FormAuthType.NIL,
         status: FormStatus.Public,
         inactiveMessage:

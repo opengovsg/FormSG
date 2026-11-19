@@ -1,5 +1,11 @@
 export const enSG = {
   title: 'Webhooks',
+  integrationsTitle: 'Integrations',
+  emailJson: {
+    label: 'Enable JSON for email notifications',
+    description:
+      'Add responses in JSON to the bottom of the email body for automations.',
+  },
   legacy: {
     label: 'Use legacy webhooks',
     description:

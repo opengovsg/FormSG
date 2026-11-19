@@ -3,6 +3,8 @@ import { type HasTitle } from '..'
 export * from './en-sg'
 
 export interface Webhooks extends HasTitle {
+  integrationsTitle: string
+  emailJson: { label: string; description: string }
   legacy: { label: string; description: string; saved: string }
   legacyStorageNotice: string
   legacyWorkflowUnsupported: string

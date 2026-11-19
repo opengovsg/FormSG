@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Skeleton } from '@chakra-ui/react'
+import { Divider, Skeleton } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import {
@@ -9,6 +9,7 @@ import {
 import { FormResponseMode } from 'formsg-shared/types/form'
 
 import { CategoryHeader } from './components/CategoryHeader'
+import { EmailJsonToggle } from './components/EmailJsonToggle'
 import { WebhooksSection } from './components/WebhooksSection'
 import { WebhooksErrorMsg } from './components/WebhooksSection/WebhooksErrorMsg'
 import { WebhooksPlumberConnectedMsg } from './components/WebhooksSection/WebhooksPlumberConnectedMsg'
@@ -26,6 +27,8 @@ export const SettingsWebhooksPage = (): JSX.Element => {
   } = useAdminFormSettings()
 
   const enableMrfWebhooks = useFeatureIsOn(featureFlags.enableMrfWebhooks)
+  // TODO (settings-integrations-json): remove the flag when GA
+  const isIntegrationsOn = useFeatureIsOn(featureFlags.settingsIntegrationsJson)
 
   if (isError) {
     return <WebhooksErrorMsg onRetry={refetch} isRetrying={isRefetching} />
@@ -40,11 +43,20 @@ export const SettingsWebhooksPage = (): JSX.Element => {
   const isPlumberConnected = PLUMBER_WEBHOOK_URL_REGEX.test(
     settings?.webhook.url ?? '',
   )
+  // The JSON toggle shows whatever state the webhooks part is in
+  const emailJsonSetting = isIntegrationsOn ? (
+    <>
+      <Divider my="2.5rem" />
+      <EmailJsonToggle />
+    </>
+  ) : null
+
   // NOTE: only show this page when the enableWebhooks flag is off.
   if (isPlumberConnected && !enableWebhooks) {
     return (
       <Skeleton isLoaded={!isLoading}>
         <WebhooksPlumberConnectedMsg />
+        {emailJsonSetting}
       </Skeleton>
     )
   }
@@ -54,6 +66,7 @@ export const SettingsWebhooksPage = (): JSX.Element => {
     return (
       <Skeleton isLoaded={!isLoading}>
         <WebhooksUnsupportedMsg />
+        {emailJsonSetting}
       </Skeleton>
     )
   }
@@ -61,9 +74,12 @@ export const SettingsWebhooksPage = (): JSX.Element => {
   return (
     <Skeleton isLoaded={!isLoading}>
       <CategoryHeader>
-        {t('features.adminForm.settings.webhooks.title')}
+        {isIntegrationsOn
+          ? t('features.adminForm.settings.webhooks.integrationsTitle')
+          : t('features.adminForm.settings.webhooks.title')}
       </CategoryHeader>
       <WebhooksSection />
+      {emailJsonSetting}
     </Skeleton>
   )
 }

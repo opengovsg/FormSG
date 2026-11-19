@@ -16,6 +16,7 @@ import {
 import * as stories from './SettingsWebhooksPage.stories'
 
 const {
+  IntegrationsStorageMode,
   MultiStepV4Webhook,
   V4Webhook,
   V4WebhookRolloutOff,
@@ -587,3 +588,19 @@ it.each([stories.StorageModeEmpty, stories.UnsupportedEmailMode])(
     ).not.toBeInTheDocument()
   },
 )
+
+describe('JSON for email notifications', () => {
+  it('lets an admin turn off JSON for email notifications', async () => {
+    await act(async () => {
+      render(<IntegrationsStorageMode />)
+    })
+    const toggle = await screen.findByRole('checkbox', {
+      name: 'Enable JSON for email notifications',
+    })
+    expect(toggle).toBeChecked()
+
+    await userEvent.click(toggle)
+
+    await waitFor(() => expect(toggle).not.toBeChecked())
+  })
+})

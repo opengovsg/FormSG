@@ -109,6 +109,10 @@ export interface SettingsMutationsStrings {
     enabled: string
     disabled: string
   }
+  emailJson: {
+    enabled: string
+    disabled: string
+  }
   formTitleUpdated: string
   inactiveMessageUpdated: string
   emailsUpdated: string
