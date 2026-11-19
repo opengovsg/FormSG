@@ -33,6 +33,7 @@ import {
   FormStatus,
   FormWebhook,
   FormWorkflowDto,
+  FormWorkflowStep,
   FormWorkflowStepWriteDto,
   LogicDto,
   MultirespondentFormSettings,
@@ -535,6 +536,28 @@ export const transferAllFormsOwnership = (
   )
 }
 
+const getHybridStepFieldError = (
+  step: FormWorkflowStep | FormWorkflowStepWriteDto,
+  formFields: FormFieldSchema[] = [],
+): MalformedParametersError | undefined => {
+  if (step.workflow_type !== WorkflowType.Hybrid) return
+  const isFieldOfType = (fieldType: BasicField) => (id: string) =>
+    formFields.some(
+      (field) =>
+        field.fieldType === fieldType && String(field._id) === String(id),
+    )
+  if (!step.email_fields.every(isFieldOfType(BasicField.Email))) {
+    return new MalformedParametersError(
+      'Respondent field must be a valid email field',
+    )
+  }
+  if (!step.dropdown_fields.every(isFieldOfType(BasicField.Dropdown))) {
+    return new MalformedParametersError(
+      'Routing field must be a valid dropdown field',
+    )
+  }
+}
+
 type MultirespondentFormToCreate = Merge<
   IMultirespondentForm,
   { admin: string }
@@ -598,6 +621,13 @@ export const createForm = (
           'All respondent fields in workflow must be email fields',
         ),
       )
+    }
+    for (const step of workflow) {
+      const hybridStepFieldError = getHybridStepFieldError(
+        step,
+        formParams.form_fields,
+      )
+      if (hybridStepFieldError) return errAsync(hybridStepFieldError)
     }
 
     const isFirstStepApproval = workflow[0] && workflow[0].approval_field
@@ -804,9 +834,11 @@ export const duplicateForm = (
   const duplicateParams = originalForm.getDuplicateParams(overrideProps)
 
   if (overrideEmails) {
-    // override emails for static workflow steps
     duplicateParams.workflow?.forEach((step) => {
-      if (step.workflow_type === WorkflowType.Static) {
+      if (
+        step.workflow_type === WorkflowType.Static ||
+        step.workflow_type === WorkflowType.Hybrid
+      ) {
         step.emails = overrideEmails
       }
     })
@@ -1922,6 +1954,12 @@ export const createWorkflowStep = (
     }
   }
 
+  const hybridStepFieldError = getHybridStepFieldError(
+    newWorkflowStep,
+    originalForm.form_fields,
+  )
+  if (hybridStepFieldError) return errAsync(hybridStepFieldError)
+
   const isFirstStep =
     (originalForm as IPopulatedMultirespondentForm).workflow.length === 0
   if (isFirstStep && newWorkflowStep.approval_field) {
@@ -2095,6 +2133,12 @@ export const updateFormWorkflowStep = (
       )
     }
   }
+
+  const hybridStepFieldError = getHybridStepFieldError(
+    updatedWorkflowStep,
+    originalForm.form_fields,
+  )
+  if (hybridStepFieldError) return errAsync(hybridStepFieldError)
 
   const isFirstStep = stepNumber === 0
   if (isFirstStep && updatedWorkflowStep.approval_field) {

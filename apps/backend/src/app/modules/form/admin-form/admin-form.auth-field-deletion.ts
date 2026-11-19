@@ -99,6 +99,24 @@ export const prepareAuthFieldDeletion = ({
       delete clean.approval_field
       clean.is_approval_enabled = false
     }
+    if (clean.workflow_type === WorkflowType.Hybrid) {
+      const email_fields = clean.email_fields.filter(
+        (id) => !removed.has(String(id)),
+      )
+      const dropdown_fields = clean.dropdown_fields.filter(
+        (id) => !removed.has(String(id)),
+      )
+      if (clean.emails.length || email_fields.length || dropdown_fields.length)
+        return { ...clean, email_fields, dropdown_fields }
+      const rerouted = {
+        ...clean,
+        workflow_type: WorkflowType.Static as const,
+        emails: [],
+      }
+      Reflect.deleteProperty(rerouted, 'email_fields')
+      Reflect.deleteProperty(rerouted, 'dropdown_fields')
+      return rerouted
+    }
     if (
       ('field' in clean && removed.has(String(clean.field))) ||
       ('conditional_field' in clean &&
