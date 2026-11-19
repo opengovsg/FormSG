@@ -30,6 +30,7 @@ export const featureFlags = {
   disableBouncedSubmissionSms: 'disable-bounced-submission-sms' as const,
   keepV4AttachmentPrefix: 'keep-v4-attachment-prefix' as const,
   paymentInfoFormat: 'payment-info-format' as const,
+  paymentEmailLookup: 'payment-email-lookup' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {

@@ -1,4 +1,5 @@
 import { celebrate, Joi, Segments } from 'celebrate'
+import { featureFlags } from 'formsg-shared/constants'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../config/logger'
@@ -44,6 +45,19 @@ export const handleGetPreviousPaymentId: ControllerHandler<
   const logMeta = {
     action: 'handleGetPreviousPayment',
     formId,
+  }
+
+  const emailLookupEnabled =
+    req.growthbook?.getFeatureValue<boolean>(
+      featureFlags.paymentEmailLookup,
+      false,
+    ) ?? false
+  if (!emailLookupEnabled) {
+    logger.info({
+      message: 'Previous payment lookup is disabled',
+      meta: logMeta,
+    })
+    return res.sendStatus(StatusCodes.NOT_FOUND)
   }
 
   // Step 1: Get Payment document from email and formId
