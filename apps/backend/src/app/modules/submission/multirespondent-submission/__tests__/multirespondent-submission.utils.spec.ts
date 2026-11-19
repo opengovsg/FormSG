@@ -1234,6 +1234,43 @@ describe('multirespondent-submission.utils', () => {
       ])
     })
 
+    it("should show a multi-file answer's files, not its zip's name", () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'File Upload',
+          fieldType: BasicField.Attachment,
+          allowMultiple: true,
+        } as IAttachmentFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.Attachment,
+          answer: {
+            value: 'Question 1.zip',
+            hasBeenScanned: true,
+            filenames: ['a.pdf', 'b.jpg'],
+          },
+          question: 'File Upload',
+          provenance: {},
+        },
+      } as any
+
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+        keepV4AttachmentPrefix: false,
+      })
+
+      expect(result).toEqual([
+        {
+          question: '[attachment] File Upload',
+          answer: 'a.pdf;b.jpg',
+          fieldType: BasicField.Attachment,
+        },
+      ])
+    })
+
     it('should keep the [Attachment] label when keep-v4-attachment-prefix is on', () => {
       const formFields: FormFieldSchema[] = [
         {

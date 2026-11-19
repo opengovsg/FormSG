@@ -30,7 +30,8 @@ export const getDecryptedResponseInstance = (
   } else if (
     isArrayResponse(fieldRecordData) &&
     (fieldRecordData.fieldType === BasicField.Checkbox ||
-      fieldRecordData.fieldType === BasicField.Signature)
+      fieldRecordData.fieldType === BasicField.Signature ||
+      fieldRecordData.fieldType === BasicField.Attachment)
   ) {
     return new ArrayAnswerResponse(fieldRecordData)
   } else if (isSingleResponse(fieldRecordData)) {

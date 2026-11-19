@@ -7,6 +7,7 @@ import saveAs from 'file-saver'
 import JSZip from 'jszip'
 
 import { featureFlags } from 'formsg-shared/constants'
+import { toSafeZipEntryName } from 'formsg-shared/utils/multi-attachment'
 
 import { env } from '~/env'
 
@@ -40,10 +41,7 @@ import {
   getTombstoneContent,
   getTombstoneName,
 } from './utils/failedDownloads'
-import {
-  getResponseFolderName,
-  toSafeZipEntryName,
-} from './utils/responseFolderName'
+import { getResponseFolderName } from './utils/responseFolderName'
 import { clearStagedZips } from './utils/zipStaging'
 import { ZipEntry } from './utils/ZipStreamWriter'
 import {

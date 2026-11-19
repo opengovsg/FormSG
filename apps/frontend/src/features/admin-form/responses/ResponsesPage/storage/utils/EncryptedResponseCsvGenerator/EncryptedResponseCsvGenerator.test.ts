@@ -940,6 +940,33 @@ describe('EncryptedResponseCsvGenerator', () => {
     })
 
     describe('submissions with answerArray key', () => {
+      it("should show a multi-file answer's files, not its zip's name", () => {
+        // Arrange
+        const mockRecord = {
+          record: [
+            {
+              ...generateRecord(1, 'Question 1.zip', 'attachment'),
+              answerArray: ['a.pdf', 'b.jpg'],
+            } as unknown as CsvRecordData,
+          ],
+          created: mockCreatedEarly,
+          submissionId: 'mockSubmissionId',
+        }
+        generator.addRecord(mockRecord)
+
+        // Act
+        generator.process()
+
+        // Assert
+        expect(generator.records[2 + BOM_LENGTH - 1]).toEqual(
+          stringify([
+            mockRecord.submissionId,
+            getFormattedDate(mockRecord.created),
+            'a.pdf;b.jpg',
+          ]),
+        )
+      })
+
       it('should handle only submissions with checkbox answerArray', () => {
         // Arrange
         const mockDecryptedRecord = [

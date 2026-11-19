@@ -3,6 +3,7 @@ import {
   answerKey,
   handleAddressResponseDisplay,
 } from 'formsg-shared/utils/address'
+import { formatAttachmentAnswer } from 'formsg-shared/utils/multi-attachment'
 import {
   convertToSignatureVectorArray,
   SIGNATURE_CAPTURED_STRING,
@@ -35,6 +36,7 @@ import {
 import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-array-to-png'
 import {
   isProcessedAddressResponse,
+  isProcessedAttachmentResponse,
   isProcessedCheckboxResponse,
   isProcessedChildResponse,
   isProcessedSignatureResponse,
@@ -453,6 +455,16 @@ const createFormattedDataForOneField = <T extends EmailDataFields | undefined>(
   } else if (isProcessedSignatureResponse(response)) {
     const signature = getAnswerForSignature(response)
     return [getFormattedFunction(signature, hashedFields)]
+  } else if (isProcessedAttachmentResponse(response) && response.answerArray) {
+    return [
+      getFormattedFunction(
+        {
+          ...response,
+          answer: formatAttachmentAnswer(response),
+        },
+        hashedFields,
+      ),
+    ]
   } else {
     return [getFormattedFunction(response, hashedFields)]
   }

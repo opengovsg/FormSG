@@ -241,6 +241,10 @@ export const enSG: Fields = {
   attachment: {
     info: 'View our [complete list]({acceptedFileTypes}) of accepted file types. Please also read our [FAQ on email reliability]({guideEmailReliability}) relating to unaccepted file types.',
     maximumSize: 'Maximum size of individual attachment',
+    maximumSizeMultiple: 'Maximum size of attachment(s)',
+    allowMultiple: 'Allow respondent to add multiple attachments',
+    webhookWarning:
+      'This form sends responses to a webhook. Files for this question will be sent as one .zip file. Check with your developer before you turn this on.',
     error: {
       exceedSize:
         "You have exceeded your form's attachment size limit of {maxTotalSizeMb} MB",
