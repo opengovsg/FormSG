@@ -1,6 +1,5 @@
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
-import { expect, userEvent, within } from 'storybook/test'
 
 import { featureFlags } from 'formsg-shared/constants'
 import {
@@ -32,7 +31,6 @@ import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { CreatePageSidebarProvider } from '~features/admin-form/create/common'
 
-import { useAdminWorkflowStore } from './adminWorkflowStore'
 import { CreatePageWorkflowTab } from './CreatePageWorkflowTab'
 
 const withCreatePageSidebar = (Story: StoryFn) => (
@@ -630,7 +628,6 @@ StepLoginMixedProviders.parameters = {
           ...FORM_WITH_WORKFLOW,
           status: FormStatus.Private,
           authType: FormAuthType.MyInfo,
-          hasUsedGuidedMode: true,
           form_fields: stepLoginFields,
           workflow: [
             {
@@ -674,34 +671,4 @@ StepLoginMixedProviders.parameters = {
       ],
     },
   },
-}
-
-export const GuidedLoginTabs = Template.bind({})
-GuidedLoginTabs.decorators = StepLoginMixedProviders.decorators
-GuidedLoginTabs.parameters = StepLoginMixedProviders.parameters
-GuidedLoginTabs.play = async ({ canvasElement }) => {
-  const canvas = within(canvasElement)
-  await canvas.findByRole('button', { name: /add step/i })
-  useAdminWorkflowStore.getState().setGuidedSetup(true)
-  useAdminWorkflowStore.getState().setToCreating()
-  await canvas.findByRole('textbox', { name: /step name/i })
-  await userEvent.click(canvas.getByRole('button', { name: /^continue$/i }))
-  await userEvent.click(canvas.getByRole('button', { name: /^continue$/i }))
-  await expect(canvas.getByRole('tab', { name: 'Login' })).toHaveAttribute(
-    'aria-selected',
-    'true',
-  )
-  await userEvent.click(canvas.getByRole('radio', { name: /^Corppass/ }))
-}
-
-export const GuidedFieldsTab = Template.bind({})
-GuidedFieldsTab.decorators = GuidedLoginTabs.decorators
-GuidedFieldsTab.parameters = GuidedLoginTabs.parameters
-GuidedFieldsTab.play = async (context) => {
-  await GuidedLoginTabs.play?.(context)
-  const canvas = within(context.canvasElement)
-  await userEvent.click(canvas.getByRole('button', { name: /^continue$/i }))
-  await expect(
-    canvas.getByRole('tab', { name: 'Fields to fill' }),
-  ).toHaveAttribute('aria-selected', 'true')
 }

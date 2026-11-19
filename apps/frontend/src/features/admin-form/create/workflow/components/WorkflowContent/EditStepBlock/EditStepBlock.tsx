@@ -298,7 +298,7 @@ export const EditStepBlock = ({
   const [focusSection, setFocusSection] = useState<StepSection | null>(null)
 
   const openSection = (section: StepSection, focus = false) => {
-    if (!sectionOrder.includes(section)) return
+    if (!useProposedTabs || !sectionOrder.includes(section)) return
     reveal.goTo(section)
     if (focus) {
       skipNextRevealScroll.current = section !== activeSection
@@ -401,12 +401,16 @@ export const EditStepBlock = ({
       } catch (error) {
         cancelPendingSwitch()
         if (!didSaveStep && isWorkflowEmailValidationError(error)) {
-          formMethods.setError('emails', {
-            type: 'server',
-            message: t(
-              'features.adminForm.sidebar.workflow.staticRespondent.invalidEmails',
-            ),
-          })
+          formMethods.setError(
+            'emails',
+            {
+              type: 'server',
+              message: t(
+                'features.adminForm.sidebar.workflow.staticRespondent.invalidEmails',
+              ),
+            },
+            { shouldFocus: true },
+          )
           openSection('people', true)
           setSaveError('')
           return
@@ -648,9 +652,11 @@ export const EditStepBlock = ({
             isLoading={_isLoading}
             onBack={reveal.goBack}
             onCancel={setToInactive}
-            onContinue={() => void continueGuidance()}
+            onContinue={
+              hasGuidedTabs ? () => void continueGuidance() : reveal.advance
+            }
             onDone={() => void saveForNavigation()}
-            doneLabel={submitButtonLabel}
+            doneLabel={hasGuidedTabs ? submitButtonLabel : undefined}
           />
         ) : (
           <SaveActionGroup
