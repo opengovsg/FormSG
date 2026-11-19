@@ -1186,6 +1186,7 @@ describe('multirespondent-submission.utils', () => {
         responses,
         keepV4AttachmentPrefix: false,
         keepV4Table: false,
+        keepV4Date: false,
       })
 
       expect(result).toEqual([
@@ -1225,6 +1226,7 @@ describe('multirespondent-submission.utils', () => {
         responses,
         keepV4AttachmentPrefix: false,
         keepV4Table: false,
+        keepV4Date: false,
       })
 
       expect(result).toEqual([
@@ -1258,6 +1260,7 @@ describe('multirespondent-submission.utils', () => {
         responses,
         keepV4AttachmentPrefix: true,
         keepV4Table: false,
+        keepV4Date: false,
       })
 
       expect(result).toEqual([
@@ -1291,6 +1294,7 @@ describe('multirespondent-submission.utils', () => {
         responses,
         keepV4AttachmentPrefix: false,
         keepV4Table: false,
+        keepV4Date: false,
       })
 
       expect(result).toEqual([
@@ -1325,6 +1329,7 @@ describe('multirespondent-submission.utils', () => {
         includeVerifiedPrefix: false,
         keepV4AttachmentPrefix: false,
         keepV4Table: false,
+        keepV4Date: false,
       })
 
       expect(result).toEqual([
@@ -1375,6 +1380,7 @@ describe('multirespondent-submission.utils', () => {
         responses,
         keepV4AttachmentPrefix: false,
         keepV4Table: false,
+        keepV4Date: false,
       })
 
       // Question naming matches getAnswersForChild, used by email/storage
@@ -1430,6 +1436,7 @@ describe('multirespondent-submission.utils', () => {
         responses,
         keepV4AttachmentPrefix: false,
         keepV4Table: false,
+        keepV4Date: false,
       })
 
       expect(result.map((pair) => pair.question)).toEqual([
@@ -1472,6 +1479,7 @@ describe('multirespondent-submission.utils', () => {
         responses,
         keepV4AttachmentPrefix: false,
         keepV4Table: false,
+        keepV4Date: false,
       })
 
       expect(result).toEqual([
@@ -1491,6 +1499,7 @@ describe('multirespondent-submission.utils', () => {
     it.each([
       {
         keepV4Table: false,
+        keepV4Date: false,
         rows: [
           ['[table] Table of Name and Age (Name, Age)', 'Alice,30'],
           ['[table] Table of Name and Age (Name, Age)', 'Bob,25'],
@@ -1556,6 +1565,7 @@ describe('multirespondent-submission.utils', () => {
           responses,
           keepV4AttachmentPrefix: false,
           keepV4Table,
+          keepV4Date: false,
         })
 
         expect(result).toEqual(
@@ -1565,6 +1575,38 @@ describe('multirespondent-submission.utils', () => {
             fieldType: BasicField.Table,
           })),
         )
+      },
+    )
+
+    it.each([
+      { keepV4Date: false, answer: '01 Jan 2025' },
+      { keepV4Date: true, answer: '01/01/2025' },
+    ])(
+      'should format dates like Storage unless keep-v4-date is on ($keepV4Date)',
+      ({ keepV4Date, answer }) => {
+        const formFields = [
+          { _id: '1', title: 'Date', fieldType: BasicField.Date },
+        ] as FormFieldSchema[]
+        const responses = {
+          '1': {
+            fieldType: BasicField.Date,
+            answer: { value: '01/01/2025' },
+            question: 'Date',
+            provenance: {},
+          },
+        } as any
+
+        const result = getQuestionAnswerPairsForMultipleFields({
+          formFields,
+          responses,
+          keepV4AttachmentPrefix: false,
+          keepV4Table: false,
+          keepV4Date,
+        })
+
+        expect(result).toEqual([
+          { question: 'Date', answer, fieldType: BasicField.Date },
+        ])
       },
     )
 
@@ -1593,6 +1635,7 @@ describe('multirespondent-submission.utils', () => {
         responses,
         keepV4AttachmentPrefix: false,
         keepV4Table: false,
+        keepV4Date: false,
       })
 
       expect(result).toEqual([
@@ -1633,6 +1676,7 @@ describe('multirespondent-submission.utils', () => {
         responses,
         keepV4AttachmentPrefix: false,
         keepV4Table: false,
+        keepV4Date: false,
       })
 
       expect(result).toEqual([
@@ -1676,6 +1720,7 @@ describe('multirespondent-submission.utils', () => {
         includeSignatureDataPngDataUri: true,
         keepV4AttachmentPrefix: false,
         keepV4Table: false,
+        keepV4Date: false,
       })
 
       const expectedSignatureDataPngDataUri =
@@ -1717,6 +1762,7 @@ describe('multirespondent-submission.utils', () => {
         responses,
         keepV4AttachmentPrefix: false,
         keepV4Table: false,
+        keepV4Date: false,
       })
 
       expect(result).toEqual([
@@ -1745,6 +1791,7 @@ describe('multirespondent-submission.utils', () => {
         responses,
         keepV4AttachmentPrefix: false,
         keepV4Table: false,
+        keepV4Date: false,
       })
 
       expect(result).toEqual([
@@ -2005,6 +2052,7 @@ describe('multirespondent-submission.utils', () => {
       responses,
       keepV4AttachmentPrefix: false,
       keepV4Table: false,
+      keepV4Date: false,
     })
 
     expect(result).toEqual([])
@@ -2024,6 +2072,7 @@ describe('multirespondent-submission.utils', () => {
       responses: undefined as unknown as FieldResponsesV3,
       keepV4AttachmentPrefix: false,
       keepV4Table: false,
+      keepV4Date: false,
     })
     expect(undefinedResult).toEqual([])
 
@@ -2032,6 +2081,7 @@ describe('multirespondent-submission.utils', () => {
       responses: null as unknown as FieldResponsesV3,
       keepV4AttachmentPrefix: false,
       keepV4Table: false,
+      keepV4Date: false,
     })
     expect(nullResult).toEqual([])
   })
@@ -2043,6 +2093,7 @@ describe('multirespondent-submission.utils', () => {
       timestamp: '1 Jan 2025',
       keepV4AttachmentPrefix: false,
       keepV4Table: false,
+      keepV4Date: false,
     }
 
     it('should emit one entry per child attribute for children responses', () => {
@@ -2392,6 +2443,7 @@ describe('multirespondent-submission.utils', () => {
     it.each([
       {
         keepV4Table: false,
+        keepV4Date: false,
         entries: [
           { question: '[table] Hobbies (Hobby, Years)', answer: ',' },
           { question: '[table] Hobbies (Hobby, Years)', answer: ',' },
@@ -2418,6 +2470,7 @@ describe('multirespondent-submission.utils', () => {
           buildMrfResponseJson({
             ...BASE_ARGS,
             keepV4Table,
+            keepV4Date: false,
             formFields,
             responses: {},
           }),
