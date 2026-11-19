@@ -24,8 +24,8 @@ export const enSG: App = {
     },
   },
   forceRefreshModal: {
-    title: 'Form has been updated',
-    body: 'A new version of Form has been released, and the page you have open is no longer compatible. Refresh the page to continue.',
-    refreshButton: 'Refresh',
+    title: 'Refresh this page to continue',
+    body: "We've updated FormSG. This page is still running the old version.",
+    refreshButton: 'Refresh page',
   },
 }
