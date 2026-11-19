@@ -74,7 +74,7 @@ export const MultiSelectProvider = ({
   onChange,
   onBlur,
   name,
-  filter = defaultFilter,
+  filter,
   nothingFoundLabel = 'No matching results',
   placeholder: placeholderProp,
   clearButtonLabel = 'Clear selection',
@@ -109,8 +109,10 @@ export const MultiSelectProvider = ({
   )
 
   const getFilteredItems = useCallback(
-    (filterValue?: string) =>
-      filterValue ? filter(items, filterValue) : items,
+    (filterValue = '') => {
+      if (filter) return filter(items, filterValue)
+      return filterValue ? defaultFilter(items, filterValue) : items
+    },
     [filter, items],
   )
   const [filteredItems, setFilteredItems] = useState(

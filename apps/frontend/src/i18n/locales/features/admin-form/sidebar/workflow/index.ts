@@ -23,6 +23,14 @@ export interface Workflow {
     fieldsToFill: string
     clickToEdit: string
   }
+  respondentSource: {
+    required: string
+    dropdownMappings: {
+      button: string
+      progress: string
+      done: string
+    }
+  }
   staticRespondent: {
     invalidEmails: string
   }

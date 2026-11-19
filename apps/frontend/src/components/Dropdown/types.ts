@@ -17,6 +17,7 @@ export type ComboboxItem<T = string> =
        * A multiselect renders it without a checkbox.
        */
       isAction?: boolean
+      isInvalid?: boolean
       /** Icon to display in input field when item is selected, if available */
       icon?: As
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

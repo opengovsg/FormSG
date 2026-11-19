@@ -20,6 +20,14 @@ export const enSG: Workflow = {
     fieldsToFill: 'Fields to fill',
     clickToEdit: 'Click to edit',
   },
+  respondentSource: {
+    required: 'Type at least one email, or choose a field.',
+    dropdownMappings: {
+      button: 'Assign emails to Dropdown options',
+      progress: '{mapped}/{total} done',
+      done: 'Done',
+    },
+  },
   staticRespondent: {
     invalidEmails:
       "Enter valid emails separated by commas, like me@example.com. Invalid emails won't be saved.",
