@@ -70,6 +70,7 @@ import { startsWithSPCPFieldTitle } from '../../spcp/spcp.util'
 import { toWorkflowEventDtos } from '../../workflow-event/workflow-event.service'
 import {
   MYINFO_PREFIX,
+  SIGNATURE_PREFIX,
   TABLE_PREFIX,
 } from '../email-submission/email-submission.constants'
 import {
@@ -932,6 +933,11 @@ export const getQuestionAnswerPairsForMultipleFields = ({
 export const getFormDelimiter = (metadata?: FormMetadata): string =>
   metadata?.delimiter ?? ', '
 
+const UNANSWERED_QUESTION_PREFIXES: Partial<Record<BasicField, string>> = {
+  [BasicField.Attachment]: ATTACHMENT_QUESTION_PREFIX,
+  [BasicField.Signature]: SIGNATURE_PREFIX,
+}
+
 // Field types that don't carry respondent answers; excluded from JSON dump.
 const NON_RESPONSE_FIELD_TYPES = new Set<string>([
   BasicField.Section,
@@ -997,15 +1003,10 @@ export const buildMrfResponseJson = ({
     }
 
     if (!response) {
-      // Label an unanswered attachment too, so its key matches an answered one
-      const isLabelledAttachment =
-        field.fieldType === BasicField.Attachment && !keepV4ResponseFormat
-      entries.push({
-        question: isLabelledAttachment
-          ? `${ATTACHMENT_QUESTION_PREFIX}${field.title}`
-          : field.title,
-        answer: '',
-      })
+      const prefix = keepV4ResponseFormat
+        ? ''
+        : (UNANSWERED_QUESTION_PREFIXES[field.fieldType] ?? '')
+      entries.push({ question: `${prefix}${field.title}`, answer: '' })
       continue
     }
 
