@@ -89,11 +89,17 @@ export type GetPaymentInfoDto = {
   client_secret?: string
   status: Stripe.PaymentIntent.Status
   description: string | null
+  use_server_confirmation: boolean
   publishableKey: string
   submissionId: string
   products: Payment['products']
   amount: Payment['amount']
   payment_fields_snapshot: Payment['payment_fields_snapshot']
+}
+
+export type ConfirmPaymentDto = {
+  status: Stripe.PaymentIntent.Status
+  client_secret?: string
 }
 
 export type IncompletePaymentsDto = {

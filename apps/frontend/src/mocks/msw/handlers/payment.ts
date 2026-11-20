@@ -11,6 +11,7 @@ const BASE_PAYMENT_INFO = {
   client_secret: 'sample_client_secret',
   status: 'requires_payment_method' as const,
   description: null,
+  use_server_confirmation: false,
   publishableKey: 'sample_pub_key',
   submissionId: 'sample_responseid',
   products: [],

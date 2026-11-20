@@ -33,6 +33,7 @@ export const featureFlags = {
   keepV4Date: 'keep-v4-date' as const,
   paymentInfoFormat: 'payment-info-format' as const,
   paymentEmailLookup: 'payment-email-lookup' as const,
+  paymentServerConfirmation: 'payment-server-confirmation' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {
