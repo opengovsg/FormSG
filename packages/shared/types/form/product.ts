@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 export const ProductId = z.string().brand<'ProductId'>()
 export type ProductId = z.infer<typeof ProductId>
