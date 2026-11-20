@@ -5,6 +5,7 @@ import {
   BasicField,
   FormAuthType,
   FormFieldDto,
+  FormLogic,
   FormResponseMode,
   FormWebhook,
   FormWorkflowStepDto,
@@ -15,6 +16,7 @@ import {
   WorkflowEventType,
   WorkflowStatus,
 } from 'formsg-shared/types'
+import { getVisibleFieldIdsV4 } from 'formsg-shared/utils/flatten-v4-to-v1'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
 import moment from 'moment'
 import mongoose from 'mongoose'
@@ -167,11 +169,11 @@ const appUrl =
     : config.app.appUrl
 
 const toPlainFormFields = (
-  formFields: IPopulatedMultirespondentForm['form_fields'],
+  formFields: IPopulatedMultirespondentForm['form_fields'] | FormFieldDto[],
 ): FormFieldDto[] => JSON.parse(JSON.stringify(formFields)) as FormFieldDto[]
 
 const toPlainFormLogics = (
-  formLogics: IPopulatedMultirespondentForm['form_logics'],
+  formLogics: IPopulatedMultirespondentForm['form_logics'] | FormLogic[],
 ): LogicDto[] => JSON.parse(JSON.stringify(formLogics)) as LogicDto[]
 
 export type SavedMultirespondentSubmission = {
@@ -647,6 +649,7 @@ const sendMrfOutcomeEmails = ({
     | 'workflow'
   > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
+    form_logics: IPopulatedMultirespondentForm['form_logics'] | FormLogic[]
   }
   responses: FieldResponsesV4
   latestSubmissionTimestamp: string
@@ -726,6 +729,12 @@ const sendMrfOutcomeEmails = ({
           responseId: submissionId,
           timestamp: latestSubmissionTimestamp,
           delimiter: getFormDelimiter(form.metadata),
+          getVisibleFieldIds: () =>
+            getVisibleFieldIdsV4({
+              v4Responses: responses,
+              formFields: toPlainFormFields(form.form_fields),
+              formLogics: toPlainFormLogics(form.form_logics ?? []),
+            }),
           keepV4ResponseFormat: isKeepV4ResponseFormatOn(growthbook),
         })
 

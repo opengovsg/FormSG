@@ -124,7 +124,7 @@ const UNTOUCHED_ADDRESS_INPUT: AddressAnswerInput = {
   },
 }
 
-const toAddressInput = ({
+export const toAddressInput = ({
   answer,
   isVisible,
 }: {
