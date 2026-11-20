@@ -332,6 +332,25 @@ const explodeChildrenEntries = (
   )
 }
 
+export const getVisibleFieldIdsV4 = ({
+  v4Responses,
+  formFields,
+  formLogics,
+}: {
+  v4Responses: FieldResponsesV4Input
+  formFields: FormFieldDto[]
+  formLogics: LogicDto[]
+}): Set<string> =>
+  formLogics.length
+    ? getVisibleFieldIds(
+        fieldResponsesV4ToLogicFieldResponseTransformer(
+          v4Responses,
+          formFields,
+        ),
+        { form_fields: formFields, form_logics: formLogics },
+      )
+    : new Set(formFields.map((field) => field._id))
+
 /**
  * Converts V4 responses and a form-definition snapshot into the same V1
  * entries a storage-mode form produces.
@@ -345,22 +364,18 @@ export const flattenV4ToFormFields = ({
   formFields: FormFieldDto[]
   formLogics: LogicDto[]
 }): FlattenedV1Response[] => {
-  const visibleFieldIds = formLogics.length
-    ? getVisibleFieldIds(
-        fieldResponsesV4ToLogicFieldResponseTransformer(
-          v4Responses,
-          formFields,
-        ),
-        { form_fields: formFields, form_logics: formLogics },
-      )
-    : null
+  const visibleFieldIds = getVisibleFieldIdsV4({
+    v4Responses,
+    formFields,
+    formLogics,
+  })
   const entries: FieldResponse[] = []
   const emittingFields: FormFieldDto[] = []
   for (const field of formFields) {
     const entry = buildEntry(
       field,
       v4Responses[field._id]?.answer,
-      visibleFieldIds === null || visibleFieldIds.has(field._id),
+      visibleFieldIds.has(field._id),
     )
     if (entry === null) continue
     entries.push(entry)
