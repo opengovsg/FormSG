@@ -565,14 +565,12 @@ const omitWorkflowStepAuth = <T extends object>(params: T): T => {
 }
 
 export const createForm = (
-  // isSaveDraftEnabled and isEmailJsonDisabled omitted: creation decides them,
-  // not the caller.
+  // isSaveDraftEnabled omitted: creation decides it, not the caller.
   formParams: Omit<
     Merge<IForm, { admin: string }>,
     'isSaveDraftEnabled' | 'isEmailJsonDisabled'
   >,
   workspaceId?: string,
-  // Decided by the caller, who knows the admin for flag targeting
   startWithEmailJsonOff = false,
 ): ResultAsync<
   IFormDocument,

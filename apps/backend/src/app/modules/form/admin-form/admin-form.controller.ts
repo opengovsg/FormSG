@@ -1274,19 +1274,7 @@ export const handleTransferFormOwnership = [
   transferFormOwnership,
 ] as ControllerHandler[]
 
-/**
- * Handler for POST /adminform.
- * @security session
- *
- * @returns 200 with newly created form
- * @returns 409 when a database conflict error occurs
- * @returns 413 when payload for created form exceeds size limit
- * @returns 422 when user of given id cannnot be found in the database, or when form parameters are invalid
- * @returns 500 when database error occurs
- */
-// TODO (settings-integrations-json): remove when GA. Matches frontend
-// targeting for the signed-in admin, so admins who see the JSON toggle get
-// new forms that start with it off.
+// TODO (settings-integrations-json): remove when GA
 const isEmailJsonSettingOnFor = (
   growthbook: GrowthBook | undefined,
   user: IPopulatedUser,
@@ -1299,6 +1287,16 @@ const isEmailJsonSettingOnFor = (
   return growthbook?.isOn(featureFlags.settingsIntegrationsJson) ?? false
 }
 
+/**
+ * Handler for POST /adminform.
+ * @security session
+ *
+ * @returns 200 with newly created form
+ * @returns 409 when a database conflict error occurs
+ * @returns 413 when payload for created form exceeds size limit
+ * @returns 422 when user of given id cannnot be found in the database, or when form parameters are invalid
+ * @returns 500 when database error occurs
+ */
 export const createForm: ControllerHandler<
   unknown,
   DeserializeTransform<FormDto> | ErrorDto,

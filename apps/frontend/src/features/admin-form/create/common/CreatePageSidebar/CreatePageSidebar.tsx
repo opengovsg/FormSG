@@ -66,8 +66,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     handleIntegrationClick,
     reportSidebarWidth,
   } = useCreatePageSidebar()
-  // TODO (settings-integrations): remove the flag when GA. With it on,
-  // integrations live in the Integrations settings tab instead.
+  // TODO (settings-integrations): remove when GA
   const isIntegrationsInSettings = useFeatureIsOn(
     featureFlags.settingsIntegrations,
   )

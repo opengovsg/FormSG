@@ -245,8 +245,7 @@ export const performEncryptPostSubmissionActions = ({
       ).andThen(() => okAsync(form))
     })
     .andThen((form) => {
-      // Add formId, adminEmail and adminAgency to growthbook attributes to
-      // allow for targeting in growthbook feature flags, as the admin app does
+      // Add formId, adminEmail and adminAgency to growthbook attributes to allow for targeting in growthbook feature flags
       void growthbook?.setAttributes({
         ...growthbook?.getAttributes(),
         formId: form._id.toString(),

@@ -1081,11 +1081,6 @@ export const buildMrfMetadata = ({
   }
 }
 
-/**
- * Whether an email notification should end with the response JSON. While the
- * settings-integrations-json flag is off, every email keeps its JSON whatever
- * the form's setting.
- */
 // TODO (settings-integrations-json): return !isEmailJsonDisabled alone when GA
 export const shouldIncludeEmailJson = ({
   growthbook,

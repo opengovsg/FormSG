@@ -609,7 +609,6 @@ describe('JSON for email notifications', () => {
     await act(async () => {
       render(<IntegrationsEmailMode />)
     })
-    // The heading only becomes visible once settings have loaded
     await screen.findByRole('heading', { name: UNSUPPORTED_MSG })
     expect(
       screen.queryByRole('checkbox', {

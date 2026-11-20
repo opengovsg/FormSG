@@ -116,7 +116,6 @@ export interface ProductTileProps extends HTMLChakraProps<'a'> {
    * image fails to load.
    */
   logoUrl?: string
-  /** Whether an arrow slides in on hover. Defaults to true. */
   hasArrow?: boolean
 }
 
@@ -263,7 +262,6 @@ const generatePlumberTile = (id: string): LauncherTile => {
   }
 }
 
-/** The Plumber tile for the form being edited, styled by the caller. */
 export const PlumberTile = (
   props: Omit<ProductTileProps, keyof LauncherTile>,
 ): JSX.Element => {

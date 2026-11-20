@@ -666,8 +666,6 @@ const sendMrfOutcomeEmails = ({
   >
   growthbook?: GrowthBook
   workflowEvents?: IWorkflowEvent[]
-  // Read from the live form, not a snapshot, so emails follow the setting
-  // at the time they're sent
   isEmailJsonDisabled: boolean
 }): ResultAsync<
   true,
@@ -2251,7 +2249,6 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   logMeta: CustomLoggerParams['meta']
   attachments?: IAttachmentInfo[]
   growthbook?: GrowthBook
-  // From the live form: the snapshot holds the form as it was at step one
   isEmailJsonDisabled: boolean
 }): ResultAsync<
   boolean,
