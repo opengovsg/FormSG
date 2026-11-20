@@ -2414,12 +2414,17 @@ describe('multirespondent-submission.utils', () => {
       expect(result[3]).not.toHaveProperty('fieldType')
     })
 
-    it('should label an unanswered attachment [attachment] like an answered one', () => {
+    it('should label an unanswered attachment or signature like an answered one', () => {
       const formFields = [
         {
           _id: '1',
           title: 'Passport',
           fieldType: BasicField.Attachment,
+        } as unknown as FormFieldSchema,
+        {
+          _id: '2',
+          title: 'Signature',
+          fieldType: BasicField.Signature,
         } as unknown as FormFieldSchema,
       ]
 
@@ -2427,18 +2432,23 @@ describe('multirespondent-submission.utils', () => {
         buildMrfResponseJson({ ...BASE_ARGS, formFields, responses: {} }),
       )
 
-      expect(result).toContainEqual({
-        question: '[attachment] Passport',
-        answer: '',
-      })
+      expect(result.slice(3)).toEqual([
+        { question: '[attachment] Passport', answer: '' },
+        { question: '[signature] Signature', answer: '' },
+      ])
     })
 
-    it('should leave an unanswered attachment unlabelled when keep-v4-response-format is on', () => {
+    it('should leave an unanswered attachment or signature unlabelled when keep-v4-response-format is on', () => {
       const formFields = [
         {
           _id: '1',
           title: 'Passport',
           fieldType: BasicField.Attachment,
+        } as unknown as FormFieldSchema,
+        {
+          _id: '2',
+          title: 'Signature',
+          fieldType: BasicField.Signature,
         } as unknown as FormFieldSchema,
       ]
 
@@ -2451,7 +2461,10 @@ describe('multirespondent-submission.utils', () => {
         }),
       )
 
-      expect(result).toContainEqual({ question: 'Passport', answer: '' })
+      expect(result.slice(3)).toEqual([
+        { question: 'Passport', answer: '' },
+        { question: 'Signature', answer: '' },
+      ])
     })
 
     it.each([
