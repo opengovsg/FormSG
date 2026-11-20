@@ -62,7 +62,7 @@ type FormDefaultableKey =
   | 'isSaveDraftEnabled'
   | 'hasCaptcha'
   | 'hasIssueNotification'
-  | 'isEmailJsonEnabled'
+  | 'isEmailJsonDisabled'
   | 'hasRespondentCopy'
   | 'authType'
   | 'isSubmitterIdCollectionEnabled'
@@ -110,7 +110,7 @@ export type PickDuplicateForm =
       | 'isSubmitterIdCollectionEnabled'
       | 'isSingleSubmission'
       | 'isSaveDraftEnabled'
-      | 'isEmailJsonEnabled'
+      | 'isEmailJsonDisabled'
       | 'inactiveMessage'
       | 'submissionLimit'
       | 'responseMode'
@@ -125,7 +125,7 @@ export type PickDuplicateForm =
       | 'isSubmitterIdCollectionEnabled'
       | 'isSingleSubmission'
       | 'isSaveDraftEnabled'
-      | 'isEmailJsonEnabled'
+      | 'isEmailJsonDisabled'
       | 'inactiveMessage'
       | 'submissionLimit'
       | 'responseMode'
@@ -314,7 +314,7 @@ interface IFormBaseDocument<T extends IFormSchema> {
   isSaveDraftEnabled: NonNullable<T['isSaveDraftEnabled']>
   hasCaptcha: NonNullable<T['hasCaptcha']>
   hasIssueNotification: NonNullable<T['hasIssueNotification']>
-  isEmailJsonEnabled: NonNullable<T['isEmailJsonEnabled']>
+  isEmailJsonDisabled: NonNullable<T['isEmailJsonDisabled']>
   hasRespondentCopy: NonNullable<T['hasRespondentCopy']>
   authType: NonNullable<T['authType']>
   isSubmitterIdCollectionEnabled: NonNullable<

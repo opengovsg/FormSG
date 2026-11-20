@@ -320,15 +320,15 @@ export const useMutateFormSettings = () => {
   )
 
   const mutateFormEmailJson = useMutation(
-    (nextIsEmailJsonEnabled: boolean) =>
-      updateFormEmailJson(formId, nextIsEmailJsonEnabled),
+    (nextIsEmailJsonDisabled: boolean) =>
+      updateFormEmailJson(formId, nextIsEmailJsonDisabled),
     {
       onSuccess: (newData) => {
         handleSuccess({
           newData,
-          toastDescription: newData.isEmailJsonEnabled
-            ? t('features.adminForm.settings.mutations.emailJson.enabled')
-            : t('features.adminForm.settings.mutations.emailJson.disabled'),
+          toastDescription: newData.isEmailJsonDisabled
+            ? t('features.adminForm.settings.mutations.emailJson.disabled')
+            : t('features.adminForm.settings.mutations.emailJson.enabled'),
         })
       },
       onError: handleError,

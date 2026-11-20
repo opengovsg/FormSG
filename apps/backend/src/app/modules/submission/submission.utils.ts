@@ -1086,15 +1086,18 @@ export const buildMrfMetadata = ({
  * settings-integrations-json flag is off, every email keeps its JSON whatever
  * the form's setting.
  */
-// TODO (settings-integrations-json): return isEmailJsonEnabled alone when GA
+// TODO (settings-integrations-json): return !isEmailJsonDisabled alone when GA
 export const shouldIncludeEmailJson = ({
   growthbook,
-  isEmailJsonEnabled,
+  isEmailJsonDisabled,
 }: {
   growthbook?: GrowthBook
-  isEmailJsonEnabled: boolean
+  isEmailJsonDisabled?: boolean
 }): boolean =>
-  !growthbook?.isOn(featureFlags.settingsIntegrationsJson) || isEmailJsonEnabled
+  !(
+    growthbook?.isOn(featureFlags.settingsIntegrationsJson) &&
+    isEmailJsonDisabled
+  )
 
 /**
  * Ops fallback: when on, MRF outputs keep the old `[Attachment] ` label and

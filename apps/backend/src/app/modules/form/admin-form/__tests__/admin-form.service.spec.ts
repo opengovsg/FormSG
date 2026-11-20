@@ -1267,6 +1267,7 @@ describe('admin-form.service', () => {
     const withCreationDefaults = <T>(formParams: T) => ({
       ...formParams,
       isSaveDraftEnabled: true,
+      isEmailJsonDisabled: false,
     })
 
     it('should successfully create form', async () => {
@@ -1308,7 +1309,7 @@ describe('admin-form.service', () => {
 
       // Assert
       expect(createSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ isEmailJsonEnabled: false }),
+        expect.objectContaining({ isEmailJsonDisabled: true }),
       )
     })
 

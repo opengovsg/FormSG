@@ -308,7 +308,7 @@ export const performEncryptPostSubmissionActions = ({
 
       const includeResponseJson = shouldIncludeEmailJson({
         growthbook,
-        isEmailJsonEnabled: form.isEmailJsonEnabled,
+        isEmailJsonDisabled: form.isEmailJsonDisabled,
       })
 
       return pdfAttachmentResult.andThen((pdfAttachment) => {

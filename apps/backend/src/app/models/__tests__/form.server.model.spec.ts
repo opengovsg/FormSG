@@ -105,7 +105,7 @@ const FORM_DEFAULTS = {
   isSaveDraftEnabled: false,
   hasCaptcha: true,
   hasIssueNotification: true,
-  isEmailJsonEnabled: true,
+  isEmailJsonDisabled: false,
   hasMultiLang: false,
   hasRespondentCopy: false,
   form_fields: [],

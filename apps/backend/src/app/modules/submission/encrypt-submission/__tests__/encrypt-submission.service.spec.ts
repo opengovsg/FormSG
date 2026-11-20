@@ -753,7 +753,7 @@ describe('encrypt-submission.service', () => {
             okAsync({
               ...MOCK_NON_PAYMENT_ENCRYPT_FORM,
               admin: { email: 'admin@example.com' },
-              isEmailJsonEnabled: false,
+              isEmailJsonDisabled: true,
             } as IPopulatedEncryptedForm),
           )
           const mockResponses: ProcessedFieldResponse[] = [

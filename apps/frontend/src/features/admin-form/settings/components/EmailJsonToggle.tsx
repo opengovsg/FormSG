@@ -16,14 +16,14 @@ export const EmailJsonToggle = (): JSX.Element => {
 
   const handleToggleEmailJson = useCallback(() => {
     if (!settings || isLoadingSettings || mutateFormEmailJson.isLoading) return
-    return mutateFormEmailJson.mutate(!settings.isEmailJsonEnabled)
+    return mutateFormEmailJson.mutate(!settings.isEmailJsonDisabled)
   }, [isLoadingSettings, mutateFormEmailJson, settings])
 
   return (
     <Skeleton isLoaded={!isLoadingSettings}>
       <Toggle
         isLoading={mutateFormEmailJson.isLoading}
-        isChecked={settings?.isEmailJsonEnabled}
+        isChecked={!settings?.isEmailJsonDisabled}
         {...t('features.adminForm.settings.webhooks.emailJson', {
           returnObjects: true,
         })}

@@ -154,7 +154,7 @@ const FORM_SCHEMA_COMMON_DUPLICATE_PARAMS = [
   'endPage',
   'authType',
   'isSaveDraftEnabled',
-  'isEmailJsonEnabled',
+  'isEmailJsonDisabled',
   'isSubmitterIdCollectionEnabled',
   'isSingleSubmission',
   'inactiveMessage',
@@ -903,11 +903,9 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         default: true,
       },
 
-      // Defaults to true so forms saved before this setting existed keep
-      // the JSON they have always had.
-      isEmailJsonEnabled: {
+      isEmailJsonDisabled: {
         type: Boolean,
-        default: true,
+        default: false,
       },
 
       savedViews: {

@@ -639,7 +639,7 @@ const sendMrfOutcomeEmails = ({
   pdfResult,
   growthbook,
   workflowEvents,
-  isEmailJsonEnabled,
+  isEmailJsonDisabled,
 }: {
   currentStepNumber: number
   form: Pick<
@@ -668,7 +668,7 @@ const sendMrfOutcomeEmails = ({
   workflowEvents?: IWorkflowEvent[]
   // Read from the live form, not a snapshot, so emails follow the setting
   // at the time they're sent
-  isEmailJsonEnabled: boolean
+  isEmailJsonDisabled: boolean
 }): ResultAsync<
   true,
   InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError
@@ -732,7 +732,7 @@ const sendMrfOutcomeEmails = ({
 
         const includeResponseJson = shouldIncludeEmailJson({
           growthbook,
-          isEmailJsonEnabled,
+          isEmailJsonDisabled,
         })
 
         const responseJson = includeResponseJson
@@ -1873,7 +1873,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
         pdfResult: sendMrfOutcomeEmailsPdfResult,
         growthbook,
         workflowEvents: submission.workflowEvents,
-        isEmailJsonEnabled: form.isEmailJsonEnabled,
+        isEmailJsonDisabled: form.isEmailJsonDisabled,
       })
     })
     .mapErr((error) => {
@@ -2240,7 +2240,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   logMeta,
   attachments,
   growthbook,
-  isEmailJsonEnabled,
+  isEmailJsonDisabled,
 }: {
   submission: IMultirespondentSubmissionSchema
   snapshot?: SubmissionSnapshot
@@ -2252,7 +2252,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   attachments?: IAttachmentInfo[]
   growthbook?: GrowthBook
   // From the live form: the snapshot holds the form as it was at step one
-  isEmailJsonEnabled: boolean
+  isEmailJsonDisabled: boolean
 }): ResultAsync<
   boolean,
   | InvalidWorkflowTypeError
@@ -2379,7 +2379,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       pdfResult: sendMrfOutcomeEmailsPdfResult,
       growthbook,
       workflowEvents: submission.workflowEvents,
-      isEmailJsonEnabled,
+      isEmailJsonDisabled,
     }).mapErr((error) => {
       logger.error({
         message: 'Send mrf outcome email error',
@@ -2399,7 +2399,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     attachments: attachments,
     pdfResult: sendMrfOutcomeEmailsPdfResult,
     growthbook,
-    isEmailJsonEnabled,
+    isEmailJsonDisabled,
     workflowEvents: submission.workflowEvents,
   })
     .mapErr((error) => {

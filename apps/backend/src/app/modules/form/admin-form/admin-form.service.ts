@@ -565,11 +565,11 @@ const omitWorkflowStepAuth = <T extends object>(params: T): T => {
 }
 
 export const createForm = (
-  // isSaveDraftEnabled and isEmailJsonEnabled omitted: creation decides them,
+  // isSaveDraftEnabled and isEmailJsonDisabled omitted: creation decides them,
   // not the caller.
   formParams: Omit<
     Merge<IForm, { admin: string }>,
-    'isSaveDraftEnabled' | 'isEmailJsonEnabled'
+    'isSaveDraftEnabled' | 'isEmailJsonDisabled'
   >,
   workspaceId?: string,
   // Decided by the caller, who knows the admin for flag targeting
@@ -659,16 +659,11 @@ export const createForm = (
   }
 
   // Copied forms bypass createForm, so they keep inheriting their source's
-  // settings.
-  // - Save draft: on for new forms. Its schema default stays false for forms
-  //   predating the field.
-  // - JSON in emails: off for new forms when the caller says so. Its schema
-  //   default stays true so forms predating the field keep their JSON.
-
+  // settings; the schema defaults stay false for forms predating the fields.
   const newFormParams = {
     ...omitWorkflowStepAuth(formParams),
     isSaveDraftEnabled: true,
-    ...(startWithEmailJsonOff ? { isEmailJsonEnabled: false } : {}),
+    isEmailJsonDisabled: startWithEmailJsonOff,
   }
 
   if (workspaceId)
