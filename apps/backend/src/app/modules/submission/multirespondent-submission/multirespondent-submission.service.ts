@@ -92,9 +92,7 @@ import { AttachmentMetadata } from '../submission.types'
 import {
   getMrfSubmissionWorkflowStatus,
   isAdminEmailPdfEnabled,
-  isKeepV4AttachmentPrefixOn,
-  isKeepV4DateOn,
-  isKeepV4TableOn,
+  isKeepV4ResponseFormatOn,
   shouldIncludeEmailJson,
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
@@ -342,9 +340,7 @@ const sendNextStepEmail = ({
   const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
     formFields: form.form_fields,
     responses,
-    keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
-    keepV4Table: isKeepV4TableOn(growthbook),
-    keepV4Date: isKeepV4DateOn(growthbook),
+    keepV4ResponseFormat: isKeepV4ResponseFormatOn(growthbook),
   })
 
   return (
@@ -719,9 +715,7 @@ const sendMrfOutcomeEmails = ({
         const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
           formFields: form.form_fields,
           responses,
-          keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
-          keepV4Table: isKeepV4TableOn(growthbook),
-          keepV4Date: isKeepV4DateOn(growthbook),
+          keepV4ResponseFormat: isKeepV4ResponseFormatOn(growthbook),
         })
 
         // TODO (formid-json): remove when Form ID in response JSON is GA
@@ -743,9 +737,7 @@ const sendMrfOutcomeEmails = ({
               responseId: submissionId,
               timestamp: latestSubmissionTimestamp,
               delimiter: getFormDelimiter(form.metadata),
-              keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
-              keepV4Table: isKeepV4TableOn(growthbook),
-              keepV4Date: isKeepV4DateOn(growthbook),
+              keepV4ResponseFormat: isKeepV4ResponseFormatOn(growthbook),
             })
           : undefined
 
@@ -872,9 +864,7 @@ const sendMrfRespondentCopyEmails = ({
   const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
     formFields: form.form_fields,
     responses,
-    keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
-    keepV4Table: isKeepV4TableOn(growthbook),
-    keepV4Date: isKeepV4DateOn(growthbook),
+    keepV4ResponseFormat: isKeepV4ResponseFormatOn(growthbook),
   })
 
   return pdfResult
@@ -1503,9 +1493,7 @@ const generatePdfAttachmentIfRequired = ({
   const responsesData = getResponsesDataFromMrfResponses({
     formFields: form.form_fields,
     responses,
-    keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
-    keepV4Table: isKeepV4TableOn(growthbook),
-    keepV4Date: isKeepV4DateOn(growthbook),
+    keepV4ResponseFormat: isKeepV4ResponseFormatOn(growthbook),
   })
 
   const autoReplyData = {

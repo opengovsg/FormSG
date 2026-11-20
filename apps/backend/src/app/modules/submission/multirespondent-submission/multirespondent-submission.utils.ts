@@ -635,7 +635,7 @@ export type QuestionAnswerPair = {
   fieldType: BasicField
 }
 
-// TODO (keep-v4-attachment-prefix): remove with the flag
+// TODO (keep-v4-response-format): remove with the flag
 const LEGACY_ATTACHMENT_QUESTION_PREFIX = '[Attachment] '
 
 const getTableQuestionAnswerPairs = (
@@ -665,7 +665,6 @@ const getTableQuestionAnswerPairs = (
  * multiple question-answer pairs per response
  * @param formField - Single form field schema. Does not include Ndi responses, @see getQuestionAnswerPairsForMultipleFields on how to include ndi responses.
  * @param response - V4 Response for the given form field
- * @param keepV4AttachmentPrefix - labels attachments `[Attachment] ` instead of `[attachment] `
  * @returns An array of QuestionAnswer objects representing the extracted question-answer pairs for the given form field.
  */
 const getQuestionAnswerPairsForOneField = ({
@@ -673,17 +672,13 @@ const getQuestionAnswerPairsForOneField = ({
   response,
   includeSignatureDataPngDataUri,
   includeVerifiedPrefix = true,
-  keepV4AttachmentPrefix,
-  keepV4Table,
-  keepV4Date,
+  keepV4ResponseFormat,
 }: {
   formField: FormFieldSchema | FormFieldDto
   response: FieldResponseV4
   includeSignatureDataPngDataUri: boolean
   includeVerifiedPrefix?: boolean
-  keepV4AttachmentPrefix: boolean
-  keepV4Table: boolean
-  keepV4Date: boolean
+  keepV4ResponseFormat: boolean
 }): QuestionAnswerPair[] => {
   // V4 responses embed question text in response.question
   let questionTitle = response.question || formField.title
@@ -705,7 +700,7 @@ const getQuestionAnswerPairsForOneField = ({
         hasBeenScanned: boolean
         md5Hash?: string
       }
-      const prefix = keepV4AttachmentPrefix
+      const prefix = keepV4ResponseFormat
         ? LEGACY_ATTACHMENT_QUESTION_PREFIX
         : ATTACHMENT_QUESTION_PREFIX
       return [
@@ -718,7 +713,9 @@ const getQuestionAnswerPairsForOneField = ({
     }
     case BasicField.Date: {
       const { value } = response.answer as StringAnswerV4
-      answer = keepV4Date ? value : computeDateAnswerValue(value).answer
+      answer = keepV4ResponseFormat
+        ? value
+        : computeDateAnswerValue(value).answer
       break
     }
     case BasicField.Address: {
@@ -755,13 +752,13 @@ const getQuestionAnswerPairsForOneField = ({
     }
     case BasicField.Table: {
       if (formField.fieldType !== BasicField.Table) break
-      if (!keepV4Table) {
+      if (!keepV4ResponseFormat) {
         return getTableQuestionAnswerPairs(
           formField,
           response.answer as TableAnswerV4,
         )
       }
-      // TODO (keep-v4-table): remove with the flag
+      // TODO (keep-v4-response-format): remove with the flag
       const tableAnswer = response.answer as Record<
         string,
         { rowNum: number; value: Record<string, string | number> }
@@ -904,17 +901,13 @@ export const getQuestionAnswerPairsForMultipleFields = ({
   responses,
   includeSignatureDataPngDataUri = false,
   includeVerifiedPrefix = true,
-  keepV4AttachmentPrefix,
-  keepV4Table,
-  keepV4Date,
+  keepV4ResponseFormat,
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV4
   includeSignatureDataPngDataUri?: boolean
   includeVerifiedPrefix?: boolean
-  keepV4AttachmentPrefix: boolean
-  keepV4Table: boolean
-  keepV4Date: boolean
+  keepV4ResponseFormat: boolean
 }): QuestionAnswerPair[] => {
   const questionAnswerPairs: QuestionAnswerPair[] = []
   if (!formFields || !responses) {
@@ -931,9 +924,7 @@ export const getQuestionAnswerPairsForMultipleFields = ({
         response,
         includeSignatureDataPngDataUri,
         includeVerifiedPrefix,
-        keepV4AttachmentPrefix,
-        keepV4Table,
-        keepV4Date,
+        keepV4ResponseFormat,
       })
 
     questionAnswerPairs.push(...questionAnswerPairsForCurrentFormField)
@@ -985,9 +976,7 @@ export const buildMrfResponseJson = ({
   formId,
   responseId,
   timestamp,
-  keepV4AttachmentPrefix,
-  keepV4Table,
-  keepV4Date,
+  keepV4ResponseFormat,
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV4
@@ -995,9 +984,7 @@ export const buildMrfResponseJson = ({
   responseId: string
   timestamp: string
   delimiter?: string
-  keepV4AttachmentPrefix: boolean
-  keepV4Table: boolean
-  keepV4Date: boolean
+  keepV4ResponseFormat: boolean
 }): string => {
   const entries: { question: string; answer: string }[] = [
     ...(formId !== undefined ? [{ question: 'Form ID', answer: formId }] : []),
@@ -1014,7 +1001,11 @@ export const buildMrfResponseJson = ({
 
     const response = responses[field._id.toString()]
 
-    if (!response && field.fieldType === BasicField.Table && !keepV4Table) {
+    if (
+      !response &&
+      field.fieldType === BasicField.Table &&
+      !keepV4ResponseFormat
+    ) {
       for (const p of getTableQuestionAnswerPairs(field, undefined)) {
         entries.push({ question: p.question, answer: p.answer })
       }
@@ -1024,7 +1015,7 @@ export const buildMrfResponseJson = ({
     if (!response) {
       // Label an unanswered attachment too, so its key matches an answered one
       const isLabelledAttachment =
-        field.fieldType === BasicField.Attachment && !keepV4AttachmentPrefix
+        field.fieldType === BasicField.Attachment && !keepV4ResponseFormat
       entries.push({
         question: isLabelledAttachment
           ? `${ATTACHMENT_QUESTION_PREFIX}${field.title}`
@@ -1054,9 +1045,7 @@ export const buildMrfResponseJson = ({
       // [Verified] prefix is a UX hint for the email body; the JSON dump is
       // for machine consumers and should carry the raw question text.
       includeVerifiedPrefix: false,
-      keepV4AttachmentPrefix,
-      keepV4Table,
-      keepV4Date,
+      keepV4ResponseFormat,
     })
     for (const p of pairs) {
       entries.push({ question: p.question, answer: p.answer })
@@ -1084,15 +1073,11 @@ export const buildMrfResponseJson = ({
 export const getResponsesDataFromMrfResponses = ({
   formFields,
   responses,
-  keepV4AttachmentPrefix,
-  keepV4Table,
-  keepV4Date,
+  keepV4ResponseFormat,
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV4
-  keepV4AttachmentPrefix: boolean
-  keepV4Table: boolean
-  keepV4Date: boolean
+  keepV4ResponseFormat: boolean
 }): EmailRespondentConfirmationField[] => {
   if (!formFields || !responses) return []
 
@@ -1100,9 +1085,7 @@ export const getResponsesDataFromMrfResponses = ({
     formFields,
     responses,
     includeSignatureDataPngDataUri: true,
-    keepV4AttachmentPrefix,
-    keepV4Table,
-    keepV4Date,
+    keepV4ResponseFormat,
   })
 
   return questionAnswerPairs.map((questionAnswerPair) => {
