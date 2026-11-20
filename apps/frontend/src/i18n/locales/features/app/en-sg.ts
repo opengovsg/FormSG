@@ -23,4 +23,9 @@ export const enSG: App = {
       transferAllForms: 'Transfer all forms',
     },
   },
+  forceRefreshModal: {
+    title: 'Refresh this page to continue',
+    body: "We've updated FormSG. This page is still running the old version.",
+    refreshButton: 'Refresh page',
+  },
 }
