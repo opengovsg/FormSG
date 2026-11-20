@@ -135,6 +135,10 @@ export const enSG = {
       disabled:
         'Email notifications for issues reported are now disabled on your form.',
     },
+    emailJson: {
+      enabled: 'JSON for email notifications is now enabled on your form.',
+      disabled: 'JSON for email notifications is now disabled on your form.',
+    },
     formTitleUpdated: "Your form's title has been updated.",
     inactiveMessageUpdated: "Your form's inactive message has been updated.",
     emailsUpdated: 'Emails successfully updated.',

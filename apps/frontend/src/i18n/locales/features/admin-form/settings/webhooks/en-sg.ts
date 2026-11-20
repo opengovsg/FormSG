@@ -1,5 +1,11 @@
 export const enSG = {
   title: 'Webhooks',
+  integrationsTitle: 'Integrations',
+  emailJson: {
+    label: 'Enable JSON for email notifications',
+    description:
+      'Add responses in JSON to the bottom of the email body for automations.',
+  },
   legacy: {
     label: 'Use legacy webhooks',
     description:
@@ -14,7 +20,7 @@ export const enSG = {
     'Forms with two or more steps only support Plumber webhooks, which must be connected through [Plumber]({plumberUrl}). Reduce your workflow to one step to enter a webhook URL here.',
   remove: 'Remove webhook',
   input: {
-    label: 'Endpoint URL',
+    label: 'Webhooks endpoint URL',
     description:
       "FormSG will POST the entire encrypted response to this endpoint. With your secret key, that system can decrypt and store every response, so ensure it supports the data's classification and sensitivity. [Learn more]({url})",
   },

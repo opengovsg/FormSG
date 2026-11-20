@@ -43,6 +43,7 @@ import { ProcessedFieldResponse } from '../submission.types'
 import {
   extractEmailConfirmationData,
   isAdminEmailPdfEnabled,
+  shouldIncludeEmailJson,
 } from '../submission.utils'
 
 import { SaveEncryptSubmissionParams } from './encrypt-submission.types'
@@ -244,11 +245,12 @@ export const performEncryptPostSubmissionActions = ({
       ).andThen(() => okAsync(form))
     })
     .andThen((form) => {
-      // Add formId and adminEmail to growthbook attributes to allow for targeting in growthbook feature flags
+      // Add formId, adminEmail and adminAgency to growthbook attributes to allow for targeting in growthbook feature flags
       void growthbook?.setAttributes({
         ...growthbook?.getAttributes(),
         formId: form._id.toString(),
         adminEmail: form.admin.email,
+        adminAgency: form.admin.agency?.shortName,
       })
       const respondentCopyEmailData: AutoReplyMailData[] = respondentEmails
         ? respondentEmails?.map((val) => {
@@ -303,6 +305,11 @@ export const performEncryptPostSubmissionActions = ({
       const includeFormIdInResponseJson: boolean =
         growthbook?.getFeatureValue(featureFlags.formIdJson, false) ?? false
 
+      const includeResponseJson = shouldIncludeEmailJson({
+        growthbook,
+        isEmailJsonDisabled: form.isEmailJsonDisabled,
+      })
+
       return pdfAttachmentResult.andThen((pdfAttachment) => {
         return ResultAsync.combine([
           MailService.sendSubmissionToAdmin({
@@ -315,7 +322,9 @@ export const performEncryptPostSubmissionActions = ({
             },
             submissionAttachments,
             formData,
-            dataCollationData: formattedDataCollationData,
+            dataCollationData: includeResponseJson
+              ? formattedDataCollationData
+              : undefined,
             pdfAttachment: checkIfAdminPdfIsRequired(
               isPaymentEnabled,
               form.form_fields,

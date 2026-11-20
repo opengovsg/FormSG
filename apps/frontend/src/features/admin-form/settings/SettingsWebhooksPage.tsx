@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Skeleton } from '@chakra-ui/react'
+import { Divider, Skeleton } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import {
@@ -8,11 +8,15 @@ import {
 } from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types/form'
 
+import { PlumberTile } from '~features/admin-form/create/integration/CreatePageIntegrationTab'
+
 import { CategoryHeader } from './components/CategoryHeader'
+import { EmailJsonToggle } from './components/EmailJsonToggle'
 import { WebhooksSection } from './components/WebhooksSection'
 import { WebhooksErrorMsg } from './components/WebhooksSection/WebhooksErrorMsg'
 import { WebhooksPlumberConnectedMsg } from './components/WebhooksSection/WebhooksPlumberConnectedMsg'
 import { WebhooksUnsupportedMsg } from './components/WebhooksSection/WebhooksUnsupportedMsg'
+import { useIntegrationsFlags } from './hooks/useIntegrationsFlags'
 import { useAdminFormSettings } from './queries'
 
 export const SettingsWebhooksPage = (): JSX.Element => {
@@ -26,6 +30,8 @@ export const SettingsWebhooksPage = (): JSX.Element => {
   } = useAdminFormSettings()
 
   const enableMrfWebhooks = useFeatureIsOn(featureFlags.enableMrfWebhooks)
+  const { isPlumberInSettings, isEmailJsonToggleOn, isIntegrationsTab } =
+    useIntegrationsFlags()
 
   if (isError) {
     return <WebhooksErrorMsg onRetry={refetch} isRetrying={isRefetching} />
@@ -40,11 +46,38 @@ export const SettingsWebhooksPage = (): JSX.Element => {
   const isPlumberConnected = PLUMBER_WEBHOOK_URL_REGEX.test(
     settings?.webhook.url ?? '',
   )
+  const isEmailMode = settings?.responseMode === FormResponseMode.Email
+  const otherIntegrations = !isEmailMode ? (
+    <>
+      {isPlumberInSettings ? (
+        <PlumberTile
+          mt="2.5rem"
+          target="_blank"
+          rel="noopener noreferrer"
+          hasArrow={false}
+          _hover={{ bg: 'primary.100' }}
+          _active={{ bg: 'primary.200' }}
+          _focusVisible={{
+            outline: 'none',
+            boxShadow: '0 0 0 2px var(--chakra-colors-primary-500)',
+          }}
+        />
+      ) : null}
+      {isEmailJsonToggleOn ? (
+        <>
+          <Divider my="2.5rem" />
+          <EmailJsonToggle />
+        </>
+      ) : null}
+    </>
+  ) : null
+
   // NOTE: only show this page when the enableWebhooks flag is off.
   if (isPlumberConnected && !enableWebhooks) {
     return (
       <Skeleton isLoaded={!isLoading}>
         <WebhooksPlumberConnectedMsg />
+        {otherIntegrations}
       </Skeleton>
     )
   }
@@ -54,6 +87,7 @@ export const SettingsWebhooksPage = (): JSX.Element => {
     return (
       <Skeleton isLoaded={!isLoading}>
         <WebhooksUnsupportedMsg />
+        {otherIntegrations}
       </Skeleton>
     )
   }
@@ -61,9 +95,12 @@ export const SettingsWebhooksPage = (): JSX.Element => {
   return (
     <Skeleton isLoaded={!isLoading}>
       <CategoryHeader>
-        {t('features.adminForm.settings.webhooks.title')}
+        {isIntegrationsTab
+          ? t('features.adminForm.settings.webhooks.integrationsTitle')
+          : t('features.adminForm.settings.webhooks.title')}
       </CategoryHeader>
       <WebhooksSection />
+      {otherIntegrations}
     </Skeleton>
   )
 }

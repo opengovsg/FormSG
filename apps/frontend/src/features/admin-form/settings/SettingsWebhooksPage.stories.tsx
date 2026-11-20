@@ -1,5 +1,5 @@
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
-import { Meta, StoryFn } from '@storybook/react-vite'
+import { Decorator, Meta, StoryFn } from '@storybook/react-vite'
 import { http, HttpResponse } from 'msw'
 
 import { featureFlags } from 'formsg-shared/constants'
@@ -339,3 +339,30 @@ V4WebhookRolloutOff.parameters = webhookWorkflowParameters(
   'https://example.com/webhook',
   'v4',
 )
+
+const withIntegrations: Decorator = (Story) => (
+  <GrowthBookProvider
+    growthbook={
+      new GrowthBook({
+        features: {
+          [featureFlags.settingsIntegrations]: { defaultValue: true },
+          [featureFlags.settingsIntegrationsJson]: { defaultValue: true },
+        },
+      })
+    }
+  >
+    <Story />
+  </GrowthBookProvider>
+)
+
+export const IntegrationsStorageMode = Template.bind({})
+IntegrationsStorageMode.decorators = [withIntegrations]
+IntegrationsStorageMode.parameters = StorageModeEmpty.parameters
+
+export const IntegrationsEmailMode = Template.bind({})
+IntegrationsEmailMode.decorators = [withIntegrations]
+
+export const IntegrationsWebhooksUnsupported = Template.bind({})
+IntegrationsWebhooksUnsupported.decorators = [withIntegrations]
+IntegrationsWebhooksUnsupported.parameters =
+  UnsupportedMultirespondentMode.parameters

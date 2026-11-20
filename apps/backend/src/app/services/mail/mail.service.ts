@@ -1293,7 +1293,7 @@ export class MailService {
     submissionId?: string
     timestamp: string
     formQuestionAnswers: QuestionAnswer[]
-    responseJson: string
+    responseJson?: string
     attachments?: Mail.Attachment[]
     replyTo?: string
     emailType?: EmailType.WorkflowCompletion | EmailType.AdminResponse
@@ -1382,7 +1382,7 @@ export class MailService {
     timestamp: string
     isRejected: boolean
     formQuestionAnswers: QuestionAnswer[]
-    responseJson: string
+    responseJson?: string
     attachments?: Mail.Attachment[]
     replyTo?: string
   }): ResultAsync<true, MailGenerationError | MailSendError> =>

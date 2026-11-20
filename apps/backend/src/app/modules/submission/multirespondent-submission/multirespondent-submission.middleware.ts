@@ -323,6 +323,7 @@ export const createFormsgAndRetrieveForm = (
                 ...existingAttributes,
                 formId,
                 adminEmail: formsg.formDef.admin.email,
+                adminAgency: formsg.formDef.admin.agency?.shortName,
               })
 
               return next()

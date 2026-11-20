@@ -95,6 +95,7 @@ import {
   isKeepV4AttachmentPrefixOn,
   isKeepV4DateOn,
   isKeepV4TableOn,
+  shouldIncludeEmailJson,
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
@@ -638,6 +639,7 @@ const sendMrfOutcomeEmails = ({
   pdfResult,
   growthbook,
   workflowEvents,
+  isEmailJsonDisabled,
 }: {
   currentStepNumber: number
   form: Pick<
@@ -664,6 +666,7 @@ const sendMrfOutcomeEmails = ({
   >
   growthbook?: GrowthBook
   workflowEvents?: IWorkflowEvent[]
+  isEmailJsonDisabled: boolean
 }): ResultAsync<
   true,
   InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError
@@ -725,17 +728,26 @@ const sendMrfOutcomeEmails = ({
         const includeFormIdInResponseJson: boolean =
           growthbook?.getFeatureValue(featureFlags.formIdJson, false) ?? false
 
-        const responseJson = buildMrfResponseJson({
-          formFields: form.form_fields,
-          responses,
-          formId: includeFormIdInResponseJson ? String(form._id) : undefined,
-          responseId: submissionId,
-          timestamp: latestSubmissionTimestamp,
-          delimiter: getFormDelimiter(form.metadata),
-          keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
-          keepV4Table: isKeepV4TableOn(growthbook),
-          keepV4Date: isKeepV4DateOn(growthbook),
+        const includeResponseJson = shouldIncludeEmailJson({
+          growthbook,
+          isEmailJsonDisabled,
         })
+
+        const responseJson = includeResponseJson
+          ? buildMrfResponseJson({
+              formFields: form.form_fields,
+              responses,
+              formId: includeFormIdInResponseJson
+                ? String(form._id)
+                : undefined,
+              responseId: submissionId,
+              timestamp: latestSubmissionTimestamp,
+              delimiter: getFormDelimiter(form.metadata),
+              keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
+              keepV4Table: isKeepV4TableOn(growthbook),
+              keepV4Date: isKeepV4DateOn(growthbook),
+            })
+          : undefined
 
         const emailAttachments = []
         emailAttachments.push(...(attachments ?? []))
@@ -1859,6 +1871,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
         pdfResult: sendMrfOutcomeEmailsPdfResult,
         growthbook,
         workflowEvents: submission.workflowEvents,
+        isEmailJsonDisabled: form.isEmailJsonDisabled,
       })
     })
     .mapErr((error) => {
@@ -2225,6 +2238,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   logMeta,
   attachments,
   growthbook,
+  isEmailJsonDisabled,
 }: {
   submission: IMultirespondentSubmissionSchema
   snapshot?: SubmissionSnapshot
@@ -2235,6 +2249,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   logMeta: CustomLoggerParams['meta']
   attachments?: IAttachmentInfo[]
   growthbook?: GrowthBook
+  isEmailJsonDisabled: boolean
 }): ResultAsync<
   boolean,
   | InvalidWorkflowTypeError
@@ -2361,6 +2376,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       pdfResult: sendMrfOutcomeEmailsPdfResult,
       growthbook,
       workflowEvents: submission.workflowEvents,
+      isEmailJsonDisabled,
     }).mapErr((error) => {
       logger.error({
         message: 'Send mrf outcome email error',
@@ -2380,6 +2396,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     attachments: attachments,
     pdfResult: sendMrfOutcomeEmailsPdfResult,
     growthbook,
+    isEmailJsonDisabled,
     workflowEvents: submission.workflowEvents,
   })
     .mapErr((error) => {
