@@ -1,5 +1,5 @@
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import { render } from '~/test-utils'
@@ -50,18 +50,24 @@ vi.mock('./SettingsMultiLangPage', () => ({
 }))
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: () => ({
-      general: { title: 'General' },
-      singpass: { title: 'Singpass', loginTitle: 'Login' },
-      emailNotifications: { title: 'Email notifications' },
-      webhooks: { title: 'Webhooks' },
-      payments: { title: 'Payments' },
-      tabs: {
-        multiLanguage: 'Multi-language',
-        newBadge: 'New',
-        navLabels: { emails: state.emailNavLabel, multiLanguage: 'Multi-lang' },
-      },
-    }),
+    t: (key: string) =>
+      key === 'features.common.betaBadgeLabel'
+        ? 'Beta'
+        : {
+            general: { title: 'General' },
+            singpass: { title: 'Singpass', loginTitle: 'Login' },
+            emailNotifications: { title: 'Email notifications' },
+            webhooks: { title: 'Webhooks' },
+            payments: { title: 'Payments' },
+            tabs: {
+              multiLanguage: 'Multi-language',
+              newBadge: 'New',
+              navLabels: {
+                emails: state.emailNavLabel,
+                multiLanguage: 'Multi-lang',
+              },
+            },
+          },
   }),
 }))
 
@@ -148,6 +154,13 @@ describe('Settings labelled navigation', () => {
       screen.queryByRole('tab', { name: 'Multi-lang' }),
     ).not.toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Emails' })).toBeInTheDocument()
+  })
+  it('marks only the Multi-lang tab as Beta', () => {
+    setup()
+    expect(
+      within(screen.getByRole('tab', { name: 'Multi-lang' })).getByText('Beta'),
+    ).toBeInTheDocument()
+    expect(screen.getAllByText('Beta')).toHaveLength(1)
   })
 })
 
