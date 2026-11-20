@@ -40,6 +40,7 @@ import {
 import { applyMyInfoPrefixToFormFields } from 'formsg-shared/utils/myinfo-prefix'
 import {
   computeAddressAnswerValue,
+  computeCheckboxAnswerValue,
   computeDateAnswerValue,
   computeTableAnswerValue,
 } from 'formsg-shared/utils/response-value-rules'
@@ -830,6 +831,12 @@ const getQuestionAnswerPairsForOneField = ({
         value: string[]
         othersInput?: string
       }
+      if (!keepV4ResponseFormat) {
+        answer =
+          computeCheckboxAnswerValue(checkboxAnswer).answerArray.join(', ')
+        break
+      }
+      // TODO (keep-v4-response-format): remove with the flag
       const selectedAnswers = checkboxAnswer.value.filter(
         (val) => val !== CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
       )
