@@ -1081,29 +1081,9 @@ export const buildMrfMetadata = ({
   }
 }
 
-/**
- * Ops fallback: when on, MRF outputs keep the old `[Attachment] ` label and
- * admin views drop the `[attachment] ` label. Off by default.
- */
-// TODO (keep-v4-attachment-prefix): remove once no admin relies on the old label
-export const isKeepV4AttachmentPrefixOn = (growthbook?: GrowthBook): boolean =>
-  growthbook?.isOn(featureFlags.keepV4AttachmentPrefix) ?? false
-
-/**
- * Ops fallback: when on, MRF emails keep the old `[Table] ` label, `; `
- * separators and bare title for an unanswered table. Off by default.
- */
-// TODO (keep-v4-table): remove once no admin relies on the old table format
-export const isKeepV4TableOn = (growthbook?: GrowthBook): boolean =>
-  growthbook?.isOn(featureFlags.keepV4Table) ?? false
-
-/**
- * Ops fallback: when on, MRF emails keep printing dates as `01/01/2025`
- * instead of `01 Jan 2025`. Off by default.
- */
-// TODO (keep-v4-date): remove once no admin relies on the old date format
-export const isKeepV4DateOn = (growthbook?: GrowthBook): boolean =>
-  growthbook?.isOn(featureFlags.keepV4Date) ?? false
+// TODO (keep-v4-response-format): remove once no admin relies on the old format
+export const isKeepV4ResponseFormatOn = (growthbook?: GrowthBook): boolean =>
+  growthbook?.isOn(featureFlags.keepV4ResponseFormat) ?? false
 
 export const isAdminEmailPdfEnabled = ({
   growthbook,

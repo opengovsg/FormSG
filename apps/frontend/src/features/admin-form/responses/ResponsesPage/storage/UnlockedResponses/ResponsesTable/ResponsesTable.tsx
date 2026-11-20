@@ -383,9 +383,7 @@ export const ResponsesTable = () => {
   )
 
   const isWorkflowActionsOn = useFeatureIsOn(featureFlags.workflowActions)
-  const keepV4AttachmentPrefix = useFeatureIsOn(
-    featureFlags.keepV4AttachmentPrefix,
-  )
+  const keepV4ResponseFormat = useFeatureIsOn(featureFlags.keepV4ResponseFormat)
 
   const metadataToUse = useMemo(() => {
     const rows = submissionId ? filteredMetadata : metadata
@@ -428,10 +426,10 @@ export const ResponsesTable = () => {
           ? getFieldColumnHeader(formField, verifiedLabel)
           : source.title,
         fieldType: source.fieldType,
-        keepV4AttachmentPrefix,
+        keepV4ResponseFormat,
       })
     },
-    [form, verifiedLabel, keepV4AttachmentPrefix],
+    [form, verifiedLabel, keepV4ResponseFormat],
   )
 
   const prefixColumns = useMemo(() => {
