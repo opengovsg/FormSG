@@ -34,7 +34,6 @@ export interface Payments extends HasTitle {
     bulkTransactionText: {
       bulkTransactionRate: string
       useBulkTransactionRates: string
-      thisForm: string
       contactForAssistance: string
       defaultTransactionRatesWarning: string
       acknowledgeWarningText: string

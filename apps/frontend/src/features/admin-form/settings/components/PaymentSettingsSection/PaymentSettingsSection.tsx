@@ -27,12 +27,13 @@ import {
 } from 'formsg-shared/types'
 
 import { BxsCheckCircle, BxsError, BxsInfoCircle } from '~assets/icons'
-import { GUIDE_STRIPE_ONBOARDING } from '~constants/links'
+import { STRIPE_DISCOUNTED_RATES_EMAIL } from '~constants/links'
 import Checkbox from '~components/Checkbox'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 import Link from '~components/Link'
+import { MailToLink } from '~components/MailToLink'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { useEnv } from '~features/env/queries'
@@ -218,9 +219,9 @@ const BeforeConnectionInstructions = ({
         </Text>
         <Text>
           {t('bulkTransactionText.useBulkTransactionRates')}{' '}
-          <Link href={GUIDE_STRIPE_ONBOARDING} target="_blank">
-            {t('bulkTransactionText.thisForm')}
-          </Link>{' '}
+          <MailToLink email={STRIPE_DISCOUNTED_RATES_EMAIL}>
+            {STRIPE_DISCOUNTED_RATES_EMAIL}
+          </MailToLink>{' '}
           {t('bulkTransactionText.contactForAssistance')}{' '}
           <Text as="b">
             {t('bulkTransactionText.defaultTransactionRatesWarning')}
