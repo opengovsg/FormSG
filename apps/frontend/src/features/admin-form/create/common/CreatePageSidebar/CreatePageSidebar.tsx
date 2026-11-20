@@ -66,10 +66,10 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     handleIntegrationClick,
     reportSidebarWidth,
   } = useCreatePageSidebar()
-  // TODO (settings-integrations-json): remove the flag when GA. With it on,
+  // TODO (settings-integrations): remove the flag when GA. With it on,
   // integrations live in the Integrations settings tab instead.
   const isIntegrationsInSettings = useFeatureIsOn(
-    featureFlags.settingsIntegrationsJson,
+    featureFlags.settingsIntegrations,
   )
 
   const sidebarRef = useRef<HTMLDivElement | null>(null)

@@ -16,6 +16,7 @@ import { WebhooksSection } from './components/WebhooksSection'
 import { WebhooksErrorMsg } from './components/WebhooksSection/WebhooksErrorMsg'
 import { WebhooksPlumberConnectedMsg } from './components/WebhooksSection/WebhooksPlumberConnectedMsg'
 import { WebhooksUnsupportedMsg } from './components/WebhooksSection/WebhooksUnsupportedMsg'
+import { useIntegrationsFlags } from './hooks/useIntegrationsFlags'
 import { useAdminFormSettings } from './queries'
 
 export const SettingsWebhooksPage = (): JSX.Element => {
@@ -29,8 +30,8 @@ export const SettingsWebhooksPage = (): JSX.Element => {
   } = useAdminFormSettings()
 
   const enableMrfWebhooks = useFeatureIsOn(featureFlags.enableMrfWebhooks)
-  // TODO (settings-integrations-json): remove the flag when GA
-  const isIntegrationsOn = useFeatureIsOn(featureFlags.settingsIntegrationsJson)
+  const { isPlumberInSettings, isEmailJsonToggleOn, isIntegrationsTab } =
+    useIntegrationsFlags()
 
   if (isError) {
     return <WebhooksErrorMsg onRetry={refetch} isRetrying={isRefetching} />
@@ -48,24 +49,30 @@ export const SettingsWebhooksPage = (): JSX.Element => {
   // Plumber and the JSON toggle show whatever state the webhooks part is in,
   // except on email mode forms, which can no longer take submissions
   const showOtherIntegrations =
-    isIntegrationsOn && settings?.responseMode !== FormResponseMode.Email
+    settings?.responseMode !== FormResponseMode.Email
   const otherIntegrations = showOtherIntegrations ? (
     <>
-      {/* Hover, press and focus follow the design system's Tile */}
-      <PlumberTile
-        mt="2.5rem"
-        target="_blank"
-        rel="noopener noreferrer"
-        hasArrow={false}
-        _hover={{ bg: 'primary.100' }}
-        _active={{ bg: 'primary.200' }}
-        _focusVisible={{
-          outline: 'none',
-          boxShadow: '0 0 0 2px var(--chakra-colors-primary-500)',
-        }}
-      />
-      <Divider my="2.5rem" />
-      <EmailJsonToggle />
+      {isPlumberInSettings ? (
+        // Hover, press and focus follow the design system's Tile
+        <PlumberTile
+          mt="2.5rem"
+          target="_blank"
+          rel="noopener noreferrer"
+          hasArrow={false}
+          _hover={{ bg: 'primary.100' }}
+          _active={{ bg: 'primary.200' }}
+          _focusVisible={{
+            outline: 'none',
+            boxShadow: '0 0 0 2px var(--chakra-colors-primary-500)',
+          }}
+        />
+      ) : null}
+      {isEmailJsonToggleOn ? (
+        <>
+          <Divider my="2.5rem" />
+          <EmailJsonToggle />
+        </>
+      ) : null}
     </>
   ) : null
 
@@ -92,7 +99,7 @@ export const SettingsWebhooksPage = (): JSX.Element => {
   return (
     <Skeleton isLoaded={!isLoading}>
       <CategoryHeader>
-        {isIntegrationsOn
+        {isIntegrationsTab
           ? t('features.adminForm.settings.webhooks.integrationsTitle')
           : t('features.adminForm.settings.webhooks.title')}
       </CategoryHeader>

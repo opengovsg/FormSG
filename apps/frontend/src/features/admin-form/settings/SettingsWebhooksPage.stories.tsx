@@ -340,11 +340,12 @@ V4WebhookRolloutOff.parameters = webhookWorkflowParameters(
   'v4',
 )
 
-const withIntegrationsJson: Decorator = (Story) => (
+const withIntegrations: Decorator = (Story) => (
   <GrowthBookProvider
     growthbook={
       new GrowthBook({
         features: {
+          [featureFlags.settingsIntegrations]: { defaultValue: true },
           [featureFlags.settingsIntegrationsJson]: { defaultValue: true },
         },
       })
@@ -355,13 +356,13 @@ const withIntegrationsJson: Decorator = (Story) => (
 )
 
 export const IntegrationsStorageMode = Template.bind({})
-IntegrationsStorageMode.decorators = [withIntegrationsJson]
+IntegrationsStorageMode.decorators = [withIntegrations]
 IntegrationsStorageMode.parameters = StorageModeEmpty.parameters
 
 export const IntegrationsEmailMode = Template.bind({})
-IntegrationsEmailMode.decorators = [withIntegrationsJson]
+IntegrationsEmailMode.decorators = [withIntegrations]
 
 export const IntegrationsWebhooksUnsupported = Template.bind({})
-IntegrationsWebhooksUnsupported.decorators = [withIntegrationsJson]
+IntegrationsWebhooksUnsupported.decorators = [withIntegrations]
 IntegrationsWebhooksUnsupported.parameters =
   UnsupportedMultirespondentMode.parameters

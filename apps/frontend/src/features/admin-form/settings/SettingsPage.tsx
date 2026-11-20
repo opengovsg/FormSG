@@ -4,9 +4,6 @@ import { BiCodeBlock, BiCog, BiDollar, BiKey, BiMailSend } from 'react-icons/bi'
 import { IconType } from 'react-icons/lib'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Box, TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
-
-import { featureFlags } from 'formsg-shared/constants'
 
 import { LanguageTranslation } from '~assets/icons/LanguageTranslation'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
@@ -22,6 +19,7 @@ import {
 import { useSideNavCollapse } from '../common/AdminFormSideNav/useSideNavCollapse'
 import { useAdminFormCollaborators } from '../common/queries'
 
+import { useIntegrationsFlags } from './hooks/useIntegrationsFlags'
 import { useAdminFormSettings } from './queries'
 import { SettingsAuthPage } from './SettingsAuthPage'
 import { SettingsEmailsPage } from './SettingsEmailsPage'
@@ -45,7 +43,7 @@ export const SettingsPage = (): JSX.Element => {
   const { isLoading: isFormSettingLoading } = useAdminFormSettings()
   const { user, isLoading: isUserLoading } = useUser()
   const { t } = useTranslation()
-  const isIntegrationsOn = useFeatureIsOn(featureFlags.settingsIntegrationsJson)
+  const { isIntegrationsTab } = useIntegrationsFlags()
   const {
     general: { title: generalTitle },
     singpass: { title: singpassTitle, loginTitle },
@@ -101,8 +99,7 @@ export const SettingsPage = (): JSX.Element => {
       path: 'email-notifications',
     },
     {
-      // TODO (settings-integrations-json): remove the flag when GA
-      label: isIntegrationsOn ? integrationsTitle : webhooksTitle,
+      label: isIntegrationsTab ? integrationsTitle : webhooksTitle,
       icon: BiCodeBlock,
       component: SettingsWebhooksPage,
       path: 'webhooks',
