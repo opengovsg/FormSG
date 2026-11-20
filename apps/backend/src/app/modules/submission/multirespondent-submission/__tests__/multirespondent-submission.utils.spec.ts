@@ -2107,6 +2107,7 @@ describe('multirespondent-submission.utils', () => {
       formId: 'form123',
       responseId: 'abc123',
       timestamp: '1 Jan 2025',
+      getVisibleFieldIds: () => new Set<string>(),
       keepV4ResponseFormat: false,
     }
 
@@ -2249,7 +2250,7 @@ describe('multirespondent-submission.utils', () => {
       expect(result[3]).toEqual({ question: 'Name', answer: 'Alice' })
     })
 
-    it('should output address sub-fields as separate flat entries', () => {
+    it('should output address sub-fields as separate flat entries in Storage order', () => {
       const fieldId = '1'
       const result = JSON.parse(
         buildMrfResponseJson({
@@ -2265,12 +2266,12 @@ describe('multirespondent-submission.utils', () => {
             [fieldId]: {
               fieldType: BasicField.Address,
               answer: {
+                postalCode: { value: '650161' },
                 blockNumber: { value: '161' },
                 streetName: { value: 'BUKIT BATOK STREET 11' },
                 buildingName: { value: '' },
                 levelNumber: { value: '01' },
                 unitNumber: { value: '02' },
-                postalCode: { value: '650161' },
               },
               question: 'Home Address',
               provenance: {},
@@ -2303,6 +2304,51 @@ describe('multirespondent-submission.utils', () => {
         answer: '650161',
       })
     })
+
+    it.each([
+      {
+        visibleFieldIds: new Set(['1']),
+        keepV4ResponseFormat: false,
+        entries: [
+          'blockNumber',
+          'streetName',
+          'buildingName',
+          'levelNumber',
+          'unitNumber',
+          'postalCode',
+        ].map((key) => ({ question: `Home Address - ${key}`, answer: '' })),
+      },
+      {
+        visibleFieldIds: new Set<string>(),
+        keepV4ResponseFormat: false,
+        entries: [],
+      },
+      {
+        visibleFieldIds: new Set<string>(),
+        keepV4ResponseFormat: true,
+        entries: [{ question: 'Home Address', answer: '' }],
+      },
+    ])(
+      'should key an unanswered address like Storage: blanks when visible, nothing when hidden (visible $visibleFieldIds, keep-v4-response-format $keepV4ResponseFormat)',
+      ({ visibleFieldIds, keepV4ResponseFormat, entries }) => {
+        const result = JSON.parse(
+          buildMrfResponseJson({
+            ...BASE_ARGS,
+            getVisibleFieldIds: () => visibleFieldIds,
+            keepV4ResponseFormat,
+            formFields: [
+              {
+                _id: '1',
+                title: 'Home Address',
+                fieldType: BasicField.Address,
+              } as IAddressCompoundFieldSchema,
+            ],
+            responses: {},
+          }),
+        )
+        expect(result.slice(3)).toEqual(entries)
+      },
+    )
 
     it('should not add [Verified] prefix to email field questions', () => {
       const fieldId = '1'

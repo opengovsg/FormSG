@@ -29,18 +29,26 @@ import {
   TableFieldDto,
   WorkflowType,
 } from 'formsg-shared/types'
-import { handleAddressResponseDisplay } from 'formsg-shared/utils/address'
-import { toTableInput } from 'formsg-shared/utils/flatten-v4-to-v1'
+import {
+  answerKey as addressAnswerKeys,
+  handleAddressResponseDisplay,
+} from 'formsg-shared/utils/address'
+import {
+  toAddressInput,
+  toTableInput,
+} from 'formsg-shared/utils/flatten-v4-to-v1'
 import { applyMyInfoPrefixToFormFields } from 'formsg-shared/utils/myinfo-prefix'
 import {
+  computeAddressAnswerValue,
   computeDateAnswerValue,
   computeTableAnswerValue,
 } from 'formsg-shared/utils/response-value-rules'
 import { SIGNATURE_CAPTURED_STRING } from 'formsg-shared/utils/signature'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
+import type { AddressAnswerV4 } from 'formsg-shared/utils/v4-answer'
 import jwt from 'jsonwebtoken'
-import { get, uniqBy } from 'lodash'
+import { get, once, uniqBy } from 'lodash'
 import moment from 'moment'
 import { err, ok, Result } from 'neverthrow'
 
@@ -982,6 +990,7 @@ export const buildMrfResponseJson = ({
   formId,
   responseId,
   timestamp,
+  getVisibleFieldIds,
   keepV4ResponseFormat,
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
@@ -990,6 +999,7 @@ export const buildMrfResponseJson = ({
   responseId: string
   timestamp: string
   delimiter?: string
+  getVisibleFieldIds: () => Set<string>
   keepV4ResponseFormat: boolean
 }): string => {
   const entries: { question: string; answer: string }[] = [
@@ -1001,6 +1011,8 @@ export const buildMrfResponseJson = ({
   if (!formFields || !responses) {
     return JSON.stringify(entries)
   }
+
+  const visibleFieldIds = once(getVisibleFieldIds)
 
   for (const field of formFields) {
     if (NON_RESPONSE_FIELD_TYPES.has(field.fieldType)) continue
@@ -1018,6 +1030,22 @@ export const buildMrfResponseJson = ({
       continue
     }
 
+    if (field.fieldType === BasicField.Address && !keepV4ResponseFormat) {
+      const { answerArray } = computeAddressAnswerValue(
+        toAddressInput({
+          answer: response?.answer as AddressAnswerV4 | undefined,
+          isVisible: !!response || visibleFieldIds().has(String(field._id)),
+        }),
+      )
+      answerArray.forEach((answer, i) =>
+        entries.push({
+          question: `${field.title} - ${addressAnswerKeys[i]}`,
+          answer,
+        }),
+      )
+      continue
+    }
+
     if (!response) {
       const prefix = keepV4ResponseFormat
         ? ''
@@ -1026,6 +1054,7 @@ export const buildMrfResponseJson = ({
       continue
     }
 
+    // TODO (keep-v4-response-format): remove with the flag
     if (response.fieldType === BasicField.Address) {
       const addressAnswer = response.answer as Record<string, { value: string }>
       for (const subField of Object.keys(addressAnswer)) {
