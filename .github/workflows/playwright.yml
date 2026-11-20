@@ -108,7 +108,7 @@ jobs:
           key: ${{ runner.os }}-build-playwright-${{ github.sha }}
           fail-on-cache-miss: true
       - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
+        uses: datadog/test-visibility-github-action@7ce545f228901e4ac4ef0b45d946120f1c4124e0 # v3.3.0
         with:
           languages: js
           service-name: ${{ secrets.DD_SERVICE }}
