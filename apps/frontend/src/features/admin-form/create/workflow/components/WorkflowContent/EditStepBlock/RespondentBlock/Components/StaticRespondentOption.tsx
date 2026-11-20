@@ -6,9 +6,9 @@ import isEmail from 'validator/lib/isEmail'
 
 import { WorkflowType } from 'formsg-shared/types'
 
+import { EmailListInput } from '~components/EmailListInput'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'
-import { TagInput } from '~components/TagInput'
 
 import { useIsWorkflowSavePermissive } from '../../../../../hooks/useIsWorkflowSavePermissive'
 
@@ -77,10 +77,9 @@ export const StaticRespondentOption = ({
                 },
               }}
               render={({ field }) => (
-                <TagInput
+                <EmailListInput
                   isDisabled={isLoading}
                   placeholder="me@example.com"
-                  tagValidation={isEmail}
                   {...field}
                 />
               )}
