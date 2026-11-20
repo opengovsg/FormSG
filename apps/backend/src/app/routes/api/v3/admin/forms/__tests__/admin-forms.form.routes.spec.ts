@@ -816,11 +816,14 @@ describe('admin-form.form.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: { key: 'email', message: 'Please enter a valid email' },
-        }),
-      )
+      expect(response.body).toEqual({
+        ...buildCelebrateError(
+          { body: { key: 'email', message: 'Please enter a valid email' } },
+          { message: 'Please enter a valid email' },
+        ),
+        messageKey:
+          'features.adminForm.backendErrors.collaborators.invalidEmail',
+      })
     })
 
     it('should return 200 with true without transferring forms when the new owner is not in the database', async () => {
@@ -2074,11 +2077,14 @@ describe('admin-form.form.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: { key: 'email', message: 'Please enter a valid email' },
-        }),
-      )
+      expect(response.body).toEqual({
+        ...buildCelebrateError(
+          { body: { key: 'email', message: 'Please enter a valid email' } },
+          { message: 'Please enter a valid email' },
+        ),
+        messageKey:
+          'features.adminForm.backendErrors.collaborators.invalidEmail',
+      })
     })
 
     it('should return 400 when body.email contains multiple emails', async () => {
@@ -2092,11 +2098,14 @@ describe('admin-form.form.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: { key: 'email', message: 'Please enter a valid email' },
-        }),
-      )
+      expect(response.body).toEqual({
+        ...buildCelebrateError(
+          { body: { key: 'email', message: 'Please enter a valid email' } },
+          { message: 'Please enter a valid email' },
+        ),
+        messageKey:
+          'features.adminForm.backendErrors.collaborators.invalidEmail',
+      })
     })
 
     it('should return 400 when the new owner is not in the database', async () => {
@@ -3225,14 +3234,18 @@ describe('admin-form.form.routes', () => {
 
       //Assert
       expect(response.status).toBe(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: {
-            key: 'buttonLink',
-            message: 'Please enter a valid HTTP or HTTPS URI',
+      expect(response.body).toEqual({
+        ...buildCelebrateError(
+          {
+            body: {
+              key: 'buttonLink',
+              message: 'Please enter a valid HTTP or HTTPS URI',
+            },
           },
-        }),
-      )
+          { message: 'Please enter a valid HTTP or HTTPS URI' },
+        ),
+        messageKey: 'features.adminForm.backendErrors.endPage.invalidUrl',
+      })
     })
   })
 

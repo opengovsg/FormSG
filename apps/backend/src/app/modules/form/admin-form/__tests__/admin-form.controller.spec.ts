@@ -7,6 +7,7 @@ import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { PresignedPost } from '@aws-sdk/s3-presigned-post'
 import { GrowthBook } from '@growthbook/growthbook'
 import { ObjectId } from 'bson'
+import express from 'express'
 import { featureFlags } from 'formsg-shared/constants'
 import {
   AdminDashboardFormMetaDto,
@@ -33,7 +34,9 @@ import { StatusCodes } from 'http-status-codes'
 import { assignIn, cloneDeep, merge, pick } from 'lodash'
 import { err, errAsync, ok, okAsync, Result } from 'neverthrow'
 import { PassThrough } from 'stream'
+import supertest from 'supertest'
 
+import { errorHandlerMiddlewares } from 'src/app/loaders/express/error-handler'
 import * as AuthService from 'src/app/modules/auth/auth.service'
 import {
   DatabaseConflictError,
@@ -4224,6 +4227,7 @@ describe('admin-form.controller', () => {
       // Should return specific message.
       expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Form must be public to be copied',
+        messageKey: 'features.adminForm.backendErrors.template.mustBePublic',
       })
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -4406,6 +4410,48 @@ describe('admin-form.controller', () => {
         expectedParams,
         { overrideEmails: ['andanother@example.com'], isFromTemplate: true },
       )
+    })
+  })
+
+  describe('collaborator email validator i18n', () => {
+    const [transferValidator] = AdminFormController.handleTransferFormOwnership
+    const [collaboratorsValidator] =
+      AdminFormController.handleUpdateCollaborators
+    const app = express()
+      .use(express.json())
+      .post('/transfer', transferValidator, (_req, res) => res.sendStatus(200))
+      .put('/collaborators', collaboratorsValidator, (_req, res) =>
+        res.sendStatus(200),
+      )
+      .use(errorHandlerMiddlewares())
+
+    it('should return the i18n key when transferring to an invalid email', async () => {
+      const response = await supertest(app)
+        .post('/transfer')
+        .send({ email: 'not-an-email' })
+
+      expect(response.status).toEqual(StatusCodes.BAD_REQUEST)
+      expect(response.body.messageKey).toEqual(
+        'features.adminForm.backendErrors.collaborators.invalidEmail',
+      )
+    })
+
+    it('should return the i18n key when adding a collaborator with an invalid email', async () => {
+      const response = await supertest(app)
+        .put('/collaborators')
+        .send([{ email: 'not-an-email', write: true }])
+
+      expect(response.status).toEqual(StatusCodes.BAD_REQUEST)
+      expect(response.body.messageKey).toEqual(
+        'features.adminForm.backendErrors.collaborators.invalidEmail',
+      )
+    })
+
+    it('should not attach the invalid email key when the email is missing', async () => {
+      const response = await supertest(app).post('/transfer').send({})
+
+      expect(response.status).toEqual(StatusCodes.BAD_REQUEST)
+      expect(response.body.messageKey).toBeUndefined()
     })
   })
 
@@ -5226,6 +5272,43 @@ describe('admin-form.controller', () => {
       MockAdminFormService.checkIsWhitelistSettingValid.mockReturnValue({
         isValid: true,
       })
+    })
+
+    describe('validator i18n', () => {
+      const [validator] = AdminFormController.handleUpdateWhitelistSetting
+      const app = express()
+        .use(express.json({ limit: '1mb' }))
+        .put('/:formId', validator, (_req, res) => res.sendStatus(200))
+        .use(errorHandlerMiddlewares())
+
+      it.each([
+        ['an empty csv', '', 'whitelist.emptyCsv', undefined],
+        [
+          'invalid characters',
+          'S7101844Z;',
+          'whitelist.invalidCharacters',
+          undefined,
+        ],
+        [
+          'a csv over the size limit',
+          'a'.repeat(AdminFormController.WHITELIST_CSV_MAX_LENGTH + 1),
+          'whitelist.fileTooLarge',
+          { limitKb: AdminFormController.WHITELIST_CSV_LIMIT_IN_KB },
+        ],
+      ])(
+        'should return the i18n key for %s',
+        async (_, whitelistCsvString, keySuffix, messageParams) => {
+          const response = await supertest(app)
+            .put(`/${MOCK_FORM_ID}`)
+            .send({ whitelistCsvString })
+
+          expect(response.status).toEqual(StatusCodes.BAD_REQUEST)
+          expect(response.body.messageKey).toEqual(
+            `features.adminForm.backendErrors.${keySuffix}`,
+          )
+          expect(response.body.messageParams).toEqual(messageParams)
+        },
+      )
     })
 
     it('should return 403 if user does not have write permissions for the form', async () => {
@@ -6482,6 +6565,7 @@ describe('admin-form.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(404)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expect.any(String),
+        messageKey: 'features.publicForm.errors.notFound',
       })
     })
 
@@ -6531,6 +6615,7 @@ describe('admin-form.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(410)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expect.any(String),
+        messageKey: 'features.publicForm.errors.deleted',
       })
     })
 
@@ -6763,6 +6848,7 @@ describe('admin-form.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(404)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Field to modify not found',
+        messageKey: 'features.adminForm.backendErrors.fields.notFound',
       })
       expect(MockAdminFormService.updateFormField).toHaveBeenCalledWith(
         MOCK_FORM,
@@ -7525,6 +7611,7 @@ describe('admin-form.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(404)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Field to modify not found',
+        messageKey: 'features.adminForm.backendErrors.fields.notFound',
       })
       expect(MockAdminFormService.duplicateFormField).toHaveBeenCalledWith(
         MOCK_FORM,
@@ -7811,6 +7898,7 @@ describe('admin-form.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(404)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Field to modify not found',
+        messageKey: 'features.adminForm.backendErrors.fields.notFound',
       })
       expect(MockAdminFormService.reorderFormField).toHaveBeenCalledWith(
         MOCK_FORM,
@@ -8485,6 +8573,7 @@ describe('admin-form.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(404)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Field to modify not found',
+        messageKey: 'features.adminForm.backendErrors.fields.notFound',
       })
       expect(MockAdminFormService.deleteFormField).toHaveBeenCalledWith(
         MOCK_FORM,

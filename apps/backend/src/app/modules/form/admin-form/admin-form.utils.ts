@@ -47,6 +47,7 @@ import {
 import { UNICODE_ESCAPED_REGEX } from '../form.utils'
 
 import {
+  AdminFormInvalidPaymentAmountError,
   DeleteFirstWorkflowStepError,
   EditFieldError,
   FieldNotFoundError,
@@ -63,9 +64,11 @@ import {
   ModelResponseInvalidSchemaFormatError,
   ModelResponseInvalidSyntaxError,
   PaymentChannelNotFoundError,
+  PaymentProductAmountLimitExceededError,
   SavedViewLimitError,
   SavedViewNotFoundError,
 } from './admin-form.errors'
+import { adminFormErrorKey } from './admin-form.i18n'
 import {
   AssertFormFn,
   EditFormFieldResult,
@@ -85,6 +88,22 @@ export const mapRouteError = (
   error: ApplicationError,
   coreErrorMessage?: string,
 ): ErrorResponseData => {
+  const errorResponse = _mapRouteError(error, coreErrorMessage)
+  // The error's own i18n only describes error.message, so skip it when a case
+  // returned a different message (e.g. the generic default); a key set by the
+  // case itself always wins
+  if (errorResponse.errorMessage !== error.message) return errorResponse
+  return {
+    ...errorResponse,
+    errorMessageKey: errorResponse.errorMessageKey ?? error.messageKey,
+    errorMessageParams: errorResponse.errorMessageParams ?? error.messageParams,
+  }
+}
+
+const _mapRouteError = (
+  error: ApplicationError,
+  coreErrorMessage?: string,
+): ErrorResponseData => {
   switch (error.constructor) {
     case SmsLimitExceededError:
     case SavedViewLimitError:
@@ -93,14 +112,22 @@ export const mapRouteError = (
         errorMessage: error.message,
       }
     case InvalidFileTypeError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
     case CreatePresignedPostError:
     case DeleteFirstWorkflowStepError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
       }
-    case FormNotFoundError:
     case FieldNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: error.message,
+      }
+    case FormNotFoundError:
     case LogicNotFoundError:
     case SavedViewNotFoundError:
       return {
@@ -169,6 +196,16 @@ export const mapRouteError = (
         statusCode: StatusCodes.BAD_GATEWAY,
         errorMessage: coreErrorMessage ?? error.message,
       }
+    case AdminFormInvalidPaymentAmountError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case PaymentProductAmountLimitExceededError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
     case InvalidPaymentAmountError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
@@ -219,6 +256,7 @@ export const mapRouteError = (
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: 'Something went wrong. Please try creating fields again.',
+        errorMessageKey: adminFormErrorKey('fields.createFailed'),
       }
     default:
       logger.error({
@@ -232,6 +270,7 @@ export const mapRouteError = (
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: 'Something went wrong. Please try again.',
+        errorMessageKey: adminFormErrorKey('unknown'),
       }
   }
 }
