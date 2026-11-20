@@ -321,13 +321,19 @@ export const handleConfirmPayment: ControllerHandler<
             return errAsync(new PaymentServerConfirmationUnavailableError())
           }
 
+          const applyFormMcc =
+            req.growthbook?.getFeatureValue<boolean>(
+              featureFlags.paymentFormMcc,
+              false,
+            ) ?? false
+
           return StripeService.confirmPaymentIntentWithPaymentMethod({
             paymentIntentId: payment.paymentIntentId,
             paymentMethodId,
             stripeAccount,
-            // Card-brand-specific MCCs arrive in a later stage, read from the
-            // form itself; until then no payment method options are applied.
-            mccByCardBrand: {},
+            mccByCardBrand: applyFormMcc
+              ? (form.payments_channel.mcc_by_card_brand ?? {})
+              : {},
             returnUrl: `${config.app.appUrl}/${form._id}/payment/${paymentId}`,
           })
         }),
