@@ -1,5 +1,5 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { FieldErrors, FieldPath, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
@@ -42,7 +42,8 @@ import {
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
-import { useGuidedStepReveal } from '../../../hooks/useGuidedStepReveal'
+import { useGuidedStepNavigation } from '../../../hooks/useGuidedStepNavigation'
+import { useIsMrfStepLoginEnabled } from '../../../hooks/useIsMrfStepLoginEnabled'
 import { useIsStepLoginShown } from '../../../hooks/useIsStepLoginShown'
 import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
 import { EditStepInputs } from '../../../types'
@@ -52,7 +53,7 @@ import {
   normaliseFirstStepLogin,
   normaliseStepAuth,
 } from '../../../workflow.utils'
-import { SpotlightGroup } from '../../Spotlight'
+import { Spotlight, SpotlightGroup } from '../../Spotlight'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { ApprovalsBlock } from './ApprovalsBlock'
@@ -86,6 +87,17 @@ const SAVE_ERRORS_KEY =
   'features.adminForm.sidebar.workflow.stepLogin.saveErrors'
 
 type StepTab = 'login' | 'fields' | 'approvals'
+type StepSection = 'name' | 'people' | StepTab
+const isStepTab = (section: StepSection): section is StepTab =>
+  section === 'login' || section === 'fields' || section === 'approvals'
+
+const SECTION_FIELDS: Record<StepSection, FieldPath<EditStepInputs>[]> = {
+  name: ['step_name'],
+  people: ['workflow_type', 'emails', 'field', 'conditional_field'],
+  login: ['auth', 'first_step_login'],
+  fields: ['edit'],
+  approvals: ['approval_field', 'is_approval_enabled'],
+}
 
 type WriteStep = FormWorkflowStepWriteDto & { _id: string }
 
@@ -233,6 +245,8 @@ export const EditStepBlock = ({
   }, [register, isLoginShown])
 
   const wrapperRef = useRef<HTMLDivElement | null>(null)
+  const saveErrorRef = useRef<HTMLDivElement | null>(null)
+  const skipNextRevealScroll = useRef(false)
 
   useLayoutEffect(() => {
     if (wrapperRef.current) {
@@ -247,13 +261,103 @@ export const EditStepBlock = ({
 
   const { isDirty } = formMethods.formState
 
-  const tabOrder: StepTab[] = [
-    'login',
-    'fields',
-    ...(!isFirstStep ? (['approvals'] as const) : []),
-  ]
-  const [activeTab, setActiveTab] = useState<StepTab>('login')
-  useEffect(() => setActiveTab('login'), [stepNumber])
+  const isGuided = isCreatingState && isGuidedSetup
+  const isStepLoginEnabled = useIsMrfStepLoginEnabled()
+  const hasGuidedTabs = isStepLoginEnabled && isLoginShown
+  const useProposedTabs = isLoginShown && (!isGuided || hasGuidedTabs)
+  const tabOrder = useMemo<StepTab[]>(
+    () => [
+      ...(isLoginShown ? (['login'] as const) : []),
+      'fields',
+      ...(!isFirstStep ? (['approvals'] as const) : []),
+    ],
+    [isLoginShown, isFirstStep],
+  )
+  const stackedSectionOrder = useMemo<StepTab[]>(
+    () => [
+      ...(isLoginShown ? (['login'] as const) : []),
+      ...(!isFirstStep ? (['approvals'] as const) : []),
+      'fields',
+    ],
+    [isLoginShown, isFirstStep],
+  )
+  const sectionOrder = useMemo<readonly [StepSection, ...StepSection[]]>(
+    () => [
+      'name',
+      'people',
+      ...(hasGuidedTabs ? tabOrder : stackedSectionOrder),
+    ],
+    [hasGuidedTabs, tabOrder, stackedSectionOrder],
+  )
+  const reveal = useGuidedStepNavigation({
+    sections: sectionOrder,
+    isEnabled: isGuided,
+  })
+  const { activeSection } = reveal
+  const selectedTab = isStepTab(activeSection) ? activeSection : tabOrder[0]
+  const [focusSection, setFocusSection] = useState<StepSection | null>(null)
+
+  const openSection = (section: StepSection, focus = false) => {
+    if (!useProposedTabs || !sectionOrder.includes(section)) return
+    reveal.goTo(section)
+    if (focus) {
+      skipNextRevealScroll.current = section !== activeSection
+      setFocusSection(section)
+    }
+  }
+
+  useEffect(() => {
+    if (!focusSection) return
+    const frame = requestAnimationFrame(() => {
+      const section = wrapperRef.current?.querySelector(
+        `[data-step-section="${focusSection}"]`,
+      )
+      const input =
+        section?.querySelector<HTMLElement>(
+          'input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="true"], [aria-invalid="true"][tabindex]',
+        ) ??
+        (saveError ? saveErrorRef.current : null) ??
+        section?.querySelector<HTMLElement>(
+          'input:not([type="hidden"]):not([type="radio"])',
+        ) ??
+        section?.querySelector<HTMLElement>('[role="combobox"]') ??
+        section?.querySelector<HTMLElement>('input') ??
+        section?.querySelector<HTMLElement>('button')
+      input?.focus()
+      ;(input ?? section)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      })
+      setFocusSection(null)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [focusSection, saveError])
+
+  const routeValidationErrors = (errors: FieldErrors<EditStepInputs>) => {
+    const section = sectionOrder.find((candidate) =>
+      SECTION_FIELDS[candidate].some(
+        (name) => errors[name as keyof EditStepInputs],
+      ),
+    )
+    if (section) openSection(section, true)
+  }
+
+  const continueGuidance = async () => {
+    const valid = await formMethods.trigger(SECTION_FIELDS[activeSection])
+    if (!valid) {
+      setFocusSection(activeSection)
+      return
+    }
+    if (
+      activeSection === 'login' &&
+      formMethods.getValues('first_step_restrictions_parsing')
+    ) {
+      setSaveError(t(`${SAVE_ERRORS_KEY}.restrictionsParsing`))
+      return
+    }
+    setSaveError('')
+    reveal.advance()
+  }
 
   const saveSucceeded = useRef(false)
   const pendingNavigationSave = useRef<Promise<boolean> | null>(null)
@@ -262,6 +366,7 @@ export const EditStepBlock = ({
     async (inputs: EditStepInputs) => {
       if (inputs.first_step_restrictions_parsing) {
         setSaveError(t(`${SAVE_ERRORS_KEY}.restrictionsParsing`))
+        openSection('login', true)
         cancelPendingSwitch()
         return
       }
@@ -306,9 +411,11 @@ export const EditStepBlock = ({
             },
             { shouldFocus: true },
           )
+          openSection('people', true)
           setSaveError('')
           return
         }
+        if (didSaveStep) openSection('login', true)
         setSaveError(
           didSaveStep
             ? t(`${SAVE_ERRORS_KEY}.restrictionsFailed`)
@@ -325,10 +432,7 @@ export const EditStepBlock = ({
       }
     },
     (errors) => {
-      if (!isFirstStep && (errors.approval_field || errors.is_approval_enabled))
-        setActiveTab('approvals')
-      else if (errors.auth || errors.first_step_login) setActiveTab('login')
-      else setActiveTab('fields')
+      routeValidationErrors(errors)
       cancelPendingSwitch()
     },
   )
@@ -354,8 +458,6 @@ export const EditStepBlock = ({
 
   const hasSubmittedForPendingSwitch = useRef(false)
 
-  const isGuided = isCreatingState && isGuidedSetup
-
   const questionsSection = (
     <QuestionsBlock
       key="fields"
@@ -370,6 +472,7 @@ export const EditStepBlock = ({
       formMethods={formMethods}
       stepNumber={stepNumber}
       isLoading={_isLoading}
+      isInTab={useProposedTabs}
     />
   ) : null
   const approvalsSection = isFirstStep ? null : (
@@ -386,12 +489,11 @@ export const EditStepBlock = ({
     approvals: approvalsSection,
   }
 
-  const useProposedTabs = isLoginShown && !isGuided
   const tabbedSections = (
     <Tabs
       key="step-settings"
-      index={tabOrder.indexOf(activeTab)}
-      onChange={(index) => setActiveTab(tabOrder[index])}
+      index={Math.max(0, tabOrder.indexOf(selectedTab))}
+      onChange={(index) => openSection(tabOrder[index])}
     >
       <Box px={{ base: '1.5rem', md: '2rem' }}>
         <TabList
@@ -403,7 +505,15 @@ export const EditStepBlock = ({
           rowGap="0.25rem"
         >
           {tabOrder.map((tab) => (
-            <Tab key={tab} {...WRAPPING_TAB_PROPS}>
+            <Tab
+              key={tab}
+              onClick={() => {
+                if (!isGuided || reveal.isReached(tab)) openSection(tab)
+              }}
+              isDisabled={isGuided && !reveal.isReached(tab)}
+              isFocusable
+              {...WRAPPING_TAB_PROPS}
+            >
               {t(`${STEP_TABS_KEY}.${tab}`)}
             </Tab>
           ))}
@@ -412,41 +522,37 @@ export const EditStepBlock = ({
       </Box>
       <TabPanels>
         {tabOrder.map((tab) => (
-          <TabPanel key={tab} px="0" pt="1.5rem">
-            {tabSections[tab]}
+          <TabPanel
+            key={tab}
+            px="0"
+            pt={isGuided ? '0' : '1.5rem'}
+            data-step-section={tab}
+          >
+            <Spotlight isEnabled={isGuided} isActive={activeSection === tab}>
+              {tabSections[tab]}
+            </Spotlight>
           </TabPanel>
         ))}
       </TabPanels>
     </Tabs>
   )
 
-  const sections: JSX.Element[] = [
-    <StepNameBlock
-      key="name"
-      formMethods={formMethods}
-      stepNumber={stepNumber}
-    />,
-    <RespondentBlock
-      key="people"
-      user={user}
-      stepNumber={stepNumber}
-      formMethods={formMethods}
-      isLoading={_isLoading}
-    />,
-    // Login follows the respondent: who fills the step, then how they log in,
-    // then what they do.
-    ...(useProposedTabs
-      ? [tabbedSections]
-      : [loginSection, approvalsSection, questionsSection]
-    ).filter((section): section is JSX.Element => section !== null),
-  ]
-
-  const reveal = useGuidedStepReveal({
-    sectionCount: sections.length,
-    isEnabled: isGuided,
-  })
-
-  const { visibleCount } = reveal
+  const sections: Record<StepSection, JSX.Element | null> = {
+    name: <StepNameBlock formMethods={formMethods} stepNumber={stepNumber} />,
+    people: (
+      <RespondentBlock
+        user={user}
+        stepNumber={stepNumber}
+        formMethods={formMethods}
+        isLoading={_isLoading}
+      />
+    ),
+    ...tabSections,
+  }
+  const introductorySections = ['name', 'people'] as const
+  const visibleStackedSections = isGuided
+    ? sectionOrder.slice(0, sectionOrder.indexOf(activeSection) + 1)
+    : sectionOrder
 
   useEffect(() => {
     if (pendingSwitchTo === null) {
@@ -472,12 +578,16 @@ export const EditStepBlock = ({
   }, [pendingSwitchTo])
 
   useEffect(() => {
-    if (!isGuided || visibleCount <= 1) return
+    if (skipNextRevealScroll.current) {
+      skipNextRevealScroll.current = false
+      return
+    }
+    if (!isGuided || reveal.isFirstSection) return
     const timeout = setTimeout(() => {
       wrapperRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
     }, SECTION_REVEAL_SCROLL_DELAY_MS)
     return () => clearTimeout(timeout)
-  }, [isGuided, visibleCount])
+  }, [isGuided, activeSection, reveal.isFirstSection])
 
   return (
     <Stack
@@ -494,24 +604,40 @@ export const EditStepBlock = ({
       transitionDuration="normal"
     >
       {useProposedTabs ? (
-        <Stack spacing="1.5rem" pt="1.5rem">
-          {sections
-            .slice(0, -1)
-            .flatMap((section, index) =>
-              index === 0
-                ? [section]
-                : [<Divider key={`intro-divider-${index}`} />, section],
-            )}
-          {tabbedSections}
+        <Stack
+          spacing={isGuided ? '0' : '1.5rem'}
+          pt={isGuided ? '0' : '1.5rem'}
+        >
+          {introductorySections.map((section, index) =>
+            !isGuided || reveal.isReached(section) ? (
+              <Box key={section} data-step-section={section}>
+                {!isGuided && index > 0 ? <Divider mb="1.5rem" /> : null}
+                <Spotlight
+                  isEnabled={isGuided}
+                  isActive={activeSection === section}
+                >
+                  {sections[section]}
+                </Spotlight>
+              </Box>
+            ) : null,
+          )}
+          {!isGuided || reveal.isReached(tabOrder[0]) ? tabbedSections : null}
           <Divider />
         </Stack>
       ) : (
-        <SpotlightGroup activeIndex={reveal.activeIndex} isEnabled={isGuided}>
-          {sections.slice(0, visibleCount)}
+        <SpotlightGroup
+          activeIndex={isGuided ? visibleStackedSections.length - 1 : null}
+          isEnabled={isGuided}
+        >
+          {visibleStackedSections.map((section) => (
+            <Box key={section} data-step-section={section}>
+              {sections[section]}
+            </Box>
+          ))}
         </SpotlightGroup>
       )}
       {saveError && isLoginShown ? (
-        <Box px="2rem" pt="1rem">
+        <Box px="2rem" pt="1rem" ref={saveErrorRef} role="alert" tabIndex={-1}>
           <InlineMessage variant="error">{saveError}</InlineMessage>
         </Box>
       ) : null}
@@ -519,15 +645,18 @@ export const EditStepBlock = ({
         {isGuided ? (
           <GuidedActionGroup
             secondaryAction={getGuidedSecondaryAction({
-              sectionIndex: visibleCount - 1,
+              sectionIndex: reveal.isFirstSection ? 0 : 1,
               canCancel: !isFirstStep,
             })}
             isOnLastSection={reveal.isOnLastSection}
             isLoading={_isLoading}
             onBack={reveal.goBack}
             onCancel={setToInactive}
-            onContinue={reveal.advance}
+            onContinue={
+              hasGuidedTabs ? () => void continueGuidance() : reveal.advance
+            }
             onDone={() => void saveForNavigation()}
+            doneLabel={hasGuidedTabs ? submitButtonLabel : undefined}
           />
         ) : (
           <SaveActionGroup
