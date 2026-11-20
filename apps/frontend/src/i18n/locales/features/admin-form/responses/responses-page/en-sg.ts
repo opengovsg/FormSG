@@ -25,6 +25,7 @@ export const enSG: ResponsesResponsesPage = {
             'For PDFs, all files will be bundled into a <strong>single zip</strong>.',
           attachmentsDescription:
             'For attachments, <strong>a separate zip file</strong> will be downloaded for each response.',
+          downloadVersionLabel: 'Download version',
           zipDescription:
             'Everything will be saved in <strong>a single zip file</strong> when the download finishes. If you stop the download, nothing is saved.',
           downloadTitle: 'Download {downloadItems}',

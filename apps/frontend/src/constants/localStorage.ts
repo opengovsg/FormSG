@@ -41,3 +41,6 @@ export const ADMIN_FEEDBACK_HISTORY_PREFIX = 'last-seen-admin-feedback-'
 export const GUIDED_WORKFLOW_MODE_KEY_PREFIX = 'prefers-guided-workflow-'
 
 export const RESULTS_DASHBOARD_VERSION_KEY_PREFIX = 'results-dashboard-version-'
+
+export const RESPONSES_DOWNLOAD_VERSION_KEY_PREFIX =
+  'responses-download-version-'
