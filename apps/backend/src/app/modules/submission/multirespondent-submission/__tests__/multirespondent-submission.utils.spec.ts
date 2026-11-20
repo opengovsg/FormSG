@@ -1589,40 +1589,56 @@ describe('multirespondent-submission.utils', () => {
       },
     )
 
-    it('should handle checkbox fields correctly', () => {
-      const formFields: FormFieldSchema[] = [
-        {
-          _id: '1',
-          title: 'Checkbox',
-          fieldType: BasicField.Checkbox,
-        } as ICheckboxFieldSchema,
-      ]
-      const responses = {
-        '1': {
-          fieldType: BasicField.Checkbox,
-          answer: {
-            value: ['Option 1', 'Option 2', CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
-            othersInput: 'Custom Option',
-          },
-          question: 'Checkbox',
-          provenance: {},
-        },
-      } as any
-
-      const result = getQuestionAnswerPairsForMultipleFields({
-        formFields,
-        responses,
+    it.each([
+      {
         keepV4ResponseFormat: false,
-      })
+        answer: 'Option 1, Option 2, Others: Custom Option',
+      },
+      {
+        keepV4ResponseFormat: true,
+        answer: 'Option 1, Option 2, Custom Option',
+      },
+    ])(
+      'should prefix a checkbox Others answer like Storage unless keep-v4-response-format is on ($keepV4ResponseFormat)',
+      ({ keepV4ResponseFormat, answer }) => {
+        const formFields: FormFieldSchema[] = [
+          {
+            _id: '1',
+            title: 'Checkbox',
+            fieldType: BasicField.Checkbox,
+          } as ICheckboxFieldSchema,
+        ]
+        const responses = {
+          '1': {
+            fieldType: BasicField.Checkbox,
+            answer: {
+              value: [
+                'Option 1',
+                'Option 2',
+                CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
+              ],
+              othersInput: 'Custom Option',
+            },
+            question: 'Checkbox',
+            provenance: {},
+          },
+        } as any
 
-      expect(result).toEqual([
-        {
-          question: 'Checkbox',
-          answer: 'Option 1, Option 2, Custom Option',
-          fieldType: BasicField.Checkbox,
-        },
-      ])
-    })
+        const result = getQuestionAnswerPairsForMultipleFields({
+          formFields,
+          responses,
+          keepV4ResponseFormat,
+        })
+
+        expect(result).toEqual([
+          {
+            question: 'Checkbox',
+            answer,
+            fieldType: BasicField.Checkbox,
+          },
+        ])
+      },
+    )
 
     it('should handle address fields correctly', () => {
       const formFields: FormFieldSchema[] = [
