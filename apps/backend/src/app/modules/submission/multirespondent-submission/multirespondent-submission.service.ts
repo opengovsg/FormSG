@@ -5,6 +5,7 @@ import {
   BasicField,
   FormAuthType,
   FormFieldDto,
+  FormLogic,
   FormResponseMode,
   FormWebhook,
   FormWorkflowStepDto,
@@ -15,6 +16,7 @@ import {
   WorkflowEventType,
   WorkflowStatus,
 } from 'formsg-shared/types'
+import { getVisibleFieldIdsV4 } from 'formsg-shared/utils/flatten-v4-to-v1'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
 import moment from 'moment'
 import mongoose from 'mongoose'
@@ -92,9 +94,7 @@ import { AttachmentMetadata } from '../submission.types'
 import {
   getMrfSubmissionWorkflowStatus,
   isAdminEmailPdfEnabled,
-  isKeepV4AttachmentPrefixOn,
-  isKeepV4DateOn,
-  isKeepV4TableOn,
+  isKeepV4ResponseFormatOn,
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
@@ -169,11 +169,11 @@ const appUrl =
     : config.app.appUrl
 
 const toPlainFormFields = (
-  formFields: IPopulatedMultirespondentForm['form_fields'],
+  formFields: IPopulatedMultirespondentForm['form_fields'] | FormFieldDto[],
 ): FormFieldDto[] => JSON.parse(JSON.stringify(formFields)) as FormFieldDto[]
 
 const toPlainFormLogics = (
-  formLogics: IPopulatedMultirespondentForm['form_logics'],
+  formLogics: IPopulatedMultirespondentForm['form_logics'] | FormLogic[],
 ): LogicDto[] => JSON.parse(JSON.stringify(formLogics)) as LogicDto[]
 
 export type SavedMultirespondentSubmission = {
@@ -341,9 +341,7 @@ const sendNextStepEmail = ({
   const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
     formFields: form.form_fields,
     responses,
-    keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
-    keepV4Table: isKeepV4TableOn(growthbook),
-    keepV4Date: isKeepV4DateOn(growthbook),
+    keepV4ResponseFormat: isKeepV4ResponseFormatOn(growthbook),
   })
 
   return (
@@ -651,6 +649,7 @@ const sendMrfOutcomeEmails = ({
     | 'workflow'
   > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
+    form_logics: IPopulatedMultirespondentForm['form_logics'] | FormLogic[]
   }
   responses: FieldResponsesV4
   latestSubmissionTimestamp: string
@@ -716,9 +715,7 @@ const sendMrfOutcomeEmails = ({
         const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
           formFields: form.form_fields,
           responses,
-          keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
-          keepV4Table: isKeepV4TableOn(growthbook),
-          keepV4Date: isKeepV4DateOn(growthbook),
+          keepV4ResponseFormat: isKeepV4ResponseFormatOn(growthbook),
         })
 
         // TODO (formid-json): remove when Form ID in response JSON is GA
@@ -732,9 +729,13 @@ const sendMrfOutcomeEmails = ({
           responseId: submissionId,
           timestamp: latestSubmissionTimestamp,
           delimiter: getFormDelimiter(form.metadata),
-          keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
-          keepV4Table: isKeepV4TableOn(growthbook),
-          keepV4Date: isKeepV4DateOn(growthbook),
+          getVisibleFieldIds: () =>
+            getVisibleFieldIdsV4({
+              v4Responses: responses,
+              formFields: toPlainFormFields(form.form_fields),
+              formLogics: toPlainFormLogics(form.form_logics ?? []),
+            }),
+          keepV4ResponseFormat: isKeepV4ResponseFormatOn(growthbook),
         })
 
         const emailAttachments = []
@@ -860,9 +861,7 @@ const sendMrfRespondentCopyEmails = ({
   const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
     formFields: form.form_fields,
     responses,
-    keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
-    keepV4Table: isKeepV4TableOn(growthbook),
-    keepV4Date: isKeepV4DateOn(growthbook),
+    keepV4ResponseFormat: isKeepV4ResponseFormatOn(growthbook),
   })
 
   return pdfResult
@@ -1491,9 +1490,7 @@ const generatePdfAttachmentIfRequired = ({
   const responsesData = getResponsesDataFromMrfResponses({
     formFields: form.form_fields,
     responses,
-    keepV4AttachmentPrefix: isKeepV4AttachmentPrefixOn(growthbook),
-    keepV4Table: isKeepV4TableOn(growthbook),
-    keepV4Date: isKeepV4DateOn(growthbook),
+    keepV4ResponseFormat: isKeepV4ResponseFormatOn(growthbook),
   })
 
   const autoReplyData = {

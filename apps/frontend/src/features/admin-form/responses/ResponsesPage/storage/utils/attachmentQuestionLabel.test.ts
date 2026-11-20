@@ -8,17 +8,17 @@ describe('getAttachmentQuestionLabel', () => {
       getAttachmentQuestionLabel({
         question: 'Passport',
         fieldType: BasicField.Attachment,
-        keepV4AttachmentPrefix: false,
+        keepV4ResponseFormat: false,
       }),
     ).toBe('[attachment] Passport')
   })
 
-  it('should leave an attachment question unlabelled when keep-v4-attachment-prefix is on', () => {
+  it('should leave an attachment question unlabelled when keep-v4-response-format is on', () => {
     expect(
       getAttachmentQuestionLabel({
         question: 'Passport',
         fieldType: BasicField.Attachment,
-        keepV4AttachmentPrefix: true,
+        keepV4ResponseFormat: true,
       }),
     ).toBe('Passport')
   })
@@ -28,7 +28,7 @@ describe('getAttachmentQuestionLabel', () => {
       getAttachmentQuestionLabel({
         question: 'Name',
         fieldType: BasicField.ShortText,
-        keepV4AttachmentPrefix: false,
+        keepV4ResponseFormat: false,
       }),
     ).toBe('Name')
   })

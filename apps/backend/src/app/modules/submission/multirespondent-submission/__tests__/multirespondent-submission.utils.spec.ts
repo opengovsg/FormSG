@@ -1184,9 +1184,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
-        keepV4AttachmentPrefix: false,
-        keepV4Table: false,
-        keepV4Date: false,
+        keepV4ResponseFormat: false,
       })
 
       expect(result).toEqual([
@@ -1224,9 +1222,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
-        keepV4AttachmentPrefix: false,
-        keepV4Table: false,
-        keepV4Date: false,
+        keepV4ResponseFormat: false,
       })
 
       expect(result).toEqual([
@@ -1238,7 +1234,7 @@ describe('multirespondent-submission.utils', () => {
       ])
     })
 
-    it('should keep the [Attachment] label when keep-v4-attachment-prefix is on', () => {
+    it('should keep the [Attachment] label when keep-v4-response-format is on', () => {
       const formFields: FormFieldSchema[] = [
         {
           _id: '1',
@@ -1258,9 +1254,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
-        keepV4AttachmentPrefix: true,
-        keepV4Table: false,
-        keepV4Date: false,
+        keepV4ResponseFormat: true,
       })
 
       expect(result).toEqual([
@@ -1292,9 +1286,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
-        keepV4AttachmentPrefix: false,
-        keepV4Table: false,
-        keepV4Date: false,
+        keepV4ResponseFormat: false,
       })
 
       expect(result).toEqual([
@@ -1327,9 +1319,7 @@ describe('multirespondent-submission.utils', () => {
         formFields,
         responses,
         includeVerifiedPrefix: false,
-        keepV4AttachmentPrefix: false,
-        keepV4Table: false,
-        keepV4Date: false,
+        keepV4ResponseFormat: false,
       })
 
       expect(result).toEqual([
@@ -1378,9 +1368,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
-        keepV4AttachmentPrefix: false,
-        keepV4Table: false,
-        keepV4Date: false,
+        keepV4ResponseFormat: false,
       })
 
       // Question naming matches getAnswersForChild, used by email/storage
@@ -1434,9 +1422,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
-        keepV4AttachmentPrefix: false,
-        keepV4Table: false,
-        keepV4Date: false,
+        keepV4ResponseFormat: false,
       })
 
       expect(result.map((pair) => pair.question)).toEqual([
@@ -1477,9 +1463,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
-        keepV4AttachmentPrefix: false,
-        keepV4Table: false,
-        keepV4Date: false,
+        keepV4ResponseFormat: false,
       })
 
       expect(result).toEqual([
@@ -1498,8 +1482,7 @@ describe('multirespondent-submission.utils', () => {
 
     it.each([
       {
-        keepV4Table: false,
-        keepV4Date: false,
+        keepV4ResponseFormat: false,
         rows: [
           ['[table] Table of Name and Age (Name, Age)', 'Alice,30'],
           ['[table] Table of Name and Age (Name, Age)', 'Bob,25'],
@@ -1508,7 +1491,7 @@ describe('multirespondent-submission.utils', () => {
         ],
       },
       {
-        keepV4Table: true,
+        keepV4ResponseFormat: true,
         rows: [
           ['[Table] Table of Name and Age (Name; Age)', 'Alice; 30'],
           ['[Table] Table of Name and Age (Name; Age)', 'Bob; 25'],
@@ -1517,8 +1500,8 @@ describe('multirespondent-submission.utils', () => {
         ],
       },
     ])(
-      'should handle table fields correctly (keep-v4-table $keepV4Table)',
-      ({ keepV4Table, rows }) => {
+      'should handle table fields correctly (keep-v4-response-format $keepV4ResponseFormat)',
+      ({ keepV4ResponseFormat, rows }) => {
         const formFields: FormFieldSchema[] = [
           {
             _id: '1',
@@ -1563,9 +1546,7 @@ describe('multirespondent-submission.utils', () => {
         const result = getQuestionAnswerPairsForMultipleFields({
           formFields,
           responses,
-          keepV4AttachmentPrefix: false,
-          keepV4Table,
-          keepV4Date: false,
+          keepV4ResponseFormat,
         })
 
         expect(result).toEqual(
@@ -1579,11 +1560,11 @@ describe('multirespondent-submission.utils', () => {
     )
 
     it.each([
-      { keepV4Date: false, answer: '01 Jan 2025' },
-      { keepV4Date: true, answer: '01/01/2025' },
+      { keepV4ResponseFormat: false, answer: '01 Jan 2025' },
+      { keepV4ResponseFormat: true, answer: '01/01/2025' },
     ])(
-      'should format dates like Storage unless keep-v4-date is on ($keepV4Date)',
-      ({ keepV4Date, answer }) => {
+      'should format dates like Storage unless keep-v4-response-format is on ($keepV4ResponseFormat)',
+      ({ keepV4ResponseFormat, answer }) => {
         const formFields = [
           { _id: '1', title: 'Date', fieldType: BasicField.Date },
         ] as FormFieldSchema[]
@@ -1599,9 +1580,7 @@ describe('multirespondent-submission.utils', () => {
         const result = getQuestionAnswerPairsForMultipleFields({
           formFields,
           responses,
-          keepV4AttachmentPrefix: false,
-          keepV4Table: false,
-          keepV4Date,
+          keepV4ResponseFormat,
         })
 
         expect(result).toEqual([
@@ -1610,42 +1589,56 @@ describe('multirespondent-submission.utils', () => {
       },
     )
 
-    it('should handle checkbox fields correctly', () => {
-      const formFields: FormFieldSchema[] = [
-        {
-          _id: '1',
-          title: 'Checkbox',
-          fieldType: BasicField.Checkbox,
-        } as ICheckboxFieldSchema,
-      ]
-      const responses = {
-        '1': {
-          fieldType: BasicField.Checkbox,
-          answer: {
-            value: ['Option 1', 'Option 2', CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
-            othersInput: 'Custom Option',
+    it.each([
+      {
+        keepV4ResponseFormat: false,
+        answer: 'Option 1, Option 2, Others: Custom Option',
+      },
+      {
+        keepV4ResponseFormat: true,
+        answer: 'Option 1, Option 2, Custom Option',
+      },
+    ])(
+      'should prefix a checkbox Others answer like Storage unless keep-v4-response-format is on ($keepV4ResponseFormat)',
+      ({ keepV4ResponseFormat, answer }) => {
+        const formFields: FormFieldSchema[] = [
+          {
+            _id: '1',
+            title: 'Checkbox',
+            fieldType: BasicField.Checkbox,
+          } as ICheckboxFieldSchema,
+        ]
+        const responses = {
+          '1': {
+            fieldType: BasicField.Checkbox,
+            answer: {
+              value: [
+                'Option 1',
+                'Option 2',
+                CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
+              ],
+              othersInput: 'Custom Option',
+            },
+            question: 'Checkbox',
+            provenance: {},
           },
-          question: 'Checkbox',
-          provenance: {},
-        },
-      } as any
+        } as any
 
-      const result = getQuestionAnswerPairsForMultipleFields({
-        formFields,
-        responses,
-        keepV4AttachmentPrefix: false,
-        keepV4Table: false,
-        keepV4Date: false,
-      })
+        const result = getQuestionAnswerPairsForMultipleFields({
+          formFields,
+          responses,
+          keepV4ResponseFormat,
+        })
 
-      expect(result).toEqual([
-        {
-          question: 'Checkbox',
-          answer: 'Option 1, Option 2, Custom Option',
-          fieldType: BasicField.Checkbox,
-        },
-      ])
-    })
+        expect(result).toEqual([
+          {
+            question: 'Checkbox',
+            answer,
+            fieldType: BasicField.Checkbox,
+          },
+        ])
+      },
+    )
 
     it('should handle address fields correctly', () => {
       const formFields: FormFieldSchema[] = [
@@ -1674,9 +1667,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
-        keepV4AttachmentPrefix: false,
-        keepV4Table: false,
-        keepV4Date: false,
+        keepV4ResponseFormat: false,
       })
 
       expect(result).toEqual([
@@ -1718,9 +1709,7 @@ describe('multirespondent-submission.utils', () => {
         formFields,
         responses,
         includeSignatureDataPngDataUri: true,
-        keepV4AttachmentPrefix: false,
-        keepV4Table: false,
-        keepV4Date: false,
+        keepV4ResponseFormat: false,
       })
 
       const expectedSignatureDataPngDataUri =
@@ -1760,9 +1749,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
-        keepV4AttachmentPrefix: false,
-        keepV4Table: false,
-        keepV4Date: false,
+        keepV4ResponseFormat: false,
       })
 
       expect(result).toEqual([
@@ -1789,9 +1776,7 @@ describe('multirespondent-submission.utils', () => {
       const result = getQuestionAnswerPairsForMultipleFields({
         formFields,
         responses,
-        keepV4AttachmentPrefix: false,
-        keepV4Table: false,
-        keepV4Date: false,
+        keepV4ResponseFormat: false,
       })
 
       expect(result).toEqual([
@@ -2050,9 +2035,7 @@ describe('multirespondent-submission.utils', () => {
     const result = getQuestionAnswerPairsForMultipleFields({
       formFields,
       responses,
-      keepV4AttachmentPrefix: false,
-      keepV4Table: false,
-      keepV4Date: false,
+      keepV4ResponseFormat: false,
     })
 
     expect(result).toEqual([])
@@ -2070,18 +2053,14 @@ describe('multirespondent-submission.utils', () => {
     const undefinedResult = getQuestionAnswerPairsForMultipleFields({
       formFields,
       responses: undefined as unknown as FieldResponsesV3,
-      keepV4AttachmentPrefix: false,
-      keepV4Table: false,
-      keepV4Date: false,
+      keepV4ResponseFormat: false,
     })
     expect(undefinedResult).toEqual([])
 
     const nullResult = getQuestionAnswerPairsForMultipleFields({
       formFields,
       responses: null as unknown as FieldResponsesV3,
-      keepV4AttachmentPrefix: false,
-      keepV4Table: false,
-      keepV4Date: false,
+      keepV4ResponseFormat: false,
     })
     expect(nullResult).toEqual([])
   })
@@ -2091,9 +2070,8 @@ describe('multirespondent-submission.utils', () => {
       formId: 'form123',
       responseId: 'abc123',
       timestamp: '1 Jan 2025',
-      keepV4AttachmentPrefix: false,
-      keepV4Table: false,
-      keepV4Date: false,
+      getVisibleFieldIds: () => new Set<string>(),
+      keepV4ResponseFormat: false,
     }
 
     it('should emit one entry per child attribute for children responses', () => {
@@ -2235,7 +2213,7 @@ describe('multirespondent-submission.utils', () => {
       expect(result[3]).toEqual({ question: 'Name', answer: 'Alice' })
     })
 
-    it('should output address sub-fields as separate flat entries', () => {
+    it('should output address sub-fields as separate flat entries in Storage order', () => {
       const fieldId = '1'
       const result = JSON.parse(
         buildMrfResponseJson({
@@ -2251,12 +2229,12 @@ describe('multirespondent-submission.utils', () => {
             [fieldId]: {
               fieldType: BasicField.Address,
               answer: {
+                postalCode: { value: '650161' },
                 blockNumber: { value: '161' },
                 streetName: { value: 'BUKIT BATOK STREET 11' },
                 buildingName: { value: '' },
                 levelNumber: { value: '01' },
                 unitNumber: { value: '02' },
-                postalCode: { value: '650161' },
               },
               question: 'Home Address',
               provenance: {},
@@ -2289,6 +2267,51 @@ describe('multirespondent-submission.utils', () => {
         answer: '650161',
       })
     })
+
+    it.each([
+      {
+        visibleFieldIds: new Set(['1']),
+        keepV4ResponseFormat: false,
+        entries: [
+          'blockNumber',
+          'streetName',
+          'buildingName',
+          'levelNumber',
+          'unitNumber',
+          'postalCode',
+        ].map((key) => ({ question: `Home Address - ${key}`, answer: '' })),
+      },
+      {
+        visibleFieldIds: new Set<string>(),
+        keepV4ResponseFormat: false,
+        entries: [],
+      },
+      {
+        visibleFieldIds: new Set<string>(),
+        keepV4ResponseFormat: true,
+        entries: [{ question: 'Home Address', answer: '' }],
+      },
+    ])(
+      'should key an unanswered address like Storage: blanks when visible, nothing when hidden (visible $visibleFieldIds, keep-v4-response-format $keepV4ResponseFormat)',
+      ({ visibleFieldIds, keepV4ResponseFormat, entries }) => {
+        const result = JSON.parse(
+          buildMrfResponseJson({
+            ...BASE_ARGS,
+            getVisibleFieldIds: () => visibleFieldIds,
+            keepV4ResponseFormat,
+            formFields: [
+              {
+                _id: '1',
+                title: 'Home Address',
+                fieldType: BasicField.Address,
+              } as IAddressCompoundFieldSchema,
+            ],
+            responses: {},
+          }),
+        )
+        expect(result.slice(3)).toEqual(entries)
+      },
+    )
 
     it('should not add [Verified] prefix to email field questions', () => {
       const fieldId = '1'
@@ -2400,12 +2423,17 @@ describe('multirespondent-submission.utils', () => {
       expect(result[3]).not.toHaveProperty('fieldType')
     })
 
-    it('should label an unanswered attachment [attachment] like an answered one', () => {
+    it('should label an unanswered attachment or signature like an answered one', () => {
       const formFields = [
         {
           _id: '1',
           title: 'Passport',
           fieldType: BasicField.Attachment,
+        } as unknown as FormFieldSchema,
+        {
+          _id: '2',
+          title: 'Signature',
+          fieldType: BasicField.Signature,
         } as unknown as FormFieldSchema,
       ]
 
@@ -2413,46 +2441,56 @@ describe('multirespondent-submission.utils', () => {
         buildMrfResponseJson({ ...BASE_ARGS, formFields, responses: {} }),
       )
 
-      expect(result).toContainEqual({
-        question: '[attachment] Passport',
-        answer: '',
-      })
+      expect(result.slice(3)).toEqual([
+        { question: '[attachment] Passport', answer: '' },
+        { question: '[signature] Signature', answer: '' },
+      ])
     })
 
-    it('should leave an unanswered attachment unlabelled when keep-v4-attachment-prefix is on', () => {
+    it('should leave an unanswered attachment or signature unlabelled when keep-v4-response-format is on', () => {
       const formFields = [
         {
           _id: '1',
           title: 'Passport',
           fieldType: BasicField.Attachment,
         } as unknown as FormFieldSchema,
+        {
+          _id: '2',
+          title: 'Signature',
+          fieldType: BasicField.Signature,
+        } as unknown as FormFieldSchema,
       ]
 
       const result = JSON.parse(
         buildMrfResponseJson({
           ...BASE_ARGS,
-          keepV4AttachmentPrefix: true,
+          keepV4ResponseFormat: true,
           formFields,
           responses: {},
         }),
       )
 
-      expect(result).toContainEqual({ question: 'Passport', answer: '' })
+      expect(result.slice(3)).toEqual([
+        { question: 'Passport', answer: '' },
+        { question: 'Signature', answer: '' },
+      ])
     })
 
     it.each([
       {
-        keepV4Table: false,
-        keepV4Date: false,
+        keepV4ResponseFormat: false,
         entries: [
           { question: '[table] Hobbies (Hobby, Years)', answer: ',' },
           { question: '[table] Hobbies (Hobby, Years)', answer: ',' },
         ],
       },
-      { keepV4Table: true, entries: [{ question: 'Hobbies', answer: '' }] },
+      {
+        keepV4ResponseFormat: true,
+        entries: [{ question: 'Hobbies', answer: '' }],
+      },
     ])(
-      'should key an unanswered table like Storage unless keep-v4-table is on ($keepV4Table)',
-      ({ keepV4Table, entries }) => {
+      'should key an unanswered table like Storage unless keep-v4-response-format is on ($keepV4ResponseFormat)',
+      ({ keepV4ResponseFormat, entries }) => {
         const formFields = [
           {
             _id: '1',
@@ -2469,8 +2507,7 @@ describe('multirespondent-submission.utils', () => {
         const result = JSON.parse(
           buildMrfResponseJson({
             ...BASE_ARGS,
-            keepV4Table,
-            keepV4Date: false,
+            keepV4ResponseFormat,
             formFields,
             responses: {},
           }),
