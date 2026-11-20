@@ -1,5 +1,5 @@
 import type { Opaque, RequireAtLeastOne } from 'type-fest'
-import { z } from 'zod/v4'
+import { z } from 'zod'
 
 import { ErrorDto } from './core'
 import { FormFieldDto, MyInfoAttribute, PaymentFieldsDto } from './field'

@@ -401,7 +401,7 @@ importers:
         version: 3.6.0
       openai:
         specifier: ^4.70.3
-        version: 4.104.0(encoding@0.1.13)(ws@8.21.1)(zod@3.25.34)
+        version: 4.104.0(encoding@0.1.13)(ws@8.21.1)(zod@4.6.7)
       openid-client:
         specifier: ^6.6.2
         version: 6.6.2
@@ -475,8 +475,8 @@ importers:
         specifier: ^6.3.0
         version: 6.3.0(@aws-sdk/client-cloudwatch-logs@3.775.0)(winston@3.19.0)
       zod:
-        specifier: ^3.24.3
-        version: 3.25.34
+        specifier: ^4.6.6
+        version: 4.6.7
     devDependencies:
       '@opengovsg/mockpass':
         specifier: ^4.7.1
@@ -1253,8 +1253,8 @@ importers:
         specifier: ^13.7.0
         version: 13.15.26
       zod:
-        specifier: ^3.11.6
-        version: 3.25.34
+        specifier: ^4.6.6
+        version: 4.6.7
     devDependencies:
       '@aws-sdk/s3-presigned-post':
         specifier: ^3.775.0
@@ -14379,6 +14379,9 @@ packages:
 
   zod@3.25.34:
     resolution: {integrity: sha512-lZHvSc2PpWdcfpHlyB33HA9nqP16GpC9IpiG4lYq9jZCJVLZNnWd6Y1cj79bcLSBKTkxepfpjckPv5Y5VOPlwA==}
+
+  zod@4.6.7:
+    resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
 
   zustand@4.1.1:
     resolution: {integrity: sha512-h4F3WMqsZgvvaE0n3lThx4MM81Ls9xebjvrABNzf5+jb3/03YjNTSgZXeyrvXDArMeV9untvWXRw1tY+ntPYbA==}
@@ -27734,6 +27737,21 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
+  openai@4.104.0(encoding@0.1.13)(ws@8.21.1)(zod@4.6.7):
+    dependencies:
+      '@types/node': 18.19.130
+      '@types/node-fetch': 2.6.11
+      abort-controller: 3.0.0
+      agentkeepalive: 4.5.0
+      form-data-encoder: 1.7.2
+      formdata-node: 4.4.1
+      node-fetch: 2.7.0(encoding@0.1.13)
+    optionalDependencies:
+      ws: 8.21.1
+      zod: 4.6.7
+    transitivePeerDependencies:
+      - encoding
+
   openapi-fetch@0.17.0:
     dependencies:
       openapi-typescript-helpers: 0.1.0
@@ -31374,6 +31392,8 @@ snapshots:
       zod: 3.25.34
 
   zod@3.25.34: {}
+
+  zod@4.6.7: {}
 
   zustand@4.1.1(immer@9.0.21)(react@18.3.1):
     dependencies:

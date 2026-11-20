@@ -1,5 +1,5 @@
 import { err, ok, Result } from 'neverthrow'
-import { z } from 'zod/v4'
+import { z } from 'zod'
 
 import { SnapshotDataIntegrityError } from './submission-snapshot.errors'
 
