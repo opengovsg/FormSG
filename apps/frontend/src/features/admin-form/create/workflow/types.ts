@@ -4,6 +4,7 @@ import {
   FormWorkflowStepAuth,
   FormWorkflowStepBase,
   FormWorkflowStepDynamic,
+  FormWorkflowStepMixed,
   FormWorkflowStepStatic,
   WorkflowType,
 } from 'formsg-shared/types'
@@ -35,6 +36,8 @@ export type EditStepInputs = Omit<FormWorkflowStepBase, 'auth'> & {
   field?: FormWorkflowStepDynamic['field']
   approval_field?: FormFieldDto['_id']
   conditional_field?: FormFieldDto['_id']
+  email_fields?: FormWorkflowStepMixed['email_fields']
+  dropdown_fields?: FormWorkflowStepMixed['dropdown_fields']
   step_name: FormWorkflowStepStatic['step_name']
   // Steps 2+ only. Null or undefined means no login.
   auth?: FormWorkflowStepAuth | null

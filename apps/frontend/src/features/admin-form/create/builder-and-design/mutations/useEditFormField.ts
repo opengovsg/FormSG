@@ -111,11 +111,12 @@ export const useEditFormField = () => {
             // Should not happen, should not be able to update field if there is no
             // existing data.
             if (!oldForm) throw new Error('Query should have been set')
-            const currentFieldIndex = oldForm.form_fields.findIndex(
-              (ff) => ff._id === newField._id,
-            )
-            oldForm.form_fields[currentFieldIndex] = newField
-            return oldForm
+            return {
+              ...oldForm,
+              form_fields: oldForm.form_fields.map((ff) =>
+                ff._id === newField._id ? newField : ff,
+              ),
+            }
           })
         },
         onError: handleError,

@@ -20,6 +20,7 @@ export const featureFlags = {
   mrfPayments: 'mrf-payments' as const,
   workflowActions: 'workflow-actions' as const,
   workflowActionsSendBack: 'workflow-actions-send-back' as const,
+  workflowEmailSourceInput: 'workflow-email-source-input' as const,
   mrfChildren: 'mrf-children' as const,
   storageChildren: 'storage-children' as const,
   isNricFieldEnabled: 'is-nric-field-enabled' as const,

@@ -40,7 +40,7 @@ import { SIGNATURE_CAPTURED_STRING } from 'formsg-shared/utils/signature'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import jwt from 'jsonwebtoken'
-import { get } from 'lodash'
+import { get, uniqBy } from 'lodash'
 import moment from 'moment'
 import { err, ok, Result } from 'neverthrow'
 
@@ -238,6 +238,22 @@ export const retrieveWorkflowStepEmailAddresses = (
           responses,
         ),
       )
+    }
+    case WorkflowType.Mixed: {
+      const emails = [
+        ...step.emails,
+        ...step.email_fields.flatMap(
+          (fieldId) => getEmailFromResponses(fieldId, responses) || [],
+        ),
+        ...step.dropdown_fields.flatMap((fieldId) =>
+          getConditionalFieldEmailRecipient(
+            form.form_fields,
+            fieldId,
+            responses,
+          ),
+        ),
+      ]
+      return ok(uniqBy(emails, (email) => email.toLowerCase()))
     }
     default: {
       return err(new InvalidWorkflowTypeError())

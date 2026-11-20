@@ -85,6 +85,19 @@ export const isStepComplete = (
       return isFieldOfType(step.field, formFields, BasicField.Email)
     case WorkflowType.Conditional:
       return isConditionalRoutingComplete(step.conditional_field, formFields)
+    case WorkflowType.Mixed:
+      return (
+        step.emails.length +
+          step.email_fields.length +
+          step.dropdown_fields.length >
+          0 &&
+        step.email_fields.every((fieldId) =>
+          isFieldOfType(fieldId, formFields, BasicField.Email),
+        ) &&
+        step.dropdown_fields.every((fieldId) =>
+          isConditionalRoutingComplete(fieldId, formFields),
+        )
+      )
   }
 }
 

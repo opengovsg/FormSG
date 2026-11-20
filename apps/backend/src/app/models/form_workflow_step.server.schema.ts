@@ -5,6 +5,7 @@ import validator from 'validator'
 import {
   IWorkflowStepConditionalSchema,
   IWorkflowStepDynamicSchema,
+  IWorkflowStepMixedSchema,
   IWorkflowStepSchema,
   IWorkflowStepStaticSchema,
 } from '../../types'
@@ -65,25 +66,27 @@ const WorkflowStepSchema = new Schema<IWorkflowStepSchema>(
   },
 )
 
-export const WorkflowStepStaticSchema = new Schema<IWorkflowStepStaticSchema>({
-  emails: {
-    type: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
-    set: transformEmails,
-    validate: {
-      validator: (v: string[]) => {
-        if (!Array.isArray(v)) return false
-        return v.every((email) => validator.isEmail(email))
-      },
-      message: 'Please provide valid email addresses',
+const EMAILS_SCHEMA = {
+  type: [
+    {
+      type: String,
+      trim: true,
     },
-    default: [],
-    required: true,
+  ],
+  set: transformEmails,
+  validate: {
+    validator: (v: string[]) => {
+      if (!Array.isArray(v)) return false
+      return v.every((email) => validator.isEmail(email))
+    },
+    message: 'Please provide valid email addresses',
   },
+  default: [],
+  required: true,
+}
+
+export const WorkflowStepStaticSchema = new Schema<IWorkflowStepStaticSchema>({
+  emails: EMAILS_SCHEMA,
 })
 
 export const WorkflowStepDynamicSchema = new Schema<IWorkflowStepDynamicSchema>(
@@ -102,5 +105,17 @@ export const WorkflowStepConditionalSchema =
       required: false,
     },
   })
+
+export const WorkflowStepMixedSchema = new Schema<IWorkflowStepMixedSchema>({
+  emails: EMAILS_SCHEMA,
+  email_fields: {
+    type: [{ type: Schema.Types.ObjectId }],
+    default: [],
+  },
+  dropdown_fields: {
+    type: [{ type: Schema.Types.ObjectId }],
+    default: [],
+  },
+})
 
 export default WorkflowStepSchema
