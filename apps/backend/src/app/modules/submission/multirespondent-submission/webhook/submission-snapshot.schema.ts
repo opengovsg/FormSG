@@ -1,5 +1,5 @@
 import { err, ok, Result } from 'neverthrow'
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 import { SnapshotDataIntegrityError } from './submission-snapshot.errors'
 
@@ -21,9 +21,12 @@ const SnapshotV4 = SnapshotBase.extend({
   // Optional for snapshots written before webhook field metadata was introduced.
   formFields: z
     .record(
+      z.string(),
       z.object({
         question: z.string(),
-        subFields: z.record(z.object({ question: z.string() })).optional(),
+        subFields: z
+          .record(z.string(), z.object({ question: z.string() }))
+          .optional(),
       }),
     )
     .optional(),
