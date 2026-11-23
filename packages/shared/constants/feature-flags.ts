@@ -7,7 +7,6 @@ export const featureFlags = {
   adminEmailPdf: 'admin-email-pdf' as const,
   ogpAwareness: 'ogp-awareness' as const,
   wogadLogin: 'wogad-login' as const,
-  mrfResponseLimit: 'mrf-response-limit' as const,
   ddSampleRateAdmin: 'dd-sample-rate-admin' as const,
   ddSampleRatePublic: 'dd-sample-rate-public' as const,
   standardisedEmailTemplate: 'standardised-email-template' as const,

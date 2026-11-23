@@ -17,7 +17,7 @@ import Stripe from 'stripe'
 
 import { Environment, IPopulatedMultirespondentForm } from '../../../../types'
 import { StripePaymentMetadataDto } from '../../../../types/payment'
-import config, { isTest } from '../../../config/config'
+import config from '../../../config/config'
 import { paymentConfig } from '../../../config/features/payment.config'
 import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
 import {
@@ -115,20 +115,14 @@ const submitMultirespondentForm = async (
 
   setFormTags(form)
 
-  // TODO(MRF-SUBMISSION-LIMIT): Remove this isMrfResponseLimitEnabled check once mrf submission limit is stable.
   const gb = req.growthbook
-  const isMrfResponseLimitEnabled =
-    isTest || (gb?.isOn(featureFlags.mrfResponseLimit) ?? true)
 
-  const middlewarePipelines = [
+  const ensurePipeline = new Pipeline(
     ensurePublicForm,
     ensureValidCaptcha,
     ensureSubmitterIdIsWhitelisted,
-  ]
-  if (isMrfResponseLimitEnabled) {
-    middlewarePipelines.push(ensureFormWithinSubmissionLimits)
-  }
-  const ensurePipeline = new Pipeline(...middlewarePipelines)
+    ensureFormWithinSubmissionLimits,
+  )
 
   const hasEnsuredAll = await ensurePipeline.execute({
     form,
@@ -476,16 +470,11 @@ const updateMultirespondentSubmission = async (
 
   setFormTags(currentForm)
 
-  // TODO(MRF-SUBMISSION-LIMIT): Remove this isMrfResponseLimitEnabled check once mrf submission limit is stable.
-  const gb = req.growthbook
-  const isMrfResponseLimitEnabled =
-    gb?.isOn(featureFlags.mrfResponseLimit) ?? true
-
-  const middlewarePipelines = [ensurePublicForm, ensureValidCaptcha]
-  if (isMrfResponseLimitEnabled) {
-    middlewarePipelines.push(ensureFormWithinSubmissionLimits)
-  }
-  const ensurePipeline = new Pipeline(...middlewarePipelines)
+  const ensurePipeline = new Pipeline(
+    ensurePublicForm,
+    ensureValidCaptcha,
+    ensureFormWithinSubmissionLimits,
+  )
 
   const hasEnsuredAll = await ensurePipeline.execute({
     form: currentForm,
