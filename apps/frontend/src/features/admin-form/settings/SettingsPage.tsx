@@ -125,7 +125,9 @@ export const SettingsPage = (): JSX.Element => {
 
   return (
     <Box
-      overflow="hidden"
+      // Unlike hidden, clip prevents focus from scrolling this outer shell.
+      // The content pane below owns Settings scrolling.
+      overflow="clip"
       display="flex"
       flexDirection="column"
       minH={0}

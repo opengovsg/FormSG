@@ -91,6 +91,17 @@ describe('Settings labelled navigation', () => {
     state.multiLang = true
     state.emailNavLabel = 'Emails'
   })
+  it('clips the page shell so focus can scroll only the settings content', () => {
+    setup()
+    const panel = screen.getByRole('tabpanel')
+    // The regression concerns the two layout wrappers, which have no roles.
+    // eslint-disable-next-line testing-library/no-node-access
+    const contentScroller = panel.parentElement?.parentElement
+    // eslint-disable-next-line testing-library/no-node-access
+    const pageShell = contentScroller?.parentElement?.parentElement
+    expect(contentScroller).toHaveStyle({ overflowY: 'auto' })
+    expect(pageShell).toHaveStyle({ overflow: 'clip' })
+  })
   it('switches from the label and keeps the current route and page when collapsed', async () => {
     setup()
     await userEvent.click(screen.getByRole('tab', { name: 'Emails' }))

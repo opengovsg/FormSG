@@ -31,3 +31,9 @@ Verification:
 Limits: agent verification only, not human usability acceptance. The restriction UI is mocked in autosave unit tests, so real CSV parsing/upload integration was not exercised. Existing mocked-network warnings and jsdom's unsupported window.scrollTo warning during Framer measurement remain. No backend changes or full-repository test run. No commit, push or deployment.
 
 Next action: user reviews the local Settings preview. No known blocking issue remains.
+
+## Local blank Settings investigation, 2026-11-23
+
+Performer: implementation agent, with root agent browser reproduction. The user video showed Settings disappearing while the top navigation and success toast remained. Root reproduced this on the local four-step form: cards remained in the DOM, but the outer Settings wrapper (`overflow: hidden`) had scrolled to 1079.5px, moving its entire Tabs layout above the viewport. This was a scroll containment failure, not missing query data or a React crash.
+
+Changed only the Settings page shell to `overflow: clip`, which prevents programmatic scrolling while retaining the inner content pane's `overflowY: auto`. Added a containment regression: it failed against the original hidden overflow and passed after the change. Retained the diagnostic last-step save test with the real navigation guard. Focused Settings tests: 21/21 passed (`/tmp/settings-scroll-green.log`). Root browser verification: last-step Corppass → Singpass saved successfully with the full page still visible; outer wrapper stayed at scrollTop 0 and top 107px. Reverse Singpass → Corppass also saved successfully with its selected radio and e-service input visible, restoring the original setting. Browser screenshot: `/tmp/singpass-settings-fixed.jpg`. jsdom checks CSS semantics, not actual layout. Touched-file ESLint (zero warnings), Prettier and git diff --check passed. No backend changes, commit, push or deployment.

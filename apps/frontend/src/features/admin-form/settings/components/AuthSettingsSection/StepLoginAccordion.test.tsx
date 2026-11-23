@@ -1,6 +1,12 @@
 import { useState } from 'react'
 import { QueryClient, QueryClientProvider } from 'react-query'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import {
+  createMemoryRouter,
+  MemoryRouter,
+  Route,
+  RouterProvider,
+  Routes,
+} from 'react-router-dom'
 import { ChakraProvider } from '@chakra-ui/react'
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -27,9 +33,6 @@ const state = vi.hoisted(() => ({
   restrictions: vi.fn(),
   publish: () => {},
   form: {} as AdminMultirespondentFormDto,
-}))
-vi.mock('~features/admin-form/common/NavigationSaveGuard', () => ({
-  NavigationSaveGuard: () => null,
 }))
 vi.mock('~features/admin-form/create/workflow/FormWorkflowService', () => ({
   updateWorkflowStep: (...args: unknown[]) => state.update(...args),
@@ -413,4 +416,46 @@ it('stays in Settings when the save requested before navigation fails', async ()
     'Save failed',
   )
   expect(screen.queryByText('Workflow destination')).not.toBeInTheDocument()
+})
+
+it('keeps every card mounted while the last step saves with the full-app navigation guard', async () => {
+  state.form.workflow.push({
+    ...state.form.workflow[0],
+    _id: 'three',
+    step_name: 'Third',
+  })
+  let finish!: () => void
+  const previousSave = state.update.getMockImplementation()!
+  state.update.mockImplementationOnce(async (...args: unknown[]) => {
+    await new Promise<void>((resolve) => {
+      finish = resolve
+    })
+    return previousSave(...args)
+  })
+  const router = createMemoryRouter(
+    [{ path: '/:formId', element: <Harness /> }],
+    { initialEntries: ['/test'] },
+  )
+  render(
+    // @ts-expect-error missing FC type in old version
+    <QueryClientProvider client={new QueryClient()}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
+  clickRadio('Third', /^Singpass/)
+  await waitFor(() => expect(state.update).toHaveBeenCalledTimes(1))
+  expect(
+    card('First').getByRole('radio', { name: /No login required/ }),
+  ).toBeVisible()
+  expect(card('Third').getByRole('radio', { name: /^Singpass/ })).toBeDisabled()
+  await act(async () => finish())
+  await waitFor(() =>
+    expect(
+      card('Third').getByRole('radio', { name: /^Singpass/ }),
+    ).toBeChecked(),
+  )
+  expect(router.state.location.pathname).toBe('/test')
+  expect(
+    screen.getAllByRole('region', { name: /^(First|Second|Third)$/ }),
+  ).toHaveLength(3)
 })
