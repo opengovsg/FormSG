@@ -14,6 +14,7 @@ export const featureFlags = {
   mrfPayments: 'mrf-payments' as const,
   workflowActions: 'workflow-actions' as const,
   workflowActionsSendBack: 'workflow-actions-send-back' as const,
+  workflowActionsSendBackMisc: 'workflow-actions-send-back-misc' as const,
   workflowEmailSourceInput: 'workflow-email-source-input' as const,
   mrfChildren: 'mrf-children' as const,
   storageChildren: 'storage-children' as const,
@@ -37,3 +38,18 @@ export enum AdminEmailPdfFeatureValue {
   SIGNATURES_ONLY = 'SIGNATURES_ONLY',
   ON = 'ON',
 }
+
+export enum WorkflowActionsSendBackMiscValue {
+  OFF = 'OFF',
+  FIX_STEP = 'FIX_STEP',
+  CLEAR_ANSWERS = 'CLEAR_ANSWERS',
+  BOTH = 'BOTH',
+}
+
+export const sendBackMiscAllowsFixStep = (value: unknown): boolean =>
+  value === WorkflowActionsSendBackMiscValue.FIX_STEP ||
+  value === WorkflowActionsSendBackMiscValue.BOTH
+
+export const sendBackMiscAllowsClearAnswers = (value: unknown): boolean =>
+  value === WorkflowActionsSendBackMiscValue.CLEAR_ANSWERS ||
+  value === WorkflowActionsSendBackMiscValue.BOTH

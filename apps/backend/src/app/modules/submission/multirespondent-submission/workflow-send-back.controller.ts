@@ -16,7 +16,10 @@ import { ControllerHandler } from '../../core/core.types'
 import { mapRouteError, sendRouteError } from '../submission.utils'
 
 import { sendBackMultirespondentSubmission } from './multirespondent-submission.service'
-import { checkWorkflowActionAllowed } from './workflow-actions.gate'
+import {
+  checkSendBackMiscAllowed,
+  checkWorkflowActionAllowed,
+} from './workflow-actions.gate'
 
 const logger = createLoggerWithLabel(module)
 
@@ -85,6 +88,13 @@ const sendBackPendingMrfSubmission: ControllerHandler<
     growthbook: req.growthbook,
     flag: featureFlags.workflowActionsSendBack,
   })
+    .andThen((allowed) =>
+      checkSendBackMiscAllowed(allowed, {
+        growthbook: req.growthbook,
+        fixStep: false,
+        clearResponses,
+      }),
+    )
     .andThen(({ form, user }) =>
       sendBackMultirespondentSubmission({
         formId,

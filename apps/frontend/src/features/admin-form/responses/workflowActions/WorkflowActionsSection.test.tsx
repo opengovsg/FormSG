@@ -20,6 +20,7 @@ let mockIsV2 = true
 const mockMutate = vi.fn()
 const mockAddAssignees = vi.fn()
 const mockSendBack = vi.fn()
+const mockFixStep = vi.fn()
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -39,6 +40,10 @@ vi.mock('react-router-dom', () => ({
 vi.mock('./useWorkflowActionsGate', () => ({
   useWorkflowActionsGate: () => mockIsGateOn,
   useWorkflowActionsSendBackGate: () => mockIsSendBackOn,
+  useWorkflowActionsSendBackMisc: () => ({
+    canFixStep: true,
+    canClearAnswers: true,
+  }),
 }))
 
 vi.mock('~features/admin-form/common/queries', () => ({
@@ -60,6 +65,7 @@ vi.mock('./mutations', () => ({
     mutate: mockSendBack,
     isLoading: false,
   }),
+  useFixStepMutation: () => ({ mutate: mockFixStep, isLoading: false }),
 }))
 vi.mock('./SendBackModal', () => ({
   SendBackModal: ({
@@ -67,14 +73,38 @@ vi.mock('./SendBackModal', () => ({
     onConfirm,
   }: {
     isOpen: boolean
-    onConfirm: (params: { targetStepNumber: number; remarks?: string }) => void
+    onConfirm: (
+      params: {
+        targetStepNumber: number
+        remarks?: string
+        clearResponses: boolean
+      },
+      mode: 'sendBack' | 'fixStep',
+    ) => void
   }) =>
     isOpen ? (
-      <button
-        onClick={() => onConfirm({ targetStepNumber: 2, remarks: 'Fix it' })}
-      >
-        confirm send back
-      </button>
+      <>
+        <button
+          onClick={() =>
+            onConfirm(
+              { targetStepNumber: 2, remarks: 'Fix it', clearResponses: true },
+              'sendBack',
+            )
+          }
+        >
+          confirm send back
+        </button>
+        <button
+          onClick={() =>
+            onConfirm(
+              { targetStepNumber: 2, remarks: 'Fix it', clearResponses: true },
+              'fixStep',
+            )
+          }
+        >
+          confirm fix step
+        </button>
+      </>
     ) : null,
 }))
 
@@ -176,6 +206,7 @@ describe('WorkflowActionsSection', () => {
     mockIsSendBackOn = false
     mockAuthType = 'SP'
     mockSendBack.mockReset()
+    mockFixStep.mockReset()
     mockHasEditAccess = true
     mockIsV2 = true
     mockMutate.mockReset()
@@ -395,9 +426,58 @@ describe('WorkflowActionsSection', () => {
           expectedStepNumber: 3,
           submissionSecretKey: 'mock-secret-key',
           remarks: 'Fix it',
+          clearResponses: true,
         },
         expect.anything(),
       )
+      expect(mockFixStep).not.toHaveBeenCalled()
+    })
+
+    it('fixes the step instead when the modal picks fix step', async () => {
+      renderSection(atStepThree(), undefined, false, 2)
+
+      await userEvent.click(screen.getByRole('button', { name: SEND_BACK }))
+      await userEvent.click(
+        screen.getByRole('button', { name: 'confirm fix step' }),
+      )
+
+      expect(mockFixStep).toHaveBeenCalledWith(
+        {
+          submissionId: 'mock-submission-id',
+          targetStepNumber: 2,
+          expectedStepNumber: 3,
+          submissionSecretKey: 'mock-secret-key',
+          remarks: 'Fix it',
+          clearResponses: true,
+        },
+        expect.anything(),
+      )
+      expect(mockSendBack).not.toHaveBeenCalled()
+    })
+
+    it('hides Remind, Reassign and Send back while an earlier step is being fixed', () => {
+      renderSection(
+        atStepThree({ workflowCurrentStepNumber: 1 }),
+        undefined,
+        false,
+        2,
+      )
+
+      expect(
+        screen.getByText(
+          'features.adminForm.responses.individualResponse.workflowActions.fixingStep',
+        ),
+      ).toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: /^remind/ }),
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: REASSIGN }),
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: SEND_BACK }),
+      ).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: STOP })).toBeInTheDocument()
     })
 
     it('offers Send back with only the send back flag on', () => {

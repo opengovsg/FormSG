@@ -3,7 +3,10 @@ import { setupApp } from '__tests__/integration/helpers/express-setup'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { Router } from 'express'
-import { featureFlags } from 'formsg-shared/constants'
+import {
+  featureFlags,
+  WorkflowActionsSendBackMiscValue,
+} from 'formsg-shared/constants'
 import {
   FormAuthType,
   FormResponseMode,
@@ -32,11 +35,16 @@ jest.mock('nodemailer', () => ({
 jest.mock('src/app/modules/spcp/spcp.oidc.client.ts')
 
 let flagsOn: string[] = []
+let sendBackMisc: string = WorkflowActionsSendBackMiscValue.BOTH
 
 const routerWithGrowthbook = Router()
 routerWithGrowthbook.use((req, _res, next) => {
   ;(req as unknown as { growthbook: unknown }).growthbook = {
     isOn: (flag: string) => flagsOn.includes(flag),
+    getFeatureValue: (flag: string, fallback: string) =>
+      flag === featureFlags.workflowActionsSendBackMisc
+        ? sendBackMisc
+        : fallback,
     getAttributes: () => ({}),
     setAttributes: async () => undefined,
   }
@@ -70,6 +78,7 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/send-back', () => 
     request = await createAuthedSession(user.email, request)
     defaultUser = user
     flagsOn = [featureFlags.workflowActionsSendBack]
+    sendBackMisc = WorkflowActionsSendBackMiscValue.BOTH
   })
   afterEach(async () => {
     await dbHandler.clearDatabase()
@@ -201,6 +210,43 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/send-back', () => 
   })
 
   it('works with only the send back flag on', async () => {
+    const form = await createForm()
+    const submission = await createSubmission(form._id)
+
+    expect((await sendBack(form._id, submission._id)).status).toEqual(200)
+  })
+
+  it.each([
+    WorkflowActionsSendBackMiscValue.OFF,
+    WorkflowActionsSendBackMiscValue.FIX_STEP,
+  ])('returns 403 for clearing answers with %s', async (value) => {
+    sendBackMisc = value
+    const form = await createForm()
+    const submission = await createSubmission(form._id)
+
+    const response = await sendBack(form._id, submission._id, {
+      clearResponses: true,
+    })
+
+    expect(response.status).toEqual(403)
+    const stored = await MultirespondentSubmission.findById(submission._id)
+    expect(stored?.submittedSteps).toHaveLength(3)
+  })
+
+  it('lets CLEAR_ANSWERS through to clearing', async () => {
+    sendBackMisc = WorkflowActionsSendBackMiscValue.CLEAR_ANSWERS
+    const form = await createForm()
+    const submission = await createSubmission(form._id)
+
+    const response = await sendBack(form._id, submission._id, {
+      clearResponses: true,
+    })
+
+    expect(response.status).toEqual(400)
+  })
+
+  it('sends back without clearing with the misc flag OFF', async () => {
+    sendBackMisc = WorkflowActionsSendBackMiscValue.OFF
     const form = await createForm()
     const submission = await createSubmission(form._id)
 

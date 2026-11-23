@@ -40,10 +40,14 @@ export const enSG: ResponsesIndividualResponse = {
       notificationRecipients: 'Notification recipients',
       sentBack:
         'Sent back from Step {fromStepNumber} to {step}{stepName}{actor}',
+      fixStep:
+        'Sent back from Step {fromStepNumber} to fix {step}{stepName}{actor}',
       remarks: 'Remarks',
     },
     reassignButton: 'Reassign',
     sendBackButton: 'Send back',
+    fixingStep:
+      'Step {stepNumber} is being fixed. The response returns to Step {returnStepNumber} once it is submitted.',
     addAssigneeModal: {
       title: 'Assign new people to this step',
       description:
@@ -79,8 +83,19 @@ export const enSG: ResponsesIndividualResponse = {
       remarksLabel: 'Remarks',
       remarksDescription: 'Tell them what they need to fix.',
       remarksTooLong: 'Remarks must be {max} characters or fewer',
+      descriptionWithChoices:
+        'We’ll email the people on that step a new link to amend their answers.',
+      routeLabel: 'What happens after the correction?',
+      redoConsequence: 'Redo every step after {stepName}.',
+      fixStepConsequence: 'Return to {currentStep} once {targetStep} is done.',
+      keepFilledLabel: 'What happens to existing answers?',
+      keepConsequence: 'Keep all existing answers.',
+      clearConsequence: 'Clear answers from {stepName} onward.',
+      clearCorrectionConsequence: 'Clear only {stepName}’s fields.',
       confirm: 'Send back',
       toastSuccess: 'The response was sent back to Step {stepNumber}.',
+      fixStepToastSuccess:
+        'The response was sent back to Step {stepNumber}. It returns to the current step once fixed.',
     },
   },
   paymentSection: {

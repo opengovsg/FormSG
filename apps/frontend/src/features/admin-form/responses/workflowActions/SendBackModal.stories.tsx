@@ -104,3 +104,15 @@ NoRecipients.args = {
   },
 }
 NoRecipients.play = () => selectStep(2)
+
+export const WithBothChoices = Template.bind({})
+WithBothChoices.args = { canFixStep: true, canClearAnswers: true }
+WithBothChoices.play = async () => {
+  await selectStep(2)
+  await userEvent.click(
+    await screen.findByRole('radio', { name: /^Return to Step 3/ }),
+  )
+  await userEvent.click(
+    await screen.findByRole('radio', { name: /^Clear only Step 2/ }),
+  )
+}
