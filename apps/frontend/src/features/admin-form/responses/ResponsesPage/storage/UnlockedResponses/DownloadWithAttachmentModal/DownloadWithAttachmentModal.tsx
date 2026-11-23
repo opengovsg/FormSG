@@ -151,7 +151,6 @@ export const DownloadWithAttachmentModal = ({
             ) : (
               <CompleteScreen
                 isWithAttachments={startedOptions.isDownloadAttachments}
-                isBeta={!isCsvOnly}
                 downloadMetadata={downloadMetadata}
                 onClose={onClose}
               />
