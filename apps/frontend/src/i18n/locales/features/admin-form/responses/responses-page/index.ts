@@ -19,9 +19,11 @@ export interface ResponsesResponsesPage {
         }
         confirmationScreen: {
           downloadTitle: string
-          csvTitle: string
+          filesToDownload: string
+          filtersApplyToDownload: string
           csvAppliesTableView: string
-          responsesText: string
+          csvDescription: string
+          csvText: string
           pdfsText: string
           attachmentsText: string
           andText: string
@@ -29,15 +31,14 @@ export interface ResponsesResponsesPage {
           pdfsDescription: string
           downloadVersionLabel: string
           zipDescription: string
+          howFilesAreSaved: string
           numberOfResponses: string
           estimatedTime: string
           estimatedTimeReference: string
-          filterResponsesCountHelperText: string
           intensiveOperationWarning: {
             title: string
-            doNotUseIE: string
-            ensureStrongNetworkConnectivity: string
-            ensureEnoughDiskSpace: string
+            reduceDownloadsWithFilters: string
+            ensureInternetAndStorage: string
           }
           noResponsesInSelectedDateRange: string
           startDownload: string

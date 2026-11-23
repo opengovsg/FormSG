@@ -21,33 +21,33 @@ export const enSG: ResponsesResponsesPage = {
           backToResponses: 'Back to responses',
         },
         confirmationScreen: {
-          pdfsDescription:
-            'For PDFs, all files will be bundled into a <strong>single zip</strong>.',
+          pdfsDescription: 'All PDFs will be saved in a single .zip file.',
           attachmentsDescription:
-            'For attachments, <strong>a separate zip file</strong> will be downloaded for each response.',
+            'Attachments will be saved in a separate .zip file for each response.',
           downloadVersionLabel: 'Download version',
           zipDescription:
-            'Everything will be saved in <strong>a single zip file</strong> when the download finishes. If you stop the download, nothing is saved.',
-          downloadTitle: 'Download {downloadItems}',
-          csvTitle: 'Download CSV',
+            'All files will be saved in a single .zip file, with a folder for each response.',
+          howFilesAreSaved: 'How files are saved',
+          downloadTitle: 'Download files',
+          filesToDownload: 'Files to download',
+          filtersApplyToDownload:
+            'Only responses matching your filters will be downloaded.',
           csvAppliesTableView:
-            'The CSV includes the filters, sorting and columns applied to the table.',
-          responsesText: 'responses',
+            "The CSV matches the table's sorting and columns.",
+          csvDescription: 'The CSV will be saved as a separate file.',
+          csvText: 'CSV',
           pdfsText: 'PDFs',
           attachmentsText: 'attachments',
           andText: 'and',
           numberOfResponses: 'Number of responses',
           estimatedTime: 'Estimated time',
-          estimatedTimeReference: '30-50 mins per 1,000 responses',
-          filterResponsesCountHelperText:
-            'You can reduce the number of downloads at one go by adjusting the date range.',
+          estimatedTimeReference: '30 mins per 1,000 responses',
           intensiveOperationWarning: {
-            title: 'Downloading many files can be an intensive operation.',
-            doNotUseIE: 'Do not use Internet Explorer',
-            ensureStrongNetworkConnectivity:
-              'Ensure network connectivity is strong',
-            ensureEnoughDiskSpace:
-              'Ensure device has sufficient disk space for the download',
+            title: 'Large downloads can take a while',
+            reduceDownloadsWithFilters:
+              'Use filters to download fewer responses',
+            ensureInternetAndStorage:
+              'Use a stable connection and check you have enough storage',
           },
           noResponsesInSelectedDateRange:
             'The date range you selected does not contain any responses. Please select a date range containing responses and try again.',

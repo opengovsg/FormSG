@@ -1,7 +1,8 @@
-import { Trans, useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { BiCheck } from 'react-icons/bi'
 import {
   Badge,
+  Box,
   Flex,
   List,
   ListIcon,
@@ -47,6 +48,12 @@ const InlineTextListItem = ({
   </ListItem>
 )
 
+type HowFilesAreSavedKey =
+  | 'zipDescription'
+  | 'csvDescription'
+  | 'attachmentsDescription'
+  | 'pdfsDescription'
+
 interface ConfirmationScreenProps {
   onCancel: () => void
   onDownload: () => void
@@ -80,39 +87,62 @@ export const ConfirmationScreen = ({
   })
   const { t } = useTranslation()
 
-  const getTitle = () => {
-    if (isCsvOnly) return confirmationScreenTranslation('csvTitle')
+  const getHowFilesAreSavedKeys = (): HowFilesAreSavedKey[] => {
+    if (isCsvOnly) return []
+    if (isOneZip) return ['zipDescription']
+    const keys: HowFilesAreSavedKey[] = []
+    if (downloadOptions.isDownloadCsv) keys.push('csvDescription')
+    if (downloadOptions.isDownloadAttachments)
+      keys.push('attachmentsDescription')
+    if (downloadOptions.isDownloadPdf) keys.push('pdfsDescription')
+    return keys
+  }
+  const howFilesAreSavedKeys = getHowFilesAreSavedKeys()
+
+  const getDownloadItems = () => {
     const { isDownloadCsv, isDownloadAttachments, isDownloadPdf } =
       downloadOptions
-    const titleParts = []
-    if (isDownloadCsv)
-      titleParts.push(confirmationScreenTranslation('responsesText'))
+    const items = []
+    if (isDownloadCsv) items.push(confirmationScreenTranslation('csvText'))
     if (isDownloadAttachments)
-      titleParts.push(confirmationScreenTranslation('attachmentsText'))
-    if (isDownloadPdf)
-      titleParts.push(confirmationScreenTranslation('pdfsText'))
+      items.push(confirmationScreenTranslation('attachmentsText'))
+    if (isDownloadPdf) items.push(confirmationScreenTranslation('pdfsText'))
 
-    if (titleParts.length == 0) {
+    if (items.length == 0) {
       return ''
     }
 
     const downloadItems =
-      titleParts.length > 2
-        ? `${titleParts.slice(0, -1).join(', ')} ${confirmationScreenTranslation('andText')} ${titleParts[titleParts.length - 1]}`
-        : titleParts.join(` ${confirmationScreenTranslation('andText')} `)
+      items.length > 2
+        ? `${items.slice(0, -1).join(', ')}, ${confirmationScreenTranslation('andText')} ${items[items.length - 1]}`
+        : items.join(` ${confirmationScreenTranslation('andText')} `)
 
-    return confirmationScreenTranslation('downloadTitle', {
-      downloadItems,
-    })
+    return downloadItems.charAt(0).toUpperCase() + downloadItems.slice(1)
   }
+  const downloadItems = getDownloadItems()
 
   return (
     <>
       <ModalCloseButton />
       <ModalHeader color="secondary.700" pr="4.5rem">
         <Wrap shouldWrapChildren direction="row" align="center">
-          <Text>{getTitle()}</Text>
-          {isCsvOnly || isVersionSwitchShown ? null : (
+          <Text>{confirmationScreenTranslation('downloadTitle')}</Text>
+          {isVersionSwitchShown ? (
+            <Flex lineHeight={0}>
+              <Switch
+                isChecked={isOneZip}
+                onChange={(event) =>
+                  setDownloadVersion(event.target.checked ? 'v2' : 'v1')
+                }
+                checkedIcon={V2Icon}
+                uncheckedIcon={V1Icon}
+                aria-label={confirmationScreenTranslation(
+                  'downloadVersionLabel',
+                )}
+              />
+            </Flex>
+          ) : null}
+          {isCsvOnly ? null : (
             <Badge
               w="fit-content"
               colorScheme="primary"
@@ -126,76 +156,46 @@ export const ConfirmationScreen = ({
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap" color="secondary.500">
         <Stack spacing="1rem">
-          {downloadOptions.isDownloadCsv && isCsvFollowingTable ? (
-            <Text>{confirmationScreenTranslation('csvAppliesTableView')}</Text>
+          {/* Set for the new table, where filters pick every file downloaded, not just the CSV */}
+          {isCsvFollowingTable ? (
+            <Text>
+              {confirmationScreenTranslation('filtersApplyToDownload')}
+              {downloadOptions.isDownloadCsv
+                ? ` ${confirmationScreenTranslation('csvAppliesTableView')}`
+                : null}
+            </Text>
           ) : undefined}
-          {isVersionSwitchShown ? (
-            <Flex align="center" gap="0.5rem">
-              <Text textStyle="subhead-1" color="secondary.700">
-                {confirmationScreenTranslation('downloadVersionLabel')}
+          <Box>
+            {downloadItems ? (
+              <Text>
+                <b>{confirmationScreenTranslation('filesToDownload')}:</b>{' '}
+                {downloadItems}
               </Text>
-              <Flex lineHeight={0}>
-                <Switch
-                  isChecked={isOneZip}
-                  onChange={(event) =>
-                    setDownloadVersion(event.target.checked ? 'v2' : 'v1')
-                  }
-                  checkedIcon={V2Icon}
-                  uncheckedIcon={V1Icon}
-                  aria-label={confirmationScreenTranslation(
-                    'downloadVersionLabel',
-                  )}
-                />
-              </Flex>
-              <Badge
-                colorScheme="primary"
-                variant="subtle"
-                color="secondary.500"
-              >
-                {t('features.common.betaBadgeLabel')}
-              </Badge>
-            </Flex>
-          ) : undefined}
-          {isOneZip && !isCsvOnly ? (
-            <Text>
-              <Trans
-                t={confirmationScreenTranslation}
-                i18nKey={'zipDescription'}
-              />
-            </Text>
-          ) : undefined}
-          {!isOneZip && downloadOptions.isDownloadAttachments ? (
-            <Text>
-              <Trans
-                t={confirmationScreenTranslation}
-                i18nKey={'attachmentsDescription'}
-              />
-            </Text>
-          ) : undefined}
-          {!isOneZip && downloadOptions.isDownloadPdf ? (
-            <Text>
-              <Trans
-                t={confirmationScreenTranslation}
-                i18nKey={'pdfsDescription'}
-              />
-            </Text>
-          ) : undefined}
-          {isResponsesCountHidden ? null : (
-            <Text>
-              <b>{confirmationScreenTranslation('numberOfResponses')}:</b>{' '}
-              {responsesCount.toLocaleString()}
-              {isCsvOnly ? null : (
-                <>
-                  <br />
-                  <b>{confirmationScreenTranslation('estimatedTime')}:</b>{' '}
-                  {confirmationScreenTranslation('estimatedTimeReference')}
-                </>
-              )}
-            </Text>
-          )}
-          <Text>
-            {confirmationScreenTranslation('filterResponsesCountHelperText')}
-          </Text>
+            ) : null}
+            {howFilesAreSavedKeys.length > 0 ? (
+              <Text>
+                <b>{confirmationScreenTranslation('howFilesAreSaved')}:</b>{' '}
+                {howFilesAreSavedKeys
+                  .map((key) => confirmationScreenTranslation(key))
+                  .join(' ')}
+              </Text>
+            ) : null}
+            {isResponsesCountHidden ? null : (
+              <Text>
+                <b>{confirmationScreenTranslation('numberOfResponses')}:</b>{' '}
+                {responsesCount.toLocaleString()}
+                {isCsvOnly ? null : (
+                  <>
+                    <br />
+                    <b>
+                      {confirmationScreenTranslation('estimatedTime')}:
+                    </b>{' '}
+                    {confirmationScreenTranslation('estimatedTimeReference')}
+                  </>
+                )}
+              </Text>
+            )}
+          </Box>
           <InlineMessage>
             <Stack>
               <Text textStyle="subhead-1">
@@ -206,17 +206,12 @@ export const ConfirmationScreen = ({
               <List>
                 <InlineTextListItem>
                   {confirmationScreenTranslation(
-                    'intensiveOperationWarning.doNotUseIE',
+                    'intensiveOperationWarning.reduceDownloadsWithFilters',
                   )}
                 </InlineTextListItem>
                 <InlineTextListItem>
                   {confirmationScreenTranslation(
-                    'intensiveOperationWarning.ensureStrongNetworkConnectivity',
-                  )}
-                </InlineTextListItem>
-                <InlineTextListItem>
-                  {confirmationScreenTranslation(
-                    'intensiveOperationWarning.ensureEnoughDiskSpace',
+                    'intensiveOperationWarning.ensureInternetAndStorage',
                   )}
                 </InlineTextListItem>
               </List>
