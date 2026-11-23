@@ -552,13 +552,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
         formId,
         adminEmail: form.admin.email,
       })
-      // TODO [CP-PKCE]: Cleanup this flag once the nonce state format is fully
-      // rolled out. Only emit the nonce state format once every instance is
-      // able to parse it, otherwise a callback served by an compute instance running
-      // the older parser rejects the state outright.
-      const useStateNonce =
-        req.growthbook?.isOn(featureFlags.spcpOidcStateNonce) ?? false
-      const nonce = useStateNonce ? randomBytes(16).toString('hex') : undefined
+      const nonce = randomBytes(16).toString('hex')
       // Fail closed: without a growthbook instance, only birth records are fetched.
       const isMrfChildrenEnabled =
         req.growthbook?.isOn(featureFlags.mrfChildren) ?? false

@@ -3,7 +3,6 @@ export const featureFlags = {
   chartsMaxResponseCount: 'charts-max-response-count' as const,
   mrfWebhooksV4: 'mrf-webhooks-v4' as const,
   enableMrfWebhooks: 'enable-mrf-webhooks' as const,
-  spcpOidcStateNonce: 'spcp-oidc-state-nonce' as const,
   adminEmailPdf: 'admin-email-pdf' as const,
   ogpAwareness: 'ogp-awareness' as const,
   wogadLogin: 'wogad-login' as const,
