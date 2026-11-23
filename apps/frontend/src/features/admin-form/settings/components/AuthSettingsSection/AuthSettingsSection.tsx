@@ -21,7 +21,7 @@ import { AuthSettingsDescriptionText } from './AuthSettingsDescriptionText'
 import { AuthSettingsDisabledExplanationText } from './AuthSettingsDisabledExplanationText'
 import { AuthSettingsSingpassSection } from './AuthSettingsSingpassSection'
 import { FormSingpassAuthToggle } from './FormSingpassAuthToggle'
-import { StepLoginAccordion } from './StepLoginAccordion'
+import { StepLoginCards } from './StepLoginCards'
 
 interface AuthSettingsSectionProps {
   settings: FormSettings
@@ -38,7 +38,7 @@ export const AuthSettingsSection = ({
   const isMrf = form?.responseMode === FormResponseMode.Multirespondent
   // Every step gets its own section once later steps can carry a login and
   // the first step exists. Until then the page stays flat, as today.
-  const showStepAccordion =
+  const showStepCards =
     !!form &&
     form.responseMode === FormResponseMode.Multirespondent &&
     form.workflow.length > 0 &&
@@ -47,10 +47,10 @@ export const AuthSettingsSection = ({
   // With a section per step, only Step 1's own fields depend on its login.
   const stepOneFields = useMemo(
     () =>
-      form && showStepAccordion
+      form && showStepCards
         ? getStepFields(form.form_fields, form.workflow, 0)
         : (form?.form_fields ?? []),
-    [form, showStepAccordion],
+    [form, showStepCards],
   )
   const containsMyInfoFields = stepOneFields.some(isMyInfo)
   const containsLoginIdentityFields = stepOneFields.some(isLoginIdentityField)
@@ -59,7 +59,7 @@ export const AuthSettingsSection = ({
   // offers to unassign them instead.
   const hasLoginFields = containsMyInfoFields || containsLoginIdentityFields
   // The per-step sections explain each step's own lock.
-  const explainsLoginFields = !showStepAccordion
+  const explainsLoginFields = !showStepCards
 
   // Step 1's login and restrictions, saved to the form-level settings.
   const stepOneSettings = (
@@ -97,9 +97,11 @@ export const AuthSettingsSection = ({
           isMrf && !isLaterStepLoginAvailable(form, isStepLoginFlagOn)
         }
       />
-      {!showStepAccordion ? <AuthSettingsDescriptionText /> : null}
-      {showStepAccordion && form ? (
-        <StepLoginAccordion form={form} settings={settings} />
+      {!showStepCards ? <AuthSettingsDescriptionText /> : null}
+      {showStepCards &&
+      form &&
+      settings.responseMode === FormResponseMode.Multirespondent ? (
+        <StepLoginCards form={form} settings={settings} />
       ) : (
         stepOneSettings
       )}

@@ -221,20 +221,11 @@ export const enSG: Workflow = {
       description: 'Manage authentication for each step in your workflow.',
       editWorkflow: 'Edit your full workflow ↗',
       addStep: 'Go to workflows to add a new step',
-      notEnabled: 'No login enabled',
       closeFormToEdit: 'Close your form to change authentication settings.',
       saved: 'Authentication settings saved.',
       saveFailed: 'Unable to save settings.',
-      restrictionsFailed:
-        'The login was saved, but some Step 1 restrictions could not be saved. {message} Review the saved settings before trying again.',
       confirmSwitchFirst:
         'Confirm or cancel the authentication change before leaving this card.',
-      checkBeforeSaving: 'Check the authentication settings before saving.',
-      deleteNotice:
-        'Confirmed fields will be deleted from the form when you save or navigate away.',
-      unassignNotice:
-        'Incompatible fields will be unassigned when you save or navigate away. They remain in the form.',
-      ariaLabelName: 'authentication settings',
     },
     unassignedNotice:
       'Incompatible fields are unassigned in this draft. Confirmed field deletions apply only when you save or navigate away.',

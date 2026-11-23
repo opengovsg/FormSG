@@ -186,16 +186,10 @@ export interface Workflow {
       description: string
       editWorkflow: string
       addStep: string
-      notEnabled: string
       closeFormToEdit: string
       saved: string
       saveFailed: string
-      restrictionsFailed: string
       confirmSwitchFirst: string
-      checkBeforeSaving: string
-      deleteNotice: string
-      unassignNotice: string
-      ariaLabelName: string
     }
     unassignedNotice: string
     fieldTags: { assignedToStep: string; providerOnly: string }
