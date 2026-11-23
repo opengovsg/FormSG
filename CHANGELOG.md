@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.78.1](https://github.com/opengovsg/formsg/compare/v9.78.0...v9.78.1) (2026-11-23)
+
+
+### Chores
+
+* **flags:** remove five low-risk feature flags (#10630) ([#10630](https://github.com/opengovsg/formsg/commit/a949c25f3873629e0a62d0f5a748c26ba95c03fd))
+* **flags:** remove the wogad-login flag (#10631) ([#10631](https://github.com/opengovsg/formsg/commit/0b6534d9984bfd956f538a2e9d612d1df85b57ca))
+
 ## [9.78.0](https://github.com/opengovsg/formsg/compare/v9.77.0...v9.78.0) (2026-11-23)
 
 
