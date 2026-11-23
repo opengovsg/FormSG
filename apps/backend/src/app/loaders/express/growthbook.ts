@@ -1,5 +1,6 @@
 import { GrowthBook } from '@growthbook/growthbook'
 import { RequestHandler } from 'express'
+import { featureFlags } from 'formsg-shared/constants'
 import { GROWTHBOOK_DEV_PROXY } from 'formsg-shared/constants/links'
 import { GROWTHBOOK_API_HOST_PATH } from 'formsg-shared/constants/routes'
 
@@ -12,6 +13,16 @@ const growthbookMiddleware: RequestHandler = async (req, res, next) => {
     clientKey: growthbookConfig.growthbookClientKey,
     enableDevMode: config.isDev,
   })
+
+  // Never force flags outside local development, even if the env switch is set.
+  if (config.isDev && growthbookConfig.enableStepLoginPreview) {
+    req.growthbook.setForcedFeatures(
+      new Map([
+        [featureFlags.mrfStepLogin, true],
+        [featureFlags.isNricFieldEnabled, true],
+      ]),
+    )
+  }
 
   res.on('close', () => {
     if (req.growthbook) {
