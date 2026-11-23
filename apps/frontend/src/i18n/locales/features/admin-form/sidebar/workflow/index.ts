@@ -218,6 +218,7 @@ export interface Workflow {
       noAuthentication: string
       titleTurnOff: string
       titleSwitch: string
+      titleDeleteSwitch: string
       assignedField: string
       deleteBodyTurnOff: string
       deleteBodySwitch: string
