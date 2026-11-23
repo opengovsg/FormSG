@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.78.0](https://github.com/opengovsg/formsg/compare/v9.77.0...v9.78.0) (2026-11-23)
+
+
+### Features
+
+* **responses:** download responses as one zip (#10512) ([#10512](https://github.com/opengovsg/formsg/commit/c8c316b086c33eccabf84a14c11c78dafaada596))
+* **responses:** track download version and how each download ends (#10620) ([#10620](https://github.com/opengovsg/formsg/commit/afb37d9b26fe228e652ed75a5c8abe4975793b89))
+
 ## [9.77.0](https://github.com/opengovsg/formsg/compare/v9.76.0...v9.77.0) (2026-11-23)
 
 
