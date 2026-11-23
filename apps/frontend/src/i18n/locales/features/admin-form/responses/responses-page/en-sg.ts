@@ -25,6 +25,9 @@ export const enSG: ResponsesResponsesPage = {
             'For PDFs, all files will be bundled into a <strong>single zip</strong>.',
           attachmentsDescription:
             'For attachments, <strong>a separate zip file</strong> will be downloaded for each response.',
+          downloadVersionLabel: 'Download version',
+          zipDescription:
+            'Everything will be saved in <strong>a single zip file</strong> when the download finishes. If you stop the download, nothing is saved.',
           downloadTitle: 'Download {downloadItems}',
           csvTitle: 'Download CSV',
           csvAppliesTableView:
@@ -53,12 +56,23 @@ export const enSG: ResponsesResponsesPage = {
         modal: {
           progressMessage:
             'Up to {responsesCount} files are being downloaded into your destination folder. Navigating away from this page will stop the download.',
+          zipProgressMessage:
+            '{responsesCount} responses are being added to a zip file, which is saved when the download finishes. Navigating away from this page will stop the download.',
         },
       },
       progressModal: {
         completeScreen: {
           downloadComplete: 'Download complete',
           backToResponses: 'Back to responses',
+          allResponsesSomeFilesFailed:
+            'All responses have been downloaded. Some files could not be downloaded and are marked in the zip.',
+          someResponsesSomeFilesFailed:
+            '**{count, number}** {count, plural, =1 {response has} other {responses have}} been downloaded. Files that could not be downloaded are marked in the zip.',
+          failedFilesTitle:
+            '{count, plural, =1 {# file} other {# files}} could not be downloaded:',
+          failedFileItem: 'RefNo {refNo} · {name}',
+          otherFailedFiles:
+            'and {count, plural, =1 {# other file} other {# other files}}',
         },
         content: {
           title: 'Downloading...',
@@ -128,6 +142,11 @@ export const enSG: ResponsesResponsesPage = {
           csv: 'Spreadsheet of responses (.csv)',
           attachments: 'Respondent-uploaded attachments',
           pdfs: 'PDF copies of responses (.pdf)',
+        },
+        toast: {
+          storageFull:
+            'Not enough storage space. Free up space or download a shorter date range.',
+          startFailed: 'Failed to start download. Please try again later.',
         },
       },
       unlockedResponses: {

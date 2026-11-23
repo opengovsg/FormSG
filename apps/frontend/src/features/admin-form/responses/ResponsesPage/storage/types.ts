@@ -21,6 +21,30 @@ export type AttachmentsDownloadMap = Map<
   { url: string; filename?: string }
 >
 
+export type DecryptedAttachmentFile = {
+  filename: string
+  content: Uint8Array<ArrayBuffer>
+}
+
+export type FailedAttachmentFile = {
+  filename: string
+  reason: 'download' | 'decrypt'
+}
+
+export type DecryptedAttachments =
+  | { kind: 'zip'; blob: Blob }
+  | {
+      kind: 'files'
+      files: DecryptedAttachmentFile[]
+      failed: FailedAttachmentFile[]
+    }
+
+export type FailedDownload = {
+  refNo: string
+  name: string
+  reason: FailedAttachmentFile['reason'] | 'pdf' | 'response'
+}
+
 export type DecryptionCtx = {
   formsgSdk: ReturnType<typeof formsgPackage>
 }
@@ -44,6 +68,7 @@ export interface SubmissionDataForDecryption {
   formsgSdkMode: string
   useV4?: boolean
   isWorkflowActionsOn?: boolean
+  isOneZipDownload: boolean
 }
 
 export type CleanableDecryptionWorkerApi = {
@@ -76,7 +101,7 @@ export type DecryptedData = {
     isDownloadAndDecryptSubmissionAttachmentsSuccessful: boolean
   }
   materializedCsvRecord?: MaterializedCsvRecord
-  attachmentDownloadBlob?: Blob
+  attachments?: DecryptedAttachments
   parsedSubmission?: SubmissionStreamDto
   decryptedResponses?: FormField[]
 }
@@ -87,6 +112,7 @@ export type DownloadResult = {
   successCount: number
   errorCount: number
   unverifiedCount?: number
+  failedDownloads?: FailedDownload[]
 }
 
 export type CanceledResult = {

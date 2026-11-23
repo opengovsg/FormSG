@@ -27,6 +27,8 @@ export interface ResponsesResponsesPage {
           andText: string
           attachmentsDescription: string
           pdfsDescription: string
+          downloadVersionLabel: string
+          zipDescription: string
           numberOfResponses: string
           estimatedTime: string
           estimatedTimeReference: string
@@ -42,12 +44,18 @@ export interface ResponsesResponsesPage {
         }
         modal: {
           progressMessage: string
+          zipProgressMessage: string
         }
       }
       progressModal: {
         completeScreen: {
           downloadComplete: string
           backToResponses: string
+          allResponsesSomeFilesFailed: string
+          someResponsesSomeFilesFailed: string
+          failedFilesTitle: string
+          failedFileItem: string
+          otherFailedFiles: string
         }
         content: {
           title: string
@@ -114,6 +122,10 @@ export interface ResponsesResponsesPage {
           csv: string
           attachments: string
           pdfs: string
+        }
+        toast: {
+          storageFull: string
+          startFailed: string
         }
       }
       unlockedResponses: {
