@@ -18,7 +18,7 @@ export const handleGetEnabledFlags: ControllerHandler<
   // TODO: stricter typing to restrict typing to flag values in shared/constants
   string[] | ErrorDto
 > = (req, res) => {
-  // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
+  // If getEnabledFlags throws a DatabaseError, we want to log it, but respond
   // to the client as if the flag is not found.
   return FeatureFlagService.getEnabledFlags()
     .map((result) => {

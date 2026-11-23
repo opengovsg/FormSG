@@ -4,10 +4,8 @@ import { FormAuthType, FormStatus } from 'formsg-shared/types'
 import jwt from 'jsonwebtoken'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
-import { okAsync } from 'neverthrow'
 import session, { Session } from 'supertest-session'
 
-import * as FeatureFlagsService from 'src/app/modules/feature-flags/feature-flags.service'
 import { s3Operations } from 'src/app/utils/aws-s3'
 import { FormFieldSchema } from 'src/types'
 
@@ -719,9 +717,6 @@ describe('public-form.submissions.routes', () => {
       })
 
       jest
-        .spyOn(FeatureFlagsService, 'getFeatureFlag')
-        .mockReturnValue(okAsync(true))
-      jest
         .spyOn(s3Operations, 'createPresignedPost')
         .mockRejectedValueOnce(new Error('some error'))
 
@@ -744,10 +739,6 @@ describe('public-form.submissions.routes', () => {
           status: FormStatus.Public,
         },
       })
-
-      jest
-        .spyOn(FeatureFlagsService, 'getFeatureFlag')
-        .mockReturnValue(okAsync(true))
 
       const expectedPresignedPostData = expect.objectContaining({
         fields: expect.objectContaining({

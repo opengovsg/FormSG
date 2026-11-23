@@ -18,10 +18,9 @@ import {
 import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import { StatusCodes } from 'http-status-codes'
-import { err, okAsync } from 'neverthrow'
+import { err } from 'neverthrow'
 
 import { IPopulatedMultirespondentForm } from '../../../../types'
-import { isTest } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
@@ -94,17 +93,9 @@ export const handleGetPublicForm: ControllerHandler<
     formId,
   }
 
-  const gb = req.growthbook
-  const isMrfResponseLimitEnabled =
-    isTest || (gb?.isOn(featureFlags.mrfResponseLimit) ?? true)
-
   const formResult = await getFormIfPublic(formId)
     .andThen((form) =>
-      // TODO(MRF-SUBMISSION-LIMIT): Remove check once mrf submission limit is stable.
-      form.responseMode === FormResponseMode.Encrypt ||
-      isMrfResponseLimitEnabled
-        ? FormService.checkFormSubmissionLimitAndDeactivateForm(form)
-        : okAsync(form),
+      FormService.checkFormSubmissionLimitAndDeactivateForm(form),
     )
     .andThen((form) => FormService.checkFormSmsLimitAndDeactivateForm(form))
 
@@ -561,13 +552,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
         formId,
         adminEmail: form.admin.email,
       })
-      // TODO [CP-PKCE]: Cleanup this flag once the nonce state format is fully
-      // rolled out. Only emit the nonce state format once every instance is
-      // able to parse it, otherwise a callback served by an compute instance running
-      // the older parser rejects the state outright.
-      const useStateNonce =
-        req.growthbook?.isOn(featureFlags.spcpOidcStateNonce) ?? false
-      const nonce = useStateNonce ? randomBytes(16).toString('hex') : undefined
+      const nonce = randomBytes(16).toString('hex')
       // Fail closed: without a growthbook instance, only birth records are fetched.
       const isMrfChildrenEnabled =
         req.growthbook?.isOn(featureFlags.mrfChildren) ?? false

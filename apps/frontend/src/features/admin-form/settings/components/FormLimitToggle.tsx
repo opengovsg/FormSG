@@ -7,10 +7,6 @@ import {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FormControl, Skeleton } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
-
-import { featureFlags } from 'formsg-shared/constants'
-import { FormResponseMode } from 'formsg-shared/types'
 
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -116,13 +112,6 @@ export const FormLimitToggle = (): JSX.Element => {
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
-  // TODO(MRF-SUBMISSION-LIMIT): Remove this isEnabled check once mrf submission limit is stable.
-  const isEncryptedMode = settings?.responseMode === FormResponseMode.Encrypt
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
-  const isMrfResponseLimitEnabled =
-    useFeatureIsOn(featureFlags.mrfResponseLimit) || isTest
-  const isEnabled = isEncryptedMode || isMrfResponseLimitEnabled
-
   const { data: responseCount, isLoading: isLoadingCount } =
     useFormResponsesCount()
 
@@ -163,7 +152,7 @@ export const FormLimitToggle = (): JSX.Element => {
     settings,
   ])
 
-  return isEnabled ? (
+  return (
     <Skeleton isLoaded={!isLoadingSettings && !!settings} mt="2rem">
       <Toggle
         isLoading={mutateFormLimit.isLoading}
@@ -180,7 +169,5 @@ export const FormLimitToggle = (): JSX.Element => {
         </Skeleton>
       )}
     </Skeleton>
-  ) : (
-    <></>
   )
 }

@@ -1241,7 +1241,9 @@ describe('public-form.controller', () => {
         redirectURL: MOCK_REDIRECT_URL,
       })
       expect(mockRes.cookie).toHaveBeenCalledWith(
-        CodeVerifierCookieName.SP,
+        expect.stringMatching(
+          new RegExp(`^${CodeVerifierCookieName.SP}_[0-9a-f]{32}$`),
+        ),
         MOCK_CODE_VERIFIER,
         expect.anything(),
       )
@@ -1362,7 +1364,9 @@ describe('public-form.controller', () => {
         redirectURL: MOCK_REDIRECT_URL,
       })
       expect(mockRes.cookie).toHaveBeenCalledWith(
-        CodeVerifierCookieName.CP,
+        expect.stringMatching(
+          new RegExp(`^${CodeVerifierCookieName.CP}_[0-9a-f]{32}$`),
+        ),
         MOCK_CODE_VERIFIER,
         expect.anything(),
       )
