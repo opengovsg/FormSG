@@ -7,6 +7,15 @@ export const enSG: Fields = {
       "These fields fill in from the respondent's Corppass login.",
     loginMissing:
       'Enable {loginName} in the <settingsLink>Settings</settingsLink> tab to access these fields.',
+    setup: {
+      title: 'Set up {loginName} login',
+      chooseField: 'These fields require {loginName} login.',
+      settings: 'Enable {loginName} in Login Settings to use this field.',
+      workflow:
+        'At least one of your Workflow steps must be using {loginName} logins. Go to your Workflow to set it up.',
+      settingsAction: 'Go to Login Settings',
+      workflowAction: 'Go to Workflow',
+    },
     convertedToast: {
       singpass: 'The field "NRIC/FIN" was created.',
       corppass: 'The fields "NRIC/FIN" and "UEN" were created.',

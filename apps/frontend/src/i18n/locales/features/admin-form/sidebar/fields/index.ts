@@ -5,6 +5,14 @@ export interface Fields {
     sectionLabel: string
     corppassPanelInfo: string
     loginMissing: string
+    setup: {
+      title: string
+      chooseField: string
+      settings: string
+      workflow: string
+      settingsAction: string
+      workflowAction: string
+    }
     // Keyed by login, since Singpass adds one field and Corppass two.
     convertedToast: {
       singpass: string

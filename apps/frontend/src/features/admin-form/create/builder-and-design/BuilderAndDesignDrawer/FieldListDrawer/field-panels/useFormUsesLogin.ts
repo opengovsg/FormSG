@@ -1,17 +1,32 @@
 import { useCallback } from 'react'
 
-import { FormAuthType } from 'formsg-shared/types'
+import { FormAuthType, FormResponseMode } from 'formsg-shared/types'
 import {
   getLoginIdentityAttrsForAuthType,
   LoginIdentityAttribute,
 } from 'formsg-shared/utils/login-identity'
 
 import { useIsMrfStepLoginEnabled } from '~features/admin-form/create/workflow/hooks/useIsMrfStepLoginEnabled'
-import { formUsesLogin } from '~features/admin-form/create/workflow/utils/stepLoginAvailability'
+import {
+  formUsesLogin,
+  isLaterStepLoginAvailable,
+} from '~features/admin-form/create/workflow/utils/stepLoginAvailability'
 
 import { useCreateTabForm } from '../../../useCreateTabForm'
 
 const STEP_LOGIN_TYPES = [FormAuthType.MyInfo, FormAuthType.CP] as const
+
+const getSetupDestination = (
+  form: ReturnType<typeof useCreateTabForm>['data'],
+  isFlagOn: boolean,
+): 'settings' | 'workflow' | undefined => {
+  if (!isLaterStepLoginAvailable(form, isFlagOn)) return undefined
+  const isUnifiedWithoutLogin =
+    form?.responseMode === FormResponseMode.Multirespondent &&
+    !form.workflow?.length &&
+    form.authType === FormAuthType.NIL
+  return isUnifiedWithoutLogin ? 'settings' : 'workflow'
+}
 
 /**
  * Whether any step of the form logs in with the given login. The builder
@@ -38,5 +53,9 @@ export const useFormUsesLogin = () => {
     [usesLogin],
   )
 
-  return { usesLogin, offersIdentityAttr }
+  return {
+    usesLogin,
+    offersIdentityAttr,
+    setupDestination: getSetupDestination(form, isFlagOn),
+  }
 }
