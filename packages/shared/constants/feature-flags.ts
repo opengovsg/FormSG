@@ -5,7 +5,6 @@ export const featureFlags = {
   enableMrfWebhooks: 'enable-mrf-webhooks' as const,
   adminEmailPdf: 'admin-email-pdf' as const,
   ogpAwareness: 'ogp-awareness' as const,
-  wogadLogin: 'wogad-login' as const,
   ddSampleRateAdmin: 'dd-sample-rate-admin' as const,
   ddSampleRatePublic: 'dd-sample-rate-public' as const,
   standardisedEmailTemplate: 'standardised-email-template' as const,
@@ -38,10 +37,4 @@ export enum AdminEmailPdfFeatureValue {
   OFF = 'OFF',
   SIGNATURES_ONLY = 'SIGNATURES_ONLY',
   ON = 'ON',
-}
-
-export enum WogadLoginFeatureValue {
-  OFF = 'OFF',
-  ALL = 'ALL', // all users on public ip, rbi and intranet ip
-  INTRANET_AND_RBI_ONLY = 'INTRANET_AND_RBI_ONLY',
 }
