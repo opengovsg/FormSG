@@ -160,7 +160,7 @@ export const StepLoginCards = ({
                   stepWord: t('features.common.entities.step'),
                 })}
                 border="1px solid"
-                borderColor="neutral.300"
+                borderColor="secondary.200"
                 borderRadius={cardRadius}
                 bg="white"
                 overflow="hidden"

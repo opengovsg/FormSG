@@ -38,8 +38,6 @@ import { EditStepBlockContainer } from './EditStepBlock/EditStepBlockContainer'
 import { GuidedActionGroup } from './EditStepBlock/GuidedActionGroup'
 import { CompletionEmailLabel } from './CompletionEmailLabel'
 
-const SECTION_REVEAL_SCROLL_DELAY_MS = 100
-
 export interface ActiveCompletionEmailCardProps {
   settings: MultirespondentFormSettings
   isDisabled: boolean
@@ -162,7 +160,7 @@ export const ActiveCompletionEmailCard = ({
         borderRadius={cardRadius}
         bg="white"
         border="1px solid"
-        borderColor="neutral.300"
+        borderColor="secondary.200"
         transitionProperty="common"
         transitionDuration="normal"
       >
