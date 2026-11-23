@@ -17,7 +17,7 @@ export const enSG: Workflow = {
     stepRespondent: 'Who should fill in this step?',
     anyone: 'Anyone with your form link can fill in Step 1.',
     select: 'Who should fill in this step?',
-    fieldsToFill: 'Fields to fill',
+    fieldsToFill: 'Assigned fields',
     clickToEdit: 'Click to edit',
   },
   respondentSource: {
@@ -212,13 +212,19 @@ export const enSG: Workflow = {
     esrvcIdWhitespace: 'e-service ID must not contain whitespace',
     closeFormToEdit: 'To change the login, close your form to new responses.',
     inactiveLabel: 'Login',
-    tabs: { fields: 'Fields to fill', approvals: 'Approvals', login: 'Login' },
+    tabs: { fields: 'Assigned fields', approvals: 'Approvals', login: 'Login' },
+    summaries: {
+      fields:
+        '{count, plural, =0 {No fields assigned} one {# field assigned} other {# fields assigned}}',
+      approvalRequired: 'Approval required',
+      noApproval: 'No approval required',
+    },
     historicalResponsesKept: 'Historical responses will not be deleted.',
     publishErrors: {
       title: 'Finish authentication setup before opening your form',
     },
     settings: {
-      description: 'Manage authentication for each step in your workflow.',
+      description: 'Manage logins for each step in your workflow.',
       editWorkflow: 'Edit your full workflow ↗',
       addStep: 'Go to workflows to add a new step',
       notEnabled: 'No login enabled',

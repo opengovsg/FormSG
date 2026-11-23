@@ -180,6 +180,7 @@ export interface Workflow {
     closeFormToEdit: string
     inactiveLabel: string
     tabs: { fields: string; approvals: string; login: string }
+    summaries: { fields: string; approvalRequired: string; noApproval: string }
     historicalResponsesKept: string
     publishErrors: { title: string }
     settings: {

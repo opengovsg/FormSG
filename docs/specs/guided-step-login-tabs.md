@@ -1,5 +1,7 @@
 # Guided setup for the new step format
 
+Presentation update, 2026-11-23: [Step accordions](singpass-step-accordions.md) replace tabs. Guided progression, eligibility, locks and save rules below remain applicable.
+
 Status: implemented on codex/singpass-login-followup; review fixes verified on 2026-11-17. Awaiting human review.
 
 ## Pinned implementation decisions

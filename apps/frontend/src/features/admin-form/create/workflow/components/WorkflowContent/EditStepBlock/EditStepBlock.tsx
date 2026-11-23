@@ -4,13 +4,16 @@ import { useTranslation } from 'react-i18next'
 import { useQueryClient } from 'react-query'
 import { useParams } from 'react-router'
 import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
   Box,
   Divider,
   Stack,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
+  Text,
+  usePrefersReducedMotion,
 } from '@chakra-ui/react'
 
 import {
@@ -22,12 +25,17 @@ import {
 } from 'formsg-shared/types'
 import { getAuthEsrvcId } from 'formsg-shared/utils/step-login'
 
+import { textStyles } from '~theme/textStyles'
 import InlineMessage from '~components/InlineMessage'
-import { Tab } from '~components/Tabs'
 
 import { useRegisterNavigationSave } from '~features/admin-form/common/navigationSave'
-import { adminFormKeys } from '~features/admin-form/common/queries'
+import {
+  adminFormKeys,
+  useAdminForm,
+} from '~features/admin-form/common/queries'
 import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
+import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
+import { LOGIN_OPTION_COPY } from '~features/admin-form/settings/components/AuthSettingsSection/constants'
 import { saveStepOneLoginRestrictions } from '~features/admin-form/settings/components/AuthSettingsSection/StepOneLoginRestrictions'
 import { adminFormSettingsKeys } from '~features/admin-form/settings/queries'
 import { isValidEsrvcId } from '~features/admin-form/settings/utils'
@@ -82,13 +90,14 @@ export const APPROVAL_ENABLED_NAME = 'is_approval_enabled'
 
 const SECTION_REVEAL_SCROLL_DELAY_MS = 100
 const STEP_TABS_KEY = 'features.adminForm.sidebar.workflow.stepLogin.tabs'
-const WRAPPING_TAB_PROPS = { _notFirst: { ml: 0 }, _notLast: { mr: 0 } }
 const SAVE_ERRORS_KEY =
   'features.adminForm.sidebar.workflow.stepLogin.saveErrors'
 
-type StepTab = 'login' | 'fields' | 'approvals'
-type StepSection = 'name' | 'people' | StepTab
-const isStepTab = (section: StepSection): section is StepTab =>
+type AccordionSection = 'login' | 'fields' | 'approvals'
+type StepSection = 'name' | 'people' | AccordionSection
+const isAccordionSection = (
+  section: StepSection,
+): section is AccordionSection =>
   section === 'login' || section === 'fields' || section === 'approvals'
 
 const SECTION_FIELDS: Record<StepSection, FieldPath<EditStepInputs>[]> = {
@@ -224,8 +233,15 @@ export const EditStepBlock = ({
   const isGuidedSetup = useAdminWorkflowStore(isGuidedSetupSelector)
   const isLoginShown = useIsStepLoginShown(stepNumber)
   const { t } = useTranslation()
-  const { cardRadius, activeCardBg, activeCardBorderWidth, activeCardShadow } =
-    useWorkflowSurfaces()
+  const {
+    cardRadius,
+    activeCardBg,
+    activeCardBorderWidth,
+    activeCardShadow,
+    cardHoverBg,
+    iconTransitionDuration,
+  } = useWorkflowSurfaces()
+  const prefersReducedMotion = usePrefersReducedMotion()
 
   const formMethods = useForm<EditStepInputs>({
     defaultValues: {
@@ -235,6 +251,7 @@ export const EditStepBlock = ({
     },
   })
   const { user, isLoading: isUserLoading } = useUser()
+  const { data: form } = useAdminForm()
   const [isSavingRestrictions, setIsSavingRestrictions] = useState(false)
   const [saveError, setSaveError] = useState('')
   const { formId } = useParams()
@@ -272,8 +289,8 @@ export const EditStepBlock = ({
 
   const isGuided = isCreatingState && isGuidedSetup
   const isStepLoginEnabled = useIsMrfStepLoginEnabled()
-  const hasGuidedTabs = isStepLoginEnabled && isLoginShown
-  const tabOrder = useMemo<StepTab[]>(
+  const hasGuidedAccordions = isStepLoginEnabled && isLoginShown
+  const guidedSectionOrder = useMemo<AccordionSection[]>(
     () => [
       ...(isLoginShown ? (['login'] as const) : []),
       'fields',
@@ -286,27 +303,47 @@ export const EditStepBlock = ({
     () => [
       'name',
       'people',
-      ...(hasGuidedTabs
-        ? tabOrder
+      ...(hasGuidedAccordions
+        ? guidedSectionOrder
         : [
             ...(isLoginShown ? (['login'] as const) : []),
             ...(!isFirstStep ? (['approvals'] as const) : []),
             'fields' as const,
           ]),
     ],
-    [hasGuidedTabs, tabOrder, isLoginShown, isFirstStep],
+    [hasGuidedAccordions, guidedSectionOrder, isLoginShown, isFirstStep],
   )
   const reveal = useGuidedStepNavigation({
     sections: sectionOrder,
     isEnabled: isGuided,
   })
   const { activeSection } = reveal
-  const selectedTab = isStepTab(activeSection) ? activeSection : tabOrder[0]
+  const accordionOrder: AccordionSection[] = [
+    'fields',
+    ...(isLoginShown ? (['login'] as const) : []),
+    ...(!isFirstStep ? (['approvals'] as const) : []),
+  ]
+  const [expandedSections, setExpandedSections] = useState<AccordionSection[]>(
+    () => (isGuided ? [] : ['fields']),
+  )
+  useEffect(() => {
+    if (!isGuided || !isAccordionSection(activeSection)) return
+    setExpandedSections((previous) =>
+      previous.includes(activeSection)
+        ? previous
+        : [...previous, activeSection],
+    )
+  }, [isGuided, activeSection])
   const [focusSection, setFocusSection] = useState<StepSection | null>(null)
 
   const openSection = (section: StepSection, focus = false) => {
     if (!sectionOrder.includes(section)) return
     reveal.goTo(section)
+    if (isAccordionSection(section)) {
+      setExpandedSections((previous) =>
+        previous.includes(section) ? previous : [...previous, section],
+      )
+    }
     if (focus) {
       skipNextRevealScroll.current = section !== activeSection
       setFocusSection(section)
@@ -352,7 +389,7 @@ export const EditStepBlock = ({
   const continueGuidance = async () => {
     const valid = await formMethods.trigger(SECTION_FIELDS[activeSection])
     if (!valid) {
-      setFocusSection(activeSection)
+      openSection(activeSection, true)
       return
     }
     if (
@@ -485,59 +522,106 @@ export const EditStepBlock = ({
     />
   )
 
-  const tabSections: Record<StepTab, JSX.Element | null> = {
+  const accordionSections: Record<AccordionSection, JSX.Element | null> = {
     login: loginSection,
     fields: questionsSection,
     approvals: approvalsSection,
   }
 
-  const useProposedTabs = isLoginShown && (!isGuided || hasGuidedTabs)
-  const tabbedSections = (
-    <Tabs
-      key="step-settings"
-      index={Math.max(0, tabOrder.indexOf(selectedTab))}
-      onChange={(index) => openSection(tabOrder[index])}
+  const useAccordionSections =
+    isLoginShown && (!isGuided || hasGuidedAccordions)
+  const assignedFields = formMethods.watch('edit') ?? []
+  const editedAuth = formMethods.watch('auth')
+  const firstStepLogin = formMethods.watch('first_step_login')
+  const authType = isFirstStep
+    ? (firstStepLogin?.auth_type ?? form?.authType ?? FormAuthType.NIL)
+    : (editedAuth?.auth_type ?? FormAuthType.NIL)
+  const approvalEnabled = formMethods.watch('is_approval_enabled')
+  const summaries: Record<AccordionSection, string> = {
+    fields: t(
+      'features.adminForm.sidebar.workflow.stepLogin.summaries.fields',
+      {
+        count: assignedFields.length,
+      },
+    ),
+    login: t(LOGIN_OPTION_COPY[authType].labelKey),
+    approvals: t(
+      `features.adminForm.sidebar.workflow.stepLogin.summaries.${approvalEnabled ? 'approvalRequired' : 'noApproval'}`,
+    ),
+  }
+  const expandableSections = (
+    <Accordion
+      allowMultiple
+      reduceMotion={prefersReducedMotion}
+      index={accordionOrder.flatMap((section, index) =>
+        expandedSections.includes(section) &&
+        (!isGuided || reveal.isReached(section))
+          ? [index]
+          : [],
+      )}
+      onChange={(indexes) => {
+        const next = (indexes as number[]).map((index) => accordionOrder[index])
+        const opened = next.find(
+          (section) => !expandedSections.includes(section),
+        )
+        setExpandedSections(next)
+        if (opened) reveal.goTo(opened)
+      }}
     >
-      <Box px={{ base: '1.5rem', md: '2rem' }}>
-        <TabList
-          mx="-0.25rem"
-          w="100%"
-          overflowX="visible"
-          flexWrap="wrap"
-          columnGap="1.5rem"
-          rowGap="0.25rem"
+      {accordionOrder.map((section) => (
+        <AccordionItem
+          key={section}
+          border="0"
+          borderTop="1px solid"
+          borderColor="neutral.300"
         >
-          {tabOrder.map((tab) => (
-            <Tab
-              key={tab}
-              onClick={() => {
-                if (!isGuided || reveal.isReached(tab)) openSection(tab)
-              }}
-              isDisabled={isGuided && !reveal.isReached(tab)}
-              isFocusable
-              {...WRAPPING_TAB_PROPS}
-            >
-              {t(`${STEP_TABS_KEY}.${tab}`)}
-            </Tab>
-          ))}
-        </TabList>
-        <Divider w="auto" mx={{ base: '-1.5rem', md: '-2rem' }} />
-      </Box>
-      <TabPanels>
-        {tabOrder.map((tab) => (
-          <TabPanel
-            key={tab}
-            px="0"
-            pt={isGuided ? '0' : '1.5rem'}
-            data-step-section={tab}
-          >
-            <Spotlight isEnabled={isGuided} isActive={activeSection === tab}>
-              {tabSections[tab]}
-            </Spotlight>
-          </TabPanel>
-        ))}
-      </TabPanels>
-    </Tabs>
+          {({ isExpanded }) => (
+            <>
+              <AccordionButton
+                px={{ base: '1.5rem', md: '2rem' }}
+                py="1.5rem"
+                textAlign="left"
+                columnGap="0.75rem"
+                aria-label={t(`${STEP_TABS_KEY}.${section}`)}
+                aria-disabled={isGuided && !reveal.isReached(section)}
+                onClick={(event) => {
+                  if (isGuided && !reveal.isReached(section))
+                    event.preventDefault()
+                }}
+                transitionProperty="background-color"
+                transitionDuration={iconTransitionDuration}
+                _hover={{
+                  bg:
+                    isGuided && !reveal.isReached(section)
+                      ? 'transparent'
+                      : cardHoverBg,
+                }}
+              >
+                <Text flex="1" minW="0" style={textStyles.h4}>
+                  {t(`${STEP_TABS_KEY}.${section}`)}
+                </Text>
+                {!isExpanded ? (
+                  <Box minW="0" maxW="50%">
+                    <LogicBadge bg="white" overflowWrap="anywhere">
+                      {summaries[section]}
+                    </LogicBadge>
+                  </Box>
+                ) : null}
+                <AccordionIcon flexShrink="0" />
+              </AccordionButton>
+              <AccordionPanel p="0" pb="1.5rem" data-step-section={section}>
+                <Spotlight
+                  isEnabled={isGuided}
+                  isActive={activeSection === section}
+                >
+                  {accordionSections[section]}
+                </Spotlight>
+              </AccordionPanel>
+            </>
+          )}
+        </AccordionItem>
+      ))}
+    </Accordion>
   )
 
   const sections: Record<StepSection, JSX.Element | null> = {
@@ -550,7 +634,7 @@ export const EditStepBlock = ({
         isLoading={_isLoading}
       />
     ),
-    ...tabSections,
+    ...accordionSections,
   }
   const introductorySections = ['name', 'people'] as const
   const visibleStackedSections = isGuided
@@ -606,7 +690,7 @@ export const EditStepBlock = ({
       transitionProperty="common"
       transitionDuration="normal"
     >
-      {useProposedTabs ? (
+      {useAccordionSections ? (
         <Stack
           spacing={isGuided ? '0' : '1.5rem'}
           pt={isGuided ? '0' : '1.5rem'}
@@ -624,8 +708,12 @@ export const EditStepBlock = ({
               </Box>
             ) : null,
           )}
-          {!isGuided || reveal.isReached(tabOrder[0]) ? tabbedSections : null}
-          <Divider />
+          <Box>
+            {!isGuided || reveal.isReached(guidedSectionOrder[0])
+              ? expandableSections
+              : null}
+            <Divider />
+          </Box>
         </Stack>
       ) : (
         <SpotlightGroup
