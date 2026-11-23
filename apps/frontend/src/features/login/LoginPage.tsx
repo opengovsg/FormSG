@@ -2,10 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { Stack, Text } from '@chakra-ui/react'
-import { useFeatureValue } from '@growthbook/growthbook-react'
 import { StatusCodes } from 'http-status-codes'
-
-import { featureFlags, WogadLoginFeatureValue } from 'formsg-shared/constants'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { DASHBOARD_ROUTE } from '~constants/routes'
@@ -27,38 +24,20 @@ import { OtpForm, OtpFormInputs } from './components/OtpForm'
 import { SgidLoginButton } from './components/SgidLoginButton'
 import { WogadLoginButton } from './components/WogadLoginButton'
 import { LoginPageTemplate } from './LoginPageTemplate'
-import { useIsIntranetCheck, useIsOgpIpCheck, useIsRbiIpCheck } from './queries'
+import { useIsOgpIpCheck } from './queries'
 
 export type LoginOtpData = {
   email: string
 }
 
-const isWogadLoginEnabled = ({
-  wogadLoginFeatureValue,
-  isIntranetIp,
-  isRbiIp,
-}: {
-  wogadLoginFeatureValue: string
-  isIntranetIp: boolean
-  isRbiIp: boolean
-}) => {
-  return (
-    wogadLoginFeatureValue === WogadLoginFeatureValue.ALL ||
-    (wogadLoginFeatureValue === WogadLoginFeatureValue.INTRANET_AND_RBI_ONLY &&
-      (isIntranetIp || isRbiIp))
-  )
-}
-
 const LoginOptionButtons = ({
-  shouldShowWogadLogin,
   shouldShowOneLogin,
 }: {
-  shouldShowWogadLogin: boolean
   shouldShowOneLogin: boolean
 }) => {
   return (
     <Stack spacing="1rem">
-      {shouldShowWogadLogin && <WogadLoginButton />}
+      <WogadLoginButton />
       {shouldShowOneLogin && <OneLoginButton />}
       <SgidLoginButton />
     </Stack>
@@ -68,22 +47,11 @@ const LoginOptionButtons = ({
 const isDev = import.meta.env.MODE === 'development'
 export const LoginPage = (): JSX.Element => {
   const { t } = useTranslation()
-  const { data: isIntranetIp = false } = useIsIntranetCheck()
-  const { data: isRbiIp = false } = useIsRbiIpCheck()
   const { data: isOgpIp = false } = useIsOgpIpCheck()
   // RATIONALE: one.gov.sg is the suite rebuild of sso.gov.sg, so it inherits
   // sso's gate as-is. The IP check is a rollout knob, not a security control —
   // the backend already whitelists domains and one.gov.sg verifies officers.
   const shouldShowOneLogin = isOgpIp || isDev
-  const wogadLoginFeatureValue = useFeatureValue(
-    featureFlags.wogadLogin,
-    WogadLoginFeatureValue.OFF,
-  )
-  const shouldShowWogadLogin = isWogadLoginEnabled({
-    wogadLoginFeatureValue,
-    isIntranetIp,
-    isRbiIp,
-  })
 
   const isMobile = useIsMobile()
 
@@ -191,7 +159,6 @@ export const LoginPage = (): JSX.Element => {
             ? [
                 <LoginOptionButtons
                   key="buttons"
-                  shouldShowWogadLogin={shouldShowWogadLogin}
                   shouldShowOneLogin={shouldShowOneLogin}
                 />,
                 <LoginForm key="form" onSubmit={handleSendOtp} />,
@@ -200,7 +167,6 @@ export const LoginPage = (): JSX.Element => {
                 <LoginForm key="form" onSubmit={handleSendOtp} />,
                 <LoginOptionButtons
                   key="buttons"
-                  shouldShowWogadLogin={shouldShowWogadLogin}
                   shouldShowOneLogin={shouldShowOneLogin}
                 />,
               ]}
