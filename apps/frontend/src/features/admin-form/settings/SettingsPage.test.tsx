@@ -91,6 +91,15 @@ describe('Settings labelled navigation', () => {
     state.multiLang = true
     state.emailNavLabel = 'Emails'
   })
+  it('clips the page shell so focus can scroll only the settings content', () => {
+    setup()
+    expect(screen.getByTestId('settings-content')).toHaveStyle({
+      overflowY: 'auto',
+    })
+    expect(screen.getByTestId('settings-shell')).toHaveStyle({
+      overflow: 'clip',
+    })
+  })
   it('switches from the label and keeps the current route and page when collapsed', async () => {
     setup()
     await userEvent.click(screen.getByRole('tab', { name: 'Emails' }))
