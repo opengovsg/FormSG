@@ -206,6 +206,8 @@ const useDecryptionWorkers = ({
         formId: adminForm._id,
         formTitle: adminForm.title,
         downloadAttachments,
+        isDownloadCsv,
+        isDownloadPdf,
         num_workers: numWorkers,
         expectedNumSubmissions: expectedResponsesCount,
         adminId: user?._id,
@@ -711,10 +713,11 @@ const useDecryptionWorkers = ({
                       duration: performance.now() - downloadStartTime,
                     },
                   })
+                  const zipResult = { ...result, zipBytes: zipMeta.zipBytes }
                   resolve(
                     failedDownloads.length
-                      ? { ...result, failedDownloads }
-                      : result,
+                      ? { ...zipResult, failedDownloads }
+                      : zipResult,
                   )
                 },
                 (err) => {
