@@ -162,6 +162,11 @@ export const createPublicMultirespondentSubmissionDto = (
   )
   return {
     ...multirespondentSubmissionDto,
+    ...(submissionData.workflowStep <
+      (submissionData.submittedSteps?.length ?? 0) - 1 &&
+    submissionData.correctionClearFieldIds?.length
+      ? { correctionClearFieldIds: submissionData.correctionClearFieldIds }
+      : {}),
     form_fields: stripDropdownFieldOptionsToRecipientsMap(
       submissionData.form_fields,
     ),

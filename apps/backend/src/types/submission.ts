@@ -244,6 +244,7 @@ export interface IMultirespondentSubmissionSchema
   submissionType: SubmissionType.Multirespondent
   getWebhookView(): Promise<WebhookView>
   mrfVersion: number
+  correctionClearFieldIds?: string[]
   workflowEvents: IWorkflowEvent[]
   stoppedAt?: Date
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -323,6 +324,7 @@ export type MultirespondentSubmissionData = {
   | 'submittedSteps'
   | 'stepTokenHash'
   | 'encryptedStepToken'
+  | 'correctionClearFieldIds'
   | 'workflowEvents'
   | 'stoppedAt'
 > &
