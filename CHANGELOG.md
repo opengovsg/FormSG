@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.77.0](https://github.com/opengovsg/formsg/compare/v9.76.0...v9.77.0) (2026-11-23)
+
+
+### Features
+
+* **settings:** add Integrations tab with a JSON toggle for email notifications (#10626) ([#10626](https://github.com/opengovsg/formsg/commit/3e8c3a8002ad5b9e4ba67339c979db58bc42b2e7))
+* **settings:** show Beta badge on the Multi-lang side nav tab (#10627) ([#10627](https://github.com/opengovsg/formsg/commit/b4beefc3a82e3c42f576c089a7686c5bfef2678d))
+
+
+### Bug Fixes
+
+* **end-page:** align thank-you paragraph typography with other admin content (#9756) ([#9756](https://github.com/opengovsg/formsg/commit/2fcdec11e67751b89b1d094e967fa94c95d23b5e))
+* **payments:** update payments settings copy (#10612) ([#10612](https://github.com/opengovsg/formsg/commit/305d9d0b454b898f708c84f959aedc45825b6a74))
+
 ## [9.76.0](https://github.com/opengovsg/formsg/compare/v9.75.1...v9.76.0) (2026-11-19)
 
 
