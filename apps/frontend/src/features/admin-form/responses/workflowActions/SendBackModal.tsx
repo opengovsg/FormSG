@@ -213,7 +213,7 @@ export const SendBackModal = ({
           />
           <FormErrorMessage>{remarksError}</FormErrorMessage>
         </FormControl>
-        {canFixStep ? (
+        {isValidStep && canFixStep ? (
           <FormControl isRequired>
             <FormLabel id="send-back-route-label">
               {t(`${I18N_PREFIX}.routeLabel`)}
@@ -244,7 +244,7 @@ export const SendBackModal = ({
             </Radio.RadioGroup>
           </FormControl>
         ) : null}
-        {canClearAnswers ? (
+        {isValidStep && canClearAnswers ? (
           <FormControl isRequired>
             <FormLabel id="send-back-answers-label">
               {t(`${I18N_PREFIX}.keepFilledLabel`)}

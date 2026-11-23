@@ -221,6 +221,16 @@ describe('SendBackModal', () => {
       expect(screen.getByText('description')).toBeInTheDocument()
     })
 
+    it('asks neither question until a step is picked', async () => {
+      showModal(vi.fn(), { canFixStep: true, canClearAnswers: true })
+
+      expect(screen.queryByText('routeLabel')).not.toBeInTheDocument()
+      expect(screen.queryByText('keepFilledLabel')).not.toBeInTheDocument()
+      await pickStep('2')
+      expect(screen.getByText('routeLabel')).toBeInTheDocument()
+      expect(screen.getByText('keepFilledLabel')).toBeInTheDocument()
+    })
+
     it('fixes the step and clears only its fields when both are on', async () => {
       const onConfirm = showModal(vi.fn(), {
         canFixStep: true,
@@ -290,6 +300,7 @@ describe('SendBackModal', () => {
         canClearAnswers: true,
       }
       const { rerender } = render(<SendBackModal {...props} isOpen />)
+      await pickStep('2')
       await userEvent.click(
         screen.getByRole('radio', { name: 'fixStepConsequence' }),
       )
@@ -299,6 +310,8 @@ describe('SendBackModal', () => {
       rerender(<SendBackModal {...props} isOpen={false} />)
       rerender(<SendBackModal {...props} isOpen />)
 
+      expect(screen.queryByText('routeLabel')).not.toBeInTheDocument()
+      await pickStep('2')
       expect(
         screen.getByRole('radio', { name: 'redoConsequence' }),
       ).toBeChecked()
