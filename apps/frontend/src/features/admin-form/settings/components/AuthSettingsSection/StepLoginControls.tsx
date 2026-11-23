@@ -28,6 +28,8 @@ export interface StepLoginControlsProps {
   disabledReason?: string
   isHeading?: boolean
   idPrefix: string
+  commitOnActivation?: boolean
+  onEsrvcIdCommit?: () => void
 }
 
 export const StepLoginControls = ({
@@ -41,6 +43,8 @@ export const StepLoginControls = ({
   disabledReason,
   isHeading = false,
   idPrefix,
+  commitOnActivation = false,
+  onEsrvcIdCommit,
 }: StepLoginControlsProps): JSX.Element => {
   const { t } = useTranslation()
   const isEsrvcIdInvalid = !isValidEsrvcId(esrvcId)
@@ -54,7 +58,7 @@ export const StepLoginControls = ({
       <FormLabel
         id={`${idPrefix}-login-label`}
         mb="1rem"
-        {...(isHeading ? textStyles.h4 : {})}
+        style={isHeading ? textStyles.h4 : undefined}
       >
         {t(`${COPY_KEY}.stepQuestion`)}
       </FormLabel>
@@ -63,6 +67,47 @@ export const StepLoginControls = ({
         aria-labelledby={`${idPrefix}-login-label`}
         value={authType}
         onChange={(next: FormAuthType) => onAuthTypeChange(next)}
+        onKeyDownCapture={
+          commitOnActivation
+            ? (event) => {
+                if (
+                  !['ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft'].includes(
+                    event.key,
+                  )
+                )
+                  return
+                const target = event.target as HTMLInputElement
+                if (target.type !== 'radio') return
+                event.preventDefault()
+                event.stopPropagation()
+                const radios = Array.from(
+                  event.currentTarget.querySelectorAll<HTMLInputElement>(
+                    'input[type="radio"]:not(:disabled)',
+                  ),
+                )
+                const current = radios.indexOf(target)
+                if (current < 0 || !radios.length) return
+                const direction =
+                  event.key === 'ArrowDown' || event.key === 'ArrowRight'
+                    ? 1
+                    : -1
+                radios[
+                  (current + direction + radios.length) % radios.length
+                ].focus()
+              }
+            : undefined
+        }
+        onKeyDown={
+          commitOnActivation
+            ? (event) => {
+                if (event.key !== 'Enter' && event.key !== ' ') return
+                const target = event.target as HTMLInputElement
+                if (target.type !== 'radio' || isDisabled || isLoading) return
+                event.preventDefault()
+                onAuthTypeChange(target.value as FormAuthType)
+              }
+            : undefined
+        }
       >
         {getLoginOptionsKeepingLegacySingpass(savedAuthType).map((option) => (
           <Box key={option}>
@@ -87,6 +132,17 @@ export const StepLoginControls = ({
                     value={esrvcId}
                     placeholder={t(`${COPY_KEY}.esrvcIdPlaceholder`)}
                     onChange={(e) => onEsrvcIdChange(e.target.value)}
+                    onBlur={onEsrvcIdCommit}
+                    onKeyDown={
+                      onEsrvcIdCommit
+                        ? (event) => {
+                            if (event.key === 'Enter') {
+                              event.preventDefault()
+                              onEsrvcIdCommit()
+                            }
+                          }
+                        : undefined
+                    }
                   />
                   <FormErrorMessage>
                     {t(`${COPY_KEY}.esrvcIdWhitespace`)}

@@ -6,10 +6,13 @@ import { featureFlags } from 'formsg-shared/constants'
 import { BasicField, PaymentChannel } from 'formsg-shared/types'
 import {
   AdminFormDto,
+  AdminMultirespondentFormDto,
   FormAuthType,
   FormResponseMode,
   FormSettings,
   FormStatus,
+  FormWorkflowStepWriteDto,
+  MultirespondentFormSettings,
   WorkflowType,
 } from 'formsg-shared/types/form'
 
@@ -340,7 +343,7 @@ PrivateStorageMyInfoUpdateWhitelistValidationErrorForm.parameters = {
   },
 }
 
-// Multi-respondent forms get one collapsible section per workflow step once
+// Multi-respondent forms get one always-editable card per workflow step once
 // later steps can log in.
 const stepLoginOn = new GrowthBook({
   features: {
@@ -397,16 +400,80 @@ const MRF_STEP_LOGIN_FORM: Partial<AdminFormDto> = {
 }
 
 const buildMrfStepLoginMswRoutes = (overrides: Partial<FormSettings>) => {
-  const current = createMockForm({
+  let current = createMockForm({
     ...MRF_STEP_LOGIN_FORM,
     status: overrides.status ?? FormStatus.Private,
-  }).form
+  }).form as AdminMultirespondentFormDto
   return [
     http.get('/api/v3/admin/forms/:formId', () =>
       HttpResponse.json({ form: current }),
     ),
     http.get('/api/v3/admin/forms/:formId/settings', () =>
       HttpResponse.json(current),
+    ),
+    http.put(
+      '/api/v3/admin/forms/:formId/workflow/:stepIndex',
+      async ({ params, request }) => {
+        const input = (await request.json()) as FormWorkflowStepWriteDto
+        const stepIndex = Number(params.stepIndex)
+        if (input.expected_last_modified !== current.lastModified) {
+          return HttpResponse.json(
+            { message: 'Form changed. Review the latest version.' },
+            { status: 409 },
+          )
+        }
+        const deleted = new Set(input.delete_auth_field_ids ?? [])
+        current = {
+          ...current,
+          ...(input.first_step_login
+            ? {
+                authType: input.first_step_login.auth_type,
+                esrvcId: input.first_step_login.esrvc_id,
+              }
+            : {}),
+          form_fields: current.form_fields.filter(
+            (field) => !deleted.has(field._id),
+          ),
+          workflow: current.workflow.map((step, index) => {
+            const next =
+              index === stepIndex
+                ? { ...step, ...input, auth: input.auth ?? undefined }
+                : step
+            return { ...next, edit: next.edit.filter((id) => !deleted.has(id)) }
+          }),
+          lastModified:
+            new Date().toISOString() as AdminMultirespondentFormDto['lastModified'],
+        }
+        return HttpResponse.json(current.workflow)
+      },
+    ),
+    http.patch('/api/v3/admin/forms/:formId/settings', async ({ request }) => {
+      const patch =
+        (await request.json()) as Partial<MultirespondentFormSettings>
+      current = {
+        ...current,
+        ...patch,
+        lastModified:
+          new Date().toISOString() as AdminMultirespondentFormDto['lastModified'],
+      }
+      return HttpResponse.json(current)
+    }),
+    http.put(
+      '/api/v3/admin/forms/:formId/settings/whitelist',
+      async ({ request }) => {
+        const body = (await request.json()) as {
+          whitelistCsvString: string | null
+        }
+        current = {
+          ...current,
+          whitelistedSubmitterIds: {
+            isWhitelistEnabled: body.whitelistCsvString !== null,
+          },
+          lastModified:
+            new Date().toISOString() as AdminMultirespondentFormDto['lastModified'],
+        }
+        return HttpResponse.json(current)
+      },
     ),
     ...createFormBuilderMocks({
       ...MRF_STEP_LOGIN_FORM,
