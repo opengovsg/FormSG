@@ -136,7 +136,7 @@ export const StepLoginAccordion = ({
                   `${t('features.common.entities.step')} ${stepIndex + 1}`
                 }
                 border="1px solid"
-                borderColor="neutral.300"
+                borderColor="secondary.200"
                 borderRadius={cardRadius}
                 bg="white"
                 overflow="hidden"

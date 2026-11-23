@@ -162,7 +162,7 @@ export const ActiveCompletionEmailCard = ({
         borderRadius={cardRadius}
         bg="white"
         border="1px solid"
-        borderColor="neutral.300"
+        borderColor="secondary.200"
         transitionProperty="common"
         transitionDuration="normal"
       >
