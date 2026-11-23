@@ -1081,6 +1081,19 @@ export const buildMrfMetadata = ({
   }
 }
 
+// TODO (settings-integrations-json): return !isEmailJsonDisabled alone when GA
+export const shouldIncludeEmailJson = ({
+  growthbook,
+  isEmailJsonDisabled,
+}: {
+  growthbook?: GrowthBook
+  isEmailJsonDisabled?: boolean
+}): boolean =>
+  !(
+    growthbook?.isOn(featureFlags.settingsIntegrationsJson) &&
+    isEmailJsonDisabled
+  )
+
 /**
  * Ops fallback: when on, MRF outputs keep the old `[Attachment] ` label and
  * admin views drop the `[attachment] ` label. Off by default.

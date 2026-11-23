@@ -1274,6 +1274,19 @@ export const handleTransferFormOwnership = [
   transferFormOwnership,
 ] as ControllerHandler[]
 
+// TODO (settings-integrations-json): remove when GA
+const isEmailJsonSettingOnFor = (
+  growthbook: GrowthBook | undefined,
+  user: IPopulatedUser,
+): boolean => {
+  void growthbook?.setAttributes({
+    ...growthbook.getAttributes(),
+    adminEmail: user.email,
+    adminAgency: user.agency?.shortName,
+  })
+  return growthbook?.isOn(featureFlags.settingsIntegrationsJson) ?? false
+}
+
 /**
  * Handler for POST /adminform.
  * @security session
@@ -1296,7 +1309,7 @@ export const createForm: ControllerHandler<
 
   return (
     // Step 1: Retrieve currently logged in user.
-    UserService.findUserById(sessionUserId)
+    UserService.getPopulatedUserById(sessionUserId)
       // Step 2: Create form with given params and set admin to logged in user.
       .andThen((user) => {
         // Step 2a: For multirespondent forms, add user's email to emails array if not provided
@@ -1313,6 +1326,7 @@ export const createForm: ControllerHandler<
             admin: user._id,
           },
           workspaceId,
+          isEmailJsonSettingOnFor(req.growthbook, user),
         )
       })
       .map((createdForm) => {

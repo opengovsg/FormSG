@@ -39,6 +39,7 @@ import {
   mapAttachmentsFromResponses,
   mapRouteError,
   sendRouteError,
+  shouldIncludeEmailJson,
 } from '../submission.utils'
 
 const RESOURCES = path.join(
@@ -714,5 +715,27 @@ describe('submission.utils', () => {
         content: secondAttachment.content,
       })
     })
+  })
+
+  describe('shouldIncludeEmailJson', () => {
+    const growthbookWithJsonFlag = (isOn: boolean) =>
+      ({ isOn: jest.fn(() => isOn) }) as never
+
+    it.each([
+      ['turned off, flag on', true, true, false],
+      ['saved before the setting existed, flag on', true, undefined, true],
+      ['turned on, flag on', true, false, true],
+      ['turned off, flag off', false, true, true],
+    ])(
+      'returns the expected value for a form with JSON %s',
+      (_, isFlagOn, isEmailJsonDisabled, expected) => {
+        expect(
+          shouldIncludeEmailJson({
+            growthbook: growthbookWithJsonFlag(isFlagOn),
+            isEmailJsonDisabled,
+          }),
+        ).toBe(expected)
+      },
+    )
   })
 })

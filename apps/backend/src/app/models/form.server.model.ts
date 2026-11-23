@@ -154,6 +154,7 @@ const FORM_SCHEMA_COMMON_DUPLICATE_PARAMS = [
   'endPage',
   'authType',
   'isSaveDraftEnabled',
+  'isEmailJsonDisabled',
   'isSubmitterIdCollectionEnabled',
   'isSingleSubmission',
   'inactiveMessage',
@@ -900,6 +901,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       hasIssueNotification: {
         type: Boolean,
         default: true,
+      },
+
+      isEmailJsonDisabled: {
+        type: Boolean,
+        default: false,
       },
 
       savedViews: {

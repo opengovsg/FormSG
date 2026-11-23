@@ -19,6 +19,7 @@ import {
 import { useSideNavCollapse } from '../common/AdminFormSideNav/useSideNavCollapse'
 import { useAdminFormCollaborators } from '../common/queries'
 
+import { useIntegrationsFlags } from './hooks/useIntegrationsFlags'
 import { useAdminFormSettings } from './queries'
 import { SettingsAuthPage } from './SettingsAuthPage'
 import { SettingsEmailsPage } from './SettingsEmailsPage'
@@ -43,11 +44,12 @@ export const SettingsPage = (): JSX.Element => {
   const { isLoading: isFormSettingLoading } = useAdminFormSettings()
   const { user, isLoading: isUserLoading } = useUser()
   const { t } = useTranslation()
+  const { isIntegrationsTab } = useIntegrationsFlags()
   const {
     general: { title: generalTitle },
     singpass: { title: singpassTitle, loginTitle },
     emailNotifications: { title: emailNotificationsTitle },
-    webhooks: { title: webhooksTitle },
+    webhooks: { title: webhooksTitle, integrationsTitle },
     payments: { title: paymentsTitle },
     tabs: { multiLanguage, navLabels },
   } = t('features.adminForm.settings', { returnObjects: true })
@@ -99,7 +101,7 @@ export const SettingsPage = (): JSX.Element => {
       path: 'email-notifications',
     },
     {
-      label: webhooksTitle,
+      label: isIntegrationsTab ? integrationsTitle : webhooksTitle,
       icon: BiCodeBlock,
       component: SettingsWebhooksPage,
       path: 'webhooks',

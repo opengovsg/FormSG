@@ -250,6 +250,7 @@ export interface FormBase {
   isSaveDraftEnabled: boolean
   hasCaptcha: boolean
   hasIssueNotification: boolean
+  isEmailJsonDisabled: boolean
   authType: FormAuthType
   isSubmitterIdCollectionEnabled: boolean
   isSingleSubmission: boolean

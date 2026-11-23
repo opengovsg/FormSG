@@ -39,6 +39,7 @@ import {
   updateFormAuthType,
   updateFormCaptcha,
   updateFormCloseAt,
+  updateFormEmailJson,
   updateFormEmails,
   updateFormEsrvcId,
   updateFormHasMultiLang,
@@ -312,6 +313,22 @@ export const useMutateFormSettings = () => {
             : t(
                 'features.adminForm.settings.mutations.issueNotification.disabled',
               ),
+        })
+      },
+      onError: handleError,
+    },
+  )
+
+  const mutateFormEmailJson = useMutation(
+    (nextIsEmailJsonDisabled: boolean) =>
+      updateFormEmailJson(formId, nextIsEmailJsonDisabled),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: newData.isEmailJsonDisabled
+            ? t('features.adminForm.settings.mutations.emailJson.disabled')
+            : t('features.adminForm.settings.mutations.emailJson.enabled'),
         })
       },
       onError: handleError,
@@ -678,6 +695,7 @@ export const useMutateFormSettings = () => {
     mutateFormIsSaveDraftEnabled,
     mutateFormCaptcha,
     mutateFormIssueNotification,
+    mutateFormEmailJson,
     mutateFormEmails,
     mutateMrfEmailNotifications,
     mutateMrfStatusTracker,

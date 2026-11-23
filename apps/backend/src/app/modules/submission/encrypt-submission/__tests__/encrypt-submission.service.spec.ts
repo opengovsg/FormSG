@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
+import { featureFlags } from 'formsg-shared/constants/feature-flags'
 import {
   BasicField,
   EmailResponse,
@@ -727,6 +728,74 @@ describe('encrypt-submission.service', () => {
               dataCollationData: expect.arrayContaining([
                 expect.objectContaining({
                   question: 'Name',
+                  answer: 'Test Answer',
+                }),
+              ]),
+            }),
+          )
+        })
+      })
+
+      describe('JSON for email notifications setting', () => {
+        const growthbookWithJsonSettingFlag = (isFlagOn: boolean) =>
+          ({
+            getAttributes: jest.fn(() => ({})),
+            setAttributes: jest.fn(),
+            isOn: jest.fn(
+              (flag: string) =>
+                flag === featureFlags.settingsIntegrationsJson && isFlagOn,
+            ),
+            getFeatureValue: jest.fn((_flag: string, def: unknown) => def),
+          }) as never
+
+        const submitToFormWithJsonTurnedOff = (isFlagOn: boolean) => {
+          MockFormService.retrieveFullFormById.mockReturnValue(
+            okAsync({
+              ...MOCK_NON_PAYMENT_ENCRYPT_FORM,
+              admin: { email: 'admin@example.com' },
+              isEmailJsonDisabled: true,
+            } as IPopulatedEncryptedForm),
+          )
+          const mockResponses: ProcessedFieldResponse[] = [
+            {
+              _id: new ObjectId().toHexString(),
+              question: 'Test Question',
+              answer: 'Test Answer',
+              fieldType: BasicField.ShortText,
+            },
+          ]
+          return performEncryptPostSubmissionActions({
+            submission: {
+              id: MOCK_SUBMISSION_ID,
+              form: new ObjectId(),
+              created: new Date(),
+            } as IEncryptedSubmissionSchema,
+            responses: mockResponses,
+            emailFields: mockResponses,
+            submissionAttachments: [],
+            respondentEmails: [],
+            growthbook: growthbookWithJsonSettingFlag(isFlagOn),
+          })
+        }
+
+        it('should leave the JSON out of the admin email when the admin has turned it off', async () => {
+          await submitToFormWithJsonTurnedOff(true)
+
+          expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
+          expect(
+            MockMailService.sendSubmissionToAdmin.mock.calls[0][0]
+              .dataCollationData,
+          ).toBeUndefined()
+        })
+
+        it('should keep the JSON in the admin email while the flag is off, even if the admin turned it off', async () => {
+          await submitToFormWithJsonTurnedOff(false)
+
+          expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith(
+            expect.objectContaining({
+              dataCollationData: expect.arrayContaining([
+                expect.objectContaining({
+                  question: 'Test Question',
                   answer: 'Test Answer',
                 }),
               ]),

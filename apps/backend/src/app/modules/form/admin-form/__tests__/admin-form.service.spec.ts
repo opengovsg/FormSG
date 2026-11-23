@@ -1267,6 +1267,7 @@ describe('admin-form.service', () => {
     const withCreationDefaults = <T>(formParams: T) => ({
       ...formParams,
       isSaveDraftEnabled: true,
+      isEmailJsonDisabled: false,
     })
 
     it('should successfully create form', async () => {
@@ -1291,6 +1292,25 @@ describe('admin-form.service', () => {
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
       expect(createSpy).toHaveBeenCalledWith(withCreationDefaults(formParams))
+    })
+
+    it('should start a new form with JSON for email notifications off when asked to', async () => {
+      // Arrange
+      const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
+        title: 'create form title',
+        admin: new ObjectId().toHexString(),
+        responseMode: FormResponseMode.Encrypt,
+      }
+      const createSpy = jest
+        .spyOn(FormModel, 'create')
+        .mockResolvedValueOnce({ _id: new ObjectId(), ...formParams } as never)
+      // Act
+      await AdminFormService.createForm(formParams, undefined, true)
+
+      // Assert
+      expect(createSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ isEmailJsonDisabled: true }),
+      )
     })
 
     it('should return DatabaseValidationError on invalid form params whilst creating form', async () => {
