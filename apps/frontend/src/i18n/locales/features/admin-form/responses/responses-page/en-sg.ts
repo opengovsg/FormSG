@@ -55,9 +55,9 @@ export const enSG: ResponsesResponsesPage = {
         },
         modal: {
           progressMessage:
-            'Up to {responsesCount} files are being downloaded into your destination folder. Navigating away from this page will stop the download.',
+            'Downloading files for {responsesCount} responses. Keep this page open until the download finishes.',
           zipProgressMessage:
-            '{responsesCount} responses are being added to a zip file, which is saved when the download finishes. Navigating away from this page will stop the download.',
+            'Adding {responsesCount} responses to a .zip file. Keep this page open until the download finishes, or nothing will be saved.',
         },
       },
       progressModal: {
