@@ -138,7 +138,9 @@ export const InactiveStepBlock = ({
   const fieldsSection = (
     <Stack>
       <Text textStyle={sectionLabelTextStyle}>
-        {t('features.adminForm.sidebar.workflow.respondentBlock.fieldsToFill')}
+        {t(
+          `features.adminForm.sidebar.workflow.respondentBlock.${isLoginShown ? 'assignedFields' : 'fieldsToFill'}`,
+        )}
       </Text>
       <Stack direction="column" spacing="0.25rem">
         {questionBadges}
