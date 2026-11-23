@@ -1,5 +1,8 @@
 import { useDisclosure } from '@chakra-ui/react'
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
+
+import { featureFlags } from 'formsg-shared/constants'
 
 import {
   fullScreenDecorator,
@@ -124,6 +127,23 @@ ConfirmationScreenPdfsOnlyDesktop.args = {
   },
 }
 
+const oneZipGrowthBook = new GrowthBook({
+  features: {
+    [featureFlags.attachmentsMultiUploadAndOneZip]: { defaultValue: true },
+  },
+})
+
+export const ConfirmationScreenOneZipDesktop = Template.bind({})
+ConfirmationScreenOneZipDesktop.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={oneZipGrowthBook}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+ConfirmationScreenOneZipDesktop.args =
+  ConfirmationScreenResponsesAndAttachmentsAndPdfsDesktop.args
+
 export const DownloadingStateDesktop = Template.bind({})
 DownloadingStateDesktop.parameters = {
   argos: { modes: viewportModes('mobile') },
@@ -134,6 +154,11 @@ DownloadingStateDesktop.args = {
   isDownloading: false,
   responsesCount: 12345,
 }
+
+export const DownloadingStateOneZipDesktop = Template.bind({})
+DownloadingStateOneZipDesktop.decorators =
+  ConfirmationScreenOneZipDesktop.decorators
+DownloadingStateOneZipDesktop.args = DownloadingStateDesktop.args
 
 export const CompleteStateDesktop = Template.bind({})
 CompleteStateDesktop.parameters = { argos: { modes: viewportModes('mobile') } }
