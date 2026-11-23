@@ -60,6 +60,7 @@ interface BasicFieldOptionProps extends FieldOptionProps {
 }
 
 interface MyInfoFieldOptionProps extends FieldOptionProps {
+  onSetup?: () => void
   fieldType: AllowedMyInfoFieldOption
 }
 
@@ -77,6 +78,8 @@ interface DraggableMyInfoFieldOptionProps extends Omit<
 > {
   index: number
   fieldType: AllowedMyInfoFieldOption
+  isDragDisabled?: boolean
+  onSetup?: () => void
 }
 
 export const DraggableBasicFieldListOption = ({
@@ -127,6 +130,7 @@ interface DraggableLoginIdentityFieldOptionProps extends Omit<
 > {
   index: number
   isDragDisabled?: boolean
+  onSetup?: () => void
   onConvert?: () => void
   attr: LoginIdentityAttribute
 }
@@ -174,6 +178,7 @@ export const DraggableLoginIdentityFieldListOption = ({
 }
 
 export const DraggableMyInfoFieldListOption = ({
+  isDragDisabled,
   fieldType,
   index,
   isDisabled,
@@ -181,7 +186,7 @@ export const DraggableMyInfoFieldListOption = ({
 }: DraggableMyInfoFieldOptionProps): JSX.Element => (
   <Draggable
     index={index}
-    isDragDisabled={isDisabled}
+    isDragDisabled={isDragDisabled || isDisabled}
     disableInteractiveElementBlocking
     draggableId={fieldType}
   >
@@ -257,7 +262,7 @@ export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
 )
 
 export const MyInfoFieldOption = forwardRef<MyInfoFieldOptionProps, 'button'>(
-  ({ fieldType, isDisabled, ...props }, ref) => {
+  ({ fieldType, isDisabled, onSetup, ...props }, ref) => {
     const meta = useMemo(
       () => MYINFO_FIELD_TO_DRAWER_META[fieldType],
       [fieldType],
@@ -273,12 +278,23 @@ export const MyInfoFieldOption = forwardRef<MyInfoFieldOptionProps, 'button'>(
     const updateCreateState = useFieldBuilderStore(updateCreateStateSelector)
 
     const handleClick = useCallback(() => {
-      if (!isDisabled) updateCreateState(newFieldMeta, numFields)
-    }, [newFieldMeta, numFields, updateCreateState, isDisabled])
+      if (isDisabled) return
+      if (onSetup) onSetup()
+      else updateCreateState(newFieldMeta, numFields)
+    }, [newFieldMeta, numFields, updateCreateState, isDisabled, onSetup])
 
     return (
       <FieldListOption
         {...props}
+        {...(onSetup
+          ? {
+              as: 'button' as const,
+              type: 'button' as const,
+              disabled: isDisabled,
+              w: '100%',
+              textAlign: 'left' as const,
+            }
+          : {})}
         isDisabled={isDisabled}
         onClick={handleClick}
         ref={ref}
@@ -291,6 +307,7 @@ export const MyInfoFieldOption = forwardRef<MyInfoFieldOptionProps, 'button'>(
 )
 
 interface LoginIdentityFieldOptionProps extends FieldOptionProps {
+  onSetup?: () => void
   onConvert?: () => void
   attr: LoginIdentityAttribute
 }
@@ -298,7 +315,7 @@ interface LoginIdentityFieldOptionProps extends FieldOptionProps {
 export const LoginIdentityFieldOption = forwardRef<
   LoginIdentityFieldOptionProps,
   'button'
->(({ attr, isDisabled, onConvert, ...props }, ref) => {
+>(({ attr, isDisabled, onSetup, onConvert, ...props }, ref) => {
   const { t } = useTranslation()
   const { data: form } = useCreateTabForm()
   const numFields = form?.form_fields?.length ?? 0
@@ -311,13 +328,30 @@ export const LoginIdentityFieldOption = forwardRef<
 
   const handleClick = useCallback(() => {
     if (isDisabled) return
-    if (onConvert) onConvert()
+    if (onSetup) onSetup()
+    else if (onConvert) onConvert()
     else updateCreateState(newFieldMeta, numFields)
-  }, [newFieldMeta, numFields, updateCreateState, isDisabled, onConvert])
+  }, [
+    newFieldMeta,
+    numFields,
+    updateCreateState,
+    isDisabled,
+    onConvert,
+    onSetup,
+  ])
 
   return (
     <FieldListOption
       {...props}
+      {...(onSetup
+        ? {
+            as: 'button' as const,
+            type: 'button' as const,
+            disabled: isDisabled,
+            w: '100%',
+            textAlign: 'left' as const,
+          }
+        : {})}
       isDisabled={isDisabled}
       onClick={handleClick}
       ref={ref}
