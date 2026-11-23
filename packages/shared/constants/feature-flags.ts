@@ -2,7 +2,6 @@ export const featureFlags = {
   turnstile: 'turnstile' as const,
   validateStripeEmailDomain: 'validateStripeEmailDomain' as const,
   chartsMaxResponseCount: 'charts-max-response-count' as const,
-  postmanSms: 'postmanSms' as const,
   mrfWebhooksV4: 'mrf-webhooks-v4' as const,
   enableMrfWebhooks: 'enable-mrf-webhooks' as const,
   spcpOidcStateNonce: 'spcp-oidc-state-nonce' as const,
