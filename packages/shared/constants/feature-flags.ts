@@ -1,5 +1,4 @@
 export const featureFlags = {
-  payment: 'payment' as const,
   turnstile: 'turnstile' as const,
   validateStripeEmailDomain: 'validateStripeEmailDomain' as const,
   chartsMaxResponseCount: 'charts-max-response-count' as const,
