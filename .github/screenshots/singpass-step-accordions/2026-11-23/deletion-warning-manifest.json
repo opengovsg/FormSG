@@ -1,0 +1,20 @@
+{
+  "clip": "deletion-warning",
+  "source": "Continuously captured browser-frame screen recording; no audio. Approximately 5 captures per second, with variable capture intervals. This is not full-frame-rate motion capture.",
+  "source_frames": 40,
+  "first_timestamp_ms": 1795425140487,
+  "last_timestamp_ms": 1795425148626,
+  "timestamp_span_seconds": 8.139,
+  "last_frame_hold_seconds": 0.186,
+  "timing": "Inter-frame durations use actual capture timestamps; final frame held for the median interval. Millisecond video time base.",
+  "output": "/private/tmp/formsg-pr10633-media/deletion-warning.mp4",
+  "contact_sheet": "/private/tmp/formsg-pr10633-media/deletion-warning-contact.jpg",
+  "codec": "h264",
+  "pixel_format": "yuv420p",
+  "width": 1280,
+  "height": 720,
+  "duration_seconds": 8.326,
+  "bytes": 126609,
+  "source_frames_modified": false,
+  "fixture": "Existing Storybook mixed-provider workflow fixture. Opened and cancelled provider-change warning; no deletion performed."
+}
