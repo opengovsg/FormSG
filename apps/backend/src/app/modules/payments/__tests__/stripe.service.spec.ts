@@ -26,7 +26,6 @@ import {
 
 import { InvalidDomainError } from '../../auth/auth.errors'
 import * as AuthService from '../../auth/auth.service'
-import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
 import { PaymentNotFoundError } from '../payments.errors'
 import * as PaymentsService from '../payments.service'
 import {
@@ -715,9 +714,6 @@ describe('stripe.service', () => {
         publicKey: 'mockPublicKey',
       }).populate('admin')) as IPopulatedEncryptedForm
 
-      const getFeatureFlagSpy = jest
-        .spyOn(FeatureFlagService, 'getFeatureFlag')
-        .mockReturnValueOnce(okAsync(true))
       const addPaymentAccountIdSpy = jest.spyOn(mockForm, 'addPaymentAccountId')
       const expectedAccountId = 'newAccountId'
       const stripeAccountsRetrieveApiSpy = jest
@@ -738,7 +734,6 @@ describe('stripe.service', () => {
       })
 
       // Assert
-      expect(getFeatureFlagSpy).toHaveBeenCalledTimes(1)
       expect(stripeAccountsRetrieveApiSpy).toHaveBeenCalledTimes(1)
       expect(authServiceSpy).toHaveBeenCalledTimes(1)
       expect(addPaymentAccountIdSpy).toHaveBeenCalledTimes(1)
@@ -753,9 +748,6 @@ describe('stripe.service', () => {
         publicKey: 'mockPublicKey',
       }).populate('admin')) as IPopulatedEncryptedForm
 
-      const getFeatureFlagSpy = jest
-        .spyOn(FeatureFlagService, 'getFeatureFlag')
-        .mockReturnValueOnce(okAsync(true))
       const expectedAccountId = 'existingAccountId'
       mockForm.payments_channel = {
         target_account_id: expectedAccountId,
@@ -780,7 +772,6 @@ describe('stripe.service', () => {
       })
 
       // Assert
-      expect(getFeatureFlagSpy).toHaveBeenCalledTimes(1)
       expect(result._unsafeUnwrap()).toBe(expectedAccountId)
       expect(stripeAccountsRetrieveApiSpy).toHaveBeenCalledTimes(1)
       expect(authServiceSpy).toHaveBeenCalledTimes(1)
@@ -795,9 +786,6 @@ describe('stripe.service', () => {
       })) as IPopulatedEncryptedForm
       const addPaymentAccountIdSpy = jest.spyOn(mockForm, 'addPaymentAccountId')
 
-      const getFeatureFlagSpy = jest
-        .spyOn(FeatureFlagService, 'getFeatureFlag')
-        .mockReturnValueOnce(okAsync(true))
       const stripeAccountsRetrieveApiSpy = jest
         .spyOn(stripe.accounts, 'retrieve')
         .mockReturnValueOnce(
@@ -816,44 +804,11 @@ describe('stripe.service', () => {
       })
 
       // Assert
-      expect(getFeatureFlagSpy).toHaveBeenCalledTimes(1)
       expect(stripeAccountsRetrieveApiSpy).toHaveBeenCalledTimes(1)
       expect(authServiceSpy).toHaveBeenCalledTimes(1)
       expect(addPaymentAccountIdSpy).toHaveBeenCalledTimes(0)
       expect(result.isErr()).toBeTrue()
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(InvalidDomainError)
-    })
-
-    it('should not check email whitelisting if feature flag is disabled', async () => {
-      // Arrange
-      const mockForm = (await new EncryptedForm({
-        admin: MOCK_USER,
-        title: 'Test Form',
-        publicKey: 'mockPublicKey',
-      }).populate('admin')) as IPopulatedEncryptedForm
-
-      const getFeatureFlagSpy = jest
-        .spyOn(FeatureFlagService, 'getFeatureFlag')
-        .mockReturnValueOnce(okAsync(false))
-      const addPaymentAccountIdSpy = jest.spyOn(mockForm, 'addPaymentAccountId')
-      const stripeAccountsRetrieveApiSpy = jest.spyOn(
-        stripe.accounts,
-        'retrieve',
-      )
-      const authServiceSpy = jest.spyOn(AuthService, 'validateEmailDomain')
-
-      // Act
-      const result = await StripeService.linkStripeAccountToForm(mockForm, {
-        accountId: 'accountId',
-        publishableKey: 'publishableKey',
-      })
-
-      // Assert
-      expect(getFeatureFlagSpy).toHaveBeenCalledTimes(1)
-      expect(stripeAccountsRetrieveApiSpy).toHaveBeenCalledTimes(0)
-      expect(authServiceSpy).toHaveBeenCalledTimes(0)
-      expect(addPaymentAccountIdSpy).toHaveBeenCalledTimes(1)
-      expect(result.isOk()).toBeTrue()
     })
 
     it('should connect stripe account when form has email fields with pdf summary disabled', async () => {
@@ -875,9 +830,6 @@ describe('stripe.service', () => {
         ],
       }).populate('admin')) as IPopulatedEncryptedForm
 
-      const getFeatureFlagSpy = jest
-        .spyOn(FeatureFlagService, 'getFeatureFlag')
-        .mockReturnValueOnce(okAsync(true))
       const addPaymentAccountIdSpy = jest.spyOn(mockForm, 'addPaymentAccountId')
       const stripeAccountsRetrieveApiSpy = jest
         .spyOn(stripe.accounts, 'retrieve')
@@ -897,7 +849,6 @@ describe('stripe.service', () => {
       })
 
       // Assert
-      expect(getFeatureFlagSpy).toHaveBeenCalledTimes(1)
       expect(stripeAccountsRetrieveApiSpy).toHaveBeenCalledTimes(1)
       expect(authServiceSpy).toHaveBeenCalledTimes(1)
       expect(addPaymentAccountIdSpy).toHaveBeenCalledTimes(1)
@@ -923,9 +874,6 @@ describe('stripe.service', () => {
         ],
       }).populate('admin')) as IPopulatedEncryptedForm
 
-      const getFeatureFlagSpy = jest
-        .spyOn(FeatureFlagService, 'getFeatureFlag')
-        .mockReturnValueOnce(okAsync(true))
       const addPaymentAccountIdSpy = jest.spyOn(mockForm, 'addPaymentAccountId')
       const stripeAccountsRetrieveApiSpy = jest
         .spyOn(stripe.accounts, 'retrieve')
@@ -945,7 +893,6 @@ describe('stripe.service', () => {
       })
 
       // Assert
-      expect(getFeatureFlagSpy).toHaveBeenCalledTimes(0)
       expect(stripeAccountsRetrieveApiSpy).toHaveBeenCalledTimes(0)
       expect(authServiceSpy).toHaveBeenCalledTimes(0)
       expect(addPaymentAccountIdSpy).not.toHaveBeenCalled()

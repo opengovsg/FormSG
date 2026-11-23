@@ -2,7 +2,6 @@
 /// <reference types="stripe-event-types" />
 import { GrowthBook } from '@growthbook/growthbook'
 import cuid from 'cuid'
-import { featureFlags } from 'formsg-shared/constants'
 import {
   EmailFieldBase,
   PaymentStatus,
@@ -31,7 +30,6 @@ import {
 import { InvalidDomainError } from '../auth/auth.errors'
 import * as AuthService from '../auth/auth.service'
 import { DatabaseError, DatabaseWriteConflictError } from '../core/core.errors'
-import { getFeatureFlag } from '../feature-flags/feature-flags.service'
 import { FormNotFoundError } from '../form/form.errors'
 import {
   PendingSubmissionNotFoundError,
@@ -731,48 +729,36 @@ export const linkStripeAccountToForm = (
     )
   }
 
-  return getFeatureFlag(featureFlags.validateStripeEmailDomain, {
-    // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
-    // to the client as if the flag is not found.
-    fallbackValue: false,
-    logMeta,
-  })
-    .andThen((shouldValidateStripeEmailDomain) => {
-      if (!shouldValidateStripeEmailDomain) {
-        // skip validation
-        return okAsync(undefined)
-      }
-
-      return ResultAsync.fromPromise(
-        stripe.accounts.retrieve(accountId),
-        (error) => {
-          logger.error({
-            message: 'Error retriving Stripe account',
-            meta: {
-              action: 'linkStripeAccountToForm',
-              stripeAccountId: accountId,
-            },
-            error,
-          })
-          return new StripeFetchError(String(error))
+  return ResultAsync.fromPromise(
+    stripe.accounts.retrieve(accountId),
+    (error) => {
+      logger.error({
+        message: 'Error retriving Stripe account',
+        meta: {
+          action: 'linkStripeAccountToForm',
+          stripeAccountId: accountId,
         },
-      ).andThen((account) => {
-        // Check if the email domain is whitelisted
-        if (!account.email) {
-          logger.error({
-            message: 'Error retriving Stripe account email',
-            meta: {
-              action: 'linkStripeAccountToForm',
-              stripeAccountId: accountId,
-              account,
-            },
-          })
-          return errAsync(
-            new StripeAccountError('Stripe account email is missing'),
-          )
-        }
-        return AuthService.validateEmailDomain(account.email)
+        error,
       })
+      return new StripeFetchError(String(error))
+    },
+  )
+    .andThen((account) => {
+      // Check if the email domain is whitelisted
+      if (!account.email) {
+        logger.error({
+          message: 'Error retriving Stripe account email',
+          meta: {
+            action: 'linkStripeAccountToForm',
+            stripeAccountId: accountId,
+            account,
+          },
+        })
+        return errAsync(
+          new StripeAccountError('Stripe account email is missing'),
+        )
+      }
+      return AuthService.validateEmailDomain(account.email)
     })
     .andThen(() =>
       ResultAsync.fromPromise(
