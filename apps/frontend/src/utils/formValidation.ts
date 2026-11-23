@@ -39,21 +39,30 @@ export const useFormTitleValidationRules = () => {
   )
 }
 
-export const useRequiredAdminEmailValidationRules = () => {
+interface AdminEmailListValidationOptions {
+  isRequired?: boolean
+  maxEmails?: number
+}
+
+export const useAdminEmailListValidationRules = ({
+  isRequired = true,
+  maxEmails,
+}: AdminEmailListValidationOptions = {}) => {
   const { t } = useTranslation()
 
   return useMemo(
     () => ({
       validate: {
-        required: (emails: string[]) => {
+        required: (emails: string[] = []) => {
           return (
+            !isRequired ||
             emails.filter(Boolean).length > 0 ||
             t(
               'utils.formValidation.requiredEmailAdminValidationRules.validate.required',
             )
           )
         },
-        valid: (emails: string[]) => {
+        valid: (emails: string[] = []) => {
           return (
             emails.filter(Boolean).every((e) => validator.isEmail(e)) ||
             t(
@@ -61,7 +70,7 @@ export const useRequiredAdminEmailValidationRules = () => {
             )
           )
         },
-        duplicate: (emails: string[]) => {
+        duplicate: (emails: string[] = []) => {
           const truthyEmails = emails.filter(Boolean)
           return (
             new Set(truthyEmails).size === truthyEmails.length ||
@@ -70,33 +79,27 @@ export const useRequiredAdminEmailValidationRules = () => {
             )
           )
         },
-        maxLength: (emails: string[]) => {
+        maxLength: (emails: string[] = []) => {
           return (
-            emails.filter(Boolean).length <= MAX_EMAIL_LENGTH ||
+            maxEmails === undefined ||
+            emails.filter(Boolean).length <= maxEmails ||
             t(
               'utils.formValidation.requiredEmailAdminValidationRules.validate.maxLength',
-              { MAX_EMAIL_LENGTH },
+              { maxEmailLength: maxEmails },
             )
           )
         },
       },
     }),
-    [t],
+    [isRequired, maxEmails, t],
   )
 }
 
-export const useOptionalAdminEmailValidationRules = () => {
-  const requiredAdminEmailValidationRules =
-    useRequiredAdminEmailValidationRules()
+export const useRequiredAdminEmailValidationRules = () =>
+  useAdminEmailListValidationRules({ maxEmails: MAX_EMAIL_LENGTH })
 
-  return useMemo(
-    () => ({
-      ...requiredAdminEmailValidationRules,
-      validate: {
-        ...requiredAdminEmailValidationRules.validate,
-        required: () => true,
-      },
-    }),
-    [requiredAdminEmailValidationRules],
-  )
-}
+export const useOptionalAdminEmailValidationRules = () =>
+  useAdminEmailListValidationRules({
+    isRequired: false,
+    maxEmails: MAX_EMAIL_LENGTH,
+  })

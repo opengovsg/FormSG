@@ -2,6 +2,7 @@ import {
   FormWorkflowStepBase,
   FormWorkflowStepConditional,
   FormWorkflowStepDynamic,
+  FormWorkflowStepHybrid,
   FormWorkflowStepStatic,
   WorkflowType,
 } from 'formsg-shared/types'
@@ -34,4 +35,13 @@ export interface IWorkflowStepConditionalSchema
   workflow_type: WorkflowType.Conditional
   edit: IFieldSchema['_id'][]
   conditional_field: IFieldSchema['_id']
+}
+
+export interface IWorkflowStepHybridSchema
+  extends IWorkflowStepSchema, FormWorkflowStepHybrid, Document {
+  workflow_type: WorkflowType.Hybrid
+  emails: string[]
+  edit: IFieldSchema['_id'][]
+  email_fields: IFieldSchema['_id'][]
+  dropdown_fields: IFieldSchema['_id'][]
 }

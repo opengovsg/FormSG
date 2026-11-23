@@ -9,7 +9,6 @@ import {
 import { useTranslation } from 'react-i18next'
 import { Box, FormControl } from '@chakra-ui/react'
 import { get, isEmpty, isEqual } from 'lodash'
-import isEmail from 'validator/lib/isEmail'
 
 import {
   EmailFormSettings,
@@ -21,9 +20,9 @@ import {
   useOptionalAdminEmailValidationRules,
   useRequiredAdminEmailValidationRules,
 } from '~utils/formValidation'
+import { EmailListInput } from '~components/EmailListInput'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
-import { TagInput } from '~components/TagInput'
 
 import { useUser } from '~features/user/queries'
 
@@ -49,7 +48,7 @@ const AdminEmailRecipientsInput = ({
   onSubmit,
   isDisabled,
 }: AdminEmailRecipientsInputProps): JSX.Element => {
-  const { getValues, setValue, control, handleSubmit } = useFormContext<{
+  const { getValues, control, handleSubmit } = useFormContext<{
     emails: string[]
     isRequired: boolean
   }>()
@@ -62,13 +61,8 @@ const AdminEmailRecipientsInput = ({
     useOptionalAdminEmailValidationRules()
 
   const handleBlur = useCallback(() => {
-    // Get rid of bad tags before submitting.
-    setValue(
-      'emails',
-      (getValues('emails') || []).filter((email) => isEmail(email)),
-    )
     handleSubmit(onSubmit)()
-  }, [getValues, handleSubmit, onSubmit, setValue])
+  }, [handleSubmit, onSubmit])
 
   const emailsFieldPlaceholder =
     getValues(EMAILS_FIELD_NAME)?.length > 0 ? undefined : 'me@example.com'
@@ -86,11 +80,10 @@ const AdminEmailRecipientsInput = ({
         }>
       }
       render={({ field }) => (
-        <TagInput
+        <EmailListInput
           placeholder={isDisabled ? undefined : emailsFieldPlaceholder}
           {...field}
           value={field.value as string[]}
-          tagValidation={isEmail}
           onBlur={handleBlur}
         />
       )}

@@ -121,5 +121,9 @@ export const useAddFieldPicker = ({
     [openBuilderInNewTab],
   )
 
-  return { withAddFieldItem, withAddFieldAction }
+  return {
+    withAddFieldItem,
+    withAddFieldAction,
+    openAddField: openBuilderInNewTab,
+  }
 }

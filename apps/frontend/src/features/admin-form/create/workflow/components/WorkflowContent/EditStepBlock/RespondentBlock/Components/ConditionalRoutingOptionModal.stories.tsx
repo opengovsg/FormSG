@@ -3,11 +3,11 @@ import { expect, screen, userEvent, waitFor } from 'storybook/test'
 
 import { StoryRouter } from '~utils/storybook'
 
-import { ConditionalRoutingConfig } from './ConditionalRoutingOption'
 import {
   ConditionalRoutingOptionModal,
   ConditionalRoutingOptionModalProps,
 } from './ConditionalRoutingOptionModal'
+import { ConditionalRoutingConfig } from './DropdownRecipientsMapping'
 
 const ModalContainer = ({
   isOpen,
@@ -38,7 +38,6 @@ const ModalContainer = ({
       onSubmit={onSubmit}
       isSubmitDisabled={isSubmitDisabled}
       validateCsvFile={validateCsvFile}
-      conditionalFieldItems={[]}
       isLoading={false}
       existingCsv={existingCsv}
     />

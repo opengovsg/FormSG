@@ -2,8 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Box, Divider, Stack, Text } from '@chakra-ui/react'
-import { isEqual, uniq } from 'lodash'
-import isEmail from 'validator/lib/isEmail'
+import { isEqual } from 'lodash'
 
 import { MultirespondentFormSettings } from 'formsg-shared/types/form'
 
@@ -77,7 +76,7 @@ export const ActiveCompletionEmailCard = ({
         stepOneEmailNotificationFieldId,
     },
   })
-  const { control, getValues, setValue } = formMethods
+  const { control } = formMethods
 
   const wrapperRef = useRef<HTMLDivElement | null>(null)
 
@@ -125,20 +124,11 @@ export const ActiveCompletionEmailCard = ({
   const otherPartiesPlaceholder =
     (otherParties?.length ?? 0) > 0 ? undefined : 'me@example.com'
 
-  const handleOtherPartiesBlur = () => {
-    const current = getValues(OTHER_PARTIES_EMAIL_INPUT_NAME) ?? []
-    const cleaned = uniq(current.filter((email) => isEmail(email)))
-    if (!isEqual(cleaned, current)) {
-      setValue(OTHER_PARTIES_EMAIL_INPUT_NAME, cleaned, { shouldDirty: true })
-    }
-  }
-
   const recipientControls = useMrfEmailRecipientControls({
     control,
     isDisabled,
     isHighContrast: true,
     otherPartiesPlaceholder,
-    onOtherPartiesBlur: handleOtherPartiesBlur,
   })
 
   const hasSubmittedForPendingSwitch = useRef(false)
@@ -244,7 +234,6 @@ export const ActiveCompletionEmailCard = ({
             isDisabled={isDisabled}
             isHighContrast
             otherPartiesPlaceholder={otherPartiesPlaceholder}
-            onOtherPartiesBlur={handleOtherPartiesBlur}
             heading={
               <Text textStyle="body-1" textColor="secondary.700" mb="1.5rem">
                 {t(

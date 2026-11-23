@@ -23,6 +23,7 @@ import {
 import { IPopulatedForm, IPopulatedUser } from 'src/types'
 
 import { MalformedParametersError } from '../../../core/core.errors'
+import { prepareAuthFieldDeletion } from '../admin-form.auth-field-deletion'
 import { FormChangedWhileEditingError } from '../admin-form.errors'
 import * as AdminFormService from '../admin-form.service'
 import { updateFormWorkflowStep } from '../admin-form.service'
@@ -542,5 +543,70 @@ describe('guided authentication workflow changes', () => {
     expect(
       (await MultirespondentFormModel.findById(form._id).orFail()).workflow,
     ).toHaveLength(3)
+  })
+})
+
+describe('prepareAuthFieldDeletion', () => {
+  const sexId = new ObjectId()
+  const emailId = new ObjectId()
+  const dropdownId = new ObjectId()
+  const lastModified = new Date()
+  const form = {
+    status: FormStatus.Private,
+    lastModified,
+    form_fields: [
+      {
+        _id: sexId,
+        fieldType: BasicField.Dropdown,
+        title: 'Sex',
+        myInfo: { attr: MyInfoAttribute.Sex },
+      },
+      { _id: emailId, fieldType: BasicField.Email, title: 'Email' },
+      { _id: dropdownId, fieldType: BasicField.Dropdown, title: 'Team' },
+    ],
+    form_logics: [],
+  } as unknown as IPopulatedForm
+  const prepare = (hybridStep: Record<string, unknown>) =>
+    prepareAuthFieldDeletion({
+      form,
+      workflow: [
+        { ...step('a@example.com'), _id: 'step-0' },
+        {
+          _id: 'step-1',
+          workflow_type: WorkflowType.Hybrid,
+          emails: [],
+          email_fields: [],
+          dropdown_fields: [],
+          edit: [],
+          ...hybridStep,
+        },
+      ] as FormWorkflowDto,
+      authType: FormAuthType.NIL,
+      confirmedIds: [String(sexId)],
+      expectedLastModified: lastModified.toISOString(),
+    })
+
+  it('drops only the removed field from a hybrid step', () => {
+    const result = prepare({
+      email_fields: [String(emailId)],
+      dropdown_fields: [String(sexId), String(dropdownId)],
+    })
+    expect(result._unsafeUnwrap().workflow[1]).toMatchObject({
+      workflow_type: WorkflowType.Hybrid,
+      email_fields: [String(emailId)],
+      dropdown_fields: [String(dropdownId)],
+    })
+  })
+
+  it('resets a hybrid step with no recipients left to a static step', () => {
+    const rerouted = prepare({
+      dropdown_fields: [String(sexId)],
+    })._unsafeUnwrap().workflow[1]
+    expect(rerouted).toMatchObject({
+      workflow_type: WorkflowType.Static,
+      emails: [],
+    })
+    expect(rerouted).not.toHaveProperty('email_fields')
+    expect(rerouted).not.toHaveProperty('dropdown_fields')
   })
 })

@@ -23,6 +23,9 @@ export interface Workflow {
     fieldsToFill: string
     clickToEdit: string
   }
+  respondentSource: {
+    required: string
+  }
   staticRespondent: {
     invalidEmails: string
   }
@@ -33,6 +36,7 @@ export interface Workflow {
     select: string
   }
   conditionalRouting: {
+    csvNeededFor: string
     title: string
     addEmailsToOptions: string
     validation: {

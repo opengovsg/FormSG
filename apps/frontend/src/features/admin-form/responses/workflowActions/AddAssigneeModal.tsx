@@ -9,8 +9,8 @@ import {
 } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
+import { EmailListInput } from '~components/EmailListInput'
 import FormLabel from '~components/FormControl/FormLabel'
-import { TagInput } from '~components/TagInput'
 
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 
@@ -110,13 +110,12 @@ export const AddAssigneeModal = ({
         </Box>
         <FormControl isInvalid={!!error}>
           <FormLabel isRequired>{t(`${I18N_PREFIX}.label`)}</FormLabel>
-          <TagInput
+          <EmailListInput
             value={emails}
             onChange={(values) =>
               setEmails(values.filter((value) => value.trim() !== ''))
             }
             placeholder={emails.length > 0 ? undefined : 'me@example.com'}
-            tagValidation={isEmail}
           />
           {error ? (
             <FormErrorMessage>{error}</FormErrorMessage>

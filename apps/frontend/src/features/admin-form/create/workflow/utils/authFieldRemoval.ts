@@ -102,7 +102,11 @@ export const getAffectedAuthFieldRules = (
       (step.workflow_type === WorkflowType.Dynamic &&
         removed.has(step.field)) ||
       (step.workflow_type === WorkflowType.Conditional &&
-        removed.has(step.conditional_field))
+        removed.has(step.conditional_field)) ||
+      (step.workflow_type === WorkflowType.Hybrid &&
+        [...step.email_fields, ...step.dropdown_fields].some((id) =>
+          removed.has(id),
+        ))
     )
       rules.push(`Step ${index + 1}: respondent routing`)
     if (step.approval_field && removed.has(step.approval_field))

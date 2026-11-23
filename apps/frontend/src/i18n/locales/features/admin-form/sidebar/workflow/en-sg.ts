@@ -20,6 +20,9 @@ export const enSG: Workflow = {
     fieldsToFill: 'Fields to fill',
     clickToEdit: 'Click to edit',
   },
+  respondentSource: {
+    required: 'Type at least one email, or choose a field.',
+  },
   staticRespondent: {
     invalidEmails:
       "Enter valid emails separated by commas, like me@example.com. Invalid emails won't be saved.",
@@ -31,6 +34,7 @@ export const enSG: Workflow = {
     select: 'Select a field',
   },
   conditionalRouting: {
+    csvNeededFor: 'Update the CSV options and emails for {fields}',
     title: 'Emails assigned to options in a Dropdown field',
     addEmailsToOptions: 'Assign emails to options',
     validation: {

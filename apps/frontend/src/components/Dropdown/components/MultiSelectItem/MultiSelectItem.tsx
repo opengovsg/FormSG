@@ -5,6 +5,7 @@ import { useMultiSelectContext } from '~components/Dropdown/MultiSelectContext'
 import { useSelectContext } from '~components/Dropdown/SelectContext'
 import { ComboboxItem } from '~components/Dropdown/types'
 import {
+  itemIsObject,
   itemToIcon,
   itemToLabelString,
 } from '~components/Dropdown/utils/itemUtils'
@@ -37,6 +38,7 @@ export const MultiSelectItem = ({
     return {
       label: itemToLabelString(item),
       icon: itemToIcon(item),
+      isInvalid: itemIsObject(item) && !!item.isInvalid,
     }
   }, [item])
 
@@ -73,7 +75,8 @@ export const MultiSelectItem = ({
   return (
     <Tag
       title={itemMeta.label}
-      colorScheme="secondary"
+      colorScheme={itemMeta.isInvalid ? 'danger' : 'secondary'}
+      aria-invalid={itemMeta.isInvalid || undefined}
       m="2px"
       h="2rem"
       {...getSelectedItemProps({

@@ -1,3 +1,4 @@
+import { enSG as emailSourceInput } from './components/email-source-input'
 import { enSG as pagination } from './components/pagination'
 import { enSG as validationConstants } from './constants/validation'
 import { enSG as adminForm } from './features/admin-form'
@@ -35,6 +36,7 @@ export const enSG: FallbackTranslation = {
       fieldValidation,
     },
     components: {
+      emailSourceInput,
       pagination,
     },
     constants: {
