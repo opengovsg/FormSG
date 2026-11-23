@@ -51,6 +51,7 @@ export interface ResponsesResponsesPage {
       progressModal: {
         completeScreen: {
           downloadComplete: string
+          allFilesDownloaded: string
           backToResponses: string
           allResponsesSomeFilesFailed: string
           someResponsesSomeFilesFailed: string

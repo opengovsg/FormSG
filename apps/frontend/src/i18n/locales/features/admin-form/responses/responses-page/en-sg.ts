@@ -63,6 +63,7 @@ export const enSG: ResponsesResponsesPage = {
       progressModal: {
         completeScreen: {
           downloadComplete: 'Download complete',
+          allFilesDownloaded: 'All files have been downloaded successfully.',
           backToResponses: 'Back to responses',
           allResponsesSomeFilesFailed:
             'All responses have been downloaded. Some files could not be downloaded and are marked in the zip.',

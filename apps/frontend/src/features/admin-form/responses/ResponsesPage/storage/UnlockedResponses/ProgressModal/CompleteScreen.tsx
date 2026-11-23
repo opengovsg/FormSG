@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Badge,
   Icon,
   ListItem,
   ModalBody,
@@ -10,7 +9,6 @@ import {
   Stack,
   Text,
   UnorderedList,
-  Wrap,
 } from '@chakra-ui/react'
 import simplur from 'simplur'
 
@@ -28,7 +26,6 @@ import { getFailedDownloadsSummary } from '../../utils/failedDownloads'
 interface CompleteScreenProps {
   isWithAttachments: boolean
   onClose: () => void
-  isBeta?: boolean
   downloadMetadata?: DownloadResult
 }
 
@@ -36,7 +33,6 @@ export const CompleteScreen = ({
   isWithAttachments,
   onClose,
   downloadMetadata,
-  isBeta = true,
 }: CompleteScreenProps): JSX.Element => {
   const { t } = useTranslation()
   const isMobile = useIsMobile()
@@ -58,9 +54,9 @@ export const CompleteScreen = ({
           )
     }
     if (successCount >= expectedCount) {
-      return `All responses${
-        isWithAttachments ? ' and attachments' : ''
-      } have been downloaded successfully.`
+      return t(
+        'features.adminForm.responses.responsesPage.storage.unlockedResponses.progressModal.completeScreen.allFilesDownloaded',
+      )
     }
     // Success count is less than expected count.
     // This means some responses were not downloaded successfully.
@@ -99,23 +95,9 @@ export const CompleteScreen = ({
     <>
       <ModalCloseButton />
       <ModalHeader color="secondary.700" pr="4.5rem">
-        <Wrap shouldWrapChildren direction="row" align="center">
-          <Text>
-            {t(
-              'features.adminForm.responses.responsesPage.storage.unlockedResponses.progressModal.completeScreen.downloadComplete',
-            )}
-          </Text>
-          {isBeta ? (
-            <Badge
-              w="fit-content"
-              colorScheme="primary"
-              variant="subtle"
-              color="secondary.500"
-            >
-              {t('features.common.betaBadgeLabel')}
-            </Badge>
-          ) : null}
-        </Wrap>
+        {t(
+          'features.adminForm.responses.responsesPage.storage.unlockedResponses.progressModal.completeScreen.downloadComplete',
+        )}
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap" color="secondary.500">
         <Stack spacing="1rem">
