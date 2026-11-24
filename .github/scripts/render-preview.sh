@@ -23,7 +23,14 @@ find_service() {
 }
 
 deploy() {
-  render POST "/services/$1/deploys" '{"clearCache":"do_not_clear"}' >/dev/null
+  render POST "/services/$1/deploys" "$(jq -n --arg sha "$2" '{clearCache: "do_not_clear", commitId: $sha}')" >/dev/null
+}
+
+deploy_unless_current() {
+  local current
+  current=$(render GET "/services/$1/deploys?limit=1" |
+    jq -r --arg sha "$2" '.[0].deploy | select(.commit.id == $sha and (.status | IN("build_failed", "update_failed", "canceled", "deactivated") | not)) | .id')
+  if [ -z "$current" ]; then deploy "$1" "$2"; fi
 }
 
 set_env() {
@@ -47,13 +54,14 @@ output() {
 
 up() {
   : "${RENDER_GROWTHBOOK_CLIENT_KEY:?}"
-  local name=$1 branch=$2 existing id url suspended created
+  local name=$1 branch=$2 sha=$3 existing id url suspended created
   existing=$(find_service "$name")
   if [ -n "$existing" ]; then
     read -r id url suspended <<<"$existing"
+    render PATCH "/services/$id" '{"autoDeployTrigger":"off"}' >/dev/null
     if [ "$suspended" = suspended ]; then render POST "/services/$id/resume" >/dev/null; fi
     preview_env "$id" "$url"
-    deploy "$id"
+    deploy_unless_current "$id" "$sha"
     created=false
   else
     created=$(jq -n --arg name "$name" --arg owner "$OWNER_ID" --arg repo "$REPO_URL" --arg branch "$branch" '{
@@ -62,7 +70,7 @@ up() {
       ownerId: $owner,
       repo: $repo,
       branch: $branch,
-      autoDeploy: "yes",
+      autoDeployTrigger: "off",
       envVars: [{key: "PORT", value: "4545"}],
       serviceDetails: {
         runtime: "docker",
@@ -81,7 +89,7 @@ up() {
     fi
     render POST "/env-groups/$ENV_GROUP_ID/services/$id" >/dev/null
     preview_env "$id" "$url"
-    deploy "$id"
+    deploy "$id" "$sha"
     created=true
   fi
   output url "$url"
@@ -102,7 +110,7 @@ down() {
 }
 
 wake() {
-  local name=$1 sha=$2 existing id url suspended deployed
+  local name=$1 sha=$2 existing id url suspended
   existing=$(find_service "$name")
   if [ -z "$existing" ]; then
     output woke missing
@@ -115,8 +123,7 @@ wake() {
     return
   fi
   render POST "/services/$id/resume" >/dev/null
-  deployed=$(render GET "/services/$id/deploys?limit=1" | jq -r '.[0].deploy.commit.id // empty')
-  if [ "$deployed" != "$sha" ]; then deploy "$id"; fi
+  deploy_unless_current "$id" "$sha"
   output woke true
 }
 
@@ -206,10 +213,10 @@ sweep() {
 }
 
 case "${1:-}" in
-  up) up "$2" "$3" ;;
+  up) up "$2" "$3" "$4" ;;
   down) down "$2" ;;
   wake) wake "$2" "$3" ;;
   await) await "$2" "$3" ;;
   sweep) sweep ;;
-  *) echo "usage: $0 up <service-name> <branch> | down <service-name> | wake <service-name> <sha> | await <service-name> <sha> | sweep" >&2; exit 64 ;;
+  *) echo "usage: $0 up <service-name> <branch> <sha> | down <service-name> | wake <service-name> <sha> | await <service-name> <sha> | sweep" >&2; exit 64 ;;
 esac
