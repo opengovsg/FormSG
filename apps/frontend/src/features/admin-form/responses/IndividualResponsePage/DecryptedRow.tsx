@@ -29,16 +29,14 @@ type DecryptedRowProps = DecryptedRowBaseProps & {
 
 function DecryptedQuestionLabel({ row }: DecryptedRowBaseProps) {
   const { t } = useTranslation()
-  const keepV4AttachmentPrefix = useFeatureIsOn(
-    featureFlags.keepV4AttachmentPrefix,
-  )
+  const keepV4ResponseFormat = useFeatureIsOn(featureFlags.keepV4ResponseFormat)
   return (
     <FormLabel questionNumber={`${row.questionNumber}.`} isRequired>
       {getVerifiedQuestionLabel(
         getAttachmentQuestionLabel({
           question: row.question,
           fieldType: row.fieldType,
-          keepV4AttachmentPrefix,
+          keepV4ResponseFormat,
         }),
         !!row.signature,
         t('features.common.verified'),
@@ -87,9 +85,7 @@ const DecryptedAttachmentRow = ({
   attachmentDecryptionKey,
 }: DecryptedRowProps) => {
   const { t } = useTranslation()
-  const keepV4AttachmentPrefix = useFeatureIsOn(
-    featureFlags.keepV4AttachmentPrefix,
-  )
+  const keepV4ResponseFormat = useFeatureIsOn(featureFlags.keepV4ResponseFormat)
 
   const { downloadAttachmentMutation } = useMutateDownloadAttachments()
 
@@ -106,7 +102,7 @@ const DecryptedAttachmentRow = ({
     <Stack>
       <DecryptedQuestionLabel row={row} />
       <Text textStyle="body-1">
-        {keepV4AttachmentPrefix ? `${t('features.common.filename')}: ` : null}
+        {keepV4ResponseFormat ? `${t('features.common.filename')}: ` : null}
         {row.answer && (
           <Button
             variant="link"
