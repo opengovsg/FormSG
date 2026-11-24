@@ -23,6 +23,7 @@ import { OPEN_WORKFLOW_TAB_STATE } from '~features/admin-form/create/common/Open
 import { StepLabel } from '~features/admin-form/create/workflow/components/WorkflowContent/StepLabel'
 import { WorkflowStepBlockDivider } from '~features/admin-form/create/workflow/components/WorkflowContent/WorkflowStepBlockDivider'
 import { useWorkflowSurfaces } from '~features/admin-form/create/workflow/hooks/useWorkflowSurfaces'
+import { getWorkflowStepLabel } from '~features/admin-form/create/workflow/utils/getWorkflowStepLabel'
 
 import {
   StepAuthSettingsEditor,
@@ -35,6 +36,11 @@ interface StepLoginCardsProps {
 }
 const COPY_KEY = 'features.adminForm.sidebar.workflow.stepLogin.settings'
 
+const isAnotherDraftPending = (
+  drafts: Record<string, StepLoginDraft>,
+  id: string,
+) => Object.entries(drafts).some(([key, draft]) => key !== id && draft.pending)
+
 export const StepLoginCards = ({
   form,
   settings,
@@ -43,9 +49,10 @@ export const StepLoginCards = ({
   const { formId } = useParams()
   const navigate = useNavigate()
   const { cardRadius } = useWorkflowSurfaces()
-  const [isSaving, setIsSaving] = useState(false)
-  const saveLock = useRef(false)
-  const [workflowRequested, setWorkflowRequested] = useState(false)
+  const [savingControl, setSavingControl] = useState<'esrvcId' | 'other'>()
+  const [settledSaves, setSettledSaves] = useState(0)
+  const [hasQueuedClick, setHasQueuedClick] = useState(false)
+  const inFlightSave = useRef<Promise<boolean> | null>(null)
   const otherMutations = useIsMutating()
   const [drafts, setDrafts] = useState<Record<string, StepLoginDraft>>({})
   const draftsRef = useRef(drafts)
@@ -60,51 +67,73 @@ export const StepLoginCards = ({
     [],
   )
   const runSave = useCallback(
-    async (id: string, action: () => Promise<void>) => {
-      if (
-        saveLock.current ||
-        Object.entries(draftsRef.current).some(
-          ([key, draft]) => key !== id && draft.pending,
-        )
+    async (id: string, action: () => Promise<void>, isEsrvcIdSave = false) => {
+      if (inFlightSave.current || isAnotherDraftPending(draftsRef.current, id))
+        return false
+      setSavingControl(isEsrvcIdSave ? 'esrvcId' : 'other')
+      const save = action().then(
+        () => true,
+        () => false,
       )
-        return false
-      saveLock.current = true
-      setIsSaving(true)
+      inFlightSave.current = save
       try {
-        await action()
-        return true
-      } catch {
-        setWorkflowRequested(false)
-        return false
+        return await save
       } finally {
-        saveLock.current = false
-        setIsSaving(false)
+        inFlightSave.current = null
+        setSavingControl(undefined)
+        setSettledSaves((count) => count + 1)
       }
     },
     [],
   )
-  const busy = isSaving || otherMutations > 0
+  const busy = savingControl !== undefined || otherMutations > 0
+  const isBusy = useRef(busy)
+  isBusy.current = busy
+  const idleWaiters = useRef<(() => void)[]>([])
+  useEffect(() => {
+    if (busy) return
+    idleWaiters.current.splice(0).forEach((resume) => resume())
+  }, [busy, settledSaves])
+  const waitUntilSavesSettle = useCallback(
+    () =>
+      isBusy.current || inFlightSave.current
+        ? new Promise<void>((resolve) => idleWaiters.current.push(resolve))
+        : Promise.resolve(),
+    [],
+  )
+  const queueClick = useCallback(
+    (run: () => void) => {
+      setHasQueuedClick(true)
+      void waitUntilSavesSettle().then(() => {
+        setHasQueuedClick(false)
+        run()
+      })
+    },
+    [waitUntilSavesSettle],
+  )
+
   useRegisterNavigationSave({
-    isDirty: Object.values(drafts).some((draft) => draft.dirty),
-    isSaving: busy,
+    isDirty:
+      busy ||
+      hasQueuedClick ||
+      Object.values(drafts).some((draft) => draft.dirty),
     save: async () => {
+      const pending = inFlightSave.current
+      await waitUntilSavesSettle()
+      if (pending && !(await pending)) return false
       for (const draft of Object.values(draftsRef.current)) {
         if (draft.dirty && !(await draft.save())) return false
       }
       return true
     },
   })
-  const goToWorkflow = () => setWorkflowRequested(true)
-  useEffect(() => {
-    if (!workflowRequested || busy) return
-    setWorkflowRequested(false)
+  const goToWorkflow = () =>
     void saveBeforeNavigation().then((saved) => {
       if (saved)
         navigate(`${ADMINFORM_ROUTE}/${formId}`, {
           state: OPEN_WORKFLOW_TAB_STATE,
         })
     })
-  }, [workflowRequested, busy, navigate, formId])
 
   return (
     <Stack spacing="2rem">
@@ -117,11 +146,7 @@ export const StepLoginCards = ({
       </Text>
       <Box>
         {form.workflow.map((step, stepIndex) => {
-          const disabled =
-            busy ||
-            Object.entries(drafts).some(
-              ([id, draft]) => id !== step._id && draft.pending,
-            )
+          const disabled = busy || isAnotherDraftPending(drafts, step._id)
           return (
             <Fragment key={step._id}>
               {stepIndex > 0 ? (
@@ -129,10 +154,11 @@ export const StepLoginCards = ({
               ) : null}
               <Box
                 as="section"
-                aria-label={
-                  step.step_name ||
-                  `${t('features.common.entities.step')} ${stepIndex + 1}`
-                }
+                aria-label={getWorkflowStepLabel({
+                  stepNumber: stepIndex,
+                  stepName: step.step_name,
+                  stepWord: t('features.common.entities.step'),
+                })}
                 border="1px solid"
                 borderColor="neutral.300"
                 borderRadius={cardRadius}
@@ -142,24 +168,20 @@ export const StepLoginCards = ({
                 <Box p="2rem">
                   <StepLabel stepNumber={stepIndex} stepName={step.step_name} />
                 </Box>
-                <Box
-                  as="fieldset"
-                  disabled={disabled}
-                  border="0"
-                  m="0"
-                  p="0"
-                  minW="0"
-                >
-                  <StepAuthSettingsEditor
-                    form={form}
-                    settings={settings}
-                    step={step}
-                    stepIndex={stepIndex}
-                    isDisabled={disabled}
-                    registerDraft={registerDraft}
-                    runSave={runSave}
-                  />
-                </Box>
+                <StepAuthSettingsEditor
+                  form={form}
+                  settings={settings}
+                  step={step}
+                  stepIndex={stepIndex}
+                  isDisabled={disabled}
+                  queueAfterSave={
+                    savingControl === 'esrvcId' && !hasQueuedClick
+                      ? queueClick
+                      : undefined
+                  }
+                  registerDraft={registerDraft}
+                  runSave={runSave}
+                />
               </Box>
             </Fragment>
           )

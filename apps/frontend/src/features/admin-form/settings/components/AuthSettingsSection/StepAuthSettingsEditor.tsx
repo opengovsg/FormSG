@@ -59,7 +59,12 @@ interface StepAuthSettingsEditorProps {
   stepIndex: number
   isDisabled: boolean
   registerDraft: (id: string, draft: StepLoginDraft | null) => void
-  runSave: (id: string, action: () => Promise<void>) => Promise<boolean>
+  queueAfterSave?: (run: () => void) => void
+  runSave: (
+    id: string,
+    action: () => Promise<void>,
+    isEsrvcIdSave?: boolean,
+  ) => Promise<boolean>
 }
 
 export const StepAuthSettingsEditor = ({
@@ -68,6 +73,7 @@ export const StepAuthSettingsEditor = ({
   step,
   stepIndex,
   isDisabled,
+  queueAfterSave,
   registerDraft,
   runSave,
 }: StepAuthSettingsEditorProps): JSX.Element => {
@@ -85,26 +91,35 @@ export const StepAuthSettingsEditor = ({
   const disabled = isPublic || isDisabled
   useEffect(() => setEsrvcId(savedEsrvcId), [savedEsrvcId])
 
-  const persist = (action: () => Promise<void>) => {
+  const persist = (
+    action: (formId: string) => Promise<void>,
+    isEsrvcIdSave = false,
+  ) => {
     if (disabled || !formId) return Promise.resolve(false)
-    return runSave(step._id, async () => {
-      setError('')
-      try {
-        await action()
-        toast({ description: t(`${COPY_KEY}.saved`) })
-      } catch (cause) {
-        setEsrvcId(savedEsrvcId)
-        setError(
-          cause instanceof Error ? cause.message : t(`${COPY_KEY}.saveFailed`),
-        )
-        throw cause
-      } finally {
-        await invalidateLoginQueries(queryClient, formId)
-      }
-    })
+    return runSave(
+      step._id,
+      async () => {
+        setError('')
+        try {
+          await action(formId)
+          toast({ description: t(`${COPY_KEY}.saved`) })
+        } catch (cause) {
+          discardEsrvcIdDraft()
+          setError(
+            cause instanceof Error
+              ? cause.message
+              : t(`${COPY_KEY}.saveFailed`),
+          )
+          throw cause
+        } finally {
+          await invalidateLoginQueries(queryClient, formId)
+        }
+      },
+      isEsrvcIdSave,
+    )
   }
   const saveLogin = (change: StepLoginSwitch, nextEsrvcId: string) =>
-    persist(async () => {
+    persist(async (formId) => {
       const unassigned = new Set(change.unassignedIds)
       const common = {
         delete_auth_field_ids: change.deletedIds,
@@ -112,7 +127,7 @@ export const StepAuthSettingsEditor = ({
         edit: step.edit.filter((id) => !unassigned.has(id)),
       }
       await updateWorkflowStep(
-        formId!,
+        formId,
         stepIndex,
         stepIndex === 0
           ? {
@@ -140,7 +155,7 @@ export const StepAuthSettingsEditor = ({
             },
       )
       setEsrvcId(nextEsrvcId.trim())
-    })
+    }, change.authType === authType)
   const loginSwitch = useStepLoginSwitch({
     form,
     stepNumber: stepIndex,
@@ -175,34 +190,40 @@ export const StepAuthSettingsEditor = ({
     }
     return saveLogin({ authType, deletedIds: [], unassignedIds: [] }, trimmed)
   }
-  const saveRef = useRef(saveText)
-  saveRef.current = saveText
+  const restrictions = createStepOneLoginRestrictionsDraft(settings)
+  const saveRestrictions = (patch: Partial<StepOneLoginRestrictionsDraft>) =>
+    void persist((formId) =>
+      saveStepOneLoginRestrictions(
+        formId,
+        { isSingleSubmission: settings.isSingleSubmission },
+        { ...restrictions, ...patch },
+      ),
+    )
+  const latestActions = {
+    saveText,
+    selectProvider: loginSwitch.requestSwitch,
+    saveRestrictions,
+  }
+  const latestActionsRef = useRef(latestActions)
+  latestActionsRef.current = latestActions
+  const afterSave = (run: () => void) =>
+    queueAfterSave ? queueAfterSave(run) : run()
   const dirty = pending || esrvcId !== savedEsrvcId
   useEffect(() => {
     registerDraft(step._id, {
       dirty,
       pending,
-      save: () => saveRef.current(),
+      save: () => latestActionsRef.current.saveText(),
     })
     return () => registerDraft(step._id, null)
   }, [registerDraft, step._id, dirty, pending])
 
-  const restrictions = createStepOneLoginRestrictionsDraft(settings)
-  const changeRestrictions = (
-    patch: Partial<StepOneLoginRestrictionsDraft>,
-  ) => {
-    void persist(() =>
-      saveStepOneLoginRestrictions(
-        formId!,
-        { isSingleSubmission: settings.isSingleSubmission },
-        { ...restrictions, ...patch },
-      ),
-    )
-  }
+  const controlsDisabled =
+    isPublic || isParsing || (isDisabled && !queueAfterSave)
   return (
     <Stack
       as="fieldset"
-      disabled={disabled || isParsing}
+      disabled={controlsDisabled}
       border="0"
       m="0"
       minW="0"
@@ -218,7 +239,10 @@ export const StepAuthSettingsEditor = ({
         authType={authType}
         savedAuthType={authType}
         esrvcId={esrvcId}
-        onAuthTypeChange={loginSwitch.requestSwitch}
+        onAuthTypeChange={(next) =>
+          afterSave(() => latestActionsRef.current.selectProvider(next))
+        }
+        isProviderDisabled={controlsDisabled}
         onEsrvcIdChange={(value) => {
           setEsrvcId(value)
           setError('')
@@ -234,8 +258,10 @@ export const StepAuthSettingsEditor = ({
           settings={settings}
           authType={authType}
           value={restrictions}
-          onChange={changeRestrictions}
-          isDisabled={disabled || isParsing}
+          onChange={(patch) =>
+            afterSave(() => latestActionsRef.current.saveRestrictions(patch))
+          }
+          isDisabled={controlsDisabled}
           onParsingChange={setIsParsing}
           dividerBleed="2rem"
         />
