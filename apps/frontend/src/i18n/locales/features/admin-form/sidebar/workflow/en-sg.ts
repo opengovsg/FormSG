@@ -15,6 +15,8 @@ export const enSG: Workflow = {
   },
   respondentBlock: {
     editorHeading: 'Choose who fills in this step',
+    noRecipients: 'No person selected',
+    moreRecipients: '+{count} more',
     stepRespondent: 'Who should fill in this step?',
     anyone: 'Anyone with your form link can fill in Step 1.',
     select: 'Who should fill in this step?',

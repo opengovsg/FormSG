@@ -18,6 +18,8 @@ export interface Workflow {
   title: string
   respondentBlock: {
     editorHeading: string
+    noRecipients: string
+    moreRecipients: string
     stepRespondent: string
     anyone: string
     select: string

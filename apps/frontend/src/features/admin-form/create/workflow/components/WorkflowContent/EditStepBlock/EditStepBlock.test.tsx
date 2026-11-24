@@ -425,6 +425,18 @@ describe('guided Login accordions', { timeout: 20000 }, () => {
     )
   })
 
+  it('reopens a collapsed recipient section when Back returns to it', async () => {
+    const user = await reachLogin()
+    const people = screen.getByRole('button', {
+      name: 'Choose who fills in this step',
+    })
+    await user.click(people)
+    expect(people).toHaveAttribute('aria-expanded', 'false')
+    await user.click(screen.getByRole('button', BACK))
+    await user.click(screen.getByRole('button', BACK))
+    expect(people).toHaveAttribute('aria-expanded', 'true')
+  })
+
   it('announces locked sections by keyboard without activating them', async () => {
     const user = await reachLogin()
     const login = screen.getByRole('button', LOGIN)
@@ -516,7 +528,9 @@ describe('guided Login accordions', { timeout: 20000 }, () => {
     const user = await reachLogin()
     const name = screen.getByRole('textbox', { name: /step name/i })
     await user.type(name, 'New reviewer')
-    await user.click(screen.getByRole('radio', { name: /Specific emails/i }))
+    await user.click(
+      await screen.findByRole('radio', { name: /Specific emails/i }),
+    )
     await user.type(
       screen.getByPlaceholderText('me@example.com'),
       'reviewer@example.gov.sg{Enter}',
@@ -532,6 +546,38 @@ describe('guided Login accordions', { timeout: 20000 }, () => {
     )
   })
 
+  it('reopens the recipient section and focuses the input when Continue fails again', async () => {
+    render(<GuidedLaterStepLogin />)
+    const user = userEvent.setup()
+    await screen.findByRole('textbox', { name: /step name/i })
+    const next = screen.getByRole('button', CONTINUE)
+    await user.click(next)
+    const recipientSection = { name: 'Choose who fills in this step' }
+    const people = await screen.findByRole('button', recipientSection)
+    await user.click(
+      await screen.findByRole('radio', { name: /Specific emails/i }),
+    )
+    const email = screen.getByPlaceholderText('me@example.com')
+    await user.type(email, 'invalid-email{Enter}')
+    await user.click(next)
+    const error = await screen.findByText(
+      /enter valid emails separated by commas/i,
+    )
+    await waitFor(() => expect(error).toBeVisible())
+    await user.click(people)
+    await waitFor(() =>
+      expect(screen.queryByRole('region', recipientSection)).toBeNull(),
+    )
+
+    await user.click(next)
+    await waitFor(() => expect(people).toHaveAttribute('aria-expanded', 'true'))
+    const reopened = await screen.findByRole('region', recipientSection)
+    await waitFor(() => expect(error).toBeVisible())
+    await waitFor(() =>
+      expect(within(reopened).getByRole('textbox')).toHaveFocus(),
+    )
+  })
+
   it('routes a server recipient error to the people spotlight and focuses its input', async () => {
     const submit = vi.fn(async () => {
       throw new Error('"emails[0]" must be a valid email')
@@ -540,7 +586,9 @@ describe('guided Login accordions', { timeout: 20000 }, () => {
     const user = userEvent.setup()
     await screen.findByRole('textbox', { name: /step name/i })
     await user.click(screen.getByRole('button', CONTINUE))
-    await user.click(screen.getByRole('radio', { name: /Specific emails/i }))
+    await user.click(
+      await screen.findByRole('radio', { name: /Specific emails/i }),
+    )
     expect(screen.getByPlaceholderText('me@example.com')).toBeVisible()
     for (let index = 0; index < 3; index++) {
       await user.click(screen.getByRole('button', CONTINUE))

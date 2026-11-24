@@ -213,11 +213,14 @@ export const EditStepBlock = ({
     isEnabled: isGuided,
   })
   const { activeSection } = reveal
+  const [peopleExpanded, setPeopleExpanded] = useState(true)
   const [expandedSections, setExpandedSections] = useState<AccordionSection[]>(
     () => (isGuided ? [] : ['fields']),
   )
   useEffect(() => {
-    if (!isGuided || !isAccordionSection(activeSection)) return
+    if (!isGuided) return
+    if (activeSection === 'people') setPeopleExpanded(true)
+    if (!isAccordionSection(activeSection)) return
     setExpandedSections((previous) =>
       previous.includes(activeSection)
         ? previous
@@ -231,6 +234,7 @@ export const EditStepBlock = ({
     const movesAccordionGuide =
       isGuided && inAccordion && section !== activeSection
     if (movesAccordionGuide) reveal.goTo(section)
+    if (section === 'people') setPeopleExpanded(true)
     if (isAccordionSection(section)) {
       setExpandedSections((previous) =>
         previous.includes(section) ? previous : [...previous, section],
@@ -528,6 +532,8 @@ export const EditStepBlock = ({
     name: <StepNameBlock formMethods={formMethods} stepNumber={stepNumber} />,
     people: (
       <RespondentBlock
+        expanded={peopleExpanded}
+        onExpandedChange={setPeopleExpanded}
         inAccordion={inAccordion}
         user={user}
         stepNumber={stepNumber}
@@ -593,13 +599,18 @@ export const EditStepBlock = ({
     >
       {inAccordion ? (
         <Stack
-          spacing={isGuided ? '0' : '1.5rem'}
+          spacing={isGuided || !isFirstStep ? '0' : '1.5rem'}
           pt={isGuided ? '0' : '1.5rem'}
         >
           {introductorySections.map((section, index) =>
             !isGuided || reveal.isReached(section) ? (
               <Box key={section} data-step-section={section}>
-                {!isGuided && index > 0 ? <Divider mb="1.5rem" /> : null}
+                {!isGuided && index > 0 ? (
+                  <Divider
+                    mt={isFirstStep ? 0 : '1.5rem'}
+                    mb={isFirstStep ? '1.5rem' : 0}
+                  />
+                ) : null}
                 <Spotlight
                   isEnabled={isGuided}
                   isActive={activeSection === section}

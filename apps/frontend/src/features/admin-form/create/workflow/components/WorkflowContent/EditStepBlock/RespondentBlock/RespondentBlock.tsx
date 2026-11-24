@@ -1,7 +1,19 @@
 import { ComponentProps } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Flex, FormControl, Stack, Text } from '@chakra-ui/react'
+import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
+  Flex,
+  FormControl,
+  Stack,
+  Text,
+  usePrefersReducedMotion,
+  VisuallyHidden,
+} from '@chakra-ui/react'
 
 import { FormWorkflowStep, UserDto, WorkflowType } from 'formsg-shared/types'
 
@@ -15,6 +27,8 @@ import { EditStepInputs } from '~features/admin-form/create/workflow/types'
 
 import { useAdminFormWorkflow } from '../../../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowEmailSourceInput } from '../../../../hooks/useIsWorkflowEmailSourceInput'
+import { useWorkflowSurfaces } from '../../../../hooks/useWorkflowSurfaces'
+import { stepToEmailSources } from '../../../../utils/stepRecipients'
 import { useIsSpotlightActiveSection } from '../../../Spotlight'
 import { StepRespondentBadges } from '../../InactiveStepBlock/StepRespondentBadges'
 import { isFirstStepByStepNumber } from '../../utils/isFirstStepByStepNumber'
@@ -23,6 +37,7 @@ import { EditStepBlockContainer } from '../EditStepBlockContainer'
 import { ConditionalRoutingOption } from './Components/ConditionalRoutingOption'
 import { DynamicRespondentOption } from './Components/DynamicRespondentOption'
 import { StaticRespondentOption } from './Components/StaticRespondentOption'
+import { RecipientSummary } from './RecipientSummary'
 import {
   RESPONDENT_SOURCE_INPUT_NAME,
   RespondentSourceInput,
@@ -37,6 +52,8 @@ const ReadOnlyHybridRespondents = (
 )
 
 interface RespondentBlockProps {
+  expanded: boolean
+  onExpandedChange: (expanded: boolean) => void
   inAccordion?: boolean
   stepNumber: number
   isLoading: boolean
@@ -45,6 +62,8 @@ interface RespondentBlockProps {
 }
 
 export const RespondentBlock = ({
+  expanded,
+  onExpandedChange,
   inAccordion = false,
   stepNumber,
   isLoading,
@@ -83,7 +102,11 @@ export const RespondentBlock = ({
         : 'features.adminForm.sidebar.workflow.respondentBlock.select',
   )
 
-  return (
+  const prefersReducedMotion = usePrefersReducedMotion()
+  const { cardHoverBg, iconTransitionDuration } = useWorkflowSurfaces()
+  const collapsible = inAccordion && !isFirstStep
+
+  const content = (
     <EditStepBlockContainer>
       {isFirstStep ? (
         <Stack spacing="0.5rem">
@@ -101,7 +124,13 @@ export const RespondentBlock = ({
             !!errors.workflow_type || (isSourceInput && !!errors.emails)
           }
         >
-          <FormLabel style={textStyles.h4}>{heading}</FormLabel>
+          {collapsible ? (
+            <VisuallyHidden as="label" htmlFor={RESPONDENT_SOURCE_INPUT_NAME}>
+              {heading}
+            </VisuallyHidden>
+          ) : (
+            <FormLabel style={textStyles.h4}>{heading}</FormLabel>
+          )}
           {isActiveSection ? (
             <Text textStyle="body-2" color="secondary.400" mb="0.5rem">
               {t('features.adminForm.sidebar.workflow.guidedHints.respondent')}
@@ -151,5 +180,71 @@ export const RespondentBlock = ({
         </FormControl>
       )}
     </EditStepBlockContainer>
+  )
+  if (!collapsible) return content
+
+  const sources = stepToEmailSources(formMethods.getValues())
+  const labels = [
+    ...sources.emails,
+    ...[...sources.emailFields, ...sources.dropdownFields].map((id) => {
+      const field = idToFieldMap[id]
+      return field
+        ? `${field.questionNumber}. ${field.title}`
+        : t('components.emailSourceInput.missingField')
+    }),
+  ]
+  return (
+    <Accordion
+      reduceMotion={prefersReducedMotion}
+      allowToggle
+      index={expanded ? 0 : -1}
+      onChange={(index) => onExpandedChange(index === 0)}
+    >
+      <AccordionItem border="0">
+        <AccordionButton
+          px={{ base: '1.5rem', md: '2rem' }}
+          py="1.5rem"
+          transitionProperty="background-color"
+          transitionDuration={iconTransitionDuration}
+          _hover={{ bg: cardHoverBg }}
+          textAlign="left"
+          gap="0.75rem"
+          aria-label={heading}
+          aria-describedby={
+            expanded ? undefined : `recipient-summary-${stepNumber}`
+          }
+        >
+          <Text
+            minW="0"
+            maxW={
+              expanded
+                ? '100%'
+                : labels.length
+                  ? 'calc(100% - 8rem)'
+                  : 'calc(100% - 12rem)'
+            }
+            isTruncated
+            style={textStyles.h4}
+          >
+            {heading}
+          </Text>
+          <Flex flex="1" minW="0" justify="flex-end">
+            {!expanded && <RecipientSummary labels={labels} />}
+          </Flex>
+          {!expanded && (
+            <VisuallyHidden id={`recipient-summary-${stepNumber}`}>
+              {labels.join(', ') ||
+                t(
+                  'features.adminForm.sidebar.workflow.respondentBlock.noRecipients',
+                )}
+            </VisuallyHidden>
+          )}
+          <AccordionIcon flexShrink={0} />
+        </AccordionButton>
+        <AccordionPanel p="0" pb="1.5rem">
+          {content}
+        </AccordionPanel>
+      </AccordionItem>
+    </Accordion>
   )
 }
