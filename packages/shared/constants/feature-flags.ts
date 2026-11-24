@@ -32,6 +32,7 @@ export const featureFlags = {
   settingsIntegrationsJson: 'settings-integrations-json' as const,
   attachmentsMultiUploadAndOneZip:
     'attachments-multi-upload-and-one-zip' as const,
+  ogpSuiteSso: 'ogp-suite-sso' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {
