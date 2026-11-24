@@ -81,6 +81,9 @@ const ddProxyUrl =
     ? `${window.__ENV__?.appUrl ?? window.location.origin}/api/v1/proxy/datadog/rum`
     : undefined
 
+// Set before init so the first view event already carries the product context
+datadogRum.setGlobalContextProperty('product', 'formsg')
+
 // Init Datadog RUM
 datadogRum.init({
   applicationId: '@VITE_APP_DD_RUM_APP_ID',
