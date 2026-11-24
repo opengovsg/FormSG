@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.79.1](https://github.com/opengovsg/formsg/compare/v9.79.0...v9.79.1) (2026-11-24)
+
+
+### Bug Fixes
+
+* **mrf:** match Storage email JSON for signatures, addresses and checkbox Others (#10629) ([#10629](https://github.com/opengovsg/formsg/commit/cfb9f18bdb5703bf753147782ac322f2f952393b))
+
 ## [9.79.0](https://github.com/opengovsg/formsg/compare/v9.78.1...v9.79.0) (2026-11-24)
 
 
