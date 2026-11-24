@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.81.0](https://github.com/opengovsg/formsg/compare/v9.80.0...v9.81.0) (2026-11-24)
+
+
+### Dependencies
+
+* **deps:** bump zod to 4.6.6 and point imports back at zod (#10572) ([#10572](https://github.com/opengovsg/formsg/commit/3eead90a814eaec0defba23bcb3cd359d8279ab5))
+
+
+### Chores
+
+* **flags:** remove the enable-auth-callback-forwarding flag (#10644) ([#10644](https://github.com/opengovsg/formsg/commit/fdaab146a6914d1d8fe17b055bac178f33624a34))
+* **flags:** remove the ogp-awareness flag (#10645) ([#10645](https://github.com/opengovsg/formsg/commit/e15700bc11647f6a87c3a019f23f7c967c23bf32))
+
+
+### Refactors
+
+* **backend:** move backend zod schemas to the zod/v4 API (#10568) ([#10568](https://github.com/opengovsg/formsg/commit/2656223aabbee2d18aaf803ed8f9bd0ac05f9f1f))
+* **shared:** move shared zod schemas to the zod/v4 API (#10569) ([#10569](https://github.com/opengovsg/formsg/commit/2108fe5fc8a6481c664fd52d0f54967c17894be4))
+
 ## [9.80.0](https://github.com/opengovsg/formsg/compare/v9.79.1...v9.80.0) (2026-11-24)
 
 
