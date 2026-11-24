@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react-vite'
 import { http, HttpResponse } from 'msw'
 
 import { ClientEnvVars } from 'formsg-shared/types/core'
