@@ -12,6 +12,8 @@ on:
       - stg-alt2
       - stg-alt3
       - uat
+      - gh-readonly-queue/**
+  merge_group:
   pull_request:
     types: [opened, reopened]
     branches-ignore:
