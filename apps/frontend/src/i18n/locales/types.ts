@@ -3,6 +3,7 @@ import { RequiredDeep } from 'type-fest'
 import { EmailSourceInput, Pagination } from './components'
 import { ValidationConstants } from './constants'
 import {
+  AdminForbiddenError,
   App,
   Collaborator,
   Common,
@@ -67,6 +68,7 @@ interface Translation {
           responsesPage?: ResponsesResponsesPage
         }
       }
+      adminForbiddenError?: AdminForbiddenError
       app?: App
       common?: Common
       landingPage?: LandingPage
