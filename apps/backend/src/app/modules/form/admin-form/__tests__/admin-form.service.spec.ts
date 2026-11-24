@@ -5274,8 +5274,9 @@ describe('admin-form.service', () => {
     )
 
     it('should name the offending step, 1-indexed', async () => {
-      const result = await AdminFormService.createWorkflowStep(
-        makeForm(FormStatus.Public, [completeFirstStep]),
+      const result = await AdminFormService.updateFormWorkflowStep(
+        makeForm(FormStatus.Public, [completeFirstStep, completeSecondStep]),
+        1,
         incompleteSecondStep as any,
       )
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(MalformedParametersError)
