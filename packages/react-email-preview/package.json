@@ -11,7 +11,7 @@
     "test-storybook": "vitest run"
   },
   "dependencies": {
-    "@react-email/components": "^0.0.26",
+    "@react-email/components": "^1.0.12",
     "formsg-backend": "workspace:*",
     "react": "^18.2.0"
   },
