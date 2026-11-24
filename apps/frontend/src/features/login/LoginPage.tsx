@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { Stack, Text } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
+import { FeaturesReady, useFeatureIsOn } from '@growthbook/growthbook-react'
 import { StatusCodes } from 'http-status-codes'
 
 import { featureFlags } from 'formsg-shared/constants'
@@ -32,22 +32,28 @@ export type LoginOtpData = {
   email: string
 }
 
+const FLAGS_TIMEOUT_MS = 3000
+
 const LoginOptionButtons = ({
   shouldShowOneLogin,
 }: {
   shouldShowOneLogin: boolean
 }) => {
+  // RATIONALE: flags load after first paint, and the flag-off buttons must
+  // not flash for flag-on admins. If flags never load, fall back to flag off.
   return (
-    <Stack spacing="1rem">
-      {shouldShowOneLogin ? (
-        <OneLoginButton />
-      ) : (
-        <>
-          <WogadLoginButton />
-          <SgidLoginButton />
-        </>
-      )}
-    </Stack>
+    <FeaturesReady timeout={FLAGS_TIMEOUT_MS}>
+      <Stack spacing="1rem">
+        {shouldShowOneLogin ? (
+          <OneLoginButton />
+        ) : (
+          <>
+            <WogadLoginButton />
+            <SgidLoginButton />
+          </>
+        )}
+      </Stack>
+    </FeaturesReady>
   )
 }
 

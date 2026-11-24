@@ -22,6 +22,8 @@ export default {
   title: 'Pages/LoginPage',
   component: LoginPage,
   decorators: [
+    // Flags loaded, all off. Stories override this with their own flags.
+    withGrowthBook(new GrowthBook({ features: {} })),
     StoryRouter({
       initialEntries: [LOGIN_ROUTE],
       path: LOGIN_ROUTE,
@@ -60,3 +62,6 @@ WithOneGovSg.decorators = [
     }),
   ),
 ]
+
+export const FlagsLoading = Template.bind({})
+FlagsLoading.decorators = [withGrowthBook(new GrowthBook())]

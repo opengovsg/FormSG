@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 
 import * as stories from './LoginPage.stories'
 
-const { Desktop, WithOneGovSg } = composeStories(stories)
+const { Desktop, WithOneGovSg, FlagsLoading } = composeStories(stories)
 
 describe('LoginPage', () => {
   it('shows WOG AD and Singpass but not one.gov.sg when the flag is off', async () => {
@@ -28,5 +28,17 @@ describe('LoginPage', () => {
       screen.queryByRole('button', { name: /WOG AD/ }),
     ).not.toBeInTheDocument()
     expect(screen.queryByText(/can use Singpass login/)).not.toBeInTheDocument()
+  })
+
+  it('shows no sign-in buttons until flags load', () => {
+    render(<FlagsLoading />)
+
+    expect(screen.getByRole('button', { name: 'Log in' })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /WOG AD/ }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Log in with one.gov.sg' }),
+    ).not.toBeInTheDocument()
   })
 })
