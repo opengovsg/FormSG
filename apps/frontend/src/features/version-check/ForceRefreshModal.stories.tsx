@@ -1,5 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react-vite'
 import { http, HttpResponse } from 'msw'
+import { screen } from 'storybook/test'
 
 import { ClientEnvVars } from 'formsg-shared/types/core'
 
@@ -19,8 +20,7 @@ export default {
   decorators: [fullScreenDecorator],
   parameters: {
     layout: 'fullscreen',
-    // Prevent flaky tests due to modal animating in.
-    chromatic: { pauseAnimationAtEnd: true },
+    argos: { fitToContent: false },
   },
 } as Meta<typeof ForceRefreshModal>
 
@@ -33,6 +33,9 @@ export const BreakingChange = Template.bind({})
 BreakingChange.args = { clientVersion: '9.6.1-develop-abc12345' }
 BreakingChange.parameters = {
   msw: { handlers: { env: mockEnvWithVersion('10.0.0') } },
+}
+BreakingChange.play = async () => {
+  await screen.findByRole('dialog')
 }
 
 /** Backend is newer but within the same major: nothing is rendered. */
