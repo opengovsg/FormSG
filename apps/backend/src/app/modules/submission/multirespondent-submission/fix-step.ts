@@ -31,12 +31,14 @@ const getRoutingFieldIds = (
     workflow[workflowStep]?.approval_field,
     ...workflow
       .slice(workflowStep + 1)
-      .map((step) =>
+      .flatMap((step) =>
         step.workflow_type === WorkflowType.Dynamic
-          ? step.field
+          ? [step.field]
           : step.workflow_type === WorkflowType.Conditional
-            ? step.conditional_field
-            : undefined,
+            ? [step.conditional_field]
+            : step.workflow_type === WorkflowType.Hybrid
+              ? [...step.email_fields, ...step.dropdown_fields]
+              : [],
       ),
   ]
     .filter((fieldId): fieldId is string => !!fieldId)

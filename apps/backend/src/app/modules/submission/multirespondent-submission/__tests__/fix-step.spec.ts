@@ -316,6 +316,40 @@ describe('fix step', () => {
       ).toBeInstanceOf(MrfFixChangesWorkflowPathError)
     })
 
+    it.each([
+      ['email field', 'routing'],
+      ['dropdown field', 'own'],
+    ])("blocks changing a later hybrid step's %s", (_label, changed) => {
+      const hybridForm = {
+        ...form,
+        workflow: [
+          ...(form.workflow ?? []).slice(0, 2),
+          {
+            workflow_type: WorkflowType.Hybrid,
+            emails: [],
+            email_fields: [routingField],
+            dropdown_fields: [ownField],
+            edit: [gatedField],
+          },
+        ],
+      }
+      const fieldId = changed === 'routing' ? routingField : ownField
+
+      const result = checkFixKeepsWorkflowPath({
+        form: hybridForm,
+        workflowStep: 1,
+        previousResponses,
+        responses: {
+          ...(previousResponses as object),
+          [fieldId]: answer('changed@example.com'),
+        } as never,
+      })
+
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        MrfFixChangesWorkflowPathError,
+      )
+    })
+
     it('blocks showing a question a later step answers', () => {
       expect(
         check({
