@@ -18,11 +18,15 @@ describe('LoginPage', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('shows one.gov.sg when the flag is on', async () => {
+  it('shows only email and one.gov.sg login when the flag is on', async () => {
     render(<WithOneGovSg />)
 
     expect(
       await screen.findByRole('button', { name: 'Log in with one.gov.sg' }),
     ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /WOG AD/ }),
+    ).not.toBeInTheDocument()
+    expect(screen.queryByText(/can use Singpass login/)).not.toBeInTheDocument()
   })
 })

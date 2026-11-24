@@ -39,9 +39,14 @@ const LoginOptionButtons = ({
 }) => {
   return (
     <Stack spacing="1rem">
-      <WogadLoginButton />
-      {shouldShowOneLogin && <OneLoginButton />}
-      <SgidLoginButton />
+      {shouldShowOneLogin ? (
+        <OneLoginButton />
+      ) : (
+        <>
+          <WogadLoginButton />
+          <SgidLoginButton />
+        </>
+      )}
     </Stack>
   )
 }
