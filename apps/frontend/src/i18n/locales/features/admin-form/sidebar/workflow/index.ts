@@ -174,7 +174,6 @@ export interface Workflow {
     singpass: string
     corppass: string
     workflowQuestion: string
-    stepQuestion: string
     formQuestion: string
     noLogin: string
     singpassOption: string

@@ -206,7 +206,6 @@ export const enSG: Workflow = {
     corppass: 'Corppass',
     esrvcIdLabel: 'Enter your organisation’s Corppass e-service ID',
     workflowQuestion: 'Choose how this person logs in',
-    stepQuestion: 'Does this step require a login?',
     formQuestion: 'Select form login method',
     noLogin: 'No login required',
     singpassOption: 'Singpass (allows Singpass Myinfo fields)',
