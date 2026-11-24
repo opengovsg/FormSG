@@ -2,7 +2,7 @@
 
 This folder contains definitions for the `ci:formsg-smoke` suite, managed as code. The tests run two ways:
 1. **only via CI triggers** — the release gate (`release.yml` → `smoke-stg`, against stg, blocking all prod deploys)
-2. **PR previews** (`render-preview.yml`, against the Render preview URL) — on demand: add the `preview-smoke` label to a PR that has a `render-preview` up; remove and re-add it to re-run.
+2. **PR previews** (`preview-smoke.yml`, against the Render preview URL) — on every push to a non-draft PR opened by a FormSG engineer (maintain or admin role). Other same-repo PRs opt in with the `render-preview` and `preview-smoke` labels, then run on every push while both are on. Re-run the `Synthetics smoke on preview` job to re-run.
 
 Tests are kept `status: paused` in Datadog so they never run on a Datadog schedule or alert on their own.
 
@@ -33,8 +33,8 @@ Editing an existing test: change its JSON, open a PR. On merge to develop,
 
 Adding a test: add the JSON, open a PR. The sync workflow runs on the PR,
 creates the test in Datadog, and commits the new `ids.json` entry back to
-the PR branch. Shake it down on the PR preview with the `preview-smoke`
-label. Note the suite is tag-scoped, so a newly created `ci:formsg-smoke`
+the PR branch. Shake it down on the PR preview by re-running the
+`Synthetics smoke on preview` job. Note the suite is tag-scoped, so a newly created `ci:formsg-smoke`
 test joins the release gate as soon as sync creates it — before the PR
 merges; if it's not ready to gate prod, leave the tag off until it is.
 Duplication is prevented by name: before creating, `sync.sh push` adopts
@@ -84,8 +84,8 @@ Each run leaves its `[smoke]` form + submission behind in the account;
 tolerated for now; add a cleanup job if it ever matters.
 
 Trigger smoke only after the sync workflow finishes pushing changed
-definitions — a `preview-smoke` label added mid-sync can hit half-updated
-tests (`Unknown variable name` / `UnknownTestError`); re-add the label
+definitions — a preview smoke that starts mid-sync can hit half-updated
+tests (`Unknown variable name` / `UnknownTestError`); re-run the job
 before digging deeper.
 
 Known flake surfaces: GrowthBook flags that reshape the create-form modal
