@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Flex, Stack, Text } from '@chakra-ui/react'
+import { Box, Flex, Stack, Text, useDisclosure } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 import Tooltip from '~components/Tooltip'
@@ -13,7 +13,9 @@ import {
 import { useAdminFormWorkflow } from '../hooks/useAdminFormWorkflow'
 import { useGuidedSetupPreference } from '../hooks/useGuidedSetupPreference'
 import { useGuidedSetupTaught } from '../hooks/useGuidedSetupTaught'
+import { useIsWorkflowEditBlocked } from '../hooks/useIsWorkflowEditBlocked'
 
+import { CloseFormToEditModal } from './CloseFormToEditModal'
 import {
   FormToWorkflowIllustration,
   ILLUSTRATION_MAX_W,
@@ -29,8 +31,14 @@ export const EmptyWorkflow = (): JSX.Element => {
   const { setGuidedSetup } = useGuidedSetupPreference()
   const showWelcomeCard = useAdminWorkflowStore(showWelcomeCardSelector)
   const [isIllustrationHovered, setIsIllustrationHovered] = useState(false)
+  const isEditBlocked = useIsWorkflowEditBlocked()
+  const closeFormModal = useDisclosure()
 
   const startSetup = (isGuidedSetup: boolean) => () => {
+    if (isEditBlocked) {
+      closeFormModal.onOpen()
+      return
+    }
     setGuidedSetup(isGuidedSetup)
     if (isGuidedSetup && !hasBeenTaught) {
       showWelcomeCard()
@@ -53,6 +61,10 @@ export const EmptyWorkflow = (): JSX.Element => {
       color="secondary.500"
       pt={{ base: '0.5rem', md: '2.75rem' }}
     >
+      <CloseFormToEditModal
+        isOpen={closeFormModal.isOpen}
+        onClose={closeFormModal.onClose}
+      />
       <Text textStyle="h2" as="h2">
         {t(`${INTRO_I18N_PREFIX}.header`)}
       </Text>

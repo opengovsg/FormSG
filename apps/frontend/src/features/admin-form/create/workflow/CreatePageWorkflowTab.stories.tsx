@@ -1,5 +1,6 @@
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'
+import { screen, userEvent } from 'storybook/test'
 
 import { featureFlags } from 'formsg-shared/constants'
 import {
@@ -276,9 +277,32 @@ NoWorkflow.parameters = {
   argos: { modes: viewportModes('mobile') },
   msw: {
     handlers: {
-      default: buildMswRoutes({ ...FORM_WITH_WORKFLOW, workflow: [] }),
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        workflow: [],
+        status: FormStatus.Private,
+      }),
     },
   },
+}
+
+export const NoWorkflowFormOpen = Template.bind({})
+NoWorkflowFormOpen.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        workflow: [],
+        status: FormStatus.Public,
+      }),
+    },
+  },
+}
+NoWorkflowFormOpen.play = async () => {
+  await userEvent.click(
+    await screen.findByRole('button', { name: /start with guided setup/i }),
+  )
+  await screen.findByText(/you can only edit your workflow/i)
 }
 
 export const WithWorkflow = Template.bind({})
