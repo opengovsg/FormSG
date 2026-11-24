@@ -1,4 +1,4 @@
-import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router'
 import { Flex } from '@chakra-ui/react'
 
 import { useAuth } from '~contexts/AuthContext'

@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Link as ReactLink } from 'react-router-dom'
+import { Link as ReactLink } from 'react-router'
 import { Box, Text, useDisclosure } from '@chakra-ui/react'
 import { Droppable } from '@hello-pangea/dnd'
 

@@ -28,7 +28,7 @@ const callbacks = {
 }
 const hiddenColumnIds: string[] = []
 const decrypted = new Map()
-vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }))
+vi.mock('react-router', () => ({ useNavigate: () => vi.fn() }))
 vi.mock('@growthbook/growthbook-react', () => ({ useFeatureIsOn: () => true }))
 vi.mock('~features/admin-form/common/queries', () => ({
   useAdminForm: () => ({ data: form }),

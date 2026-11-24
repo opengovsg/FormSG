@@ -13,8 +13,8 @@ import { GuidedWrapUp } from './types'
 const FORM_ID = 'form-id'
 const usesStepLoginRules = { value: false }
 
-vi.mock('react-router-dom', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('react-router-dom')>()),
+vi.mock('react-router', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-router')>()),
   useParams: () => ({ formId: FORM_ID }),
 }))
 vi.mock('./hooks/useUsesStepLoginRules', () => ({

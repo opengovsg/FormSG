@@ -10,7 +10,7 @@ import {
   BiTrash,
   BiUserPlus,
 } from 'react-icons/bi'
-import { Link as ReactLink } from 'react-router-dom'
+import { Link as ReactLink } from 'react-router'
 import {
   ButtonGroup,
   Flex,

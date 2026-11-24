@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { Controller } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from 'react-query'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 import { FormControl } from '@chakra-ui/react'
 import { extend, get, isEmpty, pick } from 'lodash'
 

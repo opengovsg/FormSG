@@ -1,5 +1,5 @@
 import { Trans, useTranslation } from 'react-i18next'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 import { Skeleton, Stack, Text, useDisclosure } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 

@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef } from 'react'
-import { UNSAFE_DataRouterContext, useBlocker } from 'react-router-dom'
+import { UNSAFE_DataRouterContext, useBlocker } from 'react-router'
 
 import { UnsavedChangesModal } from '~templates/NavigationPrompt'
 

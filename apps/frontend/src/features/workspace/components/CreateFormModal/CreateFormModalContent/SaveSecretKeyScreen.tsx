@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { UseFormRegister, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useQueryClient } from 'react-query'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
 

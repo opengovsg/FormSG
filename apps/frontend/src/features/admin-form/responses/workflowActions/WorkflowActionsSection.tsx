@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiStopCircle, BiUndo, BiUser } from 'react-icons/bi'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 import { Flex, Text, useDisclosure } from '@chakra-ui/react'
 
 import {

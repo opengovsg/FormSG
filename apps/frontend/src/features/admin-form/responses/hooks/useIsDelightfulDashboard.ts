@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants'

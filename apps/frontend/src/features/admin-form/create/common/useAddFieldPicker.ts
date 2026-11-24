@@ -2,7 +2,7 @@ import { useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 import { useQueryClient } from 'react-query'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 
 import { BasicField } from 'formsg-shared/types'
 
