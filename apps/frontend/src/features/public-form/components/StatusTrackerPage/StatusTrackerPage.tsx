@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom'
 import { Box, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
-import { useFeatureIsOn, useFeatureValue } from '@growthbook/growthbook-react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants'
 import { WorkflowStatus } from 'formsg-shared/types'
@@ -10,7 +10,6 @@ import { AppFooter } from '~/app/AppFooter'
 import { FCC } from '~typings/react'
 
 import { OgpAwarenessBadge } from '~assets/svgrs/brand/OgpAwarenessBadge'
-import { OgpAwarenessBanner } from '~assets/svgrs/brand/OgpAwarenessBanner'
 import { AppGrid } from '~templates/AppGrid'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
@@ -100,18 +99,6 @@ export const StatusTrackerPage = (): JSX.Element => {
   const { data, isLoading, error } = useStatusTracker(submissionId)
   const isWorkflowActionsOn = useFeatureIsOn(featureFlags.workflowActions)
 
-  const ogpAwareness = useFeatureValue('ogp-awareness', 'none')
-  const ogpAwarenessComponent = (() => {
-    switch (ogpAwareness) {
-      case 'banner':
-        return <OgpAwarenessBanner />
-      case 'badge':
-        return <OgpAwarenessBadge />
-      default:
-        return undefined
-    }
-  })()
-
   if (isLoading) return <StatusTrackerSkeletonPage />
 
   if (error || !data || !data.submittedSteps || !data.workflow)
@@ -174,9 +161,9 @@ export const StatusTrackerPage = (): JSX.Element => {
                 <Box ml="-1.5rem">
                   <PublicFormLogo />
                 </Box>
-                {ogpAwarenessComponent && (
-                  <Box my="1rem">{ogpAwarenessComponent}</Box>
-                )}
+                <Box my="1rem">
+                  <OgpAwarenessBadge />
+                </Box>
                 <Text mb="2rem" textStyle="h4">
                   Response ID: {data.responseId}
                 </Text>

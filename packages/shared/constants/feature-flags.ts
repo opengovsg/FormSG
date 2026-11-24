@@ -4,7 +4,6 @@ export const featureFlags = {
   mrfWebhooksV4: 'mrf-webhooks-v4' as const,
   enableMrfWebhooks: 'enable-mrf-webhooks' as const,
   adminEmailPdf: 'admin-email-pdf' as const,
-  ogpAwareness: 'ogp-awareness' as const,
   ddSampleRateAdmin: 'dd-sample-rate-admin' as const,
   ddSampleRatePublic: 'dd-sample-rate-public' as const,
   standardisedEmailTemplate: 'standardised-email-template' as const,
