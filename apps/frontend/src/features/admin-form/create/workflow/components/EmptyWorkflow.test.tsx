@@ -14,7 +14,7 @@ import { AdminEditWorkflowState } from '../types'
 
 import { SPOTLIGHT_TEST_ID } from './Spotlight'
 
-const { NoWorkflow } = composeStories(pageStories)
+const { NoWorkflow, NoWorkflowFormOpen } = composeStories(pageStories)
 
 const NEW_HEADER = /start creating a workflow for your form/i
 const NEW_SUBHEADER = /split your form into steps and send each one/i
@@ -212,6 +212,40 @@ describe('the workflow tab intro screen', () => {
         screen.queryByText(/step 1 is the public-facing step/i),
       ).not.toBeInTheDocument()
     })
+  })
+
+  describe('while the form is open', () => {
+    it.each([
+      ['guided', GUIDED],
+      ['manual', MANUAL],
+    ])(
+      'asks the admin to close the form instead of starting %s setup',
+      async (_label, button) => {
+        const user = userEvent.setup()
+        await act(async () => {
+          render(<NoWorkflowFormOpen />)
+        })
+        await screen.findByText(NEW_HEADER, {}, { timeout: 10000 })
+        await settleUser()
+
+        await act(async () => {
+          await user.click(screen.getByRole('button', button))
+        })
+
+        expect(
+          await screen.findByText(
+            /you can only edit your workflow when your form is closed/i,
+          ),
+        ).toBeInTheDocument()
+        expect(
+          screen.getByRole('button', { name: /go to settings/i }),
+        ).toBeInTheDocument()
+        expect(useAdminWorkflowStore.getState().createOrEditData).toBeNull()
+        expect(
+          screen.queryByText(/let's start with step 1/i),
+        ).not.toBeInTheDocument()
+      },
+    )
   })
 
   it('starts a step straight away from manual setup', async () => {
