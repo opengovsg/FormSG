@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.83.0](https://github.com/opengovsg/formsg/compare/v9.82.0...v9.83.0) (2026-11-24)
+
+
+### Features
+
+* force refresh modal when backend crosses a major version (#9840) ([#9840](https://github.com/opengovsg/formsg/commit/404823e3c6c013628bc156b720f73065e6856c18))
+
+
+### Dependencies
+
+* **deps:** bump nodemailer to 10.4.1 (#10564) ([#10564](https://github.com/opengovsg/formsg/commit/c47821f160a41acd8f23a2939fc33ec925ccf275))
+
 ## [9.82.0](https://github.com/opengovsg/formsg/compare/v9.81.0...v9.82.0) (2026-11-24)
 
 
