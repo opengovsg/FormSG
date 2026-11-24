@@ -4,7 +4,6 @@ import { AuthedSessionData } from 'express-session'
 import { OTP_REGEX } from 'formsg-shared/constants'
 import { StatusCodes } from 'http-status-codes'
 
-import { GrowthbookFeature } from '../../config/features/growthbook.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
@@ -314,9 +313,7 @@ export const authCallbackForwardingMiddleware: ControllerHandler<
 > = (req, res, next) => {
   // Check if the request needs to be forwarded from the Remote Browser Isolation proxy to the user's browser.
   const forward =
-    IntranetService.isRbiIp(req.ip) &&
-    req.growthbook?.isOn(GrowthbookFeature.ENABLE_AUTH_CALLBACK_FORWARDING) &&
-    req.query?.forwarded !== 'true'
+    IntranetService.isRbiIp(req.ip) && req.query?.forwarded !== 'true'
   if (forward) {
     logger.info({
       message: 'Forwarded auth callback request',
