@@ -180,13 +180,22 @@ comment() {
   if [ "$DRY_RUN" != true ]; then gh pr comment "$1" --repo "$GITHUB_REPOSITORY" --body "$2" >/dev/null; fi
 }
 
+list_previews() {
+  local cursor='' page
+  while :; do
+    page=$(render GET "/services?ownerId=$OWNER_ID&limit=100${cursor:+&cursor=$cursor}")
+    jq -r '.[].service | select(.name | test("^formsg-pr-[0-9]+$")) | "\(.id) \(.name) \(.suspended) \(.updatedAt)"' <<<"$page"
+    [ "$(jq length <<<"$page")" -eq 100 ] || break
+    cursor=$(jq -r '.[-1].cursor' <<<"$page")
+  done
+}
+
 sweep() {
   : "${GITHUB_REPOSITORY:?}"
   DRY_RUN="${DRY_RUN:-true}"
   local now services id name suspended updated pr state last idle
   now=$(date +%s)
-  services=$(render GET "/services?ownerId=$OWNER_ID&limit=100" |
-    jq -r '.[].service | select(.name | test("^formsg-pr-[0-9]+$")) | "\(.id) \(.name) \(.suspended) \(.updatedAt)"')
+  services=$(list_previews)
   while read -r -u 3 id name suspended updated; do
     [ -n "$id" ] || continue
     pr=${name#formsg-pr-}
