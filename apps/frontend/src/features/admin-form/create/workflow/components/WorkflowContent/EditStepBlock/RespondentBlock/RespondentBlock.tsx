@@ -245,7 +245,7 @@ export const RespondentBlock = ({
           )}
           <AccordionIcon flexShrink={0} />
         </AccordionButton>
-        <AccordionPanel p="0" pb="1.5rem">
+        <AccordionPanel px="0" pt="0.25rem" pb="1.5rem">
           {content}
         </AccordionPanel>
       </AccordionItem>

@@ -63,7 +63,7 @@ export const StepLoginControls = ({
           mb="1rem"
           style={isHeading ? textStyles.h4 : undefined}
         >
-          {t(`${COPY_KEY}.stepQuestion`)}
+          {t(`${COPY_KEY}.workflowQuestion`)}
         </FormLabel>
       )}
       <Radio.RadioGroup

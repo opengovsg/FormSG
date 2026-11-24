@@ -634,7 +634,12 @@ export const EditStepBlock = ({
                 ) : null}
                 <AccordionIcon flexShrink="0" />
               </AccordionButton>
-              <AccordionPanel p="0" pb="1.5rem" data-step-section={section}>
+              <AccordionPanel
+                px="0"
+                pt="0.25rem"
+                pb="1.5rem"
+                data-step-section={section}
+              >
                 <Spotlight
                   isEnabled={isGuided}
                   isActive={activeSection === section}
