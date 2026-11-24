@@ -2802,8 +2802,9 @@ const saveFixedStep = <T extends IMultirespondentSubmissionSchema>({
   submission.workflowEvents.push({
     ...buildStepSubmittedEvent({
       stepNumber: encryptedPayload.workflowStep + 1,
-      step: { ...fixedStep, submittedAt: new Date().toISOString() },
+      step: fixedStep,
     }),
+    created: new Date(),
     emails: [],
   })
   if (expectedPrevious) {

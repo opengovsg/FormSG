@@ -7,6 +7,7 @@ import {
   LogicType,
   SubmissionType,
   WorkflowEventType,
+  WorkflowStatus,
   WorkflowType,
 } from 'formsg-shared/types'
 import mongoose from 'mongoose'
@@ -241,6 +242,36 @@ describe('fix step', () => {
         emails: [],
       })
       expect(getPendingStepAssignees(stored!)).toEqual(['step4@example.com'])
+    })
+
+    it('logs a fixed approval step with its approval outcome', async () => {
+      const submission = await createSubmission({
+        submittedSteps: SUBMITTED_STEPS.map((step, index) =>
+          index === 1
+            ? { ...step, isApproval: true, status: WorkflowStatus.APPROVED }
+            : step,
+        ),
+      })
+      await fixStep(submission._id, 2)
+      const fixing = await MultirespondentSubmission.findById(submission._id)
+
+      await updateMultiRespondentFormSubmission({
+        submissionId: String(submission._id),
+        snapshottedFormDef,
+        encryptedPayload: payload(),
+        expectedPrevious: {
+          workflowStep: fixing!.workflowStep,
+          stepTokenHash: fixing!.stepTokenHash,
+        },
+        logMeta: {},
+      })
+
+      const stored = await MultirespondentSubmission.findById(submission._id)
+      expect(stored?.workflowEvents.at(-1)).toMatchObject({
+        type: WorkflowEventType.StepSubmitted,
+        stepNumber: 2,
+        outcome: WorkflowStatus.APPROVED,
+      })
     })
   })
 
