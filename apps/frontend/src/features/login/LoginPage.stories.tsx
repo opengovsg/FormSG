@@ -1,4 +1,7 @@
-import { Meta, StoryFn } from '@storybook/react-vite'
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
+import { Decorator, Meta, StoryFn } from '@storybook/react-vite'
+
+import { featureFlags } from 'formsg-shared/constants'
 
 import { authHandlers, otpGenerationResponse } from '~/mocks/msw/handlers/auth'
 
@@ -7,10 +10,20 @@ import { StoryRouter, viewportModes } from '~utils/storybook'
 
 import { LoginPage } from './LoginPage'
 
+const withGrowthBook =
+  (growthbook: GrowthBook): Decorator =>
+  (Story) => (
+    <GrowthBookProvider growthbook={growthbook}>
+      <Story />
+    </GrowthBookProvider>
+  )
+
 export default {
   title: 'Pages/LoginPage',
   component: LoginPage,
   decorators: [
+    // Flags loaded, all off. Stories override this with their own flags.
+    withGrowthBook(new GrowthBook({ features: {} })),
     StoryRouter({
       initialEntries: [LOGIN_ROUTE],
       path: LOGIN_ROUTE,
@@ -39,3 +52,16 @@ InvalidAgencyResponse.parameters = {
     },
   },
 }
+
+export const WithOneGovSg = Template.bind({})
+WithOneGovSg.parameters = Desktop.parameters
+WithOneGovSg.decorators = [
+  withGrowthBook(
+    new GrowthBook({
+      features: { [featureFlags.ogpSuiteSso]: { defaultValue: true } },
+    }),
+  ),
+]
+
+export const FlagsLoading = Template.bind({})
+FlagsLoading.decorators = [withGrowthBook(new GrowthBook())]
