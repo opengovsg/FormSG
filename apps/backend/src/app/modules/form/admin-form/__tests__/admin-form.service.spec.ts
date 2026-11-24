@@ -91,6 +91,7 @@ import { IMultirespondentFormSchema } from 'src/types/form'
 
 import {
   FormNotFoundError,
+  FormOpenToResponsesError,
   LogicNotFoundError,
   TransferOwnershipError,
 } from '../../form.errors'
@@ -4543,6 +4544,29 @@ describe('admin-form.service', () => {
   })
 
   describe('createWorkflowStep', () => {
+    it('should reject adding a step while the form is open to responses', async () => {
+      // Arrange
+      const updateSpy = jest.spyOn(MultirespondentFormModel, 'findOneAndUpdate')
+      const mockForm = {
+        _id: new ObjectId().toHexString(),
+        responseMode: FormResponseMode.Multirespondent,
+        status: FormStatus.Public,
+        form_fields: [],
+        workflow: [],
+      } as unknown as IPopulatedForm
+
+      // Act
+      const result = await AdminFormService.createWorkflowStep(mockForm, {
+        workflow_type: WorkflowType.Static,
+        emails: ['step1@example.com'],
+        edit: [],
+      } as any)
+
+      // Assert
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(FormOpenToResponsesError)
+      expect(updateSpy).not.toHaveBeenCalled()
+    })
+
     describe('myinfo field restriction', () => {
       const MYINFO_FIELD_ID = new ObjectId().toHexString()
       const REGULAR_FIELD_ID = new ObjectId().toHexString()
