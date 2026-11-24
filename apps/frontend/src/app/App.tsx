@@ -34,6 +34,9 @@ const queryClient = new QueryClient({
   },
 })
 
+// Set before init so every log, the first included, carries the product context
+datadogLogs.setGlobalContextProperty('product', 'formsg')
+
 // Init Datadog browser logs
 datadogLogs.init({
   clientToken: import.meta.env.VITE_APP_DD_RUM_CLIENT_TOKEN || '',
