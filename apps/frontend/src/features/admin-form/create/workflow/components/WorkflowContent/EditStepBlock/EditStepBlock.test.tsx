@@ -240,7 +240,9 @@ describe('what an unfinished step is allowed to save as', () => {
     expect(await screen.findByText(NO_RESPONDENT_TYPE)).toBeInTheDocument()
     expect(screen.queryByRole('tab')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', DONE)).not.toBeInTheDocument()
-    await user.click(screen.getByRole('radio', { name: /Specific emails/i }))
+    await user.click(
+      await screen.findByRole('radio', { name: /Specific emails/i }),
+    )
     await user.type(
       screen.getByPlaceholderText('me@example.com'),
       'reviewer@example.gov.sg{Enter}',
@@ -533,7 +535,9 @@ describe('guided Login accordions', () => {
     const user = await reachLogin()
     const name = screen.getByRole('textbox', { name: /step name/i })
     await user.type(name, 'New reviewer')
-    await user.click(screen.getByRole('radio', { name: /Specific emails/i }))
+    await user.click(
+      await screen.findByRole('radio', { name: /Specific emails/i }),
+    )
     await user.type(
       screen.getByPlaceholderText('me@example.com'),
       'reviewer@example.gov.sg{Enter}',
@@ -557,7 +561,9 @@ describe('guided Login accordions', () => {
     const user = userEvent.setup()
     await screen.findByRole('textbox', { name: /step name/i })
     await user.click(screen.getByRole('button', CONTINUE))
-    await user.click(screen.getByRole('radio', { name: /Specific emails/i }))
+    await user.click(
+      await screen.findByRole('radio', { name: /Specific emails/i }),
+    )
     expect(screen.getByPlaceholderText('me@example.com')).toBeVisible()
     for (let index = 0; index < 3; index++) {
       await user.click(screen.getByRole('button', CONTINUE))
