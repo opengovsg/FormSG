@@ -55,6 +55,7 @@ export interface StepLoginControlsProps {
   isLoading?: boolean
   disabledReason?: string
   isHeading?: boolean
+  hideQuestion?: boolean
   idPrefix: string
   commitOnActivation?: boolean
   onEsrvcIdCommit?: () => void
@@ -71,6 +72,7 @@ export const StepLoginControls = ({
   isLoading = false,
   disabledReason,
   isHeading = false,
+  hideQuestion = false,
   idPrefix,
   commitOnActivation = false,
   onEsrvcIdCommit,
@@ -84,16 +86,21 @@ export const StepLoginControls = ({
       {disabledReason ? (
         <InlineMessage mb="1rem">{disabledReason}</InlineMessage>
       ) : null}
-      <FormLabel
-        id={`${idPrefix}-login-label`}
-        mb="1rem"
-        style={isHeading ? textStyles.h4 : undefined}
-      >
-        {t(`${COPY_KEY}.stepQuestion`)}
-      </FormLabel>
+      {hideQuestion ? null : (
+        <FormLabel
+          id={`${idPrefix}-login-label`}
+          mb="1rem"
+          style={isHeading ? textStyles.h4 : undefined}
+        >
+          {t(`${COPY_KEY}.stepQuestion`)}
+        </FormLabel>
+      )}
       <Radio.RadioGroup
         style={{ opacity: isDisabled ? 0.8 : 1 }}
-        aria-labelledby={`${idPrefix}-login-label`}
+        aria-label={
+          hideQuestion ? t(`${COPY_KEY}.workflowQuestion`) : undefined
+        }
+        aria-labelledby={hideQuestion ? undefined : `${idPrefix}-login-label`}
         value={authType}
         onChange={(next: FormAuthType) => onAuthTypeChange(next)}
         onKeyDownCapture={

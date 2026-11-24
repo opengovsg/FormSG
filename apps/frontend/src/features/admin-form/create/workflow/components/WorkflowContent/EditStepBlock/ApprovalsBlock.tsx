@@ -1,13 +1,14 @@
 import { useCallback, useRef } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { FormControl, Text } from '@chakra-ui/react'
+import { FormControl, FormLabel, Stack, Text } from '@chakra-ui/react'
 
 import { BasicField } from 'formsg-shared/types'
 
 import { textStyles } from '~theme/textStyles'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import Radio from '~components/Radio'
 import Toggle from '~components/Toggle'
 
 import { useAddFieldPicker } from '~features/admin-form/create/common/useAddFieldPicker'
@@ -27,15 +28,18 @@ import {
 import { EditStepBlockContainer } from './EditStepBlockContainer'
 
 interface ApprovalsBlockProps {
+  inAccordion?: boolean
   formMethods: UseFormReturn<EditStepInputs>
   stepNumber: number
 }
 
 export const ApprovalsBlock = ({
+  inAccordion = false,
   formMethods,
   stepNumber,
 }: ApprovalsBlockProps): JSX.Element => {
   const { t } = useTranslation()
+  const approverHintId = `step-${stepNumber}-approver-hint`
   const isSavePermissive = useIsWorkflowSavePermissive()
   const isActiveSection = useIsSpotlightActiveSection()
   const { withAddFieldItem, withAddFieldAction } = useAddFieldPicker({
@@ -90,8 +94,7 @@ export const ApprovalsBlock = ({
     }
   }
 
-  const onApprovalToggleChange = () => {
-    const nextIsApprovalToggleChecked = !isApprovalToggleChecked
+  const changeApprovalRequirement = (nextIsApprovalToggleChecked: boolean) => {
     if (nextIsApprovalToggleChecked) {
       const remembered = lastChosenApprovalField.current
       if (remembered && yesNoFieldIds.includes(remembered)) {
@@ -124,72 +127,118 @@ export const ApprovalsBlock = ({
           {t('features.adminForm.sidebar.workflow.guidedHints.approvals')}
         </Text>
       ) : null}
-      <Toggle
-        isLoading={isLoading}
-        onChange={onApprovalToggleChange}
-        isChecked={isApprovalToggleChecked}
-        labelStyles={{ ...textStyles.h4, color: 'inherit' }}
-        label={t('features.adminForm.sidebar.workflow.approvals.toggle.label')}
-        description={t(
-          'features.adminForm.sidebar.workflow.approvals.toggle.description',
-        )}
-        descriptionStyles={{ color: 'secondary.700' }}
-      />
-      {isApprovalToggleChecked ? (
-        <FormControl
-          isInvalid={!!errors.approval_field?.message}
-          isRequired={!isSavePermissive}
+      {inAccordion ? (
+        <Radio.RadioGroup
+          aria-label={t(
+            'features.adminForm.sidebar.workflow.approvals.heading',
+          )}
+          value={isApprovalToggleChecked ? 'yes' : 'no'}
+          onChange={(value) => changeApprovalRequirement(value === 'yes')}
         >
-          <Controller
-            name={APPROVAL_FIELD_NAME}
-            control={control}
-            rules={{
-              validate: (value) => {
-                if (!value && isApprovalToggleChecked && !isSavePermissive) {
-                  return t(
-                    'features.adminForm.sidebar.workflow.approvals.validation.noField',
-                  )
-                }
-                if (value && approvalFieldsFromOtherSteps.includes(value)) {
-                  return t(
-                    'features.adminForm.sidebar.workflow.approvals.validation.fieldAlreadyUsed',
-                  )
-                }
-                if (
-                  value &&
-                  !(getValues(FIELDS_TO_EDIT_NAME) ?? []).includes(value)
-                ) {
-                  return t(
-                    'features.adminForm.sidebar.workflow.approvals.validation.fieldNotAssignedToUser',
-                  )
-                }
-              },
-            }}
-            render={({ field: { value = '', onChange, ...rest } }) => {
-              const displayValue = getValueIfNotDeleted(value)
-              const handleApprovalFieldChange = withAddFieldAction(
-                (newValue: string) => {
-                  assignApprovalFieldToStep(newValue)
-                  onChange(newValue)
+          <Radio value="no" isDisabled={isLoading} allowDeselect={false}>
+            {t('features.adminForm.sidebar.workflow.approvals.notApprover')}
+          </Radio>
+          <Radio
+            value="yes"
+            isDisabled={isLoading}
+            allowDeselect={false}
+            aria-describedby={approverHintId}
+          >
+            {t('features.adminForm.sidebar.workflow.approvals.approver')}
+            <Text
+              as="span"
+              display="block"
+              id={approverHintId}
+              aria-hidden="true"
+              textStyle="body-2"
+              color="secondary.500"
+            >
+              {t(
+                'features.adminForm.sidebar.workflow.approvals.toggle.description',
+              )}
+            </Text>
+          </Radio>
+        </Radio.RadioGroup>
+      ) : (
+        <Toggle
+          isLoading={isLoading}
+          onChange={() => changeApprovalRequirement(!isApprovalToggleChecked)}
+          isChecked={isApprovalToggleChecked}
+          labelStyles={{ ...textStyles.h4, color: 'inherit' }}
+          label={t(
+            'features.adminForm.sidebar.workflow.approvals.toggle.label',
+          )}
+          description={t(
+            'features.adminForm.sidebar.workflow.approvals.toggle.description',
+          )}
+          descriptionStyles={{ color: 'secondary.700' }}
+        />
+      )}
+      {isApprovalToggleChecked ? (
+        <Stack ml={inAccordion ? '2.75rem' : undefined} spacing="0.5rem">
+          <FormControl
+            id={APPROVAL_FIELD_NAME}
+            isInvalid={!!errors.approval_field?.message}
+            isRequired={!isSavePermissive}
+          >
+            {inAccordion && (
+              <FormLabel requiredIndicator={<></>}>
+                {t('features.adminForm.sidebar.workflow.approvals.fieldLabel')}
+              </FormLabel>
+            )}
+            <Controller
+              name={APPROVAL_FIELD_NAME}
+              control={control}
+              rules={{
+                validate: (value) => {
+                  if (!value && isApprovalToggleChecked && !isSavePermissive) {
+                    return t(
+                      'features.adminForm.sidebar.workflow.approvals.validation.noField',
+                    )
+                  }
+                  if (value && approvalFieldsFromOtherSteps.includes(value)) {
+                    return t(
+                      'features.adminForm.sidebar.workflow.approvals.validation.fieldAlreadyUsed',
+                    )
+                  }
+                  if (
+                    value &&
+                    !(getValues(FIELDS_TO_EDIT_NAME) ?? []).includes(value)
+                  ) {
+                    return t(
+                      'features.adminForm.sidebar.workflow.approvals.validation.fieldNotAssignedToUser',
+                    )
+                  }
                 },
-              )
-              return (
-                <SingleSelect
-                  placeholder={t(
-                    'features.adminForm.sidebar.workflow.approvals.toggle.placeholder',
-                  )}
-                  items={withAddFieldItem(yesNoFieldItems)}
-                  value={displayValue}
-                  isClearable
-                  isDisabled={isLoading}
-                  onChange={handleApprovalFieldChange}
-                  {...rest}
-                />
-              )
-            }}
-          />
-          <FormErrorMessage>{errors.approval_field?.message}</FormErrorMessage>
-        </FormControl>
+              }}
+              render={({ field: { value = '', onChange, ...rest } }) => {
+                const displayValue = getValueIfNotDeleted(value)
+                const handleApprovalFieldChange = withAddFieldAction(
+                  (newValue: string) => {
+                    assignApprovalFieldToStep(newValue)
+                    onChange(newValue)
+                  },
+                )
+                return (
+                  <SingleSelect
+                    placeholder={t(
+                      'features.adminForm.sidebar.workflow.approvals.toggle.placeholder',
+                    )}
+                    items={withAddFieldItem(yesNoFieldItems)}
+                    value={displayValue}
+                    isClearable
+                    isDisabled={isLoading}
+                    onChange={handleApprovalFieldChange}
+                    {...rest}
+                  />
+                )
+              }}
+            />
+            <FormErrorMessage>
+              {errors.approval_field?.message}
+            </FormErrorMessage>
+          </FormControl>
+        </Stack>
       ) : null}
     </EditStepBlockContainer>
   )

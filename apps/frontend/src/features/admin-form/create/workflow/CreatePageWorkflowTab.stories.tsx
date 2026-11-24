@@ -711,7 +711,7 @@ GuidedFieldsAccordion.play = async ({ canvasElement }) => {
   await userEvent.click(canvas.getByRole('button', { name: /^continue$/i }))
   await userEvent.click(canvas.getByRole('button', { name: /^continue$/i }))
   await expect(
-    canvas.getByRole('button', { name: 'Assigned fields' }),
+    canvas.getByRole('button', { name: 'Assign fields to this person' }),
   ).toHaveAttribute('aria-expanded', 'true')
 }
 
@@ -722,9 +722,8 @@ GuidedLoginAccordion.play = async (context) => {
   await GuidedFieldsAccordion.play?.(context)
   const canvas = within(context.canvasElement)
   await userEvent.click(canvas.getByRole('button', { name: /^continue$/i }))
-  await expect(canvas.getByRole('button', { name: 'Login' })).toHaveAttribute(
-    'aria-expanded',
-    'true',
-  )
+  await expect(
+    canvas.getByRole('button', { name: 'Choose how this person logs in' }),
+  ).toHaveAttribute('aria-expanded', 'true')
   await userEvent.click(await canvas.findByRole('radio', { name: /^Corppass/ }))
 }

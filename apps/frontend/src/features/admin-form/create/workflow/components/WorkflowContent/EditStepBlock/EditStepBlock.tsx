@@ -80,7 +80,11 @@ export const APPROVAL_FIELD_NAME = 'approval_field'
 export const APPROVAL_ENABLED_NAME = 'is_approval_enabled'
 
 const SECTION_REVEAL_SCROLL_DELAY_MS = 100
-const STEP_TABS_KEY = 'features.adminForm.sidebar.workflow.stepLogin.tabs'
+const SECTION_LABEL_KEYS = {
+  fields: 'features.adminForm.sidebar.workflow.questions.accordionLabel',
+  login: 'features.adminForm.sidebar.workflow.stepLogin.workflowQuestion',
+  approvals: 'features.adminForm.sidebar.workflow.approvals.heading',
+} as const
 const SAVE_ERRORS_KEY =
   'features.adminForm.sidebar.workflow.stepLogin.saveErrors'
 
@@ -380,7 +384,7 @@ export const EditStepBlock = ({
 
   const questionsSection = (
     <QuestionsBlock
-      key="fields"
+      inAccordion={inAccordion}
       formMethods={formMethods}
       isLoading={_isLoading}
       stepNumber={stepNumber}
@@ -388,7 +392,7 @@ export const EditStepBlock = ({
   )
   const loginSection = isLoginShown ? (
     <LoginBlock
-      key="login"
+      inAccordion={inAccordion}
       formMethods={formMethods}
       stepNumber={stepNumber}
       isLoading={_isLoading}
@@ -396,7 +400,7 @@ export const EditStepBlock = ({
   ) : null
   const approvalsSection = isFirstStep ? null : (
     <ApprovalsBlock
-      key="what-they-do"
+      inAccordion={inAccordion}
       formMethods={formMethods}
       stepNumber={stepNumber}
     />
@@ -424,7 +428,7 @@ export const EditStepBlock = ({
     ),
     login: t(LOGIN_OPTION_COPY[authType].labelKey),
     approvals: t(
-      `features.adminForm.sidebar.workflow.stepLogin.summaries.${approvalEnabled ? 'approvalRequired' : 'noApproval'}`,
+      `features.adminForm.sidebar.workflow.approvals.${approvalEnabled ? 'approver' : 'notApprover'}`,
     ),
   }
   const expandableSections = (
@@ -460,7 +464,12 @@ export const EditStepBlock = ({
                 py="1.5rem"
                 textAlign="left"
                 columnGap="0.75rem"
-                aria-label={t(`${STEP_TABS_KEY}.${section}`)}
+                aria-label={t(SECTION_LABEL_KEYS[section])}
+                aria-describedby={
+                  isExpanded
+                    ? undefined
+                    : `step-${stepNumber}-${section}-summary`
+                }
                 aria-disabled={isGuided && !reveal.isReached(section)}
                 onClick={(event) => {
                   if (isGuided && !reveal.isReached(section))
@@ -475,11 +484,24 @@ export const EditStepBlock = ({
                       : cardHoverBg,
                 }}
               >
-                <Text flex="1" minW="0" style={textStyles.h4}>
-                  {t(`${STEP_TABS_KEY}.${section}`)}
+                <Text
+                  id={
+                    section === 'fields'
+                      ? `${FIELDS_TO_EDIT_NAME}-label`
+                      : undefined
+                  }
+                  flex="1"
+                  minW="0"
+                  style={textStyles.h4}
+                >
+                  {t(SECTION_LABEL_KEYS[section])}
                 </Text>
                 {!isExpanded ? (
-                  <Box minW="0" maxW="50%">
+                  <Box
+                    id={`step-${stepNumber}-${section}-summary`}
+                    minW="0"
+                    maxW="50%"
+                  >
                     <LogicBadge bg="white" overflowWrap="anywhere">
                       {summaries[section]}
                     </LogicBadge>
@@ -506,6 +528,7 @@ export const EditStepBlock = ({
     name: <StepNameBlock formMethods={formMethods} stepNumber={stepNumber} />,
     people: (
       <RespondentBlock
+        inAccordion={inAccordion}
         user={user}
         stepNumber={stepNumber}
         formMethods={formMethods}

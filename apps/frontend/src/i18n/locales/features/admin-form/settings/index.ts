@@ -24,6 +24,9 @@ type SubmitterIdCollectionLoginStrings = {
 
 export interface SingpassSettingsStrings extends HasTitle {
   loginTitle: string
+  description: string
+  learnMore: string
+  learnMoreMyinfo: string
   submitterIdCollection: {
     toggleLabel: string
     addNricField: string
