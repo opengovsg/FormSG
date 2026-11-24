@@ -23,4 +23,9 @@ export interface App {
       transferAllForms: string
     }
   }
+  forceRefreshModal: {
+    title: string
+    body: string
+    refreshButton: string
+  }
 }
