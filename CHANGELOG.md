@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.79.0](https://github.com/opengovsg/formsg/compare/v9.78.1...v9.79.0) (2026-11-24)
+
+
+### Features
+
+* **responses:** plain-English copy for the attachments download modal (#10634) ([#10634](https://github.com/opengovsg/formsg/commit/24b4c1f14fdfcc2a35c2e0cc01884849ee966655))
+* **workflow:** let a step send to typed emails, Email fields and Dropdowns together (#10593) ([#10593](https://github.com/opengovsg/formsg/commit/12b2ff54a12090508efeb8cb62fd8540643a4c3c))
+
 ## [9.78.1](https://github.com/opengovsg/formsg/compare/v9.78.0...v9.78.1) (2026-11-23)
 
 
