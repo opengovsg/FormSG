@@ -434,4 +434,32 @@ describe('WorkflowActivityLog', () => {
       within(sendBackItem).getByText('Fix the <b>dates</b>'),
     ).toBeInTheDocument()
   })
+
+  it('names a fix step apart from a send back', () => {
+    render(
+      <WorkflowActivityLog
+        history={{
+          ...history,
+          workflowEvents: [
+            stepSubmitted(1, at, ['lead@agency.gov.sg']),
+            {
+              type: WorkflowEventType.FixStep,
+              actorEmail: 'admin@agency.gov.sg',
+              stepNumber: 1,
+              fromStepNumber: 2,
+              emails: ['applicant@agency.gov.sg'],
+              created: '2026-10-08T02:00:00.000Z' as DateString,
+            },
+          ],
+        }}
+      />,
+    )
+
+    expect(titles()).toEqual([
+      'Step 1 submitted',
+      'Step 2 · Team lead sent to lead@agency.gov.sg',
+      'Sent back from Step 2 to fix Step 1 · Applicant by admin@agency.gov.sg',
+      'Step 1 · Applicant sent to applicant@agency.gov.sg',
+    ])
+  })
 })

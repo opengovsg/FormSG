@@ -2,20 +2,23 @@ import { PropsWithChildren } from 'react'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 
-import { useAddAssigneesMutation } from './mutations'
+import { useAddAssigneesMutation, useFixStepMutation } from './mutations'
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }))
 
-vi.mock('~hooks/useToast', () => ({
-  useToast: () => vi.fn(),
+const { mockToast, mockFixWorkflowStep } = vi.hoisted(() => ({
+  mockToast: vi.fn(),
+  mockFixWorkflowStep: vi.fn(),
 }))
+vi.mock('~hooks/useToast', () => ({ useToast: () => mockToast }))
 
 vi.mock('../AdminSubmissionsService', () => ({
   addAssignees: () =>
     Promise.resolve({ stepNumber: 2, emails: ['new@agency.gov.sg'] }),
   stopWorkflow: vi.fn(),
+  fixWorkflowStep: mockFixWorkflowStep,
 }))
 
 describe('useAddAssigneesMutation', () => {
@@ -45,5 +48,43 @@ describe('useAddAssigneesMutation', () => {
 
     await waitFor(() => expect(onSuccess).toHaveBeenCalled())
     expect(queryClient.invalidateQueries).toHaveBeenCalled()
+  })
+})
+
+describe('useFixStepMutation', () => {
+  it('posts the fix, toasts the reopened step and refreshes the responses', async () => {
+    mockFixWorkflowStep.mockResolvedValue({ stepNumber: 2, emails: [] })
+    const queryClient = new QueryClient()
+    const invalidate = vi
+      .spyOn(queryClient, 'invalidateQueries')
+      .mockResolvedValue()
+    const wrapper = ({ children }: PropsWithChildren) => (
+      // @ts-expect-error missing FC type in old version
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
+    const { result } = renderHook(() => useFixStepMutation('form-id'), {
+      wrapper,
+    })
+    const params = {
+      submissionId: 'submission-id',
+      targetStepNumber: 2,
+      expectedStepNumber: 4,
+      submissionSecretKey: 'key',
+      clearResponses: true,
+    }
+
+    result.current.mutate(params)
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(mockFixWorkflowStep).toHaveBeenCalledWith({
+      formId: 'form-id',
+      ...params,
+    })
+    expect(mockToast).toHaveBeenCalledWith({
+      status: 'success',
+      description:
+        'features.adminForm.responses.individualResponse.workflowActions.sendBackModal.fixStepToastSuccess',
+    })
+    expect(invalidate).toHaveBeenCalled()
   })
 })

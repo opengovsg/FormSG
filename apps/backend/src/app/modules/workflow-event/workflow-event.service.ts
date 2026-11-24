@@ -139,7 +139,8 @@ const toWorkflowEventDto = (event: IWorkflowEvent): WorkflowEventDto => {
       actorEmail: event.actorEmail,
       stepNumber: event.stepNumber,
       emails: event.emails,
-      ...(event.type === WorkflowEventType.SentBack
+      ...(event.type === WorkflowEventType.SentBack ||
+      event.type === WorkflowEventType.FixStep
         ? { fromStepNumber: event.fromStepNumber, remarks: event.remarks }
         : {}),
       created,

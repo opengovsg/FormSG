@@ -1,7 +1,12 @@
 import { GrowthBook } from '@growthbook/growthbook'
-import { featureFlags } from 'formsg-shared/constants'
+import {
+  featureFlags,
+  sendBackMiscAllowsClearAnswers,
+  sendBackMiscAllowsFixStep,
+  WorkflowActionsSendBackMiscValue,
+} from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types'
-import { errAsync, okAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync } from 'neverthrow'
 
 import * as AuthService from '../../auth/auth.service'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
@@ -42,3 +47,28 @@ export const checkWorkflowActionAllowed = ({
       }
       return okAsync({ form, user })
     })
+
+export const checkSendBackMiscAllowed = <T>(
+  allowed: T,
+  {
+    growthbook,
+    fixStep,
+    clearResponses,
+  }: {
+    growthbook?: GrowthBook
+    fixStep: boolean
+    clearResponses: boolean
+  },
+) => {
+  const value = growthbook?.getFeatureValue<string>(
+    featureFlags.workflowActionsSendBackMisc,
+    WorkflowActionsSendBackMiscValue.OFF,
+  )
+  if (
+    (fixStep && !sendBackMiscAllowsFixStep(value)) ||
+    (clearResponses && !sendBackMiscAllowsClearAnswers(value))
+  ) {
+    return err(new MrfWorkflowActionsUnavailableError())
+  }
+  return ok(allowed)
+}

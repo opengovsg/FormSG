@@ -254,12 +254,15 @@ export const WorkflowActivityLog = ({
           ]
           break
         case WorkflowEventType.SentBack:
+        case WorkflowEventType.FixStep:
           entries = [
             {
               ...entry(
                 id,
                 event.created,
-                'sentBack',
+                event.type === WorkflowEventType.FixStep
+                  ? 'fixStep'
+                  : 'sentBack',
                 {
                   fromStepNumber: String(event.fromStepNumber ?? ''),
                   ...stepValues(event.stepNumber),

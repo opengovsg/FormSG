@@ -16,7 +16,10 @@ import { ControllerHandler } from '../../core/core.types'
 import { mapRouteError, sendRouteError } from '../submission.utils'
 
 import { sendBackMultirespondentSubmission } from './multirespondent-submission.service'
-import { checkWorkflowActionAllowed } from './workflow-actions.gate'
+import {
+  checkSendBackMiscAllowed,
+  checkWorkflowActionAllowed,
+} from './workflow-actions.gate'
 
 const logger = createLoggerWithLabel(module)
 
@@ -38,6 +41,7 @@ const validateSendBackBody = celebrate({
         otherwise: Joi.forbidden(),
       }),
     submissionSecretKey: Joi.string().required(),
+    clearResponses: Joi.boolean().default(false),
     remarks: Joi.string()
       .trim()
       .allow('')
@@ -55,6 +59,7 @@ const sendBackPendingMrfSubmission: ControllerHandler<
     submissionSecretKey: string
     remarks?: string
     stepOneRecipientEmail?: string
+    clearResponses: boolean
   }
 > = async (req, res) => {
   const { formId, submissionId } = req.params
@@ -64,6 +69,7 @@ const sendBackPendingMrfSubmission: ControllerHandler<
     submissionSecretKey,
     remarks,
     stepOneRecipientEmail,
+    clearResponses,
   } = req.body
   const authedUserId = (req.session as AuthedSessionData).user._id
   const logMeta = {
@@ -72,6 +78,7 @@ const sendBackPendingMrfSubmission: ControllerHandler<
     submissionId,
     targetStepNumber,
     expectedStepNumber,
+    clearResponses,
     ...createReqMeta(req),
   }
 
@@ -81,6 +88,13 @@ const sendBackPendingMrfSubmission: ControllerHandler<
     growthbook: req.growthbook,
     flag: featureFlags.workflowActionsSendBack,
   })
+    .andThen((allowed) =>
+      checkSendBackMiscAllowed(allowed, {
+        growthbook: req.growthbook,
+        fixStep: false,
+        clearResponses,
+      }),
+    )
     .andThen(({ form, user }) =>
       sendBackMultirespondentSubmission({
         formId,
@@ -91,6 +105,8 @@ const sendBackPendingMrfSubmission: ControllerHandler<
         remarks: remarks || undefined,
         stepOneRecipientEmail,
         canSendBackToStepOne: form.authType === FormAuthType.NIL,
+        clearResponses,
+        submissionSecretKey,
         actor: user,
       }).map((sentBack) => ({ form, ...sentBack })),
     )

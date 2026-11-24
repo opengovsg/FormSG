@@ -18,6 +18,7 @@ import {
 } from 'formsg-shared/types'
 import { getVisibleFieldIdsV4 } from 'formsg-shared/utils/flatten-v4-to-v1'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
+import { omit } from 'lodash'
 import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -38,6 +39,7 @@ import {
   SnapshottedFormDef,
 } from '../../../../types/api'
 import config, { isTest } from '../../../config/config'
+import formsgSdk from '../../../config/formsg-sdk'
 import {
   createLoggerWithLabel,
   CustomLoggerParams,
@@ -81,6 +83,7 @@ import {
   MrfReminderInvalidWorkflowStepError,
   MrfReminderLimitReachedError,
   MrfReminderRecipientEmailsEmptyError,
+  MrfSendBackClearFailedError,
   MrfSendBackInvalidStepError,
   MrfSubmissionStaleError,
   MrfWorkflowNotPendingError,
@@ -138,6 +141,7 @@ import {
   shouldSendMrfWebhook,
   shouldWriteMrfSnapshot,
 } from './webhook/webhook-send-eligibility'
+import { isFixingStep } from './fix-step'
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
 import {
   buildMrfResponseJson,
@@ -418,7 +422,11 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
           workflowStep,
         ) === WorkflowStatus.PENDING
 
-      if (!isPending || !submittedSteps) {
+      if (
+        !isPending ||
+        !submittedSteps ||
+        isFixingStep({ workflowStep, submittedSteps })
+      ) {
         logger.error({
           message:
             'Failed to find details for pending step to send mrf next step submission reminder email',
@@ -2074,6 +2082,16 @@ export const updateMultiRespondentFormSubmission = ({
 
       const submissionIndex = submission.submittedSteps?.length ?? 0
 
+      if (workflowStep < submissionIndex) {
+        return saveFixedStep({
+          submission,
+          encryptedPayload,
+          attachmentMetadata,
+          expectedPrevious,
+          logMeta,
+        })
+      }
+
       submission.responseMetadata = responseMetadata
       submission.submissionPublicKey = submissionPublicKey
       submission.encryptedSubmissionSecretKey = encryptedSubmissionSecretKey
@@ -2526,6 +2544,61 @@ export const stopMultirespondentSubmission = ({
       stopped ? okAsync(stopped) : errAsync(new MrfWorkflowNotPendingError()),
     )
 
+export const getFieldIdsClearedBySendBack = (
+  workflow: { edit?: unknown[] }[],
+  targetStepNumber: number,
+): string[] => {
+  const editableIn = (steps: { edit?: unknown[] }[]) =>
+    steps.flatMap((step) => (step.edit ?? []).map(String))
+  const keptFieldIds = new Set(
+    editableIn(workflow.slice(0, targetStepNumber - 1)),
+  )
+  return Array.from(
+    new Set(editableIn(workflow.slice(targetStepNumber - 1))),
+  ).filter((fieldId) => !keptFieldIds.has(fieldId))
+}
+
+type SendBackClearUpdate = {
+  $set?: { encryptedContent: string }
+  $unset?: Record<string, ''>
+}
+
+const clearSentBackResponses = ({
+  submission,
+  targetStepNumber,
+  submissionSecretKey,
+}: {
+  submission: IMultirespondentSubmissionSchema
+  targetStepNumber: number
+  submissionSecretKey: string
+}): Result<SendBackClearUpdate, MrfSendBackClearFailedError> => {
+  const decrypted = formsgSdk.cryptoV3.decryptFromSubmissionKey(
+    submissionSecretKey,
+    {
+      encryptedContent: submission.encryptedContent,
+      version: submission.version,
+    },
+  )
+  if (!decrypted) {
+    return err(new MrfSendBackClearFailedError())
+  }
+  const clearedFieldIds = getFieldIdsClearedBySendBack(
+    submission.workflow,
+    targetStepNumber,
+  )
+  return ok({
+    $set: {
+      encryptedContent: formsgSdk.crypto.encrypt(
+        omit(decrypted.responses, clearedFieldIds),
+        submission.submissionPublicKey,
+      ),
+    },
+    $unset: Object.fromEntries(
+      clearedFieldIds.map((fieldId) => [`attachmentMetadata.${fieldId}`, '']),
+    ),
+  })
+}
+
 export const sendBackMultirespondentSubmission = ({
   formId,
   formPublicKey,
@@ -2535,6 +2608,8 @@ export const sendBackMultirespondentSubmission = ({
   remarks,
   stepOneRecipientEmail,
   canSendBackToStepOne,
+  clearResponses,
+  submissionSecretKey,
   actor,
 }: {
   formId: string
@@ -2545,6 +2620,8 @@ export const sendBackMultirespondentSubmission = ({
   remarks?: string
   stepOneRecipientEmail?: string
   canSendBackToStepOne: boolean
+  clearResponses: boolean
+  submissionSecretKey: string
   actor: { _id?: unknown; email: string }
 }): ResultAsync<
   { stepNumber: number; emails: string[]; stepToken: string },
@@ -2552,6 +2629,7 @@ export const sendBackMultirespondentSubmission = ({
   | SubmissionNotFoundError
   | MrfWorkflowNotPendingError
   | MrfSendBackInvalidStepError
+  | MrfSendBackClearFailedError
 > =>
   getMultirespondentSubmission(submissionId)
     .andThen((submission) => {
@@ -2600,9 +2678,24 @@ export const sendBackMultirespondentSubmission = ({
           ].map((email) => email.toLowerCase()),
         ),
       )
-      return okAsync({ submission, keptSteps, pendingStepNumber, emails })
+      const clear = clearResponses
+        ? clearSentBackResponses({
+            submission,
+            targetStepNumber,
+            submissionSecretKey,
+          })
+        : ok<SendBackClearUpdate>({})
+      return clear.isErr()
+        ? errAsync(clear.error)
+        : okAsync({
+            submission,
+            keptSteps,
+            pendingStepNumber,
+            emails,
+            clear: clear.value,
+          })
     })
-    .andThen(({ submission, keptSteps, pendingStepNumber, emails }) => {
+    .andThen(({ submission, keptSteps, pendingStepNumber, emails, clear }) => {
       const newStepToken = stepToken.generate()
       return ResultAsync.fromPromise(
         MultirespondentSubmission.findOneAndUpdate(
@@ -2615,11 +2708,13 @@ export const sendBackMultirespondentSubmission = ({
           },
           {
             $set: {
+              ...clear.$set,
               submittedSteps: keptSteps,
               workflowStep: targetStepNumber - 2,
               stepTokenHash: stepToken.hash(newStepToken),
               encryptedStepToken: stepToken.wrap(newStepToken, formPublicKey),
             },
+            ...(clear.$unset ? { $unset: clear.$unset } : {}),
             $push: {
               workflowEvents: {
                 $each: [
@@ -2650,6 +2745,248 @@ export const sendBackMultirespondentSubmission = ({
               formId,
               submissionId,
             },
+            error,
+          })
+          return transformMongoError(error)
+        },
+      ).andThen((updated) =>
+        updated
+          ? okAsync({
+              stepNumber: targetStepNumber,
+              emails,
+              stepToken: newStepToken,
+            })
+          : errAsync(new MrfWorkflowNotPendingError()),
+      )
+    })
+
+const saveFixedStep = <T extends IMultirespondentSubmissionSchema>({
+  submission,
+  encryptedPayload,
+  attachmentMetadata,
+  expectedPrevious,
+  logMeta,
+}: {
+  submission: T
+  encryptedPayload: MultirespondentSubmissionDto
+  attachmentMetadata?: Map<string, string>
+  expectedPrevious?: { workflowStep: number; stepTokenHash?: string }
+  logMeta: CustomLoggerParams['meta']
+}): ResultAsync<
+  {
+    submission: T
+    responseMetadata: MultirespondentSubmissionDto['responseMetadata']
+    snapshot: undefined
+  },
+  SubmissionSaveError | MrfSubmissionStaleError | PossibleDatabaseError
+> => {
+  const submittedSteps = (submission.submittedSteps ?? []) as SubmittedStep[]
+  const fixedStep = submittedSteps[encryptedPayload.workflowStep]
+
+  submission.responseMetadata = encryptedPayload.responseMetadata
+  submission.submissionPublicKey = encryptedPayload.submissionPublicKey
+  submission.encryptedSubmissionSecretKey =
+    encryptedPayload.encryptedSubmissionSecretKey
+  submission.encryptedContent = encryptedPayload.encryptedContent
+  submission.verifiedContent = encryptedPayload.verifiedContent
+  submission.version = encryptedPayload.version
+  submission.correctionClearFieldIds = undefined
+  submission.workflowStep = submittedSteps.length - 1
+  submission.attachmentMetadata = attachmentMetadata
+  submission.mrfVersion = encryptedPayload.mrfVersion
+  submission.stepTokenHash = encryptedPayload.stepTokenHash
+  submission.encryptedStepToken = encryptedPayload.encryptedStepToken
+  if (encryptedPayload.myInfoReadOnlyFields) {
+    submission.myInfoReadOnlyFields = encryptedPayload.myInfoReadOnlyFields
+  }
+  submission.workflowEvents.push({
+    ...buildStepSubmittedEvent({
+      stepNumber: encryptedPayload.workflowStep + 1,
+      step: fixedStep,
+    }),
+    created: new Date(),
+    emails: [],
+  })
+  if (expectedPrevious) {
+    submission.$where = {
+      workflowStep: expectedPrevious.workflowStep,
+      stepTokenHash: expectedPrevious.stepTokenHash ?? { $exists: false },
+    }
+  }
+  return ResultAsync.fromPromise(
+    submission.save().then(() => ({
+      submission,
+      responseMetadata: encryptedPayload.responseMetadata,
+      snapshot: undefined,
+    })),
+    (error) => {
+      if (
+        expectedPrevious &&
+        (error instanceof mongoose.Error.DocumentNotFoundError ||
+          error instanceof mongoose.Error.VersionError)
+      ) {
+        return new MrfSubmissionStaleError()
+      }
+      logger.error({
+        message: 'Multirespondent fixed step save error',
+        meta: logMeta,
+        error,
+      })
+      return new SubmissionSaveError()
+    },
+  )
+}
+
+/**
+ * @returns who the pending step is assigned to, including people added to it
+ */
+export const getPendingStepAssignees = (
+  submission: Pick<
+    IMultirespondentSubmissionSchema,
+    'submittedSteps' | 'workflowEvents'
+  >,
+): string[] => {
+  const submittedSteps = (submission.submittedSteps ?? []) as SubmittedStep[]
+  return Array.from(
+    new Set(
+      [
+        ...(submittedSteps.length > 0
+          ? (submittedSteps[submittedSteps.length - 1]
+              .nextStepRecipientEmails ?? [])
+          : getStepOneSendBackRecipients(submission.workflowEvents)),
+        ...getAddedAssignees(
+          submission.workflowEvents,
+          submittedSteps.length + 1,
+        ),
+      ].map((email) => email.toLowerCase()),
+    ),
+  )
+}
+
+export const startFixingStep = ({
+  formId,
+  formPublicKey,
+  submissionId,
+  targetStepNumber,
+  expectedStepNumber,
+  remarks,
+  clearResponses = false,
+  stepOneRecipientEmail,
+  canFixStepOne,
+  actor,
+}: {
+  formId: string
+  formPublicKey: string
+  submissionId: string
+  targetStepNumber: number
+  expectedStepNumber: number
+  clearResponses?: boolean
+  remarks?: string
+  stepOneRecipientEmail?: string
+  canFixStepOne: boolean
+  actor: { _id?: unknown; email: string }
+}): ResultAsync<
+  { stepNumber: number; emails: string[]; stepToken: string },
+  | DatabaseError
+  | SubmissionNotFoundError
+  | MrfWorkflowNotPendingError
+  | MrfSendBackInvalidStepError
+> =>
+  getMultirespondentSubmission(submissionId)
+    .andThen((submission) => {
+      if (String(submission.form) !== formId) {
+        return errAsync(new SubmissionNotFoundError())
+      }
+      const submittedSteps = (submission.submittedSteps ??
+        []) as SubmittedStep[]
+      const pendingStepNumber = submittedSteps.length + 1
+      const isPending =
+        !submission.stoppedAt &&
+        getMrfSubmissionWorkflowStatus(
+          submittedSteps,
+          submission.workflow.length,
+          submission.workflowStep,
+        ) === WorkflowStatus.PENDING
+      if (
+        !isPending ||
+        pendingStepNumber !== expectedStepNumber ||
+        submission.workflowStep !== submittedSteps.length - 1
+      ) {
+        return errAsync(new MrfWorkflowNotPendingError())
+      }
+      const isToStepOne = targetStepNumber === 1
+      if (
+        targetStepNumber < 1 ||
+        targetStepNumber >= pendingStepNumber ||
+        (isToStepOne &&
+          (!canFixStepOne ||
+            !stepOneRecipientEmail ||
+            !!submission.verifiedContent))
+      ) {
+        return errAsync(new MrfSendBackInvalidStepError())
+      }
+      const emails = Array.from(
+        new Set(
+          [
+            ...(isToStepOne
+              ? [stepOneRecipientEmail as string]
+              : (submittedSteps[targetStepNumber - 2].nextStepRecipientEmails ??
+                [])),
+            ...getAddedAssignees(submission.workflowEvents, targetStepNumber),
+          ].map((email) => email.toLowerCase()),
+        ),
+      )
+      return okAsync({ submission, pendingStepNumber, emails })
+    })
+    .andThen(({ submission, pendingStepNumber, emails }) => {
+      const newStepToken = stepToken.generate()
+      return ResultAsync.fromPromise(
+        MultirespondentSubmission.findOneAndUpdate(
+          {
+            _id: submission._id,
+            form: formId,
+            __v: submission.__v,
+            stoppedAt: { $exists: false },
+            workflowStep: pendingStepNumber - 2,
+            submittedSteps: { $size: pendingStepNumber - 1 },
+          },
+          {
+            $set: {
+              correctionClearFieldIds: clearResponses
+                ? (submission.workflow[targetStepNumber - 1]?.edit ?? []).map(
+                    String,
+                  )
+                : [],
+              workflowStep: targetStepNumber - 2,
+              stepTokenHash: stepToken.hash(newStepToken),
+              encryptedStepToken: stepToken.wrap(newStepToken, formPublicKey),
+            },
+            $push: {
+              workflowEvents: {
+                $each: [
+                  ...buildMissingStepSubmittedEvents(
+                    (submission.submittedSteps ?? []) as SubmittedStep[],
+                    submission.workflowEvents,
+                  ),
+                  buildWorkflowEvent({
+                    type: WorkflowEventType.FixStep,
+                    actor,
+                    stepNumber: targetStepNumber,
+                    fromStepNumber: pendingStepNumber,
+                    emails,
+                    remarks,
+                  }),
+                ],
+              },
+            },
+            $inc: { __v: 1 },
+          },
+          { new: true },
+        ).exec(),
+        (error) => {
+          logger.error({
+            message: 'Error starting to fix a multirespondent step',
+            meta: { action: 'startFixingStep', formId, submissionId },
             error,
           })
           return transformMongoError(error)
@@ -2700,7 +3037,11 @@ export const addAssigneesToPendingStep = ({
           submission.workflowStep,
         ) === WorkflowStatus.PENDING
       const stepNumber = submittedSteps.length + 1
-      if (!isPending || stepNumber !== expectedStepNumber) {
+      if (
+        !isPending ||
+        stepNumber !== expectedStepNumber ||
+        isFixingStep(submission)
+      ) {
         return errAsync(new MrfWorkflowNotPendingError())
       }
 

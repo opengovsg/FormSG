@@ -38,10 +38,12 @@ export interface ResponsesIndividualResponse {
       stopped: string
       notificationRecipients: string
       sentBack: string
+      fixStep: string
       remarks: string
     }
     reassignButton: string
     sendBackButton: string
+    fixingStep: string
     addAssigneeModal: {
       currentlyAssignedLabel: string
       noCurrentAssignees: string
@@ -71,8 +73,17 @@ export interface ResponsesIndividualResponse {
       remarksLabel: string
       remarksDescription: string
       remarksTooLong: string
+      descriptionWithChoices: string
+      routeLabel: string
+      redoConsequence: string
+      fixStepConsequence: string
+      keepFilledLabel: string
+      keepConsequence: string
+      clearConsequence: string
+      clearCorrectionConsequence: string
       confirm: string
       toastSuccess: string
+      fixStepToastSuccess: string
     }
   }
   paymentSection: {
