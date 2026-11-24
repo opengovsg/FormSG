@@ -1,5 +1,6 @@
 import { MB } from 'formsg-shared/constants/file'
 import { BasicField } from 'formsg-shared/types'
+import { isAllowedFileType } from 'formsg-shared/utils/file-validation'
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
@@ -63,6 +64,16 @@ const makeAttachmentSizeValidator: AttachmentValidatorConstructor =
       : left(`AttachmentValidator:\t File size more than limit`)
   }
 
+const makeAttachmentFileTypeValidator: AttachmentValidatorConstructor =
+  (attachmentField) => (response) => {
+    return isAllowedFileType(
+      response.filename,
+      attachmentField.allowedFileTypes,
+    )
+      ? right(response)
+      : left(`AttachmentValidator:\t File type not allowed`)
+  }
+
 /**
  * Returns a validation function for an attachment field when called.
  */
@@ -73,6 +84,7 @@ export const constructAttachmentValidator: AttachmentValidatorConstructor = (
     attachmentAnswerValidator,
     chain(attachmentContentValidator),
     chain(makeAttachmentSizeValidator(attachmentField)),
+    chain(makeAttachmentFileTypeValidator(attachmentField)),
   )
 
 // V4
@@ -129,6 +141,18 @@ const makeAttachmentSizeValidatorV4: ResponseValidatorConstructor<
     : left(`AttachmentValidatorV4:\t File size more than limit`)
 }
 
+const makeAttachmentFileTypeValidatorV4: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<IAttachmentFieldSchema>,
+  ParsedClearAttachmentFieldResponseV4
+> = (attachmentField) => (response) => {
+  return isAllowedFileType(
+    response.answer.filename,
+    attachmentField.allowedFileTypes,
+  )
+    ? right(response)
+    : left(`AttachmentValidatorV4:\t File type not allowed`)
+}
+
 export const constructAttachmentFieldValidatorV4: ResponseValidatorConstructor<
   OmitUnusedValidatorProps<IAttachmentFieldSchema>,
   ParsedClearFormFieldResponseV4,
@@ -139,4 +163,5 @@ export const constructAttachmentFieldValidatorV4: ResponseValidatorConstructor<
     chain(attachmentAnswerNotEmptyValidatorV4),
     chain(attachmentContentDefinedValidatorV4),
     chain(makeAttachmentSizeValidatorV4(attachmentField)),
+    chain(makeAttachmentFileTypeValidatorV4(attachmentField)),
   )

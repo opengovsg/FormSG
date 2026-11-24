@@ -54,6 +54,10 @@ export const AttachmentField = ({
     return parseInt(schema.attachmentSize) * MB
   }, [schema.attachmentSize])
 
+  const allowedFileTypes = schema.allowedFileTypes?.length
+    ? schema.allowedFileTypes
+    : undefined
+
   const setErrorMessage = useCallback(
     (errorMessage: string) => {
       setError(fieldName, { message: errorMessage })
@@ -138,6 +142,7 @@ export const AttachmentField = ({
             colorScheme={`theme-${colorTheme}`}
             maxSize={maxSizeInBytes}
             accept={VALID_EXTENSIONS}
+            allowedFileTypes={allowedFileTypes}
             showFileSize
             onChange={handleFileChange(onChange)}
             onError={setErrorMessage}

@@ -241,6 +241,17 @@ export const enSG: Fields = {
   attachment: {
     info: 'View our [complete list]({acceptedFileTypes}) of accepted file types. Please also read our [FAQ on email reliability]({guideEmailReliability}) relating to unaccepted file types.',
     maximumSize: 'Maximum size of individual attachment',
+    restrictFileTypes: {
+      title: 'Restrict file types',
+      inputLabel: 'File types allowed',
+      placeholder: '.pdf\n.docx\n.jpg',
+      error: {
+        duplicate: 'Please remove duplicate file types',
+        empty: 'Please enter at least one file type',
+        invalid:
+          "Please enter only valid file types. These aren't accepted file types: {fileTypes}",
+      },
+    },
     error: {
       exceedSize:
         "You have exceeded your form's attachment size limit of {maxTotalSizeMb} MB",

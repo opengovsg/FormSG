@@ -176,6 +176,52 @@ describe('attachment validation', () => {
     expect(error).not.toBeNull()
   })
 
+  it('names the allowed file types when a restricted field gets another type', async () => {
+    const user = userEvent.setup({ applyAccept: false })
+    const schema = ValidationOptional.args!.schema!
+    render(
+      <ValidationOptional
+        schema={{ ...schema, allowedFileTypes: ['.pdf', '.zip'] }}
+      />,
+    )
+    const input = screen.getByTestId(schema._id) as HTMLInputElement
+
+    await user.upload(input, new File(['photo'], 'photo.jpg'))
+
+    expect(
+      screen.getByText(
+        /\*\.jpg is not allowed\. Only these file types are accepted: \.pdf, \.zip/i,
+      ),
+    ).not.toBeNull()
+  })
+
+  it('checks files in a zip against every valid type, not the restriction', async () => {
+    const user = userEvent.setup()
+    const schema = ValidationOptional.args!.schema!
+    render(
+      <ValidationOptional
+        schema={{ ...schema, allowedFileTypes: ['.pdf', '.zip'] }}
+      />,
+    )
+    const input = screen.getByTestId(schema._id) as HTMLInputElement
+    const zip = new JSZip()
+    zip.file('notes.txt', 'Some notes')
+    const zipFile = new File(
+      [await zip.generateAsync({ type: 'blob' })],
+      'notes.zip',
+      {
+        type: 'application/zip',
+      },
+    )
+
+    await user.upload(input, zipFile)
+    await user.click(screen.getByRole('button', { name: /submit/i }))
+
+    expect(
+      screen.getByText(/you have submitted[\s\S]*notes\.zip/i),
+    ).not.toBeNull()
+  })
+
   it('renders error when file that exceeds schema max size is uploaded', async () => {
     // Arrange
     const user = userEvent.setup()
