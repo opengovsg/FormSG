@@ -1,4 +1,4 @@
-import { ComponentProps, useEffect, useState } from 'react'
+import { ComponentProps } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import {
@@ -52,6 +52,8 @@ const ReadOnlyHybridRespondents = (
 )
 
 interface RespondentBlockProps {
+  expanded: boolean
+  onExpandedChange: (expanded: boolean) => void
   useActionHeading?: boolean
   stepNumber: number
   isLoading: boolean
@@ -60,6 +62,8 @@ interface RespondentBlockProps {
 }
 
 export const RespondentBlock = ({
+  expanded,
+  onExpandedChange,
   useActionHeading = false,
   stepNumber,
   isLoading,
@@ -101,17 +105,6 @@ export const RespondentBlock = ({
   const prefersReducedMotion = usePrefersReducedMotion()
   const { cardHoverBg, iconTransitionDuration } = useWorkflowSurfaces()
   const collapsible = useActionHeading && !isFirstStep
-  const [expanded, setExpanded] = useState(true)
-  const { submitCount } = formMethods.formState
-  const hasError = !!(
-    errors.workflow_type ||
-    errors.emails ||
-    errors.field ||
-    errors.conditional_field
-  )
-  useEffect(() => {
-    if (hasError) setExpanded(true)
-  }, [hasError, submitCount])
 
   const content = (
     <EditStepBlockContainer>
@@ -205,7 +198,7 @@ export const RespondentBlock = ({
       reduceMotion={prefersReducedMotion}
       allowToggle
       index={expanded ? 0 : -1}
-      onChange={(index) => setExpanded(index === 0)}
+      onChange={(index) => onExpandedChange(index === 0)}
     >
       <AccordionItem border="0">
         <AccordionButton

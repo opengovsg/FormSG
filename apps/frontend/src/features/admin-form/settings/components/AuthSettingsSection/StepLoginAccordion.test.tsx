@@ -260,6 +260,38 @@ it('saves trimmed text on blur and Enter, resets invalid or failed changes', asy
   await waitFor(() => expect(input).toBeEnabled())
 })
 
+it.each(['First', 'Second'])(
+  'keeps a provider click on %s while the Corppass ID blur save is pending',
+  async (targetStep) => {
+    const user = userEvent.setup()
+    let finishIdSave!: () => void
+    const save = state.update.getMockImplementation()!
+    state.update.mockImplementationOnce(async (...args) => {
+      await new Promise<void>((resolve) => {
+        finishIdSave = resolve
+      })
+      await save(...args)
+    })
+    renderCards()
+    const input = card('Second').getByRole('textbox')
+    await user.clear(input)
+    await user.type(input, 'changed-id')
+    await user.click(card(targetStep).getByText(/^Singpass \(allows/))
+    expect(state.update).toHaveBeenCalledTimes(1)
+    expect(state.update.mock.calls[0][2].auth.esrvc_id).toBe('changed-id')
+    await act(async () => finishIdSave())
+    await waitFor(() =>
+      expect(
+        card(targetStep).getByRole('radio', { name: /^Singpass/ }),
+      ).toBeChecked(),
+    )
+    expect(state.update).toHaveBeenCalledTimes(2)
+    expect(state.update.mock.calls[1][2].expected_last_modified).toBe(
+      '2026-11-23T00:00:01.000Z',
+    )
+  },
+)
+
 it('asks before field consequences, cancels without saving, and sends confirmation on confirm', async () => {
   state.form.form_fields = [
     {

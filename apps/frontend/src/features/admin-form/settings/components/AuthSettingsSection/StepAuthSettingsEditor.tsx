@@ -51,6 +51,7 @@ export interface StepLoginDraft {
   dirty: boolean
   pending: boolean
   save: () => Promise<boolean>
+  selectProvider: (authType: FormAuthType) => void
 }
 interface StepAuthSettingsEditorProps {
   form: AdminMultirespondentFormDto
@@ -59,7 +60,12 @@ interface StepAuthSettingsEditorProps {
   stepIndex: number
   isDisabled: boolean
   registerDraft: (id: string, draft: StepLoginDraft | null) => void
-  runSave: (id: string, action: () => Promise<void>) => Promise<boolean>
+  onQueueProvider?: (authType: FormAuthType) => void
+  runSave: (
+    id: string,
+    action: () => Promise<void>,
+    isEsrvcIdSave?: boolean,
+  ) => Promise<boolean>
 }
 
 /** Saves one control at a time against the current, reviewed form snapshot. */
@@ -69,6 +75,7 @@ export const StepAuthSettingsEditor = ({
   step,
   stepIndex,
   isDisabled,
+  onQueueProvider,
   registerDraft,
   runSave,
 }: StepAuthSettingsEditorProps): JSX.Element => {
@@ -85,23 +92,29 @@ export const StepAuthSettingsEditor = ({
   const disabled = isPublic || isDisabled
   useEffect(() => setEsrvcId(savedEsrvcId), [savedEsrvcId])
 
-  const persist = (action: () => Promise<void>) => {
+  const persist = (action: () => Promise<void>, isEsrvcIdSave = false) => {
     if (disabled || !formId) return Promise.resolve(false)
-    return runSave(step._id, async () => {
-      setError('')
-      try {
-        await action()
-        toast({ description: t(`${COPY_KEY}.saved`) })
-      } catch (cause) {
-        setEsrvcId(savedEsrvcId)
-        setError(
-          cause instanceof Error ? cause.message : t(`${COPY_KEY}.saveFailed`),
-        )
-        throw cause
-      } finally {
-        await invalidateLoginQueries(queryClient, formId)
-      }
-    })
+    return runSave(
+      step._id,
+      async () => {
+        setError('')
+        try {
+          await action()
+          toast({ description: t(`${COPY_KEY}.saved`) })
+        } catch (cause) {
+          setEsrvcId(savedEsrvcId)
+          setError(
+            cause instanceof Error
+              ? cause.message
+              : t(`${COPY_KEY}.saveFailed`),
+          )
+          throw cause
+        } finally {
+          await invalidateLoginQueries(queryClient, formId)
+        }
+      },
+      isEsrvcIdSave,
+    )
   }
   const saveLogin = (change: StepLoginSwitch, nextEsrvcId: string) =>
     persist(async () => {
@@ -140,7 +153,7 @@ export const StepAuthSettingsEditor = ({
             },
       )
       setEsrvcId(nextEsrvcId.trim())
-    })
+    }, change.authType === authType)
   const loginSwitch = useStepLoginSwitch({
     form,
     stepNumber: stepIndex,
@@ -175,14 +188,18 @@ export const StepAuthSettingsEditor = ({
     }
     return saveLogin({ authType, deletedIds: [], unassignedIds: [] }, trimmed)
   }
-  const saveRef = useRef(saveText)
-  saveRef.current = saveText
+  const actions = useRef({
+    saveText,
+    selectProvider: loginSwitch.requestSwitch,
+  })
+  actions.current = { saveText, selectProvider: loginSwitch.requestSwitch }
   const dirty = esrvcId !== savedEsrvcId || loginSwitch.isPending || isParsing
   useEffect(() => {
     registerDraft(step._id, {
       dirty,
       pending: loginSwitch.isPending || isParsing,
-      save: () => saveRef.current(),
+      save: () => actions.current.saveText(),
+      selectProvider: (next) => actions.current.selectProvider(next),
     })
     return () => registerDraft(step._id, null)
   }, [registerDraft, step._id, dirty, loginSwitch.isPending, isParsing])
@@ -199,10 +216,12 @@ export const StepAuthSettingsEditor = ({
       ),
     )
   }
+  const providerDisabled =
+    isPublic || isParsing || (isDisabled && !onQueueProvider)
   return (
     <Stack
       as="fieldset"
-      disabled={disabled || isParsing}
+      disabled={providerDisabled}
       border="0"
       m="0"
       minW="0"
@@ -218,7 +237,8 @@ export const StepAuthSettingsEditor = ({
         authType={authType}
         savedAuthType={authType}
         esrvcId={esrvcId}
-        onAuthTypeChange={loginSwitch.requestSwitch}
+        onAuthTypeChange={onQueueProvider ?? loginSwitch.requestSwitch}
+        isProviderDisabled={providerDisabled}
         onEsrvcIdChange={(value) => {
           setEsrvcId(value)
           setError('')

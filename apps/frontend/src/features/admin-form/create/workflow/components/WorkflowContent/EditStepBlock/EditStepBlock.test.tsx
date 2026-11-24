@@ -553,6 +553,38 @@ describe('guided Login accordions', () => {
     )
   })
 
+  it('reopens the recipient section and focuses the input when Continue fails again', async () => {
+    render(<GuidedLaterStepLogin />)
+    const user = userEvent.setup()
+    await screen.findByRole('textbox', { name: /step name/i })
+    const next = screen.getByRole('button', CONTINUE)
+    await user.click(next)
+    const recipientSection = { name: 'Choose who fills in this step' }
+    const people = await screen.findByRole('button', recipientSection)
+    await user.click(
+      await screen.findByRole('radio', { name: /Specific emails/i }),
+    )
+    const email = screen.getByPlaceholderText('me@example.com')
+    await user.type(email, 'invalid-email{Enter}')
+    await user.click(next)
+    const error = await screen.findByText(
+      /enter valid emails separated by commas/i,
+    )
+    await waitFor(() => expect(error).toBeVisible())
+    await user.click(people)
+    await waitFor(() =>
+      expect(screen.queryByRole('region', recipientSection)).toBeNull(),
+    )
+
+    await user.click(next)
+    await waitFor(() => expect(people).toHaveAttribute('aria-expanded', 'true'))
+    const reopened = await screen.findByRole('region', recipientSection)
+    await waitFor(() => expect(error).toBeVisible())
+    await waitFor(() =>
+      expect(within(reopened).getByRole('textbox')).toHaveFocus(),
+    )
+  })
+
   it('routes a server recipient error to the people spotlight and focuses its input', async () => {
     const submit = vi.fn(async () => {
       throw new Error('"emails[0]" must be a valid email')

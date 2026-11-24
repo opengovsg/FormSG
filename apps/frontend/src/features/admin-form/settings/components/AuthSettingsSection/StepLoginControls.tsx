@@ -23,6 +23,7 @@ export interface StepLoginControlsProps {
   esrvcId: string
   onAuthTypeChange: (authType: FormAuthType) => void
   onEsrvcIdChange: (esrvcId: string) => void
+  isProviderDisabled?: boolean
   isDisabled: boolean
   isLoading?: boolean
   disabledReason?: string
@@ -40,6 +41,7 @@ export const StepLoginControls = ({
   onAuthTypeChange,
   onEsrvcIdChange,
   isDisabled,
+  isProviderDisabled = isDisabled,
   isLoading = false,
   disabledReason,
   isHeading = false,
@@ -109,7 +111,8 @@ export const StepLoginControls = ({
             ? (event) => {
                 if (event.key !== 'Enter' && event.key !== ' ') return
                 const target = event.target as HTMLInputElement
-                if (target.type !== 'radio' || isDisabled || isLoading) return
+                if (target.type !== 'radio' || isProviderDisabled || isLoading)
+                  return
                 event.preventDefault()
                 onAuthTypeChange(target.value as FormAuthType)
               }
@@ -121,7 +124,7 @@ export const StepLoginControls = ({
             <Radio
               value={option}
               allowDeselect={false}
-              isDisabled={isDisabled || isLoading}
+              isDisabled={isProviderDisabled || isLoading}
             >
               <LoginOptionLabel authType={option} />
             </Radio>

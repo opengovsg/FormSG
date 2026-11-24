@@ -7,6 +7,7 @@ import { Box, Stack, Text } from '@chakra-ui/react'
 
 import {
   AdminMultirespondentFormDto,
+  FormAuthType,
   FormSettings,
   MultirespondentFormSettings,
 } from 'formsg-shared/types'
@@ -45,7 +46,12 @@ export const StepLoginAccordion = ({
   const { formId } = useParams()
   const navigate = useNavigate()
   const { cardRadius } = useWorkflowSurfaces()
-  const [isSaving, setIsSaving] = useState(false)
+  const [savingControl, setSavingControl] = useState<'esrvcId' | 'other'>()
+  const [queuedProvider, setQueuedProvider] = useState<{
+    stepId: string
+    authType: FormAuthType
+  }>()
+
   const saveLock = useRef(false)
   const [workflowRequested, setWorkflowRequested] = useState(false)
   const otherMutations = useIsMutating()
@@ -62,7 +68,7 @@ export const StepLoginAccordion = ({
     [],
   )
   const runSave = useCallback(
-    async (id: string, action: () => Promise<void>) => {
+    async (id: string, action: () => Promise<void>, isEsrvcIdSave = false) => {
       if (
         saveLock.current ||
         Object.entries(draftsRef.current).some(
@@ -71,21 +77,32 @@ export const StepLoginAccordion = ({
       )
         return false
       saveLock.current = true
-      setIsSaving(true)
+      setSavingControl(isEsrvcIdSave ? 'esrvcId' : 'other')
       try {
         await action()
         return true
       } catch {
+        setQueuedProvider(undefined)
         setWorkflowRequested(false)
         return false
       } finally {
         saveLock.current = false
-        setIsSaving(false)
+        setSavingControl(undefined)
       }
     },
     [],
   )
-  const busy = isSaving || otherMutations > 0
+  const busy = savingControl !== undefined || otherMutations > 0
+  // Blurring the ID can start a save before the provider label receives its click.
+  // Apply that choice against the refreshed version, including field consequences.
+  useEffect(() => {
+    if (busy || !queuedProvider) return
+    setQueuedProvider(undefined)
+    draftsRef.current[queuedProvider.stepId]?.selectProvider(
+      queuedProvider.authType,
+    )
+  }, [busy, queuedProvider])
+
   useRegisterNavigationSave({
     isDirty: Object.values(drafts).some((draft) => draft.dirty),
     isSaving: busy,
@@ -144,24 +161,21 @@ export const StepLoginAccordion = ({
                 <Box p="2rem">
                   <StepLabel stepNumber={stepIndex} stepName={step.step_name} />
                 </Box>
-                <Box
-                  as="fieldset"
-                  disabled={disabled}
-                  border="0"
-                  m="0"
-                  p="0"
-                  minW="0"
-                >
-                  <StepAuthSettingsEditor
-                    form={form}
-                    settings={settings as MultirespondentFormSettings}
-                    step={step}
-                    stepIndex={stepIndex}
-                    isDisabled={disabled}
-                    registerDraft={registerDraft}
-                    runSave={runSave}
-                  />
-                </Box>
+                <StepAuthSettingsEditor
+                  form={form}
+                  settings={settings as MultirespondentFormSettings}
+                  step={step}
+                  stepIndex={stepIndex}
+                  isDisabled={disabled}
+                  onQueueProvider={
+                    savingControl === 'esrvcId' && !queuedProvider
+                      ? (authType) =>
+                          setQueuedProvider({ stepId: step._id, authType })
+                      : undefined
+                  }
+                  registerDraft={registerDraft}
+                  runSave={runSave}
+                />
               </Box>
             </Fragment>
           )

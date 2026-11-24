@@ -327,6 +327,7 @@ export const EditStepBlock = ({
     ...(isLoginShown ? (['login'] as const) : []),
     ...(!isFirstStep ? (['approvals'] as const) : []),
   ]
+  const [peopleExpanded, setPeopleExpanded] = useState(true)
   const [expandedSections, setExpandedSections] = useState<AccordionSection[]>(
     () => (isGuided ? [] : ['fields']),
   )
@@ -343,6 +344,7 @@ export const EditStepBlock = ({
   const openSection = (section: StepSection, focus = false) => {
     if (!sectionOrder.includes(section)) return
     reveal.goTo(section)
+    if (section === 'people') setPeopleExpanded(true)
     if (isAccordionSection(section)) {
       setExpandedSections((previous) =>
         previous.includes(section) ? previous : [...previous, section],
@@ -362,7 +364,10 @@ export const EditStepBlock = ({
       )
       const input =
         section?.querySelector<HTMLElement>(
-          'input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="true"], [aria-invalid="true"][tabindex]',
+          'input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="true"]',
+        ) ??
+        section?.querySelector<HTMLElement>(
+          '[aria-invalid="true"][tabindex]',
         ) ??
         (saveError ? saveErrorRef.current : null) ??
         section?.querySelector<HTMLElement>(
@@ -658,6 +663,8 @@ export const EditStepBlock = ({
     name: <StepNameBlock formMethods={formMethods} stepNumber={stepNumber} />,
     people: (
       <RespondentBlock
+        expanded={peopleExpanded}
+        onExpandedChange={setPeopleExpanded}
         useActionHeading={useAccordionSections}
         user={user}
         stepNumber={stepNumber}
