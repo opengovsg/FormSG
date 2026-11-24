@@ -2,7 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
 import { Stack, Text } from '@chakra-ui/react'
+import { FeaturesReady, useFeatureIsOn } from '@growthbook/growthbook-react'
 import { StatusCodes } from 'http-status-codes'
+
+import { featureFlags } from 'formsg-shared/constants'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { DASHBOARD_ROUTE } from '~constants/routes'
@@ -24,34 +27,39 @@ import { OtpForm, OtpFormInputs } from './components/OtpForm'
 import { SgidLoginButton } from './components/SgidLoginButton'
 import { WogadLoginButton } from './components/WogadLoginButton'
 import { LoginPageTemplate } from './LoginPageTemplate'
-import { useIsOgpIpCheck } from './queries'
 
 export type LoginOtpData = {
   email: string
 }
+
+const FLAGS_TIMEOUT_MS = 3000
 
 const LoginOptionButtons = ({
   shouldShowOneLogin,
 }: {
   shouldShowOneLogin: boolean
 }) => {
+  // RATIONALE: flags load after first paint, and the flag-off buttons must
+  // not flash for flag-on admins. If flags never load, fall back to flag off.
   return (
-    <Stack spacing="1rem">
-      <WogadLoginButton />
-      {shouldShowOneLogin && <OneLoginButton />}
-      <SgidLoginButton />
-    </Stack>
+    <FeaturesReady timeout={FLAGS_TIMEOUT_MS}>
+      <Stack spacing="1rem">
+        {shouldShowOneLogin ? (
+          <OneLoginButton />
+        ) : (
+          <>
+            <WogadLoginButton />
+            <SgidLoginButton />
+          </>
+        )}
+      </Stack>
+    </FeaturesReady>
   )
 }
 
-const isDev = import.meta.env.MODE === 'development'
 export const LoginPage = (): JSX.Element => {
   const { t } = useTranslation()
-  const { data: isOgpIp = false } = useIsOgpIpCheck()
-  // RATIONALE: one.gov.sg is the suite rebuild of sso.gov.sg, so it inherits
-  // sso's gate as-is. The IP check is a rollout knob, not a security control —
-  // the backend already whitelists domains and one.gov.sg verifies officers.
-  const shouldShowOneLogin = isOgpIp || isDev
+  const shouldShowOneLogin = useFeatureIsOn(featureFlags.ogpSuiteSso)
 
   const isMobile = useIsMobile()
 
