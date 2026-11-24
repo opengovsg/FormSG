@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.80.0](https://github.com/opengovsg/formsg/compare/v9.79.1...v9.80.0) (2026-11-24)
+
+
+### Features
+
+* **workflow-actions:** ask what happens after a send back correction (#10636) ([#10636](https://github.com/opengovsg/formsg/commit/861fd0b4e74fcb413df1fa494bee430b480a3a55))
+
+
+### Bug Fixes
+
+* **workflow:** ask to close the form before starting workflow setup (#10640) ([#10640](https://github.com/opengovsg/formsg/commit/26d5b8dbdcbf7b50488945e082dff1879449c56f))
+* **workflow:** refuse to add workflow steps while the form is open (#10641) ([#10641](https://github.com/opengovsg/formsg/commit/427d3ea6d956bc9fb33c83c0b629c93931e47b17))
+* **workflow:** start the send back modal with no step selected (#10635) ([#10635](https://github.com/opengovsg/formsg/commit/6a549625ea851c794eb7aabfb46a0ba3e2080816))
+
 ## [9.79.1](https://github.com/opengovsg/formsg/compare/v9.79.0...v9.79.1) (2026-11-24)
 
 
