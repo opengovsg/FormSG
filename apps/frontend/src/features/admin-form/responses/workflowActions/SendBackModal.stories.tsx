@@ -1,5 +1,6 @@
 import { Box } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react-vite'
+import { screen, userEvent } from 'storybook/test'
 
 import { DateString, WorkflowEventType } from 'formsg-shared/types'
 
@@ -59,7 +60,20 @@ const Template: StoryFn<SendBackModalProps> = (args) => (
   <SendBackModal {...args} />
 )
 
+const selectStep = async (stepNumber: number) => {
+  await userEvent.click(await screen.findByRole('combobox'))
+  await userEvent.click(
+    await screen.findByRole('option', {
+      name: new RegExp(`^Step ${stepNumber}\\b`),
+      hidden: true,
+    }),
+  )
+}
+
+export const NoStepSelected = Template.bind({})
+
 export const LaterStepWithAddedAssignees = Template.bind({})
+LaterStepWithAddedAssignees.play = () => selectStep(2)
 
 export const StepOne = Template.bind({})
 StepOne.args = {
@@ -72,6 +86,7 @@ StepOne.args = {
     workflowEvents: [],
   },
 }
+StepOne.play = () => selectStep(1)
 
 export const NoRecipients = Template.bind({})
 NoRecipients.args = {
@@ -88,3 +103,4 @@ NoRecipients.args = {
     workflowEvents: [],
   },
 }
+NoRecipients.play = () => selectStep(2)

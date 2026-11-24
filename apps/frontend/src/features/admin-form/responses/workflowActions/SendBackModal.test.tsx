@@ -41,6 +41,7 @@ vi.mock('~components/Dropdown', async (importOriginal) => ({
       value={value}
       onChange={(event) => onChange(event.target.value)}
     >
+      <option value="" />
       {items.map((item) => (
         <option key={item.value} value={item.value}>
           {item.label}
@@ -97,14 +98,18 @@ const showModal = (onConfirm = vi.fn()) => {
 }
 
 describe('SendBackModal', () => {
-  it('offers steps 2 to the one before the pending step, defaulting to the latest', () => {
+  it('offers steps 2 to the one before the pending step, with none selected', () => {
     showModal()
 
     expect(
-      screen.getAllByRole('option').map((option) => option.textContent),
+      screen
+        .getAllByRole('option')
+        .map((option) => option.textContent)
+        .filter(Boolean),
     ).toEqual(['Step 2 · Team lead', 'Step 3'])
-    expect(screen.getByRole('combobox', { name: 'step' })).toHaveValue('3')
-    expect(screen.getByText('People in Step 3')).toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: 'step' })).toHaveValue('')
+    expect(screen.queryByText(/^People in /)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'confirm' })).toBeDisabled()
   })
 
   it("shows the chosen step's people, including those added to it", async () => {
@@ -132,7 +137,7 @@ describe('SendBackModal', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('explains when the selected step has no recipients', () => {
+  it('explains when the selected step has no recipients', async () => {
     render(
       <SendBackModal
         isOpen
@@ -144,6 +149,10 @@ describe('SendBackModal', () => {
           workflowEvents: [],
         }}
       />,
+    )
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'step' }),
+      '3',
     )
 
     expect(screen.getByText('People in Step 3')).toBeInTheDocument()
@@ -170,6 +179,10 @@ describe('SendBackModal', () => {
   it('sends no remarks when the field is blank', async () => {
     const onConfirm = showModal()
 
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'step' }),
+      '3',
+    )
     await userEvent.click(screen.getByRole('button', { name: 'confirm' }))
 
     expect(onConfirm).toHaveBeenCalledWith({
@@ -206,8 +219,36 @@ describe('SendBackModal', () => {
       showStepOneModal()
 
       expect(
-        screen.getAllByRole('option').map((option) => option.textContent),
+        screen
+          .getAllByRole('option')
+          .map((option) => option.textContent)
+          .filter(Boolean),
       ).toEqual(['Step 1 · Applicant', 'Step 2 · Team lead', 'Step 3'])
+    })
+
+    it('asks for an email only once step 1 is selected', async () => {
+      render(
+        <SendBackModal
+          isOpen
+          onClose={vi.fn()}
+          onConfirm={vi.fn()}
+          history={{ ...history, submittedSteps: [step([])] }}
+          canSendBackToStepOne
+        />,
+      )
+
+      expect(screen.getByRole('combobox', { name: 'step' })).toHaveValue('')
+      expect(
+        screen.queryByPlaceholderText('me@example.com'),
+      ).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'confirm' })).toBeDisabled()
+
+      await userEvent.selectOptions(
+        screen.getByRole('combobox', { name: 'step' }),
+        '1',
+      )
+
+      expect(screen.getByPlaceholderText('me@example.com')).toBeInTheDocument()
     })
 
     it('asks for an email and sends step 1 to it', async () => {

@@ -48,19 +48,18 @@ export const SendBackModal = ({
   const { t } = useTranslation()
   const { submittedSteps, workflow, workflowEvents } = history
   const pendingStepNumber = submittedSteps.length + 1
-  const defaultStep = String(pendingStepNumber - 1)
-  const [step, setStep] = useState(defaultStep)
+  const [step, setStep] = useState('')
   const [remarks, setRemarks] = useState('')
   const [stepOneEmail, setStepOneEmail] = useState('')
   const [isStepOneEmailTouched, setIsStepOneEmailTouched] = useState(false)
 
   useEffect(() => {
     if (!isOpen) return
-    setStep(defaultStep)
+    setStep('')
     setRemarks('')
     setStepOneEmail('')
     setIsStepOneEmailTouched(false)
-  }, [isOpen, defaultStep])
+  }, [isOpen])
 
   const firstTargetStep = canSendBackToStepOne ? 1 : 2
   const stepItems = Array.from(
