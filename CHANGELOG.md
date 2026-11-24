@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.82.0](https://github.com/opengovsg/formsg/compare/v9.81.0...v9.82.0) (2026-11-24)
+
+
+### Dependencies
+
+* **deps:** upgrade react-router to 7 (#10578) ([#10578](https://github.com/opengovsg/formsg/commit/03101492c8bbeec3cf431d8136bda41509daa34e))
+
+
+### Chores
+
+* **frontend:** enable react-router v6 future flags (#10570) ([#10570](https://github.com/opengovsg/formsg/commit/2adbe06c9359f0744c8a9767969ac489336c41c4))
+* add product tag for Datadog usage attribution (paths 2 and 3) (#10643) ([#10643](https://github.com/opengovsg/formsg/commit/da31e077227435a4ca7159dbdb21ef27d9580f31))
+
 ## [9.81.0](https://github.com/opengovsg/formsg/compare/v9.80.0...v9.81.0) (2026-11-24)
 
 
