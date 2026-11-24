@@ -1,0 +1,29 @@
+name: FormSG engineer
+description: >-
+  Outputs whether the user has the maintain or admin role on this repo,
+  which the formsg-engineers and formsg-admins teams grant
+
+inputs:
+  user:
+    description: GitHub login to check
+    required: true
+
+outputs:
+  engineer:
+    description: "'true' for the maintain or admin role, otherwise 'false'"
+    value: ${{ steps.role.outputs.engineer }}
+
+runs:
+  using: composite
+  steps:
+    - id: role
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        LOGIN: ${{ inputs.user }}
+      run: |
+        role=$(gh api "repos/$GITHUB_REPOSITORY/collaborators/$LOGIN/permission" -q .role_name 2>/dev/null || true)
+        case "$role" in
+          admin | maintain) echo engineer=true >>"$GITHUB_OUTPUT" ;;
+          *) echo engineer=false >>"$GITHUB_OUTPUT" ;;
+        esac
