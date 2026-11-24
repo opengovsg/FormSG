@@ -49,7 +49,7 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
         <Input
           autoComplete="email"
           autoFocus
-          placeholder="e.g. jane@data.gov.sg"
+          placeholder="e.g. user@agency.gov.sg"
           {...register('email', {
             required: t(
               'features.login.components.LoginForm.emailEmptyErrorMsg',
