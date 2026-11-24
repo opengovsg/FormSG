@@ -711,10 +711,9 @@ GuidedLoginTabs.play = async ({ canvasElement }) => {
   await canvas.findByRole('textbox', { name: /step name/i })
   await userEvent.click(canvas.getByRole('button', { name: /^continue$/i }))
   await userEvent.click(canvas.getByRole('button', { name: /^continue$/i }))
-  await expect(canvas.getByRole('button', { name: 'Login' })).toHaveAttribute(
-    'aria-expanded',
-    'true',
-  )
+  await expect(
+    canvas.getByRole('button', { name: 'Choose how this person logs in' }),
+  ).toHaveAttribute('aria-expanded', 'true')
   await userEvent.click(canvas.getByRole('radio', { name: /^Corppass/ }))
 }
 
@@ -726,6 +725,8 @@ GuidedFieldsTab.play = async (context) => {
   const canvas = within(context.canvasElement)
   await userEvent.click(canvas.getByRole('button', { name: /^continue$/i }))
   await expect(
-    canvas.getByRole('button', { name: 'Assigned fields' }),
+    canvas.getByRole('button', {
+      name: 'Assign fields to this person',
+    }),
   ).toHaveAttribute('aria-expanded', 'true')
 }

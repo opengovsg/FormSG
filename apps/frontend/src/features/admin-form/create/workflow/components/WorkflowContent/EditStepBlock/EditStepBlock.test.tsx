@@ -2,6 +2,8 @@ import { composeStories } from '@storybook/react-vite'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
+import { FormAuthType, WorkflowType } from 'formsg-shared/types'
+
 import * as SettingsService from '~features/admin-form/settings/SettingsService'
 
 import { useAdminWorkflowStore } from '../../../adminWorkflowStore'
@@ -26,6 +28,9 @@ const PEOPLE_LABEL = /who should fill in this step/i
 const WHAT_THEY_DO_LABEL = /make this person approve/i
 const FIELDS_LABEL = /choose the fields this person fills in/i
 
+const LOGIN = { name: 'Choose how this person logs in' }
+const FIELDS = { name: 'Assign fields to this person' }
+const APPROVALS = { name: 'Choose an approval role' }
 const CONTINUE = { name: /^continue$/i }
 const BACK = { name: /^back$/i }
 const CANCEL = { name: /^cancel$/i }
@@ -288,16 +293,19 @@ describe('step login accordions', () => {
     render(<StepLoginMixedProviders />)
     await act(async () => useAdminWorkflowStore.getState().setToEditing(0))
     await findOpenCard()
-    const fields = screen.getByRole('button', { name: 'Assigned fields' })
-    const login = screen.getByRole('button', { name: 'Login' })
+    expect(
+      screen.getByText('Choose who fills in this step'),
+    ).toBeInTheDocument()
+    const fields = screen.getByRole('button', FIELDS)
+    const login = screen.getByRole('button', LOGIN)
     expect(fields).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('combobox', FIELDS)).toBeInTheDocument()
+    expect(screen.getAllByText(FIELDS.name)).toHaveLength(1)
     expect(login).toHaveAttribute('aria-expanded', 'false')
     expect(
       fields.compareDocumentPosition(login) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
-    expect(
-      screen.queryByRole('button', { name: 'Approvals' }),
-    ).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', APPROVALS)).not.toBeInTheDocument()
     expect(screen.queryByRole('tab')).not.toBeInTheDocument()
   })
   it('preserves drafts across independent collapse and opens errors without closing other sections', async () => {
@@ -305,9 +313,9 @@ describe('step login accordions', () => {
     await act(async () => useAdminWorkflowStore.getState().setToEditing(1))
     await findOpenCard()
     const user = userEvent.setup()
-    const fields = screen.getByRole('button', { name: 'Assigned fields' })
-    const login = screen.getByRole('button', { name: 'Login' })
-    const approvals = screen.getByRole('button', { name: 'Approvals' })
+    const fields = screen.getByRole('button', FIELDS)
+    const login = screen.getByRole('button', LOGIN)
+    const approvals = screen.getByRole('button', APPROVALS)
     await user.click(login)
     expect(fields).toHaveAttribute('aria-expanded', 'true')
     expect(
@@ -318,9 +326,21 @@ describe('step login accordions', () => {
     await user.click(login)
     expect(login).toHaveAttribute('aria-expanded', 'false')
     await user.click(approvals)
+    expect(screen.getByRole('radio', { name: 'Approver' })).toBeChecked()
+    const approvalField = { name: 'Approval field' }
+    expect(screen.getByRole('combobox', approvalField)).toBeInTheDocument()
+    const rejectionHint =
+      'If they reject the submission, the workflow stops here.'
+    expect(screen.getByText(rejectionHint)).toBeInTheDocument()
+    await user.click(screen.getByRole('radio', { name: 'Not an approver' }))
     expect(
-      screen.getByRole('checkbox', { name: /make this person approve/i }),
-    ).toBeChecked()
+      screen.queryByRole('combobox', approvalField),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('radio', { name: 'Approver' }),
+    ).toHaveAccessibleDescription(rejectionHint)
+    await user.click(screen.getByRole('radio', { name: 'Approver' }))
+    expect(screen.getByRole('combobox', approvalField)).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Save step' }))
     expect(login).toHaveAttribute('aria-expanded', 'true')
     expect(fields).toHaveAttribute('aria-expanded', 'true')
@@ -344,10 +364,21 @@ describe('guided Login accordions', () => {
   })
 
   const reachLogin = async () => {
-    const user = await openNewStepCard(StepLoginMixedProviders)
+    render(
+      <GuidedLaterStepLogin
+        defaultValues={{
+          workflow_type: WorkflowType.Static,
+          emails: [],
+          edit: [],
+          auth: { auth_type: FormAuthType.NIL },
+        }}
+      />,
+    )
+    await screen.findByRole('textbox', { name: /step name/i })
+    const user = userEvent.setup()
     await user.click(screen.getByRole('button', CONTINUE))
     await user.click(screen.getByRole('button', CONTINUE))
-    expect(screen.getByRole('button', { name: 'Login' })).toHaveAttribute(
+    expect(screen.getByRole('button', LOGIN)).toHaveAttribute(
       'aria-expanded',
       'true',
     )
@@ -356,31 +387,30 @@ describe('guided Login accordions', () => {
 
   const reopenLogin = async (user: ReturnType<typeof userEvent.setup>) => {
     const radio = await screen.findByRole('radio', { name: /^Corppass/ })
-    await user.click(screen.getByRole('button', { name: 'Login' }))
+    await user.click(screen.getByRole('button', LOGIN))
     await waitFor(() => expect(radio).not.toBeVisible())
-    await user.click(screen.getByRole('button', { name: 'Login' }))
+    await user.click(screen.getByRole('button', LOGIN))
     await waitFor(() => expect(radio).toBeVisible())
   }
 
   it('shows empty summaries and retains them across independent expansion', async () => {
     const user = await reachLogin()
     expect(screen.getByText('No fields assigned')).toBeVisible()
-    await user.click(screen.getByRole('button', { name: 'Login' }))
-    expect(screen.getByRole('button', { name: 'Login' })).toHaveAttribute(
+    await user.click(screen.getByRole('button', LOGIN))
+    expect(screen.getByRole('button', LOGIN)).toHaveAttribute(
       'aria-expanded',
       'false',
     )
     expect(
-      within(screen.getByRole('button', { name: 'Login' })).getByText(
-        'No login required',
-      ),
+      within(screen.getByRole('button', LOGIN)).getByText('No login required'),
     ).toBeVisible()
-    await user.click(screen.getByRole('button', { name: 'Login' }))
+    await user.click(screen.getByRole('button', LOGIN))
     await user.click(screen.getByRole('button', CONTINUE))
-    expect(
-      screen.getByRole('button', { name: 'Assigned fields' }),
-    ).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getByRole('button', { name: 'Login' })).toHaveAttribute(
+    expect(screen.getByRole('button', FIELDS)).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+    expect(screen.getByRole('button', LOGIN)).toHaveAttribute(
       'aria-expanded',
       'true',
     )
@@ -397,15 +427,16 @@ describe('guided Login accordions', () => {
       screen.queryByText(/choose who formsg sends the form to/i),
     ).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', CONTINUE))
-    expect(
-      screen.getByRole('button', { name: 'Assigned fields' }),
-    ).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('button', FIELDS)).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
   })
 
   it('announces locked sections by keyboard without activating them', async () => {
     const user = await reachLogin()
-    const login = screen.getByRole('button', { name: 'Login' })
-    const fields = screen.getByRole('button', { name: 'Assigned fields' })
+    const login = screen.getByRole('button', LOGIN)
+    const fields = screen.getByRole('button', FIELDS)
     login.focus()
     await user.keyboard('{ArrowUp}')
     expect(fields).toHaveFocus()
@@ -419,10 +450,11 @@ describe('guided Login accordions', () => {
 
   it('unlocks sections in order and keeps reached sections available after Back', async () => {
     const user = await reachLogin()
-    expect(
-      screen.getByRole('button', { name: 'Assigned fields' }),
-    ).toHaveAttribute('aria-disabled', 'true')
-    expect(screen.getByRole('button', { name: 'Approvals' })).toHaveAttribute(
+    expect(screen.getByRole('button', FIELDS)).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
+    expect(screen.getByRole('button', APPROVALS)).toHaveAttribute(
       'aria-disabled',
       'true',
     )
@@ -431,19 +463,21 @@ describe('guided Login accordions', () => {
       screen.getByRole('textbox', { name: /Corppass e-service ID/i }),
     ).toHaveValue('')
     await user.click(screen.getByRole('button', CONTINUE))
-    expect(
-      screen.getByRole('button', { name: 'Assigned fields' }),
-    ).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('button', FIELDS)).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
     await user.click(screen.getByRole('button', CONTINUE))
-    expect(screen.getByRole('button', { name: 'Approvals' })).toHaveAttribute(
+    expect(screen.getByRole('button', APPROVALS)).toHaveAttribute(
       'aria-expanded',
       'true',
     )
     await user.click(screen.getByRole('button', BACK))
-    expect(
-      screen.getByRole('button', { name: 'Assigned fields' }),
-    ).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getByRole('button', { name: 'Approvals' })).toBeEnabled()
+    expect(screen.getByRole('button', FIELDS)).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+    expect(screen.getByRole('button', APPROVALS)).toBeEnabled()
     await reopenLogin(user)
     expect(
       await screen.findByRole('radio', { name: /^Corppass/ }),
@@ -455,8 +489,8 @@ describe('guided Login accordions', () => {
     await user.click(await screen.findByRole('radio', { name: /^Corppass/ }))
     const id = screen.getByRole('textbox', { name: /Corppass e-service ID/i })
     await user.type(id, 'invalid id')
-    await user.click(screen.getByRole('button', { name: 'Login' }))
-    expect(screen.getByRole('button', { name: 'Login' })).toHaveAttribute(
+    await user.click(screen.getByRole('button', LOGIN))
+    expect(screen.getByRole('button', LOGIN)).toHaveAttribute(
       'aria-expanded',
       'false',
     )
@@ -464,13 +498,14 @@ describe('guided Login accordions', () => {
     await user.click(screen.getByRole('button', CONTINUE))
     await waitFor(() => expect(id).toBeVisible())
     await waitFor(() => expect(id).toHaveFocus())
-    expect(screen.getByRole('button', { name: 'Login' })).toHaveAttribute(
+    expect(screen.getByRole('button', LOGIN)).toHaveAttribute(
       'aria-expanded',
       'true',
     )
-    expect(
-      screen.getByRole('button', { name: 'Assigned fields' }),
-    ).toHaveAttribute('aria-disabled', 'true')
+    expect(screen.getByRole('button', FIELDS)).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
     await user.clear(id)
     await user.click(screen.getByRole('button', CONTINUE))
     await user.click(screen.getByRole('button', CONTINUE))
@@ -479,10 +514,10 @@ describe('guided Login accordions', () => {
       screen.getByRole('textbox', { name: /Corppass e-service ID/i }),
       'invalid id',
     )
-    await user.click(screen.getByRole('button', { name: 'Approvals' }))
-    await user.click(screen.getByRole('button', { name: 'Approvals' }))
+    await user.click(screen.getByRole('button', APPROVALS))
+    await user.click(screen.getByRole('button', APPROVALS))
     await user.click(screen.getByRole('button', DONE))
-    expect(screen.getByRole('button', { name: 'Login' })).toHaveAttribute(
+    expect(screen.getByRole('button', LOGIN)).toHaveAttribute(
       'aria-expanded',
       'true',
     )
@@ -491,7 +526,7 @@ describe('guided Login accordions', () => {
         screen.getByRole('textbox', { name: /Corppass e-service ID/i }),
       ).toHaveFocus(),
     )
-    expect(screen.getByRole('button', { name: 'Approvals' })).toBeEnabled()
+    expect(screen.getByRole('button', APPROVALS)).toBeEnabled()
   })
 
   it('keeps reached name and respondent answers editable above the accordions', async () => {
@@ -506,9 +541,12 @@ describe('guided Login accordions', () => {
     await user.click(screen.getByRole('button', CONTINUE))
     expect(name).toHaveValue('New reviewer')
     expect(screen.getByText('reviewer@example.gov.sg')).toBeVisible()
-    expect(
-      screen.getByRole('button', { name: 'Assigned fields' }),
-    ).toHaveAttribute('aria-expanded', 'true')
+    await waitFor(() =>
+      expect(screen.getByRole('button', FIELDS)).toHaveAttribute(
+        'aria-expanded',
+        'true',
+      ),
+    )
   })
 
   it('routes a server recipient error to the people spotlight and focuses its input', async () => {
@@ -535,9 +573,10 @@ describe('guided Login accordions', () => {
     await waitFor(() =>
       expect(screen.getByPlaceholderText('me@example.com')).toHaveFocus(),
     )
-    expect(
-      screen.getByRole('button', { name: 'Approvals' }),
-    ).not.toHaveAttribute('aria-disabled', 'true')
+    expect(screen.getByRole('button', APPROVALS)).not.toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
   })
 
   it('preserves answers and resumes the guided position after toggling guidance', async () => {
@@ -551,19 +590,21 @@ describe('guided Login accordions', () => {
     await act(async () =>
       useAdminWorkflowStore.getState().setGuidedSetup(false),
     )
-    expect(
-      screen.getByRole('button', { name: 'Assigned fields' }),
-    ).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getByRole('button', { name: 'Approvals' })).toBeEnabled()
+    expect(screen.getByRole('button', FIELDS)).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+    expect(screen.getByRole('button', APPROVALS)).toBeEnabled()
     await reopenLogin(user)
     expect(
       screen.getByRole('textbox', { name: /Corppass e-service ID/i }),
     ).toHaveValue('agency-id')
     await act(async () => useAdminWorkflowStore.getState().setGuidedSetup(true))
-    expect(
-      screen.getByRole('button', { name: 'Assigned fields' }),
-    ).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getByRole('button', { name: 'Approvals' })).toHaveAttribute(
+    expect(screen.getByRole('button', FIELDS)).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+    expect(screen.getByRole('button', APPROVALS)).toHaveAttribute(
       'aria-disabled',
       'true',
     )
@@ -603,26 +644,23 @@ describe('guided first-step restriction save failures', () => {
     const next = () => user.click(screen.getByRole('button', CONTINUE))
     await next()
     await next()
-    expect(
-      screen.queryByRole('button', { name: 'Approvals' }),
-    ).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', APPROVALS)).not.toBeInTheDocument()
     await user.click(
       await screen.findByRole('checkbox', { name: /limit each unique/i }),
     )
     await next()
-    expect(
-      screen.getByRole('button', { name: 'Assigned fields' }),
-    ).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('button', FIELDS)).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
     await user.click(screen.getByRole('button', DONE))
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Login' })).toHaveAttribute(
+      expect(screen.getByRole('button', LOGIN)).toHaveAttribute(
         'aria-expanded',
         'true',
       ),
     )
-    expect(
-      screen.getByRole('button', { name: 'Assigned fields' }),
-    ).toBeEnabled()
+    expect(screen.getByRole('button', FIELDS)).toBeEnabled()
     expect(
       await screen.findByText(/step was saved.*Step 1 restrictions/i),
     ).toBeInTheDocument()

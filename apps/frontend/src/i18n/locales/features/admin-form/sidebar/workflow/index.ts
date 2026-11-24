@@ -17,6 +17,7 @@ export interface Workflow {
   }
   title: string
   respondentBlock: {
+    editorHeading: string
     stepRespondent: string
     anyone: string
     select: string
@@ -158,6 +159,7 @@ export interface Workflow {
     }
   }
   questions: {
+    accordionLabel: string
     label: string
     placeholder: string
     autoAddHelperText: string
@@ -168,19 +170,18 @@ export interface Workflow {
     title: string
     singpass: string
     corppass: string
+    workflowQuestion: string
     stepQuestion: string
     formQuestion: string
     noLogin: string
-    singpassDescription: string
-    legacySingpassDescription: string
-    corppassDescription: string
+    singpassOption: string
+    corppassOption: string
     esrvcIdLabel: string
     esrvcIdPlaceholder: string
     esrvcIdWhitespace: string
     closeFormToEdit: string
     inactiveLabel: string
-    tabs: { fields: string; approvals: string; login: string }
-    summaries: { fields: string; approvalRequired: string; noApproval: string }
+    summaries: { fields: string }
     historicalResponsesKept: string
     publishErrors: { title: string }
     settings: {
@@ -243,6 +244,10 @@ export interface Workflow {
     saveFailed: string
   }
   approvals: {
+    fieldLabel: string
+    heading: string
+    approver: string
+    notApprover: string
     title: string
     yesNoDeleted: string
     notRequired: string

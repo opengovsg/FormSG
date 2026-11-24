@@ -7,23 +7,23 @@ const COPY_KEY = 'features.adminForm.sidebar.workflow.stepLogin'
 export const LOGIN_OPTION_COPY = {
   [FormAuthType.NIL]: {
     labelKey: `${COPY_KEY}.noLogin`,
-    descriptionKey: undefined,
+    optionKey: `${COPY_KEY}.noLogin`,
   },
   [FormAuthType.SP]: {
     labelKey: STEP_LOGIN_LABEL_KEYS[FormAuthType.MyInfo],
-    descriptionKey: `${COPY_KEY}.legacySingpassDescription`,
+    optionKey: STEP_LOGIN_LABEL_KEYS[FormAuthType.MyInfo],
   },
   [FormAuthType.MyInfo]: {
     labelKey: STEP_LOGIN_LABEL_KEYS[FormAuthType.MyInfo],
-    descriptionKey: `${COPY_KEY}.singpassDescription`,
+    optionKey: `${COPY_KEY}.singpassOption`,
   },
   [FormAuthType.CP]: {
     labelKey: STEP_LOGIN_LABEL_KEYS[FormAuthType.CP],
-    descriptionKey: `${COPY_KEY}.corppassDescription`,
+    optionKey: `${COPY_KEY}.corppassOption`,
   },
 } as const satisfies Record<
   FormAuthType,
-  { labelKey: string; descriptionKey?: string }
+  { labelKey: string; optionKey: string }
 >
 
 export const LOGIN_PROVIDERS = [FormAuthType.MyInfo, FormAuthType.CP]

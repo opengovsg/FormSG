@@ -173,9 +173,13 @@ beforeEach(() => {
 
 it('shows every neutral card with editable controls and no collapse, Save or Cancel actions', () => {
   renderCards()
-  expect(
-    card('First').getByRole('radio', { name: /No login required/ }),
-  ).toBeVisible()
+  for (const name of [
+    'No login required',
+    'Singpass (allows Singpass Myinfo fields)',
+    'Corppass (allows Corppass Myinfo fields)',
+  ]) {
+    expect(card('First').getByRole('radio', { name })).toBeVisible()
+  }
   expect(card('Second').getByRole('textbox')).toHaveValue('original')
   expect(
     screen.queryByRole('button', { name: /^(Save|Cancel|First|Second)$/ }),

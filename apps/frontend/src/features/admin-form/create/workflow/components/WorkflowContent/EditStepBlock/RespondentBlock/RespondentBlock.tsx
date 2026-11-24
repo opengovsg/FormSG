@@ -37,6 +37,7 @@ const ReadOnlyHybridRespondents = (
 )
 
 interface RespondentBlockProps {
+  useActionHeading?: boolean
   stepNumber: number
   isLoading: boolean
   formMethods: UseFormReturn<EditStepInputs>
@@ -44,6 +45,7 @@ interface RespondentBlockProps {
 }
 
 export const RespondentBlock = ({
+  useActionHeading = false,
   stepNumber,
   isLoading,
   formMethods,
@@ -73,16 +75,19 @@ export const RespondentBlock = ({
   const selectedWorkflowType = watch('workflow_type')
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
+  const heading = t(
+    useActionHeading
+      ? 'features.adminForm.sidebar.workflow.respondentBlock.editorHeading'
+      : isFirstStep
+        ? 'features.adminForm.sidebar.workflow.respondentBlock.stepRespondent'
+        : 'features.adminForm.sidebar.workflow.respondentBlock.select',
+  )
 
   return (
     <EditStepBlockContainer>
       {isFirstStep ? (
         <Stack spacing="0.5rem">
-          <Text style={textStyles.h4}>
-            {t(
-              'features.adminForm.sidebar.workflow.respondentBlock.stepRespondent',
-            )}
-          </Text>
+          <Text style={textStyles.h4}>{heading}</Text>
           <Text>
             {t('features.adminForm.sidebar.workflow.respondentBlock.anyone')}
           </Text>
@@ -96,9 +101,7 @@ export const RespondentBlock = ({
             !!errors.workflow_type || (isSourceInput && !!errors.emails)
           }
         >
-          <FormLabel style={textStyles.h4}>
-            {t('features.adminForm.sidebar.workflow.respondentBlock.select')}
-          </FormLabel>
+          <FormLabel style={textStyles.h4}>{heading}</FormLabel>
           {isActiveSection ? (
             <Text textStyle="body-2" color="secondary.400" mb="0.5rem">
               {t('features.adminForm.sidebar.workflow.guidedHints.respondent')}
