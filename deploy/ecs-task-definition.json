@@ -9,7 +9,8 @@
       "cpu": "<FORMSG_APP_RESERVED_CPU>",
       "environment": [
         { "name": "DD_SERVICE", "value": "formsg" },
-        { "name": "DD_ENV", "value": "<DD_ENV>" }
+        { "name": "DD_ENV", "value": "<DD_ENV>" },
+        { "name": "DD_TAGS", "value": "product:formsg" }
       ],
       "secrets": [
         {
@@ -493,7 +494,9 @@
         { "name": "DD_SERVICE", "value": "formsg" },
         { "name": "DD_ENV", "value": "<DD_ENV>" },
         { "name": "DD_LOGS_INJECTION", "value": "true" },
-        { "name": "DD_RUNTIME_METRICS_ENABLED", "value": "true" }
+        { "name": "DD_RUNTIME_METRICS_ENABLED", "value": "true" },
+        { "name": "DD_EXTRA_TAGS", "value": "product:formsg" },
+        { "name": "DD_DOGSTATSD_TAGS", "value": "product:formsg" }
       ],
       "mountPoints": [],
       "volumesFrom": [],
