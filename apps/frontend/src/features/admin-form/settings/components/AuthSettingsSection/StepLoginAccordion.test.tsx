@@ -6,7 +6,7 @@ import {
   Route,
   RouterProvider,
   Routes,
-} from 'react-router-dom'
+} from 'react-router'
 import { ChakraProvider } from '@chakra-ui/react'
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
