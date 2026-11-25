@@ -13,13 +13,13 @@ jobs:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     outputs:
-      engineer: ${{ steps.check.outputs.engineer }}
+      member: ${{ steps.check.outputs.member }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           sparse-checkout: .github/actions
       - id: check
-        uses: ./.github/actions/formsg-engineer
+        uses: ./.github/actions/formsg-team-member
         with:
           user: ${{ github.event.pull_request.user.login }}
 
@@ -31,7 +31,7 @@ jobs:
       github.event.pull_request.state == 'open' &&
       (
         (
-          needs.author.outputs.engineer == 'true' &&
+          needs.author.outputs.member == 'true' &&
           !github.event.pull_request.draft &&
           contains(fromJSON('["opened", "reopened", "synchronize", "ready_for_review"]'), github.event.action)
         ) ||
@@ -64,9 +64,9 @@ jobs:
           PR: ${{ github.event.pull_request.number }}
           URL: ${{ steps.render.outputs.url }}
           DASHBOARD: ${{ steps.render.outputs.dashboard }}
-          ENGINEER: ${{ needs.author.outputs.engineer }}
+          MEMBER: ${{ needs.author.outputs.member }}
         run: |
-          if [ "$ENGINEER" = true ]; then removal="the PR closes"; else removal="the \`render-preview\` label is removed or the PR closes"; fi
+          if [ "$MEMBER" = true ]; then removal="the PR closes"; else removal="the \`render-preview\` label is removed or the PR closes"; fi
           gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "Render preview is building: $URL ([logs]($DASHBOARD)). It uses staging's database and config, redeploys on every push, and is deleted when $removal."
 
   down:
@@ -78,7 +78,7 @@ jobs:
       (
         github.event.action == 'unlabeled' &&
         github.event.label.name == 'render-preview' &&
-        needs.author.outputs.engineer != 'true'
+        needs.author.outputs.member != 'true'
       )
     runs-on: ubuntu-latest
     steps:

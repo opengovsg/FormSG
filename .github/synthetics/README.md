@@ -2,7 +2,7 @@
 
 This folder contains definitions for the `ci:formsg-smoke` suite, managed as code. The tests run two ways:
 1. **only via CI triggers** — the release gate (`release.yml` → `smoke-stg`, against stg, blocking all prod deploys)
-2. **PR previews** (`preview-smoke.yml`, against the Render preview URL) — on every push to a non-draft PR opened by a FormSG engineer (maintain or admin role). Other same-repo PRs opt in with the `render-preview` and `preview-smoke` labels, then run on every push while both are on. Re-run the `Synthetics smoke on preview` job to re-run.
+2. **PR previews** (`preview-smoke.yml`, against the Render preview URL) — on every push to a non-draft PR opened by a FormSG team member (write access or higher). Other same-repo PRs opt in with the `render-preview` and `preview-smoke` labels, then run on every push while both are on. Re-run the `Synthetics smoke on preview` job to re-run.
 
 Tests are kept `status: paused` in Datadog so they never run on a Datadog schedule or alert on their own.
 
