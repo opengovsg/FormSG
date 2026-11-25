@@ -1,4 +1,10 @@
-import { startTransition, useCallback, useMemo, useState } from 'react'
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { act, screen } from '@testing-library/react'
 
@@ -21,29 +27,6 @@ vi.mock('~features/public-form/PublicFormContext', async () => {
     usePublicFormContext: () => useContext(TestPublicFormContext),
   }
 })
-
-vi.mock(
-  '~features/public-form/hooks/useFetchPrefillQuery',
-  async (importOriginal) => {
-    const actual =
-      await importOriginal<
-        typeof import('~features/public-form/hooks/useFetchPrefillQuery')
-      >()
-    const { useEffect } = await import('react')
-    const { usePublicFormContext } =
-      await import('~features/public-form/PublicFormContext')
-    return {
-      ...actual,
-      useFetchPrefillQuery: () => {
-        const { restorePrefillQuery } = usePublicFormContext() as unknown as {
-          restorePrefillQuery: () => void
-        }
-        useEffect(() => restorePrefillQuery(), [restorePrefillQuery])
-        return false
-      },
-    }
-  },
-)
 
 vi.mock('./FormSectionsContext', async (importOriginal) => {
   const formSections = { setVisibleFieldIdsForScrollData: () => {} }
@@ -108,6 +91,11 @@ const shortTextField = {
   ValidationOptions: { selectedValidation: null, customVal: null },
 }
 
+const ChangeDefaultsOnMount = ({ onMount }: { onMount: () => void }) => {
+  useEffect(() => onMount(), [onMount])
+  return null
+}
+
 const LoggedInPublicForm = ({
   withCheckbox,
   myInfoMobile,
@@ -155,7 +143,7 @@ const LoggedInPublicForm = ({
     mode: 'onTouched',
   })
 
-  const restorePrefillQuery = useCallback(
+  const addPrefill = useCallback(
     () =>
       startTransition(() =>
         setSearchParams(
@@ -172,24 +160,26 @@ const LoggedInPublicForm = ({
         fieldPrefillMap,
         form: { responseMode: FormResponseMode.Encrypt },
         augmentedFormFields: formFields,
-        restorePrefillQuery,
       }}
     >
       <FormProvider {...formMethods}>
         {isLoaded ? (
-          <FormFields
-            formFields={formFields}
-            formLogics={[]}
-            colorTheme={FormColorTheme.Blue}
-            onSubmit={undefined}
-          />
+          <>
+            <FormFields
+              formFields={formFields}
+              formLogics={[]}
+              colorTheme={FormColorTheme.Blue}
+              onSubmit={undefined}
+            />
+            <ChangeDefaultsOnMount onMount={addPrefill} />
+          </>
         ) : null}
       </FormProvider>
     </TestPublicFormContext.Provider>
   )
 }
 
-const renderAfterSingpassLogin = async ({
+const renderThenAddPrefill = async ({
   withCheckbox,
   myInfoMobile,
 }: {
@@ -207,9 +197,9 @@ const renderAfterSingpassLogin = async ({
   await act(async () => load())
 }
 
-describe('FormFields prefill restored after Singpass login', () => {
+describe('FormFields prefill added after the fields mount', () => {
   it('fills the prefill when the form has a MyInfo mobile and a checkbox', async () => {
-    await renderAfterSingpassLogin({
+    await renderThenAddPrefill({
       withCheckbox: true,
       myInfoMobile: MYINFO_MOBILE,
     })
@@ -220,7 +210,7 @@ describe('FormFields prefill restored after Singpass login', () => {
   })
 
   it('fills the prefill when the form has a MyInfo mobile and no checkbox', async () => {
-    await renderAfterSingpassLogin({
+    await renderThenAddPrefill({
       withCheckbox: false,
       myInfoMobile: MYINFO_MOBILE,
     })
@@ -231,7 +221,7 @@ describe('FormFields prefill restored after Singpass login', () => {
   })
 
   it('fills the prefill when the form has a checkbox and an empty mobile', async () => {
-    await renderAfterSingpassLogin({
+    await renderThenAddPrefill({
       withCheckbox: true,
       myInfoMobile: '',
     })

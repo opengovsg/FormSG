@@ -3,7 +3,11 @@ import dedent from 'dedent'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 
 import { DateString, ErrorCode } from 'formsg-shared/types'
-import { BasicField } from 'formsg-shared/types/field'
+import {
+  BasicField,
+  FormFieldDto,
+  MyInfoAttribute,
+} from 'formsg-shared/types/field'
 import {
   FormAuthType,
   FormColorTheme,
@@ -37,6 +41,10 @@ import { ShortTextFieldSchema } from '~templates/Field'
 
 import { SAVE_DRAFT_INDEXEDDB_STORE_NAME } from '~features/form/constants'
 
+import {
+  REDIRECTED_QUERY_KEY,
+  STORED_QUERY_KEY,
+} from './hooks/useFetchPrefillQuery'
 import { DraftSubmission } from './PublicFormContext'
 import PublicFormPage from './PublicFormPage'
 import SaveDraftSetupWrapper from './SaveDraftSetupWrapper'
@@ -768,6 +776,88 @@ WithMyInfo.parameters = {
       ],
     },
   },
+}
+
+const PREFILL_QUERY_ID = 'cl0prefillrestoredafterlogin'
+const PREFILL_RESTORED_VALUE = 'StaffSignUps'
+const SINGLE_OPTION_CHECKBOX_FIELD = {
+  _id: '5da04eafe397fc0013f63b25',
+  fieldType: BasicField.Checkbox,
+  title: 'Checkbox',
+  description: '',
+  required: false,
+  disabled: false,
+  fieldOptions: ['Option'],
+  othersRadioButton: false,
+  validateByValue: false,
+  ValidationOptions: { customMin: null, customMax: null },
+} as FormFieldDto
+
+export const SingpassMyInfoPrefillRestoredAfterLogin = Template.bind({})
+SingpassMyInfoPrefillRestoredAfterLogin.storyName =
+  'SP_MyInfo/Prefill restored after login'
+SingpassMyInfoPrefillRestoredAfterLogin.parameters = {
+  router: {
+    path: '/:formId',
+    initialEntries: [
+      `/61540ece3d4a6e50ac0cc6ff?${REDIRECTED_QUERY_KEY}=${PREFILL_QUERY_ID}`,
+    ],
+  },
+  msw: {
+    handlers: {
+      default: [
+        ...envHandlers,
+        getPublicFormResponse({
+          delay: 0,
+          overrides: {
+            form: {
+              title: 'SP_MyInfo login form',
+              authType: FormAuthType.MyInfo,
+              responseMode: FormResponseMode.Encrypt,
+              form_fields: [
+                ...MOCK_PREFILLED_MYINFO_FIELDS.filter(
+                  (field) =>
+                    'myInfo' in field &&
+                    field.myInfo?.attr === MyInfoAttribute.MobileNo,
+                ),
+                SINGLE_OPTION_CHECKBOX_FIELD,
+                PREFILLABLE_NORMAL_SHORTTEXT_FIELD,
+              ],
+            },
+            spcpSession: {
+              userName: 'S1234567A',
+            },
+          },
+        }),
+      ],
+    },
+  },
+}
+SingpassMyInfoPrefillRestoredAfterLogin.loaders = [
+  () => {
+    sessionStorage.setItem(
+      STORED_QUERY_KEY,
+      JSON.stringify({
+        _id: PREFILL_QUERY_ID,
+        queryString: JSON.stringify({
+          [PREFILLABLE_NORMAL_SHORTTEXT_FIELD._id]: PREFILL_RESTORED_VALUE,
+        }),
+      }),
+    )
+    return {}
+  },
+]
+SingpassMyInfoPrefillRestoredAfterLogin.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement)
+  await waitFor(
+    () =>
+      expect(
+        canvas.getByRole('textbox', {
+          name: new RegExp(PREFILLABLE_NORMAL_SHORTTEXT_FIELD.title),
+        }),
+      ).toHaveValue(PREFILL_RESTORED_VALUE),
+    { timeout: 3000 },
+  )
 }
 
 export const WithPayment = Template.bind({})

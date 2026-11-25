@@ -474,12 +474,9 @@ export const PublicFormProvider = ({
     encryptedPreviousSubmission?.workflow,
   )
 
-  // After a step login redirect, the submission key and step token come back
-  // from session storage, so wait for them before using the url. Other
-  // restores are left to FormFields, as before.
-  const isRestoringPrefillQuery = useFetchPrefillQuery({
-    enabled: hasSavedStepLogin,
-  })
+  // After a login redirect, the url's params come back from session storage,
+  // so wait for them before using the url.
+  const isRestoringPrefillQuery = useFetchPrefillQuery()
   const wasRestoringPrefillQueryRef = useRef(false)
   if (isRestoringPrefillQuery) wasRestoringPrefillQueryRef.current = true
   const isAwaitingPrefillQuery =
@@ -618,6 +615,7 @@ export const PublicFormProvider = ({
   const isLoading =
     isFormLoading ||
     isSubmissionLoading ||
+    isAwaitingPrefillQuery ||
     (!!pendingStepAuthType && !submissionData && isMrfStepAuthLoading)
   const error = publicFormError || encryptedSubmissionError
 

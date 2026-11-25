@@ -15,7 +15,6 @@ import {
 import InlineMessage from '~components/InlineMessage'
 import { FormFieldValues } from '~templates/Field'
 
-import { useFetchPrefillQuery } from '~features/public-form/hooks/useFetchPrefillQuery'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { PaymentPreview } from '../../../../templates/Field/PaymentPreview/PaymentPreview'
@@ -48,8 +47,6 @@ export const FormFields = ({
   onSubmit,
 }: FormFieldsProps): JSX.Element => {
   const { t } = useTranslation()
-
-  useFetchPrefillQuery()
 
   const { defaultFormValues, fieldPrefillMap, form, augmentedFormFields } =
     usePublicFormContext()
