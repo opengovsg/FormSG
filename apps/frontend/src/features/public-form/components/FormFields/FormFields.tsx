@@ -56,18 +56,20 @@ export const FormFields = ({
 
   const {
     reset,
-    formState: { isDirty },
+    formState: { dirtyFields },
     trigger,
     handleSubmit,
     control,
   } = useFormContext<FormFieldValues>()
 
+  const hasEditedFields = !isEmpty(dirtyFields)
+
   // Reset cached default values when they change
   useEffect(() => {
-    if (!isDirty) {
+    if (!hasEditedFields) {
       reset(defaultFormValues)
     }
-  }, [defaultFormValues, isDirty, reset])
+  }, [defaultFormValues, hasEditedFields, reset])
 
   const hasLockedPrefills = Object.values(fieldPrefillMap).some(
     (field) => field.lockPrefill && field.prefillValue,
