@@ -401,6 +401,10 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/UPLOAD_FORM_WHITELIST_RATE_LIMIT"
         },
         {
+          "name": "LOAD_TEST_BYPASS_KEY",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/LOAD_TEST_BYPASS_KEY"
+        },
+        {
           "name": "KILL_EMAIL_MODE_FEEDBACK_FORMID",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/KILL_EMAIL_MODE_FEEDBACK_FORMID"
         },
