@@ -1,6 +1,6 @@
 {
   "name": "formsg-react-email-preview",
-  "version": "9.78.1",
+  "version": "9.84.1",
   "private": true,
   "scripts": {
     "build": "email build",
@@ -11,10 +11,9 @@
     "test-storybook": "vitest run"
   },
   "dependencies": {
-    "@react-email/components": "^0.0.26",
+    "@react-email/components": "^1.0.12",
     "formsg-backend": "workspace:*",
-    "react": "^18.2.0",
-    "react-email": "^4.0.11"
+    "react": "^18.2.0"
   },
   "devDependencies": {
     "@argos-ci/cli": "^6.9.6",
@@ -27,6 +26,7 @@
     "@vitest/browser-playwright": "^4.1.12",
     "playwright": "^1.64.1",
     "react-dom": "18.3.1",
+    "react-email": "^4.0.11",
     "storybook": "10.6.2",
     "vite": "^6.4.4",
     "vitest": "^4.1.12"

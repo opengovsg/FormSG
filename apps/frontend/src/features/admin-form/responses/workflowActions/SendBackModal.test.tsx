@@ -41,6 +41,7 @@ vi.mock('~components/Dropdown', async (importOriginal) => ({
       value={value}
       onChange={(event) => onChange(event.target.value)}
     >
+      <option value="" />
       {items.map((item) => (
         <option key={item.value} value={item.value}>
           {item.label}
@@ -84,27 +85,36 @@ const history = {
   workflowEvents: [added],
 }
 
-const showModal = (onConfirm = vi.fn()) => {
+const showModal = (
+  onConfirm = vi.fn(),
+  { canFixStep = false, canClearAnswers = false } = {},
+) => {
   render(
     <SendBackModal
       isOpen
       onClose={vi.fn()}
       onConfirm={onConfirm}
       history={history}
+      canFixStep={canFixStep}
+      canClearAnswers={canClearAnswers}
     />,
   )
   return onConfirm
 }
 
 describe('SendBackModal', () => {
-  it('offers steps 2 to the one before the pending step, defaulting to the latest', () => {
+  it('offers steps 2 to the one before the pending step, with none selected', () => {
     showModal()
 
     expect(
-      screen.getAllByRole('option').map((option) => option.textContent),
+      screen
+        .getAllByRole('option')
+        .map((option) => option.textContent)
+        .filter(Boolean),
     ).toEqual(['Step 2 · Team lead', 'Step 3'])
-    expect(screen.getByRole('combobox', { name: 'step' })).toHaveValue('3')
-    expect(screen.getByText('People in Step 3')).toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: 'step' })).toHaveValue('')
+    expect(screen.queryByText(/^People in /)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'confirm' })).toBeDisabled()
   })
 
   it("shows the chosen step's people, including those added to it", async () => {
@@ -132,7 +142,7 @@ describe('SendBackModal', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('explains when the selected step has no recipients', () => {
+  it('explains when the selected step has no recipients', async () => {
     render(
       <SendBackModal
         isOpen
@@ -144,6 +154,10 @@ describe('SendBackModal', () => {
           workflowEvents: [],
         }}
       />,
+    )
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'step' }),
+      '3',
     )
 
     expect(screen.getByText('People in Step 3')).toBeInTheDocument()
@@ -161,21 +175,25 @@ describe('SendBackModal', () => {
     await userEvent.type(screen.getByRole('textbox'), '  Fix the dates  ')
     await userEvent.click(screen.getByRole('button', { name: 'confirm' }))
 
-    expect(onConfirm).toHaveBeenCalledWith({
-      targetStepNumber: 2,
-      remarks: 'Fix the dates',
-    })
+    expect(onConfirm).toHaveBeenCalledWith(
+      { targetStepNumber: 2, remarks: 'Fix the dates', clearResponses: false },
+      'sendBack',
+    )
   })
 
   it('sends no remarks when the field is blank', async () => {
     const onConfirm = showModal()
 
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'step' }),
+      '3',
+    )
     await userEvent.click(screen.getByRole('button', { name: 'confirm' }))
 
-    expect(onConfirm).toHaveBeenCalledWith({
-      targetStepNumber: 3,
-      remarks: undefined,
-    })
+    expect(onConfirm).toHaveBeenCalledWith(
+      { targetStepNumber: 3, remarks: undefined, clearResponses: false },
+      'sendBack',
+    )
   })
 
   it('blocks remarks over the limit', async () => {
@@ -186,6 +204,121 @@ describe('SendBackModal', () => {
 
     expect(screen.getByText('Too long, max 1000')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'confirm' })).toBeDisabled()
+  })
+
+  describe('after-correction and existing-answers choices', () => {
+    const pickStep = (value: string) =>
+      userEvent.selectOptions(
+        screen.getByRole('combobox', { name: 'step' }),
+        value,
+      )
+
+    it('asks neither question when both are off', () => {
+      showModal()
+
+      expect(screen.queryByText('routeLabel')).not.toBeInTheDocument()
+      expect(screen.queryByText('keepFilledLabel')).not.toBeInTheDocument()
+      expect(screen.getByText('description')).toBeInTheDocument()
+    })
+
+    it('asks neither question until a step is picked', async () => {
+      showModal(vi.fn(), { canFixStep: true, canClearAnswers: true })
+
+      expect(screen.queryByText('routeLabel')).not.toBeInTheDocument()
+      expect(screen.queryByText('keepFilledLabel')).not.toBeInTheDocument()
+      await pickStep('2')
+      expect(screen.getByText('routeLabel')).toBeInTheDocument()
+      expect(screen.getByText('keepFilledLabel')).toBeInTheDocument()
+    })
+
+    it('fixes the step and clears only its fields when both are on', async () => {
+      const onConfirm = showModal(vi.fn(), {
+        canFixStep: true,
+        canClearAnswers: true,
+      })
+      await pickStep('2')
+
+      expect(screen.getByText('descriptionWithChoices')).toBeInTheDocument()
+      expect(
+        screen.getByRole('radio', { name: 'redoConsequence' }),
+      ).toBeChecked()
+      expect(
+        screen.getByRole('radio', { name: 'keepConsequence' }),
+      ).toBeChecked()
+      await userEvent.click(
+        screen.getByRole('radio', { name: 'fixStepConsequence' }),
+      )
+      await userEvent.click(
+        screen.getByRole('radio', { name: 'clearCorrectionConsequence' }),
+      )
+      await userEvent.click(screen.getByRole('button', { name: 'confirm' }))
+
+      expect(onConfirm).toHaveBeenCalledWith(
+        expect.objectContaining({ targetStepNumber: 2, clearResponses: true }),
+        'fixStep',
+      )
+    })
+
+    it('asks only the after-correction question with FIX_STEP', async () => {
+      const onConfirm = showModal(vi.fn(), { canFixStep: true })
+      await pickStep('2')
+
+      expect(screen.queryByText('keepFilledLabel')).not.toBeInTheDocument()
+      await userEvent.click(
+        screen.getByRole('radio', { name: 'fixStepConsequence' }),
+      )
+      await userEvent.click(screen.getByRole('button', { name: 'confirm' }))
+
+      expect(onConfirm).toHaveBeenCalledWith(
+        expect.objectContaining({ clearResponses: false }),
+        'fixStep',
+      )
+    })
+
+    it('asks only the existing-answers question with CLEAR_ANSWERS', async () => {
+      const onConfirm = showModal(vi.fn(), { canClearAnswers: true })
+      await pickStep('2')
+
+      expect(screen.queryByText('routeLabel')).not.toBeInTheDocument()
+      await userEvent.click(
+        screen.getByRole('radio', { name: 'clearConsequence' }),
+      )
+      await userEvent.click(screen.getByRole('button', { name: 'confirm' }))
+
+      expect(onConfirm).toHaveBeenCalledWith(
+        expect.objectContaining({ clearResponses: true }),
+        'sendBack',
+      )
+    })
+
+    it('resets both choices when reopened', async () => {
+      const props = {
+        onClose: vi.fn(),
+        onConfirm: vi.fn(),
+        history,
+        canFixStep: true,
+        canClearAnswers: true,
+      }
+      const { rerender } = render(<SendBackModal {...props} isOpen />)
+      await pickStep('2')
+      await userEvent.click(
+        screen.getByRole('radio', { name: 'fixStepConsequence' }),
+      )
+      await userEvent.click(
+        screen.getByRole('radio', { name: 'clearCorrectionConsequence' }),
+      )
+      rerender(<SendBackModal {...props} isOpen={false} />)
+      rerender(<SendBackModal {...props} isOpen />)
+
+      expect(screen.queryByText('routeLabel')).not.toBeInTheDocument()
+      await pickStep('2')
+      expect(
+        screen.getByRole('radio', { name: 'redoConsequence' }),
+      ).toBeChecked()
+      expect(
+        screen.getByRole('radio', { name: 'keepConsequence' }),
+      ).toBeChecked()
+    })
   })
 
   describe('to step 1', () => {
@@ -206,8 +339,36 @@ describe('SendBackModal', () => {
       showStepOneModal()
 
       expect(
-        screen.getAllByRole('option').map((option) => option.textContent),
+        screen
+          .getAllByRole('option')
+          .map((option) => option.textContent)
+          .filter(Boolean),
       ).toEqual(['Step 1 · Applicant', 'Step 2 · Team lead', 'Step 3'])
+    })
+
+    it('asks for an email only once step 1 is selected', async () => {
+      render(
+        <SendBackModal
+          isOpen
+          onClose={vi.fn()}
+          onConfirm={vi.fn()}
+          history={{ ...history, submittedSteps: [step([])] }}
+          canSendBackToStepOne
+        />,
+      )
+
+      expect(screen.getByRole('combobox', { name: 'step' })).toHaveValue('')
+      expect(
+        screen.queryByPlaceholderText('me@example.com'),
+      ).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'confirm' })).toBeDisabled()
+
+      await userEvent.selectOptions(
+        screen.getByRole('combobox', { name: 'step' }),
+        '1',
+      )
+
+      expect(screen.getByPlaceholderText('me@example.com')).toBeInTheDocument()
     })
 
     it('asks for an email and sends step 1 to it', async () => {
@@ -230,11 +391,15 @@ describe('SendBackModal', () => {
       ).not.toBeInTheDocument()
       expect(screen.getByText('stepOneEmailDescription')).toBeInTheDocument()
       await userEvent.click(screen.getByRole('button', { name: 'confirm' }))
-      expect(onConfirm).toHaveBeenCalledWith({
-        targetStepNumber: 1,
-        remarks: undefined,
-        stepOneRecipientEmail: 'applicant@agency.gov.sg',
-      })
+      expect(onConfirm).toHaveBeenCalledWith(
+        {
+          targetStepNumber: 1,
+          remarks: undefined,
+          clearResponses: false,
+          stepOneRecipientEmail: 'applicant@agency.gov.sg',
+        },
+        'sendBack',
+      )
     })
 
     it('shows invalid-email feedback after first blur then updates while editing', async () => {

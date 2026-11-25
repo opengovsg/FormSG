@@ -1,9 +1,9 @@
-import { Route } from 'react-router'
 import {
   createMemoryRouter,
   createRoutesFromElements,
+  Route,
   RouterProvider,
-} from 'react-router-dom'
+} from 'react-router'
 import { Box } from '@chakra-ui/react'
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react-vite'

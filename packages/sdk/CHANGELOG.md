@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.5.0](https://github.com/opengovsg/formsg/compare/sdk-v8.4.0...sdk-v8.5.0) (2026-11-24)
+
+
+### Features
+
+* **workflow:** let a step send to typed emails, Email fields and Dropdowns together (#10593) ([#10593](https://github.com/opengovsg/formsg/commit/12b2ff54a12090508efeb8cb62fd8540643a4c3c))
+
 ## [8.4.0](https://github.com/opengovsg/formsg/compare/sdk-v8.3.0...sdk-v8.4.0) (2026-10-28)
 
 

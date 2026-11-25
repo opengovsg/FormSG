@@ -228,6 +228,16 @@ export interface Fields {
   attachment: {
     info: string
     maximumSize: string
+    restrictFileTypes: {
+      title: string
+      inputLabel: string
+      placeholder: string
+      error: {
+        duplicate: string
+        empty: string
+        invalid: string
+      }
+    }
     error: {
       exceedSize: string
     }

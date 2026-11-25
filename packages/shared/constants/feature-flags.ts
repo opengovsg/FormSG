@@ -4,7 +4,6 @@ export const featureFlags = {
   mrfWebhooksV4: 'mrf-webhooks-v4' as const,
   enableMrfWebhooks: 'enable-mrf-webhooks' as const,
   adminEmailPdf: 'admin-email-pdf' as const,
-  ogpAwareness: 'ogp-awareness' as const,
   ddSampleRateAdmin: 'dd-sample-rate-admin' as const,
   ddSampleRatePublic: 'dd-sample-rate-public' as const,
   standardisedEmailTemplate: 'standardised-email-template' as const,
@@ -14,6 +13,7 @@ export const featureFlags = {
   mrfPayments: 'mrf-payments' as const,
   workflowActions: 'workflow-actions' as const,
   workflowActionsSendBack: 'workflow-actions-send-back' as const,
+  workflowActionsSendBackMisc: 'workflow-actions-send-back-misc' as const,
   workflowEmailSourceInput: 'workflow-email-source-input' as const,
   mrfChildren: 'mrf-children' as const,
   storageChildren: 'storage-children' as const,
@@ -23,15 +23,14 @@ export const featureFlags = {
   delightfulDashboard: 'delightful-dashboard' as const,
   escapeHatch: 'mrf-cutover-escape-hatch' as const,
   disableBouncedSubmissionSms: 'disable-bounced-submission-sms' as const,
-  keepV4AttachmentPrefix: 'keep-v4-attachment-prefix' as const,
-  keepV4Table: 'keep-v4-table' as const,
-  keepV4Date: 'keep-v4-date' as const,
+  keepV4ResponseFormat: 'keep-v4-response-format' as const,
   paymentInfoFormat: 'payment-info-format' as const,
   paymentEmailLookup: 'payment-email-lookup' as const,
   settingsIntegrations: 'settings-integrations' as const,
   settingsIntegrationsJson: 'settings-integrations-json' as const,
   attachmentsMultiUploadAndOneZip:
     'attachments-multi-upload-and-one-zip' as const,
+  attachmentsRestrictFileTypes: 'attachments-restrict-file-types' as const,
   ogpSuiteSso: 'ogp-suite-sso' as const,
 }
 
@@ -40,3 +39,18 @@ export enum AdminEmailPdfFeatureValue {
   SIGNATURES_ONLY = 'SIGNATURES_ONLY',
   ON = 'ON',
 }
+
+export enum WorkflowActionsSendBackMiscValue {
+  OFF = 'OFF',
+  FIX_STEP = 'FIX_STEP',
+  CLEAR_ANSWERS = 'CLEAR_ANSWERS',
+  BOTH = 'BOTH',
+}
+
+export const sendBackMiscAllowsFixStep = (value: unknown): boolean =>
+  value === WorkflowActionsSendBackMiscValue.FIX_STEP ||
+  value === WorkflowActionsSendBackMiscValue.BOTH
+
+export const sendBackMiscAllowsClearAnswers = (value: unknown): boolean =>
+  value === WorkflowActionsSendBackMiscValue.CLEAR_ANSWERS ||
+  value === WorkflowActionsSendBackMiscValue.BOTH

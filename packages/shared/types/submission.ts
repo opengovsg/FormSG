@@ -303,6 +303,7 @@ export type PublicMultirespondentSubmissionDto = Omit<
   | 'submittedSteps'
   | 'workflowEvents'
 > & {
+  correctionClearFieldIds?: string[]
   form_fields: StrippedFormFieldDto[]
   workflow: StrippedFormWorkflowDto
   encryptedStepToken: undefined
@@ -320,7 +321,7 @@ export const StorageModeSubmissionStreamDto = StorageModeSubmissionBase.pick({
   verifiedContent: true,
   version: true,
 }).extend({
-  attachmentMetadata: z.record(z.string()),
+  attachmentMetadata: z.record(z.string(), z.string()),
   payment: z.optional(SubmissionPaymentDto),
   _id: SubmissionId,
   created: DateString,
@@ -341,7 +342,7 @@ export const MultirespondentSubmissionStreamDto =
     version: true,
     mrfVersion: true,
   }).extend({
-    attachmentMetadata: z.record(z.string()),
+    attachmentMetadata: z.record(z.string(), z.string()),
     payment: z.optional(SubmissionPaymentDto),
     _id: SubmissionId,
     created: DateString,

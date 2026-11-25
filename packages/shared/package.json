@@ -1,6 +1,6 @@
 {
   "name": "formsg-shared",
-  "version": "9.78.1",
+  "version": "9.84.1",
   "private": true,
   "description": "",
   "scripts": {
@@ -238,6 +238,10 @@
       "require": "./dist/utils/workflow-step-completion.js",
       "default": "./utils/workflow-step-completion.ts"
     },
+    "./utils/version": {
+      "require": "./dist/utils/version.js",
+      "default": "./utils/version.ts"
+    },
     "./modules/logic": {
       "require": "./dist/modules/logic/index.js",
       "default": "./modules/logic/index.ts"
@@ -253,7 +257,7 @@
     "tweetnacl-util": "^0.15.1",
     "type-fest": "^4.17.0",
     "validator": "^13.7.0",
-    "zod": "^3.11.6"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@aws-sdk/s3-presigned-post": "^3.775.0",

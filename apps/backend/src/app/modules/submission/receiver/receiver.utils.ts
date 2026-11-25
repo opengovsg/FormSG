@@ -36,7 +36,7 @@ const attachmentAnswerV4Schema = z.object({
   hasBeenScanned: z.boolean().default(false),
   md5Hash: z.string().optional(),
   // RATIONALE: pin to the AttachmentAnswerV4 type to avoid type drift
-}) satisfies z.ZodType<AttachmentAnswerV4, z.ZodTypeDef, unknown>
+}) satisfies z.ZodType<AttachmentAnswerV4>
 
 export const mapRouteError: MapRouteError = (error) => {
   switch (error.constructor) {

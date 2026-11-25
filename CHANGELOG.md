@@ -2,6 +2,103 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.84.1](https://github.com/opengovsg/formsg/compare/v9.84.0...v9.84.1) (2026-11-25)
+
+
+### Bug Fixes
+
+* **public-form:** keep URL prefill after Singpass login (#10668) ([#10668](https://github.com/opengovsg/formsg/commit/05c13d4b91037fbefb97c44a1a6eb3ac34349f91))
+
+
+### CI
+
+* move develop merges to GitHub's native merge queue (#10658) ([#10658](https://github.com/opengovsg/formsg/commit/59e008d6529b16ef0eb66a580c5e5de1e97d7c32))
+
+## [9.84.0](https://github.com/opengovsg/formsg/compare/v9.83.0...v9.84.0) (2026-11-25)
+
+
+### Features
+
+* **attachments:** let admins restrict the file types an attachment question accepts (#10598) ([#10598](https://github.com/opengovsg/formsg/commit/ab2a73952019f22fa8520176b38bd565e5336915))
+
+
+### Dependencies
+
+* **deps:** upgrade react-email and keep its CLI out of production (#10651) ([#10651](https://github.com/opengovsg/formsg/commit/ba7f7dc057f14e652d09764a0f85c15c7e36ddb6))
+
+## [9.83.0](https://github.com/opengovsg/formsg/compare/v9.82.0...v9.83.0) (2026-11-24)
+
+
+### Features
+
+* force refresh modal when backend crosses a major version (#9840) ([#9840](https://github.com/opengovsg/formsg/commit/404823e3c6c013628bc156b720f73065e6856c18))
+
+
+### Dependencies
+
+* **deps:** bump nodemailer to 10.4.1 (#10564) ([#10564](https://github.com/opengovsg/formsg/commit/c47821f160a41acd8f23a2939fc33ec925ccf275))
+
+## [9.82.0](https://github.com/opengovsg/formsg/compare/v9.81.0...v9.82.0) (2026-11-24)
+
+
+### Dependencies
+
+* **deps:** upgrade react-router to 7 (#10578) ([#10578](https://github.com/opengovsg/formsg/commit/03101492c8bbeec3cf431d8136bda41509daa34e))
+
+
+### Chores
+
+* **frontend:** enable react-router v6 future flags (#10570) ([#10570](https://github.com/opengovsg/formsg/commit/2adbe06c9359f0744c8a9767969ac489336c41c4))
+* add product tag for Datadog usage attribution (paths 2 and 3) (#10643) ([#10643](https://github.com/opengovsg/formsg/commit/da31e077227435a4ca7159dbdb21ef27d9580f31))
+
+## [9.81.0](https://github.com/opengovsg/formsg/compare/v9.80.0...v9.81.0) (2026-11-24)
+
+
+### Dependencies
+
+* **deps:** bump zod to 4.6.6 and point imports back at zod (#10572) ([#10572](https://github.com/opengovsg/formsg/commit/3eead90a814eaec0defba23bcb3cd359d8279ab5))
+
+
+### Chores
+
+* **flags:** remove the enable-auth-callback-forwarding flag (#10644) ([#10644](https://github.com/opengovsg/formsg/commit/fdaab146a6914d1d8fe17b055bac178f33624a34))
+* **flags:** remove the ogp-awareness flag (#10645) ([#10645](https://github.com/opengovsg/formsg/commit/e15700bc11647f6a87c3a019f23f7c967c23bf32))
+
+
+### Refactors
+
+* **backend:** move backend zod schemas to the zod/v4 API (#10568) ([#10568](https://github.com/opengovsg/formsg/commit/2656223aabbee2d18aaf803ed8f9bd0ac05f9f1f))
+* **shared:** move shared zod schemas to the zod/v4 API (#10569) ([#10569](https://github.com/opengovsg/formsg/commit/2108fe5fc8a6481c664fd52d0f54967c17894be4))
+
+## [9.80.0](https://github.com/opengovsg/formsg/compare/v9.79.1...v9.80.0) (2026-11-24)
+
+
+### Features
+
+* **workflow-actions:** ask what happens after a send back correction (#10636) ([#10636](https://github.com/opengovsg/formsg/commit/861fd0b4e74fcb413df1fa494bee430b480a3a55))
+
+
+### Bug Fixes
+
+* **workflow:** ask to close the form before starting workflow setup (#10640) ([#10640](https://github.com/opengovsg/formsg/commit/26d5b8dbdcbf7b50488945e082dff1879449c56f))
+* **workflow:** refuse to add workflow steps while the form is open (#10641) ([#10641](https://github.com/opengovsg/formsg/commit/427d3ea6d956bc9fb33c83c0b629c93931e47b17))
+* **workflow:** start the send back modal with no step selected (#10635) ([#10635](https://github.com/opengovsg/formsg/commit/6a549625ea851c794eb7aabfb46a0ba3e2080816))
+
+## [9.79.1](https://github.com/opengovsg/formsg/compare/v9.79.0...v9.79.1) (2026-11-24)
+
+
+### Bug Fixes
+
+* **mrf:** match Storage email JSON for signatures, addresses and checkbox Others (#10629) ([#10629](https://github.com/opengovsg/formsg/commit/cfb9f18bdb5703bf753147782ac322f2f952393b))
+
+## [9.79.0](https://github.com/opengovsg/formsg/compare/v9.78.1...v9.79.0) (2026-11-24)
+
+
+### Features
+
+* **responses:** plain-English copy for the attachments download modal (#10634) ([#10634](https://github.com/opengovsg/formsg/commit/24b4c1f14fdfcc2a35c2e0cc01884849ee966655))
+* **workflow:** let a step send to typed emails, Email fields and Dropdowns together (#10593) ([#10593](https://github.com/opengovsg/formsg/commit/12b2ff54a12090508efeb8cb62fd8540643a4c3c))
+
 ## [9.78.1](https://github.com/opengovsg/formsg/compare/v9.78.0...v9.78.1) (2026-11-23)
 
 

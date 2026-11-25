@@ -28,7 +28,7 @@ vi.mock('react-i18next', () => ({
 
 let mockSubmissionId = 'mock-submission-id'
 
-vi.mock('react-router-dom', () => ({
+vi.mock('react-router', () => ({
   useParams: () => ({
     formId: 'mock-form-id',
     submissionId: mockSubmissionId,

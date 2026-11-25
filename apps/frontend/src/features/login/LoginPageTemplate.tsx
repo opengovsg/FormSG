@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link as ReactLink } from 'react-router-dom'
+import { Link as ReactLink } from 'react-router'
 import { Box, chakra, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 

@@ -29,6 +29,7 @@ export interface Fields {
       fileEmpty: string
       fileTooLarge: string
       fileInvalidType: string
+      fileTypeNotAllowed: string
       tooManyFiles: string
       zipFileInvalidType: string
       zipParsing: string

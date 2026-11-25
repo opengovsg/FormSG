@@ -1934,6 +1934,14 @@ export const createWorkflowStep = (
     )
   }
 
+  if (originalForm.status === FormStatus.Public) {
+    return errAsync(
+      new FormOpenToResponsesError(
+        'Close your form to new responses before adding workflow steps',
+      ),
+    )
+  }
+
   if ((originalForm as IPopulatedMultirespondentForm).payments_field?.enabled) {
     return errAsync(
       new MalformedParametersError(

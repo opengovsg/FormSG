@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useQuery, UseQueryOptions, UseQueryResult } from 'react-query'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 
 import { Product } from 'formsg-shared/types'
 import { AdminFormDto, PreviewFormViewDto } from 'formsg-shared/types/form/form'
