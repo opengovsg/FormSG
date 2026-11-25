@@ -1,0 +1,16 @@
+{
+  "name": "formsg-load-tests",
+  "version": "0.0.0",
+  "private": true,
+  "description": "k6 load tests for FormSG",
+  "license": "MIT",
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/k6": "2.2.0",
+    "esbuild": "^0.28.1",
+    "typescript": "^5.9.2"
+  }
+}
