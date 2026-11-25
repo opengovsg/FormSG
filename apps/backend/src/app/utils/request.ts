@@ -1,6 +1,8 @@
 import { Request } from 'express'
 import { X_FORMSG_CLIENT_VERSION } from 'formsg-shared/constants'
 
+export const LOAD_TEST_BYPASS_HEADER = 'x-load-test-key'
+
 type ReqMeta = {
   ip: ReturnType<typeof getRequestIp>
   trace: ReturnType<typeof getTrace>
