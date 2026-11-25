@@ -64,9 +64,9 @@ jobs:
           PR: ${{ github.event.pull_request.number }}
           URL: ${{ steps.render.outputs.url }}
           DASHBOARD: ${{ steps.render.outputs.dashboard }}
-          MEMBER: ${{ needs.author.outputs.member }}
+          AUTOMATIC: ${{ needs.author.outputs.member == 'true' && !github.event.pull_request.draft }}
         run: |
-          if [ "$MEMBER" = true ]; then removal="the PR closes"; else removal="the \`render-preview\` label is removed or the PR closes"; fi
+          if [ "$AUTOMATIC" = true ]; then removal="the PR closes"; else removal="the \`render-preview\` label is removed or the PR closes"; fi
           gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "Render preview is building: $URL ([logs]($DASHBOARD)). It uses staging's database and config, redeploys on every push, and is deleted when $removal."
 
   down:
@@ -78,7 +78,7 @@ jobs:
       (
         github.event.action == 'unlabeled' &&
         github.event.label.name == 'render-preview' &&
-        needs.author.outputs.member != 'true'
+        (needs.author.outputs.member != 'true' || github.event.pull_request.draft)
       )
     runs-on: ubuntu-latest
     steps:
