@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.84.0](https://github.com/opengovsg/formsg/compare/v9.83.0...v9.84.0) (2026-11-25)
+
+
+### Features
+
+* **attachments:** let admins restrict the file types an attachment question accepts (#10598) ([#10598](https://github.com/opengovsg/formsg/commit/ab2a73952019f22fa8520176b38bd565e5336915))
+
+
+### Dependencies
+
+* **deps:** upgrade react-email and keep its CLI out of production (#10651) ([#10651](https://github.com/opengovsg/formsg/commit/ba7f7dc057f14e652d09764a0f85c15c7e36ddb6))
+
 ## [9.83.0](https://github.com/opengovsg/formsg/compare/v9.82.0...v9.83.0) (2026-11-24)
 
 
