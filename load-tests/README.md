@@ -1,6 +1,6 @@
 # FormSG load tests
 
-k6 scenarios for FormSG's public form paths. The setup is ported from CalSG's `load-tests/`.
+k6 scenarios for FormSG's public form paths, run nightly against UAT on Fargate. The setup is ported from CalSG's `load-tests/`.
 
 Background: [RFC: Improving reliability across FormSG, CalSG, Highway](https://app.notion.com/p/3cc77dbba7888029bc22de3a8e28715c).
 
@@ -65,3 +65,18 @@ Passed as `--env NAME=value`.
 | `P95_MS` | `5000` on `load` | `0` turns the gate off |
 | `MAX_DROPPED` | `0` | `load` only |
 | `PRE_ALLOCATED_VUS` / `MAX_VUS` | sized from the rate | |
+
+## Nightly run
+
+`.github/workflows/load-test-nightly.yml` runs at 02:00 SGT on weeknights, plus on `workflow_dispatch`. It:
+
+1. Assumes `formsg-uat-load-test-github-oidc-role`. The role is trusted only for `refs/heads/develop` and scoped to the load-test resources.
+2. Builds the k6 image and pushes it to `formsg-uat-load-tests`.
+3. Seeds the fixtures on the exact task definition the UAT service is running. The app task family `formsg-app` is shared with production in the same account, so the step refuses any revision whose `SSM_ENV_SITE_NAME` is not read from `/uat/`.
+4. Runs k6 on Fargate with a `dd-agent` sidecar. k6 sends OTLP to `localhost:4317` and the metrics land in Datadog as `k6.*`, tagged `task_family:formsg-uat-load-test-runner`.
+
+Exit codes: 0 is a pass, 99 is a threshold breach (a finding), and anything else means the script broke.
+
+The runner reaches `https://uat.form.gov.sg` through Cloudflare from the UAT NAT IP, and sends `x-formsg-iac: true` so that Cloudflare's load balancer always picks the ECS pool.
+
+Repository variables `LOAD_TEST_SUBNET_IDS` and `LOAD_TEST_SECURITY_GROUP_ID` come from the formsg-infra `uat` stack outputs.
