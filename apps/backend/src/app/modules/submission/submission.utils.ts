@@ -1100,8 +1100,13 @@ export const shouldIncludeEmailJson = ({
   )
 
 // TODO (keep-v4-response-format): remove once no admin relies on the old format
-export const isKeepV4ResponseFormatOn = (growthbook?: GrowthBook): boolean =>
-  growthbook?.isOn(featureFlags.keepV4ResponseFormat) ?? false
+export const isKeepV4ResponseFormatOn = (
+  growthbook?: GrowthBook,
+  compatibilityMode?: CompatibilityMode | null,
+): boolean =>
+  compatibilityMode
+    ? compatibilityMode === 'legacy'
+    : (growthbook?.isOn(featureFlags.keepV4ResponseFormat) ?? false)
 
 // TODO (email-standardisation): remove when email standardisation is GA
 export const isStandardisedEmailTemplateOn = (
