@@ -113,6 +113,7 @@ export interface SettingsMutationsStrings {
     enabled: string
     disabled: string
   }
+  compatibilityOptionsUpdated: string
   formTitleUpdated: string
   inactiveMessageUpdated: string
   emailsUpdated: string

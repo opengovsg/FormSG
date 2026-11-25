@@ -11,6 +11,7 @@ import { FormResponseMode } from 'formsg-shared/types/form'
 import { PlumberTile } from '~features/admin-form/create/integration/CreatePageIntegrationTab'
 
 import { CategoryHeader } from './components/CategoryHeader'
+import { CompatibilityOptionsSection } from './components/CompatibilityOptionsSection'
 import { EmailJsonToggle } from './components/EmailJsonToggle'
 import { WebhooksSection } from './components/WebhooksSection'
 import { WebhooksErrorMsg } from './components/WebhooksSection/WebhooksErrorMsg'
@@ -30,6 +31,9 @@ export const SettingsWebhooksPage = (): JSX.Element => {
   } = useAdminFormSettings()
 
   const enableMrfWebhooks = useFeatureIsOn(featureFlags.enableMrfWebhooks)
+  const isCompatibilityOptionsOn = useFeatureIsOn(
+    featureFlags.settingsCompatibilityOptions,
+  )
   const { isPlumberInSettings, isEmailJsonToggleOn, isIntegrationsTab } =
     useIntegrationsFlags()
 
@@ -67,6 +71,12 @@ export const SettingsWebhooksPage = (): JSX.Element => {
         <>
           <Divider my="2.5rem" />
           <EmailJsonToggle />
+        </>
+      ) : null}
+      {isCompatibilityOptionsOn ? (
+        <>
+          <Divider my="2.5rem" />
+          <CompatibilityOptionsSection />
         </>
       ) : null}
     </>
