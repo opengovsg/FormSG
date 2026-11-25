@@ -1,0 +1,29 @@
+name: FormSG team member
+description: >-
+  Outputs whether the user has write access or higher to this repo,
+  which the FormSG teams and direct collaborators have
+
+inputs:
+  user:
+    description: GitHub login to check
+    required: true
+
+outputs:
+  member:
+    description: "'true' for the write, maintain or admin role, otherwise 'false'"
+    value: ${{ steps.role.outputs.member }}
+
+runs:
+  using: composite
+  steps:
+    - id: role
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        LOGIN: ${{ inputs.user }}
+      run: |
+        role=$(gh api "repos/$GITHUB_REPOSITORY/collaborators/$LOGIN/permission" -q .role_name 2>/dev/null || true)
+        case "$role" in
+          admin | maintain | write) echo member=true >>"$GITHUB_OUTPUT" ;;
+          *) echo member=false >>"$GITHUB_OUTPUT" ;;
+        esac
