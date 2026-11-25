@@ -10,6 +10,7 @@ import { FIELDS_TO_REJECT } from 'formsg-shared/constants/field/basic'
 import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
 import {
   BasicField,
+  CompatibilityMode,
   FormAuthType,
   FormField,
   FormResponseMode,
@@ -1101,6 +1102,18 @@ export const shouldIncludeEmailJson = ({
 // TODO (keep-v4-response-format): remove once no admin relies on the old format
 export const isKeepV4ResponseFormatOn = (growthbook?: GrowthBook): boolean =>
   growthbook?.isOn(featureFlags.keepV4ResponseFormat) ?? false
+
+// TODO (email-standardisation): remove when email standardisation is GA
+export const isStandardisedEmailTemplateOn = (
+  growthbook?: GrowthBook,
+  compatibilityMode?: CompatibilityMode | null,
+): boolean =>
+  compatibilityMode
+    ? compatibilityMode !== 'legacy'
+    : (growthbook?.getFeatureValue(
+        featureFlags.standardisedEmailTemplate,
+        false,
+      ) ?? false)
 
 export const isAdminEmailPdfEnabled = ({
   growthbook,

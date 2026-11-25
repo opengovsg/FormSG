@@ -36,6 +36,7 @@ import {
   buildMrfMetadata,
   getInvalidFileExtensions,
   getResponseModeFilter,
+  isStandardisedEmailTemplateOn,
   mapAttachmentsFromResponses,
   mapRouteError,
   sendRouteError,
@@ -734,6 +735,29 @@ describe('submission.utils', () => {
             growthbook: growthbookWithJsonFlag(isFlagOn),
             isEmailJsonDisabled,
           }),
+        ).toBe(expected)
+      },
+    )
+  })
+
+  describe('isStandardisedEmailTemplateOn', () => {
+    const growthbookWithFlag = (isOn: boolean) =>
+      ({ getFeatureValue: jest.fn(() => isOn) }) as never
+
+    it.each([
+      ['no option, flag off', undefined, false, false],
+      ['no option, flag on', undefined, true, true],
+      ['cleared option, flag off', null, false, false],
+      ['legacy, flag on', 'legacy', true, false],
+      ['latest, flag off', 'latest', false, true],
+    ] as const)(
+      'returns the expected value for %s',
+      (_, compatibilityMode, isFlagOn, expected) => {
+        expect(
+          isStandardisedEmailTemplateOn(
+            growthbookWithFlag(isFlagOn),
+            compatibilityMode,
+          ),
         ).toBe(expected)
       },
     )
