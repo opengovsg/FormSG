@@ -156,6 +156,61 @@ describe('admin-form.settings.routes', () => {
       )
     })
 
+    it('should return 200 and merge compatibility options with ones already saved', async () => {
+      // Arrange
+      const { form: formToUpdate, user } = await dbHandler.insertEncryptForm()
+      const session = await createAuthedSession(user.email, request)
+      await session
+        .patch(`/admin/forms/${formToUpdate._id}/settings`)
+        .send({ compatibilityOptions: { json: { prefixes: 'latest' } } })
+
+      // Act
+      const response = await session
+        .patch(`/admin/forms/${formToUpdate._id}/settings`)
+        .send({ compatibilityOptions: { emails: { format: 'legacy' } } })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body.compatibilityOptions).toEqual({
+        emails: { format: 'legacy' },
+        json: { prefixes: 'latest' },
+      })
+    })
+
+    it('should return 200 and return a compatibility option to default when given null', async () => {
+      // Arrange
+      const { form: formToUpdate, user } = await dbHandler.insertEncryptForm()
+      const session = await createAuthedSession(user.email, request)
+      await session
+        .patch(`/admin/forms/${formToUpdate._id}/settings`)
+        .send({ compatibilityOptions: { emails: { format: 'legacy' } } })
+
+      // Act
+      const response = await session
+        .patch(`/admin/forms/${formToUpdate._id}/settings`)
+        .send({ compatibilityOptions: { emails: { format: null } } })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body.compatibilityOptions?.emails?.format ?? null).toBe(
+        null,
+      )
+    })
+
+    it('should return 400 when a compatibility option is not supported', async () => {
+      // Arrange
+      const { form, user } = await dbHandler.insertEncryptForm()
+      const session = await createAuthedSession(user.email, request)
+
+      // Act
+      const response = await session
+        .patch(`/admin/forms/${form._id}/settings`)
+        .send({ compatibilityOptions: { emails: { format: 'v1' } } })
+
+      // Assert
+      expect(response.status).toEqual(400)
+    })
+
     it('should return 400 when patching with empty form settings', async () => {
       // Arrange
       // Log in user.

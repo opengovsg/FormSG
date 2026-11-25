@@ -57,6 +57,7 @@ const FORM_SETTINGS_FIELDS = [
   'supportedLanguages',
   'hasRespondentCopy',
   'isEmailJsonDisabled',
+  'compatibilityOptions',
 ] as const
 
 export const EMAIL_FORM_SETTINGS_FIELDS = [
