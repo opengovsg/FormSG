@@ -110,6 +110,11 @@ const maskStepTokenQueryParam = (url: string): string =>
       )
     : url
 
+const redactLoadTestKey = (headers: ReqMeta['headers']): ReqMeta['headers'] =>
+  headers?.[LOAD_TEST_BYPASS_HEADER]
+    ? { ...headers, [LOAD_TEST_BYPASS_HEADER]: '[redacted]' }
+    : headers
+
 export const createReqMeta = <R extends LooseRequest>(req: R): ReqMeta => {
   return {
     ip: getRequestIp(req),
@@ -117,6 +122,6 @@ export const createReqMeta = <R extends LooseRequest>(req: R): ReqMeta => {
     clientVersion: getClientVersion(req),
     url: req.baseUrl + req.path,
     urlWithQueryParams: maskStepTokenQueryParam(req.originalUrl),
-    headers: maskRefererHeaders(req.headers),
+    headers: redactLoadTestKey(maskRefererHeaders(req.headers)),
   }
 }

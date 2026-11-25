@@ -8,6 +8,7 @@ import {
   getClientVersion,
   getRequestIp,
   getTrace,
+  LOAD_TEST_BYPASS_HEADER,
   maskOAuthCode,
 } from '../../utils/request'
 
@@ -99,7 +100,7 @@ const loggingMiddleware = () => {
       }
       return value
     },
-    headerBlacklist: ['cookie', 'authorization'],
+    headerBlacklist: ['cookie', 'authorization', LOAD_TEST_BYPASS_HEADER],
     ignoredRoutes: ['/'],
     skip: (req, res) => {
       // Skip if it's ELB-HealthChecker to avoid polluting logs
