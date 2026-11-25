@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.84.1](https://github.com/opengovsg/formsg/compare/v9.84.0...v9.84.1) (2026-11-25)
+
+
+### Bug Fixes
+
+* **public-form:** keep URL prefill after Singpass login (#10668) ([#10668](https://github.com/opengovsg/formsg/commit/05c13d4b91037fbefb97c44a1a6eb3ac34349f91))
+
+
+### CI
+
+* move develop merges to GitHub's native merge queue (#10658) ([#10658](https://github.com/opengovsg/formsg/commit/59e008d6529b16ef0eb66a580c5e5de1e97d7c32))
+
 ## [9.84.0](https://github.com/opengovsg/formsg/compare/v9.83.0...v9.84.0) (2026-11-25)
 
 
