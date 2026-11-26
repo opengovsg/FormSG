@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.84.4](https://github.com/opengovsg/formsg/compare/v9.84.3...v9.84.4) (2026-11-26)
+
+
+### Bug Fixes
+
+* **mrf:** show legacy webhook toggle as on for unset format with a URL (#10674) ([#10674](https://github.com/opengovsg/formsg/commit/158603aa6af1912d5ad6894e06583bb9aed1ec2c))
+* **storage:** send email notifications even when the webhook fails (#10650) ([#10650](https://github.com/opengovsg/formsg/commit/1a57433d82b7ce5fb99528404e32f0f9757975af))
+
 ## [9.84.3](https://github.com/opengovsg/formsg/compare/v9.84.2...v9.84.3) (2026-11-26)
 
 
