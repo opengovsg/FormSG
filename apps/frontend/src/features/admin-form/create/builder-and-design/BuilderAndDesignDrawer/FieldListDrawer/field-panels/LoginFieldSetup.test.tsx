@@ -163,7 +163,8 @@ describe('login setup from fields', () => {
       'data-drag-disabled',
       'true',
     )
-    clickField()
+    const row = screen.getByRole('button', { name: 'NRIC/FIN' })
+    expect(fireEvent.dragStart(row)).toBe(false)
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
     expect(state.createField).not.toHaveBeenCalled()
     expect(state.workflowClick).not.toHaveBeenCalled()
@@ -245,7 +246,8 @@ describe('login setup from fields', () => {
       'data-drag-disabled',
       'true',
     )
-    clickField('Name')
+    const row = screen.getByRole('button', { name: 'Name' })
+    expect(fireEvent.dragStart(row)).toBe(false)
     expect(
       screen.getByRole('button', { name: 'Go to Login Settings' }),
     ).toBeInTheDocument()

@@ -50,6 +50,18 @@ const getDraggableAnimationProps = (
     : 'translate(0px, 0px)',
 })
 
+// Native dragstart fires after the browser recognises a drag gesture.
+const modalDragProps = (openModal: () => void): BoxProps => ({
+  draggable: true,
+  onPointerDown: (event) => {
+    event.currentTarget.draggable = event.pointerType === 'mouse'
+  },
+  onDragStart: (event) => {
+    event.preventDefault()
+    openModal()
+  },
+})
+
 interface FieldOptionProps extends BoxProps {
   isActive?: boolean
   isDisabled?: boolean
@@ -296,6 +308,7 @@ export const MyInfoFieldOption = forwardRef<MyInfoFieldOptionProps, 'button'>(
             }
           : {})}
         isDisabled={isDisabled}
+        {...(onSetup && !isDisabled ? modalDragProps(handleClick) : {})}
         onClick={handleClick}
         ref={ref}
       >
@@ -353,6 +366,9 @@ export const LoginIdentityFieldOption = forwardRef<
           }
         : {})}
       isDisabled={isDisabled}
+      {...((onSetup || onConvert) && !isDisabled
+        ? modalDragProps(handleClick)
+        : {})}
       onClick={handleClick}
       ref={ref}
     >

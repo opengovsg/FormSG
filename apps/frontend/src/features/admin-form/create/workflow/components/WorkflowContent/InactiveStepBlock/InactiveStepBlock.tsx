@@ -214,9 +214,10 @@ export const InactiveStepBlock = ({
             )}
           </Stack>
 
+          {isLoginShown && fieldsSection}
           {loginSection}
           {approvalsSection}
-          {fieldsSection}
+          {!isLoginShown && fieldsSection}
         </Stack>
       </chakra.button>
       <Icon
