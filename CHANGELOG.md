@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.84.5](https://github.com/opengovsg/formsg/compare/v9.84.4...v9.84.5) (2026-11-26)
+
+
+### Tests
+
+* **mrf:** expect legacy toggle on for unset format with a URL (#10675) ([#10675](https://github.com/opengovsg/formsg/commit/6044da6c1de411604b851994038a56ca6d5f4554))
+
 ## [9.84.4](https://github.com/opengovsg/formsg/compare/v9.84.3...v9.84.4) (2026-11-26)
 
 
