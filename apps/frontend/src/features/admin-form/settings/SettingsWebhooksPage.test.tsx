@@ -505,11 +505,14 @@ describe('legacy toggle decisions', () => {
       const toggle = screen.queryByRole('checkbox', {
         name: 'Use legacy webhooks',
       })
+      // An unset format with a URL is delivered as v1.
+      const effectiveFormat = format ?? (enabled && !url ? 'v4' : 'v1')
       if (!url.includes('plumber.gov.sg') && (enabled || format === 'v4')) {
         expect(toggle).toBeInTheDocument()
-        expect(toggle).toHaveProperty('checked', format === 'v1')
+        expect(toggle).toHaveProperty('checked', effectiveFormat === 'v1')
         // Multi-step forms can leave legacy but not enter it.
-        if (steps === 2 && format !== 'v1') expect(toggle).toBeDisabled()
+        if (steps === 2 && effectiveFormat !== 'v1')
+          expect(toggle).toBeDisabled()
         else expect(toggle).toBeEnabled()
       } else expect(toggle).not.toBeInTheDocument()
     },
