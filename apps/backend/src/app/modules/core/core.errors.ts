@@ -294,6 +294,8 @@ export enum ErrorCodes {
   // [190200 - 190299] Verified Content Errors (/modules/verified-content)
   VERIFIED_CONTENT_MALFORMED = 190200,
   VERIFIED_CONTENT_ENCRYPT_FAILURE = 190201,
+  // [190300 - 190399] OneMap Errors (/modules/onemap)
+  ONEMAP_REQUEST_FAILURE = 190300,
   // End of Other Errors -------------------------------------------------------
 }
 

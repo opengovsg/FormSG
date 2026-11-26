@@ -1,5 +1,6 @@
 import { Router } from 'express'
 
+import { AddressRouter } from './address'
 import { AdminRouter } from './admin'
 import { AnalyticsRouter } from './analytics'
 import { AuthRouter } from './auth'
@@ -33,3 +34,4 @@ V3Router.use('/feature-flags', FeatureFlagsRouter)
 V3Router.use('/intranet', IntranetRouter)
 V3Router.use('/status', StatusTrackerRouter)
 V3Router.use('/cron', CronRouter)
+V3Router.use('/address', AddressRouter)

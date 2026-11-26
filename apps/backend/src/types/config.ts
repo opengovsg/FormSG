@@ -76,6 +76,7 @@ export type RateLimitConfig = {
   makeVisionPrompt: number
   mrfPendingSubmissionEmailReminder: number
   analyticsEvents: number
+  postalCodeLookup: number
 }
 
 export type PublicApiConfig = {
@@ -243,6 +244,7 @@ export interface IOptionalVarsSchema {
     makeVisionPrompt: number
     mrfPendingSubmissionEmailReminder: number
     analyticsEvents: number
+    postalCodeLookup: number
   }
   iacMigration: {
     // TODO: (IaC Migration) Remove this after IaC migration is fully completed

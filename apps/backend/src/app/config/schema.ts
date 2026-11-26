@@ -480,6 +480,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 60,
       env: 'ANALYTICS_EVENTS_RATE_LIMIT',
     },
+    postalCodeLookup: {
+      doc: 'Per-minute, per-IP, per-instance request limit for postal code address lookups',
+      format: 'int',
+      default: 30,
+      env: 'POSTAL_CODE_LOOKUP_RATE_LIMIT',
+    },
   },
   iacMigration: {
     isMigrated: {
