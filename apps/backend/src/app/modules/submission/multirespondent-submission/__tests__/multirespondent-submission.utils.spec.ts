@@ -826,6 +826,116 @@ describe('multirespondent-submission.utils', () => {
         isVisible: true,
       })
     })
+
+    describe('required fields left out of the submission', () => {
+      const mockFormId = 'mockFormId'
+      const requiredFieldId = new ObjectId().toHexString()
+      const optionalFieldId = new ObjectId().toHexString()
+      const mockFormFields = [
+        generateDefaultField(BasicField.ShortText, {
+          _id: requiredFieldId,
+          required: true,
+        }),
+        generateDefaultField(BasicField.ShortText, {
+          _id: optionalFieldId,
+          required: false,
+        }),
+      ] as FormFieldDto[]
+      const optionalOnlyResponses = {
+        [optionalFieldId]: {
+          fieldType: BasicField.ShortText,
+          question: 'Optional',
+          answer: { value: 'answered' },
+          provenance: {},
+        },
+      } as unknown as ParsedClearFormFieldResponsesV4
+
+      const act = ({
+        visibleFieldIds = new Set([requiredFieldId, optionalFieldId]),
+        stepFieldIds = new Set([requiredFieldId, optionalFieldId]),
+        formFields = mockFormFields,
+      }: {
+        visibleFieldIds?: Set<string>
+        stepFieldIds?: Set<string>
+        formFields?: FormFieldDto[]
+      } = {}) =>
+        validateMrfFieldResponses({
+          formId: mockFormId,
+          visibleFieldIds,
+          formFields,
+          responses: optionalOnlyResponses,
+          stepFieldIds,
+          ...CHILDREN_GATE_CLOSED,
+        })
+
+      beforeEach(() => {
+        jest.spyOn(fieldValidation, 'validateFieldV4').mockReturnValue(ok(true))
+      })
+
+      it('should return error when a required, visible, editable field is missing', () => {
+        const result = act()
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(ValidateFieldErrorV4)
+      })
+
+      it('should accept when the missing required field is hidden by logic', () => {
+        const result = act({ visibleFieldIds: new Set([optionalFieldId]) })
+
+        expect(result.isOk()).toBe(true)
+      })
+
+      it('should accept when the missing required field is not editable in this step', () => {
+        const result = act({ stepFieldIds: new Set([optionalFieldId]) })
+
+        expect(result.isOk()).toBe(true)
+      })
+
+      it('should return error when a table field with a required column is missing', () => {
+        const tableFieldId = new ObjectId().toHexString()
+        const formFields = [
+          ...mockFormFields.slice(1),
+          generateDefaultField(BasicField.Table, {
+            _id: tableFieldId,
+            required: false,
+            columns: [
+              {
+                _id: new ObjectId().toHexString(),
+                title: 'Col',
+                required: true,
+                columnType: BasicField.ShortText,
+              },
+            ],
+          }),
+        ] as FormFieldDto[]
+
+        const result = act({
+          formFields,
+          visibleFieldIds: new Set([tableFieldId, optionalFieldId]),
+          stepFieldIds: new Set([tableFieldId, optionalFieldId]),
+        })
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(ValidateFieldErrorV4)
+      })
+
+      it('should ignore fields that take no answer', () => {
+        const statementFieldId = new ObjectId().toHexString()
+        const formFields = [
+          ...mockFormFields.slice(1),
+          generateDefaultField(BasicField.Statement, {
+            _id: statementFieldId,
+            required: true,
+          }),
+        ] as FormFieldDto[]
+
+        const result = act({
+          formFields,
+          visibleFieldIds: new Set([statementFieldId, optionalFieldId]),
+          stepFieldIds: new Set([statementFieldId, optionalFieldId]),
+        })
+
+        expect(result.isOk()).toBe(true)
+      })
+    })
   })
 
   describe('adaptV4ResponsesForMyInfoHashCheck', () => {
