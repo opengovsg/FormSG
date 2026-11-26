@@ -95,33 +95,34 @@ export const AddressCompoundField = ({
       // Call the service to verify the address
       const result = await verifyAddress(postalCode)
 
-      if (result.success && result.data) {
+      if (result.success) {
         setValue(
           `${schema._id}.addressSubFields.blockNumber`,
-          result.data?.blockNumber,
+          result.data.blockNumber,
         )
         setValue(
           `${schema._id}.addressSubFields.streetName`,
-          result.data?.streetName,
+          result.data.streetName,
         )
         await trigger([
           `${schema._id}.addressSubFields.blockNumber`,
           `${schema._id}.addressSubFields.streetName`,
         ]) // clear errors if first verification failed
       } else {
-        if (!result.success) {
-          setError(`${schema._id}.addressSubFields.blockNumber`, {
-            type: 'manual',
-            message: t('validPostalCodeNoAddress'),
-          })
-          setError(`${schema._id}.addressSubFields.streetName`, {
-            type: 'manual',
-            message: t('validPostalCodeNoAddress'),
-          })
-          setValue(`${schema._id}.addressSubFields.blockNumber`, '') // reset values if verification failure
-          setValue(`${schema._id}.addressSubFields.streetName`, '')
-          await trigger([`${schema._id}.addressSubFields.postalCode`]) // show postalCode error upon verification failure
-        }
+        const message = result.isUnavailable
+          ? t('postalCodeLookupUnavailable')
+          : t('validPostalCodeNoAddress')
+        setError(`${schema._id}.addressSubFields.blockNumber`, {
+          type: 'manual',
+          message,
+        })
+        setError(`${schema._id}.addressSubFields.streetName`, {
+          type: 'manual',
+          message,
+        })
+        setValue(`${schema._id}.addressSubFields.blockNumber`, '') // reset values if verification failure
+        setValue(`${schema._id}.addressSubFields.streetName`, '')
+        await trigger([`${schema._id}.addressSubFields.postalCode`]) // show postalCode error upon verification failure
       }
     }
 

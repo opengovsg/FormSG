@@ -50,7 +50,6 @@ export const CSP_CORE_DIRECTIVES = {
     'https://*.google-analytics.com',
     'https://*.analytics.google.com',
     'https://*.googletagmanager.com',
-    'https://www.onemap.gov.sg/api/',
     ...(growthbookConfig.growthbookApiHost
       ? [growthbookConfig.growthbookApiHost]
       : []),

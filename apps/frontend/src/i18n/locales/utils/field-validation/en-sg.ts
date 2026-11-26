@@ -156,6 +156,7 @@ interface AddressFieldValidation {
   invalidBlockUnit: string
   invalidLevelUnit: string
   validPostalCodeNoAddress: string
+  postalCodeLookupUnavailable: string
 }
 
 const addressFieldValidation: AddressFieldValidation = {
@@ -165,6 +166,8 @@ const addressFieldValidation: AddressFieldValidation = {
   invalidLevelUnit: 'Please include both level and unit number',
   validPostalCodeNoAddress:
     'Address cannot be found. Please fill in details manually',
+  postalCodeLookupUnavailable:
+    'Address lookup is unavailable right now. Please fill in details manually',
 }
 
 export type FieldValidation = BaseValidation &

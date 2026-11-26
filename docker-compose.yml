@@ -118,6 +118,9 @@ services:
       - CRON_SCHEDULED_CLOSURE_API_SECRET=secretKey
       # env vars for go integration
       - GOGOV_API_KEY
+      # env vars for OneMap postal code lookup
+      - ONEMAP_EMAIL
+      - ONEMAP_PASSWORD
       # Bearer token API key format
       - API_KEY_VERSION=v1
       # env vars for growthbook (development client keys are non-sensitive)

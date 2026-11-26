@@ -192,19 +192,16 @@ ValidPostalCodeApiFail.args = {
   },
 }
 
-// OneMap is a live third-party API, so answer it locally with no results.
 ValidPostalCodeApiFail.parameters = {
   msw: {
     handlers: {
-      oneMap: http.get(
-        'https://www.onemap.gov.sg/api/common/elastic/search',
+      postalCodeLookup: http.get(
+        '/api/v3/address/postal-codes/:postalCode',
         () =>
-          HttpResponse.json({
-            found: 0,
-            totalNumPages: 0,
-            pageNum: 1,
-            results: [],
-          }),
+          HttpResponse.json(
+            { message: 'No address found for this postal code' },
+            { status: 404 },
+          ),
       ),
     },
   },

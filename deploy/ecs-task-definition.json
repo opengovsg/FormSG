@@ -103,6 +103,14 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/GOGOV_API_KEY"
         },
         {
+          "name": "ONEMAP_EMAIL",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/ONEMAP_EMAIL"
+        },
+        {
+          "name": "ONEMAP_PASSWORD",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/ONEMAP_PASSWORD"
+        },
+        {
           "name": "CRON_PAYMENT_API_SECRET",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/CRON_PAYMENT_API_SECRET"
         },

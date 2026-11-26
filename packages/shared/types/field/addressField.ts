@@ -13,3 +13,8 @@ export type AddressAttributes = {
   levelNumber: string
   unitNumber: string
 }
+
+export type PostalCodeAddressDto = Pick<
+  AddressAttributes,
+  'postalCode' | 'blockNumber' | 'streetName'
+>
