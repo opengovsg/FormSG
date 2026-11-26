@@ -77,6 +77,7 @@ describe('validation required', () => {
   it('renders failed api resp when api fails to grab address info', async () => {
     ;(verifyAddress as jest.Mock).mockResolvedValue({
       success: false,
+      isUnavailable: false,
     })
     const user = userEvent.setup()
     render(<ValidPostalCodeApiFail />)
@@ -85,6 +86,22 @@ describe('validation required', () => {
     await user.click(verifyButton)
     const error = screen.getAllByText(
       fieldValidationTranslation.validPostalCodeNoAddress,
+    )
+    expect(error).toHaveLength(2)
+  })
+
+  it('renders lookup unavailable when the address lookup is down', async () => {
+    ;(verifyAddress as jest.Mock).mockResolvedValue({
+      success: false,
+      isUnavailable: true,
+    })
+    const user = userEvent.setup()
+    render(<ValidPostalCodeApiFail />)
+    const verifyButton = screen.getByRole('button', { name: /Find Address/i })
+
+    await user.click(verifyButton)
+    const error = screen.getAllByText(
+      fieldValidationTranslation.postalCodeLookupUnavailable,
     )
     expect(error).toHaveLength(2)
   })
