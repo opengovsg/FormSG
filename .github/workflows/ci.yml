@@ -376,4 +376,5 @@ jobs:
       - run: pnpm test:sdk:coverage
         env:
           DD_TAGS: layer:sdk
+          DD_CIVISIBILITY_ITR_ENABLED: 'false'
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
