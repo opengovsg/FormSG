@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useParams } from 'react-router'
 import {
   Box,
   Flex,
@@ -19,6 +20,7 @@ import Button from '~components/Button'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { PaymentSummary } from '../../components'
+import { confirmPayment } from '../../FormPaymentService'
 
 interface PaymentPageBlockProps {
   paymentInfoData: GetPaymentInfoDto
@@ -31,24 +33,28 @@ interface PaymentPageBlockProps {
 }
 
 interface StripeCheckoutFormProps {
+  paymentInfoData: GetPaymentInfoDto
   isRetry?: boolean
   colorTheme: FormColorTheme
   triggerPaymentStatusRefetch: () => void
 }
 
 const StripeCheckoutForm = ({
+  paymentInfoData,
   colorTheme,
   isRetry,
   triggerPaymentStatusRefetch,
 }: StripeCheckoutFormProps) => {
   const { formId } = usePublicFormContext()
+  const { paymentId } = useParams()
   const stripe = useStripe()
   const elements = useElements()
 
   const [stripeMessage, setStripeMessage] = useState('')
   const [isStripeProcessing, setIsStripeProcessing] = useState(false)
   const [, , clearPaymentMemory] = useBrowserStm(formId)
-  const [isPaynow, setIsPayNow] = useState(false)
+  const [paymentMethodType, setPaymentMethodType] = useState('')
+  const isPaynow = paymentMethodType === 'paynow'
 
   useEffect(() => {
     if (isRetry) {
@@ -56,36 +62,67 @@ const StripeCheckoutForm = ({
     }
   }, [isRetry])
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    // We don't want to let default form submission happen here,
-    // which would refresh the page.
-    event.preventDefault()
-    setIsStripeProcessing(true)
-    setStripeMessage('')
+  const confirmOnServer = async () => {
+    if (!stripe || !elements || !paymentId) return
 
-    if (!stripe || !elements) {
-      return null
-      // Stripe.js has not yet loaded.
-      // Make sure to disable form submission until Stripe.js has loaded.
+    const paymentMethodResult = await stripe.createPaymentMethod({ elements })
+    if (paymentMethodResult.error) {
+      setStripeMessage(paymentMethodResult.error.message ?? '')
+      return
     }
 
-    const result = await stripe.confirmPayment({
-      //`Elements` instance that was used to create the Payment Element
-      elements,
-      confirmParams: {
-        // 1. Responders should return back to the same payment page to view the receipt
-        // 2. Your customer will be redirected to your `return_url`. For some payment
-        //    methods like iDEAL, your customer will be redirected to an intermediate
-        //    site first to authorize the payment, then redirected to the `return_url`.
-        return_url: window.location.href,
-      },
+    try {
+      const confirmResult = await confirmPayment(
+        paymentId,
+        paymentMethodResult.paymentMethod.id,
+      )
+      if (
+        confirmResult.status === 'requires_action' &&
+        confirmResult.client_secret
+      ) {
+        const nextActionResult = await stripe.handleNextAction({
+          clientSecret: confirmResult.client_secret,
+        })
+        if (nextActionResult.error) {
+          setStripeMessage(nextActionResult.error.message ?? '')
+          return
+        }
+      }
+      triggerPaymentStatusRefetch()
+      clearPaymentMemory()
+    } catch (error) {
+      setStripeMessage(error instanceof Error ? error.message : String(error))
+    }
+  }
 
-      // The default is `redirect?: 'always'` and this will introduce
-      // a bad UX of triggering a page reload of the same page.
-      // By setting if_required we can control when it reloads,
-      // which is after the payment had completed successfully.
-      redirect: 'if_required',
-    })
+  const confirmOnClient = async () => {
+    if (!stripe || !elements) return
+
+    const confirmParams = {
+      // 1. Responders should return back to the same payment page to view the receipt
+      // 2. Your customer will be redirected to your `return_url`. For some payment
+      //    methods like iDEAL, your customer will be redirected to an intermediate
+      //    site first to authorize the payment, then redirected to the `return_url`.
+      return_url: window.location.href,
+    }
+
+    // The default is `redirect?: 'always'` and this will introduce
+    // a bad UX of triggering a page reload of the same page.
+    // By setting if_required we can control when it reloads,
+    // which is after the payment had completed successfully.
+    const result =
+      paymentInfoData.use_server_confirmation && paymentInfoData.client_secret
+        ? await stripe.confirmPayment({
+            elements,
+            clientSecret: paymentInfoData.client_secret,
+            confirmParams,
+            redirect: 'if_required',
+          })
+        : await stripe.confirmPayment({
+            elements,
+            confirmParams,
+            redirect: 'if_required',
+          })
 
     if (result.error && result.error.message) {
       setStripeMessage(result.error.message)
@@ -95,7 +132,45 @@ const StripeCheckoutForm = ({
       triggerPaymentStatusRefetch()
       clearPaymentMemory()
     }
-    setIsStripeProcessing(false)
+  }
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    // We don't want to let default form submission happen here,
+    // which would refresh the page.
+    event.preventDefault()
+
+    if (!stripe || !elements) {
+      return null
+      // Stripe.js has not yet loaded.
+      // Make sure to disable form submission until Stripe.js has loaded.
+    }
+
+    setIsStripeProcessing(true)
+    setStripeMessage('')
+
+    try {
+      if (paymentInfoData.use_server_confirmation) {
+        const submitResult = await elements.submit()
+        if (submitResult.error) {
+          setStripeMessage(submitResult.error.message ?? '')
+          return
+        }
+      }
+
+      if (
+        paymentInfoData.use_server_confirmation &&
+        paymentMethodType === 'card' &&
+        paymentId
+      ) {
+        await confirmOnServer()
+      } else {
+        await confirmOnClient()
+      }
+    } catch (error) {
+      setStripeMessage(error instanceof Error ? error.message : String(error))
+    } finally {
+      setIsStripeProcessing(false)
+    }
   }
 
   return (
@@ -103,11 +178,7 @@ const StripeCheckoutForm = ({
       <FormControl isInvalid={stripeMessage !== ''}>
         <PaymentElement
           onChange={(e) => {
-            if (e.value.type === 'paynow') {
-              setIsPayNow(true)
-            } else {
-              setIsPayNow(false)
-            }
+            setPaymentMethodType(e.value.type)
           }}
         />
         {stripeMessage !== '' ? (
@@ -184,6 +255,7 @@ export const StripePaymentBlock = ({
           />
         </Box>
         <StripeCheckoutForm
+          paymentInfoData={paymentInfoData}
           colorTheme={colorTheme}
           isRetry={isRetry}
           triggerPaymentStatusRefetch={triggerPaymentStatusRefetch}
