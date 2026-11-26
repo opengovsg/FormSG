@@ -1,11 +1,16 @@
 import { composeStories } from '@storybook/react-vite'
-import { act, render, screen } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 
 import { useAdminWorkflowStore } from '../../../adminWorkflowStore'
 import * as pageStories from '../../../CreatePageWorkflowTab.stories'
 
-const { Step1FieldsPickedOutOfOrder, Step2NoEmails, WithWorkflow } =
-  composeStories(pageStories)
+const {
+  Step1FieldsPickedOutOfOrder,
+  Step2NoEmails,
+  Step3Approval,
+  StepLoginMixedProviders,
+  WithWorkflow,
+} = composeStories(pageStories)
 
 const NO_EMAILS = /no emails added/i
 
@@ -41,6 +46,32 @@ describe('inactive step respondent badges', () => {
     ).toBeInTheDocument()
     expect(screen.queryByText(NO_EMAILS)).not.toBeInTheDocument()
   })
+
+  it.each([
+    ['stacked', Step3Approval, true, 'Fields to fill'],
+    ['accordion', StepLoginMixedProviders, false, 'Assigned fields'],
+  ] as const)(
+    'matches the %s editor section order',
+    async (_, Story, approvalFirst, fieldsLabel) => {
+      await act(async () => {
+        render(<Story />)
+      })
+      const card = within(
+        await screen.findByRole(
+          'button',
+          { name: /approvals/i },
+          { timeout: 10000 },
+        ),
+      )
+      const approval = card.getByText('Approvals')
+      const fields = card.getByText(fieldsLabel)
+      expect(approval.compareDocumentPosition(fields)).toBe(
+        approvalFirst
+          ? Node.DOCUMENT_POSITION_FOLLOWING
+          : Node.DOCUMENT_POSITION_PRECEDING,
+      )
+    },
+  )
 
   it('lists the fields in question order, not the order they were picked', async () => {
     await act(async () => {
