@@ -107,10 +107,8 @@ export const WebhooksSection = (): JSX.Element => {
               description={t(
                 'features.adminForm.settings.webhooks.legacy.description',
               )}
-              isChecked={settings?.webhook.webhookFormat === 'v1'}
-              isDisabled={
-                hasMultipleSteps && settings?.webhook.webhookFormat !== 'v1'
-              }
+              isChecked={effectiveFormat === 'v1'}
+              isDisabled={hasMultipleSteps && effectiveFormat !== 'v1'}
               isLoading={mutateWebhookFormat.isLoading}
               onChange={(event) =>
                 mutateWebhookFormat.mutate(event.target.checked ? 'v1' : 'v4')
