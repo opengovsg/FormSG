@@ -322,6 +322,7 @@ V4Webhook.decorators = [withV4Webhooks]
 V4Webhook.parameters = webhookWorkflowParameters(
   1,
   'https://webhook.site/c0b42763-e934-4a48-9b1e-745690a10f81',
+  'v4',
 )
 
 export const MultiStepV4Webhook = Template.bind({})
