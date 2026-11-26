@@ -24,10 +24,6 @@ import { PossibleDatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import { isFormEncryptMode } from '../../form/form.utils'
-import {
-  WebhookPushToQueueError,
-  WebhookValidationError,
-} from '../../webhook/webhook.errors'
 import { WebhookFactory } from '../../webhook/webhook.factory'
 import { MYINFO_PREFIX } from '../email-submission/email-submission.constants'
 import * as EmailSubmissionService from '../email-submission/email-submission.service'
@@ -35,7 +31,6 @@ import { SubmissionEmailObj } from '../email-submission/email-submission.util'
 import {
   ResponseModeError,
   SendEmailConfirmationError,
-  SubmissionNotFoundError,
   UnsupportedSettingsError,
 } from '../submission.errors'
 import { sendEmailConfirmations } from '../submission.service'
@@ -194,9 +189,6 @@ const generatePdfAttachmentIfRequired = ({
  * @returns ok(true) if all actions were completed successfully
  * @returns err(FormNotFoundError) if the form or form admin does not exist
  * @returns err(ResponseModeError) if the form is not encrypt mode
- * @returns err(WebhookValidationError) if the webhook URL failed validation
- * @returns err(WebhookPushToQueueError) if the webhook was failed to be pushed to SQS
- * @returns err(SubmissionNotFoundError) if there was an error updating the submission with the webhook record
  * @returns err(SendEmailConfirmationError) if any email failed to be sent
  * @returns err(PossibleDatabaseError) if error occurs whilst querying the database
  */
@@ -218,10 +210,7 @@ export const performEncryptPostSubmissionActions = ({
   true,
   | FormNotFoundError
   | ResponseModeError
-  | WebhookValidationError
-  | WebhookPushToQueueError
   | SendEmailConfirmationError
-  | SubmissionNotFoundError
   | PossibleDatabaseError
 > => {
   const logMeta = {
@@ -242,7 +231,17 @@ export const performEncryptPostSubmissionActions = ({
         submission,
         webhookUrl,
         !!form.webhook?.isRetryEnabled,
-      ).andThen(() => okAsync(form))
+      )
+        .orElse((error) => {
+          logger.error({
+            message:
+              'Error while sending initial webhook, continuing with email notifications',
+            meta: logMeta,
+            error,
+          })
+          return okAsync(true as const)
+        })
+        .map(() => form)
     })
     .andThen((form) => {
       // Add formId, adminEmail and adminAgency to growthbook attributes to allow for targeting in growthbook feature flags

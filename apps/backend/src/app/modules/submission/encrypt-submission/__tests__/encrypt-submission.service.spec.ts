@@ -15,6 +15,8 @@ import { errAsync, ok, okAsync } from 'neverthrow'
 
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
 import * as FormService from 'src/app/modules/form/form.service'
+import { WebhookValidationError } from 'src/app/modules/webhook/webhook.errors'
+import { WebhookFactory } from 'src/app/modules/webhook/webhook.factory'
 import { AutoreplyPdfGenerationError } from 'src/app/services/mail/mail.errors'
 import MailService from 'src/app/services/mail/mail.service'
 import * as MailUtils from 'src/app/services/mail/mail.utils'
@@ -37,9 +39,11 @@ const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 jest.mock('src/app/services/mail/mail.service')
 jest.mock('src/app/modules/form/form.service')
 jest.mock('src/app/services/mail/mail.utils')
+jest.mock('src/app/modules/webhook/webhook.factory')
 const MockMailService = jest.mocked(MailService)
 const MockFormService = jest.mocked(FormService)
 const MockMailUtils = jest.mocked(MailUtils)
+const MockWebhookFactory = jest.mocked(WebhookFactory)
 
 describe('encrypt-submission.service', () => {
   beforeAll(async () => await dbHandler.connect())
@@ -520,6 +524,75 @@ describe('encrypt-submission.service', () => {
 
         // Assert
         expect(MockMailService.sendAutoReplyEmails).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('webhook', () => {
+      const MOCK_WEBHOOK_FORM = {
+        ...MOCK_NON_PAYMENT_ENCRYPT_FORM,
+        webhook: { url: 'https://example.com/webhook', isRetryEnabled: false },
+      } as IPopulatedEncryptedForm
+
+      const mockSubmission = {
+        id: MOCK_SUBMISSION_ID,
+        form: new ObjectId(),
+        created: new Date(),
+      } as IEncryptedSubmissionSchema
+
+      beforeEach(() => {
+        jest.clearAllMocks()
+        MockMailService.sendSubmissionToAdmin.mockReturnValue(okAsync(true))
+        MockFormService.retrieveFullFormById.mockReturnValue(
+          okAsync(MOCK_WEBHOOK_FORM),
+        )
+        MockMailUtils.generateAutoreplyPdf.mockReturnValue(
+          okAsync(MOCK_PDF_ATTACHMENT_BUFFER),
+        )
+      })
+
+      it('should still send the admin notification email when the webhook fails', async () => {
+        // Arrange
+        MockWebhookFactory.sendInitialWebhook.mockReturnValue(
+          errAsync(new WebhookValidationError()),
+        )
+
+        // Act
+        const postSubmissionActionStatus =
+          await performEncryptPostSubmissionActions({
+            submission: mockSubmission,
+            responses: [],
+            emailFields: [],
+            submissionAttachments: [],
+            respondentEmails: [],
+          })
+
+        // Assert
+        expect(postSubmissionActionStatus).toEqual(ok(true))
+        expect(MockWebhookFactory.sendInitialWebhook).toHaveBeenCalledWith(
+          mockSubmission,
+          MOCK_WEBHOOK_FORM.webhook.url,
+          false,
+        )
+        expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
+      })
+
+      it('should send the admin notification email when the webhook succeeds', async () => {
+        // Arrange
+        MockWebhookFactory.sendInitialWebhook.mockReturnValue(okAsync(true))
+
+        // Act
+        const postSubmissionActionStatus =
+          await performEncryptPostSubmissionActions({
+            submission: mockSubmission,
+            responses: [],
+            emailFields: [],
+            submissionAttachments: [],
+            respondentEmails: [],
+          })
+
+        // Assert
+        expect(postSubmissionActionStatus).toEqual(ok(true))
+        expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
       })
     })
 
