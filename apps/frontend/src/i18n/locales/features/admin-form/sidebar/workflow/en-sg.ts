@@ -221,20 +221,11 @@ export const enSG: Workflow = {
       description: 'Manage authentication for each step in your workflow.',
       editWorkflow: 'Edit your full workflow ↗',
       addStep: 'Go to workflows to add a new step',
-      notEnabled: 'No login enabled',
       closeFormToEdit: 'Close your form to change authentication settings.',
       saved: 'Authentication settings saved.',
       saveFailed: 'Unable to save settings.',
-      restrictionsFailed:
-        'The login was saved, but some Step 1 restrictions could not be saved. {message} Review the saved settings before trying again.',
       confirmSwitchFirst:
         'Confirm or cancel the authentication change before leaving this card.',
-      checkBeforeSaving: 'Check the authentication settings before saving.',
-      deleteNotice:
-        'Confirmed fields will be deleted from the form when you save or navigate away.',
-      unassignNotice:
-        'Incompatible fields will be unassigned when you save or navigate away. They remain in the form.',
-      ariaLabelName: 'authentication settings',
     },
     unassignedNotice:
       'Incompatible fields are unassigned in this draft. Confirmed field deletions apply only when you save or navigate away.',
@@ -262,28 +253,28 @@ export const enSG: Workflow = {
     },
     switchConfirmation: {
       noAuthentication: 'no authentication',
-      titleTurnOff: 'Turn off authentication',
+      titleTurnOff: 'Turn off logins',
       titleSwitch: 'Switch to {provider}',
+      titleDeleteSwitch: 'Switch to {provider} and delete {current} fields',
       assignedField:
         '"{field}" needs {provider}. Switching this step to {provider} assigns it to this step.',
       deleteBodyTurnOff:
-        'This is the only step using {current}. Turning off authentication means these {current} fields can no longer be used:',
+        'This is your only step using {current}. If you turn off logins, FormSG will automatically delete these fields from your form:',
       deleteBodySwitch:
-        'This is the only step using {current}. Switching to {provider} means these {current} fields can no longer be used:',
+        'This is your only step using {current}. If you switch to {provider}, FormSG will automatically delete these fields from your form:',
       unassignBodyTurnOff:
         'These fields need {current}, so they cannot be filled in on a step without authentication:',
       unassignBodySwitch:
         'These fields need {current}, so they cannot be filled in on a step using {provider}:',
       affectedRules: 'References to these fields will also be removed from:',
-      deleteNote:
-        'These fields will be deleted from your form when you save this step or navigate away. Past responses will be kept.',
+      deleteNote: 'Past responses will be kept.',
       unassignNote:
         'These fields will be unassigned from this step when you save or navigate away. They will stay in your form.',
       cancel: 'Cancel',
       confirmAssign: 'Switch to {provider} and assign field',
-      confirmDeleteTurnOff: 'Delete fields and turn off',
+      confirmDeleteTurnOff: 'Delete fields',
       confirmUnassignTurnOff: 'Unassign fields and turn off',
-      confirmDeleteSwitch: 'Delete fields and switch to {provider}',
+      confirmDeleteSwitch: 'Delete {current} fields',
       confirmUnassignSwitch: 'Unassign fields and switch to {provider}',
     },
   },

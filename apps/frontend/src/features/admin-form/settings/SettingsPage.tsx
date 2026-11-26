@@ -125,7 +125,9 @@ export const SettingsPage = (): JSX.Element => {
 
   return (
     <Box
-      overflow="hidden"
+      data-testid="settings-shell"
+      // clip, not hidden: focus can still scroll a hidden box
+      overflow="clip"
       display="flex"
       flexDirection="column"
       minH={0}
@@ -184,6 +186,7 @@ export const SettingsPage = (): JSX.Element => {
           </AdminFormSideNav>
         )}
         <Box
+          data-testid="settings-content"
           flex={1}
           minW={0}
           overflowY="auto"

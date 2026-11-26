@@ -1,3 +1,4 @@
+import { KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, FormControl, FormLabel, Stack } from '@chakra-ui/react'
 
@@ -17,17 +18,46 @@ import { LoginOptionLabel } from './LoginOptionLabel'
 
 const COPY_KEY = 'features.adminForm.sidebar.workflow.stepLogin'
 
+const ARROW_STEPS: Record<string, number> = {
+  ArrowDown: 1,
+  ArrowRight: 1,
+  ArrowUp: -1,
+  ArrowLeft: -1,
+}
+
+const getRadioTarget = ({ target }: KeyboardEvent<HTMLElement>) =>
+  target instanceof HTMLInputElement && target.type === 'radio' ? target : null
+
+const moveRadioFocusWithoutChecking = (event: KeyboardEvent<HTMLElement>) => {
+  const radio = getRadioTarget(event)
+  const step = ARROW_STEPS[event.key]
+  if (!radio || !step) return
+  event.preventDefault()
+  event.stopPropagation()
+  const radios = Array.from(
+    event.currentTarget.querySelectorAll<HTMLInputElement>(
+      'input[type="radio"]:not(:disabled)',
+    ),
+  )
+  const current = radios.indexOf(radio)
+  if (current < 0) return
+  radios[(current + step + radios.length) % radios.length].focus()
+}
+
 export interface StepLoginControlsProps {
   authType: FormAuthType
   savedAuthType: FormAuthType
   esrvcId: string
   onAuthTypeChange: (authType: FormAuthType) => void
   onEsrvcIdChange: (esrvcId: string) => void
+  isProviderDisabled?: boolean
   isDisabled: boolean
   isLoading?: boolean
   disabledReason?: string
   isHeading?: boolean
   idPrefix: string
+  commitOnActivation?: boolean
+  onEsrvcIdCommit?: () => void
 }
 
 export const StepLoginControls = ({
@@ -37,10 +67,13 @@ export const StepLoginControls = ({
   onAuthTypeChange,
   onEsrvcIdChange,
   isDisabled,
+  isProviderDisabled = isDisabled,
   isLoading = false,
   disabledReason,
   isHeading = false,
   idPrefix,
+  commitOnActivation = false,
+  onEsrvcIdCommit,
 }: StepLoginControlsProps): JSX.Element => {
   const { t } = useTranslation()
   const isEsrvcIdInvalid = !isValidEsrvcId(esrvcId)
@@ -54,7 +87,7 @@ export const StepLoginControls = ({
       <FormLabel
         id={`${idPrefix}-login-label`}
         mb="1rem"
-        {...(isHeading ? textStyles.h4 : {})}
+        style={isHeading ? textStyles.h4 : undefined}
       >
         {t(`${COPY_KEY}.stepQuestion`)}
       </FormLabel>
@@ -63,13 +96,28 @@ export const StepLoginControls = ({
         aria-labelledby={`${idPrefix}-login-label`}
         value={authType}
         onChange={(next: FormAuthType) => onAuthTypeChange(next)}
+        onKeyDownCapture={
+          commitOnActivation ? moveRadioFocusWithoutChecking : undefined
+        }
+        onKeyDown={
+          commitOnActivation
+            ? (event) => {
+                const radio = getRadioTarget(event)
+                if (!radio || (event.key !== 'Enter' && event.key !== ' '))
+                  return
+                if (isProviderDisabled || isLoading) return
+                event.preventDefault()
+                onAuthTypeChange(radio.value as FormAuthType)
+              }
+            : undefined
+        }
       >
         {getLoginOptionsKeepingLegacySingpass(savedAuthType).map((option) => (
           <Box key={option}>
             <Radio
               value={option}
               allowDeselect={false}
-              isDisabled={isDisabled || isLoading}
+              isDisabled={isProviderDisabled || isLoading}
             >
               <LoginOptionLabel authType={option} />
             </Radio>
@@ -87,6 +135,17 @@ export const StepLoginControls = ({
                     value={esrvcId}
                     placeholder={t(`${COPY_KEY}.esrvcIdPlaceholder`)}
                     onChange={(e) => onEsrvcIdChange(e.target.value)}
+                    onBlur={onEsrvcIdCommit}
+                    onKeyDown={
+                      onEsrvcIdCommit
+                        ? (event) => {
+                            if (event.key === 'Enter') {
+                              event.preventDefault()
+                              onEsrvcIdCommit()
+                            }
+                          }
+                        : undefined
+                    }
                   />
                   <FormErrorMessage>
                     {t(`${COPY_KEY}.esrvcIdWhitespace`)}

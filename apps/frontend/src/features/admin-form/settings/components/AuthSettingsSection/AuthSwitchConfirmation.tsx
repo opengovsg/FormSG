@@ -73,7 +73,10 @@ export const AuthSwitchConfirmation = ({
         <ModalHeader>
           {isTurningOff
             ? t(`${COPY_KEY}.titleTurnOff`)
-            : t(`${COPY_KEY}.titleSwitch`, { provider })}
+            : t(
+                `${COPY_KEY}.${deleteFields && fields.length > 0 ? 'titleDeleteSwitch' : 'titleSwitch'}`,
+                { current, provider },
+              )}
         </ModalHeader>
         <ModalBody>
           <Stack spacing="1rem">
@@ -152,7 +155,7 @@ export const AuthSwitchConfirmation = ({
                       : deleteFields
                         ? `${COPY_KEY}.confirmDeleteSwitch`
                         : `${COPY_KEY}.confirmUnassignSwitch`,
-                    { provider },
+                    { current, provider },
                   )}
             </Button>
           </Stack>
