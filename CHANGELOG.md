@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.84.2](https://github.com/opengovsg/formsg/compare/v9.84.1...v9.84.2) (2026-11-26)
+
+
+### Bug Fixes
+
+* **public-form:** look up postal codes through a backend OneMap proxy (#10670) ([#10670](https://github.com/opengovsg/formsg/commit/9d492c9256c8a164bdd6b7c9e9cc5880b5c97935))
+
+
+### CI
+
+* **preview:** build a Render preview on every team PR (#10660) ([#10660](https://github.com/opengovsg/formsg/commit/bc29e3cc2b93d3dbd732a2c1a83b9167c19092e3))
+
 ## [9.84.1](https://github.com/opengovsg/formsg/compare/v9.84.0...v9.84.1) (2026-11-25)
 
 
