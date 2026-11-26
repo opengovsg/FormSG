@@ -21,7 +21,12 @@ import {
 import { DateString } from '../generic'
 import { CheckboxFieldResponsesV3 } from '../response-v3'
 import { FormLogic, LogicDto } from './form_logic'
-import { PaymentChannel, PaymentMethodType, PaymentType } from '../payment'
+import {
+  PaymentCardBrand,
+  PaymentChannel,
+  PaymentMethodType,
+  PaymentType,
+} from '../payment'
 import { Product } from './product'
 import {
   FormWorkflow,
@@ -143,6 +148,11 @@ export type FormPaymentsChannel = {
   channel: PaymentChannel
   target_account_id: string
   publishable_key: string
+  /**
+   * Merchant category codes to apply per card brand when this form's payments
+   * are confirmed on the server. Not writable through form settings.
+   */
+  mcc_by_card_brand?: Partial<Record<PaymentCardBrand, string>>
 }
 
 export interface PaymentTypeBase {

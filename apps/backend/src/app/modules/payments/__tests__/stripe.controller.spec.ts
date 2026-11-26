@@ -1,7 +1,8 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson'
-import { FormResponseMode } from 'formsg-shared/types'
+import { featureFlags } from 'formsg-shared/constants'
+import { FormResponseMode, PaymentChannel } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
@@ -15,6 +16,8 @@ import { IPopulatedForm } from 'src/types'
 import config from '../../../config/config'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
+import * as PendingSubmissionService from '../../pending-submission/pending-submission.service'
+import * as PaymentService from '../payments.service'
 import * as StripeController from '../stripe.controller'
 import * as StripeService from '../stripe.service'
 
@@ -189,6 +192,127 @@ describe('stripe.controller', () => {
       expect(
         MockStripeService.linkStripeAccountToForm,
       ).not.toHaveBeenCalledWith()
+    })
+  })
+
+  describe('handleConfirmPayment', () => {
+    const MOCK_PAYMENT_ID = new ObjectId().toHexString()
+    const MOCK_PENDING_SUBMISSION_ID = new ObjectId().toHexString()
+    const MOCK_STRIPE_ACCOUNT = 'acct_MOCK_ACCOUNT_ID'
+    const MOCK_PAYMENT_METHOD_ID = 'pm_MOCK_PAYMENT_METHOD'
+    const MOCK_MCC_BY_CARD_BRAND = { mastercard: '5411' }
+
+    const mockPayment = {
+      _id: MOCK_PAYMENT_ID,
+      paymentIntentId: 'pi_MOCK_PAYMENT_INTENT',
+      targetAccountId: MOCK_STRIPE_ACCOUNT,
+      pendingSubmissionId: MOCK_PENDING_SUBMISSION_ID,
+    }
+
+    const mockFormWithMcc = {
+      _id: MOCK_FORM_ID,
+      responseMode: FormResponseMode.Encrypt,
+      payments_channel: {
+        channel: PaymentChannel.Stripe,
+        target_account_id: MOCK_STRIPE_ACCOUNT,
+        publishable_key: 'pk_MOCK_KEY',
+        mcc_by_card_brand: MOCK_MCC_BY_CARD_BRAND,
+      },
+    } as unknown as IPopulatedForm
+
+    const mockConfirmRequest = (flagValues: Record<string, boolean>) =>
+      expressHandler.mockRequest({
+        params: { paymentId: MOCK_PAYMENT_ID },
+        body: { paymentMethodId: MOCK_PAYMENT_METHOD_ID },
+        others: {
+          growthbook: {
+            getFeatureValue: (flag: string, defaultValue: boolean) =>
+              flagValues[flag] ?? defaultValue,
+          },
+        },
+      })
+
+    beforeEach(() => {
+      jest
+        .spyOn(PaymentService, 'findPaymentById')
+        .mockReturnValue(okAsync(mockPayment as any))
+      jest
+        .spyOn(PendingSubmissionService, 'findPendingSubmissionById')
+        .mockReturnValue(okAsync({ form: MOCK_FORM_ID } as any))
+      MockFormService.retrieveFullFormById.mockReturnValue(
+        okAsync(mockFormWithMcc),
+      )
+      MockStripeService.confirmPaymentIntentWithPaymentMethod.mockReturnValue(
+        okAsync({
+          id: 'pi_MOCK_PAYMENT_INTENT',
+          status: 'succeeded',
+        } as Stripe.PaymentIntent),
+      )
+    })
+
+    it("should confirm with the form's configured mccs when the feature is enabled", async () => {
+      // Arrange
+      const mockReq = mockConfirmRequest({
+        [featureFlags.paymentServerConfirmation]: true,
+        [featureFlags.paymentFormMcc]: true,
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await StripeController.handleConfirmPayment(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(
+        MockStripeService.confirmPaymentIntentWithPaymentMethod,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({ mccByCardBrand: MOCK_MCC_BY_CARD_BRAND }),
+      )
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.OK)
+    })
+
+    it('should confirm without mccs when the feature is disabled', async () => {
+      // Arrange
+      const mockReq = mockConfirmRequest({
+        [featureFlags.paymentServerConfirmation]: true,
+        [featureFlags.paymentFormMcc]: false,
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await StripeController.handleConfirmPayment(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(
+        MockStripeService.confirmPaymentIntentWithPaymentMethod,
+      ).toHaveBeenCalledWith(expect.objectContaining({ mccByCardBrand: {} }))
+    })
+
+    it('should confirm without mccs when the form has none configured', async () => {
+      // Arrange
+      const formWithoutMcc = {
+        ...mockFormWithMcc,
+        payments_channel: {
+          channel: PaymentChannel.Stripe,
+          target_account_id: MOCK_STRIPE_ACCOUNT,
+          publishable_key: 'pk_MOCK_KEY',
+        },
+      } as unknown as IPopulatedForm
+      MockFormService.retrieveFullFormById.mockReturnValue(
+        okAsync(formWithoutMcc),
+      )
+      const mockReq = mockConfirmRequest({
+        [featureFlags.paymentServerConfirmation]: true,
+        [featureFlags.paymentFormMcc]: true,
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await StripeController.handleConfirmPayment(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(
+        MockStripeService.confirmPaymentIntentWithPaymentMethod,
+      ).toHaveBeenCalledWith(expect.objectContaining({ mccByCardBrand: {} }))
     })
   })
 })

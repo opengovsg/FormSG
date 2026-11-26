@@ -23,6 +23,24 @@ export enum PaymentMethodType {
   Paynow = 'Paynow',
 }
 
+/**
+ * Card brands as reported by Stripe on a card payment method, excluding
+ * 'unknown'. Used to key per-brand card configuration such as merchant
+ * category codes.
+ */
+export const PaymentCardBrands = [
+  'amex',
+  'diners',
+  'discover',
+  'eftpos_au',
+  'jcb',
+  'mastercard',
+  'unionpay',
+  'visa',
+] as const
+
+export type PaymentCardBrand = (typeof PaymentCardBrands)[number]
+
 export enum PaymentType {
   /**
    * @deprecated Fixed-amount payments are legacy and not offered on new
