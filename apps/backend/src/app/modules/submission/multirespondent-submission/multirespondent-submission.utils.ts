@@ -289,6 +289,19 @@ export const retrieveWorkflowStepEmailAddresses = (
  * @param isMrfChildrenEnabled whether the mrf-children feature flag is on; fail closed when unknown
  * @returns initial responses if all responses are valid, else an error.
  */
+const isFieldRequired = (field: FormFieldDto): boolean => {
+  switch (field.fieldType) {
+    case BasicField.Section:
+    case BasicField.Statement:
+    case BasicField.Image:
+      return false
+    case BasicField.Table:
+      return field.columns.some((column) => column.required)
+    default:
+      return !!field.required
+  }
+}
+
 export const validateMrfFieldResponses = ({
   formId,
   visibleFieldIds,
@@ -323,6 +336,19 @@ export const validateMrfFieldResponses = ({
     acc[field._id] = field
     return acc
   }, {})
+
+  const isMissingRequiredField = formFields.some((field) => {
+    const fieldId = String(field._id)
+    return (
+      stepFieldIds.has(fieldId) &&
+      visibleFieldIds.has(fieldId) &&
+      !responses[fieldId] &&
+      isFieldRequired(field)
+    )
+  })
+  if (isMissingRequiredField) {
+    return err(new ValidateFieldErrorV4('Required field is missing'))
+  }
 
   for (const [responseId, response] of Object.entries(responses)) {
     const formField = idToFieldMap[responseId]
