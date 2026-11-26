@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.84.3](https://github.com/opengovsg/formsg/compare/v9.84.2...v9.84.3) (2026-11-26)
+
+
+### Bug Fixes
+
+* **mrf:** reject submissions that leave out required fields (#10671) ([#10671](https://github.com/opengovsg/formsg/commit/3aa2a7ceb0a53bd02633fcff603513a91f7a99d9))
+
 ## [9.84.2](https://github.com/opengovsg/formsg/compare/v9.84.1...v9.84.2) (2026-11-26)
 
 
