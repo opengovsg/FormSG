@@ -4,7 +4,6 @@ import addRequestId from 'express-request-id'
 import http from 'http'
 import { Connection } from 'mongoose'
 import path from 'path'
-import url from 'url'
 
 import config from '../../config/config'
 import { FrontendRouter } from '../../modules/frontend/frontend.routes'
@@ -51,7 +50,10 @@ const loadExpressApp = async (connection: Connection) => {
   }
 
   app.use(function (req, res, next) {
-    const urlPath = url.parse(req.url).path?.split('/') ?? []
+    const parsed = URL.parse(req.url, 'http://localhost')
+    const urlPath = parsed
+      ? `${parsed.pathname}${parsed.search}`.split('/')
+      : []
     if (
       urlPath.indexOf('static') > -1 &&
       urlPath.indexOf('view') === urlPath.indexOf('static') - 1
