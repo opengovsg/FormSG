@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.84.7](https://github.com/opengovsg/formsg/compare/v9.84.6...v9.84.7) (2026-11-27)
+
 ## [9.84.6](https://github.com/opengovsg/formsg/compare/v9.84.5...v9.84.6) (2026-11-26)
 
 ## [9.84.5](https://github.com/opengovsg/formsg/compare/v9.84.4...v9.84.5) (2026-11-26)
