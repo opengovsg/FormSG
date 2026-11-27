@@ -9,6 +9,9 @@ export const enSG = {
   singpass: {
     title: 'Singpass',
     loginTitle: 'Login',
+    description: 'Authenticate respondents via Singpass.',
+    learnMore: 'Learn more about Singpass authentication',
+    learnMoreMyinfo: 'Learn more about Singpass and Myinfo',
     submitterIdCollection: {
       toggleLabel: 'Collect NRIC/FIN/UENs with form submissions',
       addNricField: 'Add an NRIC/FIN Field',

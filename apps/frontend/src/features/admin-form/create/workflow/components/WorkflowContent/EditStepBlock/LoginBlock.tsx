@@ -15,8 +15,6 @@ import { getStepAuthType } from 'formsg-shared/utils/step-login'
 import { textStyles } from '~theme/textStyles'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { FieldListTabIndex } from '~features/admin-form/create/builder-and-design/constants'
-import { useCreatePageSidebar } from '~features/admin-form/create/common'
 import { AuthSwitchConfirmation } from '~features/admin-form/settings/components/AuthSettingsSection/AuthSwitchConfirmation'
 import { StepLoginControls } from '~features/admin-form/settings/components/AuthSettingsSection/StepLoginControls'
 import {
@@ -39,6 +37,7 @@ interface LoginBlockProps {
   formMethods: UseFormReturn<EditStepInputs>
   stepNumber: number
   isLoading: boolean
+  inAccordion?: boolean
 }
 
 /**
@@ -50,6 +49,7 @@ export const LoginBlock = ({
   formMethods,
   stepNumber,
   isLoading,
+  inAccordion,
 }: LoginBlockProps): JSX.Element | null => {
   const { data: form } = useAdminForm()
   // The workflow tab is shown only on multi-respondent forms.
@@ -61,6 +61,7 @@ export const LoginBlock = ({
       formMethods={formMethods}
       stepNumber={stepNumber}
       isLoading={isLoading}
+      inAccordion={inAccordion}
     />
   )
 }
@@ -70,6 +71,7 @@ const StepLogin = ({
   formMethods,
   stepNumber,
   isLoading,
+  inAccordion,
 }: LoginBlockProps & { form: AdminMultirespondentFormDto }) => {
   const { t } = useTranslation()
   const isGuidedSection = useIsSpotlightActiveSection()
@@ -88,11 +90,12 @@ const StepLogin = ({
   return (
     <EditStepBlockContainer>
       <AuthSwitchConfirmation {...confirmationProps} />
-      {isGuidedSection ? (
+      {isGuidedSection && !inAccordion ? (
         <Text style={textStyles.h4}>{t(`${COPY_KEY}.title`)}</Text>
       ) : null}
       <StepLoginControls
         isHeading={!isGuidedSection}
+        hideQuestion={inAccordion}
         idPrefix={`step-${stepNumber}-login`}
         authType={login.auth_type}
         savedAuthType={getStepAuthType(form, form.workflow, stepNumber)}
@@ -116,7 +119,6 @@ const StepLogin = ({
         <WorkflowStepOneRestrictions
           form={form}
           formMethods={formMethods}
-          authType={login.auth_type}
           isDisabled={isFormPublic || isLoading}
         />
       ) : null}
@@ -127,16 +129,13 @@ const StepLogin = ({
 const WorkflowStepOneRestrictions = ({
   form,
   formMethods,
-  authType,
   isDisabled,
 }: {
   form: AdminMultirespondentFormDto
   formMethods: UseFormReturn<EditStepInputs>
-  authType: FormAuthType
   isDisabled: boolean
 }) => {
   const { data: settings } = useAdminFormSettings<MultirespondentFormSettings>()
-  const { setFieldListTabIndex, handleBuilderClick } = useCreatePageSidebar()
   const draft = formMethods.watch('first_step_restrictions')
 
   // Converting the NRIC/FIN/UEN setting adds identity fields to the saved
@@ -162,11 +161,6 @@ const WorkflowStepOneRestrictions = ({
       settings={settings}
       value={value}
       isDisabled={isDisabled}
-      authType={authType}
-      onGoToFields={(tab: FieldListTabIndex) => {
-        setFieldListTabIndex(tab)
-        handleBuilderClick(false)
-      }}
       onParsingChange={(parsing) =>
         formMethods.setValue('first_step_restrictions_parsing', parsing)
       }

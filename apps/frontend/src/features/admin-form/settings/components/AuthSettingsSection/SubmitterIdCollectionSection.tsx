@@ -13,8 +13,6 @@ import { getLoginIdentityAttrsForAuthType } from 'formsg-shared/utils/login-iden
 
 import InlineMessage from '~components/InlineMessage'
 
-import { FieldListTabIndex } from '~features/admin-form/create/builder-and-design/constants'
-
 import { FormSubmitterIdCollectionToggle } from './FormNricCollectionToggle'
 import { MovedToFieldsMessage } from './MovedToFieldsMessage'
 import { SubmitterIdCollectionSetting } from './SubmitterIdCollectionSetting'
@@ -26,7 +24,6 @@ interface SubmitterIdCollectionSectionProps {
   nextQuestionNumber?: number
   authType?: FormAuthType
   divider: ReactNode
-  onGoToFields?: (tab: FieldListTabIndex) => void
 }
 
 /**
@@ -41,7 +38,6 @@ export const SubmitterIdCollectionSection = ({
   nextQuestionNumber,
   authType = settings.authType,
   divider,
-  onGoToFields,
 }: SubmitterIdCollectionSectionProps): JSX.Element | null => {
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.settings.singpass.submitterIdCollection',
@@ -83,7 +79,6 @@ export const SubmitterIdCollectionSection = ({
           <MovedToFieldsMessage
             authType={authType}
             actionRef={fieldsActionRef}
-            onGoToFields={onGoToFields}
           />
         </Stack>
       ) : isNricFieldEnabled && isEncryptOrMultirespondentMode ? (

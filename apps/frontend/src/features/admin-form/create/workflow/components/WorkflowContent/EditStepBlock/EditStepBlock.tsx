@@ -80,7 +80,11 @@ export const APPROVAL_FIELD_NAME = 'approval_field'
 export const APPROVAL_ENABLED_NAME = 'is_approval_enabled'
 
 const SECTION_REVEAL_SCROLL_DELAY_MS = 100
-const STEP_TABS_KEY = 'features.adminForm.sidebar.workflow.stepLogin.tabs'
+const SECTION_LABEL_KEYS = {
+  fields: 'features.adminForm.sidebar.workflow.questions.accordionLabel',
+  login: 'features.adminForm.sidebar.workflow.stepLogin.workflowQuestion',
+  approvals: 'features.adminForm.sidebar.workflow.approvals.heading',
+} as const
 const SAVE_ERRORS_KEY =
   'features.adminForm.sidebar.workflow.stepLogin.saveErrors'
 
@@ -209,11 +213,14 @@ export const EditStepBlock = ({
     isEnabled: isGuided,
   })
   const { activeSection } = reveal
+  const [peopleExpanded, setPeopleExpanded] = useState(true)
   const [expandedSections, setExpandedSections] = useState<AccordionSection[]>(
     () => (isGuided ? [] : ['fields']),
   )
   useEffect(() => {
-    if (!isGuided || !isAccordionSection(activeSection)) return
+    if (!isGuided) return
+    if (activeSection === 'people') setPeopleExpanded(true)
+    if (!isAccordionSection(activeSection)) return
     setExpandedSections((previous) =>
       previous.includes(activeSection)
         ? previous
@@ -227,6 +234,7 @@ export const EditStepBlock = ({
     const movesAccordionGuide =
       isGuided && inAccordion && section !== activeSection
     if (movesAccordionGuide) reveal.goTo(section)
+    if (section === 'people') setPeopleExpanded(true)
     if (isAccordionSection(section)) {
       setExpandedSections((previous) =>
         previous.includes(section) ? previous : [...previous, section],
@@ -380,7 +388,7 @@ export const EditStepBlock = ({
 
   const questionsSection = (
     <QuestionsBlock
-      key="fields"
+      inAccordion={inAccordion}
       formMethods={formMethods}
       isLoading={_isLoading}
       stepNumber={stepNumber}
@@ -388,7 +396,7 @@ export const EditStepBlock = ({
   )
   const loginSection = isLoginShown ? (
     <LoginBlock
-      key="login"
+      inAccordion={inAccordion}
       formMethods={formMethods}
       stepNumber={stepNumber}
       isLoading={_isLoading}
@@ -396,7 +404,7 @@ export const EditStepBlock = ({
   ) : null
   const approvalsSection = isFirstStep ? null : (
     <ApprovalsBlock
-      key="what-they-do"
+      inAccordion={inAccordion}
       formMethods={formMethods}
       stepNumber={stepNumber}
     />
@@ -424,7 +432,7 @@ export const EditStepBlock = ({
     ),
     login: t(LOGIN_OPTION_COPY[authType].labelKey),
     approvals: t(
-      `features.adminForm.sidebar.workflow.stepLogin.summaries.${approvalEnabled ? 'approvalRequired' : 'noApproval'}`,
+      `features.adminForm.sidebar.workflow.approvals.${approvalEnabled ? 'approver' : 'notApprover'}`,
     ),
   }
   const expandableSections = (
@@ -460,7 +468,12 @@ export const EditStepBlock = ({
                 py="1.5rem"
                 textAlign="left"
                 columnGap="0.75rem"
-                aria-label={t(`${STEP_TABS_KEY}.${section}`)}
+                aria-label={t(SECTION_LABEL_KEYS[section])}
+                aria-describedby={
+                  isExpanded
+                    ? undefined
+                    : `step-${stepNumber}-${section}-summary`
+                }
                 aria-disabled={isGuided && !reveal.isReached(section)}
                 onClick={(event) => {
                   if (isGuided && !reveal.isReached(section))
@@ -475,11 +488,24 @@ export const EditStepBlock = ({
                       : cardHoverBg,
                 }}
               >
-                <Text flex="1" minW="0" style={textStyles.h4}>
-                  {t(`${STEP_TABS_KEY}.${section}`)}
+                <Text
+                  id={
+                    section === 'fields'
+                      ? `${FIELDS_TO_EDIT_NAME}-label`
+                      : undefined
+                  }
+                  flex="1"
+                  minW="0"
+                  style={textStyles.h4}
+                >
+                  {t(SECTION_LABEL_KEYS[section])}
                 </Text>
                 {!isExpanded ? (
-                  <Box minW="0" maxW="50%">
+                  <Box
+                    id={`step-${stepNumber}-${section}-summary`}
+                    minW="0"
+                    maxW="50%"
+                  >
                     <LogicBadge bg="white" overflowWrap="anywhere">
                       {summaries[section]}
                     </LogicBadge>
@@ -487,7 +513,12 @@ export const EditStepBlock = ({
                 ) : null}
                 <AccordionIcon flexShrink="0" />
               </AccordionButton>
-              <AccordionPanel p="0" pb="1.5rem" data-step-section={section}>
+              <AccordionPanel
+                px="0"
+                pt="0.25rem"
+                pb="1.5rem"
+                data-step-section={section}
+              >
                 <Spotlight
                   isEnabled={isGuided}
                   isActive={activeSection === section}
@@ -506,6 +537,9 @@ export const EditStepBlock = ({
     name: <StepNameBlock formMethods={formMethods} stepNumber={stepNumber} />,
     people: (
       <RespondentBlock
+        expanded={peopleExpanded}
+        onExpandedChange={setPeopleExpanded}
+        inAccordion={inAccordion}
         user={user}
         stepNumber={stepNumber}
         formMethods={formMethods}
@@ -570,13 +604,18 @@ export const EditStepBlock = ({
     >
       {inAccordion ? (
         <Stack
-          spacing={isGuided ? '0' : '1.5rem'}
+          spacing={isGuided || !isFirstStep ? '0' : '1.5rem'}
           pt={isGuided ? '0' : '1.5rem'}
         >
           {introductorySections.map((section, index) =>
             !isGuided || reveal.isReached(section) ? (
               <Box key={section} data-step-section={section}>
-                {!isGuided && index > 0 ? <Divider mb="1.5rem" /> : null}
+                {!isGuided && index > 0 ? (
+                  <Divider
+                    mt={isFirstStep ? 0 : '1.5rem'}
+                    mb={isFirstStep ? '1.5rem' : 0}
+                  />
+                ) : null}
                 <Spotlight
                   isEnabled={isGuided}
                   isActive={activeSection === section}

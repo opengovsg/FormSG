@@ -14,6 +14,9 @@ export const enSG: Workflow = {
     deleteWorkflow: 'Delete workflow',
   },
   respondentBlock: {
+    editorHeading: 'Choose who fills in this step',
+    noRecipients: 'No person selected',
+    moreRecipients: '+{count} more',
     stepRespondent: 'Who should fill in this step?',
     anyone: 'Anyone with your form link can fill in Step 1.',
     select: 'Who should fill in this step?',
@@ -188,6 +191,7 @@ export const enSG: Workflow = {
     },
   },
   questions: {
+    accordionLabel: 'Assign fields to this person',
     label: 'Choose the fields this person fills in',
     placeholder: 'Select fields from your form',
     autoAddHelperText: 'The approval field is added here automatically.',
@@ -201,24 +205,18 @@ export const enSG: Workflow = {
     singpass: 'Singpass',
     corppass: 'Corppass',
     esrvcIdLabel: 'Enter your organisation’s Corppass e-service ID',
-    stepQuestion: 'Does this step require a login?',
+    workflowQuestion: 'Choose how this person logs in',
     formQuestion: 'Select form login method',
     noLogin: 'No login required',
-    singpassDescription:
-      'Log in using Singpass and use Singpass Myinfo fields.',
-    legacySingpassDescription: 'Log in using Singpass',
-    corppassDescription:
-      'Log in using Corppass and use Corppass Myinfo fields.',
+    singpassOption: 'Singpass (allows Singpass Myinfo fields)',
+    corppassOption: 'Corppass (allows Corppass Myinfo fields)',
     esrvcIdPlaceholder: 'Enter Corppass e-service ID',
     esrvcIdWhitespace: 'e-service ID must not contain whitespace',
     closeFormToEdit: 'To change the login, close your form to new responses.',
     inactiveLabel: 'Login',
-    tabs: { fields: 'Assigned fields', approvals: 'Approvals', login: 'Login' },
     summaries: {
       fields:
         '{count, plural, =0 {No fields assigned} one {# field assigned} other {# fields assigned}}',
-      approvalRequired: 'Approval required',
-      noApproval: 'No approval required',
     },
     historicalResponsesKept: 'Historical responses will not be deleted.',
     publishErrors: {
@@ -294,6 +292,10 @@ export const enSG: Workflow = {
       "This step couldn't be saved. Fix it, then add the field again.",
   },
   approvals: {
+    heading: 'Choose an approval role',
+    approver: 'Approver',
+    notApprover: 'Not an approver',
+    fieldLabel: 'Approval field',
     title: 'Approvals',
     yesNoDeleted:
       'This Yes/No field was deleted, please select another Yes/No field',
