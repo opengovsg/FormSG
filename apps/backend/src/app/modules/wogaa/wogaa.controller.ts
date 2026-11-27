@@ -4,6 +4,7 @@ import uuidGen from 'uuid-by-string'
 
 import { wogaaConfig } from '../../config/features/wogaa'
 import { createLoggerWithLabel } from '../../config/logger'
+import { isLoadTestRequest } from '../../utils/load-test'
 import { ControllerHandler } from '../core/core.types'
 
 const logger = createLoggerWithLabel(module)
@@ -39,7 +40,7 @@ export const handleSubmit: ControllerHandler<{ formId: string }> = async (
 ) => {
   const { formId } = req.params
 
-  if (!req.sessionID || !formId || !isConfigValid()) {
+  if (!req.sessionID || !formId || !isConfigValid() || isLoadTestRequest(req)) {
     return next()
   }
 
@@ -81,7 +82,7 @@ export const handleFormView: ControllerHandler<{ formId: string }> = async (
 ) => {
   const { formId } = req.params
 
-  if (!req.sessionID || !formId || !isConfigValid()) {
+  if (!req.sessionID || !formId || !isConfigValid() || isLoadTestRequest(req)) {
     return next()
   }
 
@@ -123,7 +124,7 @@ export const handleFormFeedback: ControllerHandler<
   const { formId } = req.params
   const { rating, comment } = req.body
 
-  if (!req.sessionID || !formId || !isConfigValid()) {
+  if (!req.sessionID || !formId || !isConfigValid() || isLoadTestRequest(req)) {
     return next()
   }
 

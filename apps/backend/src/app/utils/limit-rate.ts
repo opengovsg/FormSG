@@ -7,6 +7,7 @@ import { merge } from 'lodash'
 
 import { createLoggerWithLabel } from '../config/logger'
 
+import { isLoadTestRequest } from './load-test'
 import { createReqMeta } from './request'
 
 const logger = createLoggerWithLabel(module)
@@ -25,6 +26,7 @@ export const limitRate = (
     requestPropertyName: 'rateLimit',
     windowMs: 60 * 1000, // Apply rate per-minute
     max: 1200,
+    skip: (req) => isLoadTestRequest(req),
     handler: (req, res) => {
       logger.warn({
         message: 'Rate limit exceeded',

@@ -64,6 +64,7 @@ export type MailConfig = {
 }
 
 export type RateLimitConfig = {
+  loadTestBypassKey: string
   submissions: number
   sendAuthOtp: number
   publicFormIssueFeedback: number
@@ -232,6 +233,7 @@ export interface IOptionalVarsSchema {
     socketTimeout: number
   }
   rateLimit: {
+    loadTestBypassKey: string
     submissions: number
     sendAuthOtp: number
     publicFormIssueFeedback: number

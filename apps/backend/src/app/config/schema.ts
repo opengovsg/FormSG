@@ -408,6 +408,13 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     },
   },
   rateLimit: {
+    loadTestBypassKey: {
+      doc: 'Shared secret that lets load test requests past the per-IP rate limits. Ignored in production.',
+      format: String,
+      default: '',
+      env: 'LOAD_TEST_BYPASS_KEY',
+      sensitive: true,
+    },
     submissions: {
       doc: 'Per-minute, per-IP, per-instance request limit for submissions endpoints',
       format: 'int',
