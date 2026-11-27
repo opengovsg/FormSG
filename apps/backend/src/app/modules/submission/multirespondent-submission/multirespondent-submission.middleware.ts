@@ -72,6 +72,7 @@ import {
   checkLoginIdentityAnswers,
   getLoginIdentityValuesFromCookies,
 } from '../login-identity-answers'
+import { readAndNameMultiAttachmentAnswersV4 } from '../multi-attachment'
 import {
   InvalidSubmissionTypeError,
   MissingSubmitterIdError,
@@ -614,8 +615,16 @@ export const scanAndRetrieveAttachments = async (
     meta: logMeta,
   })
 
-  // Step 3: Update responses with new values.
-  for (const idTaggedAttachmentResponse of scanAndRetrieveFilesResult.value) {
+  const respondentFormDef = req.formsg.snapshottedFormDef ?? req.formsg.formDef
+  const namedResult = await readAndNameMultiAttachmentAnswersV4(
+    respondentFormDef,
+    scanAndRetrieveFilesResult.value,
+  )
+  if (namedResult.isErr()) {
+    return sendRouteError(res, mapRouteError(namedResult.error))
+  }
+
+  for (const idTaggedAttachmentResponse of namedResult.value) {
     const { id, ...attachmentResponseRaw } = idTaggedAttachmentResponse
     const attachmentResponse =
       attachmentResponseRaw as ParsedClearAttachmentFieldResponseV4
@@ -1361,6 +1370,7 @@ export const encryptSubmission = async (
         value: attachmentRes.answer.value,
         hasBeenScanned: attachmentRes.answer.hasBeenScanned,
         md5Hash: attachmentRes.answer.md5Hash,
+        filenames: attachmentRes.answer.filenames,
         filename: undefined,
         content: undefined,
       },

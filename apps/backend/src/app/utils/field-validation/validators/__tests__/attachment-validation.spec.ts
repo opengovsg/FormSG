@@ -183,6 +183,34 @@ describe('Attachment validation', () => {
         new ValidateFieldError('Invalid answer submitted'),
       )
     })
+
+    it('should check each file in a multi-file answer, not its zip', () => {
+      const formField = generateDefaultField(BasicField.Attachment, {
+        attachmentSize: AttachmentSize.OneMb,
+        allowMultiple: true,
+        allowedFileTypes: ['.pdf'],
+      })
+      const makeResponse = (answerArray: string[]) =>
+        generateNewAttachmentResponse({
+          answer: 'Question 1.zip',
+          filename: 'Question 1.zip',
+          answerArray,
+        })
+      expect(
+        validateField(
+          formId,
+          formField,
+          makeResponse(['a.pdf', 'b.pdf']),
+        ).isOk(),
+      ).toBe(true)
+      expect(
+        validateField(
+          formId,
+          formField,
+          makeResponse(['a.pdf', 'b.jpg']),
+        ).isErr(),
+      ).toBe(true)
+    })
   })
 
   describe('check for responses on hidden fields', () => {
@@ -251,6 +279,7 @@ describe('Attachment field validation V4', () => {
   const makeAttachmentResponseV4 = (answer: {
     value: string
     filename: string
+    filenames?: string[]
     content: Buffer
     hasBeenScanned: boolean
   }): ParsedClearFormFieldResponseV4 =>
@@ -479,7 +508,11 @@ describe('Attachment field validation V4', () => {
   })
 
   describe('Validation of file types', () => {
-    const validate = (answer: { value: string; filename: string }) =>
+    const validate = (answer: {
+      value: string
+      filename: string
+      filenames?: string[]
+    }) =>
       validateFieldV4({
         formId,
         formField: generateDefaultFieldV4(BasicField.Attachment, {
@@ -502,6 +535,24 @@ describe('Attachment field validation V4', () => {
           filename: 'photo.jpg',
         })._unsafeUnwrapErr(),
       ).toEqual(new ValidateFieldErrorV4('Invalid answer submitted'))
+    })
+
+    it('should check each file in a multi-file answer, not its zip', () => {
+      const zipName = 'Question 1.zip'
+      expect(
+        validate({
+          value: zipName,
+          filename: zipName,
+          filenames: ['a.pdf'],
+        }).isOk(),
+      ).toBe(true)
+      expect(
+        validate({
+          value: zipName,
+          filename: zipName,
+          filenames: ['a.pdf', 'b.jpg'],
+        }).isErr(),
+      ).toBe(true)
     })
   })
 

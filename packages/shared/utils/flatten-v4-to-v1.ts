@@ -179,7 +179,10 @@ const buildEntry = (
     case BasicField.Attachment:
       return {
         ...pickBase(field),
-        ...computeAttachmentAnswerValue((answer as AttachmentAnswerV4)?.value),
+        ...computeAttachmentAnswerValue(
+          (answer as AttachmentAnswerV4)?.value,
+          (answer as AttachmentAnswerV4)?.filenames,
+        ),
       }
     case BasicField.Checkbox:
       return {

@@ -18,7 +18,7 @@ export enum CsvRecordStatus {
 
 export type AttachmentsDownloadMap = Map<
   number,
-  { url: string; filename?: string }
+  { url: string; filename?: string; isZipOfFiles?: boolean }
 >
 
 export type DecryptedAttachmentFile = {

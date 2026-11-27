@@ -142,6 +142,7 @@ import {
   InvalidFieldIdError,
   InvalidFileExtensionError,
   InvalidFileKeyError,
+  InvalidMultiAttachmentError,
   InvalidWorkflowTypeError,
   MissingSubmitterIdError,
   MrfAssigneeAlreadyAssignedError,
@@ -409,6 +410,7 @@ const errorMapper: MapRouteError = (
     case ValidateFieldErrorV4:
     case DatabaseValidationError:
     case InvalidFileExtensionError:
+    case InvalidMultiAttachmentError:
     case AttachmentTooLargeError:
     case ProcessingError:
       return {

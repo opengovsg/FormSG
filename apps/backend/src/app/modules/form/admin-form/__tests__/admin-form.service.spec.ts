@@ -891,6 +891,37 @@ describe('admin-form.service', () => {
       })
     })
 
+    it('should turn off multiple attachments when duplicating to Email mode', async () => {
+      // Arrange
+      const expectedParams = {
+        admin: MOCK_NEW_ADMIN_ID,
+        ...MOCK_EMAIL_OVERRIDE_PARAMS,
+        form_fields: [
+          { fieldType: BasicField.Attachment, allowMultiple: true },
+        ],
+      } as unknown as PickDuplicateForm & OverrideProps
+      const mockForm = createMockForm(expectedParams)
+      const createSpy = jest
+        .spyOn(FormModel, 'create')
+        .mockResolvedValueOnce(mockForm as never)
+
+      // Act
+      await AdminFormService.duplicateForm(
+        mockForm,
+        MOCK_NEW_ADMIN_ID,
+        MOCK_EMAIL_OVERRIDE_PARAMS,
+      )
+
+      // Assert
+      expect(createSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          form_fields: [
+            { fieldType: BasicField.Attachment, allowMultiple: false },
+          ],
+        }),
+      )
+    })
+
     // primary functionality of workspace transaction is tested in 'createForm'
     it('should use form to workspace transaction if duplicating form to workspace', async () => {
       // Arrange

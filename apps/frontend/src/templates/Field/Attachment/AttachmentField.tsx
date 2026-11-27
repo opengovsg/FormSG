@@ -7,13 +7,14 @@ import {
 import { useTranslation } from 'react-i18next'
 import { datadogLogs } from '@datadog/browser-logs'
 
+import { MAX_ATTACHMENTS_PER_FIELD } from 'formsg-shared/constants'
 import { MB } from 'formsg-shared/constants/file'
 import { FormColorTheme } from 'formsg-shared/types'
 import { VALID_EXTENSIONS } from 'formsg-shared/utils/file-validation'
 
 import { useAttachmentValidationRules } from '~utils/fieldValidation'
 import fileArrayBuffer from '~utils/fileArrayBuffer'
-import Attachment from '~components/Field/Attachment'
+import Attachment, { MultiAttachment } from '~components/Field/Attachment'
 
 import { PublicFormContext } from '~features/public-form/PublicFormContext'
 
@@ -65,6 +66,62 @@ export const AttachmentField = ({
     [fieldName, setError],
   )
 
+  const cloneFile = useCallback(
+    async (file: File): Promise<File | null> => {
+      // Clone file due to bug where attached file may be empty or corrupted if the
+      // file is a Google Drive file selected from Android's native file picker.
+      // Cloning the file ensures that the file can be read (and/or not mutated by Android)
+      // and throws an error if the file cannot be read instead of silently failing and only throw
+      // an error during form submission.
+      // See https://bugs.chromium.org/p/chromium/issues/detail?id=1063576#c79
+      // and https://stackoverflow.com/questions/62714319/attached-from-google-drivecloud-storage-in-android-file-gives-err-upload-file
+      // as possible sources of the error (still not confirmed it is the same thing).
+      try {
+        const buffer = await fileArrayBuffer(file)
+        const clone = new File([buffer], file.name, { type: file.type })
+
+        if (clone.size === 0) {
+          setErrorMessage(
+            t(
+              'features.publicForm.components.fields.attachment.error.fileReadError',
+            ),
+          )
+          datadogLogs.logger.warn('attachment file clone is empty', {
+            formId: publicFormId,
+            fileName: file.name,
+            originalSize: file.size,
+            cloneSize: clone.size,
+            reason: 'fileCloneEmpty',
+          })
+          return null
+        }
+
+        /**
+         * Set a custom field to force attachment field to remain dirty.
+         * React Hook Form is unable to evaluate dirtiness file when comparing File objects https://react-hook-form.com/docs/useformstate#return
+         * React Hook Form has a custom deepEqual comparator function that checks for key values on the object https://github.com/react-hook-form/react-hook-form/blob/v7.51.1/src/utils/deepEqual.ts
+         * By introducing a new `__dirtyField` property, so we can set force the evaluation deepEqual to be false, thus remaining dirty.
+         * */
+        // @ts-expect-error __dirtyField is not a standard property of File.
+        clone.__dirtyField = 1
+        return clone
+      } catch (error) {
+        setErrorMessage(
+          t(
+            'features.publicForm.components.fields.attachment.error.fileReadError',
+          ),
+        )
+
+        // For RUM error tracking
+        datadogLogs.logger.error(
+          `handleFileChange error: ${(error as Error)?.message}`,
+        )
+        return null
+      }
+    },
+    [publicFormId, setErrorMessage, t],
+  )
+
   const handleFileChange = useCallback(
     (onChange: ControllerRenderProps['onChange']) =>
       async (file: File | null) => {
@@ -77,80 +134,63 @@ export const AttachmentField = ({
           onChange(null)
           return
         }
-        // Clone file due to bug where attached file may be empty or corrupted if the
-        // file is a Google Drive file selected from Android's native file picker.
-        // Cloning the file ensures that the file can be read (and/or not mutated by Android)
-        // and throws an error if the file cannot be read instead of silently failing and only throw
-        // an error during form submission.
-        // See https://bugs.chromium.org/p/chromium/issues/detail?id=1063576#c79
-        // and https://stackoverflow.com/questions/62714319/attached-from-google-drivecloud-storage-in-android-file-gives-err-upload-file
-        // as possible sources of the error (still not confirmed it is the same thing).
-        try {
-          const buffer = await fileArrayBuffer(file)
-          const clone = new File([buffer], file.name, { type: file.type })
-
-          if (clone.size === 0) {
-            setErrorMessage(
-              t(
-                'features.publicForm.components.fields.attachment.error.fileReadError',
-              ),
-            )
-            datadogLogs.logger.warn('attachment file clone is empty', {
-              formId: publicFormId,
-              fileName: file.name,
-              originalSize: file.size,
-              cloneSize: clone.size,
-              reason: 'fileCloneEmpty',
-            })
-            return onChange(undefined)
-          }
-
-          /**
-           * Set a custom field to force attachment field to remain dirty.
-           * React Hook Form is unable to evaluate dirtiness file when comparing File objects https://react-hook-form.com/docs/useformstate#return
-           * React Hook Form has a custom deepEqual comparator function that checks for key values on the object https://github.com/react-hook-form/react-hook-form/blob/v7.51.1/src/utils/deepEqual.ts
-           * By introducing a new `__dirtyField` property, so we can set force the evaluation deepEqual to be false, thus remaining dirty.
-           * */
-          // @ts-expect-error __dirtyField is not a standard property of File.
-          clone.__dirtyField = 1
-          return onChange(clone)
-        } catch (error) {
-          setErrorMessage(
-            t(
-              'features.publicForm.components.fields.attachment.error.fileReadError',
-            ),
-          )
-
-          // For RUM error tracking
-          datadogLogs.logger.error(
-            `handleFileChange error: ${(error as Error)?.message}`,
-          )
-
-          return onChange(undefined) // Clear attachment and return
-        }
+        return onChange((await cloneFile(file)) ?? undefined)
       },
-    [clearErrors, fieldName, publicFormId, setErrorMessage, schema.disabled, t],
+    [clearErrors, cloneFile, fieldName, schema.disabled],
+  )
+
+  const handleFilesChange = useCallback(
+    (onChange: ControllerRenderProps['onChange']) => async (files: File[]) => {
+      if (schema.disabled) {
+        return
+      }
+      clearErrors(fieldName)
+      const clones = await Promise.all(
+        files.map((file) => ('__dirtyField' in file ? file : cloneFile(file))),
+      )
+      const readableClones = clones.filter((file) => file !== null)
+      return onChange(readableClones)
+    },
+    [clearErrors, cloneFile, fieldName, schema.disabled],
   )
 
   return (
     <FieldContainer schema={schema} isHighContrast={isHighContrast}>
       <Controller
         control={control}
-        render={({ field: { onChange, ...rest } }) => (
-          <Attachment
-            {...rest}
-            colorScheme={`theme-${colorTheme}`}
-            maxSize={maxSizeInBytes}
-            accept={VALID_EXTENSIONS}
-            allowedFileTypes={allowedFileTypes}
-            showFileSize
-            onChange={handleFileChange(onChange)}
-            onError={setErrorMessage}
-            title={`${schema.questionNumber}. ${schema.title}`}
-            showDownload={showDownload}
-            showRemove={!schema.disabled}
-          />
-        )}
+        render={({ field: { onChange, value, ...rest } }) =>
+          schema.allowMultiple ? (
+            <MultiAttachment
+              {...rest}
+              value={Array.isArray(value) ? value : []}
+              colorScheme={`theme-${colorTheme}`}
+              maxTotalSize={maxSizeInBytes}
+              maxFiles={MAX_ATTACHMENTS_PER_FIELD}
+              accept={VALID_EXTENSIONS}
+              allowedFileTypes={allowedFileTypes}
+              onChange={handleFilesChange(onChange)}
+              onError={setErrorMessage}
+              title={`${schema.questionNumber}. ${schema.title}`}
+              showDownload={showDownload}
+              showRemove={!schema.disabled}
+            />
+          ) : (
+            <Attachment
+              {...rest}
+              value={Array.isArray(value) ? null : value}
+              colorScheme={`theme-${colorTheme}`}
+              maxSize={maxSizeInBytes}
+              accept={VALID_EXTENSIONS}
+              allowedFileTypes={allowedFileTypes}
+              showFileSize
+              onChange={handleFileChange(onChange)}
+              onError={setErrorMessage}
+              title={`${schema.questionNumber}. ${schema.title}`}
+              showDownload={showDownload}
+              showRemove={!schema.disabled}
+            />
+          )
+        }
         name={fieldName}
         rules={validationRules}
       />

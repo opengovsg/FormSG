@@ -255,6 +255,14 @@ describe('response value rules', () => {
     expect('signature' in computeVerifiableAnswerValue(undefined)).toBe(true)
   })
 
+  it("follows a multi-file attachment's zip name with the files in it", () => {
+    expect(
+      JSON.stringify(
+        computeAttachmentAnswerValue('Question 3.zip', ['a.pdf', 'b.jpg']),
+      ),
+    ).toBe('{"answer":"Question 3.zip","answerArray":["a.pdf","b.jpg"]}')
+  })
+
   describe('checkbox', () => {
     it('leaves a selection without Others in its original order', () => {
       expect(computeCheckboxAnswerValue({ value: ['b', 'a'] })).toEqual({

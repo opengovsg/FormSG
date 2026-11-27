@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { DropzoneProps, useDropzone } from 'react-dropzone'
 import { useTranslation } from 'react-i18next'
 import {
@@ -10,29 +10,16 @@ import {
   useMergeRefs,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
-import { datadogLogs } from '@datadog/browser-logs'
-import imageCompression from 'browser-image-compression'
 import omit from 'lodash/omit'
-
-import { MB } from 'formsg-shared/constants/file'
-import { VALID_EXTENSIONS } from 'formsg-shared/utils/file-validation'
 
 import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
 import { ThemeColorScheme } from '~theme/foundations/colours'
-
-import { PublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { downloadFile } from './utils/downloadFile'
 import { AttachmentStylesProvider } from './AttachmentContext'
 import { AttachmentDropzone } from './AttachmentDropzone'
 import { AttachmentFileInfo } from './AttachmentFileInfo'
-import {
-  getFileExtension,
-  getInvalidFileExtensionsInZip,
-  getReadableFileSize,
-} from './utils'
-
-const IMAGE_UPLOAD_TYPES_TO_COMPRESS = ['image/jpeg', 'image/png']
+import { useAttachmentFileChecks } from './useAttachmentFileChecks'
 
 export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
   /**
@@ -151,16 +138,17 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
     ref,
   ) => {
     const { t } = useTranslation()
-    const publicFormId = useContext(PublicFormContext)?.formId
     // Merge given props with any form control props, if they exist.
     const inputProps = useFormControl(props)
     // id to set on the rendered max size FormFieldMessage component.
     const maxSizeTextId = useMemo(() => `${name}-max-size`, [name])
 
-    const readableMaxSize = useMemo(
-      () => (maxSize ? getReadableFileSize(maxSize) : undefined),
-      [maxSize],
-    )
+    const {
+      readableMaxSize,
+      getRejectionErrorMessage,
+      prepareFile,
+      fileValidator,
+    } = useAttachmentFileChecks({ allowedFileTypes, maxSize })
 
     const showMaxSize = useMemo(
       () => !value && showFileSize && readableMaxSize,
@@ -169,128 +157,15 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
 
     const handleFileDrop = useCallback<NonNullable<DropzoneProps['onDrop']>>(
       async ([acceptedFile], rejectedFiles) => {
-        if (rejectedFiles.length > 0) {
-          const firstError = rejectedFiles[0].errors[0]
-          let errorMessage
-          switch (firstError.code) {
-            case 'file-invalid-type': {
-              const fileExt = getFileExtension(rejectedFiles[0].file.name)
-              errorMessage = allowedFileTypes
-                ? t(
-                    'features.publicForm.components.fields.attachment.error.fileTypeNotAllowed',
-                    {
-                      fileExt,
-                      allowedFileTypes: allowedFileTypes.join(', '),
-                    },
-                  )
-                : t(
-                    `features.publicForm.components.fields.attachment.error.fileInvalidType`,
-                    { fileExt },
-                  )
-              break
-            }
-            case 'too-many-files': {
-              errorMessage = t(
-                `features.publicForm.components.fields.attachment.error.tooManyFiles`,
-              )
-              break
-            }
-            default:
-              errorMessage = firstError.message
-          }
-          return onError?.(errorMessage)
+        const [firstRejection] = rejectedFiles
+        if (firstRejection) {
+          return onError?.(getRejectionErrorMessage(firstRejection))
         }
-
-        // Zip validation.
-        if (acceptedFile.type === 'application/zip') {
-          try {
-            const invalidFilesInZip = await getInvalidFileExtensionsInZip(
-              acceptedFile,
-              VALID_EXTENSIONS,
-            )
-            const numInvalidFiles = invalidFilesInZip.length
-            // There are invalid files, return error.
-            if (numInvalidFiles !== 0) {
-              const stringOfInvalidExtensions = invalidFilesInZip.join(', ')
-              return onError?.(
-                t(
-                  'features.publicForm.components.fields.attachment.error.zipFileInvalidType',
-                  { stringOfInvalidExtensions },
-                ),
-              )
-            }
-          } catch {
-            return onError?.(
-              t(
-                'features.publicForm.components.fields.attachment.error.zipParsing',
-              ),
-            )
-          }
-        }
-
-        // Compress images that are too large.
-        if (
-          IMAGE_UPLOAD_TYPES_TO_COMPRESS.includes(acceptedFile.type) &&
-          maxSize &&
-          acceptedFile.size > maxSize
-        ) {
-          return imageCompression(acceptedFile, {
-            maxSizeMB: maxSize ? maxSize / MB : undefined,
-            maxWidthOrHeight: 1440,
-            initialQuality: 0.8,
-            useWebWorker: false,
-            preserveExif: true,
-          }).then((blob) => {
-            if (blob.size === 0) {
-              datadogLogs.logger.warn('attachment empty after compression', {
-                formId: publicFormId,
-                fileName: acceptedFile.name,
-                originalSize: acceptedFile.size,
-                originalType: acceptedFile.type,
-                reason: 'imageCompressionEmpty',
-              })
-              return onError?.(
-                t(
-                  'features.publicForm.components.fields.attachment.error.imageProcessingError',
-                ),
-              )
-            }
-            return onChange(
-              new File([blob], acceptedFile.name, {
-                type: blob.type,
-              }),
-            )
-          })
-        }
-        onChange(acceptedFile)
+        const prepared = await prepareFile(acceptedFile)
+        if (prepared.kind === 'error') return onError?.(prepared.errorMessage)
+        onChange(prepared.file)
       },
-      [allowedFileTypes, publicFormId, maxSize, onChange, onError, t],
-    )
-
-    const fileValidator = useCallback<NonNullable<DropzoneProps['validator']>>(
-      (file) => {
-        if (file.size === 0) {
-          return {
-            code: 'file-empty',
-            message: t(
-              'features.publicForm.components.fields.attachment.error.fileEmpty',
-            ),
-          }
-        }
-        if (!IMAGE_UPLOAD_TYPES_TO_COMPRESS.includes(file.type)) {
-          if (maxSize && file.size > maxSize) {
-            return {
-              code: 'file-too-large',
-              message: t(
-                'features.publicForm.components.fields.attachment.error.fileTooLarge',
-                { readableMaxSize },
-              ),
-            }
-          }
-        }
-        return null
-      },
-      [maxSize, readableMaxSize, t],
+      [getRejectionErrorMessage, onChange, onError, prepareFile],
     )
 
     const { getRootProps, getInputProps, isDragActive, rootRef } = useDropzone({

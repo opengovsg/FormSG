@@ -95,6 +95,22 @@ describe('extractMrfPreviousStepResponseValue', () => {
     expect(result).toEqual(mockFile)
   })
 
+  it("should return a multi-file answer's files as they are", () => {
+    const files = [new File(['a'], 'a.pdf'), new File(['b'], 'b.jpg')]
+
+    const result = extractMrfPreviousStepResponseValue(
+      mockField(BasicField.Attachment),
+      v4Response(BasicField.Attachment, {
+        value: 'Question 1.zip',
+        hasBeenScanned: true,
+      }),
+      files,
+    )
+
+    expect(bufferToFile).not.toHaveBeenCalled()
+    expect(result).toBe(files)
+  })
+
   it('should return undefined for Attachment if buffer is not provided', () => {
     const result = extractMrfPreviousStepResponseValue(
       mockField(BasicField.Attachment),

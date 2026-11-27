@@ -134,11 +134,13 @@ const transformToTableOutput = (
 
 const transformToAttachmentOutput = (
   schema: AttachmentFieldSchema,
-  input?: File,
+  input?: File | File[],
 ): AttachmentResponse => {
   return {
     ...pickBaseOutputFromSchema(schema),
-    ...computeAttachmentAnswerValue(input?.name),
+    ...computeAttachmentAnswerValue(
+      Array.isArray(input) ? undefined : input?.name,
+    ),
   }
 }
 

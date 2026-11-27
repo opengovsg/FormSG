@@ -38,6 +38,16 @@ describe('formatResponseForCell', () => {
     ).toBe('Option 1; Option 2')
   })
 
+  it("shows a multi-file answer's files, joined with ; and no space", () => {
+    expect(
+      formatResponseForCell({
+        ...field({ fieldType: BasicField.Attachment }),
+        answer: 'Question 3.zip',
+        answerArray: ['a.pdf', 'b.jpg'],
+      } as unknown as FormField),
+    ).toBe('a.pdf;b.jpg')
+  })
+
   it('joins table rows with commas and separates rows with semicolons', () => {
     expect(
       formatResponseForCell(
