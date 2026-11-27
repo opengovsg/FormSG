@@ -2,6 +2,7 @@ packages:
   - apps/*
   - packages/*
   - services/*
+  - load-tests
 
 blockExoticSubdeps: true
 
