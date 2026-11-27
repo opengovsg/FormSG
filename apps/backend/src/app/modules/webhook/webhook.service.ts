@@ -25,7 +25,10 @@ import type {
 } from '../submission/multirespondent-submission/webhook/webhook-payload-policy'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 
-import { WEBHOOK_MAX_CONTENT_LENGTH } from './webhook.constants'
+import {
+  V1_ATTACHMENT_KEY_PREFIX,
+  WEBHOOK_MAX_CONTENT_LENGTH,
+} from './webhook.constants'
 import {
   WebhookFailedWithAxiosError,
   WebhookFailedWithPresignedUrlGenerationError,
@@ -85,11 +88,17 @@ export const saveWebhookRecord = (
   })
 }
 
-// RATIONALE: V1 attachments are encrypted using the form secret key, and are thus stored in a different bucket.
-const attachmentBucketForContentFormat = (
+// RATIONALE: Pick the bucket from the key, never from the
+// mrfV1AttachmentsSharedBucket flag. The flag only decides where new V1 copies
+// are written. A retry can run after the flag changes, and the key saved in
+// its snapshot still shows which bucket the copy is in.
+// TODO(#10685): Remove the legacy V1 bucket branch and its config once the
+// flag is permanently on and no unprefixed V1 snapshot is still being retried.
+const attachmentBucketForKey = (
+  key: string,
   contentFormat?: WebhookContentFormat,
 ): string =>
-  contentFormat === 'v1'
+  contentFormat === 'v1' && !key.startsWith(V1_ATTACHMENT_KEY_PREFIX)
     ? AwsConfig.submissionHistoryV1AttachmentS3Bucket
     : AwsConfig.attachmentS3Bucket
 
@@ -99,12 +108,10 @@ const createWebhookSubmissionView = (
 ): Promise<WebhookView> => {
   // Generate S3 signed urls
   const signedUrlPromises: Record<string, Promise<string>> = {}
-  for (const key in submissionWebhookView.data.attachmentDownloadUrls) {
-    signedUrlPromises[key] = getSignedS3Url(
-      {
-        Bucket: attachmentBucketForContentFormat(contentFormat),
-        Key: submissionWebhookView.data.attachmentDownloadUrls[key],
-      },
+  for (const fieldId in submissionWebhookView.data.attachmentDownloadUrls) {
+    const key = submissionWebhookView.data.attachmentDownloadUrls[fieldId]
+    signedUrlPromises[fieldId] = getSignedS3Url(
+      { Bucket: attachmentBucketForKey(key, contentFormat), Key: key },
       60 * 60, // one hour expiry
     )
   }

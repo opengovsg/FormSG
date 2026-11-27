@@ -189,7 +189,7 @@ export type SavedMultirespondentSubmission = {
 }
 
 /**
- * Builds the first step's V1 snapshot, uploading its V1 attachments to the V1 attachments bucket.
+ * Builds the first step's V1 snapshot, uploading its V1 attachment copies.
  * Callers decide whether to store this snapshot to the V1 snapshots bucket.
  */
 const buildFirstStepV1Snapshot = ({
@@ -197,11 +197,13 @@ const buildFirstStepV1Snapshot = ({
   encryptedPayload,
   verifiedContentPlaintext,
   snapshotBase,
+  useSharedAttachmentBucket,
   logMeta,
 }: {
   form: IPopulatedMultirespondentForm
   encryptedPayload: MultirespondentSubmissionDto
   verifiedContentPlaintext?: Record<string, string>
+  useSharedAttachmentBucket: boolean
   snapshotBase: Pick<
     SubmissionSnapshot,
     'formId' | 'submissionId' | 'submissionIndex' | 'workflowStep' | 'createdAt'
@@ -231,6 +233,7 @@ const buildFirstStepV1Snapshot = ({
     formId: String(form._id),
     responses: encryptedPayload.responses,
     formPublicKey: form.publicKey,
+    useSharedAttachmentBucket,
     logMeta,
   }).map((attachments) =>
     buildV1Snapshot({
@@ -1134,6 +1137,9 @@ export const createMultiRespondentFormSubmission = ({
             verifiedContentPlaintext,
             logMeta,
             snapshotBase,
+            useSharedAttachmentBucket:
+              growthbook?.isOn(featureFlags.mrfV1AttachmentsSharedBucket) ??
+              false,
           })
         }
         if (webhookContentFormat === 'v4' && shouldWriteSnapshot) {
@@ -1234,12 +1240,14 @@ export const createMultiRespondentFormPendingSubmission = ({
   encryptedPayload,
   verifiedContentPlaintext,
   paymentId,
+  growthbook,
   logMeta,
 }: {
   form: IPopulatedMultirespondentForm
   encryptedPayload: MultirespondentSubmissionDto
   verifiedContentPlaintext?: Record<string, string>
   paymentId: string
+  growthbook?: GrowthBook
   logMeta: CustomLoggerParams['meta']
 }): ResultAsync<
   IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId },
@@ -1316,6 +1324,8 @@ export const createMultiRespondentFormPendingSubmission = ({
       verifiedContentPlaintext,
       logMeta,
       snapshotBase,
+      useSharedAttachmentBucket:
+        growthbook?.isOn(featureFlags.mrfV1AttachmentsSharedBucket) ?? false,
     })
       .andThen(writeSnapshot)
       .andThen(({ token }) =>

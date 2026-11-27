@@ -154,12 +154,17 @@ const attachmentIds = [
 ]
 const GENERIC_URL = 'https://example.com/hook'
 const PLUMBER_URL = 'https://plumber.gov.sg/webhooks/payment'
-const growthbook = new GrowthBook({
-  features: {
-    [featureFlags.enableMrfWebhooks]: { defaultValue: true },
-    [featureFlags.mrfPayments]: { defaultValue: true },
-  },
-})
+const growthbookWith = ({ sharedAttachmentBucket = true } = {}) =>
+  new GrowthBook({
+    features: {
+      [featureFlags.enableMrfWebhooks]: { defaultValue: true },
+      [featureFlags.mrfPayments]: { defaultValue: true },
+      [featureFlags.mrfV1AttachmentsSharedBucket]: {
+        defaultValue: sharedAttachmentBucket,
+      },
+    },
+  })
+const growthbook = growthbookWith()
 
 describe('[GATE] payment webhook delivery', () => {
   const objects = new Map<string, string>()
@@ -325,7 +330,10 @@ describe('[GATE] payment webhook delivery', () => {
     return { form, populated, payload, formKeypair }
   }
 
-  const submit = async (options: Parameters<typeof prepare>[0] = {}) => {
+  const submit = async (
+    options: Parameters<typeof prepare>[0] = {},
+    flags = growthbook,
+  ) => {
     const { form, populated, payload, formKeypair } = await prepare(options)
     const paymentId = new mongoose.Types.ObjectId()
     const submission = (
@@ -334,6 +342,7 @@ describe('[GATE] payment webhook delivery', () => {
         paymentId: String(paymentId),
         encryptedPayload: payload,
         verifiedContentPlaintext,
+        growthbook: flags,
         logMeta: { action: 'retry-fidelity-test' },
       })
     )._unsafeUnwrap()
@@ -434,6 +443,54 @@ describe('[GATE] payment webhook delivery', () => {
     })
     expect(data).not.toHaveProperty('encryptedSubmissionSecretKey')
   })
+  it.each([
+    ['on', 'on'],
+    ['on', 'off'],
+    ['off', 'off'],
+    ['off', 'on'],
+  ])(
+    'delivers V1 attachment copies written with the shared bucket flag %s from that bucket on confirmation with it %s',
+    async (writtenWith, confirmedWith) => {
+      const { payment, form, formKeypair } = await submit(
+        { withAttachments: true },
+        growthbookWith({ sharedAttachmentBucket: writtenWith === 'on' }),
+      )
+      await confirm(
+        payment,
+        growthbookWith({ sharedAttachmentBucket: confirmedWith === 'on' }),
+      )
+
+      const writtenTo =
+        writtenWith === 'on'
+          ? `${aws.attachmentS3Bucket}/webhook-v1/${form._id}/`
+          : `${aws.submissionHistoryV1AttachmentS3Bucket}/${form._id}/`
+      const { data } = JSON.parse(posted[0]) as WebhookView
+      const downloaded = await Promise.all(
+        Object.entries(data.attachmentDownloadUrls).map(async ([id, url]) => {
+          const objectPath = new URL(url).pathname.slice(1)
+          const stored = objects.get(objectPath)
+          if (!objectPath.startsWith(writtenTo) || !stored) {
+            return [id, `no copy written at ${objectPath}`]
+          }
+          const { encryptedFile } = JSON.parse(stored)
+          const decrypted = await formsgSdk.crypto.decryptFile(
+            formKeypair.secretKey,
+            {
+              ...encryptedFile,
+              binary: new Uint8Array(
+                Buffer.from(encryptedFile.binary, 'base64'),
+              ),
+            },
+          )
+          return [id, Buffer.from(decrypted!).toString()]
+        }),
+      )
+      expect(Object.fromEntries(downloaded)).toEqual({
+        [attachmentIds[0]]: 'Scanned attachment',
+        [attachmentIds[1]]: 'Scanned attachment',
+      })
+    },
+  )
   it('carries verified plaintext through the payment respondent controller into the delivered V1 payload', async () => {
     const input = await prepare()
     const response = await submitThroughRoute(input)
@@ -469,26 +526,28 @@ describe('[GATE] payment webhook delivery', () => {
   it.each([
     [
       'snapshot',
-      aws.submissionHistoryV1S3Bucket,
+      ({ Bucket }: PutObjectCommand['input']) =>
+        Bucket === aws.submissionHistoryV1S3Bucket,
       500,
       'Failed to save submission. Please try again later.',
     ],
     [
       'attachment',
-      aws.submissionHistoryV1AttachmentS3Bucket,
+      ({ Bucket, Key }: PutObjectCommand['input']) =>
+        Bucket === aws.attachmentS3Bucket && Key!.startsWith('webhook-v1/'),
       400,
       'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
     ],
   ])(
     'rejects a required %s write failure before saving pending or creating a PaymentIntent, even without a URL',
-    async (_kind, bucket, status, message) => {
+    async (_kind, isRequiredWrite, status, message) => {
       const input = await prepare({ withAttachments: true, webhookUrl: '' })
       const send = jest.mocked(aws.s3.send).getMockImplementation()!
       jest.mocked(aws.s3.send).mockImplementation(async (...args) => {
         const [command] = args
         if (
           command instanceof PutObjectCommand &&
-          command.input.Bucket === bucket
+          isRequiredWrite(command.input)
         )
           throw new Error('S3 unavailable')
         return send(...args)
@@ -611,6 +670,7 @@ describe('[GATE] payment webhook delivery', () => {
         features: {
           [featureFlags.mrfPayments]: { defaultValue: true },
           [featureFlags.enableMrfWebhooks]: { defaultValue: enabled },
+          [featureFlags.mrfV1AttachmentsSharedBucket]: { defaultValue: true },
         },
       })
       const writes: { pendingCount: number; paymentIntentCount: number }[] = []
@@ -654,6 +714,11 @@ describe('[GATE] payment webhook delivery', () => {
           key.startsWith(`${aws.submissionHistoryV4S3Bucket}/`),
         ),
       ).toHaveLength(1)
+      expect(
+        [...objects.keys()].filter((key) =>
+          key.startsWith(`${aws.submissionHistoryV1AttachmentS3Bucket}/`),
+        ),
+      ).toEqual([])
       for (const [, body] of snapshots) {
         const snapshot = JSON.parse(body)
         expect(
@@ -662,9 +727,12 @@ describe('[GATE] payment webhook delivery', () => {
             version: 2.1,
           })?.verified,
         ).toEqual({ cpUen: '201234567A', cpUid: 'S1234567D' })
-        for (const key of Object.values(snapshot.attachmentMetadata)) {
+        for (const key of Object.values<string>(snapshot.attachmentMetadata)) {
+          expect(key.startsWith(`webhook-v1/${input.populated._id}/`)).toBe(
+            true,
+          )
           const stored = JSON.parse(
-            objects.get(`${aws.submissionHistoryV1AttachmentS3Bucket}/${key}`)!,
+            objects.get(`${aws.attachmentS3Bucket}/${key}`)!,
           )
           const decrypted = await formsgSdk.crypto.decryptFile(
             input.formKeypair.secretKey,
@@ -811,11 +879,11 @@ describe('[GATE] payment webhook delivery', () => {
     },
   )
   it.each([
-    ['V1', GENERIC_URL, PLUMBER_URL, aws.submissionHistoryV1AttachmentS3Bucket],
-    ['V4', PLUMBER_URL, GENERIC_URL, aws.attachmentS3Bucket],
+    ['V1', GENERIC_URL, PLUMBER_URL, 'webhook-v1/'],
+    ['V4', PLUMBER_URL, GENERIC_URL, ''],
   ])(
     'retries payment %s to the current URL in its original format after a consumer change',
-    async (format, before, after, bucket) => {
+    async (format, before, after, keyPrefix) => {
       const { payment, form } = await submit({
         webhookUrl: before,
         withAttachments: true,
@@ -858,7 +926,9 @@ describe('[GATE] payment webhook delivery', () => {
       })
       expect(normalise(retry)).toEqual(normalise(initial))
       for (const url of Object.values(retry.attachmentDownloadUrls))
-        expect(url).toContain(`/${bucket}/`)
+        expect(url).toContain(
+          `/${aws.attachmentS3Bucket}/${keyPrefix}${form._id}/`,
+        )
       expect(aws.s3.send).toHaveBeenCalledTimes(format === 'V4' ? 0 : 1)
     },
   )

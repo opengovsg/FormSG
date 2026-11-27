@@ -77,9 +77,12 @@ const attachmentIds = [
   new ObjectId().toHexString(),
 ]
 const GENERIC_URL = 'https://example.com/hook'
-const growthbook = new GrowthBook({
-  features: { [featureFlags.enableMrfWebhooks]: { defaultValue: true } },
-})
+const growthbook = new GrowthBook()
+const setSharedAttachmentBucketFlag = (on: boolean) =>
+  growthbook.setFeatures({
+    [featureFlags.enableMrfWebhooks]: { defaultValue: true },
+    [featureFlags.mrfV1AttachmentsSharedBucket]: { defaultValue: on },
+  })
 
 describe('[GATE] webhook retry consumer fidelity', () => {
   const objects = new Map<string, string>()
@@ -93,6 +96,7 @@ describe('[GATE] webhook retry consumer fidelity', () => {
   })
 
   beforeEach(() => {
+    setSharedAttachmentBucketFlag(true)
     objects.clear()
     queued = []
     posted = []
@@ -150,9 +154,10 @@ describe('[GATE] webhook retry consumer fidelity', () => {
     webhookUrl = GENERIC_URL,
     webhookFormat = undefined as 'v1' | 'v4' | undefined,
   } = {}) => {
+    const formKeypair = formsgSdk.crypto.generate()
     const { form } = await dbHandler.insertMultirespondentForm({
       formOptions: {
-        publicKey: formsgSdk.crypto.generate().publicKey,
+        publicKey: formKeypair.publicKey,
         workflow: [],
         form_fields: [
           {
@@ -248,7 +253,7 @@ describe('[GATE] webhook retry consumer fidelity', () => {
       await new Promise((resolve) => setTimeout(resolve, 10))
     }
     expect(queued).toHaveLength(1)
-    return { submission, form }
+    return { submission, form, formKeypair }
   }
 
   const consume = async (body = queued[queued.length - 1]) => {
@@ -335,22 +340,12 @@ describe('[GATE] webhook retry consumer fidelity', () => {
   )
 
   it.each([
-    [
-      'generic V1',
-      GENERIC_URL,
-      aws.submissionHistoryV1AttachmentS3Bucket,
-      'v1',
-    ],
-    ['generic V4', GENERIC_URL, aws.attachmentS3Bucket, 'v4'],
-    [
-      'Plumber V4',
-      'https://plumber.gov.sg/webhooks/retry',
-      aws.attachmentS3Bucket,
-      'v4',
-    ],
+    ['generic V1', GENERIC_URL, 'webhook-v1/', 'v1'],
+    ['generic V4', GENERIC_URL, '', 'v4'],
+    ['Plumber V4', 'https://plumber.gov.sg/webhooks/retry', '', 'v4'],
   ])(
     'replays %s with fresh URLs targeting the same attachment objects for every field',
-    async (_case, webhookUrl, bucket, format) => {
+    async (_case, webhookUrl, keyPrefix, format) => {
       const { submission, form } = await submit({
         withAttachments: true,
         webhookUrl,
@@ -398,9 +393,75 @@ describe('[GATE] webhook retry consumer fidelity', () => {
       })
       for (const url of Object.values(retry.attachmentDownloadUrls)) {
         const objectKey = new URL(url).pathname.slice(1)
-        expect(objectKey.startsWith(`${bucket}/`)).toBe(true)
+        expect(objectKey).toMatch(
+          new RegExp(`^${aws.attachmentS3Bucket}/${keyPrefix}${form._id}/`),
+        )
         expect(objects.has(objectKey)).toBe(true)
       }
+      expect(
+        [...objects.keys()].filter((key) =>
+          key.startsWith(`${aws.submissionHistoryV1AttachmentS3Bucket}/`),
+        ),
+      ).toEqual([])
+    },
+  )
+
+  it.each([
+    ['on', 'on'],
+    ['on', 'off'],
+    ['off', 'off'],
+    ['off', 'on'],
+  ])(
+    'signs a V1 copy written with the shared bucket flag %s and retried with it %s against the bucket it was written to',
+    async (writtenWith, retriedWith) => {
+      setSharedAttachmentBucketFlag(writtenWith === 'on')
+      const { form, formKeypair } = await submit({
+        withAttachments: true,
+        webhookFormat: 'v1',
+      })
+      setSharedAttachmentBucketFlag(retriedWith === 'on')
+
+      await consume()
+
+      expect(posted).toHaveLength(2)
+      const writtenTo =
+        writtenWith === 'on'
+          ? `${aws.attachmentS3Bucket}/webhook-v1/${form._id}/`
+          : `${aws.submissionHistoryV1AttachmentS3Bucket}/${form._id}/`
+      const downloadAndDecrypt = async (body: string) => {
+        const { attachmentDownloadUrls } = (JSON.parse(body) as WebhookView)
+          .data
+        return Object.fromEntries(
+          await Promise.all(
+            Object.entries(attachmentDownloadUrls).map(async ([id, url]) => {
+              const objectPath = new URL(url).pathname.slice(1)
+              const stored = objects.get(objectPath)
+              if (!objectPath.startsWith(writtenTo) || !stored) {
+                return [id, `no copy written at ${objectPath}`]
+              }
+              const { encryptedFile } = JSON.parse(stored)
+              const decrypted = await formsgSdk.crypto.decryptFile(
+                formKeypair.secretKey,
+                {
+                  ...encryptedFile,
+                  binary: new Uint8Array(
+                    Buffer.from(encryptedFile.binary, 'base64'),
+                  ),
+                },
+              )
+              return [id, Buffer.from(decrypted!).toString()]
+            }),
+          ),
+        )
+      }
+      const decrypted = {
+        [attachmentIds[0]]: 'Scanned attachment',
+        [attachmentIds[1]]: 'Scanned attachment',
+      }
+      expect(await Promise.all(posted.map(downloadAndDecrypt))).toEqual([
+        decrypted,
+        decrypted,
+      ])
     },
   )
 

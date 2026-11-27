@@ -4,8 +4,12 @@ import { okAsync, ResultAsync } from 'neverthrow'
 import { ParsedClearFormFieldResponsesV4 } from '../../../../../types/api'
 import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
+import { V1_ATTACHMENT_KEY_PREFIX } from '../../../webhook/webhook.constants'
 import { AttachmentUploadError } from '../../submission.errors'
-import { uploadAttachments } from '../../submission.service'
+import {
+  AttachmentUploadTarget,
+  uploadAttachments,
+} from '../../submission.service'
 import { AttachmentMetadata } from '../../submission.types'
 import {
   getEncryptedAttachmentsMapFromAttachmentsMap,
@@ -15,6 +19,19 @@ import {
 import { V1ContentMappingError } from './submission-snapshot.errors'
 
 const logger = createLoggerWithLabel(module)
+
+const v1AttachmentUploadTarget = (
+  useSharedAttachmentBucket: boolean,
+): AttachmentUploadTarget =>
+  useSharedAttachmentBucket
+    ? {
+        bucket: AwsConfig.attachmentS3Bucket,
+        keyPrefix: V1_ATTACHMENT_KEY_PREFIX,
+      }
+    : {
+        bucket: AwsConfig.submissionHistoryV1AttachmentS3Bucket,
+        keyPrefix: '',
+      }
 
 /**
  * Extracts all attachments responses from the given responses.
@@ -34,7 +51,8 @@ const getFieldIdToAttachmentsMap = (
 
 /**
  * Produces the form public key encrypted copy of every attachment from the given responses and
- * uploads it to the V1 attachment bucket.
+ * uploads it to the shared attachment bucket under V1_ATTACHMENT_KEY_PREFIX, or to the legacy V1
+ * attachment bucket unprefixed when useSharedAttachmentBucket is off.
  *
  * @returns ok(AttachmentMetadata) A map of field id to the s3 key of the uploaded attachment
  */
@@ -42,11 +60,13 @@ export const encryptAndUploadAttachmentInV1 = ({
   formId,
   responses,
   formPublicKey,
+  useSharedAttachmentBucket,
   logMeta,
 }: {
   formId: string
   responses: ParsedClearFormFieldResponsesV4
   formPublicKey: string
+  useSharedAttachmentBucket: boolean
   logMeta: Record<string, unknown>
 }): ResultAsync<
   AttachmentMetadata,
@@ -77,7 +97,7 @@ export const encryptAndUploadAttachmentInV1 = ({
     uploadAttachments(
       formId,
       v1EncryptedAttachmentsData,
-      AwsConfig.submissionHistoryV1AttachmentS3Bucket,
+      v1AttachmentUploadTarget(useSharedAttachmentBucket),
     ),
   )
 }

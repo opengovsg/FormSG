@@ -2,6 +2,7 @@ import { GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
 import assert from 'assert/strict'
 
 import { aws as AwsConfig } from 'src/app/config/config'
+import { V1_ATTACHMENT_KEY_PREFIX } from 'src/app/modules/webhook/webhook.constants'
 import { s3Operations } from 'src/app/utils/aws-s3'
 
 /** An external S3 substitute: downloads fail unless the object was uploaded.
@@ -17,7 +18,10 @@ export class FakeS3 {
     jest.spyOn(AwsConfig.s3, 'send').mockImplementation(async (command) => {
       if (command instanceof PutObjectCommand) {
         const { Bucket, Key, Body } = command.input
-        if (Bucket === AwsConfig.submissionHistoryV1AttachmentS3Bucket) {
+        if (
+          Bucket === AwsConfig.submissionHistoryV1AttachmentS3Bucket ||
+          Key!.startsWith(V1_ATTACHMENT_KEY_PREFIX)
+        ) {
           await this.beforeV1Upload()
         }
         this.objects.set(
@@ -64,9 +68,9 @@ export class FakeS3 {
     return target
   }
 
-  objectsIn(bucket: string): Buffer[] {
+  objectsIn(bucket: string, keyPrefix = ''): Buffer[] {
     return [...this.objects.entries()]
-      .filter(([key]) => key.startsWith(`${bucket}/`))
+      .filter(([key]) => key.startsWith(`${bucket}/${keyPrefix}`))
       .map(([, body]) => body)
   }
 

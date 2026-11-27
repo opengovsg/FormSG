@@ -64,3 +64,13 @@ export const DUE_TIME_TOLERANCE_SECONDS = minutes(1)
  *
  */
 export const WEBHOOK_MAX_CONTENT_LENGTH = 1000000
+
+/**
+ * Leads the key of every V1 attachment copy in the shared attachment bucket.
+ * A V1 attachment key with this prefix is stored in the shared attachment
+ * bucket. One without it is stored in the legacy V1 attachment bucket.
+ *
+ * RATIONALE: The prefix leads the key so an S3 lifecycle rule can target the
+ * V1 copies by prefix, apart from the native attachments in the same bucket.
+ */
+export const V1_ATTACHMENT_KEY_PREFIX = 'webhook-v1/'

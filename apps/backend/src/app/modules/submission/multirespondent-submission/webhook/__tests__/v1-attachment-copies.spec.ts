@@ -183,16 +183,23 @@ const buildPayload = async (
   } as unknown as MultirespondentSubmissionDto
 }
 
-const growthbookWith = (enableMrfWebhooks: boolean) =>
+const growthbookWith = (
+  enableMrfWebhooks: boolean,
+  sharedAttachmentBucket = true,
+) =>
   ({
     isOn: jest.fn(
       (flag: string) =>
-        flag === featureFlags.enableMrfWebhooks && enableMrfWebhooks,
+        (flag === featureFlags.enableMrfWebhooks && enableMrfWebhooks) ||
+        (flag === featureFlags.mrfV1AttachmentsSharedBucket &&
+          sharedAttachmentBucket),
     ),
     getFeatureValue: jest.fn((_flag: string, def: unknown) => def),
   }) as never
 
 const flushPromises = () => new Promise((resolve) => setImmediate(resolve))
+
+const V1_COPY_KEY_PREFIX = 'webhook-v1/'
 
 const SECOND_ATTACHMENT = {
   id: new ObjectId().toHexString(),
@@ -237,11 +244,12 @@ describe('[GATE] V1 attachment form-key copies', () => {
     attachments = DEFAULT_ATTACHMENTS,
     isRetryEnabled = true,
     webhookUrl = GENERIC_URL,
+    sharedAttachmentBucket = true,
   } = {}) => ({
     form: await buildForm({ url: webhookUrl, isRetryEnabled }, attachments),
     encryptedPayload: await buildPayload(attachments),
     logMeta: { action: 'test' },
-    growthbook: growthbookWith(true),
+    growthbook: growthbookWith(true, sharedAttachmentBucket),
   })
 
   const submitThroughController = async (
@@ -297,7 +305,7 @@ describe('[GATE] V1 attachment form-key copies', () => {
   const downloadAndDecryptAttachments = async (
     body: WebhookData,
     secretKey = formKeypair.secretKey,
-    bucket = AwsConfig.submissionHistoryV1AttachmentS3Bucket,
+    bucket = AwsConfig.attachmentS3Bucket,
   ) =>
     Object.fromEntries(
       await Promise.all(
@@ -348,10 +356,80 @@ describe('[GATE] V1 attachment form-key copies', () => {
 
   it('keeps every attachment associated with its field in the V1 delivery', async () => {
     const { body } = await submit({ attachments: TWO_ATTACHMENTS })
-    // Downloading both URLs requires both files to have been PUT into the V1 bucket.
+    // Downloading both URLs requires both files to have been PUT into the shared bucket.
     expect(await downloadAndDecryptAttachments(body)).toEqual({
       [attachmentId]: ATTACHMENT_PLAINTEXT,
       [SECOND_ATTACHMENT.id]: Buffer.from([0, 255, 128, 1]),
+    })
+  })
+
+  it('stores the V1 copies in the shared attachment bucket under the form key prefix and nothing in the legacy V1 bucket', async () => {
+    const { body } = await submit({ attachments: TWO_ATTACHMENTS })
+    const copyKey = new RegExp(
+      `^${V1_COPY_KEY_PREFIX}${body.formId}/[0-9a-f]{40}/[0-9a-f]{64}$`,
+    )
+    expect({
+      deliveredTargets: Object.values(body.attachmentDownloadUrls).map((url) =>
+        storage.targetOf(url),
+      ),
+      storedCopies: storage.objectsIn(
+        AwsConfig.attachmentS3Bucket,
+        `${V1_COPY_KEY_PREFIX}${body.formId}/`,
+      ).length,
+      legacyObjects: storage.objectsIn(
+        AwsConfig.submissionHistoryV1AttachmentS3Bucket,
+      ),
+    }).toEqual({
+      deliveredTargets: [
+        {
+          bucket: AwsConfig.attachmentS3Bucket,
+          key: expect.stringMatching(copyKey),
+        },
+        {
+          bucket: AwsConfig.attachmentS3Bucket,
+          key: expect.stringMatching(copyKey),
+        },
+      ],
+      storedCopies: 2,
+      legacyObjects: [],
+    })
+  })
+
+  it('stores the V1 copies unprefixed in the legacy V1 bucket for the consumer to decrypt while the shared bucket flag is off', async () => {
+    const { body } = await submit({
+      attachments: TWO_ATTACHMENTS,
+      sharedAttachmentBucket: false,
+    })
+    const copyKey = new RegExp(`^${body.formId}/[0-9a-f]{40}/[0-9a-f]{64}$`)
+    expect({
+      deliveredTargets: Object.values(body.attachmentDownloadUrls).map((url) =>
+        storage.targetOf(url),
+      ),
+      sharedBucketCopies: storage.objectsIn(
+        AwsConfig.attachmentS3Bucket,
+        V1_COPY_KEY_PREFIX,
+      ),
+      decrypted: await downloadAndDecryptAttachments(
+        body,
+        formKeypair.secretKey,
+        AwsConfig.submissionHistoryV1AttachmentS3Bucket,
+      ),
+    }).toEqual({
+      deliveredTargets: [
+        {
+          bucket: AwsConfig.submissionHistoryV1AttachmentS3Bucket,
+          key: expect.stringMatching(copyKey),
+        },
+        {
+          bucket: AwsConfig.submissionHistoryV1AttachmentS3Bucket,
+          key: expect.stringMatching(copyKey),
+        },
+      ],
+      sharedBucketCopies: [],
+      decrypted: {
+        [attachmentId]: ATTACHMENT_PLAINTEXT,
+        [SECOND_ATTACHMENT.id]: Buffer.from([0, 255, 128, 1]),
+      },
     })
   })
 
@@ -388,7 +466,7 @@ describe('[GATE] V1 attachment form-key copies', () => {
     const recordedTargets = Object.fromEntries(
       Object.entries(snapshot.attachmentMetadata ?? {}).map(([id, key]) => [
         id,
-        { bucket: AwsConfig.submissionHistoryV1AttachmentS3Bucket, key },
+        { bucket: AwsConfig.attachmentS3Bucket, key },
       ]),
     )
     const deliveredTargets = Object.fromEntries(
@@ -415,9 +493,15 @@ describe('[GATE] V1 attachment form-key copies', () => {
 
   it('does not create unused V1 copies for a Plumber delivery', async () => {
     await submit({ webhookUrl: PLUMBER_URL })
-    expect(
-      storage.objectsIn(AwsConfig.submissionHistoryV1AttachmentS3Bucket),
-    ).toEqual([])
+    expect({
+      copies: storage.objectsIn(
+        AwsConfig.attachmentS3Bucket,
+        V1_COPY_KEY_PREFIX,
+      ),
+      legacyObjects: storage.objectsIn(
+        AwsConfig.submissionHistoryV1AttachmentS3Bucket,
+      ),
+    }).toEqual({ copies: [], legacyObjects: [] })
   })
 
   it('still lets the consumer download all attachments when retries are disabled', async () => {
@@ -477,7 +561,8 @@ describe('[GATE] V1 attachment form-key copies', () => {
     expect({
       error: result._unsafeUnwrapErr(),
       uploadedAttachments: storage.objectsIn(
-        AwsConfig.submissionHistoryV1AttachmentS3Bucket,
+        AwsConfig.attachmentS3Bucket,
+        V1_COPY_KEY_PREFIX,
       ).length,
       ...(await getSubmissionAndSnapshotCounts(String(args.form._id))),
     }).toEqual({

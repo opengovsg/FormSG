@@ -2508,6 +2508,76 @@ describe('submission.service', () => {
     })
   })
 
+  describe('uploadAttachments', () => {
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_ATTACHMENTS = {
+      fieldOne: { encryptedFile: { binary: 'one' } },
+      fieldTwo: { encryptedFile: { binary: 'two' } },
+    }
+
+    afterEach(() => jest.restoreAllMocks())
+
+    const upload = async (
+      target?: SubmissionService.AttachmentUploadTarget,
+    ) => {
+      const putSpy = jest
+        .spyOn(s3Operations, 'putObject')
+        .mockResolvedValue({} as never)
+      const result = await SubmissionService.uploadAttachments(
+        MOCK_FORM_ID,
+        MOCK_ATTACHMENTS,
+        target,
+      )
+      return {
+        metadata: Object.fromEntries(result._unsafeUnwrap()),
+        puts: putSpy.mock.calls.map(([{ Bucket, Key, Body }]) => ({
+          Bucket,
+          Key,
+          Body: String(Body),
+        })),
+      }
+    }
+
+    it.each([
+      [
+        'the attachment bucket with no key prefix by default',
+        undefined,
+        aws.attachmentS3Bucket,
+        '',
+      ],
+      [
+        'the given bucket under the given key prefix',
+        { bucket: 'given-bucket', keyPrefix: 'webhook-v1/' },
+        'given-bucket',
+        'webhook-v1/',
+      ],
+    ])(
+      'should upload each attachment keyed by form id to %s',
+      async (_case, target, expectedBucket, expectedKeyStart) => {
+        const { metadata, puts } = await upload(target)
+
+        const key = expect.stringMatching(
+          new RegExp(
+            `^${expectedKeyStart}${MOCK_FORM_ID}/[0-9a-f]{40}/[0-9a-f]{64}$`,
+          ),
+        )
+        expect(metadata).toEqual({ fieldOne: key, fieldTwo: key })
+        expect(puts).toEqual([
+          {
+            Bucket: expectedBucket,
+            Key: metadata.fieldOne,
+            Body: JSON.stringify(MOCK_ATTACHMENTS.fieldOne),
+          },
+          {
+            Bucket: expectedBucket,
+            Key: metadata.fieldTwo,
+            Body: JSON.stringify(MOCK_ATTACHMENTS.fieldTwo),
+          },
+        ])
+      },
+    )
+  })
+
   describe('validateAttachments', () => {
     it('should reject email mode submissions when attachments are more than 7MB', async () => {
       const processedResponse1 = generateNewAttachmentResponse({

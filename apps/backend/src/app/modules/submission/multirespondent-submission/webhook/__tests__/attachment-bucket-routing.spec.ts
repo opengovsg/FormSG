@@ -28,6 +28,11 @@ const ATTACHMENT_KEYS = {
   'field-two': 'form-id/bbbb/object-two',
 }
 
+const PREFIXED_V1_KEYS = {
+  'field-one': 'webhook-v1/form-id/cccc/object-one',
+  'field-two': 'webhook-v1/form-id/dddd/object-two',
+}
+
 const viewWith = (data: Partial<WebhookData> = {}): WebhookView =>
   ({
     data: {
@@ -68,7 +73,32 @@ describe('[GATE] attachment bucket routing', () => {
   const postedUrls = () =>
     (MockAxios.post.mock.calls[0][1] as WebhookView).data.attachmentDownloadUrls
 
-  it('should presign a V1 delivery against the V1 attachment bucket', async () => {
+  it('should presign a V1 delivery of prefixed copies against the shared attachment bucket', async () => {
+    await sendWebhook(
+      viewWith({ version: 2.1, attachmentDownloadUrls: PREFIXED_V1_KEYS }),
+      WEBHOOK_URL,
+      'v1',
+    )
+
+    expect(signCalls).toEqual(
+      Object.values(PREFIXED_V1_KEYS).map((Key) => ({
+        Bucket: AwsConfig.attachmentS3Bucket,
+        Key,
+      })),
+    )
+    expect(postedUrls()).toEqual({
+      'field-one': signedUrlFor({
+        Bucket: AwsConfig.attachmentS3Bucket,
+        Key: PREFIXED_V1_KEYS['field-one'],
+      }),
+      'field-two': signedUrlFor({
+        Bucket: AwsConfig.attachmentS3Bucket,
+        Key: PREFIXED_V1_KEYS['field-two'],
+      }),
+    })
+  })
+
+  it('should presign a V1 delivery of legacy unprefixed copies against the legacy V1 attachment bucket', async () => {
     await sendWebhook(viewWith({ version: 2.1 }), WEBHOOK_URL, 'v1')
 
     expect(signCalls).toEqual(
