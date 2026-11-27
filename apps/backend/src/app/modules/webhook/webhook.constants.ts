@@ -64,3 +64,9 @@ export const DUE_TIME_TOLERANCE_SECONDS = minutes(1)
  *
  */
 export const WEBHOOK_MAX_CONTENT_LENGTH = 1000000
+
+/**
+ * Leads the key of every V1 attachment copy in the shared attachment bucket,
+ * so an S3 lifecycle rule can target the copies by prefix.
+ */
+export const V1_ATTACHMENT_KEY_PREFIX = 'webhook-v1/'

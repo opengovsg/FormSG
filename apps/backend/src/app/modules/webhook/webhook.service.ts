@@ -25,7 +25,10 @@ import type {
 } from '../submission/multirespondent-submission/webhook/webhook-payload-policy'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 
-import { WEBHOOK_MAX_CONTENT_LENGTH } from './webhook.constants'
+import {
+  V1_ATTACHMENT_KEY_PREFIX,
+  WEBHOOK_MAX_CONTENT_LENGTH,
+} from './webhook.constants'
 import {
   WebhookFailedWithAxiosError,
   WebhookFailedWithPresignedUrlGenerationError,
@@ -85,11 +88,15 @@ export const saveWebhookRecord = (
   })
 }
 
-// RATIONALE: V1 attachments are encrypted using the form secret key, and are thus stored in a different bucket.
-const attachmentBucketForContentFormat = (
+// V1 copies written before V1_ATTACHMENT_KEY_PREFIX existed live in the legacy
+// V1 bucket, and their retries re-sign the unprefixed keys frozen in V1
+// snapshots. Delete this branch and the legacy bucket config once those
+// snapshots are past the retry window.
+const attachmentBucketForKey = (
+  key: string,
   contentFormat?: WebhookContentFormat,
 ): string =>
-  contentFormat === 'v1'
+  contentFormat === 'v1' && !key.startsWith(V1_ATTACHMENT_KEY_PREFIX)
     ? AwsConfig.submissionHistoryV1AttachmentS3Bucket
     : AwsConfig.attachmentS3Bucket
 
@@ -99,12 +106,10 @@ const createWebhookSubmissionView = (
 ): Promise<WebhookView> => {
   // Generate S3 signed urls
   const signedUrlPromises: Record<string, Promise<string>> = {}
-  for (const key in submissionWebhookView.data.attachmentDownloadUrls) {
-    signedUrlPromises[key] = getSignedS3Url(
-      {
-        Bucket: attachmentBucketForContentFormat(contentFormat),
-        Key: submissionWebhookView.data.attachmentDownloadUrls[key],
-      },
+  for (const fieldId in submissionWebhookView.data.attachmentDownloadUrls) {
+    const key = submissionWebhookView.data.attachmentDownloadUrls[fieldId]
+    signedUrlPromises[fieldId] = getSignedS3Url(
+      { Bucket: attachmentBucketForKey(key, contentFormat), Key: key },
       60 * 60, // one hour expiry
     )
   }
