@@ -8,12 +8,14 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 
 import { createLoggerWithLabel } from '../../../config/logger'
+import { buildErrorDto } from '../../../utils/i18n-error'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
 import { ControllerHandler } from '../../core/core.types'
 import * as IssueService from '../../issue/issue.service'
 import * as UserService from '../../user/user.service'
 
+import { adminFormErrorKey } from './admin-form.i18n'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
 
@@ -60,8 +62,8 @@ export const handleGetFormIssues: ControllerHandler<
         },
         error,
       })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      const { statusCode, ...errorResponse } = mapRouteError(error)
+      return res.status(statusCode).json(buildErrorDto(errorResponse))
     })
 }
 
@@ -107,10 +109,10 @@ export const handleStreamFormIssues: ControllerHandler<
       meta: logMeta,
       error: hasReadPermissionResult.error,
     })
-    const { errorMessage, statusCode } = mapRouteError(
+    const { statusCode, ...errorResponse } = mapRouteError(
       hasReadPermissionResult.error,
     )
-    return res.status(statusCode).json({ message: errorMessage })
+    return res.status(statusCode).json(buildErrorDto(errorResponse))
   }
 
   // No errors, start stream.
@@ -123,9 +125,12 @@ export const handleStreamFormIssues: ControllerHandler<
         meta: logMeta,
         error,
       })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: 'Error retrieving from database.',
-      })
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(
+        buildErrorDto({
+          errorMessage: 'Error retrieving from database.',
+          errorMessageKey: adminFormErrorKey('exports.databaseRetrieval'),
+        }),
+      )
     })
     .pipe(JSONStream.stringify())
     .on('error', (error) => {
@@ -134,9 +139,12 @@ export const handleStreamFormIssues: ControllerHandler<
         meta: logMeta,
         error,
       })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: 'Error converting issue to JSON.',
-      })
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(
+        buildErrorDto({
+          errorMessage: 'Error converting issue to JSON.',
+          errorMessageKey: adminFormErrorKey('exports.issue.jsonConversion'),
+        }),
+      )
     })
     .pipe(res.type('json'))
     .on('error', (error) => {

@@ -1,3 +1,5 @@
+import { I18nMessageParams } from 'formsg-shared/types'
+
 import { setErrorCode, submitErrorCountMetric } from '../datadog/datadog.utils'
 
 /**
@@ -310,6 +312,12 @@ export class ApplicationError extends Error {
   meta?: unknown
   // FormSG Business Logic errors, not to be confused with HTTP Status Codes
   code?: number
+  /**
+   * i18n key and interpolation params for the frontend to translate
+   * `message`, if any.
+   */
+  messageKey?: string
+  messageParams?: I18nMessageParams
 
   constructor(message?: string, meta?: unknown, errorCode?: number) {
     super()

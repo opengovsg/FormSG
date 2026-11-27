@@ -17,6 +17,7 @@ import { IEncryptedFormDocument, IPopulatedForm } from 'src/types'
 
 import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
+import { buildErrorDto } from '../../../utils/i18n-error'
 import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import * as AuthService from '../../auth/auth.service'
@@ -125,8 +126,8 @@ export const handleConnectAccount: ControllerHandler<{
           error,
         })
 
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        const { statusCode, ...errorResponse } = mapRouteError(error)
+        return res.status(statusCode).json(buildErrorDto(errorResponse))
       })
   )
 }
@@ -178,8 +179,8 @@ export const handleUnlinkAccount: ControllerHandler<{
           error,
         })
 
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        const { statusCode, ...errorResponse } = mapRouteError(error)
+        return res.status(statusCode).json(buildErrorDto(errorResponse))
       })
   )
 }
@@ -235,8 +236,8 @@ export const handleValidatePaymentAccount: ControllerHandler<{
           error,
         })
 
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        const { statusCode, ...errorResponse } = mapRouteError(error)
+        return res.status(statusCode).json(buildErrorDto(errorResponse))
       })
   )
 }
@@ -312,8 +313,8 @@ const _handleUpdatePayments: ControllerHandler<
           meta: logMeta,
           error,
         })
-        const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        const { statusCode, ...errorResponse } = mapRouteError(error)
+        return res.status(statusCode).json(buildErrorDto(errorResponse))
       })
   )
 }
@@ -364,8 +365,8 @@ export const _handleUpdatePaymentsProduct: ControllerHandler<
           },
           error,
         })
-        const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        const { statusCode, ...errorResponse } = mapRouteError(error)
+        return res.status(statusCode).json(buildErrorDto(errorResponse))
       })
   )
 }

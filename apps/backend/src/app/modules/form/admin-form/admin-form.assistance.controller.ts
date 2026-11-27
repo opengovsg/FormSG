@@ -7,6 +7,7 @@ import {
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
+import { buildErrorDto } from '../../../utils/i18n-error'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
 import { ControllerHandler } from '../../core/core.types'
@@ -93,8 +94,8 @@ const _handleTextPrompt: ControllerHandler<
         },
         error,
       })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      const { statusCode, ...errorResponse } = mapRouteError(error)
+      return res.status(statusCode).json(buildErrorDto(errorResponse))
     })
 }
 
@@ -182,8 +183,8 @@ const _handleVisionPrompt: ControllerHandler<
           },
           error,
         })
-        const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        const { statusCode, ...errorResponse } = mapRouteError(error)
+        return res.status(statusCode).json(buildErrorDto(errorResponse))
       })
   )
 }

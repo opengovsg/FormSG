@@ -76,6 +76,7 @@ import {
 } from '../../services/turnstile/turnstile.errors'
 import { CreatePresignedPostError } from '../../utils/aws-s3'
 import { genericMapRouteErrorTransform } from '../../utils/error'
+import { buildErrorDto } from '../../utils/i18n-error'
 import {
   DatabaseConflictError,
   DatabaseError,
@@ -189,16 +190,6 @@ const PUBLIC_FORM_BACKEND_ERROR_KEY_PREFIX =
 
 const submissionErrorKey = (suffix: string) =>
   `${PUBLIC_FORM_BACKEND_ERROR_KEY_PREFIX}.${suffix}`
-
-const buildErrorDto = ({
-  errorMessage,
-  errorMessageKey,
-  errorMessageParams,
-}: ErrorResponseData) => ({
-  message: errorMessage,
-  ...(errorMessageKey ? { messageKey: errorMessageKey } : {}),
-  ...(errorMessageParams ? { messageParams: errorMessageParams } : {}),
-})
 
 export const sendRouteError = (
   res: Response,
