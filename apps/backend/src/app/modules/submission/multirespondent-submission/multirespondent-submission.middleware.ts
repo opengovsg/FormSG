@@ -1,4 +1,4 @@
-import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
+import type { FieldResponsesV4, FieldResponseV4 } from '@opengovsg/formsg-sdk'
 import {
   adaptV3ToV4,
   adaptV4ToV3,
@@ -36,7 +36,6 @@ import {
 
 import {
   ParsedClearAttachmentFieldResponseV4,
-  ParsedClearFormFieldResponsesV4,
   ParsedClearFormFieldResponseV4,
 } from '../../../../types/api'
 import {
@@ -824,20 +823,15 @@ export const validateMultirespondentSubmission = async (
                  * meta — question text and myInfo on the adapted response are
                  * unused; downstream consumers source both from the form field.
                  */
-                const previousResponses = (() => {
-                  const responses = previousSubmissionDecryptedContent.responses
-                  if (
-                    !isFieldResponsesV4(responses as Record<string, unknown>)
-                  ) {
-                    // Response is in V3 format, adapt to V4
-                    return adaptV3ToV4(responses, {
+                const { responses } = previousSubmissionDecryptedContent
+                const previousResponses: FieldResponsesV4 = isFieldResponsesV4(
+                  responses,
+                )
+                  ? responses
+                  : adaptV3ToV4(responses, {
                       formFields: {},
                       provenance: {},
-                    }) as ParsedClearFormFieldResponsesV4
-                  }
-                  // Response is in V4 format, return as is
-                  return responses as unknown as ParsedClearFormFieldResponsesV4
-                })()
+                    })
 
                 const previousNonEditableFieldIdsWithResponses = Object.keys(
                   previousResponses,
@@ -869,21 +863,27 @@ export const validateMultirespondentSubmission = async (
                     Result.combine(
                       nonEditableFieldIdsWithResponses.map((fieldId) => {
                         const incomingResField = req.body.responses[fieldId]
-                        const prevResField = previousResponses[fieldId]
+                        const prevResField: FieldResponseV4 | undefined =
+                          previousResponses[fieldId]
 
-                        const resp = isFieldResponseV4Equal(
-                          incomingResField as FieldResponsesV4[string],
-                          prevResField as FieldResponsesV4[string],
-                        )
-
-                        if (!resp) {
+                        if (
+                          !prevResField ||
+                          !isFieldResponseV4Equal(
+                            // ParsedClearAttachmentFieldResponseV4 resolves without
+                            // fieldType because its Extract matches the BasicField
+                            // enum against the SDK's string literal.
+                            incomingResField as FieldResponseV4,
+                            prevResField,
+                          )
+                        ) {
                           logger.info({
                             message:
                               'Submitted response on a non-editable field which did not match previous response',
                             meta: {
                               ...logMeta,
+                              fieldId,
                               incomingResFieldType: incomingResField.fieldType,
-                              prevResFieldType: prevResField.fieldType,
+                              prevResFieldType: prevResField?.fieldType,
                             },
                           })
 
@@ -936,8 +936,7 @@ export const validateMultirespondentSubmission = async (
                   ? checkFixKeepsWorkflowPath({
                       form: { ...formPropertiesForLogicComputation, workflow },
                       workflowStep,
-                      previousResponses:
-                        previousResponses as unknown as FieldResponsesV4,
+                      previousResponses,
                       responses: req.body.responses as FieldResponsesV4,
                     }).map(() => previousResponses)
                   : ok(previousResponses),

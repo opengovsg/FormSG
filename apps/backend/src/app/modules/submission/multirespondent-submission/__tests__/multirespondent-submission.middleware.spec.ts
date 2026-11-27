@@ -2108,6 +2108,48 @@ describe('Multirespondent Submission Middleware', () => {
       expect(mockRes.status).toHaveBeenCalledWith(400)
     })
 
+    it('should reject submission when a non-editable field has no previous response', async () => {
+      jest.mocked(adaptV3ToV4).mockReturnValue({
+        [EDITABLE_FIELD_ID]: MOCK_V4_ADAPTED_RESPONSES[EDITABLE_FIELD_ID],
+      } as any)
+      const mockReq = createMockReq({
+        formId: MOCK_FORM_ID,
+        submissionId: MOCK_SUBMISSION_ID,
+      })
+      mockReq.body.responses = {
+        [EDITABLE_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'updated' },
+          question: 'Editable Field',
+          provenance: {},
+        },
+        [NON_EDITABLE_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'injected' },
+          question: 'Non-editable Field',
+          provenance: {},
+        },
+      }
+      mockReq.body.submissionSecretKey = 'submission-secret-key'
+      mockReq.formsg = {
+        formDef: {
+          _id: MOCK_FORM_ID,
+          form_fields: SNAPSHOT_FORM_FIELDS,
+          form_logics: [],
+          workflow: SNAPSHOT_WORKFLOW,
+        },
+        mrfSubmission: MOCK_MRF_SUBMISSION_V1,
+      }
+
+      const mockNext = jest.fn()
+      const mockRes = createMockRes()
+
+      await validateMultirespondentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+    })
+
     describe('previous answers left out of the submission', () => {
       const submitEditableFieldOnly = async (
         mergedVisibleFieldIds: Set<string>,
