@@ -88,13 +88,12 @@ export const saveWebhookRecord = (
   })
 }
 
-// Unprefixed V1 copies live in the legacy V1 bucket: those written before
-// V1_ATTACHMENT_KEY_PREFIX existed, and those written while the
-// mrfV1AttachmentsSharedBucket flag is off. That flag gates only the writer.
-// Keep this flag-independent: retries re-sign the keys frozen in V1
-// snapshots, so reading the flag here would mis-sign copies written before a
-// flip. Delete this branch and the legacy bucket config once the flag is
-// permanently on and unprefixed snapshots are past the retry window.
+// RATIONALE: Pick the bucket from the key, never from the
+// mrfV1AttachmentsSharedBucket flag. The flag only decides where new V1 copies
+// are written. A retry can run after the flag changes, and the key saved in
+// its snapshot still shows which bucket the copy is in.
+// TODO(#10685): Remove the legacy V1 bucket branch and its config once the
+// flag is permanently on and no unprefixed V1 snapshot is still being retried.
 const attachmentBucketForKey = (
   key: string,
   contentFormat?: WebhookContentFormat,
