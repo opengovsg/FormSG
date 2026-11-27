@@ -1,33 +1,35 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { FieldErrors, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useQueryClient } from 'react-query'
 import { useParams } from 'react-router'
 import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
   Box,
   Divider,
   Stack,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
+  Text,
+  usePrefersReducedMotion,
 } from '@chakra-ui/react'
 
-import {
-  FormAuthType,
-  FormWorkflowStepAuth,
-  FormWorkflowStepBase,
-  FormWorkflowStepWriteDto,
-  WorkflowType,
-} from 'formsg-shared/types'
+import { FormAuthType, FormWorkflowStepWriteDto } from 'formsg-shared/types'
 import { getAuthEsrvcId } from 'formsg-shared/utils/step-login'
 
+import { textStyles } from '~theme/textStyles'
 import InlineMessage from '~components/InlineMessage'
-import { Tab } from '~components/Tabs'
 
 import { useRegisterNavigationSave } from '~features/admin-form/common/navigationSave'
-import { adminFormKeys } from '~features/admin-form/common/queries'
+import {
+  adminFormKeys,
+  useAdminForm,
+} from '~features/admin-form/common/queries'
 import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
+import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
+import { LOGIN_OPTION_COPY } from '~features/admin-form/settings/components/AuthSettingsSection/constants'
 import { saveStepOneLoginRestrictions } from '~features/admin-form/settings/components/AuthSettingsSection/StepOneLoginRestrictions'
 import { adminFormSettingsKeys } from '~features/admin-form/settings/queries'
 import { isValidEsrvcId } from '~features/admin-form/settings/utils'
@@ -42,20 +44,18 @@ import {
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
-import { useGuidedStepReveal } from '../../../hooks/useGuidedStepReveal'
+import { useGuidedStepNavigation } from '../../../hooks/useGuidedStepNavigation'
+import { useIsMrfStepLoginEnabled } from '../../../hooks/useIsMrfStepLoginEnabled'
 import { useIsStepLoginShown } from '../../../hooks/useIsStepLoginShown'
 import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
 import { EditStepInputs } from '../../../types'
 import { getGuidedSecondaryAction } from '../../../utils/guidedStepPolicy'
 import { isWorkflowEmailValidationError } from '../../../utils/isWorkflowEmailValidationError'
-import {
-  normaliseFirstStepLogin,
-  normaliseStepAuth,
-} from '../../../workflow.utils'
-import { SpotlightGroup } from '../../Spotlight'
+import { Spotlight, SpotlightGroup } from '../../Spotlight'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { ApprovalsBlock } from './ApprovalsBlock'
+import { buildWorkflowStep } from './buildWorkflowStep'
 import { GuidedActionGroup } from './GuidedActionGroup'
 import { LoginBlock } from './LoginBlock'
 import { QuestionsBlock } from './QuestionsBlock'
@@ -81,120 +81,40 @@ export const APPROVAL_ENABLED_NAME = 'is_approval_enabled'
 
 const SECTION_REVEAL_SCROLL_DELAY_MS = 100
 const STEP_TABS_KEY = 'features.adminForm.sidebar.workflow.stepLogin.tabs'
-const WRAPPING_TAB_PROPS = { _notFirst: { ml: 0 }, _notLast: { mr: 0 } }
 const SAVE_ERRORS_KEY =
   'features.adminForm.sidebar.workflow.stepLogin.saveErrors'
 
-type StepTab = 'login' | 'fields' | 'approvals'
+type AccordionSection = 'login' | 'fields' | 'approvals'
+type StepSection = 'name' | 'people' | AccordionSection
+const isAccordionSection = (
+  section: StepSection,
+): section is AccordionSection =>
+  section === 'login' || section === 'fields' || section === 'approvals'
 
-type WriteStep = FormWorkflowStepWriteDto & { _id: string }
-
-export const buildWorkflowStep = (
-  rawInputs: EditStepInputs,
-  isFirstStep: boolean,
-): WriteStep | undefined => {
-  const inputs = { ...rawInputs }
-  if (inputs.approval_field === '') {
-    inputs.approval_field = undefined
-  }
-  if (inputs.step_name === '') {
-    inputs.step_name = undefined
-  }
-
-  const fieldDeletion = {
-    ...(inputs.expected_last_modified
-      ? { expected_last_modified: inputs.expected_last_modified }
-      : {}),
-    ...(inputs.delete_auth_field_ids?.length
-      ? { delete_auth_field_ids: inputs.delete_auth_field_ids }
-      : {}),
-  }
-
-  // Step 1 is always "anyone with the link", represented as a static step with
-  // no emails. Legacy forms (pre #7794) may still store step 1 as dynamic with
-  // a `field` that can point at a deleted email field, which the backend
-  // rejects on save — so saving always rewrites step 1 to static, lazily
-  // migrating those forms. Nothing reads step 1's `field` at runtime; step-1
-  // notifications come from `stepOneEmailNotificationFieldId`.
-  if (isFirstStep) {
-    return {
-      _id: inputs._id,
-      ...fieldDeletion,
-      workflow_type: WorkflowType.Static,
-      edit: inputs.edit,
-      approval_field: inputs.approval_field,
-      is_approval_enabled: !!inputs.is_approval_enabled,
-      step_name: inputs.step_name,
-      emails: inputs.emails ?? [],
-      // Only sent once the admin changed Step 1's login in the editor.
-      ...normaliseFirstStepLogin(inputs.first_step_login),
-    }
-  }
-
-  // A saved login is always sent back, even while the login block is hidden,
-  // so a save never drops it.
-  const workflowStepBase: Omit<FormWorkflowStepBase, 'auth'> & {
-    _id: string
-    auth: FormWorkflowStepAuth | null
-  } = {
-    _id: inputs._id,
-    ...fieldDeletion,
-    workflow_type: inputs.workflow_type,
-    edit: inputs.edit,
-    approval_field: inputs.approval_field,
-    is_approval_enabled: !!inputs.is_approval_enabled,
-    step_name: inputs.step_name,
-    auth: normaliseStepAuth(inputs.auth),
-  }
-
-  const workflowType: WorkflowType | undefined = inputs.workflow_type
-  if (!workflowType) {
-    return {
-      ...workflowStepBase,
-      workflow_type: WorkflowType.Static,
-      emails: inputs.emails ?? [],
-    }
-  }
-
-  switch (workflowType) {
-    case WorkflowType.Static: {
-      return {
-        ...workflowStepBase,
-        workflow_type: WorkflowType.Static,
-        emails: inputs.emails ?? [],
-      }
-    }
-    case WorkflowType.Dynamic: {
-      return {
-        ...workflowStepBase,
-        workflow_type: WorkflowType.Dynamic,
-        ...(inputs.field ? { field: inputs.field } : {}),
-      } as WriteStep
-    }
-    case WorkflowType.Conditional: {
-      return {
-        ...workflowStepBase,
-        workflow_type: WorkflowType.Conditional,
-        ...(inputs.conditional_field
-          ? { conditional_field: inputs.conditional_field }
-          : {}),
-      } as WriteStep
-    }
-    case WorkflowType.Hybrid: {
-      return {
-        ...workflowStepBase,
-        workflow_type: WorkflowType.Hybrid,
-        emails: inputs.emails ?? [],
-        email_fields: inputs.email_fields ?? [],
-        dropdown_fields: inputs.dropdown_fields ?? [],
-      }
-    }
-    default: {
-      const exhaustiveCheck: never = workflowType
-      return exhaustiveCheck
-    }
-  }
+const SECTION_FIELDS: Record<StepSection, (keyof EditStepInputs)[]> = {
+  name: ['step_name'],
+  people: ['workflow_type', 'emails', 'field', 'conditional_field'],
+  login: ['auth', 'first_step_login'],
+  fields: ['edit'],
+  approvals: ['approval_field', 'is_approval_enabled'],
 }
+
+const INVALID_INPUT_SELECTORS = [
+  'input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="true"]',
+  '[aria-invalid="true"][tabindex]',
+]
+const FALLBACK_INPUT_SELECTORS = [
+  'input:not([type="hidden"]):not([type="radio"])',
+  '[role="combobox"]',
+  'input',
+  'button',
+]
+const findFirst = (root: Element | null | undefined, selectors: string[]) =>
+  selectors.reduce<HTMLElement | null>(
+    (found, selector) =>
+      found ?? root?.querySelector<HTMLElement>(selector) ?? null,
+    null,
+  )
 
 export const EditStepBlock = ({
   stepNumber,
@@ -212,8 +132,15 @@ export const EditStepBlock = ({
   const isGuidedSetup = useAdminWorkflowStore(isGuidedSetupSelector)
   const isLoginShown = useIsStepLoginShown(stepNumber)
   const { t } = useTranslation()
-  const { cardRadius, activeCardBg, activeCardBorderWidth, activeCardShadow } =
-    useWorkflowSurfaces()
+  const {
+    cardRadius,
+    activeCardBg,
+    activeCardBorderWidth,
+    activeCardShadow,
+    cardHoverBg,
+    iconTransitionDuration,
+  } = useWorkflowSurfaces()
+  const prefersReducedMotion = usePrefersReducedMotion()
 
   const formMethods = useForm<EditStepInputs>({
     defaultValues: {
@@ -223,6 +150,7 @@ export const EditStepBlock = ({
     },
   })
   const { user, isLoading: isUserLoading } = useUser()
+  const { data: form } = useAdminForm()
   const [isSavingRestrictions, setIsSavingRestrictions] = useState(false)
   const [saveError, setSaveError] = useState('')
   const { formId } = useParams()
@@ -242,6 +170,8 @@ export const EditStepBlock = ({
   }, [register, isLoginShown])
 
   const wrapperRef = useRef<HTMLDivElement | null>(null)
+  const saveErrorRef = useRef<HTMLDivElement | null>(null)
+  const skipNextRevealScroll = useRef(false)
 
   useLayoutEffect(() => {
     if (wrapperRef.current) {
@@ -256,13 +186,102 @@ export const EditStepBlock = ({
 
   const { isDirty } = formMethods.formState
 
-  const tabOrder: StepTab[] = [
-    'login',
+  const isGuided = isCreatingState && isGuidedSetup
+  const isStepLoginEnabled = useIsMrfStepLoginEnabled()
+  const isStackedGuide = isGuided && !isStepLoginEnabled
+  const inAccordion = isLoginShown && !isStackedGuide
+  const loginSections: AccordionSection[] = isLoginShown ? ['login'] : []
+  const approvalSections: AccordionSection[] = isFirstStep ? [] : ['approvals']
+  const accordionOrder: AccordionSection[] = [
     'fields',
-    ...(!isFirstStep ? (['approvals'] as const) : []),
+    ...loginSections,
+    ...approvalSections,
   ]
-  const [activeTab, setActiveTab] = useState<StepTab>('login')
-  useEffect(() => setActiveTab('login'), [stepNumber])
+  const sectionOrder: [StepSection, ...StepSection[]] = [
+    'name',
+    'people',
+    ...(inAccordion
+      ? accordionOrder
+      : [...loginSections, ...approvalSections, 'fields' as const]),
+  ]
+  const reveal = useGuidedStepNavigation({
+    sections: sectionOrder,
+    isEnabled: isGuided,
+  })
+  const { activeSection } = reveal
+  const [expandedSections, setExpandedSections] = useState<AccordionSection[]>(
+    () => (isGuided ? [] : ['fields']),
+  )
+  useEffect(() => {
+    if (!isGuided || !isAccordionSection(activeSection)) return
+    setExpandedSections((previous) =>
+      previous.includes(activeSection)
+        ? previous
+        : [...previous, activeSection],
+    )
+  }, [isGuided, activeSection])
+  const [focusSection, setFocusSection] = useState<StepSection | null>(null)
+
+  const openSection = (section: StepSection, focus = false) => {
+    if (!sectionOrder.includes(section)) return
+    const movesAccordionGuide =
+      isGuided && inAccordion && section !== activeSection
+    if (movesAccordionGuide) reveal.goTo(section)
+    if (isAccordionSection(section)) {
+      setExpandedSections((previous) =>
+        previous.includes(section) ? previous : [...previous, section],
+      )
+    }
+    if (focus) {
+      skipNextRevealScroll.current = movesAccordionGuide
+      setFocusSection(section)
+    }
+  }
+
+  useEffect(() => {
+    if (!focusSection) return
+    const frame = requestAnimationFrame(() => {
+      const section = wrapperRef.current?.querySelector(
+        `[data-step-section="${focusSection}"]`,
+      )
+      const input =
+        findFirst(section, INVALID_INPUT_SELECTORS) ??
+        (saveError ? saveErrorRef.current : null) ??
+        findFirst(section, FALLBACK_INPUT_SELECTORS)
+      input?.focus()
+      ;(input ?? section)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      })
+      setFocusSection(null)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [focusSection, saveError])
+
+  const routeValidationErrors = (errors: FieldErrors<EditStepInputs>) => {
+    const section = sectionOrder.find((candidate) =>
+      SECTION_FIELDS[candidate].some((name) => errors[name]),
+    )
+    if (section) openSection(section, true)
+  }
+
+  const continueGuidance = async () => {
+    if (!inAccordion) return reveal.advance()
+    const valid = await formMethods.trigger(SECTION_FIELDS[activeSection])
+    if (!valid) {
+      openSection(activeSection, true)
+      return
+    }
+    if (
+      activeSection === 'login' &&
+      formMethods.getValues('first_step_restrictions_parsing')
+    ) {
+      setSaveError(t(`${SAVE_ERRORS_KEY}.restrictionsParsing`))
+      return
+    }
+    setSaveError('')
+    reveal.advance()
+  }
 
   const saveSucceeded = useRef(false)
   const pendingNavigationSave = useRef<Promise<boolean> | null>(null)
@@ -271,6 +290,7 @@ export const EditStepBlock = ({
     async (inputs: EditStepInputs) => {
       if (inputs.first_step_restrictions_parsing) {
         setSaveError(t(`${SAVE_ERRORS_KEY}.restrictionsParsing`))
+        openSection('login', true)
         cancelPendingSwitch()
         return
       }
@@ -305,19 +325,17 @@ export const EditStepBlock = ({
       } catch (error) {
         cancelPendingSwitch()
         if (!didSaveStep && isWorkflowEmailValidationError(error)) {
-          formMethods.setError(
-            'emails',
-            {
-              type: 'server',
-              message: t(
-                'features.adminForm.sidebar.workflow.staticRespondent.invalidEmails',
-              ),
-            },
-            { shouldFocus: true },
-          )
+          formMethods.setError('emails', {
+            type: 'server',
+            message: t(
+              'features.adminForm.sidebar.workflow.staticRespondent.invalidEmails',
+            ),
+          })
+          openSection('people', true)
           setSaveError('')
           return
         }
+        if (didSaveStep) openSection('login', true)
         setSaveError(
           didSaveStep
             ? t(`${SAVE_ERRORS_KEY}.restrictionsFailed`)
@@ -334,10 +352,7 @@ export const EditStepBlock = ({
       }
     },
     (errors) => {
-      if (!isFirstStep && (errors.approval_field || errors.is_approval_enabled))
-        setActiveTab('approvals')
-      else if (errors.auth || errors.first_step_login) setActiveTab('login')
-      else setActiveTab('fields')
+      routeValidationErrors(errors)
       cancelPendingSwitch()
     },
   )
@@ -363,8 +378,6 @@ export const EditStepBlock = ({
 
   const hasSubmittedForPendingSwitch = useRef(false)
 
-  const isGuided = isCreatingState && isGuidedSetup
-
   const questionsSection = (
     <QuestionsBlock
       key="fields"
@@ -389,73 +402,122 @@ export const EditStepBlock = ({
     />
   )
 
-  const tabSections: Record<StepTab, JSX.Element | null> = {
+  const accordionSections: Record<AccordionSection, JSX.Element | null> = {
     login: loginSection,
     fields: questionsSection,
     approvals: approvalsSection,
   }
 
-  const useProposedTabs = isLoginShown && !isGuided
-  const tabbedSections = (
-    <Tabs
-      key="step-settings"
-      index={tabOrder.indexOf(activeTab)}
-      onChange={(index) => setActiveTab(tabOrder[index])}
+  const assignedFields = formMethods.watch('edit') ?? []
+  const editedAuth = formMethods.watch('auth')
+  const firstStepLogin = formMethods.watch('first_step_login')
+  const authType = isFirstStep
+    ? (firstStepLogin?.auth_type ?? form?.authType ?? FormAuthType.NIL)
+    : (editedAuth?.auth_type ?? FormAuthType.NIL)
+  const approvalEnabled = formMethods.watch('is_approval_enabled')
+  const summaries: Record<AccordionSection, string> = {
+    fields: t(
+      'features.adminForm.sidebar.workflow.stepLogin.summaries.fields',
+      {
+        count: assignedFields.length,
+      },
+    ),
+    login: t(LOGIN_OPTION_COPY[authType].labelKey),
+    approvals: t(
+      `features.adminForm.sidebar.workflow.stepLogin.summaries.${approvalEnabled ? 'approvalRequired' : 'noApproval'}`,
+    ),
+  }
+  const expandableSections = (
+    <Accordion
+      allowMultiple
+      reduceMotion={prefersReducedMotion}
+      index={accordionOrder.flatMap((section, index) =>
+        expandedSections.includes(section) &&
+        (!isGuided || reveal.isReached(section))
+          ? [index]
+          : [],
+      )}
+      onChange={(indexes) => {
+        const next = [indexes].flat().map((index) => accordionOrder[index])
+        const opened = next.find(
+          (section) => !expandedSections.includes(section),
+        )
+        setExpandedSections(next)
+        if (opened) reveal.goTo(opened)
+      }}
     >
-      <Box px={{ base: '1.5rem', md: '2rem' }}>
-        <TabList
-          mx="-0.25rem"
-          w="100%"
-          overflowX="visible"
-          flexWrap="wrap"
-          columnGap="1.5rem"
-          rowGap="0.25rem"
+      {accordionOrder.map((section) => (
+        <AccordionItem
+          key={section}
+          border="0"
+          borderTop="1px solid"
+          borderColor="neutral.300"
         >
-          {tabOrder.map((tab) => (
-            <Tab key={tab} {...WRAPPING_TAB_PROPS}>
-              {t(`${STEP_TABS_KEY}.${tab}`)}
-            </Tab>
-          ))}
-        </TabList>
-        <Divider w="auto" mx={{ base: '-1.5rem', md: '-2rem' }} />
-      </Box>
-      <TabPanels>
-        {tabOrder.map((tab) => (
-          <TabPanel key={tab} px="0" pt="1.5rem">
-            {tabSections[tab]}
-          </TabPanel>
-        ))}
-      </TabPanels>
-    </Tabs>
+          {({ isExpanded }) => (
+            <>
+              <AccordionButton
+                px={{ base: '1.5rem', md: '2rem' }}
+                py="1.5rem"
+                textAlign="left"
+                columnGap="0.75rem"
+                aria-label={t(`${STEP_TABS_KEY}.${section}`)}
+                aria-disabled={isGuided && !reveal.isReached(section)}
+                onClick={(event) => {
+                  if (isGuided && !reveal.isReached(section))
+                    event.preventDefault()
+                }}
+                transitionProperty="background-color"
+                transitionDuration={iconTransitionDuration}
+                _hover={{
+                  bg:
+                    isGuided && !reveal.isReached(section)
+                      ? 'transparent'
+                      : cardHoverBg,
+                }}
+              >
+                <Text flex="1" minW="0" style={textStyles.h4}>
+                  {t(`${STEP_TABS_KEY}.${section}`)}
+                </Text>
+                {!isExpanded ? (
+                  <Box minW="0" maxW="50%">
+                    <LogicBadge bg="white" overflowWrap="anywhere">
+                      {summaries[section]}
+                    </LogicBadge>
+                  </Box>
+                ) : null}
+                <AccordionIcon flexShrink="0" />
+              </AccordionButton>
+              <AccordionPanel p="0" pb="1.5rem" data-step-section={section}>
+                <Spotlight
+                  isEnabled={isGuided}
+                  isActive={activeSection === section}
+                >
+                  {accordionSections[section]}
+                </Spotlight>
+              </AccordionPanel>
+            </>
+          )}
+        </AccordionItem>
+      ))}
+    </Accordion>
   )
 
-  const sections: JSX.Element[] = [
-    <StepNameBlock
-      key="name"
-      formMethods={formMethods}
-      stepNumber={stepNumber}
-    />,
-    <RespondentBlock
-      key="people"
-      user={user}
-      stepNumber={stepNumber}
-      formMethods={formMethods}
-      isLoading={_isLoading}
-    />,
-    // Login follows the respondent: who fills the step, then how they log in,
-    // then what they do.
-    ...(useProposedTabs
-      ? [tabbedSections]
-      : [loginSection, approvalsSection, questionsSection]
-    ).filter((section): section is JSX.Element => section !== null),
-  ]
-
-  const reveal = useGuidedStepReveal({
-    sectionCount: sections.length,
-    isEnabled: isGuided,
-  })
-
-  const { visibleCount } = reveal
+  const sections: Record<StepSection, JSX.Element | null> = {
+    name: <StepNameBlock formMethods={formMethods} stepNumber={stepNumber} />,
+    people: (
+      <RespondentBlock
+        user={user}
+        stepNumber={stepNumber}
+        formMethods={formMethods}
+        isLoading={_isLoading}
+      />
+    ),
+    ...accordionSections,
+  }
+  const introductorySections = ['name', 'people'] as const
+  const visibleStackedSections = isGuided
+    ? sectionOrder.slice(0, sectionOrder.indexOf(activeSection) + 1)
+    : sectionOrder
 
   useEffect(() => {
     if (pendingSwitchTo === null) {
@@ -481,12 +543,16 @@ export const EditStepBlock = ({
   }, [pendingSwitchTo])
 
   useEffect(() => {
-    if (!isGuided || visibleCount <= 1) return
+    if (skipNextRevealScroll.current) {
+      skipNextRevealScroll.current = false
+      return
+    }
+    if (!isGuided || reveal.isFirstSection) return
     const timeout = setTimeout(() => {
       wrapperRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
     }, SECTION_REVEAL_SCROLL_DELAY_MS)
     return () => clearTimeout(timeout)
-  }, [isGuided, visibleCount])
+  }, [isGuided, activeSection, reveal.isFirstSection])
 
   return (
     <Stack
@@ -497,30 +563,50 @@ export const EditStepBlock = ({
       borderRadius={cardRadius}
       bg={isGuided ? 'white' : activeCardBg}
       border={isGuided ? '1px solid' : `${activeCardBorderWidth} solid`}
-      borderColor={isGuided ? 'neutral.300' : 'primary.500'}
+      borderColor={isGuided ? 'secondary.200' : 'primary.500'}
       boxShadow={isGuided ? 'none' : activeCardShadow}
       transitionProperty="common"
       transitionDuration="normal"
     >
-      {useProposedTabs ? (
-        <Stack spacing="1.5rem" pt="1.5rem">
-          {sections
-            .slice(0, -1)
-            .flatMap((section, index) =>
-              index === 0
-                ? [section]
-                : [<Divider key={`intro-divider-${index}`} />, section],
-            )}
-          {tabbedSections}
-          <Divider />
+      {inAccordion ? (
+        <Stack
+          spacing={isGuided ? '0' : '1.5rem'}
+          pt={isGuided ? '0' : '1.5rem'}
+        >
+          {introductorySections.map((section, index) =>
+            !isGuided || reveal.isReached(section) ? (
+              <Box key={section} data-step-section={section}>
+                {!isGuided && index > 0 ? <Divider mb="1.5rem" /> : null}
+                <Spotlight
+                  isEnabled={isGuided}
+                  isActive={activeSection === section}
+                >
+                  {sections[section]}
+                </Spotlight>
+              </Box>
+            ) : null,
+          )}
+          <Box>
+            {!isGuided || reveal.isReached(accordionOrder[0])
+              ? expandableSections
+              : null}
+            <Divider />
+          </Box>
         </Stack>
       ) : (
-        <SpotlightGroup activeIndex={reveal.activeIndex} isEnabled={isGuided}>
-          {sections.slice(0, visibleCount)}
+        <SpotlightGroup
+          activeIndex={isGuided ? visibleStackedSections.length - 1 : null}
+          isEnabled={isGuided}
+        >
+          {visibleStackedSections.map((section) => (
+            <Box key={section} data-step-section={section}>
+              {sections[section]}
+            </Box>
+          ))}
         </SpotlightGroup>
       )}
       {saveError && isLoginShown ? (
-        <Box px="2rem" pt="1rem">
+        <Box px="2rem" pt="1rem" ref={saveErrorRef} role="alert" tabIndex={-1}>
           <InlineMessage variant="error">{saveError}</InlineMessage>
         </Box>
       ) : null}
@@ -528,15 +614,16 @@ export const EditStepBlock = ({
         {isGuided ? (
           <GuidedActionGroup
             secondaryAction={getGuidedSecondaryAction({
-              sectionIndex: visibleCount - 1,
+              isFirstSection: reveal.isFirstSection,
               canCancel: !isFirstStep,
             })}
             isOnLastSection={reveal.isOnLastSection}
             isLoading={_isLoading}
             onBack={reveal.goBack}
             onCancel={setToInactive}
-            onContinue={reveal.advance}
+            onContinue={() => void continueGuidance()}
             onDone={() => void saveForNavigation()}
+            doneLabel={inAccordion ? submitButtonLabel : undefined}
           />
         ) : (
           <SaveActionGroup

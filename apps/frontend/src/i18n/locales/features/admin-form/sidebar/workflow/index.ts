@@ -21,6 +21,7 @@ export interface Workflow {
     anyone: string
     select: string
     fieldsToFill: string
+    assignedFields: string
     clickToEdit: string
   }
   respondentSource: {
@@ -180,6 +181,7 @@ export interface Workflow {
     closeFormToEdit: string
     inactiveLabel: string
     tabs: { fields: string; approvals: string; login: string }
+    summaries: { fields: string; approvalRequired: string; noApproval: string }
     historicalResponsesKept: string
     publishErrors: { title: string }
     settings: {
