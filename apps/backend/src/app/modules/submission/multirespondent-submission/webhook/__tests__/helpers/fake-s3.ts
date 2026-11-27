@@ -18,7 +18,10 @@ export class FakeS3 {
     jest.spyOn(AwsConfig.s3, 'send').mockImplementation(async (command) => {
       if (command instanceof PutObjectCommand) {
         const { Bucket, Key, Body } = command.input
-        if (Key!.startsWith(V1_ATTACHMENT_KEY_PREFIX)) {
+        if (
+          Bucket === AwsConfig.submissionHistoryV1AttachmentS3Bucket ||
+          Key!.startsWith(V1_ATTACHMENT_KEY_PREFIX)
+        ) {
           await this.beforeV1Upload()
         }
         this.objects.set(

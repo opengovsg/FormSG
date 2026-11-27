@@ -422,6 +422,8 @@ export const downloadCleanFile = (
   )
 }
 
+export type AttachmentUploadTarget = { bucket: string; keyPrefix: string }
+
 type AttachmentReducerData = {
   attachmentMetadata: AttachmentMetadata // type alias for Map<string, string>
   attachmentUploadPromises: Promise<PutObjectCommandOutput>[]
@@ -432,7 +434,7 @@ type AttachmentReducerData = {
  *
  * @param formId the id of the form to upload attachments for
  * @param attachmentData Attachment blob data from the client (including the attachment)
- * @param keyPrefix leads every uploaded object key, defaulting to none
+ * @param target the bucket to upload to and the prefix leading every object key, defaulting to the attachmentS3Bucket with no prefix
  *
  * @returns ok(AttachmentMetadata) A map of field id to the s3 key of the uploaded attachment
  * @returns err(AttachmentUploadError) if the upload has failed
@@ -440,7 +442,10 @@ type AttachmentReducerData = {
 export const uploadAttachments = (
   formId: string,
   attachmentData: Record<string, unknown>,
-  keyPrefix = '',
+  { bucket, keyPrefix }: AttachmentUploadTarget = {
+    bucket: AwsConfig.attachmentS3Bucket,
+    keyPrefix: '',
+  },
 ): ResultAsync<AttachmentMetadata, AttachmentUploadError> => {
   const { attachmentMetadata, attachmentUploadPromises } = Object.keys(
     attachmentData,
@@ -458,7 +463,7 @@ export const uploadAttachments = (
       accumulator.attachmentMetadata.set(fieldId, uploadKey)
       accumulator.attachmentUploadPromises.push(
         putS3Object({
-          Bucket: AwsConfig.attachmentS3Bucket,
+          Bucket: bucket,
           Key: uploadKey,
           Body: Buffer.from(individualAttachment),
         }),

@@ -77,9 +77,12 @@ const attachmentIds = [
   new ObjectId().toHexString(),
 ]
 const GENERIC_URL = 'https://example.com/hook'
-const growthbook = new GrowthBook({
-  features: { [featureFlags.enableMrfWebhooks]: { defaultValue: true } },
-})
+const growthbook = new GrowthBook()
+const setSharedAttachmentBucketFlag = (on: boolean) =>
+  growthbook.setFeatures({
+    [featureFlags.enableMrfWebhooks]: { defaultValue: true },
+    [featureFlags.mrfV1AttachmentsSharedBucket]: { defaultValue: on },
+  })
 
 describe('[GATE] webhook retry consumer fidelity', () => {
   const objects = new Map<string, string>()
@@ -93,6 +96,7 @@ describe('[GATE] webhook retry consumer fidelity', () => {
   })
 
   beforeEach(() => {
+    setSharedAttachmentBucketFlag(true)
     objects.clear()
     queued = []
     posted = []
@@ -402,58 +406,64 @@ describe('[GATE] webhook retry consumer fidelity', () => {
     },
   )
 
-  it('re-signs a frozen pre-prefix V1 snapshot against the legacy V1 attachment bucket for the consumer to decrypt', async () => {
-    const { formKeypair } = await submit({
-      withAttachments: true,
-      webhookFormat: 'v1',
-    })
-    // Recreate what V1 delivery wrote before the key prefix: unprefixed keys
-    // in the snapshot, and the copies only in the legacy V1 bucket.
-    const legacyBucket = aws.submissionHistoryV1AttachmentS3Bucket
-    for (const [path, body] of [...objects]) {
-      if (!path.startsWith(`${aws.submissionHistoryV1S3Bucket}/`)) continue
-      const snapshot = JSON.parse(body)
-      for (const [id, key] of Object.entries<string>(
-        snapshot.attachmentMetadata,
-      )) {
-        const legacyKey = key.replace(/^webhook-v1\//, '')
-        objects.set(
-          `${legacyBucket}/${legacyKey}`,
-          objects.get(`${aws.attachmentS3Bucket}/${key}`)!,
+  it.each([
+    ['on', 'on'],
+    ['on', 'off'],
+    ['off', 'off'],
+    ['off', 'on'],
+  ])(
+    'signs a V1 copy written with the shared bucket flag %s and retried with it %s against the bucket it was written to',
+    async (writtenWith, retriedWith) => {
+      setSharedAttachmentBucketFlag(writtenWith === 'on')
+      const { form, formKeypair } = await submit({
+        withAttachments: true,
+        webhookFormat: 'v1',
+      })
+      setSharedAttachmentBucketFlag(retriedWith === 'on')
+
+      await consume()
+
+      expect(posted).toHaveLength(2)
+      const writtenTo =
+        writtenWith === 'on'
+          ? `${aws.attachmentS3Bucket}/webhook-v1/${form._id}/`
+          : `${aws.submissionHistoryV1AttachmentS3Bucket}/${form._id}/`
+      const downloadAndDecrypt = async (body: string) => {
+        const { attachmentDownloadUrls } = (JSON.parse(body) as WebhookView)
+          .data
+        return Object.fromEntries(
+          await Promise.all(
+            Object.entries(attachmentDownloadUrls).map(async ([id, url]) => {
+              const objectPath = new URL(url).pathname.slice(1)
+              const stored = objects.get(objectPath)
+              if (!objectPath.startsWith(writtenTo) || !stored) {
+                return [id, `no copy written at ${objectPath}`]
+              }
+              const { encryptedFile } = JSON.parse(stored)
+              const decrypted = await formsgSdk.crypto.decryptFile(
+                formKeypair.secretKey,
+                {
+                  ...encryptedFile,
+                  binary: new Uint8Array(
+                    Buffer.from(encryptedFile.binary, 'base64'),
+                  ),
+                },
+              )
+              return [id, Buffer.from(decrypted!).toString()]
+            }),
+          ),
         )
-        objects.delete(`${aws.attachmentS3Bucket}/${key}`)
-        snapshot.attachmentMetadata[id] = legacyKey
       }
-      objects.set(path, JSON.stringify(snapshot))
-    }
-
-    await consume()
-
-    expect(posted).toHaveLength(2)
-    const retry = (JSON.parse(posted[1]) as WebhookView).data
-    const downloaded = await Promise.all(
-      Object.entries(retry.attachmentDownloadUrls).map(async ([id, url]) => {
-        const objectPath = new URL(url).pathname.slice(1)
-        const stored = objects.get(objectPath)
-        if (!objectPath.startsWith(`${legacyBucket}/`) || !stored) {
-          return [id, `no legacy object at ${objectPath}`]
-        }
-        const { encryptedFile } = JSON.parse(stored)
-        const decrypted = await formsgSdk.crypto.decryptFile(
-          formKeypair.secretKey,
-          {
-            ...encryptedFile,
-            binary: new Uint8Array(Buffer.from(encryptedFile.binary, 'base64')),
-          },
-        )
-        return [id, Buffer.from(decrypted!).toString()]
-      }),
-    )
-    expect(Object.fromEntries(downloaded)).toEqual({
-      [attachmentIds[0]]: 'Scanned attachment',
-      [attachmentIds[1]]: 'Scanned attachment',
-    })
-  })
+      const decrypted = {
+        [attachmentIds[0]]: 'Scanned attachment',
+        [attachmentIds[1]]: 'Scanned attachment',
+      }
+      expect(await Promise.all(posted.map(downloadAndDecrypt))).toEqual([
+        decrypted,
+        decrypted,
+      ])
+    },
+  )
 
   it('preserves V1 replay when a failed retry is queued again', async () => {
     await submit()

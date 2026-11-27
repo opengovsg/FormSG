@@ -320,6 +320,7 @@ const _createPaymentSubmission = async ({
       encryptedPayload,
       verifiedContentPlaintext: req.formsg.verifiedContentPlaintext,
       paymentId,
+      growthbook: req.growthbook,
       logMeta,
     })
   if (createPendingSubmissionResult.isErr()) {

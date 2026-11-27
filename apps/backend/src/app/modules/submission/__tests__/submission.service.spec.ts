@@ -2517,14 +2517,16 @@ describe('submission.service', () => {
 
     afterEach(() => jest.restoreAllMocks())
 
-    const upload = async (keyPrefix?: string) => {
+    const upload = async (
+      target?: SubmissionService.AttachmentUploadTarget,
+    ) => {
       const putSpy = jest
         .spyOn(s3Operations, 'putObject')
         .mockResolvedValue({} as never)
       const result = await SubmissionService.uploadAttachments(
         MOCK_FORM_ID,
         MOCK_ATTACHMENTS,
-        keyPrefix,
+        target,
       )
       return {
         metadata: Object.fromEntries(result._unsafeUnwrap()),
@@ -2537,12 +2539,22 @@ describe('submission.service', () => {
     }
 
     it.each([
-      ['no key prefix', undefined, ''],
-      ['a key prefix', 'webhook-v1/', 'webhook-v1/'],
+      [
+        'the attachment bucket with no key prefix by default',
+        undefined,
+        aws.attachmentS3Bucket,
+        '',
+      ],
+      [
+        'the given bucket under the given key prefix',
+        { bucket: 'given-bucket', keyPrefix: 'webhook-v1/' },
+        'given-bucket',
+        'webhook-v1/',
+      ],
     ])(
-      'should upload each attachment to the attachment bucket keyed by form id with %s',
-      async (_case, keyPrefix, expectedKeyStart) => {
-        const { metadata, puts } = await upload(keyPrefix)
+      'should upload each attachment keyed by form id to %s',
+      async (_case, target, expectedBucket, expectedKeyStart) => {
+        const { metadata, puts } = await upload(target)
 
         const key = expect.stringMatching(
           new RegExp(
@@ -2552,12 +2564,12 @@ describe('submission.service', () => {
         expect(metadata).toEqual({ fieldOne: key, fieldTwo: key })
         expect(puts).toEqual([
           {
-            Bucket: aws.attachmentS3Bucket,
+            Bucket: expectedBucket,
             Key: metadata.fieldOne,
             Body: JSON.stringify(MOCK_ATTACHMENTS.fieldOne),
           },
           {
-            Bucket: aws.attachmentS3Bucket,
+            Bucket: expectedBucket,
             Key: metadata.fieldTwo,
             Body: JSON.stringify(MOCK_ATTACHMENTS.fieldTwo),
           },

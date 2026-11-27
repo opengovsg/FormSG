@@ -154,12 +154,17 @@ const attachmentIds = [
 ]
 const GENERIC_URL = 'https://example.com/hook'
 const PLUMBER_URL = 'https://plumber.gov.sg/webhooks/payment'
-const growthbook = new GrowthBook({
-  features: {
-    [featureFlags.enableMrfWebhooks]: { defaultValue: true },
-    [featureFlags.mrfPayments]: { defaultValue: true },
-  },
-})
+const growthbookWith = ({ sharedAttachmentBucket = true } = {}) =>
+  new GrowthBook({
+    features: {
+      [featureFlags.enableMrfWebhooks]: { defaultValue: true },
+      [featureFlags.mrfPayments]: { defaultValue: true },
+      [featureFlags.mrfV1AttachmentsSharedBucket]: {
+        defaultValue: sharedAttachmentBucket,
+      },
+    },
+  })
+const growthbook = growthbookWith()
 
 describe('[GATE] payment webhook delivery', () => {
   const objects = new Map<string, string>()
@@ -325,7 +330,10 @@ describe('[GATE] payment webhook delivery', () => {
     return { form, populated, payload, formKeypair }
   }
 
-  const submit = async (options: Parameters<typeof prepare>[0] = {}) => {
+  const submit = async (
+    options: Parameters<typeof prepare>[0] = {},
+    flags = growthbook,
+  ) => {
     const { form, populated, payload, formKeypair } = await prepare(options)
     const paymentId = new mongoose.Types.ObjectId()
     const submission = (
@@ -334,6 +342,7 @@ describe('[GATE] payment webhook delivery', () => {
         paymentId: String(paymentId),
         encryptedPayload: payload,
         verifiedContentPlaintext,
+        growthbook: flags,
         logMeta: { action: 'retry-fidelity-test' },
       })
     )._unsafeUnwrap()
@@ -434,6 +443,54 @@ describe('[GATE] payment webhook delivery', () => {
     })
     expect(data).not.toHaveProperty('encryptedSubmissionSecretKey')
   })
+  it.each([
+    ['on', 'on'],
+    ['on', 'off'],
+    ['off', 'off'],
+    ['off', 'on'],
+  ])(
+    'delivers V1 attachment copies written with the shared bucket flag %s from that bucket on confirmation with it %s',
+    async (writtenWith, confirmedWith) => {
+      const { payment, form, formKeypair } = await submit(
+        { withAttachments: true },
+        growthbookWith({ sharedAttachmentBucket: writtenWith === 'on' }),
+      )
+      await confirm(
+        payment,
+        growthbookWith({ sharedAttachmentBucket: confirmedWith === 'on' }),
+      )
+
+      const writtenTo =
+        writtenWith === 'on'
+          ? `${aws.attachmentS3Bucket}/webhook-v1/${form._id}/`
+          : `${aws.submissionHistoryV1AttachmentS3Bucket}/${form._id}/`
+      const { data } = JSON.parse(posted[0]) as WebhookView
+      const downloaded = await Promise.all(
+        Object.entries(data.attachmentDownloadUrls).map(async ([id, url]) => {
+          const objectPath = new URL(url).pathname.slice(1)
+          const stored = objects.get(objectPath)
+          if (!objectPath.startsWith(writtenTo) || !stored) {
+            return [id, `no copy written at ${objectPath}`]
+          }
+          const { encryptedFile } = JSON.parse(stored)
+          const decrypted = await formsgSdk.crypto.decryptFile(
+            formKeypair.secretKey,
+            {
+              ...encryptedFile,
+              binary: new Uint8Array(
+                Buffer.from(encryptedFile.binary, 'base64'),
+              ),
+            },
+          )
+          return [id, Buffer.from(decrypted!).toString()]
+        }),
+      )
+      expect(Object.fromEntries(downloaded)).toEqual({
+        [attachmentIds[0]]: 'Scanned attachment',
+        [attachmentIds[1]]: 'Scanned attachment',
+      })
+    },
+  )
   it('carries verified plaintext through the payment respondent controller into the delivered V1 payload', async () => {
     const input = await prepare()
     const response = await submitThroughRoute(input)
@@ -613,6 +670,7 @@ describe('[GATE] payment webhook delivery', () => {
         features: {
           [featureFlags.mrfPayments]: { defaultValue: true },
           [featureFlags.enableMrfWebhooks]: { defaultValue: enabled },
+          [featureFlags.mrfV1AttachmentsSharedBucket]: { defaultValue: true },
         },
       })
       const writes: { pendingCount: number; paymentIntentCount: number }[] = []

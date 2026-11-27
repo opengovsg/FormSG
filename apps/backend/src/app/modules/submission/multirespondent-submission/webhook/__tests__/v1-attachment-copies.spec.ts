@@ -183,11 +183,16 @@ const buildPayload = async (
   } as unknown as MultirespondentSubmissionDto
 }
 
-const growthbookWith = (enableMrfWebhooks: boolean) =>
+const growthbookWith = (
+  enableMrfWebhooks: boolean,
+  sharedAttachmentBucket = true,
+) =>
   ({
     isOn: jest.fn(
       (flag: string) =>
-        flag === featureFlags.enableMrfWebhooks && enableMrfWebhooks,
+        (flag === featureFlags.enableMrfWebhooks && enableMrfWebhooks) ||
+        (flag === featureFlags.mrfV1AttachmentsSharedBucket &&
+          sharedAttachmentBucket),
     ),
     getFeatureValue: jest.fn((_flag: string, def: unknown) => def),
   }) as never
@@ -239,11 +244,12 @@ describe('[GATE] V1 attachment form-key copies', () => {
     attachments = DEFAULT_ATTACHMENTS,
     isRetryEnabled = true,
     webhookUrl = GENERIC_URL,
+    sharedAttachmentBucket = true,
   } = {}) => ({
     form: await buildForm({ url: webhookUrl, isRetryEnabled }, attachments),
     encryptedPayload: await buildPayload(attachments),
     logMeta: { action: 'test' },
-    growthbook: growthbookWith(true),
+    growthbook: growthbookWith(true, sharedAttachmentBucket),
   })
 
   const submitThroughController = async (
@@ -386,6 +392,44 @@ describe('[GATE] V1 attachment form-key copies', () => {
       ],
       storedCopies: 2,
       legacyObjects: [],
+    })
+  })
+
+  it('stores the V1 copies unprefixed in the legacy V1 bucket for the consumer to decrypt while the shared bucket flag is off', async () => {
+    const { body } = await submit({
+      attachments: TWO_ATTACHMENTS,
+      sharedAttachmentBucket: false,
+    })
+    const copyKey = new RegExp(`^${body.formId}/[0-9a-f]{40}/[0-9a-f]{64}$`)
+    expect({
+      deliveredTargets: Object.values(body.attachmentDownloadUrls).map((url) =>
+        storage.targetOf(url),
+      ),
+      sharedBucketCopies: storage.objectsIn(
+        AwsConfig.attachmentS3Bucket,
+        V1_COPY_KEY_PREFIX,
+      ),
+      decrypted: await downloadAndDecryptAttachments(
+        body,
+        formKeypair.secretKey,
+        AwsConfig.submissionHistoryV1AttachmentS3Bucket,
+      ),
+    }).toEqual({
+      deliveredTargets: [
+        {
+          bucket: AwsConfig.submissionHistoryV1AttachmentS3Bucket,
+          key: expect.stringMatching(copyKey),
+        },
+        {
+          bucket: AwsConfig.submissionHistoryV1AttachmentS3Bucket,
+          key: expect.stringMatching(copyKey),
+        },
+      ],
+      sharedBucketCopies: [],
+      decrypted: {
+        [attachmentId]: ATTACHMENT_PLAINTEXT,
+        [SECOND_ATTACHMENT.id]: Buffer.from([0, 255, 128, 1]),
+      },
     })
   })
 
