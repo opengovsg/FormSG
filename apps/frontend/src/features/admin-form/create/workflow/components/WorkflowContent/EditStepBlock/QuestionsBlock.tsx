@@ -36,12 +36,14 @@ import { useStepEditorLogin } from './useStepEditorLogin'
 const FIELD_TAGS_KEY = 'features.adminForm.sidebar.workflow.stepLogin.fieldTags'
 
 interface QuestionsBlockProps {
+  inAccordion?: boolean
   isLoading: boolean
   formMethods: UseFormReturn<EditStepInputs>
   stepNumber: number
 }
 
 export const QuestionsBlock = ({
+  inAccordion = false,
   isLoading,
   formMethods,
   stepNumber,
@@ -146,9 +148,11 @@ export const QuestionsBlock = ({
         isRequired
         isInvalid={!!errors.edit}
       >
-        <FormLabel style={textStyles.h4}>
-          {t('features.adminForm.sidebar.workflow.questions.label')}
-        </FormLabel>
+        {!inAccordion && (
+          <FormLabel style={textStyles.h4}>
+            {t('features.adminForm.sidebar.workflow.questions.label')}
+          </FormLabel>
+        )}
         <Controller
           control={control}
           name={FIELDS_TO_EDIT_NAME}

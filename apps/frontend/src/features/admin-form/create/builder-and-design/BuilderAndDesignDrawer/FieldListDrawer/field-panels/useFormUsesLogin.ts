@@ -1,13 +1,16 @@
 import { useCallback } from 'react'
 
-import { FormAuthType } from 'formsg-shared/types'
+import { FormAuthType, FormResponseMode } from 'formsg-shared/types'
 import {
   getLoginIdentityAttrsForAuthType,
   LoginIdentityAttribute,
 } from 'formsg-shared/utils/login-identity'
 
 import { useIsMrfStepLoginEnabled } from '~features/admin-form/create/workflow/hooks/useIsMrfStepLoginEnabled'
-import { formUsesLogin } from '~features/admin-form/create/workflow/utils/stepLoginAvailability'
+import {
+  formUsesLogin,
+  isLaterStepLoginAvailable,
+} from '~features/admin-form/create/workflow/utils/stepLoginAvailability'
 
 import { useCreateTabForm } from '../../../useCreateTabForm'
 
@@ -38,5 +41,13 @@ export const useFormUsesLogin = () => {
     [usesLogin],
   )
 
-  return { usesLogin, offersIdentityAttr }
+  const setupDestination = isLaterStepLoginAvailable(form, isFlagOn)
+    ? form?.responseMode === FormResponseMode.Multirespondent &&
+      !form.workflow?.length &&
+      form.authType === FormAuthType.NIL
+      ? ('settings' as const)
+      : ('workflow' as const)
+    : undefined
+
+  return { usesLogin, offersIdentityAttr, setupDestination }
 }

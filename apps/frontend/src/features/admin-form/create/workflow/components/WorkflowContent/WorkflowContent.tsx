@@ -80,7 +80,7 @@ export const WorkflowContent = (): JSX.Element | null => {
           ref={workflowCardRef}
           bg="white"
           border="1px solid"
-          borderColor="neutral.300"
+          borderColor="secondary.200"
           borderRadius={cardRadius}
           padding={WORKFLOW_CARD_PADDING}
           pos="relative"

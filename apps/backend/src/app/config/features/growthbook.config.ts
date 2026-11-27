@@ -10,9 +10,16 @@ export enum GrowthbookFeature {
 export interface IGrowthbook {
   growthbookClientKey: string
   growthbookApiHost: string
+  enableStepLoginPreview: boolean
 }
 
 const growthbookSchema: Schema<IGrowthbook> = {
+  enableStepLoginPreview: {
+    doc: 'Local step login preview. Applied only in the development environment.',
+    format: Boolean,
+    default: false,
+    env: 'ENABLE_STEP_LOGIN_PREVIEW',
+  },
   growthbookClientKey: {
     doc: 'Growthbook Client Key',
     format: String,

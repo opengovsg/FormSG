@@ -14,10 +14,11 @@ export const enSG: Workflow = {
     deleteWorkflow: 'Delete workflow',
   },
   respondentBlock: {
+    editorHeading: 'Choose who fills in this step',
     stepRespondent: 'Who should fill in this step?',
     anyone: 'Anyone with your form link can fill in Step 1.',
     select: 'Who should fill in this step?',
-    fieldsToFill: 'Fields to fill',
+    fieldsToFill: 'Assigned fields',
     clickToEdit: 'Click to edit',
   },
   respondentSource: {
@@ -187,6 +188,7 @@ export const enSG: Workflow = {
     },
   },
   questions: {
+    accordionLabel: 'Assign fields to this person',
     label: 'Choose the fields this person fills in',
     placeholder: 'Select fields from your form',
     autoAddHelperText: 'The approval field is added here automatically.',
@@ -200,25 +202,25 @@ export const enSG: Workflow = {
     singpass: 'Singpass',
     corppass: 'Corppass',
     esrvcIdLabel: 'Enter your organisation’s Corppass e-service ID',
-    stepQuestion: 'Does this step require a login?',
+    workflowQuestion: 'Choose how this person logs in',
     formQuestion: 'Select form login method',
     noLogin: 'No login required',
-    singpassDescription:
-      'Log in using Singpass and use Singpass Myinfo fields.',
-    legacySingpassDescription: 'Log in using Singpass',
-    corppassDescription:
-      'Log in using Corppass and use Corppass Myinfo fields.',
+    singpassOption: 'Singpass (allows Singpass Myinfo fields)',
+    corppassOption: 'Corppass (allows Corppass Myinfo fields)',
     esrvcIdPlaceholder: 'Enter Corppass e-service ID',
     esrvcIdWhitespace: 'e-service ID must not contain whitespace',
     closeFormToEdit: 'To change the login, close your form to new responses.',
     inactiveLabel: 'Login',
-    tabs: { fields: 'Fields to fill', approvals: 'Approvals', login: 'Login' },
+    summaries: {
+      fields:
+        '{count, plural, =0 {No fields assigned} one {# field assigned} other {# fields assigned}}',
+    },
     historicalResponsesKept: 'Historical responses will not be deleted.',
     publishErrors: {
       title: 'Finish authentication setup before opening your form',
     },
     settings: {
-      description: 'Manage authentication for each step in your workflow.',
+      description: 'Manage logins for each step in your workflow.',
       editWorkflow: 'Edit your full workflow ↗',
       addStep: 'Go to workflows to add a new step',
       notEnabled: 'No login enabled',
@@ -262,28 +264,28 @@ export const enSG: Workflow = {
     },
     switchConfirmation: {
       noAuthentication: 'no authentication',
-      titleTurnOff: 'Turn off authentication',
+      titleTurnOff: 'Turn off logins',
       titleSwitch: 'Switch to {provider}',
+      titleDeleteSwitch: 'Switch to {provider} and delete {current} fields',
       assignedField:
         '"{field}" needs {provider}. Switching this step to {provider} assigns it to this step.',
       deleteBodyTurnOff:
-        'This is the only step using {current}. Turning off authentication means these {current} fields can no longer be used:',
+        'This is your only step using {current}. If you turn off logins, FormSG will automatically delete these fields from your form:',
       deleteBodySwitch:
-        'This is the only step using {current}. Switching to {provider} means these {current} fields can no longer be used:',
+        'This is your only step using {current}. If you switch to {provider}, FormSG will automatically delete these fields from your form:',
       unassignBodyTurnOff:
         'These fields need {current}, so they cannot be filled in on a step without authentication:',
       unassignBodySwitch:
         'These fields need {current}, so they cannot be filled in on a step using {provider}:',
       affectedRules: 'References to these fields will also be removed from:',
-      deleteNote:
-        'These fields will be deleted from your form when you save this step or navigate away. Past responses will be kept.',
+      deleteNote: 'Past responses will be kept.',
       unassignNote:
         'These fields will be unassigned from this step when you save or navigate away. They will stay in your form.',
       cancel: 'Cancel',
       confirmAssign: 'Switch to {provider} and assign field',
-      confirmDeleteTurnOff: 'Delete fields and turn off',
+      confirmDeleteTurnOff: 'Delete fields',
       confirmUnassignTurnOff: 'Unassign fields and turn off',
-      confirmDeleteSwitch: 'Delete fields and switch to {provider}',
+      confirmDeleteSwitch: 'Delete {current} fields',
       confirmUnassignSwitch: 'Unassign fields and switch to {provider}',
     },
   },
@@ -296,6 +298,10 @@ export const enSG: Workflow = {
       "This step couldn't be saved. Fix it, then add the field again.",
   },
   approvals: {
+    heading: 'Choose an approval role',
+    approver: 'Approver',
+    notApprover: 'Not an approver',
+    fieldLabel: 'Approval field',
     title: 'Approvals',
     yesNoDeleted:
       'This Yes/No field was deleted, please select another Yes/No field',

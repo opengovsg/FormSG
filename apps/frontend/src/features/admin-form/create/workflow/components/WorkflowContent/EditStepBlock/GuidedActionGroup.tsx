@@ -13,6 +13,7 @@ export interface GuidedActionGroupProps {
   onCancel: () => void
   onContinue?: () => void
   onDone: () => void
+  doneLabel?: string
 }
 
 export const GuidedActionGroup = ({
@@ -23,6 +24,7 @@ export const GuidedActionGroup = ({
   onCancel,
   onContinue,
   onDone,
+  doneLabel,
 }: GuidedActionGroupProps): JSX.Element => {
   const { t } = useTranslation()
 
@@ -53,11 +55,13 @@ export const GuidedActionGroup = ({
         isLoading={isOnLastSection && isLoading}
         onClick={isOnLastSection ? onDone : onContinue}
       >
-        {t(
-          isOnLastSection
-            ? 'features.adminForm.sidebar.workflow.guided.done'
-            : 'features.adminForm.sidebar.workflow.guided.continue',
-        )}
+        {isOnLastSection && doneLabel
+          ? doneLabel
+          : t(
+              isOnLastSection
+                ? 'features.adminForm.sidebar.workflow.guided.done'
+                : 'features.adminForm.sidebar.workflow.guided.continue',
+            )}
       </Button>
     </Flex>
   )

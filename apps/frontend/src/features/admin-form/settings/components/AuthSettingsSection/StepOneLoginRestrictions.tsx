@@ -22,7 +22,6 @@ import Link from '~components/Link'
 import Toggle from '~components/Toggle'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { FieldListTabIndex } from '~features/admin-form/create/builder-and-design/constants'
 import { getNextQuestionNumber } from '~features/form/utils'
 
 import {
@@ -77,7 +76,6 @@ interface StepOneLoginRestrictionsProps {
   onParsingChange?: (isParsing: boolean) => void
   dividerBleed?: string
   authType?: FormAuthType
-  onGoToFields?: (tab: FieldListTabIndex) => void
 }
 
 const COPY_KEY = 'features.adminForm.sidebar.workflow.stepLogin.restrictions'
@@ -91,7 +89,6 @@ export const StepOneLoginRestrictions = ({
   onParsingChange,
   dividerBleed,
   authType,
-  onGoToFields,
 }: StepOneLoginRestrictionsProps): JSX.Element => {
   const { t } = useTranslation()
   const { formId } = useParams()
@@ -186,7 +183,6 @@ export const StepOneLoginRestrictions = ({
           nextQuestionNumber={getNextQuestionNumber(form?.form_fields ?? [])}
           authType={authType}
           divider={divider}
-          onGoToFields={onGoToFields}
         />
       ) : null}
       {divider}

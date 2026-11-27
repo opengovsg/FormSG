@@ -4,6 +4,7 @@ import { Link as ReactLink } from 'react-router'
 import { Box, Text, useDisclosure } from '@chakra-ui/react'
 import { Droppable } from '@hello-pangea/dnd'
 
+import { MyInfoAttribute } from 'formsg-shared/types/field'
 import { FormStatus } from 'formsg-shared/types/form'
 import { LoginIdentityAttribute } from 'formsg-shared/utils/login-identity'
 
@@ -18,6 +19,7 @@ import { useCreateTabForm } from '../../../useCreateTabForm'
 import { DraggableLoginIdentityFieldListOption } from '../FieldListOption'
 
 import { FieldSection } from './FieldSection'
+import { LoginFieldSetupModal } from './LoginFieldSetupModal'
 import { useFormUsesLogin } from './useFormUsesLogin'
 import { useLoginFieldLimit } from './useLoginFieldLimit'
 import { useOfferedLoginIdentityAttrs } from './useOfferedLoginIdentityAttrs'
@@ -67,7 +69,7 @@ export const LoginIdentityMessage = ({
   })
   const { data: form } = useCreateTabForm()
   const { isAtLimit } = useLoginFieldLimit()
-  const { offersIdentityAttr } = useFormUsesLogin()
+  const { offersIdentityAttr, setupDestination } = useFormUsesLogin()
   if (!form) return null
 
   const isLoginMissing = !offersIdentityAttr(attrs[0])
@@ -81,7 +83,9 @@ export const LoginIdentityMessage = ({
         isAtLimit && !isLoginMissing && !isConvertFirst ? 'error' : 'info'
       }
     >
-      {isLoginMissing ? (
+      {isLoginMissing && setupDestination ? (
+        t('setup.chooseField', { loginName })
+      ) : isLoginMissing ? (
         <Trans
           t={t}
           i18nKey="loginMissing"
@@ -114,11 +118,12 @@ export const LoginIdentityFieldSection = ({
   })
   const { t: tCommon } = useTranslation()
   const convertModal = useDisclosure()
+  const setupModal = useDisclosure()
   const { data: form, isLoading } = useCreateTabForm()
   const { isAtLimit } = useLoginFieldLimit()
 
   const filteredAttrs = useOfferedLoginIdentityAttrs(attrs, searchValue)
-  const { offersIdentityAttr } = useFormUsesLogin()
+  const { offersIdentityAttr, setupDestination } = useFormUsesLogin()
   if (!form || filteredAttrs.length === 0) return null
 
   const isLoginMissing = !offersIdentityAttr(attrs[0])
@@ -126,7 +131,10 @@ export const LoginIdentityFieldSection = ({
   const mustCloseToConvert =
     isCollectedBySettings && form.status === FormStatus.Public
   const isSectionDisabled =
-    isLoading || isLoginMissing || isAtLimit || mustCloseToConvert
+    isLoading ||
+    (isLoginMissing && !setupDestination) ||
+    isAtLimit ||
+    mustCloseToConvert
 
   const options = filteredAttrs.map(({ attr, originalIndex }) => (
     <DraggableLoginIdentityFieldListOption
@@ -134,13 +142,25 @@ export const LoginIdentityFieldSection = ({
       index={originalIndex}
       attr={attr}
       isDisabled={isSectionDisabled}
-      isDragDisabled={isCollectedBySettings}
+      isDragDisabled={isCollectedBySettings || isLoginMissing}
+      onSetup={
+        isLoginMissing && setupDestination ? setupModal.onOpen : undefined
+      }
       onConvert={isCollectedBySettings ? convertModal.onOpen : undefined}
     />
   ))
 
   return (
     <>
+      {setupModal.isOpen && setupDestination && (
+        <LoginFieldSetupModal
+          loginName={
+            attrs[0] === MyInfoAttribute.UinFin ? 'Singpass' : 'Corppass'
+          }
+          destination={setupDestination}
+          onClose={setupModal.onClose}
+        />
+      )}
       <SubmitterIdConversionModal
         authType={form.authType}
         isOpen={convertModal.isOpen}

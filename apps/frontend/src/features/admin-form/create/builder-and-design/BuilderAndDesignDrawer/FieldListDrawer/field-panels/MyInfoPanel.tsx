@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Box, Text } from '@chakra-ui/react'
+import { Box, Text, useDisclosure } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { Droppable } from '@hello-pangea/dnd'
 
@@ -30,6 +30,7 @@ import { useCreateTabForm } from '../../../../builder-and-design/useCreateTabFor
 import { DraggableMyInfoFieldListOption } from '../FieldListOption'
 
 import { FieldSection } from './FieldSection'
+import { LoginFieldSetupModal } from './LoginFieldSetupModal'
 import {
   LoginFieldLimitText,
   LoginIdentityFieldSection,
@@ -60,8 +61,15 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
       isMrfChildrenEnabled)
 
   const { isAtLimit } = useLoginFieldLimit()
-  const { usesLogin } = useFormUsesLogin()
-  const isMyInfoDisabled = !form || !usesLogin(FormAuthType.MyInfo) || isAtLimit
+  const { usesLogin, setupDestination } = useFormUsesLogin()
+  const setupModal = useDisclosure()
+  const isLoginMissing = !usesLogin(FormAuthType.MyInfo)
+  const isMyInfoDisabled =
+    !form || (isLoginMissing && !setupDestination) || isAtLimit
+  const setupProps = {
+    isDragDisabled: isLoginMissing,
+    onSetup: isLoginMissing && setupDestination ? setupModal.onOpen : undefined,
+  }
   const isDisabled = isMyInfoDisabled || isLoading
 
   const filteredCreateMyInfoPersonalFields = filterFieldsBySearchValue(
@@ -103,6 +111,7 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
               {filteredCreateMyInfoPersonalFields.map(
                 ({ fieldType, originalIndex }) => (
                   <DraggableMyInfoFieldListOption
+                    {...setupProps}
                     index={originalIndex}
                     isDisabled={isDisabled}
                     key={originalIndex}
@@ -120,6 +129,13 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
 
   return (
     <>
+      {setupModal.isOpen && setupDestination && (
+        <LoginFieldSetupModal
+          loginName="Singpass"
+          destination={setupDestination}
+          onClose={setupModal.onClose}
+        />
+      )}
       <MyInfoMessage />
       {/* Without identity options, keep the original Personal section layout. */}
       {offeredIdentityAttrs.length > 0 ? (
@@ -143,6 +159,7 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
                 {filteredCreateMyInfoContactFields.map(
                   ({ fieldType, originalIndex }) => (
                     <DraggableMyInfoFieldListOption
+                      {...setupProps}
                       index={originalIndex}
                       isDisabled={isDisabled}
                       key={originalIndex}
@@ -164,6 +181,7 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
                 {filteredCreateMyInfoParticularsFields.map(
                   ({ fieldType, originalIndex }) => (
                     <DraggableMyInfoFieldListOption
+                      {...setupProps}
                       index={originalIndex}
                       isDisabled={isDisabled}
                       key={originalIndex}
@@ -185,6 +203,7 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
                 {filteredCreateMyInfoMarriageFields.map(
                   ({ fieldType, originalIndex }) => (
                     <DraggableMyInfoFieldListOption
+                      {...setupProps}
                       index={originalIndex}
                       isDisabled={isDisabled}
                       key={originalIndex}
@@ -207,6 +226,7 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
                   {filteredCreateMyInfoChildrenFields.map(
                     ({ fieldType, originalIndex }) => (
                       <DraggableMyInfoFieldListOption
+                        {...setupProps}
                         index={originalIndex}
                         isDisabled={isDisabled}
                         key={originalIndex}
@@ -233,6 +253,14 @@ const MyInfoText = ({
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.sidebar.fields.myInfoPanel',
   })
+
+  const { setupDestination } = useFormUsesLogin()
+  const { t: tLogin } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.loginIdentity.setup',
+  })
+  if (!isSingpassUsed && setupDestination) {
+    return <Text>{tLogin('chooseField', { loginName: 'Singpass' })}</Text>
+  }
 
   if (!isSingpassUsed) {
     return (

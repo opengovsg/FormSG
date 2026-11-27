@@ -23,11 +23,15 @@ export interface StepLoginControlsProps {
   esrvcId: string
   onAuthTypeChange: (authType: FormAuthType) => void
   onEsrvcIdChange: (esrvcId: string) => void
+  isProviderDisabled?: boolean
   isDisabled: boolean
   isLoading?: boolean
   disabledReason?: string
   isHeading?: boolean
+  hideQuestion?: boolean
   idPrefix: string
+  commitOnActivation?: boolean
+  onEsrvcIdCommit?: () => void
 }
 
 export const StepLoginControls = ({
@@ -37,10 +41,14 @@ export const StepLoginControls = ({
   onAuthTypeChange,
   onEsrvcIdChange,
   isDisabled,
+  isProviderDisabled = isDisabled,
   isLoading = false,
   disabledReason,
   isHeading = false,
+  hideQuestion = false,
   idPrefix,
+  commitOnActivation = false,
+  onEsrvcIdCommit,
 }: StepLoginControlsProps): JSX.Element => {
   const { t } = useTranslation()
   const isEsrvcIdInvalid = !isValidEsrvcId(esrvcId)
@@ -51,25 +59,72 @@ export const StepLoginControls = ({
       {disabledReason ? (
         <InlineMessage mb="1rem">{disabledReason}</InlineMessage>
       ) : null}
-      <FormLabel
-        id={`${idPrefix}-login-label`}
-        mb="1rem"
-        {...(isHeading ? textStyles.h4 : {})}
-      >
-        {t(`${COPY_KEY}.stepQuestion`)}
-      </FormLabel>
+      {hideQuestion ? null : (
+        <FormLabel
+          id={`${idPrefix}-login-label`}
+          mb="1rem"
+          style={isHeading ? textStyles.h4 : undefined}
+        >
+          {t(`${COPY_KEY}.workflowQuestion`)}
+        </FormLabel>
+      )}
       <Radio.RadioGroup
         style={{ opacity: isDisabled ? 0.8 : 1 }}
-        aria-labelledby={`${idPrefix}-login-label`}
+        aria-label={
+          hideQuestion ? t(`${COPY_KEY}.workflowQuestion`) : undefined
+        }
+        aria-labelledby={hideQuestion ? undefined : `${idPrefix}-login-label`}
         value={authType}
         onChange={(next: FormAuthType) => onAuthTypeChange(next)}
+        onKeyDownCapture={
+          commitOnActivation
+            ? (event) => {
+                if (
+                  !['ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft'].includes(
+                    event.key,
+                  )
+                )
+                  return
+                const target = event.target as HTMLInputElement
+                if (target.type !== 'radio') return
+                event.preventDefault()
+                event.stopPropagation()
+                const radios = Array.from(
+                  event.currentTarget.querySelectorAll<HTMLInputElement>(
+                    'input[type="radio"]:not(:disabled)',
+                  ),
+                )
+                const current = radios.indexOf(target)
+                if (current < 0 || !radios.length) return
+                const direction =
+                  event.key === 'ArrowDown' || event.key === 'ArrowRight'
+                    ? 1
+                    : -1
+                radios[
+                  (current + direction + radios.length) % radios.length
+                ].focus()
+              }
+            : undefined
+        }
+        onKeyDown={
+          commitOnActivation
+            ? (event) => {
+                if (event.key !== 'Enter' && event.key !== ' ') return
+                const target = event.target as HTMLInputElement
+                if (target.type !== 'radio' || isProviderDisabled || isLoading)
+                  return
+                event.preventDefault()
+                onAuthTypeChange(target.value as FormAuthType)
+              }
+            : undefined
+        }
       >
         {getLoginOptionsKeepingLegacySingpass(savedAuthType).map((option) => (
           <Box key={option}>
             <Radio
               value={option}
               allowDeselect={false}
-              isDisabled={isDisabled || isLoading}
+              isDisabled={isProviderDisabled || isLoading}
             >
               <LoginOptionLabel authType={option} />
             </Radio>
@@ -87,6 +142,17 @@ export const StepLoginControls = ({
                     value={esrvcId}
                     placeholder={t(`${COPY_KEY}.esrvcIdPlaceholder`)}
                     onChange={(e) => onEsrvcIdChange(e.target.value)}
+                    onBlur={onEsrvcIdCommit}
+                    onKeyDown={
+                      onEsrvcIdCommit
+                        ? (event) => {
+                            if (event.key === 'Enter') {
+                              event.preventDefault()
+                              onEsrvcIdCommit()
+                            }
+                          }
+                        : undefined
+                    }
                   />
                   <FormErrorMessage>
                     {t(`${COPY_KEY}.esrvcIdWhitespace`)}

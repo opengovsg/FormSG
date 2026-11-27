@@ -180,7 +180,7 @@ export const InactiveStepBlock = ({
         borderRadius={cardRadius}
         bg="white"
         border="1px solid"
-        borderColor="neutral.300"
+        borderColor="secondary.200"
         transitionProperty="common"
         transitionDuration="normal"
         cursor="pointer"
@@ -214,9 +214,10 @@ export const InactiveStepBlock = ({
             )}
           </Stack>
 
+          {isLoginShown && fieldsSection}
           {loginSection}
           {approvalsSection}
-          {fieldsSection}
+          {!isLoginShown && fieldsSection}
         </Stack>
       </chakra.button>
       <Icon
