@@ -55,6 +55,23 @@ PaymentsRouter.get(
 )
 
 /**
+ * Confirms the payment intent for this payment on the server
+ * @route POST /payments/:paymentId/confirm
+ *
+ * @returns 200 with the resulting payment intent status
+ * @returns 400 if the payment method was declined or invalid
+ * @returns 404 if the payment does not exist or server confirmation is not enabled for its account
+ * @returns 409 if the payment intent can no longer be confirmed
+ * @returns 500 if an unexpected error occurs
+ */
+PaymentsRouter.post(
+  '/:paymentId([a-fA-F0-9]{24})/confirm',
+  limitRate({ max: rateLimitConfig.submissions }),
+  StripeController.validateConfirmPaymentParams,
+  StripeController.handleConfirmPayment,
+)
+
+/**
  * Get previous latest successful payment id if it exists
  * Uses post request to collect the email data from the request body
  * @route POST /:formId/payments/previous

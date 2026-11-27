@@ -1,4 +1,8 @@
-import { GetPaymentInfoDto, PaymentReceiptStatusDto } from 'formsg-shared/types'
+import {
+  ConfirmPaymentDto,
+  GetPaymentInfoDto,
+  PaymentReceiptStatusDto,
+} from 'formsg-shared/types'
 
 import { ApiService } from '~services/ApiService'
 
@@ -29,6 +33,23 @@ export const getPaymentReceiptStatus = async (
 export const getPaymentInfo = async (paymentId: string) => {
   return ApiService.get<GetPaymentInfoDto>(
     `${PAYMENTS_ENDPOINT}/${paymentId}/getinfo`,
+  ).then(({ data }) => data)
+}
+
+/**
+ * Confirms the payment on the server with a payment method collected
+ * on the client.
+ * @param paymentId the id of the payment to confirm
+ * @param paymentMethodId the id of the collected payment method
+ * @returns the resulting payment intent status on success
+ */
+export const confirmPayment = async (
+  paymentId: string,
+  paymentMethodId: string,
+): Promise<ConfirmPaymentDto> => {
+  return ApiService.post<ConfirmPaymentDto>(
+    `${PAYMENTS_ENDPOINT}/${paymentId}/confirm`,
+    { paymentMethodId },
   ).then(({ data }) => data)
 }
 

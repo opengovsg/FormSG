@@ -77,3 +77,27 @@ export class StripeMetadataNotFormsgError extends ApplicationError {
     super(message, undefined, ErrorCodes.PAYMENT_STRIPE_METADATA_NOT_FORMSG)
   }
 }
+
+export class PaymentServerConfirmationUnavailableError extends ApplicationError {
+  constructor(
+    message = 'Server-side confirmation is not enabled for this payment',
+  ) {
+    super(
+      message,
+      undefined,
+      ErrorCodes.PAYMENT_STRIPE_SERVER_CONFIRMATION_UNAVAILABLE,
+    )
+  }
+}
+
+export class PaymentIntentNotConfirmableError extends ApplicationError {
+  constructor(message = 'The payment can no longer be confirmed') {
+    super(message, undefined, ErrorCodes.PAYMENT_STRIPE_INTENT_NOT_CONFIRMABLE)
+  }
+}
+
+export class StripeCardConfirmationError extends ApplicationError {
+  constructor(message = 'The payment could not be confirmed') {
+    super(message, undefined, ErrorCodes.PAYMENT_STRIPE_CARD_CONFIRMATION)
+  }
+}

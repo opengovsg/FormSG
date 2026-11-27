@@ -47,7 +47,9 @@ import {
   ComputePaymentStateError,
   MalformedStripeChargeObjectError,
   MalformedStripeEventObjectError,
+  PaymentIntentNotConfirmableError,
   StripeAccountError,
+  StripeCardConfirmationError,
   StripeFetchError,
   StripeMetadataIncorrectEnvError,
   StripeMetadataInvalidError,
@@ -1053,4 +1055,118 @@ export const verifyPaymentStatusWithStripe = (
           })
       }
     })
+}
+
+const CONFIRMABLE_PAYMENT_INTENT_STATUSES: Stripe.PaymentIntent.Status[] = [
+  'requires_payment_method',
+  'requires_confirmation',
+]
+
+const CONFIRMATION_PASSTHROUGH_STATUSES: Stripe.PaymentIntent.Status[] = [
+  'requires_action',
+  'processing',
+  'requires_capture',
+  'succeeded',
+]
+
+/**
+ * Confirms a payment intent on the connected account with the given payment
+ * method. When the payment method is a card whose brand has a merchant
+ * category code configured, the confirmation carries that code as a card
+ * payment method option.
+ *
+ * A payment intent that has already moved beyond collecting a payment method
+ * is returned as-is, so repeated calls are safe.
+ */
+export const confirmPaymentIntentWithPaymentMethod = ({
+  paymentIntentId,
+  paymentMethodId,
+  stripeAccount,
+  mccByCardBrand,
+  returnUrl,
+}: {
+  paymentIntentId: string
+  paymentMethodId: string
+  stripeAccount: string
+  mccByCardBrand: Record<string, string>
+  returnUrl: string
+}): ResultAsync<
+  Stripe.PaymentIntent,
+  | StripeFetchError
+  | PaymentIntentNotConfirmableError
+  | StripeCardConfirmationError
+> => {
+  const logMeta = {
+    action: 'confirmPaymentIntentWithPaymentMethod',
+    paymentIntentId,
+    stripeAccount,
+  }
+  return ResultAsync.fromPromise(
+    stripe.paymentIntents.retrieve(paymentIntentId, { stripeAccount }),
+    (error) => {
+      logger.error({
+        message: 'Error retrieving payment intent for confirmation',
+        meta: logMeta,
+        error,
+      })
+      return new StripeFetchError()
+    },
+  ).andThen((paymentIntent) => {
+    if (CONFIRMATION_PASSTHROUGH_STATUSES.includes(paymentIntent.status)) {
+      return okAsync(paymentIntent)
+    }
+    if (!CONFIRMABLE_PAYMENT_INTENT_STATUSES.includes(paymentIntent.status)) {
+      return errAsync(new PaymentIntentNotConfirmableError())
+    }
+    return ResultAsync.fromPromise(
+      stripe.paymentMethods.retrieve(paymentMethodId, { stripeAccount }),
+      (error) => {
+        logger.error({
+          message: 'Error retrieving payment method for confirmation',
+          meta: logMeta,
+          error,
+        })
+        return new StripeFetchError()
+      },
+    ).andThen((paymentMethod) => {
+      const cardBrand =
+        paymentMethod.type === 'card' ? paymentMethod.card?.brand : undefined
+      const mcc = cardBrand ? mccByCardBrand[cardBrand] : undefined
+
+      const confirmParams: Stripe.PaymentIntentConfirmParams = {
+        payment_method: paymentMethod.id,
+        return_url: returnUrl,
+      }
+      if (mcc) {
+        confirmParams.payment_method_options = {
+          card: {
+            mcc,
+          } as Stripe.PaymentIntentConfirmParams.PaymentMethodOptions.Card,
+        }
+      }
+
+      logger.info({
+        message: 'Confirming payment intent server-side',
+        meta: { ...logMeta, cardBrand, mccApplied: Boolean(mcc) },
+      })
+
+      return ResultAsync.fromPromise(
+        stripe.paymentIntents.confirm(paymentIntent.id, confirmParams, {
+          stripeAccount,
+          idempotencyKey: `confirm-${paymentIntent.id}-${paymentMethod.id}`,
+        }),
+        (error) => {
+          logger.warn({
+            message: 'Stripe payment intent confirmation failed',
+            meta: { ...logMeta, cardBrand },
+            error,
+          })
+          if (error instanceof Stripe.errors.StripeCardError) {
+            return new StripeCardConfirmationError(error.message)
+          }
+          return new StripeFetchError()
+        },
+      )
+    })
+  })
 }

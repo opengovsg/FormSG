@@ -31,6 +31,9 @@ import {
   ComputePaymentStateError,
   MalformedStripeChargeObjectError,
   MalformedStripeEventObjectError,
+  PaymentIntentNotConfirmableError,
+  PaymentServerConfirmationUnavailableError,
+  StripeCardConfirmationError,
   StripeFetchError,
   StripeMetadataIncorrectEnvError,
   StripeMetadataInvalidError,
@@ -46,8 +49,19 @@ export const mapRouteError: MapRouteError = (error: ApplicationError) => {
     case MalformedStripeEventObjectError:
     case MalformedStripeChargeObjectError:
     case StripeMetadataNotFormsgError:
+    case StripeCardConfirmationError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case PaymentIntentNotConfirmableError:
+      return {
+        statusCode: StatusCodes.CONFLICT,
+        errorMessage: error.message,
+      }
+    case PaymentServerConfirmationUnavailableError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
         errorMessage: error.message,
       }
     case ResponseModeError:
