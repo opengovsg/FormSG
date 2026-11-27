@@ -38,6 +38,7 @@ import { ProcessedFieldResponse } from '../submission.types'
 import {
   extractEmailConfirmationData,
   isAdminEmailPdfEnabled,
+  isStandardisedEmailTemplateOn,
   shouldIncludeEmailJson,
 } from '../submission.utils'
 
@@ -293,12 +294,10 @@ export const performEncryptPostSubmissionActions = ({
         growthbook,
       }).orElse(() => okAsync(undefined))
 
-      // TODO (email-standardisation): remove when email standardisation is GA
-      const useStandardisedEmailTemplate: boolean =
-        growthbook?.getFeatureValue(
-          featureFlags.standardisedEmailTemplate,
-          false,
-        ) ?? false
+      const useStandardisedEmailTemplate = isStandardisedEmailTemplateOn(
+        growthbook,
+        form.compatibilityOptions?.emails?.format,
+      )
 
       // TODO (formid-json): remove when Form ID in response JSON is GA
       const includeFormIdInResponseJson: boolean =

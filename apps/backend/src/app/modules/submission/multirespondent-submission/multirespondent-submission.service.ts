@@ -4,6 +4,7 @@ import { featureFlags } from 'formsg-shared/constants/feature-flags'
 import {
   BasicField,
   FormAuthType,
+  FormCompatibilityOptions,
   FormFieldDto,
   FormLogic,
   FormResponseMode,
@@ -316,6 +317,7 @@ interface sendNextStepEmailProps {
   submissionId: string
   responses: FieldResponsesV4
   growthbook?: GrowthBook
+  compatibilityOptions?: FormCompatibilityOptions
 }
 
 const sendNextStepEmail = ({
@@ -327,6 +329,7 @@ const sendNextStepEmail = ({
   submissionId,
   responses,
   growthbook,
+  compatibilityOptions,
 }: sendNextStepEmailProps): ResultAsync<
   true,
   InvalidWorkflowTypeError | MailSendError
@@ -346,7 +349,10 @@ const sendNextStepEmail = ({
   const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
     formFields: form.form_fields,
     responses,
-    keepV4ResponseFormat: isKeepV4ResponseFormatOn(growthbook),
+    keepV4ResponseFormat: isKeepV4ResponseFormatOn(
+      growthbook,
+      compatibilityOptions?.emails?.prefixes,
+    ),
   })
 
   return (
@@ -646,6 +652,7 @@ const sendMrfOutcomeEmails = ({
   growthbook,
   workflowEvents,
   isEmailJsonDisabled,
+  compatibilityOptions,
 }: {
   currentStepNumber: number
   form: Pick<
@@ -674,6 +681,7 @@ const sendMrfOutcomeEmails = ({
   growthbook?: GrowthBook
   workflowEvents?: IWorkflowEvent[]
   isEmailJsonDisabled: boolean
+  compatibilityOptions?: FormCompatibilityOptions
 }): ResultAsync<
   true,
   InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError
@@ -726,7 +734,10 @@ const sendMrfOutcomeEmails = ({
         const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
           formFields: form.form_fields,
           responses,
-          keepV4ResponseFormat: isKeepV4ResponseFormatOn(growthbook),
+          keepV4ResponseFormat: isKeepV4ResponseFormatOn(
+            growthbook,
+            compatibilityOptions?.emails?.prefixes,
+          ),
         })
 
         // TODO (formid-json): remove when Form ID in response JSON is GA
@@ -754,7 +765,10 @@ const sendMrfOutcomeEmails = ({
                   formFields: toPlainFormFields(form.form_fields),
                   formLogics: toPlainFormLogics(form.form_logics ?? []),
                 }),
-              keepV4ResponseFormat: isKeepV4ResponseFormatOn(growthbook),
+              keepV4ResponseFormat: isKeepV4ResponseFormatOn(
+                growthbook,
+                compatibilityOptions?.json?.prefixes,
+              ),
             })
           : undefined
 
@@ -836,6 +850,7 @@ const sendMrfRespondentCopyEmails = ({
   currentStepActiveFields,
   pdfResult,
   growthbook,
+  compatibilityOptions,
 }: {
   form: Pick<
     IPopulatedMultirespondentForm | SnapshottedFormDef,
@@ -853,6 +868,7 @@ const sendMrfRespondentCopyEmails = ({
     AutoreplyPdfGenerationError
   >
   growthbook?: GrowthBook
+  compatibilityOptions?: FormCompatibilityOptions
 }): ResultAsync<
   true,
   InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError
@@ -881,7 +897,10 @@ const sendMrfRespondentCopyEmails = ({
   const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
     formFields: form.form_fields,
     responses,
-    keepV4ResponseFormat: isKeepV4ResponseFormatOn(growthbook),
+    keepV4ResponseFormat: isKeepV4ResponseFormatOn(
+      growthbook,
+      compatibilityOptions?.emails?.prefixes,
+    ),
   })
 
   return pdfResult
@@ -1471,8 +1490,10 @@ const generatePdfAttachmentIfRequired = ({
   currentStepNumber,
   isRejected,
   growthbook,
+  compatibilityOptions,
 }: CheckIsPdfGenerationRequiredArgs & {
   submission: IMultirespondentSubmissionSchema
+  compatibilityOptions?: FormCompatibilityOptions
   form: Pick<
     IPopulatedMultirespondentForm,
     | '_id'
@@ -1510,7 +1531,10 @@ const generatePdfAttachmentIfRequired = ({
   const responsesData = getResponsesDataFromMrfResponses({
     formFields: form.form_fields,
     responses,
-    keepV4ResponseFormat: isKeepV4ResponseFormatOn(growthbook),
+    keepV4ResponseFormat: isKeepV4ResponseFormatOn(
+      growthbook,
+      compatibilityOptions?.emails?.prefixes,
+    ),
   })
 
   const autoReplyData = {
@@ -1783,6 +1807,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     isRejected: false, // first step cannot be an approval step and thus cannot be rejected.
     submissionId,
     growthbook,
+    compatibilityOptions: form.compatibilityOptions,
   })
 
   const latestSubmissionTimestamp = formatSubmittedStepTimestamp({
@@ -1821,6 +1846,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     currentStepActiveFields,
     pdfResult: sendMrfRespondentCopyEmailsPdfResult,
     growthbook,
+    compatibilityOptions: form.compatibilityOptions,
   }).mapErr((error) => {
     logger.error({
       message: 'Send multirespondent respondent copy email error',
@@ -1856,6 +1882,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     submissionId,
     responses,
     growthbook,
+    compatibilityOptions: form.compatibilityOptions,
   })
     .mapErr((error) => {
       logger.error({
@@ -1877,6 +1904,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
         growthbook,
         workflowEvents: submission.workflowEvents,
         isEmailJsonDisabled: form.isEmailJsonDisabled,
+        compatibilityOptions: form.compatibilityOptions,
       })
     })
     .mapErr((error) => {
@@ -2254,6 +2282,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   attachments,
   growthbook,
   isEmailJsonDisabled,
+  compatibilityOptions,
 }: {
   submission: IMultirespondentSubmissionSchema
   snapshot?: SubmissionSnapshot
@@ -2265,6 +2294,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   attachments?: IAttachmentInfo[]
   growthbook?: GrowthBook
   isEmailJsonDisabled: boolean
+  compatibilityOptions?: FormCompatibilityOptions
 }): ResultAsync<
   boolean,
   | InvalidWorkflowTypeError
@@ -2330,6 +2360,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     currentStepActiveFields:
       snapshottedFormDef.workflow[currentStepNumber]?.edit ?? [],
     growthbook,
+    compatibilityOptions,
   })
 
   const latestSubmissionTimestamp = formatSubmittedStepTimestamp({
@@ -2370,6 +2401,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       snapshottedFormDef.workflow[currentStepNumber]?.edit ?? [],
     pdfResult: sendMrfRespondentCopyEmailsPdfResult,
     growthbook,
+    compatibilityOptions,
   }).mapErr((error) => {
     logger.error({
       message: 'Send multirespondent respondent copy email error',
@@ -2392,6 +2424,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       growthbook,
       workflowEvents: submission.workflowEvents,
       isEmailJsonDisabled,
+      compatibilityOptions,
     }).mapErr((error) => {
       logger.error({
         message: 'Send mrf outcome email error',
@@ -2412,6 +2445,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     pdfResult: sendMrfOutcomeEmailsPdfResult,
     growthbook,
     isEmailJsonDisabled,
+    compatibilityOptions,
     workflowEvents: submission.workflowEvents,
   })
     .mapErr((error) => {
@@ -2436,6 +2470,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
         submissionId,
         responses,
         growthbook,
+        compatibilityOptions,
       }).mapErr((error) => {
         logger.error({
           message: 'Send multirespondent workflow email error',

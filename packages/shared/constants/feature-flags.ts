@@ -28,6 +28,7 @@ export const featureFlags = {
   paymentEmailLookup: 'payment-email-lookup' as const,
   settingsIntegrations: 'settings-integrations' as const,
   settingsIntegrationsJson: 'settings-integrations-json' as const,
+  settingsCompatibilityOptions: 'settings-compatibility-options' as const,
   attachmentsMultiUploadAndOneZip:
     'attachments-multi-upload-and-one-zip' as const,
   attachmentsRestrictFileTypes: 'attachments-restrict-file-types' as const,

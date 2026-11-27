@@ -363,6 +363,32 @@ IntegrationsStorageMode.parameters = StorageModeEmpty.parameters
 export const IntegrationsEmailMode = Template.bind({})
 IntegrationsEmailMode.decorators = [withIntegrations]
 
+const withCompatibilityOptions: Decorator = (Story) => (
+  <GrowthBookProvider
+    growthbook={
+      new GrowthBook({
+        features: {
+          [featureFlags.enableMrfWebhooks]: { defaultValue: true },
+          [featureFlags.settingsCompatibilityOptions]: { defaultValue: true },
+        },
+      })
+    }
+  >
+    <Story />
+  </GrowthBookProvider>
+)
+
+export const CompatibilityStorageMode = Template.bind({})
+CompatibilityStorageMode.decorators = [withCompatibilityOptions]
+CompatibilityStorageMode.parameters = StorageModeEmpty.parameters
+
+export const CompatibilityMultirespondentMode = Template.bind({})
+CompatibilityMultirespondentMode.decorators = [withCompatibilityOptions]
+CompatibilityMultirespondentMode.parameters = webhookWorkflowParameters(
+  1,
+  'https://example.com/webhook',
+)
+
 export const IntegrationsWebhooksUnsupported = Template.bind({})
 IntegrationsWebhooksUnsupported.decorators = [withIntegrations]
 IntegrationsWebhooksUnsupported.parameters =

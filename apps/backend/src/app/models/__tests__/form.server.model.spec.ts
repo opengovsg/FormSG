@@ -3520,6 +3520,7 @@ describe('Form Model', () => {
           inactiveMessage: 'inactive_test',
           responseMode: FormResponseMode.Encrypt,
           submissionLimit: 1000,
+          compatibilityOptions: { emails: { format: 'legacy' as const } },
         }
         const sourceForm = new Form(MOCK_ALL_FORM_PARAMS)
 
@@ -3550,6 +3551,9 @@ describe('Form Model', () => {
         )
         expect(duplicatedForm.isSaveDraftEnabled).toEqual(
           MOCK_ALL_FORM_PARAMS.isSaveDraftEnabled,
+        )
+        expect(duplicatedForm.compatibilityOptions).toMatchObject(
+          MOCK_ALL_FORM_PARAMS.compatibilityOptions,
         )
       })
 

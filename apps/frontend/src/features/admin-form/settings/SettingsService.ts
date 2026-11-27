@@ -149,6 +149,13 @@ export const updateFormEmailJson: UpdateFormFn<'isEmailJsonDisabled'> = async (
   })
 }
 
+export const updateFormCompatibilityOptions = async (
+  formId: string,
+  compatibilityOptions: NonNullable<SettingsUpdateDto['compatibilityOptions']>,
+): Promise<FormSettings> => {
+  return updateFormSettings(formId, { compatibilityOptions })
+}
+
 export const updateFormInactiveMessage: UpdateFormFn<
   'inactiveMessage'
 > = async (formId, newMessage) => {

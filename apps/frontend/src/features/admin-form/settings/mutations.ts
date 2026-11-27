@@ -39,6 +39,7 @@ import {
   updateFormAuthType,
   updateFormCaptcha,
   updateFormCloseAt,
+  updateFormCompatibilityOptions,
   updateFormEmailJson,
   updateFormEmails,
   updateFormEsrvcId,
@@ -329,6 +330,25 @@ export const useMutateFormSettings = () => {
           toastDescription: newData.isEmailJsonDisabled
             ? t('features.adminForm.settings.mutations.emailJson.disabled')
             : t('features.adminForm.settings.mutations.emailJson.enabled'),
+        })
+      },
+      onError: handleError,
+    },
+  )
+
+  const mutateFormCompatibilityOptions = useMutation(
+    (
+      nextCompatibilityOptions: Parameters<
+        typeof updateFormCompatibilityOptions
+      >[1],
+    ) => updateFormCompatibilityOptions(formId, nextCompatibilityOptions),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: t(
+            'features.adminForm.settings.mutations.compatibilityOptionsUpdated',
+          ),
         })
       },
       onError: handleError,
@@ -696,6 +716,7 @@ export const useMutateFormSettings = () => {
     mutateFormCaptcha,
     mutateFormIssueNotification,
     mutateFormEmailJson,
+    mutateFormCompatibilityOptions,
     mutateFormEmails,
     mutateMrfEmailNotifications,
     mutateMrfStatusTracker,

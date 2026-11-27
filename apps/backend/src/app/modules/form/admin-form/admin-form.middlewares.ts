@@ -3,6 +3,7 @@ import {
   FormAuthType,
   FormStatus,
   Language,
+  LEGACY_OR_LATEST,
   SettingsUpdateDto,
   WebhookSettingsUpdateDto,
   WorkflowType,
@@ -14,6 +15,20 @@ const webhookSettingsValidator = Joi.object({
   url: Joi.string().uri().allow(''),
   isRetryEnabled: Joi.boolean(),
   webhookFormat: Joi.string().valid('v1', 'v4'),
+}).min(1)
+
+const legacyOrLatestValidator = Joi.string()
+  .valid(...LEGACY_OR_LATEST)
+  .allow(null)
+
+const compatibilityOptionsValidator = Joi.object({
+  emails: Joi.object({
+    format: legacyOrLatestValidator,
+    prefixes: legacyOrLatestValidator,
+  }).min(1),
+  json: Joi.object({
+    prefixes: legacyOrLatestValidator,
+  }).min(1),
 }).min(1)
 
 /**
@@ -35,6 +50,7 @@ export const updateSettingsValidator = celebrate({
     hasCaptcha: Joi.boolean(),
     hasIssueNotification: Joi.boolean(),
     isEmailJsonDisabled: Joi.boolean(),
+    compatibilityOptions: compatibilityOptionsValidator,
     inactiveMessage: Joi.string(),
     status: Joi.string().valid(...Object.values(FormStatus)),
     submissionLimit: Joi.number().allow(null),

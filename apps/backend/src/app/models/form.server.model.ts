@@ -33,6 +33,7 @@ import {
   FormWebhookSettings,
   FormWorkflowDto,
   Language,
+  LEGACY_OR_LATEST,
   LogicConditionState,
   LogicDto,
   LogicType,
@@ -156,6 +157,7 @@ const FORM_SCHEMA_COMMON_DUPLICATE_PARAMS = [
   'authType',
   'isSaveDraftEnabled',
   'isEmailJsonDisabled',
+  'compatibilityOptions',
   'isSubmitterIdCollectionEnabled',
   'isSingleSubmission',
   'inactiveMessage',
@@ -911,6 +913,16 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       isEmailJsonDisabled: {
         type: Boolean,
         default: false,
+      },
+
+      compatibilityOptions: {
+        emails: {
+          format: { type: String, enum: [...LEGACY_OR_LATEST, null] },
+          prefixes: { type: String, enum: [...LEGACY_OR_LATEST, null] },
+        },
+        json: {
+          prefixes: { type: String, enum: [...LEGACY_OR_LATEST, null] },
+        },
       },
 
       savedViews: {

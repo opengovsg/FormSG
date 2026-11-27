@@ -113,6 +113,32 @@ export type FormWebhook = {
   webhookFormat?: FormWebhookFormat
 }
 
+/**
+ * How a form's output should stay compatible with an admin's integration.
+ * - `legacy`: the output from before the most recent format change
+ * - `v<N>`: a named output version
+ * - `latest`: the newest output, ahead of the platform default
+ * An absent or null value follows the system-wide default.
+ */
+export type CompatibilityMode = 'legacy' | 'latest' | `v${number}`
+
+export const LEGACY_OR_LATEST = ['legacy', 'latest'] as const
+
+type LegacyOrLatest = (typeof LEGACY_OR_LATEST)[number] | null
+
+export type FormCompatibilityOptions = {
+  emails?: {
+    /** Storage mode admin email layout. */
+    format?: LegacyOrLatest
+    /** Multi-respondent email and PDF question labels and answer formats. */
+    prefixes?: LegacyOrLatest
+  }
+  json?: {
+    /** Multi-respondent email JSON keys and answer formats. */
+    prefixes?: LegacyOrLatest
+  }
+}
+
 export enum FormResponseMode {
   Encrypt = 'encrypt',
   Email = 'email',
@@ -251,6 +277,7 @@ export interface FormBase {
   hasCaptcha: boolean
   hasIssueNotification: boolean
   isEmailJsonDisabled: boolean
+  compatibilityOptions?: FormCompatibilityOptions
   authType: FormAuthType
   isSubmitterIdCollectionEnabled: boolean
   isSingleSubmission: boolean

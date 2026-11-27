@@ -16,6 +16,8 @@ import {
 import * as stories from './SettingsWebhooksPage.stories'
 
 const {
+  CompatibilityMultirespondentMode,
+  CompatibilityStorageMode,
   IntegrationsEmailMode,
   IntegrationsStorageMode,
   MultiStepV4Webhook,
@@ -29,6 +31,16 @@ const {
   StorageModePlumberConnected,
   UnsupportedEmailMode,
 } = composeStories(stories)
+
+vi.mock('react-virtuoso', () => ({
+  Virtuoso: ({
+    data = [],
+    itemContent,
+  }: {
+    data?: unknown[]
+    itemContent: (index: number, item: unknown) => React.ReactNode
+  }) => <>{data.map((item, index) => itemContent(index, item))}</>,
+}))
 
 const UNSUPPORTED_MSG = /webhooks are only available in storage mode/i
 const PLUMBER_CONNECTED_MSG = /this form is connected to plumber/i
@@ -618,5 +630,97 @@ describe('JSON for email notifications', () => {
         name: 'Enable JSON for email notifications',
       }),
     ).not.toBeInTheDocument()
+  })
+})
+
+describe('compatibility options', () => {
+  const EMAIL_FORMAT = /^Email notification layout/
+  const MRF_OPTIONS = [
+    /^Question labels and answers in emails and PDFs/,
+    /^Question labels and answers in email JSON/,
+  ]
+
+  it('stays hidden while the flag is off', async () => {
+    await act(async () => {
+      render(<IntegrationsStorageMode />)
+    })
+    await screen.findByRole('checkbox', {
+      name: 'Enable JSON for email notifications',
+    })
+    expect(screen.queryByText('Compatibility')).not.toBeInTheDocument()
+  })
+
+  it('shows only the email layout option on storage mode forms', async () => {
+    await act(async () => {
+      render(<CompatibilityStorageMode />)
+    })
+    await screen.findByRole('combobox', { name: EMAIL_FORMAT })
+    for (const label of MRF_OPTIONS) {
+      expect(
+        screen.queryByRole('combobox', { name: label }),
+      ).not.toBeInTheDocument()
+    }
+  })
+
+  it('shows the label and JSON options on multi-respondent forms', async () => {
+    await act(async () => {
+      render(<CompatibilityMultirespondentMode />)
+    })
+    for (const label of MRF_OPTIONS) {
+      await screen.findByRole('combobox', { name: label })
+    }
+    expect(
+      screen.queryByRole('combobox', { name: EMAIL_FORMAT }),
+    ).not.toBeInTheDocument()
+  })
+
+  it.each([
+    ['Legacy', 'legacy'],
+    ['Default', null],
+  ])('saves %s as %s', async (label, expected) => {
+    const requests: unknown[] = []
+    const Case = composeStory(
+      {
+        ...stories.CompatibilityStorageMode,
+        parameters: {
+          msw: {
+            handlers: {
+              default: [
+                getAdminFormSettings({
+                  overrides: {
+                    responseMode: FormResponseMode.Encrypt,
+                    compatibilityOptions: { emails: { format: 'latest' } },
+                  },
+                }),
+                http.patch(
+                  '/api/v3/admin/forms/:formId/settings',
+                  async ({ request }) => {
+                    requests.push(await request.json())
+                    return patchAdminFormSettings({
+                      mode: FormResponseMode.Encrypt,
+                    }).resolver({ request } as never)
+                  },
+                ),
+              ],
+            },
+          },
+        },
+      },
+      stories.default,
+    )
+    await act(async () => {
+      render(<Case />)
+    })
+
+    await userEvent.click(
+      await screen.findByRole('combobox', { name: EMAIL_FORMAT }),
+    )
+    await userEvent.click(await screen.findByRole('option', { name: label }))
+
+    await waitFor(() =>
+      expect(requests).toEqual([
+        { compatibilityOptions: { emails: { format: expected } } },
+      ]),
+    )
   })
 })

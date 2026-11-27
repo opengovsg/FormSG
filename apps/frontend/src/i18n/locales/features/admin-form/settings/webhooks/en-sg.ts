@@ -6,6 +6,19 @@ export const enSG = {
     description:
       'Add responses in JSON to the bottom of the email body for automations.',
   },
+  compatibility: {
+    title: 'Compatibility',
+    description:
+      "If your automations read FormSG's output, keep the format they were built for. Default follows FormSG's latest format as changes are released.",
+    options: {
+      default: 'Default',
+      legacy: 'Legacy',
+      latest: 'Latest',
+    },
+    emailFormat: 'Email notification layout',
+    emailPrefixes: 'Question labels and answers in emails and PDFs',
+    jsonPrefixes: 'Question labels and answers in email JSON',
+  },
   legacy: {
     label: 'Use legacy webhooks',
     description:
