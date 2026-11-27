@@ -432,7 +432,7 @@ type AttachmentReducerData = {
  *
  * @param formId the id of the form to upload attachments for
  * @param attachmentData Attachment blob data from the client (including the attachment)
- * @param bucket the bucket to upload to, defaulting to the default attachmentS3Bucket.
+ * @param keyPrefix leads every uploaded object key, defaulting to none
  *
  * @returns ok(AttachmentMetadata) A map of field id to the s3 key of the uploaded attachment
  * @returns err(AttachmentUploadError) if the upload has failed
@@ -440,7 +440,7 @@ type AttachmentReducerData = {
 export const uploadAttachments = (
   formId: string,
   attachmentData: Record<string, unknown>,
-  bucket: string = AwsConfig.attachmentS3Bucket,
+  keyPrefix = '',
 ): ResultAsync<AttachmentMetadata, AttachmentUploadError> => {
   const { attachmentMetadata, attachmentUploadPromises } = Object.keys(
     attachmentData,
@@ -453,13 +453,12 @@ export const uploadAttachments = (
         .update(individualAttachment)
         .digest('hex')
 
-      const uploadKey =
-        formId + '/' + crypto.randomBytes(20).toString('hex') + '/' + hashStr
+      const uploadKey = `${keyPrefix}${formId}/${crypto.randomBytes(20).toString('hex')}/${hashStr}`
 
       accumulator.attachmentMetadata.set(fieldId, uploadKey)
       accumulator.attachmentUploadPromises.push(
         putS3Object({
-          Bucket: bucket,
+          Bucket: AwsConfig.attachmentS3Bucket,
           Key: uploadKey,
           Body: Buffer.from(individualAttachment),
         }),

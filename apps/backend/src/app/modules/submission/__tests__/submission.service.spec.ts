@@ -2508,6 +2508,64 @@ describe('submission.service', () => {
     })
   })
 
+  describe('uploadAttachments', () => {
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_ATTACHMENTS = {
+      fieldOne: { encryptedFile: { binary: 'one' } },
+      fieldTwo: { encryptedFile: { binary: 'two' } },
+    }
+
+    afterEach(() => jest.restoreAllMocks())
+
+    const upload = async (keyPrefix?: string) => {
+      const putSpy = jest
+        .spyOn(s3Operations, 'putObject')
+        .mockResolvedValue({} as never)
+      const result = await SubmissionService.uploadAttachments(
+        MOCK_FORM_ID,
+        MOCK_ATTACHMENTS,
+        keyPrefix,
+      )
+      return {
+        metadata: Object.fromEntries(result._unsafeUnwrap()),
+        puts: putSpy.mock.calls.map(([{ Bucket, Key, Body }]) => ({
+          Bucket,
+          Key,
+          Body: String(Body),
+        })),
+      }
+    }
+
+    it.each([
+      ['no key prefix', undefined, ''],
+      ['a key prefix', 'webhook-v1/', 'webhook-v1/'],
+    ])(
+      'should upload each attachment to the attachment bucket keyed by form id with %s',
+      async (_case, keyPrefix, expectedKeyStart) => {
+        const { metadata, puts } = await upload(keyPrefix)
+
+        const key = expect.stringMatching(
+          new RegExp(
+            `^${expectedKeyStart}${MOCK_FORM_ID}/[0-9a-f]{40}/[0-9a-f]{64}$`,
+          ),
+        )
+        expect(metadata).toEqual({ fieldOne: key, fieldTwo: key })
+        expect(puts).toEqual([
+          {
+            Bucket: aws.attachmentS3Bucket,
+            Key: metadata.fieldOne,
+            Body: JSON.stringify(MOCK_ATTACHMENTS.fieldOne),
+          },
+          {
+            Bucket: aws.attachmentS3Bucket,
+            Key: metadata.fieldTwo,
+            Body: JSON.stringify(MOCK_ATTACHMENTS.fieldTwo),
+          },
+        ])
+      },
+    )
+  })
+
   describe('validateAttachments', () => {
     it('should reject email mode submissions when attachments are more than 7MB', async () => {
       const processedResponse1 = generateNewAttachmentResponse({

@@ -469,26 +469,28 @@ describe('[GATE] payment webhook delivery', () => {
   it.each([
     [
       'snapshot',
-      aws.submissionHistoryV1S3Bucket,
+      ({ Bucket }: PutObjectCommand['input']) =>
+        Bucket === aws.submissionHistoryV1S3Bucket,
       500,
       'Failed to save submission. Please try again later.',
     ],
     [
       'attachment',
-      aws.submissionHistoryV1AttachmentS3Bucket,
+      ({ Bucket, Key }: PutObjectCommand['input']) =>
+        Bucket === aws.attachmentS3Bucket && Key!.startsWith('webhook-v1/'),
       400,
       'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
     ],
   ])(
     'rejects a required %s write failure before saving pending or creating a PaymentIntent, even without a URL',
-    async (_kind, bucket, status, message) => {
+    async (_kind, isRequiredWrite, status, message) => {
       const input = await prepare({ withAttachments: true, webhookUrl: '' })
       const send = jest.mocked(aws.s3.send).getMockImplementation()!
       jest.mocked(aws.s3.send).mockImplementation(async (...args) => {
         const [command] = args
         if (
           command instanceof PutObjectCommand &&
-          command.input.Bucket === bucket
+          isRequiredWrite(command.input)
         )
           throw new Error('S3 unavailable')
         return send(...args)
@@ -654,6 +656,11 @@ describe('[GATE] payment webhook delivery', () => {
           key.startsWith(`${aws.submissionHistoryV4S3Bucket}/`),
         ),
       ).toHaveLength(1)
+      expect(
+        [...objects.keys()].filter((key) =>
+          key.startsWith(`${aws.submissionHistoryV1AttachmentS3Bucket}/`),
+        ),
+      ).toEqual([])
       for (const [, body] of snapshots) {
         const snapshot = JSON.parse(body)
         expect(
@@ -662,9 +669,12 @@ describe('[GATE] payment webhook delivery', () => {
             version: 2.1,
           })?.verified,
         ).toEqual({ cpUen: '201234567A', cpUid: 'S1234567D' })
-        for (const key of Object.values(snapshot.attachmentMetadata)) {
+        for (const key of Object.values<string>(snapshot.attachmentMetadata)) {
+          expect(key.startsWith(`webhook-v1/${input.populated._id}/`)).toBe(
+            true,
+          )
           const stored = JSON.parse(
-            objects.get(`${aws.submissionHistoryV1AttachmentS3Bucket}/${key}`)!,
+            objects.get(`${aws.attachmentS3Bucket}/${key}`)!,
           )
           const decrypted = await formsgSdk.crypto.decryptFile(
             input.formKeypair.secretKey,
@@ -811,11 +821,11 @@ describe('[GATE] payment webhook delivery', () => {
     },
   )
   it.each([
-    ['V1', GENERIC_URL, PLUMBER_URL, aws.submissionHistoryV1AttachmentS3Bucket],
-    ['V4', PLUMBER_URL, GENERIC_URL, aws.attachmentS3Bucket],
+    ['V1', GENERIC_URL, PLUMBER_URL, 'webhook-v1/'],
+    ['V4', PLUMBER_URL, GENERIC_URL, ''],
   ])(
     'retries payment %s to the current URL in its original format after a consumer change',
-    async (format, before, after, bucket) => {
+    async (format, before, after, keyPrefix) => {
       const { payment, form } = await submit({
         webhookUrl: before,
         withAttachments: true,
@@ -858,7 +868,9 @@ describe('[GATE] payment webhook delivery', () => {
       })
       expect(normalise(retry)).toEqual(normalise(initial))
       for (const url of Object.values(retry.attachmentDownloadUrls))
-        expect(url).toContain(`/${bucket}/`)
+        expect(url).toContain(
+          `/${aws.attachmentS3Bucket}/${keyPrefix}${form._id}/`,
+        )
       expect(aws.s3.send).toHaveBeenCalledTimes(format === 'V4' ? 0 : 1)
     },
   )

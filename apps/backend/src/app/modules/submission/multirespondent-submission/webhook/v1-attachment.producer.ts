@@ -2,8 +2,8 @@ import { VIRUS_SCANNER_SUBMISSION_VERSION } from 'formsg-shared/constants'
 import { okAsync, ResultAsync } from 'neverthrow'
 
 import { ParsedClearFormFieldResponsesV4 } from '../../../../../types/api'
-import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
+import { V1_ATTACHMENT_KEY_PREFIX } from '../../../webhook/webhook.constants'
 import { AttachmentUploadError } from '../../submission.errors'
 import { uploadAttachments } from '../../submission.service'
 import { AttachmentMetadata } from '../../submission.types'
@@ -34,7 +34,7 @@ const getFieldIdToAttachmentsMap = (
 
 /**
  * Produces the form public key encrypted copy of every attachment from the given responses and
- * uploads it to the V1 attachment bucket.
+ * uploads it to the shared attachment bucket under V1_ATTACHMENT_KEY_PREFIX.
  *
  * @returns ok(AttachmentMetadata) A map of field id to the s3 key of the uploaded attachment
  */
@@ -77,7 +77,7 @@ export const encryptAndUploadAttachmentInV1 = ({
     uploadAttachments(
       formId,
       v1EncryptedAttachmentsData,
-      AwsConfig.submissionHistoryV1AttachmentS3Bucket,
+      V1_ATTACHMENT_KEY_PREFIX,
     ),
   )
 }
