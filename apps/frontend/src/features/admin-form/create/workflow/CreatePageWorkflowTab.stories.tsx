@@ -699,10 +699,10 @@ StepLoginMixedProviders.parameters = {
   },
 }
 
-export const GuidedLoginAccordion = Template.bind({})
-GuidedLoginAccordion.decorators = StepLoginMixedProviders.decorators
-GuidedLoginAccordion.parameters = StepLoginMixedProviders.parameters
-GuidedLoginAccordion.play = async ({ canvasElement }) => {
+export const GuidedFieldsAccordion = Template.bind({})
+GuidedFieldsAccordion.decorators = StepLoginMixedProviders.decorators
+GuidedFieldsAccordion.parameters = StepLoginMixedProviders.parameters
+GuidedFieldsAccordion.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement)
   await canvas.findByRole('button', { name: /add step/i })
   useAdminWorkflowStore.getState().setGuidedSetup(true)
@@ -710,21 +710,21 @@ GuidedLoginAccordion.play = async ({ canvasElement }) => {
   await canvas.findByRole('textbox', { name: /step name/i })
   await userEvent.click(canvas.getByRole('button', { name: /^continue$/i }))
   await userEvent.click(canvas.getByRole('button', { name: /^continue$/i }))
+  await expect(
+    canvas.getByRole('button', { name: 'Assigned fields' }),
+  ).toHaveAttribute('aria-expanded', 'true')
+}
+
+export const GuidedLoginAccordion = Template.bind({})
+GuidedLoginAccordion.decorators = GuidedFieldsAccordion.decorators
+GuidedLoginAccordion.parameters = GuidedFieldsAccordion.parameters
+GuidedLoginAccordion.play = async (context) => {
+  await GuidedFieldsAccordion.play?.(context)
+  const canvas = within(context.canvasElement)
+  await userEvent.click(canvas.getByRole('button', { name: /^continue$/i }))
   await expect(canvas.getByRole('button', { name: 'Login' })).toHaveAttribute(
     'aria-expanded',
     'true',
   )
-  await userEvent.click(canvas.getByRole('radio', { name: /^Corppass/ }))
-}
-
-export const GuidedFieldsAccordion = Template.bind({})
-GuidedFieldsAccordion.decorators = GuidedLoginAccordion.decorators
-GuidedFieldsAccordion.parameters = GuidedLoginAccordion.parameters
-GuidedFieldsAccordion.play = async (context) => {
-  await GuidedLoginAccordion.play?.(context)
-  const canvas = within(context.canvasElement)
-  await userEvent.click(canvas.getByRole('button', { name: /^continue$/i }))
-  await expect(
-    canvas.getByRole('button', { name: 'Assigned fields' }),
-  ).toHaveAttribute('aria-expanded', 'true')
+  await userEvent.click(await canvas.findByRole('radio', { name: /^Corppass/ }))
 }
