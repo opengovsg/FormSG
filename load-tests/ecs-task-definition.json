@@ -1,0 +1,74 @@
+{
+  "containerDefinitions": [
+    {
+      "name": "k6",
+      "cpu": 0,
+      "essential": true,
+      "environment": [
+        { "name": "TZ", "value": "Asia/Singapore" },
+        { "name": "K6_NO_USAGE_REPORT", "value": "true" },
+        { "name": "K6_OTEL_GRPC_EXPORTER_INSECURE", "value": "true" },
+        { "name": "K6_OTEL_METRIC_PREFIX", "value": "k6." },
+        { "name": "K6_OTEL_SERVICE_NAME", "value": "formsg-load-test" }
+      ],
+      "secrets": [
+        {
+          "name": "LOAD_TEST_KEY",
+          "valueFrom": "/uat/LOAD_TEST_BYPASS_KEY"
+        }
+      ],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "dependsOn": [{ "containerName": "dd-agent", "condition": "START" }],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "formsg-uat/ecs/load-test",
+          "awslogs-region": "ap-southeast-1",
+          "awslogs-stream-prefix": "k6"
+        }
+      }
+    },
+    {
+      "name": "dd-agent",
+      "image": "public.ecr.aws/datadog/agent:latest",
+      "cpu": 0,
+      "essential": false,
+      "environment": [
+        { "name": "TZ", "value": "Asia/Singapore" },
+        { "name": "ECS_FARGATE", "value": "true" },
+        { "name": "DD_SITE", "value": "datadoghq.com" },
+        {
+          "name": "DD_OTLP_CONFIG_RECEIVER_PROTOCOLS_GRPC_ENDPOINT",
+          "value": "localhost:4317"
+        },
+        { "name": "DD_APM_ENABLED", "value": "false" },
+        { "name": "DD_ENV", "value": "uat" },
+        { "name": "DD_TAGS", "value": "env:uat team:formsg product:formsg" }
+      ],
+      "secrets": [{ "name": "DD_API_KEY", "valueFrom": "/uat/DD_API_KEY" }],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "formsg-uat/ecs/load-test",
+          "awslogs-region": "ap-southeast-1",
+          "awslogs-stream-prefix": "dd-agent"
+        }
+      }
+    }
+  ],
+  "family": "formsg-uat-load-test-runner",
+  "networkMode": "awsvpc",
+  "volumes": [],
+  "placementConstraints": [],
+  "runtimePlatform": {
+    "operatingSystemFamily": "LINUX",
+    "cpuArchitecture": "X86_64"
+  },
+  "requiresCompatibilities": ["FARGATE"],
+  "executionRoleArn": "arn:aws:iam::<AWS_ACCOUNT_ID>:role/formsg-uat-ecs-task-exec-role",
+  "cpu": "2048",
+  "memory": "4096"
+}
