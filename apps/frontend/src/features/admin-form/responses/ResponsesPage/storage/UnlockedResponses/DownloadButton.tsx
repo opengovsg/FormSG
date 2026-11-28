@@ -399,6 +399,10 @@ export const DownloadButton = ({
       ? savedViews.find(({ _id }) => _id === selectedViewId)
       : undefined
     const formats = toDownloadFormats(downloadOptions)
+    const folderNameField =
+      downloadVersion === 'v2' && !isCsvOnlyDownload(downloadOptions)
+        ? downloadOptions.folderNameField
+        : undefined
     logAnalyticsEvent(formId, {
       type: AnalyticsEventType.ResultsDownload,
       content: {
@@ -459,6 +463,7 @@ export const DownloadButton = ({
       downloadAttachments: downloadOptions.isDownloadAttachments,
       isDownloadCsv: downloadOptions.isDownloadCsv,
       isDownloadPdf: downloadOptions.isDownloadPdf,
+      folderNameFieldId: folderNameField?._id,
     })
   }, [
     downloadParams,
@@ -539,6 +544,7 @@ export const DownloadButton = ({
           isDownloading={handleBulkDownloadMutation.isLoading}
           downloadMetadata={downloadMetadata}
           downloadOptions={downloadOptions}
+          onDownloadOptionsChange={setDownloadOptions}
           isCsvFollowingTable={isDelightfulDashboard}
           isResponsesCountHidden={isResponsesCountHidden}
         />

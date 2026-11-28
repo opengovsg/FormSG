@@ -52,6 +52,10 @@ export const enSG: ResponsesResponsesPage = {
           noResponsesInSelectedDateRange:
             'The date range you selected does not contain any responses. Please select a date range containing responses and try again.',
           startDownload: 'Start download',
+          folderNameLabel: 'Name folders by',
+          folderNameDescription:
+            'Folders are named by this answer, then the Response ID. Blank answers use the Response ID only.',
+          folderNamePlaceholder: 'Response ID only',
         },
         modal: {
           progressMessage:
