@@ -42,6 +42,9 @@ export interface ResponsesResponsesPage {
           }
           noResponsesInSelectedDateRange: string
           startDownload: string
+          folderNameLabel: string
+          folderNameDescription: string
+          folderNamePlaceholder: string
         }
         modal: {
           progressMessage: string

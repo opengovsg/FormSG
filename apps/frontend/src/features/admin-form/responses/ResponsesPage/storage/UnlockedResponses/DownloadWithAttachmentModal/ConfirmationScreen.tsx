@@ -20,10 +20,13 @@ import { featureFlags } from 'formsg-shared/constants'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import { DropdownMenuLayerProvider, SingleSelect } from '~components/Dropdown'
+import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import { ModalCloseButton } from '~components/Modal'
 import { Switch } from '~components/Toggle/Switch'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
 import {
   V1Icon,
   V2Icon,
@@ -34,6 +37,7 @@ import {
 } from '~features/admin-form/responses/hooks'
 
 import { DownloadOptions, isCsvOnlyDownload } from '../../types'
+import { FOLDER_NAME_FIELD_TYPES } from '../../utils/responseFolderName'
 
 const InlineTextListItem = ({
   children,
@@ -48,6 +52,46 @@ const InlineTextListItem = ({
   </ListItem>
 )
 
+type FolderNameField = DownloadOptions['folderNameField']
+
+interface FolderNamePickerProps {
+  value: FolderNameField
+  onChange: (field: FolderNameField) => void
+}
+
+const FolderNamePicker = ({
+  value,
+  onChange,
+}: FolderNamePickerProps): JSX.Element => {
+  const { data: adminForm } = useAdminForm()
+  const { t } = useTranslation('translation', {
+    keyPrefix:
+      'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen',
+  })
+  const fields = (adminForm?.form_fields ?? []).filter(({ fieldType }) =>
+    FOLDER_NAME_FIELD_TYPES.includes(fieldType),
+  )
+  return (
+    <Box>
+      <FormLabel isRequired={false} description={t('folderNameDescription')}>
+        {t('folderNameLabel')}
+      </FormLabel>
+      <DropdownMenuLayerProvider value="popover">
+        <SingleSelect
+          name="folderNameFieldId"
+          placeholder={t('folderNamePlaceholder')}
+          items={fields.map(({ _id, title }) => ({ value: _id, label: title }))}
+          value={value?._id ?? ''}
+          onChange={(fieldId) => {
+            const field = fields.find(({ _id }) => _id === fieldId)
+            onChange(field && { _id: field._id, fieldType: field.fieldType })
+          }}
+        />
+      </DropdownMenuLayerProvider>
+    </Box>
+  )
+}
+
 type HowFilesAreSavedKey =
   | 'zipDescription'
   | 'csvDescription'
@@ -60,12 +104,14 @@ interface ConfirmationScreenProps {
   isDownloading: boolean
   responsesCount: number
   downloadOptions: DownloadOptions
+  onDownloadOptionsChange?: (downloadOptions: DownloadOptions) => void
   isCsvFollowingTable?: boolean
   isResponsesCountHidden?: boolean
 }
 
 export const ConfirmationScreen = ({
   downloadOptions,
+  onDownloadOptionsChange,
   onCancel,
   isDownloading,
   onDownload,
@@ -79,6 +125,10 @@ export const ConfirmationScreen = ({
   )
   const isVersionSwitchShown = isOneZipEnabled && !isCsvOnly
   const isOneZip = useIsOneZipDownload()
+  const isFolderNamePickerOn = useFeatureIsOn(
+    featureFlags.attachmentsFolderNamePicker,
+  )
+  const isFolderNamePickerShown = isFolderNamePickerOn && isOneZip && !isCsvOnly
   const [, setDownloadVersion] = useResponsesDownloadVersion()
   const isMobile = useIsMobile()
   const { t: confirmationScreenTranslation } = useTranslation('translation', {
@@ -196,6 +246,17 @@ export const ConfirmationScreen = ({
               </Text>
             )}
           </Box>
+          {isFolderNamePickerShown ? (
+            <FolderNamePicker
+              value={downloadOptions.folderNameField}
+              onChange={(folderNameField) =>
+                onDownloadOptionsChange?.({
+                  ...downloadOptions,
+                  folderNameField,
+                })
+              }
+            />
+          ) : null}
           <InlineMessage>
             <Stack>
               <Text textStyle="subhead-1">

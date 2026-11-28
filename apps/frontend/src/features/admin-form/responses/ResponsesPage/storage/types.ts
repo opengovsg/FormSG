@@ -4,6 +4,7 @@ import { Remote } from 'comlink'
 import { SetRequired } from 'type-fest'
 
 import { SubmissionMrfMetadata, SubmissionStreamDto } from 'formsg-shared/types'
+import { BasicField } from 'formsg-shared/types/field'
 
 import { CsvRecord } from './utils/CsvRecord.class'
 import { DecryptionWorkerApi } from './worker/decryption.worker'
@@ -83,6 +84,7 @@ export interface DownloadOptions {
   isDownloadAttachments: boolean
   isDownloadCsv: boolean
   isDownloadPdf: boolean
+  folderNameField?: { _id: string; fieldType: BasicField }
 }
 
 export const isCsvOnlyDownload = ({

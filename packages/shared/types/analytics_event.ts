@@ -1,3 +1,5 @@
+import { BasicField } from './field'
+
 export enum AnalyticsEventType {
   ResultsDownload = 'results.download',
   ResultsDownloadFinished = 'results.download.finished',
@@ -39,6 +41,7 @@ export type ResultsDownloadContent = {
   dateRange?: { startDate: string; endDate: string }
   columnFilters?: ResultsDownloadColumnFilter[]
   downloadVersion?: ResultsDownloadVersion
+  folderNameFieldType?: BasicField
 }
 
 export type ResultsDownloadFinishedContent = {

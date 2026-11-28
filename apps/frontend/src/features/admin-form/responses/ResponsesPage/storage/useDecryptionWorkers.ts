@@ -41,6 +41,7 @@ import {
   getTombstoneName,
 } from './utils/failedDownloads'
 import {
+  getFolderNameAnswer,
   getResponseFolderName,
   toSafeZipEntryName,
 } from './utils/responseFolderName'
@@ -96,6 +97,7 @@ export type DownloadEncryptedParams = EncryptedResponsesStreamParams & {
   isDownloadPdf: boolean
   visibleSubmissionIds?: string[]
   csvView?: CsvExportView
+  folderNameFieldId?: string
 }
 interface UseDecryptionWorkersProps {
   onDecryptionProgress: React.Dispatch<React.SetStateAction<number>>
@@ -149,6 +151,7 @@ const useDecryptionWorkers = ({
         startDate,
         visibleSubmissionIds,
         csvView,
+        folderNameFieldId,
       }: DownloadEncryptedParams,
       freshAbortController: AbortController,
     ) => {
@@ -281,7 +284,13 @@ const useDecryptionWorkers = ({
             failedRefNo,
           } = decryptResult
           const getFolderPath = (refNo: string) =>
-            `${getResponseFolderName({ refNo })}/`
+            `${getResponseFolderName({
+              refNo,
+              answer: getFolderNameAnswer(
+                decryptedResponses,
+                folderNameFieldId,
+              ),
+            })}/`
           const entries: ZipEntry[] = []
           const addPlaceholder = (failure: FailedDownload, path: string) => {
             failedDownloads.push(failure)
