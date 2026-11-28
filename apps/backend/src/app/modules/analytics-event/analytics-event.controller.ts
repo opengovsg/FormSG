@@ -4,6 +4,7 @@ import { AuthedSessionData } from 'express-session'
 import {
   AnalyticsEventInput,
   AnalyticsEventType,
+  BasicField,
   ErrorDto,
 } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
@@ -63,6 +64,9 @@ const joiAnalyticsEventBody = Joi.alternatives().try(
         .max(100)
         .optional(),
       downloadVersion: downloadVersion.optional(),
+      folderNameFieldType: Joi.string()
+        .valid(...Object.values(BasicField))
+        .optional(),
     }),
   ),
   joiEvent(

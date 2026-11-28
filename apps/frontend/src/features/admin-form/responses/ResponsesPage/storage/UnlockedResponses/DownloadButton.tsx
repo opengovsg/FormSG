@@ -439,6 +439,9 @@ export const DownloadButton = ({
         ...(dateRangeResponsesCount !== undefined
           ? { responsesCount: dateRangeResponsesCount }
           : {}),
+        ...(folderNameField
+          ? { folderNameFieldType: folderNameField.fieldType }
+          : {}),
       },
     })
     datadogLogs.logger.info('Bulk download used', {
